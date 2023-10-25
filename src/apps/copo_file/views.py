@@ -19,7 +19,6 @@ def copo_files(request, profile_id):
     return render(request, "copo/copo_files.html", {"profile_id": profile_id, "profile_title": profile_title, "profile_type": profile_type})
 
 
-@web_page_access_checker
 @login_required()
 def process_urls(request):
     profile_id = helpers.get_current_request().session['profile_id']
@@ -51,7 +50,6 @@ def process_urls(request):
     return HttpResponse(json.dumps(urls_list))
 
 
-@web_page_access_checker
 @login_required()
 def upload_ecs_files(request, profile_id):
     channels_group_name = "s3_" + profile_id
