@@ -4,27 +4,10 @@ info:
   description: |
     The following are Swagger Application Programming Interface (API) methods for manifests, samples, statistics and profiles 
     in the **Collaborative OPen Omics (COPO)** project.
-
-    API methods are documentated [here](https://copo-docs.readthedocs.io/en/latest/retrieval/copo-api.html).
-
-    Choose one of the available API servers from the **Servers** dropdown menu then, perform the desired API method.
-    - **Live Server**
-    - **Demo Server**
-    - **Local Server 1**
-    - **Local Server 2**
-
-    > If you get the error, ``TypeError: Failed to fetch`` or ``TypeError: NetworkError when attempting to fetch resource.``, 
-      please ensure that you have selected the correct API server from the **Servers** dropdown menu.
   version: 1.1.8
 servers:
-  - url: https://copo-project.org/api
-    description: Live Server
-  - url: http://demo.copo-project.org/api
-    description: Demo Server
-  - url: http://127.0.0.1:8000/api
-    description: Local Server 1
-  - url: http://127.0.0.1:8001/api
-    description: Local Server 2
+  - url: /api
+    description: Current Website Server
 
 paths:
   # Section: API key
