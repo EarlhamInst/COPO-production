@@ -100,7 +100,10 @@ class ProcessValidationQueue:
                 '''
                 self.data = self.data.apply(lambda x: x.astype(str))
                 self.data = self.data.apply(lambda x: x.str.strip())
-                self.data.columns = self.data.columns.str.replace(" ", "")
+                
+                # Remove special characters from column names
+                self.data.columns = [col.strip().replace(" ", "").replace(":", "").replace(".", "").replace("(", "").replace(")", "").replace(
+                    "/", "").replace(",", "").replace(";", "").replace("'", "").replace('"', "").replace("’", "").replace("“", "").replace("”", "").replace("\n", "") for col in self.data.columns]
 
                 # validate for an empty manifest/excel file
                 if len(self.data.index) == 0 or len(self.data.columns) == 0:

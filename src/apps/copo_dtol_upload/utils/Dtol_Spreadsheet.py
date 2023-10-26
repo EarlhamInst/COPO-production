@@ -522,8 +522,8 @@ class DtolSpreadsheet:
         sample_data = sample_data.apply(lambda x: x.str.strip())
 
         # Remove special characters from column names
-        sample_data.columns = [col.replace(" ", "").replace(":", "").replace(".", "").replace("(", "").replace(")", "").replace(
-            "/", "").replace(",", "").replace(";", "").replace("'", "").replace('"', "").replace("’", "").replace("“", "").replace("”", "") for col in sample_data.columns]
+        sample_data.columns = [col.strip().replace(" ", "").replace(":", "").replace(".", "").replace("(", "").replace(")", "").replace(
+            "/", "").replace(",", "").replace(";", "").replace("'", "").replace('"', "").replace("’", "").replace("“", "").replace("”", "").replace("\n", "") for col in sample_data.columns]
         manifest_id = str(uuid.uuid4())
         request = ThreadLocal.get_current_request()
         image_data = request.session.get("image_specimen_match", [])
