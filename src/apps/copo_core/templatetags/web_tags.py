@@ -82,3 +82,14 @@ def get_first_value_from_array(value):
             result = result.strftime('%a, %d %b %Y %H:%M')
         return result
     return value
+
+
+@register.filter(is_safe=True, name="is_list_empty")
+def is_list_empty(value):
+    # Check if list is an empty list
+    if value and isinstance(value, list):
+        if len(value) == 1 and '' in value:
+            return False
+        return True
+    else:
+        return False
