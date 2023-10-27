@@ -127,6 +127,8 @@ MESSAGES = {
                                         'at row <strong>%s</strong>',
     'validation_msg_rack_tube_both_na': 'NOT_APPLICABLE, NOT_PROVIDED or NOT_COLLECTED value found in both RACK_OR_PLATE_ID '
                                         'and TUBE_OR_WELL_ID at row <strong>%s</strong>.',
+    'validation_msg_rack_or_tube_contains_a_slash': 'Slash found in column, <strong>RACK_OR_PLATE_ID</strong>, or column, <strong>TUBE_OR_WELL_ID</strong>. '
+                                                    'Expected value should not contain any slashes (i.e. no <strong>/</strong> or <strong>\</strong>).',
     'validation_msg_rack_or_tube_is_na': 'NOT_APPLICABLE, NOT_PROVIDED, NOT_COLLECTED or "NA" value found in column, RACK_OR_PLATE_ID '
                                         'or column, TUBE_OR_WELL_ID at row <strong>%s</strong>.',
     'validation_msg_single_file_error': 'Field indicates that files should be single, but multiple filenames were '
