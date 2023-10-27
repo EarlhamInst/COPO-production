@@ -1148,8 +1148,11 @@ class Sample(DAComponent):
     def get_all_tol_samples(self):
         return self.get_collection_handle().find({"tol_project": {"$in": ["ASG", "DTOL"]}})
 
-    def get_number_of_dtol_samples(self):
-        return self.get_collection_handle().count_documents({"sample_type": "dtol"})
+    def get_number_of_samples_by_sample_type(self, sample_type):
+        if sample_type:
+            return self.get_collection_handle().count_documents({"sample_type": sample_type})
+        else:
+            self.get_number_of_samples()
 
     def get_number_of_samples(self):
         return self.get_collection_handle().count_documents({})
