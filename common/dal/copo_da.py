@@ -2527,7 +2527,7 @@ class Submission(DAComponent):
             {"_id": ObjectId(submission_id)}, {"$set": {"dtol_status": status}})
         if samples_ids:
             object_samples_ids = [ObjectId(x) for x in samples_ids]
-        Sample().get_collection_handle().update_many({"_id": {"$in": object_samples_ids}},
+            Sample().get_collection_handle().update_many({"_id": {"$in": object_samples_ids}},
                                                      {"$set": {"status": "processing"}})
 
     def make_tagged_seq_submission_pending(self, sub_id, target_ids):

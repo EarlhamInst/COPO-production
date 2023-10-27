@@ -88,6 +88,20 @@ class ReadNotInSubmissionQueueValidator(Validator):
                         self.flag = False 
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
     
+class DuplicatedSample(Validator):
+    def validate(self):
+        if "biosampleAccession" in self.data.columns:
+            samples = list(self.data["biosampleAccession"])
+        elif "sample" in self.data.columns:
+            samples = list(self.data["sample"])
+        if samples:
+            sample = [ x for x in samples if samples.count(x) > 1]
+            for s in set(sample):
+                self.errors.append("Sample " + s + " is duplicated in manifest")
+                self.flag = False
+        return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")        
+
+    
 class DuplicatedDataFile(Validator):
     def validate(self):
         user = ThreadLocal.get_current_user()

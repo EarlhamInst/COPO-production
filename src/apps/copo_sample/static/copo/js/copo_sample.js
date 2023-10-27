@@ -1239,6 +1239,20 @@ $(document).ready(function () {
   function do_record_task(event) {
     var task = event.task.toLowerCase(); //action to be performed e.g., 'Edit', 'Delete'
     var tableID = event.tableID; //get target table
+    //retrieve target records and execute task
+    var table = $('#' + tableID).DataTable();
+    var records = []; //
+    var manifests = [];
+    $.map(table.rows('.selected').data(), function (item) {
+      records.push(item);
+    });
+
+    //download sample manifest
+    if (task == 'download-sample-manifest') {   
+      $('#download-sample-manifest-link').attr('href', "/manifests/download_manifest/" +  records[0].manifest_id );
+      $('#download-sample-manifest-link span').trigger("click")
+      return
+    }  
 
     //describe task
     if (task == 'describe') {
@@ -1253,12 +1267,6 @@ $(document).ready(function () {
       return false;
     }
 
-    //retrieve target records and execute task
-    var table = $('#' + tableID).DataTable();
-    var records = []; //
-    $.map(table.rows('.selected').data(), function (item) {
-      records.push(item);
-    });
 
    
 

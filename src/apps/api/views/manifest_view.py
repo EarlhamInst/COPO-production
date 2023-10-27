@@ -433,7 +433,7 @@ def download_manifest(request, manifest_id):
         if f"{prefix}_REQUIRED" in sample_df.columns :
             filename_column = f"{prefix}_FILENAME"
             if filename_column in sample_df.columns:
-                sample_df[filename_column] = np.where (sample_df[f"{prefix}_REQUIRED"] == "Y", sample_df[filename_column].apply(lambda x: x.split("_")[0]+ ".pdf" if "_" in x else x), "NOT_APPLICABLE")
+                sample_df[filename_column] = np.where (sample_df[f"{prefix}_REQUIRED"] == "Y", sample_df[filename_column].apply(lambda x: x.rsplit("_",1)[0]+ ".pdf" if "_" in x else x), "NOT_APPLICABLE")
             else :
                 sample_df[filename_column] = np.where (sample_df[f"{prefix}_REQUIRED"] == "Y", "", "NOT_APPLICABLE")
 

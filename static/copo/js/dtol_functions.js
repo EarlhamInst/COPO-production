@@ -421,7 +421,11 @@ function update_pending_samples_table() {
 
         $(data).each(function (d) {
             let date = new Date(data[d].date_created.$date).toLocaleDateString('en-GB', {timeZone: 'UTC'})
-            $("#profile_titles").find("tbody").append("<tr class='selectable_row'><td style='max-width: 10px' data-profile_id='" + data[d]._id.$oid + "'>" + data[d].title + "</td><td>" + date + "</td></tr>")
+            let link = "<td/>" 
+            if (which_profiles == "my_profiles") {
+                link = "<td><a href='/copo/copo_sample/"+ data[d]._id.$oid  +"/view'>Samples</a></td>"
+            }    
+            $("#profile_titles").find("tbody").append("<tr class='selectable_row'><td style='max-width: 10px' data-profile_id='" + data[d]._id.$oid + "'>" + data[d].title + "</td><td>" + date + "</td>"+ link + "</tr>")
         })
         
         $.fn.dataTable.moment('DD/MM/YYYY');
@@ -430,6 +434,13 @@ function update_pending_samples_table() {
             paging: false,
             dom: '<"top"f>rt<"bottom"lp><"clear">',
             "order": [[1, "desc"]],
+            initComplete: function () {
+                var api = this.api();
+                if ( which_profiles != "my_profiles" ) {
+                  // Hide Office column
+                  api.column(2).visible( false );
+                }
+            },    
 
         })
         $($("#profile_titles tr")[1]).click()

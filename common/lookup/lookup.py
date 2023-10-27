@@ -914,7 +914,13 @@ BUTTON_TEMPLATES = {
             "className": "copo-dt btn btn-danger",
             "iconClass": "fa fa-tags",
             "btnAction": "submit_tagged_seq"
-        },         
+        },      
+        "download_sample_manifest_single": {
+            "text": "Download Sample Manifest",
+            "className": "copo-dt btn button",
+            "iconClass": "fa fa-download",
+            "btnAction": "download-sample-manifest"
+        }   
     }
 }
 REPO_NAME_LOOKUP = {

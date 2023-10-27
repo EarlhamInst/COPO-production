@@ -13,7 +13,7 @@ from common.lookup.copo_enums import *
 import common.schemas.utils.data_utils as d_utils
 from common.dal.copo_da import Submission, Sample, Profile, Source
 from common.utils.helpers import notify_frontend, get_env
-from common.schema_versions.lookup.dtol_lookups import DTOL_ENA_MAPPINGS, DTOL_UNITS, PERMIT_FILENAME_COLUMN_NAMES
+from common.schema_versions.lookup.dtol_lookups import DTOL_ENA_MAPPINGS, DTOL_UNITS, PERMIT_COLUMN_NAMES_PREFIX, PERMIT_FILENAME_COLUMN_NAMES
 from common.lookup.lookup import SRA_SETTINGS, SRA_SUBMISSION_TEMPLATE, SRA_SAMPLE_TEMPLATE, SRA_PROJECT_TEMPLATE, DTOL_SAMPLE_COLLECTION_LOCATION_STATEMENT
 from .helpers import query_public_name_service
 from bson import ObjectId
@@ -56,6 +56,8 @@ def process_pending_dtol_samples():
     # get all pending dtol submissions
     sub_id_list = Submission().get_pending_dtol_samples()
     tolidflag = True
+    specimenID_map = dict()  # Map of specimen IDs
+
     # send each to ENA for Biosample ids
     for submission in sub_id_list:
 
@@ -69,7 +71,6 @@ def process_pending_dtol_samples():
             uuid.uuid4())  # use this to recover bundle sample file
         build_bundle_sample_xml(file_subfix)
         s_ids = []
-        specimenID_lst = list()  # list of specimen IDs
         # check for public name with Sanger Name Service
         public_name_list = list()
         rejected_sample = {}
@@ -155,24 +156,27 @@ def process_pending_dtol_samples():
 
             s_ids.append(s_id)
 
-            # check if specimen ID biosample was already registered, if not do it
-            specimen_sample = Source().get_specimen_biosample(
-                sam["SPECIMEN_ID"])
-            try:
-                assert len(specimen_sample) <= 1
-            except AssertionError:
-                log_message("Multiple sources for SPECIMEN_ID " + sam["SPECIMEN_ID"], Loglvl.ERROR,
-                            profile_id=profile_id)
-                # l.error("Multiple sources for SPECIMEN_ID " + sam["SPECIMEN_ID"])
-                break
-            specimen_accession = ""
-            if specimen_sample:
-                specimen_accession = specimen_sample[0].get(
-                    "biosampleAccession", "")
-                l.log("Specimen accession at 119 is " + specimen_accession)
-            else:
-                # create specimen object and submit
-                log_message("Creating Sample for SPECIMEN_ID " + sam.get("RACK_OR_PLATE_ID", "") + "/" + sam[
+            if not sam["SPECIMEN_ID"] in specimenID_map.keys():    
+                # check if specimen ID biosample was already registered, if not do it
+                specimen_sample = Source().get_specimen_biosample(
+                    sam["SPECIMEN_ID"])
+                try:
+                    assert len(specimen_sample) <= 1
+                except AssertionError:
+                    log_message("Multiple sources for SPECIMEN_ID " + sam["SPECIMEN_ID"], Loglvl.ERROR,
+                                profile_id=profile_id)
+                    # l.error("Multiple sources for SPECIMEN_ID " + sam["SPECIMEN_ID"])
+                    break
+                specimen_accession = ""
+                target_id = ""
+                if specimen_sample:
+                    target_id = str(specimen_sample[0]["_id"])
+                    specimen_accession = specimen_sample[0].get(
+                        "biosampleAccession", "")
+                #    l.log("Specimen accession at 119 is " + specimen_accession)
+                #else:
+                    # create specimen object and submit
+                log_message("Creating / Upldate Sample for SPECIMEN_ID " + sam.get("RACK_OR_PLATE_ID", "") + "/" + sam[
                     "SPECIMEN_ID"], Loglvl.INFO, profile_id=profile_id)
                 # l.log("creating specimen level sample for " + sam["SPECIMEN_ID"])
                 # notify_frontend(data={"profile_id": profile_id},
@@ -190,8 +194,8 @@ def process_pending_dtol_samples():
                 # Save source/specimen and add object fields to the source/specimen
                 if issymbiont == "TARGET":
                     specimen_obj_fields = {"SPECIMEN_ID": sam["SPECIMEN_ID"],
-                                           "TAXON_ID": sam["species_list"][0]["TAXON_ID"],
-                                           "sample_type": sample_type, "profile_id": sam['profile_id']}
+                                            "TAXON_ID": sam["species_list"][0]["TAXON_ID"],
+                                            "sample_type": sample_type, "profile_id": sam['profile_id'], "target_id":target_id}
 
                     # Add permit filename to the source/specimen of erga sources
                     permit_filename_field = {}
@@ -209,14 +213,14 @@ def process_pending_dtol_samples():
                             {"NAGOYA_PERMITS_FILENAME": sam.get("NAGOYA_PERMITS_FILENAME", "")})
 
                     obj_fields = {**specimen_obj_fields, **
-                                  permit_filename_field}  # Merge dictionaries
-                    Source().save_record(auto_fields={}, **obj_fields)  # Save source/specimen record
+                                    permit_filename_field }  # Merge dictionaries
+                    Source().save_record(auto_fields={}, **obj_fields, )  # Save source/specimen record
                     specimen_obj_fields = populate_source_fields(sam)
                 else:
                     # look for sample with same specimen ID which is target
                     specimen_obj_fields = {"SPECIMEN_ID": targetsam["SPECIMEN_ID"],
-                                           "TAXON_ID": targetsam["species_list"][0]["TAXON_ID"],
-                                           "sample_type": sample_type, "profile_id": targetsam['profile_id']}
+                                            "TAXON_ID": targetsam["species_list"][0]["TAXON_ID"],
+                                            "sample_type": sample_type, "profile_id": targetsam['profile_id'], "target_id":target_id}
 
                     # Add permit filename to the source/specimen of erga sources
                     permit_filename_field = {}
@@ -234,20 +238,20 @@ def process_pending_dtol_samples():
                             {"NAGOYA_PERMITS_FILENAME": targetsam.get("NAGOYA_PERMITS_FILENAME", "")})
 
                     obj_fields = {**specimen_obj_fields, **
-                                  permit_filename_field}  # Merge dictionaries
-                    Source().save_record(auto_fields={}, **obj_fields)  # Save source/specimen record
+                                    permit_filename_field}  # Merge dictionaries
+                    Source().save_record(auto_fields={}, **obj_fields, target_id=target_id)  # Save source/specimen record
                     specimen_obj_fields = populate_source_fields(targetsam)
 
                 # Add fields to the source/specimen
                 sour = Source().get_by_specimen(sam["SPECIMEN_ID"])[0]
                 Source().add_fields(specimen_obj_fields, str(sour['_id']))
 
-                log_message("Specimen level sample for " + sam["SPECIMEN_ID"] + " created", Loglvl.INFO,
+                log_message("Specimen level sample for " + sam["SPECIMEN_ID"] + " created/Updated", Loglvl.INFO,
                             profile_id=profile_id)
                 # l.log("created specimen level sample for " + sam["SPECIMEN_ID"])
 
-            # source exists but doesn't have accession/source didn't exist
-            if not specimen_accession:
+                # source exists but doesn't have accession/source didn't exist
+                #if not specimen_accession:
                 log_message("Retrieving specimen level sample biosampleAccession for " + sam["SPECIMEN_ID"],
                             Loglvl.INFO, profile_id=profile_id)
                 # l.log("retrieving specimen level sample biosampleAccession for " + sam["SPECIMEN_ID"])
@@ -266,8 +270,8 @@ def process_pending_dtol_samples():
                     # retrieve public name
                     spec_tolid = query_public_name_service(
                         [{"taxonomyId": int(targetsam["species_list"][0]["TAXON_ID"]),
-                          "specimenId": targetsam["SPECIMEN_ID"],
-                          "sample_id": str(sam["_id"])}])
+                            "specimenId": targetsam["SPECIMEN_ID"],
+                            "sample_id": str(sam["_id"])}])
                     try:
                         assert len(spec_tolid) == 1
                     except AssertionError:
@@ -300,7 +304,7 @@ def process_pending_dtol_samples():
                             continue
                         # change dtol_status to "awaiting_tolids"
                         msg = "We couldn't retrieve one or more public names, a request for a new tolId has been " \
-                              "sent, COPO will try again in 24 hours"
+                                "sent, COPO will try again in 24 hours"
                         log_message(msg, Loglvl.INFO, profile_id=profile_id)
                         # notify_frontend(data={"profile_id": profile_id}, msg=msg, action="info",
                         #                html_id="dtol_sample_info")
@@ -315,18 +319,18 @@ def process_pending_dtol_samples():
                     sour = sour[0]
 
                 build_specimen_sample_xml(sour)
-                build_submission_xml(str(sour['_id']), release=True)
+                build_submission_xml(str(sour['_id']), release=True, modify=sour.get("biosampleAccession", ""))
                 log_message("submitting specimen level sample to ENA for " + sam["SPECIMEN_ID"], Loglvl.INFO,
                             profile_id=profile_id)
                 accessions = submit_biosample_v2(str(sour['_id']), Source(), submission['_id'], {}, type="source",
-                                                 async_send=False)
+                                                    async_send=False)
                 # l.log("submission status is " + str(accessions.get("status", "")), type=Logtype.FILE)
-                if accessions.get("status", "") == "error":
+                if not accessions or accessions.get("status", "") == "error":
                     if handle_common_ENA_error(accessions.get("msg", ""), sour['_id']):
                         pass
                     else:
                         msg = "Submission Rejected: specimen level " + sam["SPECIMEN_ID"] + "<p>" + accessions[
-                            "msg"] + "</p>"
+                            "msg"] if accessions else " ERROR " + "</p>"
                         notify_frontend(data={"profile_id": profile_id}, msg=msg, action="error",
                                         html_id="dtol_sample_info")
                         status = {}
@@ -336,13 +340,94 @@ def process_pending_dtol_samples():
                         Submission().dtol_sample_rejected(
                             submission['_id'], sam_ids=[s_id], submission_id=[])
                         rejected_sample[sam["rack_tube"]] = msg
-                        Source().get_collection_handle().remove(
-                            {"_id": sour['_id']})
+                        Source().get_collection_handle().delete_one(
+                            {"_id": sour['_id'] , "biosampleAccession" : {"$ne": ""} })  
                         # Submission().make_dtol_status_pending(submission['_id'])
                         continue
                 specimen_accession = Source().get_specimen_biosample(sam["SPECIMEN_ID"])[0].get("biosampleAccession",
                                                                                                 "")
 
+                if not specimen_accession:
+                    l.log("no accession found, set submission to pending")
+                    Submission().make_dtol_status_pending(submission['_id'])
+                    msg = "Connection issue - please try resubmit later"
+                    log_message(msg, Loglvl.INFO, profile_id=profile_id)
+                    # notify_frontend(data={"profile_id": profile_id}, msg=msg, action="info",
+                    #                html_id="dtol_sample_info")
+                    Submission().make_dtol_status_pending(submission['_id'])
+                    Sample().mark_processing(sample_ids=s_ids)
+                    break #break current submission and do next submission
+
+                # Transfer permit files to b2drop
+                sample_permits_directory = os.path.join(
+                    sample_permits_directory_path, profile_id)
+
+                # Check if sample permits directory exists and if specimen accession is not in the list of specimen IDs
+                if  os.path.exists(sample_permits_directory):  # Check if sample permits directory exists
+                    taxonID_directory = os.path.join(
+                        b2drop_permits_directory_path, sam["TAXON_ID"])
+                    for col_name in PERMIT_COLUMN_NAMES_PREFIX:  
+                        if sam.get(f"{col_name}_REQUIRED", "N") == "N":
+                            continue
+                        # Skip if permit filename column is empty
+                        b2drop_filename = sam.get(f"{col_name}_FILENAME", "")
+                        if not b2drop_filename:
+                            continue
+
+                        # Get actual permit filename
+                        permit_file = b2drop_filename.replace(
+                            f"_{b2drop_filename.split('_')[-1]}", ".pdf")
+                        permit_file_path = os.path.join(
+                            sample_permits_directory, permit_file)
+                        permit_type = col_name.title()
+
+                        # Copy permit file from COPO 'media/sample_permits' directory to b2drop directory
+                        try:
+                            # Create taxonID directory if it doesn't exist
+                            if not os.path.exists(taxonID_directory):
+                                os.makedirs(taxonID_directory)
+
+                            b2drop_file_path = Path(b2drop_permits_directory_path) / sam[
+                                "TAXON_ID"] / b2drop_filename
+
+                            shutil.copy2(permit_file_path, b2drop_file_path)
+
+                            l.log(f"{b2drop_filename} file copied to b2drop")
+
+                            # Create "readme.txt" file (if it doesn't exist) to store the permit file name,
+                            # permit type and specimen ID
+                            with open(os.path.join(b2drop_permits_directory_path, sam["TAXON_ID"], 'readme.txt'),
+                                    'a+') as readmeFile:
+                                # Check if the file is empty
+                                # Traverse to the start of the file
+                                readmeFile.seek(0)
+                                # Get the first character in the file
+                                first_character = readmeFile.read(1)
+
+                                if not first_character:
+                                    # Add a line to the readme if file is empty
+                                    readmeFile.write(
+                                        "This file contains all the permit files and types associated with each specimen ID." + "\n \n")
+                                    readmeFile.write(
+                                        "SPECIMEN_ID" + "  " + "Permit_Type" + "  " + "Permit_Filename" + "\n")
+                                else:
+                                    # Traverse to the end of the file
+                                    readmeFile.seek(0, os.SEEK_END)
+
+                                # Add a line to the readme file
+                                readmeFile.write(
+                                    sam["SPECIMEN_ID"] + "  " + permit_type.replace(" ", "_") + "  " + sam.get(
+                                        f"{col_name}_FILENAME", "") + "\n")
+
+                        except Exception as error:
+                            print("Error:", error)
+                            l.exception(error)
+
+                # Add specimen ID to list
+                specimenID_map[sam["SPECIMEN_ID"]] = specimen_accession  
+
+
+            specimen_accession = specimenID_map.get(sam["SPECIMEN_ID"],"")
             if not specimen_accession:
                 l.log("no accession found, set submission to pending")
                 Submission().make_dtol_status_pending(submission['_id'])
@@ -352,75 +437,7 @@ def process_pending_dtol_samples():
                 #                html_id="dtol_sample_info")
                 Submission().make_dtol_status_pending(submission['_id'])
                 Sample().mark_processing(sample_ids=s_ids)
-                break
-
-            # Transfer permit files to b2drop
-            sample_permits_directory = os.path.join(
-                sample_permits_directory_path, profile_id)
-
-            # Check if sample permits directory exists and if specimen accession is not in the list of specimen IDs
-            if not sam["SPECIMEN_ID"] in specimenID_lst and os.path.exists(
-                    sample_permits_directory):  # Check if sample permits directory exists
-                taxonID_directory = os.path.join(
-                    b2drop_permits_directory_path, sam["TAXON_ID"])
-                for col_name in PERMIT_FILENAME_COLUMN_NAMES:
-                    # Skip if permit filename column is empty
-                    b2drop_filename = sam.get(col_name, "")
-                    if not b2drop_filename:
-                        continue
-
-                    # Get actual permit filename
-                    permit_file = b2drop_filename.replace(
-                        f"_{b2drop_filename.split('_')[-1]}", ".pdf")
-                    permit_file_path = os.path.join(
-                        sample_permits_directory, permit_file)
-                    permit_type = col_name.replace(
-                        "_PERMITS_FILENAME", " Permit").title()
-
-                    # Copy permit file from COPO 'media/sample_permits' directory to b2drop directory
-                    try:
-                        # Create taxonID directory if it doesn't exist
-                        if not os.path.exists(taxonID_directory):
-                            os.makedirs(taxonID_directory)
-
-                        b2drop_file_path = Path(b2drop_permits_directory_path) / sam[
-                            "TAXON_ID"] / b2drop_filename
-
-                        shutil.copy2(permit_file_path, b2drop_file_path)
-
-                        l.log(f"{b2drop_filename} file copied to b2drop")
-
-                        # Create "readme.txt" file (if it doesn't exist) to store the permit file name,
-                        # permit type and specimen ID
-                        with open(os.path.join(b2drop_permits_directory_path, sam["TAXON_ID"], 'readme.txt'),
-                                  'a+') as readmeFile:
-                            # Check if the file is empty
-                            # Traverse to the start of the file
-                            readmeFile.seek(0)
-                            # Get the first character in the file
-                            first_character = readmeFile.read(1)
-
-                            if not first_character:
-                                # Add a line to the readme if file is empty
-                                readmeFile.write(
-                                    "This file contains all the permit files and types associated with each specimen ID." + "\n \n")
-                                readmeFile.write(
-                                    "SPECIMEN_ID" + "  " + "Permit_Type" + "  " + "Permit_Filename" + "\n")
-                            else:
-                                # Traverse to the end of the file
-                                readmeFile.seek(0, os.SEEK_END)
-
-                            # Add a line to the readme file
-                            readmeFile.write(
-                                sam["SPECIMEN_ID"] + "  " + permit_type.replace(" ", "_") + "  " + sam.get(
-                                    col_name, "") + "\n")
-
-                        # Add specimen ID to list
-                        specimenID_lst.append(sam["SPECIMEN_ID"])
-
-                    except Exception as error:
-                        print("Error:", error)
-                        l.exception(error)
+                break  #break the current submission and do next submission
 
             # set appropriate relationship to specimen level sample
             l.log("setting relationship to specimen level sample for " +
@@ -929,15 +946,16 @@ def build_submission_xml(sample_id, hold="", release=False, modify=""):
         if add != None:
             action.remove(add)
         modify = ET.SubElement(action, 'MODIFY')
-    if hold:
+    elif release:
+        actions = root.find('ACTIONS')
+        action = ET.SubElement(actions, 'ACTION')
+        release_block = ET.SubElement(action, 'RELEASE')        
+    elif hold:
         actions = root.find('ACTIONS')
         action = ET.SubElement(actions, 'ACTION')
         hold_block = ET.SubElement(action, 'HOLD')
         hold_block.set("HoldUntilDate", hold)
-    if release:
-        actions = root.find('ACTIONS')
-        action = ET.SubElement(actions, 'ACTION')
-        release_block = ET.SubElement(action, 'RELEASE')
+
     ET.dump(tree)
     submissionfile = "submission_" + str(sample_id) + ".xml"
     tree.write(open(submissionfile, 'w'),
@@ -1144,8 +1162,9 @@ def handle_submit_receipt(sampleobj, collection_id, tree, type="sample"):
                 sample_id = child.get('alias')
                 sampleobj.add_rejected_status(status, sample_id)
                 sam = Sample().get_record(sample_id)
-                rejected_sample[sam["rack_tube"]] = msg
-                profile_id = sam["profile_id"]
+                if sam:
+                    rejected_sample[sam["rack_tube"]] = msg
+                    profile_id = sam["profile_id"]
 
         if rejected_sample:
             profile = Profile().get_record(profile_id)

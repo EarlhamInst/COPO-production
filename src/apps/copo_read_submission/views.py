@@ -235,6 +235,9 @@ def save_ena_records(request):
                                                                 
         else:
             condition["name"] = s["Sample"]
+            sample.pop("profile_id", None)
+            sample.pop("sample_type", None)
+
             sample = Sample().get_collection_handle().find_one_and_update(condition,
                                                                     {"$set": sample, "$setOnInsert": insert_record},
                                                                     upsert=True,  return_document=ReturnDocument.AFTER)
@@ -448,7 +451,7 @@ def init_manifest_submission(request):
             processing_status='pending'
         )
 
-        collection_handle.insert_one(fields)
+        collection_handle.insert(fields)
         context['message'] = 'Submission has been added to the processing queue. Status update will be provided.'
     else:
         context['message'] = 'Submission is already in the processing queue.'
