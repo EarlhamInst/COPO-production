@@ -394,7 +394,7 @@ function update_pending_samples_table() {
     // get profiles with samples needing looked at and populate left hand column
     //check whether we are getting my profiles or all profiles
     var which_profiles = $("#sequencing_centre_filter").find(".active").find("a").attr("href")
-    console.log(which_profiles)
+    //console.log(which_profiles)
     if (which_profiles == "my_profiles") {
         $("#accept_reject_button").show()
         $("#edit-buttons").show()

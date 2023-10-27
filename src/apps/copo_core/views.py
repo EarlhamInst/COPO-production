@@ -1,4 +1,4 @@
-from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
+from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES, SAMPLE_MANAGERS_ACCESSIBLE_WEB_PAGES
 from common.utils import helpers
 from django.db.models import Q
 import bson.json_util as json_util
@@ -7,6 +7,7 @@ from common.utils.copo_lookup_service import COPOLookup
 import json
 from allauth.socialaccount.models import SocialAccount
 from bson import json_util as j
+from bson import ObjectId
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
@@ -42,6 +43,65 @@ def login(request):
     }
     return render(request, 'copo/auth/login.html', context)
 """
+
+
+def web_page_access_checker(func):
+    # Custom decorator to check if the current web page should be
+    # viewed/accessed by the current web page viewer
+    def verify_view_access(request, *args, **kwargs):
+        response = func(request, *args, **kwargs)
+        member_groups = get_group_membership_asString()
+        current_view = request.resolver_match.view_name
+
+        profile_id = kwargs.get('profile_id', '')
+
+        if not profile_id:
+            # Check if current web page viewer is a sample manager and current web page is
+            # 'accept/reject samples' web page, if 'yes', grant web page access if not, deny access
+            if not (any(x.endswith('sample_managers') for x in member_groups) and 'accept_reject' in current_view):
+                response = handler403(request)
+            return response
+
+        user_id = Profile().get_record(ObjectId(profile_id))['user_id']
+        profile_type = Profile().get_type(profile_id).lower()
+
+        shared_profiles = list(
+            Profile().get_shared_for_user(id_only=True))
+
+        # The ID output from get_user_id() i.e. current_user_id is
+        # the same output from 'request.user.id'
+        rightful_page_viewerID = User.objects.get(pk=user_id).id
+        current_page_viewerID = request.user.id
+
+        if not (current_page_viewerID == rightful_page_viewerID):
+            if any(str(x['_id']) == profile_id for x in shared_profiles):
+                # Grant web page access if the profile (ID) associated with the current web page
+                # belongs to a profile that is shared with the current web page viewer
+                response = func(request, *args, **kwargs)
+            elif any(x.endswith('sample_managers') for x in member_groups):
+                # Check if current web page viewer is a sample manager
+                # with permission to view the web page
+                if any(x in current_view for x in SAMPLE_MANAGERS_ACCESSIBLE_WEB_PAGES):
+                    if 'asg' in profile_type and 'dtol_sample_managers' in member_groups:
+                        request.session['profile_id'] = profile_id
+                        response = func(request, *args, **kwargs)
+                    elif 'dtol_env' in profile_type and 'dtolenv_sample_managers' in member_groups:
+                        request.session['profile_id'] = profile_id
+                        response = func(request, *args, **kwargs)
+                    elif 'dtol' in profile_type and 'dtol_sample_managers' in member_groups:
+                        request.session['profile_id'] = profile_id
+                        response = func(request, *args, **kwargs)
+                    elif 'erga' in profile_type and 'erga_sample_managers' in member_groups:
+                        request.session['profile_id'] = profile_id
+                        response = func(request, *args, **kwargs)
+                else:
+                    response = handler403(request)
+            else:
+                # Deny web page access if the profile (ID) associated with the current web page
+                # is not owned/created by the current web page viewer
+                response = handler403(request)
+        return response
+    return verify_view_access
 
 
 def test(request):
@@ -404,7 +464,7 @@ def handler500(request):
     return error_page(request)
 
 
-def handler403(request, exception, message="Apologies, you do not have permission to view this web page"):
+def handler403(request, message="Apologies, you do not have permission to view this web page"):
     try:
         LOGGER.log(message)
     finally:
@@ -449,26 +509,38 @@ def search_copo_components(request, data_source):
 
 
 def create_group(request):
-    name = request.GET['group_name']
-    description = request.GET['description']
+    name = request.POST['group_name']
+    description = request.POST['description']
+
+    if not name or not description:
+        return HttpResponseBadRequest(
+            'Error Creating Group - Form field(s) cannot be empty!')
+
     uid = CopoGroup().create_shared_group(name=name, description=description)
 
     if uid:
         return HttpResponse(json.dumps({'id': str(uid), 'name': name}))
     else:
-        return HttpResponseBadRequest('Error Creating Group - Try Again')
+        return HttpResponseBadRequest('Forbidden - Group with the same name already exists!')
 
 
 def edit_group(request):
-    group_id = request.GET['group_id']
-    name = request.GET['group_name']
-    description = request.GET['description']
-    uid = CopoGroup().edit_group(group_id=group_id, name=name, description=description)
+    group_id = request.POST['group_id']
+    name = request.POST['group_name']
+    description = request.POST['description']
 
-    if uid:
-        return HttpResponse(json.dumps({'id': str(uid), 'name': name}))
-    else:
-        return HttpResponseBadRequest('Error Editing Group - Try Again')
+    if not name or not description:
+        return HttpResponseBadRequest(
+            'Error Updating Group - Form field(s) cannot be empty!')
+
+    if name and description:
+        document = CopoGroup().edit_group(
+            group_id=group_id, name=name, description=description)
+
+        if document:
+            return HttpResponse(json.dumps({'id': str(group_id), 'name': name}))
+        else:
+            return HttpResponseBadRequest('Forbidden - Group with the same name already exists!')
 
 
 def delete_group(request):

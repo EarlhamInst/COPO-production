@@ -1058,6 +1058,12 @@ class DecoupleFormSubmission:
                     if f_id in self.auto_fields.keys():
                         if type(self.auto_fields[f_id]) == list:
                             value_list = self.auto_fields[f_id]
+                        elif type(self.auto_fields[f_id]) == str and 'sequencing_centre' in f_id:
+                            # Ensure that the value for the sequencing centre field is not empty
+                            #  i.e. a list with an empty string
+                            # If yes, set the value to an empty list if profile type is 'Stand-alone'
+                            if self.auto_fields['copo.profile.type'] == 'Stand-alone' and self.auto_fields[f_id] == '':
+                                self.auto_fields[f_id] = list()
                         else:
                             value_list.append(self.auto_fields[f_id])
                         secondary_data_list = [k for k in self.auto_fields.keys() if

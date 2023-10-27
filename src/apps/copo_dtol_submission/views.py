@@ -2,19 +2,26 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseBadRequest
 from common.dal.copo_da import Sample, Profile, Submission
-from bson import json_util 
+from bson import json_util
 from common.utils.helpers import get_group_membership_asString, notify_frontend
 from src.apps.copo_core.models import ViewLock
+from src.apps.copo_core.views import web_page_access_checker
 import json
+
 # Create your views here.
+
+
+@web_page_access_checker
 @login_required
 def copo_sample_accept_reject(request):
     return render(request, 'copo/copo_sample_accept_reject.html', {})
 
+
 @login_required
 def get_samples_column_names(request):
-    columnanmes = Sample().get_sample_display_column_names();
-    return HttpResponse(json_util.dumps(columnanmes))    
+    columnanmes = Sample().get_sample_display_column_names()
+    return HttpResponse(json_util.dumps(columnanmes))
+
 
 @login_required
 def update_pending_samples_table(request):
@@ -32,6 +39,7 @@ def update_pending_samples_table(request):
         profiles += Profile().get_dtolenv_profiles(filter=profile_filter)
     return HttpResponse(json_util.dumps(profiles))
 
+
 @login_required
 def get_samples_for_profile(request):
     url = request.build_absolute_uri()
@@ -48,7 +56,8 @@ def get_samples_for_profile(request):
         if direction == "desc":
             dir = -1
 
-        samples = Sample().get_dtol_from_profile_id(profile_id, filter, draw, start, length, sort_by, dir, search)
+        samples = Sample().get_dtol_from_profile_id(
+            profile_id, filter, draw, start, length, sort_by, dir, search)
         # notify_frontend(msg="Creating Sample: " + "sprog", action="info",
         #                     html_id="dtol_sample_info")
 
@@ -70,6 +79,7 @@ def mark_sample_rejected(request):
         return HttpResponse(status=200)
     return HttpResponse(status=500)
 
+
 @login_required
 def add_sample_to_dtol_submission(request):
     sample_ids = request.GET.get("sample_ids")
@@ -82,11 +92,14 @@ def add_sample_to_dtol_submission(request):
         type_sub = Profile().get_record(profile_id)["type"]
         if not sub:
             if type_sub == "Aquatic Symbiosis Genomics (ASG)":
-                sub = Submission(profile_id).save_record(dict(), **{"type": "asg"})
+                sub = Submission(profile_id).save_record(
+                    dict(), **{"type": "asg"})
             elif type_sub == "European Reference Genome Atlas (ERGA)":
-                sub = Submission(profile_id).save_record(dict(), **{"type": "erga"})
+                sub = Submission(profile_id).save_record(
+                    dict(), **{"type": "erga"})
             else:
-                sub = Submission(profile_id).save_record(dict(), **{"type": "dtol"})
+                sub = Submission(profile_id).save_record(
+                    dict(), **{"type": "dtol"})
         sub["dtol_status"] = "pending"
         sub["target_id"] = sub.pop("_id")
 
@@ -95,15 +108,15 @@ def add_sample_to_dtol_submission(request):
             notify_frontend(action="delete_row", html_id=sample_id, data={})
             if not sample_id in sub["dtol_samples"]:
                 sub["dtol_samples"].append(sample_id)
-                #Sample().get_all_records_columns()
+                # Sample().get_all_records_columns()
 
         Sample().mark_processing(sample_ids=sample_ids)
         Sample().timestamp_dtol_sample_updated(sample_ids=sample_ids)
-        #sample_ids_bson = list(map(lambda id: ObjectId(id), sample_ids))
-        #sepciment_ids = Sample().get_collection_handle().distinct( 'SPECIMEN_ID', {"_id": {"$in": sample_ids_bson}});
-        #if "dtol_specimen" not in sub:
+        # sample_ids_bson = list(map(lambda id: ObjectId(id), sample_ids))
+        # sepciment_ids = Sample().get_collection_handle().distinct( 'SPECIMEN_ID', {"_id": {"$in": sample_ids_bson}});
+        # if "dtol_specimen" not in sub:
         #    sub["dtol_specimen"] = []
-        #for speciment_id in sepciment_ids:
+        # for speciment_id in sepciment_ids:
         #    if speciment_id not in sub["dtol_specimen"]:
         #        sub["dtol_specimen"].append(speciment_id)
 
@@ -113,6 +126,7 @@ def add_sample_to_dtol_submission(request):
             return HttpResponse(status=500)
     else:
         return HttpResponse(status=500, content="Sample IDs or profile_id not provided")
+
 
 @login_required
 def delete_dtol_samples(request):
@@ -126,5 +140,3 @@ def delete_dtol_samples(request):
                     html_id="sample_info")
 
     return HttpResponse(json.dumps({}))
-
- 

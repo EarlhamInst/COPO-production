@@ -242,15 +242,29 @@ function display_copo_alert(alertType, alertMessage, displayDuration) {
   //alertMessage: the actual message to be displayed to the user
   //displayDuration: how long should the alert be displayed for before taking it down
 
-  var infoPanelElement = $('#page_alert_panel');
+  // Strangely, calling the 'Info' tab with the ID, '#page_alert_panel' doesn't work,
+  // so the class, '.copo-sidebar-info' is used instead.
+  let info_sidebar_tab = $('.copo-sidebar-info');
+  let infoPanelElement = info_sidebar_tab.find('.panel-body'); // $('#page_alert_panel');
 
   if (infoPanelElement.length) {
     //reveal tab if not already shown
     $('.copo-sidebar-tabs a[href="#copo-sidebar-info"]').tab('show');
 
-    var alertElement = $('.alert-templates')
+    // Remove fade class if present
+    if (info_sidebar_tab.hasClass('fade')) info_sidebar_tab.removeClass('fade');
+
+    // Reveal tab content if it is not already shown
+    if (!info_sidebar_tab.find('.panel-body').hasClass('in'))
+      info_sidebar_tab.find('.panel-body').addClass('in');
+
+    const alertElement = $('.alert-templates')
       .find('.alert-' + alertType)
       .clone();
+
+    // Remove fade class if present
+    if (alertElement.hasClass('fade')) alertElement.removeClass('fade');
+
     alertElement.find('.alert-message').html(alertMessage);
 
     infoPanelElement.prepend(alertElement);

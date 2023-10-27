@@ -31,7 +31,7 @@
                             <div class="boldText" style="margin-top: 10px;">Description:</div>
                             <div class="showEllipsisFor2TextLines profileDescription">{{ profile.description }}</div>
                             
-                            {% if profile.study_status or profile.associated_type or profile.sequencing_centre %}
+                            {% if profile.study_status or profile.associated_type or profile.sequencing_centre|is_list_empty %}
                                 <a id="showMoreProfileInfoBtn" class="btn {% if profile.description.strip|length < 56 %}showMoreProfileInfoBtn_margin{% elif profile.description.strip|length >= 56 %}showMoreProfileInfoBtn_2LineDescriptionText{% endif %}" href="#" rel="popover"
                                     data-popover-content="#showMoreProfileInfoContent" data-placement="right">View more...</a>                         
                             {% endif %}
@@ -64,7 +64,7 @@
                                             </ul>
                                         </div>
                                     {% endif %}
-                                    {% if profile.sequencing_centre %}
+                                    {% if profile.sequencing_centre|is_list_empty %}
                                         <div class="profile-info-label">
                                             Associated Sequencing Centre(s):
                                         </div>
@@ -82,7 +82,7 @@
                         </div>
                         <!--Panel expanding menu -->
                         <!-- Row: Profile menu-->
-                        <div class="{% if profile.study_status or profile.associated_type or profile.sequencing_centre %}menu-row{% else %}menu-no-addtl-info-row{% endif %}">
+                        <div class="{% if profile.study_status or profile.associated_type or profile.sequencing_centre|is_list_empty %}menu-row{% else %}menu-no-addtl-info-row{% endif %}">
                             <span class="ui compact menu expanding_menu" id="expanding_menu">
                                 <div class="ui up pointing dropdown link item" tabindex="0">
                                     Actions

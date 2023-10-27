@@ -49,38 +49,9 @@ $(document).ready(function () {
   var copoFormsURL = '/copo/copo_forms/';
   var csrftoken = $.cookie('csrftoken');
 
-  //get component metadata
-  var componentMeta = {
-    component: 'annotation',
-    title: 'Generic Annotations',
-    iconClass: 'fa fa-pencil',
-    semanticIcon: 'write',
-    countsKey: 'num_annotation',
-    buttons: ['quick-tour-template', 'new-component-template'],
-    sidebarPanels: [
-      'copo-sidebar-info',
-      'copo-sidebar-help',
-      'copo-sidebar-annotate',
-    ],
-    colorClass: 'annotations_color',
-    color: 'violet',
-    tableID: 'annotation_table',
-    recordActions: ['delete_record_multi'],
-    visibleColumns: 10000,
-  };
-
   do_global_help(component);
 
-  //load records
-  //load_records(componentMeta);
-
-  //instantiate/refresh tooltips
   refresh_tool_tips();
-
-  //trigger refresh of profiles list
-  // $("body").on("refreshtable", function (event) {
-  //     do_render_component_table(globalDataBuffer, componentMeta);
-  // });
 
   //handle task button event
   $('body').on('addbuttonevents', function (event) {
@@ -91,6 +62,8 @@ $(document).ready(function () {
   $('#add_group_modal').on('hidden.bs.modal', function () {
     $('.modal-body').find('#groupName').val('');
     $('.modal-body').find('#groupDescription').val('');
+    $('.helpDivRow').removeClass('errorDiv');
+    $('.helpDivRowMessage').text('');
   });
 
   //add new component button
@@ -157,27 +130,48 @@ $(document).ready(function () {
         // submit form to create new group
         var group_name = $('#groupName').val();
         var description = $('#groupDescription').val();
+        const csrftoken = $.cookie('csrftoken');
+
         $.ajax({
           url: '/copo/create_group/',
+          type: 'POST',
+          headers: {
+            'X-CSRFToken': csrftoken,
+          },
           data: {
             group_name: group_name,
             description: description,
           },
           dataType: 'json',
-        }).done(function (data) {
-          var li = $('<li>').html(
-            "<a href='#' data-group-id='" + data.id + "'>" + data.name + '</a>'
-          );
-          $('#group_dropdown_ul').append(li);
-          $('#group_name_button').text(data.name + ' ');
-          $('#selected_group').html(data.name);
-          $('#selected_group').data('selected_group_id', data.id);
-          $('#add_group_modal').modal('hide');
-          $('#delete_group_button').css('visibility', 'visible');
-          $('#edit_group_button').css('visibility', 'visible');
-          $('#tool_window').css('visibility', 'visible');
-          get_profiles_in_group_data();
-        });
+        })
+          .done(function (data) {
+            let li = $('<li>').html(
+              "<a href='#' data-group-id='" +
+                data.id +
+                "'>" +
+                data.name +
+                '</a>'
+            );
+            $('#group_dropdown_ul').append(li);
+            $('#group_name_button').text(data.name + ' ');
+            $('#selected_group').html(data.name);
+            $('#selected_group').data('selected_group_id', data.id);
+            $('#add_group_modal').modal('hide');
+            $('#delete_group_button').css('visibility', 'visible');
+            $('#edit_group_button').css('visibility', 'visible');
+            $('#tool_window').css('visibility', 'visible');
+
+            get_profiles_in_group_data();
+            // Show success alert in the 'Info' panel
+            const alertType = 'success';
+            const alertMessage = 'Group created!';
+            display_copo_alert(alertType, alertMessage);
+          })
+          .error(function (data) {
+            $('.helpDivRow').show();
+            $('.helpDivRow').addClass('errorDiv');
+            $('.helpDivRowMessage').text(data['responseText']);
+          });
       }
     });
 
@@ -207,19 +201,29 @@ $(document).ready(function () {
                 group_id: $('#selected_group').data('selected_group_id'),
               },
               dataType: 'json',
-            }).done(function (data) {
-              var el = $(
-                "a[data-group-id='" +
-                  $('#selected_group').data('selected_group_id') +
-                  "']"
-              );
-              el.remove();
-              $('#group_name_button').text('Select Group' + ' ');
-              $('#selected_group').html('Select Group');
-              $('#selected_group').data('selected_group_id', undefined);
-              $('#delete_group_button').css('visibility', 'hidden');
-              $('#tool_window').css('visibility', 'hidden');
-            });
+            })
+              .done(function (data) {
+                var el = $(
+                  "a[data-group-id='" +
+                    $('#selected_group').data('selected_group_id') +
+                    "']"
+                );
+                el.remove();
+                $('#group_name_button').text('Select Group' + ' ');
+                $('#selected_group').html('Select Group');
+                $('#selected_group').data('selected_group_id', undefined);
+                $('#delete_group_button').css('visibility', 'hidden');
+                $('#edit_group_button').css('visibility', 'hidden');
+                $('#tool_window').css('visibility', 'hidden');
+
+                // Show success alert in the 'Info' panel
+                const alertType = 'success';
+                const alertMessage = 'Group deleted!';
+                display_copo_alert(alertType, alertMessage);
+              })
+              .error(function (e) {
+                console.log(e);
+              });
             dialogRef.close();
           },
         },
@@ -231,7 +235,7 @@ $(document).ready(function () {
     let group_id = $('#selected_group').data('selected_group_id');
 
     // Clone the modal body of the 'Add Group' modal
-    let message = $('#add_group_modal .modal-body').clone();
+    let message = $('#add_group_modal .modal-body').children().clone();
 
     message.find('#group_form').attr('id', 'edit_group_form');
     message.find('.submitFormGroupDiv').remove();
@@ -253,13 +257,14 @@ $(document).ready(function () {
       message.find('#editGroupDescription').val(data['resp'].description);
     });
 
-    BootstrapDialog.show({
+    let dialog = new BootstrapDialog({
       title: 'Edit Group',
       message: message,
       closable: true,
       animate: true,
-      onshown: function (dialog) {
-        // $('.fade').removeClass('fade');
+      onhidden: function () {
+        $('.helpDivRow').removeClass('errorDiv');
+        $('.helpDivRowMessage').text('');
       },
       buttons: [
         {
@@ -269,35 +274,42 @@ $(document).ready(function () {
           action: function (dialogRef) {
             let editedGroupName = $('#editGroupName').val();
             let editGroupDescription = $('#editGroupDescription').val();
-            $('#editGroupName').validator('validate');
-            $('#editGroupDescription').validator('validate');
-            if (!editedGroupName || !editGroupDescription) {
-              // $('#editGroupName').validator('validate');
-              // $('#editGroupDescription').validator('validate');
-              // Disable the 'Save' button
-              // dialogRef.getButton('editBtnID').disable();
-              return;
-            } else {
-              $.ajax({
-                url: '/copo/edit_group/',
-                data: {
-                  group_id: group_id,
-                  group_name: editedGroupName,
-                  description: editGroupDescription,
-                },
-                dataType: 'json',
+            const csrftoken = $.cookie('csrftoken');
+
+            $.ajax({
+              url: '/copo/edit_group/',
+              type: 'POST',
+              headers: {
+                'X-CSRFToken': csrftoken,
+              },
+              data: {
+                group_id: group_id,
+                group_name: editedGroupName,
+                description: editGroupDescription,
+              },
+              dataType: 'json',
+            })
+              .done(function (data) {
+                // Show success alert in the 'Info' panel
+                const alertType = 'success';
+                const alertMessage = 'Group updated!';
+                display_copo_alert(alertType, alertMessage);
+                dialogRef.close();
               })
-                .done(function (data) {
-                })
-                .error(function (data) {
-                  console.error(data);
-                });
-              dialogRef.close();
-            }
+              .error(function (data) {
+                $('.helpDivRow').show();
+                $('.helpDivRow').addClass('errorDiv');
+                $('.helpDivRowMessage').text(data['responseText']);
+              });
           },
         },
       ],
     });
+
+    dialog.realize();
+    dialog.getModalBody().css('padding', '20px 20px 5px 20px');
+    dialog.getModalBody().find();
+    dialog.open();
   }
 
   function add_repo_to_group(values) {

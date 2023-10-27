@@ -98,8 +98,8 @@ dtol_api_patterns = [
 stats_api_patterns = [
     re_path(r'^stats/number_of_users', stats.get_number_of_users,
             name='get_number_of_users'),
-    re_path(r'^stats/number_of_dtol_samples', stats.get_number_of_dtol_samples,
-            name='get_number_of_dtol_samples'),
+    re_path(r'^stats/number_of_samples/(?P<sample_type>[a-zA-Z-_, ]+)', stats.get_number_of_samples_by_sample_type,
+            name='get_number_of_samples_by_sample_type'),
     re_path(r'^stats/number_of_samples', stats.get_number_of_samples,
             name='get_number_of_samples'),
     re_path(r'^stats/number_of_profiles', stats.get_number_of_profiles,
@@ -107,7 +107,7 @@ stats_api_patterns = [
     re_path(r'^stats/number_of_datafiles', stats.get_number_of_datafiles,
             name='get_number_of_datafiles'),
     re_path(r'^stats/combined_stats_json', stats.combined_stats_json,
-            name='combined_stats_csv'),
+            name='combined_stats_json'),
     re_path(r'^stats/sample_stats_csv', stats.samples_stats_csv,
             name='samples_stats_csv'),
     re_path(r'^stats/histogram_metric/(?P<metric>[A-Za-z0-9_]+)', stats.samples_hist_json,
@@ -120,17 +120,17 @@ stats_api_patterns = [
 
 manifest_patterns = [
     path('get_latest_manifest_versions/', manifest_view.get_latest_manifest_versions,
-            name="get_latest_manifest_versions"),
+         name="get_latest_manifest_versions"),
     path('get_manifest_fields/', manifest_view.get_manifest_fields,
-            name="get_manifest_fields"),
+         name="get_manifest_fields"),
     path('get_common_value_dropdown_list/', manifest_view.get_common_value_dropdown_list,
-            name="get_common_value_dropdown_list"),
+         name="get_common_value_dropdown_list"),
     path('prefill_manifest_template/', manifest_view.prefill_manifest_template,
-            name="prefill_manifest_template"),
+         name="prefill_manifest_template"),
     re_path(r'^download_manifest/(?P<manifest_id>[A-Z0-9a-f-]+)', manifest_view.download_manifest,
-            name="download_manifest"),   
+            name="download_manifest"),
     path('validate_common_value/', manifest_view.validate_common_value,
-            name="validate_common_value"),
+         name="validate_common_value"),
     path('index', TemplateView.as_view(
         template_name="manifests.html"), name='manifests'),
 ]

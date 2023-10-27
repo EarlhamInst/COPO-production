@@ -1,15 +1,17 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from common.dal.copo_da import Profile, EnaChecklist
+from src.apps.copo_core.views import web_page_access_checker
 
 
+@web_page_access_checker
 @login_required
 def copo_taggedseq(request, profile_id):
-    request.session["profile_id"] = profile_id    
+    request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
     checklists = EnaChecklist().get_barcoding_checklists_no_fields()
 
-    return render(request, 'copo/copo_tagged_seq.html', {'profile_id': profile_id, 'profile':profile,  'checklists': checklists})
+    return render(request, 'copo/copo_tagged_seq.html', {'profile_id': profile_id, 'profile': profile,  'checklists': checklists})
 
 
 @login_required()

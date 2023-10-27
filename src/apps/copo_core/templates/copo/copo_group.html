@@ -93,6 +93,17 @@
             color: inherit;
         }
 
+        .errorDiv {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            position: relative;
+            padding: .75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: .25rem;
+        }
+
         button.close {
             padding: 0;
             cursor: pointer;
@@ -236,6 +247,9 @@
                     <h4 class="modal-title" id="myModalLabel">Create New Group</h4>
                 </div>
                 <div class="modal-body">
+                    <div class="row helpDivRow" style="margin-bottom:10px">
+                        <div class="helpDivRowMessage col-sm-9 col-md-9 col-lg-9"></div>
+                    </div>
                     <form id="group_form" data-toggle="validator" role="form">
                         <div class="form-group">
                             <label class='groupNamelLabel' for="groupName">Group Name</label>

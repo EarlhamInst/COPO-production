@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from bson import json_util
 import common.dal.copo_da as da
-from  common.dal.copo_da import Sample
+from common.dal.copo_da import Sample
 from ..utils import finish_request
+
 
 def get_number_of_users(request):
     users = User.objects.all()
@@ -13,8 +14,8 @@ def get_number_of_users(request):
     return HttpResponse(number)
 
 
-def get_number_of_dtol_samples(request):
-    number = Sample().get_number_of_dtol_samples()
+def get_number_of_samples_by_sample_type(request, sample_type):
+    number = Sample().get_number_of_samples_by_sample_type(sample_type.lower())
     return HttpResponse(number)
 
 
@@ -34,7 +35,8 @@ def get_number_of_datafiles(request):
 
 
 def combined_stats_json(request):
-    stats = da.cursor_to_list(da.handle_dict["stats"].find({}, {"_id": 0}).sort('date', pymongo.DESCENDING))
+    stats = da.cursor_to_list(da.handle_dict["stats"].find(
+        {}, {"_id": 0}).sort('date', pymongo.DESCENDING))
     df = pandas.DataFrame(stats, index=None)
     return HttpResponse(df.reset_index().to_json(orient='records'))
 
@@ -54,14 +56,16 @@ def samples_hist_json(request, metric):
         # need to merge PARTNER and GAL columns as this field has different names between tol types
         projection = {"GAL": 1, "PARTNER": 1, "_id": 0}
         s_list = list(Sample().get_collection_handle().find(
-            {"$or": [{"TOL_PROJECT": "DTOL"}, {"TOL_PROJECT": "ASG"}, {"sample_type": "dtol"}, {"sample_type": "asg"}]},
+            {"$or": [{"TOL_PROJECT": "DTOL"}, {"TOL_PROJECT": "ASG"},
+                     {"sample_type": "dtol"}, {"sample_type": "asg"}]},
             projection))
         df = pandas.DataFrame(s_list)
         df["GAL"][df["GAL"].isnull()] = df["PARTNER"][df["GAL"].isnull()]
     else:
         projection = {metric: 1, "_id": 0}
         s_list = list(Sample().get_collection_handle().find(
-            {"$or": [{"TOL_PROJECT": "DTOL"}, {"TOL_PROJECT": "ASG"}, {"sample_type": "dtol"}, {"sample_type": "asg"}]},
+            {"$or": [{"TOL_PROJECT": "DTOL"}, {"TOL_PROJECT": "ASG"},
+                     {"sample_type": "dtol"}, {"sample_type": "asg"}]},
             projection))
         df = pandas.DataFrame(s_list)
 
@@ -72,15 +76,20 @@ def samples_hist_json(request, metric):
         out.append({"k": x, "v": int(u[x])})
     return HttpResponse(json_util.dumps(out))
 
+
 def get_tol_projects(request):
-    project_lst = da.handle_dict["profile"].distinct("type") # Get unique list of tol projects
-    project_lst.sort() # Sort the list of tol projects
+    project_lst = da.handle_dict["profile"].distinct(
+        "type")  # Get unique list of tol projects
+    project_lst.sort()  # Sort the list of tol projects
 
     return finish_request(project_lst)
 
-def get_associated_tol_projects(request):    
-    associated_project_lst = da.handle_dict["profile"].distinct("associated_type") # Get unique list of associated tol projects
-    associated_project_lst = [item.get('label','') for item in associated_project_lst] # Get labels only
-    associated_project_lst.sort() # Sort the list of associated tol projects
+
+def get_associated_tol_projects(request):
+    associated_project_lst = da.handle_dict["profile"].distinct(
+        "associated_type")  # Get unique list of associated tol projects
+    associated_project_lst = [
+        item.get('label', '') for item in associated_project_lst]  # Get labels only
+    associated_project_lst.sort()  # Sort the list of associated tol projects
 
     return finish_request(associated_project_lst)

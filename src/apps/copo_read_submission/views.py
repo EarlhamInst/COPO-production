@@ -24,6 +24,7 @@ from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreedsheet, write_
 from common.utils.helpers import get_datetime, get_not_deleted_flag,map_to_dict
 from .utils import ena_read  
 from io import BytesIO
+from src.apps.copo_core.views import web_page_access_checker
 
 l = Logger()
 
@@ -546,6 +547,8 @@ def get_read_accessions(request, sample_accession):
     result = dict(run_accessions=run_accessions, experiment_accessions=experiment_accessions)                                                     
     return JsonResponse(status=200,  data=result)
 
+
+@web_page_access_checker
 @login_required
 def copo_reads(request, profile_id):
     request.session["profile_id"] = profile_id

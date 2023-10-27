@@ -4,8 +4,10 @@ from common.dal.copo_da import Submission, Assembly, Profile
 from common.utils.helpers import notify_assembly_status
 from django.http import HttpResponse, JsonResponse
 from .forms import AssemblyForm
-from .utils import EnaAssembly   
+from .utils import EnaAssembly
 from common.s3.s3Connection import S3Connection
+from src.apps.copo_core.views import web_page_access_checker
+
 
 @login_required()
 def ena_assembly(request, profile_id, assembly_id=None):
@@ -49,45 +51,46 @@ def ena_assembly(request, profile_id, assembly_id=None):
             for file in files:
                 ecs_files.append(file["Key"])
 
-
     if request.method == 'POST' or request.method == 'PUT':
-        form = AssemblyForm(request.POST, request.FILES, sample_accession=sample_accession, assembly=assembly, ecs_files=ecs_files)
+        form = AssemblyForm(request.POST, request.FILES,
+                            sample_accession=sample_accession, assembly=assembly, ecs_files=ecs_files)
         if form.is_valid():
             notify_assembly_status(data={"profile_id": profile_id},
-                            msg="Intitialising Assembly Submission",
-                            action="info",
-                            html_id="assembly_info")
+                                   msg="Intitialising Assembly Submission",
+                                   action="info",
+                                   html_id="assembly_info")
             # this is a dict
             formdata = form.cleaned_data
             # uploading files to folder in COPO
             notify_assembly_status(data={"profile_id": profile_id}, msg="", action="show",
-                            html_id="loading_span")
-            #EnaAssembly.upload_assembly_files(files)
+                                   html_id="loading_span")
+            # EnaAssembly.upload_assembly_files(files)
             assembly_id = request.POST.get("assembly_id", "")
 
-            sub_result = EnaAssembly.validate_assembly(formdata, profile_id, assembly_id)
+            sub_result = EnaAssembly.validate_assembly(
+                formdata, profile_id, assembly_id)
             if sub_result.get("error", ""):
                 notify_assembly_status(data={"profile_id": profile_id},
-                                                msg=sub_result.get("error", ""),
-                                                action="error",
-                                                html_id="assembly_info")
+                                       msg=sub_result.get("error", ""),
+                                       action="error",
+                                       html_id="assembly_info")
                 is_error = True
                 # messages.error(request,sub_result)
             else:
                 notify_assembly_status(data={"profile_id": profile_id},
-                                                msg="The assembly has been created with accession: " + sub_result.get(
-                                                    "accession", "Success"),
-                                                action="info",
-                                                html_id="assembly_info")
+                                       msg="The assembly has been created with accession: " + sub_result.get(
+                    "accession", "Success"),
+                    action="info",
+                    html_id="assembly_info")
 
                 return JsonResponse(status=200, data=sub_result)
                 # form = AssemblyForm(study_accession=study_accession, sample_accession=sample_accession)
             # return HttpResponse()
         else:
             notify_assembly_status(data={"profile_id": profile_id},
-                                          msg=str(form.errors),
-                                          action="error",
-                                          html_id="assembly_info")
+                                   msg=str(form.errors),
+                                   action="error",
+                                   html_id="assembly_info")
             is_error = True
             # messages.error(request, form.errors)
         # if is_error:
@@ -109,6 +112,8 @@ def ena_assembly(request, profile_id, assembly_id=None):
         return render(request, "copo/ena_assembly_form.html",
                       {"profile_id": profile_id, "form": form, "hide_form": False})
 
+
+@web_page_access_checker
 @login_required
 def copo_assembly(request, profile_id):
     request.session["profile_id"] = profile_id

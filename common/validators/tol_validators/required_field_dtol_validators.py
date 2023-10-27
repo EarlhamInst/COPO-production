@@ -4,7 +4,7 @@ from common.validators.validator import Validator
 from common.validators.validation_messages import MESSAGES as msg
 from collections import Counter
 from common.schema_versions.lookup.dtol_lookups import BLANK_VALS, \
-    NA_VALS, POP_GENOMICS_OPTIONAL_COLUMNS_DEFAULT_VALUES_MAPPING
+    NA_VALS, POP_GENOMICS_OPTIONAL_COLUMNS_DEFAULT_VALUES_MAPPING, SLASHES_LIST
 
 
 class ColumnValidator(Validator):
@@ -98,70 +98,78 @@ class OrphanedSymbiontValidator(Validator):
 class RackPlateUniquenessValidator(Validator):
     def validate(self):
         # check for uniqueness of RACK_OR_PLATE_ID and TUBE_OR_WELL_ID in this manifest
-        rack_tube = self.data.get(
-            "RACK_OR_PLATE_ID", "") + "/" + self.data["TUBE_OR_WELL_ID"]
-        # now check for uniqueness across all Samples
-        p_type = Profile().get_type(profile_id=self.profile_id)
-        dup = Sample().check_dtol_unique(rack_tube)
-        # duplicated returns a boolean array, false for not duplicate, true for duplicate
-        u = list(rack_tube[rack_tube.duplicated()])
+        # RACK_OR_PLATE_ID and TUBE_OR_WELL_ID cannot contain any slashes i.e. '/' nor '\'
+        if any(slash in value for value in list(self.data.get("RACK_OR_PLATE_ID", "")) for slash in SLASHES_LIST) or \
+                any(slash in value for value in list(self.data.get("TUBE_OR_WELL_ID", "")) for slash in SLASHES_LIST):
+            self.errors.append(
+                msg["validation_msg_rack_or_tube_contains_a_slash"])
+            self.flag = False
+        else:
+            rack_tube = self.data.get(
+                "RACK_OR_PLATE_ID", "") + "/" + self.data["TUBE_OR_WELL_ID"]
 
-        if len(dup) > 0:
-            # errors = list(map(lambda x: "<li>" + x + "</li>", errors))
-            err = list(map(lambda x: x.get("RACK_OR_PLATE_ID",
-                       "") + "/" + x["TUBE_OR_WELL_ID"], dup))
+            # now check for uniqueness across all Samples
+            p_type = Profile().get_type(profile_id=self.profile_id)
+            dup = Sample().check_dtol_unique(rack_tube)
+            # duplicated returns a boolean array, false for not duplicate, true for duplicate
+            u = list(rack_tube[rack_tube.duplicated()])
 
-            # check if rack_tube present we are in the same profile
-            existingsam = Sample().get_by_field(
-                "rack_tube", err)  # [str(rack_tube[0])])
-            for exsam in existingsam:
-                if exsam["profile_id"] == self.profile_id:
-                    # todo check SYMBIONT value in species list is the same too
-                    # check accessions do not exist yet and status is pending
-                    if not exsam["biosampleAccession"]:
-                        if "ERGA" in p_type and exsam["status"] in ["pending", "rejected"]:
-                            self.warnings.append(
-                                msg["validation_msg_isupdate"] % exsam["rack_tube"])
+            if len(dup) > 0:
+                # errors = list(map(lambda x: "<li>" + x + "</li>", errors))
+                err = list(map(lambda x: x.get("RACK_OR_PLATE_ID",
+                                               "") + "/" + x["TUBE_OR_WELL_ID"], dup))
+
+                # check if rack_tube present we are in the same profile
+                existingsam = Sample().get_by_field(
+                    "rack_tube", err)  # [str(rack_tube[0])])
+                for exsam in existingsam:
+                    if exsam["profile_id"] == self.profile_id:
+                        # todo check SYMBIONT value in species list is the same too
+                        # check accessions do not exist yet and status is pending
+                        if not exsam["biosampleAccession"]:
+                            if "ERGA" in p_type and exsam["status"] in ["pending", "rejected"]:
+                                self.warnings.append(
+                                    msg["validation_msg_isupdate"] % exsam["rack_tube"])
+                                self.kwargs["isupdate"] = True
+                            elif exsam["status"] == "pending":
+                                self.warnings.append(
+                                    msg["validation_msg_isupdate"] % exsam["rack_tube"])
+                                self.kwargs["isupdate"] = True
+                        else:  # allow for update after approval in the same profile
                             self.kwargs["isupdate"] = True
-                        elif exsam["status"] == "pending":
-                            self.warnings.append(
-                                msg["validation_msg_isupdate"] % exsam["rack_tube"])
-                            self.kwargs["isupdate"] = True
-                    else:  # allow for update after approval in the same profile
-                        self.kwargs["isupdate"] = True
-                        self.warnings.append(msg["validation_msg_warning_update_submitted_sample"] % (
-                            exsam["rack_tube"], exsam["biosampleAccession"]))
-                    #    #rack_tube has already been approved by sample manager and can't be updated any more
-                    #    self.errors.append(msg["validation_msg_duplicate_tube_or_well_id_in_copo"] % (err))
-                    #    self.flag = False
-                else:
-                    # rack_tube exist in another profile, can't be updated
-                    self.errors.append(
-                        msg["validation_msg_duplicate_tube_or_well_id_in_copo"] % exsam["rack_tube"])
+                            self.warnings.append(msg["validation_msg_warning_update_submitted_sample"] % (
+                                exsam["rack_tube"], exsam["biosampleAccession"]))
+                        #    #rack_tube has already been approved by sample manager and can't be updated any more
+                        #    self.errors.append(msg["validation_msg_duplicate_tube_or_well_id_in_copo"] % (err))
+                        #    self.flag = False
+                    else:
+                        # rack_tube exist in another profile, can't be updated
+                        self.errors.append(
+                            msg["validation_msg_duplicate_tube_or_well_id_in_copo"] % exsam["rack_tube"])
+                        self.flag = False
+
+            # duplicates are allowed for asg (and possibily dtol) but one element of duplicate set must have one
+            # and only one target in
+            # sybiont fields
+            for i in u:
+                rack, tube = i.split('/')
+                rows = self.data.loc[
+                    (self.data.get("RACK_OR_PLATE_ID", "") == rack) & (self.data["TUBE_OR_WELL_ID"] == tube)]
+                counts = Counter([x.upper()
+                                  for x in list(rows["SYMBIONT"].values)])
+                if "TARGET" not in counts:
+                    self.errors.append(msg["validation_msg_duplicate_without_target"] % (
+                        str(rows.get("RACK_OR_PLATE_ID", "") + "/" + rows["TUBE_OR_WELL_ID"])))
                     self.flag = False
-
-        # duplicates are allowed for asg (and possibily dtol) but one element of duplicate set must have one
-        # and only one target in
-        # sybiont fields
-        for i in u:
-            rack, tube = i.split('/')
-            rows = self.data.loc[
-                (self.data.get("RACK_OR_PLATE_ID", "") == rack) & (self.data["TUBE_OR_WELL_ID"] == tube)]
-            counts = Counter([x.upper()
-                             for x in list(rows["SYMBIONT"].values)])
-            if "TARGET" not in counts:
-                self.errors.append(msg["validation_msg_duplicate_without_target"] % (
-                    str(rows.get("RACK_OR_PLATE_ID", "") + "/" + rows["TUBE_OR_WELL_ID"])))
-                self.flag = False
-            if counts["TARGET"] > 1:
-                self.errors.append(
-                    msg["validation_msg_multiple_targets_with_same_id"] % (i))
-                self.flag = False
-            # TODO this can go at version 2.3 of DTOL
-            if counts["TARGET"] + counts["SYMBIONT"] < len(list(rows["SYMBIONT"].values)):
-                self.errors.append(
-                    msg["validation_msg_multiple_targets_with_same_id"] % (i))
-                self.flag = False
+                if counts["TARGET"] > 1:
+                    self.errors.append(
+                        msg["validation_msg_multiple_targets_with_same_id"] % (i))
+                    self.flag = False
+                # TODO this can go at version 2.3 of DTOL
+                if counts["TARGET"] + counts["SYMBIONT"] < len(list(rows["SYMBIONT"].values)):
+                    self.errors.append(
+                        msg["validation_msg_multiple_targets_with_same_id"] % (i))
+                    self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
 

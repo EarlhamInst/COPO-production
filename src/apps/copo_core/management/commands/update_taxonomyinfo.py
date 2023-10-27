@@ -100,14 +100,14 @@ class Command(BaseCommand):
         out["SCIENTIFIC_NAME"] = name
 
         oldsample = da.Sample().get_record(sample)
-        for tax_field in self.TAXONOMY_FIELDS:
-            oldvalue = oldsample["species_list"][0].get(tax_field, "")
-            newvalue = out[tax_field]
-            if oldvalue != newvalue:
-                if barcoding:
-                    da.Sample().record_barcoding_update(tax_field, oldvalue, newvalue, sample)
-                else:
-                    da.Sample().record_manual_update(tax_field, oldvalue, newvalue, sample)
+        # for tax_field in self.TAXONOMY_FIELDS:
+        #     oldvalue = oldsample["species_list"][0].get(tax_field, "")
+        #     newvalue = out[tax_field]
+        #     if oldvalue != newvalue:
+        #         if barcoding:
+        #             da.Sample().record_barcoding_update(tax_field, oldvalue, newvalue, sample)
+        #         else:
+        #             da.Sample().record_manual_update(tax_field, oldvalue, newvalue, sample)
         da.Sample().update_field("species_list.0", out, sample)
 
         # query public name (skip this for now)
@@ -128,12 +128,12 @@ class Command(BaseCommand):
         # update db record
         source = da.Source().get_by_field("biosampleAccession", accession)
         assert len(source) == 1
-        if barcoding:
-            da.Source().record_barcoding_update(
-                "TAXON_ID", source[0]["TAXON_ID"], taxon, source[0]['_id'])
-        else:
-            da.Source().record_manual_update(
-                "TAXON_ID", source[0]["TAXON_ID"], taxon, source[0]['_id'])
+        # if barcoding:
+        #     da.Source().record_barcoding_update(
+        #         "TAXON_ID", source[0]["TAXON_ID"], taxon, source[0]['_id'])
+        # else:
+        #     da.Source().record_manual_update(
+        #         "TAXON_ID", source[0]["TAXON_ID"], taxon, source[0]['_id'])
         da.Source().update_field("TAXON_ID", taxon, source[0]['_id'])
         # update ENA record
         updatedrecord = da.Source().get_record(source[0]['_id'])

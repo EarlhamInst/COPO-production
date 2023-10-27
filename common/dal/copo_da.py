@@ -1148,8 +1148,11 @@ class Sample(DAComponent):
     def get_all_tol_samples(self):
         return self.get_collection_handle().find({"tol_project": {"$in": ["ASG", "DTOL"]}})
 
-    def get_number_of_dtol_samples(self):
-        return self.get_collection_handle().count_documents({"sample_type": "dtol"})
+    def get_number_of_samples_by_sample_type(self, sample_type):
+        if sample_type:
+            return self.get_collection_handle().count_documents({"sample_type": sample_type})
+        else:
+            self.get_number_of_samples()
 
     def get_number_of_samples(self):
         return self.get_collection_handle().count_documents({})
@@ -1196,8 +1199,8 @@ class Sample(DAComponent):
         if "copo@earlham.ac.uk" in email:
             set_update_data['update_type'] = 'system'
         else:
-            set_update_data['update_type'] = 'user'
             set_update_data['updated_by'] = email
+            set_update_data['update_type'] = 'user'
 
         self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}},
                                                  {"$set": set_update_data})
@@ -1230,14 +1233,22 @@ class Sample(DAComponent):
              })
 
     def update_field(self, field, value, oid):
-        return self.get_collection_handle().update_one(
-            {
-                "_id": ObjectId(oid)
-            },
-            {"$set":
-             {field: value, 'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(
-                 timezone.utc).replace(microsecond=0), 'updated_by': ThreadLocal.get_current_user().email, 'update_type': 'user'}
-             })
+        try:
+            email = ThreadLocal.get_current_user().email
+        except:
+            email = "copo@earlham.ac.uk"
+
+        # Determine if the update is being done by a user or by the system
+        set_update_data = {field: value, 'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(timezone.utc).replace(
+            microsecond=0)}
+
+        if "copo@earlham.ac.uk" in email:
+            set_update_data['update_type'] = 'system'
+        else:
+            set_update_data['updated_by'] = email
+            set_update_data['update_type'] = 'user'
+
+        return self.get_collection_handle().update_one({"_id": ObjectId(oid)}, {"$set": set_update_data})
 
     def remove_field(self, field, oid):
         return self.get_collection_handle().update_one(
@@ -3014,30 +3025,61 @@ class CopoGroup(DAComponent):
             return list()
         return doc
 
-    def create_shared_group(self, name, description, owner_id=None):
-        group_fields = helpers.json_to_pytype(DB_TEMPLATES['COPO_GROUP'])
+    def get_group_names(self, owner_id=None, with_id=False):
         if not owner_id:
             owner_id = helpers.get_user_id()
-        group_fields['owner_id'] = owner_id
-        group_fields['name'] = name
-        group_fields['description'] = description
-        group_fields['date_created'] = datetime.now().strftime(
-            "%d-%m-%Y %H:%M:%S")
-        # Get inserted document ID
-        uid = self.Group.insert_one(group_fields).inserted_id
-        if uid:
-            return uid
+
+        projection = {'_id': 1, 'name': 1} if with_id else {
+            '_id': 0, 'name': 1}
+
+        doc = list(self.Group.find(
+            {'owner_id': owner_id}, projection))
+        if not doc:
+            return list()
+        return doc
+
+    def create_shared_group(self, name, description, owner_id=None):
+        group_names = self.get_group_names()
+        group_fields = helpers.json_to_pytype(DB_TEMPLATES['COPO_GROUP'])
+
+        if not owner_id:
+            owner_id = helpers.get_user_id()
+
+        if any(x['name'] == name for x in group_names):
+            return False  # Group name already exists
         else:
-            return False
+            group_fields['owner_id'] = owner_id
+            group_fields['name'] = name
+            group_fields['description'] = description
+            group_fields['date_created'] = datetime.now().strftime(
+                "%d-%m-%Y %H:%M:%S")
+            # Get inserted document ID
+            return self.Group.insert_one(group_fields).inserted_id
 
     def edit_group(self, group_id, name, description):
-        group_fields = helpers.json_to_pytype(DB_TEMPLATES['COPO_GROUP'])
-        group_fields['name'] = name
-        group_fields['description'] = description
-        group_fields['date_modified'] = datetime.now().strftime(
+        update_info = {}
+        group_names = self.get_group_names(with_id=True)
+
+        update_info['name'] = name
+        update_info['description'] = description
+        update_info['date_modified'] = datetime.now().strftime(
             "%d-%m-%Y %H:%M:%S")
-        # Update document
-        return self.Group.update_one({"_id": ObjectId(group_id)}, {"$set": group_fields})
+
+        if any(str(x['_id']) == group_id and x['name'] != name for x in group_names):
+            # If edited group name is not equal to the exisiting group name
+            # but the group ID is the matchES the current group ID, update the document
+            self.Group.find_one_and_update({"_id": ObjectId(group_id)}, {
+                "$set": update_info})
+            return True
+        elif any(str(x['_id']) != group_id and x['name'] == name for x in group_names):
+            # If edited group name is equal to an exisiting group name
+            # and the group ID does not match the current group ID, return an error
+            return False  # Group name already exists
+        else:
+            # Update document
+            self.Group.find_one_and_update({"_id": ObjectId(group_id)}, {
+                "$set": update_info})
+            return True
 
     def delete_group(self, group_id):
         result = self.Group.delete_one({'_id': ObjectId(group_id)})

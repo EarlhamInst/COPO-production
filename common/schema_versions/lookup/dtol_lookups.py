@@ -1815,7 +1815,12 @@ NIH_API_KEY = helpers.get_env("NIH_API_KEY")
 REQUIRED_MEMBER_GROUPS = ['dtol_users', 'dtol_sample_managers', 'dtolenv_users', 'dtolenv_sample_managers',
                           'erga_users', 'erga_sample_managers']
 
+# A list of web pages that can be accessed by both COPO users and sample managers
+SAMPLE_MANAGERS_ACCESSIBLE_WEB_PAGES = ['copo_samples']
+
 SANGER_TOL_PROFILE_TYPES = ["asg", "dtol", "dtol_env", "erga"]
+
+SLASHES_LIST = ["/", "\\"]
 
 SPECIES_LIST_FIELDS = ["SYMBIONT", "TAXON_ID", "ORDER_OR_GROUP", "FAMILY", "GENUS", "SCIENTIFIC_NAME",
                        "INFRASPECIFIC_EPITHET", "CULTURE_OR_STRAIN", "COMMON_NAME", "TAXON_REMARKS"]

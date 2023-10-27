@@ -6,9 +6,11 @@ import jsonpickle
 from django.http import HttpResponse
 from .utils.CopoFiles import generate_files_record
 from common.utils import helpers
+from src.apps.copo_core.views import web_page_access_checker
 import json
 
 
+@web_page_access_checker
 @login_required()
 def copo_files(request, profile_id):
     request.session["profile_id"] = profile_id

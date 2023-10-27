@@ -108,9 +108,8 @@ def delete_ena_records(profile_id, target_ids=list(), target_id=None):
 
     if file_ids:
         DataFile(profile_id=profile_id).get_collection_handle().delete_many(
-            {"_id": {"$in": [ObjectId(f) for f in file_ids]}}, multi=True)
-        EnaFileTransfer(profile_id=profile_id).get_collection_handle().delete_many({"file_id": {"$in": file_ids}},
-                                                                              multi=True)
+            {"_id": {"$in": [ObjectId(f) for f in file_ids]}})
+        EnaFileTransfer(profile_id=profile_id).get_collection_handle().delete_many({"file_id": {"$in": file_ids}})
 
     # remove sample records if no file inside
 
