@@ -233,6 +233,10 @@ $(document).ready(function () {
     $('#ellipsisID[data-toggle="popover"]').popover('hide');
   });
 
+  $(document).on('click', '#showMoreProfileInfoCloseBtn', function () {
+    $('#showMoreProfileInfoBtn[rel="popover"]').popover('hide');
+  });
+
   // Trigger infinite scroll once user scrolls downwards to display more profile records that exist
   $(window).scroll(function () {
     const margin = $(document).height() - $(window).height() - 200;
@@ -282,7 +286,7 @@ $(document).ready(function () {
           ); // Initialise functions for the profile grids beyond the 8 records that are shown by default
 
           set_profile_grid_heading(content); // Set profile grid heading
-          showMoreProfileInfoPopover(content) // Initialise 'show more' information popover for profile records
+          showMoreProfileInfoPopover(content); // Initialise 'show more' information popover for profile records
 
           grid_count.text($('.grid').length); // Increment the number of profile records displayed
           tableLoader.remove(); // Remove loading .gif
@@ -1051,6 +1055,10 @@ function initialise_loaded_records(
     $('#ellipsisID[data-toggle="popover"]').popover('hide');
   });
 
+  $('#showMoreProfileInfoCloseBtn').click(function () {
+    $('#showMoreProfileInfoBtn[rel="popover"]').popover('hide');
+  });
+
   // Initialise the popover 'View profile options' for each profile record
   let popover = $('#ellipsisID[data-toggle="popover"]')
     .popover({
@@ -1186,10 +1194,12 @@ function remove_selectedProfileType_from_associatedProfileTypeList(
     .getElementById(profileTypeID)
     .addEventListener('change', function () {
       // Perform the following only if selected 'Profile Type' is not "Stand-alone"
-      if (this.value == "European Reference Genome Atlas (ERGA)") {
+      if (this.value == 'European Reference Genome Atlas (ERGA)') {
         $('.row:nth-child(4) > .col-sm-12').show(); // Show 'Associated Profile Type(s)' field
         $('.row:nth-child(5) > .col-sm-12').show(); // Show 'Sequencing Centre(s)' field
-        $('.row:nth-child(5) > .col-sm-12').find("select").attr("required", "required") 
+        $('.row:nth-child(5) > .col-sm-12')
+          .find('select')
+          .attr('required', 'required');
         // $('[id*="sequencing_centre"]').parent().parent().hide().show();
         let selected_type = get_acronym(this.value);
         let multi_select_options = $('.copo-multi-select2');
@@ -1230,7 +1240,9 @@ function remove_selectedProfileType_from_associatedProfileTypeList(
       } else {
         $('.row:nth-child(4) > .col-sm-12').hide(); // Hide 'Associated Profile Type(s)' field
         $('.row:nth-child(5) > .col-sm-12').hide(); // Hide 'Sequencing Centre(s)' field
-        $('.row:nth-child(5) > .col-sm-12').find("select").removeAttr("required") 
+        $('.row:nth-child(5) > .col-sm-12')
+          .find('select')
+          .removeAttr('required');
         // $('[id*="sequencing_centre"]').parent().parent().hide().hide;
       }
     });
@@ -1238,12 +1250,20 @@ function remove_selectedProfileType_from_associatedProfileTypeList(
 
 function showMoreProfileInfoPopover(grids) {
   grids.each(function () {
-    let showMoreProfileInfoBtn = $(this).closest('.grid').find('#showMoreProfileInfoBtn[rel="popover"]');
+    let showMoreProfileInfoBtn = $(this)
+      .closest('.grid')
+      .find('#showMoreProfileInfoBtn[rel="popover"]');
 
-    showMoreProfileInfoBtn.popover({
+    showMoreProfileInfoBtn
+      .popover({
         html: true,
-        trigger: 'hover',
+        trigger: 'click',
         sanitize: false,
+        title: function () {
+          let $showMoreProfileInfoCloseBtn =
+            '<i id="showMoreProfileInfoCloseBtn" class="fa fa-times pull-right"></i>';
+          return $showMoreProfileInfoCloseBtn;
+        },
         content: function (e) {
           return $(this)
             .closest('.grid-panel-body')
@@ -1251,10 +1271,23 @@ function showMoreProfileInfoPopover(grids) {
             .children('.popover-content')
             .html();
         },
+      })
+      .click(function (e) {
+        e.preventDefault(); // Prevents one from being automatically redirected to the top of the page
+        $(this).popover('toggle');
+        $('#showMoreProfileInfoBtn[rel="popover"]').not(this).popover('hide');
+        e.stopPropagation();
+
+        // Initialise the tooltip for the associated type info icon
+        // if the profile has associated types to display
+        if (
+          $(this).popover().is(':visible') &&
+          $(this).popover().find('.associated_type_info_icon')
+        ) {
+          $('.associated_type_info_icon').tooltip();
+        }
       });
-});
-
-
+  });
 }
 function get_acronym(txt) {
   // Retrieve the parentheses and the enclosed string from the
