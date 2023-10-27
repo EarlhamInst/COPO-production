@@ -327,6 +327,20 @@ function json2HtmlForm(data) {
     $dialogContent.find('.row:nth-child(5) > .col-sm-12').hide(); // Hide 'Sequencing Centre' field
   }
 
+  // Hide the'Sequencing Centre' field on "Edit Profile" dialog launch
+  // if the the profile type is not 'ERGA'
+
+  if (
+    dialog_title.includes('Edit Profile') &&
+    !data.form.form_schema[2].data.includes('ERGA')
+  ) {
+    $dialogContent.find('.row:nth-child(5) > .col-sm-12').hide(); // Hide 'Sequencing Centre' field
+    $dialogContent
+      .find('.row:nth-child(5) > .col-sm-12')
+      .find('select')
+      .removeAttr('required');
+  }
+
   dialog.realize();
   dialog.setMessage($dialogContent);
   dialog.open();
