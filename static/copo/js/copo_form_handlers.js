@@ -237,11 +237,20 @@ function json2HtmlForm(data) {
         .find('form')
         .validator()
         .on('submit', function (e) {
-          if (e.isDefaultPrevented()) {
-            return false;
-          } else {
+          // Allow users to edit 'Stand-alone' profile types on the first edit
+          if (
+            e.isDefaultPrevented() &&
+            document.getElementById(data.form.form_schema[2].id).value ===
+              'Stand-alone' &&
+            formMode === 'edit'
+          ) {
             e.preventDefault();
             save_form(data.form, dialogRef);
+          } else if (!e.isDefaultPrevented()) {
+            e.preventDefault();
+            save_form(data.form, dialogRef);
+          } else {
+            return false;
           }
         });
 
@@ -300,7 +309,10 @@ function json2HtmlForm(data) {
   if (dialog_title.includes('Add Profile') && groups.length >= 1) {
     $dialogContent.find('.row:nth-child(4) > .col-sm-12').hide(); // Hide 'Associated Profile Type' field
     $dialogContent.find('.row:nth-child(5) > .col-sm-12').hide(); // Hide 'Sequencing Centre' field
-    $dialogContent.find('.row:nth-child(5) > .col-sm-12').find("select").removeAttr("required") 
+    $dialogContent
+      .find('.row:nth-child(5) > .col-sm-12')
+      .find('select')
+      .removeAttr('required');
   }
 
   // If user is in a manifest group, hide 'Associated profile type(s)' field on "Edit Profile" dialog launch
@@ -3354,9 +3366,9 @@ function custom_validate(formObject) {
             valueElem[item.getAttribute('data-parent1')] = $(item).val().trim();
           }
         });
-        
+
         var errorMessage = '';
-        
+
         if (valueElem.value != '') {
           //case: numeric value, no unit
           if ($.isNumeric(valueElem.value) && valueElem.unit == '') {
@@ -3531,10 +3543,10 @@ function save_form(formJSON, dialogRef) {
 
           do_crud_action_feedback(data.action_feedback);
 
-                    // Refresh web page to have change reflected
-                    setTimeout(function () {
-                        window.location.reload();
-                    }, 1000);
+          // Refresh web page to have change reflected
+          setTimeout(function () {
+            window.location.reload();
+          }, 1000);
 
           return true;
         }
