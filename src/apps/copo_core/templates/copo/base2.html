@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>{% block title %}{% endblock %} | COPO</title>
+
+    <!--REQUIRED STYLE SHEETS-->
+    <!-- BOOTSTRAP CORE STYLE CSS -->
+    <link href="/static/assets/css/bootstrap.css" rel="stylesheet" />
+    <!-- FONTAWESOME STYLE CSS -->
+    <link href="/static/assets/css/font-awesome.min.css" rel="stylesheet" />
+    <!-- CUSTOM STYLE CSS -->
+    <link href="/static/assets/css/style.css" rel="stylesheet" />
+    <!-- GOOGLE FONT -->
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Raleway|Slabo+27px" rel="stylesheet">
+    <link rel="shortcut icon" href="{% static 'copo/img/favicon.png' %}" />
+    <!-- favicon -->
+    <link rel="icon" type="image/png" href="{% static 'copo/img/COPO_icon.png' %}" />
+
+    <!-- PAGE LEVEL STYLES -->
+    {% block stylesheet_block %}{% endblock %}
+    <style>
+        .navbar-brand>img {
+            margin-top: -5px !important;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-collapse {
+                background-color: rgba(179, 151, 89, 1);
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+    <!-- include navbar html -->
+    <div class="pull-right">
+        {% include "nav_dropdown.html" %}
+    </div>
+    <!-- Carousel -->
+    {% block carouselblock %}
+    {% endblock carouselblock %}
+    <!-- End Carousel -->
+
+    <!--Header section  -->
+    {% block header_section %}
+    {% endblock header_section %}
+    <!--End Header section  -->
+
+    {% block content_area %}
+    <section class="color-white">
+        <div class="container">
+            {% block content %}
+            {% endblock content%}
+        </div>
+    </section>
+    {% endblock content_area%}
+
+    <!--footer section -->
+    <footer class="for-full-back" style="background-color: #cdcdcd; min-height: 100px;" id="footer">
+        <div class="pull-right">
+            <a href="https://www.earlham.ac.uk/">
+                <img class="img-responsive" src="/static/assets/img/ei.png" width="200" height="200"
+                    alt="Earlham Institute logo" />
+            </a>
+        </div>
+        {% block footer %}
+        {% endblock footer%}
+    </footer>
+    <!--End footer section -->
+
+    <!-- JAVASCRIPT FILES PLACED AT THE BOTTOM TO REDUCE THE LOADING TIME  -->
+    <!-- CORE JQUERY  -->
+    <script src="/static/assets/plugins/jquery-1.10.2.js"></script>
+    <!-- BOOTSTRAP CORE SCRIPT   -->
+    <script src="/static/assets/plugins/bootstrap.js"></script>
+    <!-- CUSTOM SCRIPTS -->
+    <script src="/static/assets/js/custom.js"></script>
+    {% block js_block %}{% endblock js_block%}
+</body>
+
+</html>

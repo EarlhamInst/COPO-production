@@ -1,0 +1,86 @@
+<style>
+    #cookieModalHeader {
+        background-color: #5bc0de;
+    }
+
+    #cookieModalTitle {
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    #cookieModalBody {
+        font-size: 18px;
+    }
+
+    #acceptCookies,
+    #rejectCookies {
+        font-size: 16px;
+    }
+</style>
+
+<div id="cookieModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div id="cookieModalHeader" class="modal-header">
+                <h5 id="cookieModalTitle" class="modal-title">We value your privacy</h5>
+            </div>
+            <div id="cookieModalBody" class="modal-body">
+                <p>This website requires cookies, fonts and the limited processing of your personal data 
+                    in order to function.
+                </p>
+                <p>By using our website, you acknowledge that you have read and understood this as outlined in our
+                    <a style="text-decoration: underline;" href="/about/privacy_notice">Privacy Notice</a> and
+                    <a style="text-decoration: underline;" href="/about/terms_of_use">Terms of Use</a>.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button id="rejectCookies" type="button" class="btn btn-secondary" data-dismiss="modal">I
+                    decline, redirect to homepage</button>
+                <button id="acceptCookies" type="button" class="btn btn-primary" data-dismiss="modal">I agree, dismiss
+                    this dialog</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Cookie consent functions
+        function setCookie(name, value, days) {
+            var expires = "";
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        // Show cookie consent modal if not accepted yet or if cookies are rejected
+        if (getCookie('cookiesAccepted') === null || getCookie('cookiesAccepted') === 'false') {
+            $('#cookieModal').modal({ backdrop: 'static', keyboard: false }, 'show');
+        }
+
+        // Handle cookie consent choices
+        $('#acceptCookies').on('click', function () {
+            setCookie('cookiesAccepted', 'true', 365);
+        });
+
+        $('#rejectCookies').on('click', function () {
+            setCookie('cookiesAccepted', 'false', 365);
+            document.location = '/'; // Redirect to homepage
+        });
+    });
+</script>

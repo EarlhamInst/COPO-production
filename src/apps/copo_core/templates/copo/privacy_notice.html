@@ -1,0 +1,142 @@
+{% extends 'copo/base2.html' %}
+
+{% load static %}
+{% block title %}Privacy Notice{% endblock %}
+
+{% block stylesheet_block %}
+<style>
+    body {
+        background-color: rgb(255, 255, 255);
+    }
+
+    p {
+        color: #1a1c1a;
+        font-size: 19px;
+        font-weight: 400;
+    }
+
+    a {
+        color: mediumblue;
+    }
+
+    #privacy_notice_ul1 li,
+    #privacy_notice_ul2 li,
+    #privacy_notice_ul3 li,
+    #privacy_notice_ul4 li {
+        color: #1a1c1a;
+        font-size: 19px;
+        font-weight: 400;
+        line-height: 1.421;
+        margin-bottom: .5rem;
+    }
+</style>
+{% endblock stylesheet_block%}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 col-md-offset-1">
+        <h1 class="text-center">Privacy Notice</h1>
+        <p>This Privacy notice explains what data is collected by the <b>Collaborative OPen Omics (COPO)</b> website
+            service, its
+            purposes, how the data is processed and how COPO keeps it secure.
+        </p>
+        <p> Please view our <a style="text-decoration: underline; color: mediumblue;" href="/about/terms_of_use">terms of use</a> regarding
+            the rules and requirements for the use of the service.
+        </p>
+
+        <h2>Consent</h2>
+        <p>Processing your data is necessary for our legitimate interest of allowing the operation and functioning of
+            COPO. By using our website, you hereby consent to our Privacy Notice and agree to its terms.
+        </p><br>
+
+        <h2>Data Collected</h2>
+        <p>COPO adopts appropriate data collection, validation, storage and processing practices as well as security
+            measures to protect against unauthorised access, alteration, disclosure or destruction of your 
+            personal information, Orcid credentials and metadata provided on our service.
+        </p>
+
+        <h3>Information collected:</h3>
+        <ul id="privacy_notice_ul1">
+            <li>Internet Protocol (IP) address</li>
+            <li>Firstname, lastname and username after you sign into the service with your <a
+                    href="https://orcid.org/">Orcid</a> credentials
+            </li>
+            <li>Email address (after you input it in the dialog shown after a first-time access to the service)</li>
+            <li>Date and time when a profile record and manifests are created or updated</li>
+            <li>Metadata submitted. Metadata is the essential inforamtion about when, where, how and why data
+                has been collected. It can relate to research elements like samples, assemblies, sequencing annotaions,
+                barcoding, experiments, reads or runs
+            </li>
+            <li>If you contact us via email, we may receive additional information about you such as the contents of the
+                message and/or attachments you may send us and any other information you may choose to provide
+            </li>
+        </ul>
+
+        <h3>Usage of information collected:</h3>
+        <ul id="privacy_notice_ul2">
+            <li>To utilise Google Fonts, an interactive web directory via Cascading Style Sheets (CSS), 
+                which is embedded in the service
+            </li>
+            <li>To provide the user access to the service</li>
+            <li>To answer support request sent by the user</li>
+            <li>To monitor errors and exceptions that may occur during metadata submission</li>
+            <li>To register your email address with your COPO user account</li>
+        </ul><br>
+
+        <h2>Data Access</h2>
+        <ul id="privacy_notice_ul3">
+            <li>Authorised COPO team developers</li>
+            <li>Public metadata repositories that COPO relies on to provide the service. They are:
+                <ul>
+                    <li><a href="https://www.ebi.ac.uk/bioimage-archive/"> BioImage Archive (BIA)</a></li>
+                    <li><a href="https://copo-docs.readthedocs.io/en/latest/help/glossary.html#term-ENA"> European
+                            Nucleotide Archive (ENA)</a>
+                    </li>
+                    <li><a href="https://copo-docs.readthedocs.io/en/latest/help/glossary.html#term-NCBI"> National
+                            Centre for Biotechnology
+                            Information (NCBI)</a>
+                    </li>
+                </ul>
+            </li>
+        </ul><br>
+
+        <h2>Data Retention</h2>
+        <ul id="privacy_notice_ul4">
+            <li>Any personal data (name and email address) and metadata obtained from you will be retained as long as
+                the service is
+                live, even
+                if you stop using the service.
+            </li>
+            <li>COPO obscures your email address and omits your name from the <a style="color: mediumblue;" href="/api">COPO Application
+                    Programming Interface (API)</a>
+                method results after a manifest submission.
+            </li>
+            <li>Access to the web and security logs containing personal data are restricted to the relevant COPO team
+                developers
+
+            </li>
+        </ul>
+
+        <br>
+
+        <h2>Cookies</h2>
+        <p>This service uses "cookies" to store information about the web pages on the service that the visitor has
+            accessed or visited.
+            The information is used to log any errors or exceptions that may occur and user sessions.
+        </p><br>
+
+        <h2>Questions</h2>
+        <p>Any questions or comments concerning this Privacy Policy can be addressed to us by <a
+                href="/#contact-sec">contacting us</a>.
+        </p>
+        <br>
+        <p><b>Published on: 28-10-2023</b></p>
+    </div>
+</div>
+{% endblock content%}
+
+{% block footer %}
+{% endblock footer%}
+{% block js_block %}
+{% endblock js_block%}

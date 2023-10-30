@@ -397,6 +397,10 @@
 {% include "components_template.html" %}
 <!-- end template components -->
 
+<!-- cookie modal -->
+{% include 'component_cookie_modal.html' %}
+<!-- end cookie modal -->
+
 <div id="hidden_notification" class="hidden">
     <div>
         Message Recieved:<br/>{{ created }}</div>
@@ -439,6 +443,13 @@
                 <a href="/#contact-sec" target="_blank">
                     <span data-copo-tour-id="contact_button">
                             <i class="fa fa-envelope" aria-hidden="true"></i>
+                    </span>
+                </a>
+            </li>
+            <li class="dropdown" style="margin-left: 15px;" title="About COPO">
+                <a href="/about" target="_blank">
+                    <span data-copo-tour-id="about_button">
+                        <i class="fa fa-info-circle" style="font-size: 17px;" aria-hidden="true"></i>
                     </span>
                 </a>
             </li>

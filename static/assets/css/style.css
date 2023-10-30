@@ -74,6 +74,26 @@ hr {
     height: 24px;
 }
 
+.p_orcid a{
+    color: mediumblue;
+}
+
+.header_font_weight{
+    font-weight: 900;
+}
+
+#former_members_contributors_ul li {
+    color: #1a1c1a;
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 1.421;
+    margin-bottom: .5rem;
+}
+
+#former_members_contributors_ul li a{
+    color: mediumblue;
+}
+
 a {
     color: slategrey;
 }
@@ -695,11 +715,11 @@ blockquote {
     padding-left: 30px
 }
 
-.news-item-text a {
-    /*    color: indianred;
+ /*.news-item-text a {
+       color: indianred;
         font-weight: bold;
-        font-size: larger; */
-}
+        font-size: larger; 
+}*/
 
 /* stupid tiny window */
 @media only screen and (min-width: 320px) {

@@ -34,6 +34,10 @@ urlpatterns = [
    
     path('', landing_views.index, name='index'),
     path('about/', TemplateView.as_view(template_name="about.html"), name='about'),
+    path('about/privacy_notice/', TemplateView.as_view(template_name="privacy_notice.html"),
+         name='privacy_notice'),
+    path('about/terms_of_use/', TemplateView.as_view(template_name="terms_of_use.html"),
+         name='terms_of_use'),
     path('people/', TemplateView.as_view(template_name="people.html"), name='people'),
     path('dtol/', TemplateView.as_view(template_name="dtol.html"), name='dtol'),
     path('news/', TemplateView.as_view(template_name="news.html"), name='news'),
