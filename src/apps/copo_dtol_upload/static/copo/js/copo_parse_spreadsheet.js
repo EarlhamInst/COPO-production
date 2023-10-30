@@ -287,7 +287,7 @@ $(document).ready(function () {
             })
               .done(function (data) {
                 dialogRef.close(); // Close 'Update' modal
-                
+
                 // Refresh table
                 let result_dict = {};
                 result_dict['status'] = 'success';
@@ -715,6 +715,8 @@ $(document).on(
       cssClass: 'copo-modal1',
       closable: true,
       animate: true,
+      closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
+      closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
       type: BootstrapDialog.TYPE_INFO,
       buttons: [
         {
