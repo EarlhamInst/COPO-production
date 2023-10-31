@@ -182,7 +182,7 @@ class S3Connection():
         bucket_name = str(user.id) + "_" + user.username
         for key in target_ids:
             self.s3_client.delete_object(Bucket=bucket_name, Key=key)
-        return dict(status='success', message="File/s have been deleted!")
+        return dict(status='success', message="File(s) have been deleted!")
 
     def upload_file(self, chunk, bucket=str(), filename=str()):
         self.s3_client.upload_fileobj(BytesIO(chunk), bucket, filename)
