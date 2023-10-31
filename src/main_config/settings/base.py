@@ -5,17 +5,23 @@ from django.conf import settings
 from django.contrib.messages import constants as messages
 from datetime import timedelta
 from common.utils import helpers as resolve_env
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+BASE_DIR = os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 SCHEMA_DIR = os.path.join(BASE_DIR, 'common', 'schemas')
 
 SCHEMA_VERSIONS_DIR = os.path.join(BASE_DIR, 'common', 'schema_versions')
 
-SCHEMA_VERSIONS_FILE_LIST = ["sample.json", "ena_seq.json"]  # files based on schema versions
+# files based on schema versions
+SCHEMA_VERSIONS_FILE_LIST = ["sample.json", "ena_seq.json"]
 
 MANIFEST_PATH = os.path.join(BASE_DIR, 'static', 'assets', 'manifests')
 MANIFEST_FILE_NAME = "{0}_MANIFEST_TEMPLATE{1}.xlsx"
-MANIFEST_DOWNLOAD_URL =  "/static/assets/manifests/" + MANIFEST_FILE_NAME
+MANIFEST_DOWNLOAD_URL = "/static/assets/manifests/" + MANIFEST_FILE_NAME
+
+SOP_PATH = os.path.join(BASE_DIR, 'static', 'assets', 'sops')
+SOP_FILE_NAME = "{0}_MANIFEST_SOP{1}.pdf"
+SOP_DOWNLOAD_URL = "/static/assets/sops/" + SOP_FILE_NAME
 
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 
@@ -40,7 +46,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://0.0.0.0:8000",
     "http://0.0.0.0:80",
     "http://127.0.0.1:8000",
-    "http://127.0.0.1:8001",    
+    "http://127.0.0.1:8001",
     "https://copo-project.org",
     "https://demo.copo-project.org",
     "https://copodev.cyverseuk.org",
@@ -95,9 +101,9 @@ PROJECT_APPS = [
 ]
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
 ASGI_APPLICATION = 'src.main_config.asgi.application'
-#WSGI_APPLICATION = 'src.main_config.wsgi.application'
+# WSGI_APPLICATION = 'src.main_config.wsgi.application'
 
-#CRISPY_TEMPLATE_PACK = 'uni-form'
+# CRISPY_TEMPLATE_PACK = 'uni-form'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 # sass, social accounts...
@@ -115,8 +121,8 @@ STATICFILES_FINDERS = (
 
 SOCIALACCOUNT_PROVIDERS = \
     {'google':
-         {'SCOPE': ['profile', 'email'],
-          'AUTH_PARAMS': {'access_type': 'online'}}}
+     {'SCOPE': ['profile', 'email'],
+      'AUTH_PARAMS': {'access_type': 'online'}}}
 
 MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -161,9 +167,7 @@ CORS_ORIGIN_ALLOW_ALL = False
 ACCOUNT_LOGOUT_REDIRECT_URL = '/copo/auth/login'
 
 
-
 LOGIN_URL = '/copo/auth/login'
-
 
 
 # Internationalization
@@ -179,7 +183,8 @@ USE_L10N = True
 
 USE_TZ = True
 
-CSRF_TRUSTED_ORIGINS = ['https://*.copo-project.org', 'https://copodev.cyverseuk.org','http://copodev.cyverseuk.org', 'http://127.0.0.1:8000']
+CSRF_TRUSTED_ORIGINS = ['https://*.copo-project.org', 'https://copodev.cyverseuk.org',
+                        'http://copodev.cyverseuk.org', 'http://127.0.0.1:8000']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
@@ -205,14 +210,13 @@ COPO_URL = 'copo-project.org'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024 * 2
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 24
 
-#CACHES = {
+# CACHES = {
 #    'default': {
 #        'LOCATION': 'copo_cache_table',
 #        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
 #
 #    }
-#}
-
+# }
 
 
 VIEWLOCK_TIMEOUT = timedelta(seconds=1800)
@@ -242,9 +246,11 @@ TEMPLATES = [
         'DIRS': [
             # insert your TEMPLATE_DIRS here
             #
-            os.path.join( BASE_DIR, 'src', 'apps', 'copo_landing_page', 'templates'),
-            os.path.join( BASE_DIR, 'src', 'apps', 'copo_core', 'templates', 'copo'),
-            os.path.join( BASE_DIR, 'static', 'swagger'),
+            os.path.join(BASE_DIR, 'src', 'apps',
+                         'copo_landing_page', 'templates'),
+            os.path.join(BASE_DIR, 'src', 'apps',
+                         'copo_core', 'templates', 'copo'),
+            os.path.join(BASE_DIR, 'static', 'swagger'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -269,4 +275,4 @@ TEMPLATES = [
 
 ROOT_URLCONF = 'src.main_config.urls'
 
-UPLOAD_PATH = os.path.join(settings.MEDIA_ROOT,'uploads')
+UPLOAD_PATH = os.path.join(settings.MEDIA_ROOT, 'uploads')

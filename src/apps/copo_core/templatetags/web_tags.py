@@ -68,6 +68,13 @@ def get_blank_manifest_url(value):
     return settings.MANIFEST_DOWNLOAD_URL.format(value, version)
 
 
+@register.filter(is_safe=True, name="get_sop_url")
+def get_sop_url(value):
+    manfiest_version = settings.MANIFEST_VERSION
+    version = manfiest_version.get(value, "")
+    version = "_v" + version if version else ""
+    return settings.SOP_DOWNLOAD_URL.format(value, version)
+
 @register.filter(is_safe=True, name="get_short_profile_type")
 def get_short_profile_type(value):
     result = re.search(r"\((.*?)\)", value)
