@@ -2792,6 +2792,7 @@ function get_profile_components() {
         'new-samples-spreadsheet-template',
         'new-samples-spreadsheet-template-erga',
         'download-blank-manifest-template|href:#blank_manifest_url',
+        'download-sop|href:#sop_url',
         'accept_reject_samples',
       ],
       sidebarPanels: ['copo-sidebar-info'],
@@ -2799,7 +2800,7 @@ function get_profile_components() {
       color: 'olive',
       profile_component: 'dtol',
       tableID: 'sample_table',
-      recordActions: ["download_sample_manifest_single"],
+      recordActions: ['download_sample_manifest_single'],
       visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
     },
     {
