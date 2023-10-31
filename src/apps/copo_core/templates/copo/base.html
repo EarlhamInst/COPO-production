@@ -243,7 +243,7 @@
             var component = "";
             var copoFormsURL = "/copo/copo_forms/";
 
-            var message = "An email address is required for your user account!";
+            var message = "<b>An email address is required for your user account</b>";
             var errMessage = "Please enter a valid email address!";
             var $content = '<div>';
             $content += '<div style="margin-bottom: 10px;">' + message + '</div>';
@@ -251,7 +251,7 @@
 
             $content += '<p style="margin-top:10px"  for="gdpr_check">Please check this box if you consent to your identifiable information being stored in COPO. We do not use this information for any process but this information will be submitted to public repositories and well be part of the public record.</p>';
             $content += '<input class="form-check-input" type="checkbox" value="" id="gdpr_check">'
-            $content += '<label class="form-check-label" for="gdpr_check"> - I Agree</label>'
+            $content += '<label class="form-check-label" for="gdpr_check"> I Agree</label>'
             $content += '</div>';
 
             var dialog = new BootstrapDialog({
