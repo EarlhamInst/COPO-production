@@ -68,18 +68,34 @@
             return null;
         }
 
-        // Show cookie consent modal if not accepted yet or if cookies are rejected
-        if (getCookie('cookiesAccepted') === null || getCookie('cookiesAccepted') === 'false') {
+        function recordCookieResponse() {
+            $.ajax({
+                headers: { 'X-CSRFToken': $.cookie('csrftoken') },
+                url: '/cookie_response/',
+                method: 'POST',
+                data: {
+                    cookie_response: getCookie('cookiesAccepted'),
+                },
+            }).done(function () {})
+            .error(function (e) {
+                console.error(e);
+            });
+        }
+
+        // Show cookie consent modal if cookies have not been accepted yet or if cookies are rejected
+        if (getCookie('cookiesAccepted') === null || getCookie('cookiesAccepted').toLowerCase() === 'null'  || getCookie('cookiesAccepted') === 'false') {
             $('#cookieModal').modal({ backdrop: 'static', keyboard: false }, 'show');
         }
 
         // Handle cookie consent choices
         $('#acceptCookies').on('click', function () {
             setCookie('cookiesAccepted', 'true', 365);
+            recordCookieResponse();
         });
 
         $('#rejectCookies').on('click', function () {
             setCookie('cookiesAccepted', 'false', 365);
+            recordCookieResponse();
             document.location = '/'; // Redirect to homepage
         });
     });

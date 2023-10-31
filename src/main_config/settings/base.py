@@ -88,6 +88,7 @@ PROJECT_APPS = [
     'rest_framework.authtoken',
     'compressor',
     'django_extensions',
+    'django_user_agents',
     'corsheaders',
     'crispy_forms',
     "crispy_bootstrap5"
@@ -126,6 +127,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_tools.middlewares.ThreadLocal.ThreadLocalMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
     'compression_middleware.middleware.CompressionMiddleware',
     'src.apps.copo_core.middlewares.LocksMiddleware.LocksMiddleware',
     'src.apps.copo_core.middlewares.LogUncaughtExceptions.LogUncaughtExceptions',

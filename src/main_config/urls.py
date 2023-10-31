@@ -33,6 +33,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
    
     path('', landing_views.index, name='index'),
+    path('cookie_response/', landing_views.cookie_response, name='cookie_response'),
     path('about/', TemplateView.as_view(template_name="about.html"), name='about'),
     path('about/privacy_notice/', TemplateView.as_view(template_name="privacy_notice.html"),
          name='privacy_notice'),
@@ -41,7 +42,8 @@ urlpatterns = [
     path('people/', TemplateView.as_view(template_name="people.html"), name='people'),
     path('dtol/', TemplateView.as_view(template_name="dtol.html"), name='dtol'),
     path('news/', TemplateView.as_view(template_name="news.html"), name='news'),
-    path('ebp/', TemplateView.as_view(template_name="ebp_resources.html"), name="ebp")
+    path('ebp/', TemplateView.as_view(template_name="ebp_resources.html"), name="ebp"),
+
 ]
 
 #handler404 = views.handler404

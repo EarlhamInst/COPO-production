@@ -54,6 +54,7 @@ django-gollum==1.0.1
 django-html-validator==0.5.1
 django-redis-sessions==0.6.2
 django-tools==0.54.0
+django-user-agents==0.4.0
 django-crispy-forms==2.0
 crispy-bootstrap5==0.7
 djangorestframework==3.14.0
@@ -191,7 +192,9 @@ Twisted==22.10.0
 txaio==23.1.1
 typed-ast==1.5.4
 #typing==3.6.2
+ua-parser==0.18.0
 urllib3==1.26.13
+user-agents==2.2.0
 validators==0.20.0
 vine==5.0.0
 wcwidth==0.2.6
