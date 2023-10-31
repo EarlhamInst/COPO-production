@@ -177,6 +177,12 @@ $(document).ready(function () {
     do_record_task(event);
   });
 
+  // Close the alert message once the close button is clicked
+  // since the boostrap event is strangely not registered to do so
+  $(document).on('click', '#page_alert_panel .alert .close', function () {
+    $(this).closest('.alert').remove();
+  });
+
   //add new component button
   $(document)
     .off('click')
