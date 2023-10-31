@@ -50,6 +50,10 @@
             background-color: #e1e1e1 !important;
         }
 
+        #profile_titles .selected a{
+            color: #e1e1e1 !important;
+        }
+
         .na_color {
             background-color: #eee;
         }
@@ -60,6 +64,34 @@
 
         .selectable_row {
             cursor: pointer;
+        }
+
+        /* Truncate profile title when it is too long */
+        .profile_title_header_my_profiles {
+            max-height: 4em; /* fallback */
+            max-width: 200px;
+            -webkit-line-clamp: 3; /* number of lines to show */
+            -webkit-box-orient: vertical; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+            -o-text-overflow: ellipsis;
+            -ms-text-overflow: ellipsis;
+            -moz-binding: url('ellipsis.xml#ellipsis');
+            display: -webkit-box;
+            text-align: left;
+        }
+        
+        .profile_title_header_all_profiles {
+            max-height: 4em; /* fallback */
+            max-width: 150px;
+            -webkit-line-clamp: 3; /* number of lines to show */
+            -webkit-box-orient: vertical; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+            -o-text-overflow: ellipsis;
+            -ms-text-overflow: ellipsis;
+            -moz-binding: url('ellipsis.xml#ellipsis');
+            text-align: left;
         }
 
         .table_viewport {
@@ -149,7 +181,7 @@
                 <tr>
                     <th>Profile Title</th>
                     <th>Date Created</th>
-                    <th class="show_sample_links">Access to Samples</th>
+                    <th class="show_sample_links">Samples link</th>
                 </tr>
                 </thead>
                 <tbody></tbody>

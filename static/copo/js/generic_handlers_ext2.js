@@ -723,6 +723,9 @@ function do_render_component_table(data, componentMeta) {
       });
 
     place_task_buttons(componentMeta); //this will place custom buttons on the table for executing tasks on records
+
+    // Align table column headings with table body
+    table.columns.adjust().draw();
   }
 
   $('#' + tableID + '_wrapper')
@@ -805,11 +808,6 @@ function do_render_component_table(data, componentMeta) {
         });
       }
     });
-  // Align table column headings with table body
-  $('#' + tableID)
-    .DataTable()
-    .columns.adjust()
-    .draw();
 } //end of func
 
 function load_records(componentMeta, args_dict) {
