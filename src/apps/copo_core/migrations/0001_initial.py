@@ -51,6 +51,8 @@ class Migration(migrations.Migration):
                 ('repo_manager', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(blank=True, max_length=100), blank=True, null=True, size=None)),
                 ('repo_submitter', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(blank=True, max_length=100), blank=True, null=True, size=None)),
                 ('active_task', models.BooleanField(default=False)),
+                ('cookie_consent_log', django.contrib.postgres.fields.ArrayField(
+                    base_field=models.JSONField(default=dict), blank=True, null=True, size=None)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),

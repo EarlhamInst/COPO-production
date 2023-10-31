@@ -4,6 +4,7 @@ import pytz
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_tools.middlewares.ThreadLocal import get_current_user
@@ -28,6 +29,10 @@ class UserDetails(models.Model):
         null=True,
     )
     active_task = models.BooleanField(default=False)
+    cookie_consent_log = ArrayField(
+        JSONField(default=dict),
+        blank=True,
+        null=True)
     # class Meta:
     # app_label = 'django.contrib.auth'
 
