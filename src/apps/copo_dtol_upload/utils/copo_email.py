@@ -6,7 +6,9 @@ from django.conf import settings
 from src.apps.copo_core.models import User, SequencingCentre
 from common.utils.copo_email import CopoEmail
 from common.dal.copo_da import get_users_seq_centres, Profile
+from common.utils.logger import Logger
 
+logger = Logger()
 
 class Email:
 
@@ -20,12 +22,31 @@ class Email:
         # get email addresses of users in sequencing centre
         users = []
         p_id = kwargs.get("profile_id", "")
-        if p_id != "":
+        type = kwargs.get("project", "")
+        if p_id:
             profile = Profile().get_record(p_id)
             sequencing_centres = profile.get("sequencing_centre", [])
-            for sc in sequencing_centres:
-                centre = SequencingCentre.objects.get(name=sc)
-                users += centre.users.all()
+            '''
+            is_bge_profile = "BGE" in [ x.get("value","") for x in profile.get("associated_type",[]) ]
+            if is_bge_profile:
+                users = User.objects.filter(groups__name='bge_checkers')
+            elif type in ["ERGA"]:
+                for sc in sequencing_centres:
+                    centre = SequencingCentre.objects.get(name=sc)
+                    users += centre.users.all()
+            '''        
+            if type in ["ERGA"]:
+                for sc in sequencing_centres:
+                    centre = SequencingCentre.objects.get(name=sc)
+                    users += centre.users.all()
+                checker_users = User.objects.filter(groups__name='bge_checkers')
+                users = list(set(users) & set(checker_users))
+            elif type in ["DTOL", "ASG"]:
+                users = User.objects.filter(groups__name='dtol_sample_notifiers')
+            elif type in ["DTOL_ENV"]:
+                users = User.objects.filter(groups__name='dtolenv_sample_notifiers')
+            else:
+                users = []     
 
         email_addresses = list()
         sub = ""
@@ -42,3 +63,5 @@ class Email:
             msg = self.messages["new_manifest"].format(kwargs["title"], demo_notification + kwargs["description"], data, data)
             sub = demo_notification + is_new + kwargs["project"] + " Manifest - " + kwargs["title"]
             CopoEmail().send(to=email_addresses, sub=sub, content=msg, html=True)
+        else:
+            logger.log("No users found for sequencing centre")

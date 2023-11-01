@@ -41,7 +41,8 @@ def sample_spreadsheet(request, report_id=""):
                       "time_added": datetime.utcnow(),
                       "file_name": name,
                       "isupdate": False,
-                      "report_id": report_id
+                      "report_id": report_id,
+                      "user_id": request.user.id,
                       }}
         ValidationQueue().get_collection_handle().update_one({"profile_id": p_id}, r, upsert=True)
 

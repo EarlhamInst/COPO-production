@@ -505,7 +505,7 @@ class DtolSpreadsheet:
     def save_records(self):
         # create mongo sample objects from info parsed from manifest and saved to session variable
         # sample_data = self.sample_data
-
+        #is_bge = "BGE" in self.associated_type
         binary = pickle.loads(self.vr["manifest_data"])
         try:
             sample_data = pandas.read_excel(binary, keep_default_na=False,
@@ -585,7 +585,9 @@ class DtolSpreadsheet:
             s["manifest_id"] = manifest_id
             if "erga" in self.type.lower() and s["ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID"]:
                 s["status"] = "private"
-            else:
+            elif type == "ERGA":
+                s["status"] = "bge_pending"
+            else :
                 s["status"] = "pending"
             s["rack_tube"] = s.get("RACK_OR_PLATE_ID", "") + \
                 "/" + s["TUBE_OR_WELL_ID"]
@@ -662,6 +664,7 @@ class DtolSpreadsheet:
                                                      project=self.type.upper(), is_new=True, profile_id=profile_id)
         
     def update_records(self):
+        #is_bge = "BGE" in self.associated_type
         binary = pickle.loads(self.vr["manifest_data"])
         try:
             sample_data = pandas.read_excel(binary, keep_default_na=False,
@@ -726,7 +729,9 @@ class DtolSpreadsheet:
                         is_updated = True
 
             if recorded_sample["biosampleAccession"] and is_updated:
-                Sample().mark_pending(recorded_sample["_id"])
+                is_private = "erga" in self.type.lower() and s["ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID"]
+                is_erga = "erga" in self.type.lower()
+                Sample().mark_pending(sample_ids = [str(recorded_sample["_id"])], is_erga=is_erga, is_private=is_private)
                 need_send_email = True
 
             uri = request.build_absolute_uri('/')
@@ -745,8 +750,8 @@ class DtolSpreadsheet:
 
         if need_send_email:
             Email().notify_manifest_pending_approval(uri + 'copo/dtol_submission/accept_reject_sample/', title=title,
-                                                         description=description,
-                                                         project=self.type.upper(), is_new=False)
+                                                         description=description, 
+                                                         project=self.type.upper(), is_new=False,profile_id=profile_id)
 
         image_data = request.session.get("image_specimen_match", [])
         for im in image_data:

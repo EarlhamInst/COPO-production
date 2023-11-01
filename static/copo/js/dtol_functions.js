@@ -20,7 +20,7 @@
                 className: "tickbox",
                 render: function (data, type, row) {
                     var filter = $("#sample_filter").find(".active").find("a").attr("href")
-                    if (filter == "pending" || filter == "rejected") {
+                    if (filter == "pending" || filter == "rejected" || filter == "bge_pending") {
                         return "<input type='checkbox' class='form-check-input checkbox'/>"
                     } else {
                         return ""
@@ -46,7 +46,7 @@
             "return": true,
         },
           ajax: {
-            url: '/copo/dtol_submission/get_samples_for_profile',
+            url: '/copo/dtol_submission/get_samples_for_profile/',
             data: function (d) {
               return {
                 profile_id : $("#profile_id").val(),
@@ -256,47 +256,48 @@ $(document).ready(function () {
 
     var profile_samples = document.getElementById("profile_samples")
     if (profile_samples && profile_samples.getElementsByTagName("thead")[0].children.length == 0  ) {
-    $.ajax({
-        url: "/copo/dtol_submission/get_sample_column_names",
-        method: "GET",
-        dataType: "json"
-    }).error(function (data) {
-        console.error("ERROR: " + data)
-    }).done(function (data) {
-        if (data.length) {
-            var header = $("<h4/>", {
-                html: "Samples"
-            })
-            $("#sample_panel").find(".labelling").empty().append(header)
+        $.ajax({
+            url: "/copo/dtol_submission/get_sample_column_names",
+            method: "GET",
+            dataType: "json"
+        }).error(function (data) {
+            console.error("ERROR: " + data)
+        }).done(function (data) {
+            if (data.length) {
+                var header = $("<h4/>", {
+                    html: "Samples"
+                })
+                $("#sample_panel").find(".labelling").empty().append(header)
 
-            var rows = []
-            rows.push({"title": ""})
+                var rows = []
+                rows.push({"title": ""})
 
-                let i = 0;
-                while (i < data.length) {
-                     if (!excluded_fields.includes(data[i])) {
-                            rows.push({"title": data[i], "data": data[i]})
-                        }
-                    i++;
-                }
-                if (profile_samples) {
-                    if ($.fn.DataTable.isDataTable('#profile_samples')) {
-                        sample_table.clear().destroy();
+                    let i = 0;
+                    while (i < data.length) {
+                        if (!excluded_fields.includes(data[i])) {
+                                rows.push({"title": data[i], "data": data[i]})
+                            }
+                        i++;
                     }
-                    dt_options["columns"] = rows
-                    dt_options["scrollCollapse"] = true
-                    dt_options["scrollX"] = true
-                    dt_options["scrollY"] = 1000
-                    dt_options["fixedHeader"] = true
-                    sample_table = $("#profile_samples").DataTable(dt_options).columns.adjust().draw();
-                    
-                }
-        }
-    })
+                    if (profile_samples) {
+                        if ($.fn.DataTable.isDataTable('#profile_samples')) {
+                            sample_table.clear().destroy();
+                        }
+                        dt_options["columns"] = rows
+                        dt_options["scrollCollapse"] = true
+                        dt_options["scrollX"] = true
+                        dt_options["scrollY"] = 1000
+                        dt_options["fixedHeader"] = true
+                        sample_table = $("#profile_samples").DataTable(dt_options).columns.adjust().draw();
+                        update_profile_table()
+
+                    }
+            }
+        })
     }
-    if (profile_samples) {
-       update_pending_samples_table()
-    }
+    //if (profile_samples) {
+       //update_pending_samples_table()
+    //}
 })
    var fadeSpeed = 'fast'
 
@@ -317,27 +318,34 @@ function row_select(ev) {
         row = $(document).data("selected_row")
     }
 
-    var filter = $("#sample_filter").find(".active").find("a").attr("href")
-    var profile_id = $(row).find("td").data("profile_id")
-    $("#profile_id").val(profile_id)
-    $("#spinner").show()
-    sample_table.ajax.reload(function () { 
-        if (sample_table.data().length == 0) {
-            var header = $("<h4/>", {
-                html: "No Samples Found"
-            })
-            $("#sample_panel").find(".labelling").empty().append(header)
-            $('#profile_samples_wrapper').hide()
+    if (sample_table != undefined) {
+        var filter = $("#sample_filter").find(".active").find("a").attr("href")
+        if (row == undefined) {
+            $("#profile_id").val("")
         } else {
-            var header = $("<h4/>", {
-                html: "Samples"
-            })
-            $("#sample_panel").find(".labelling").empty().append(header)
-            $('#profile_samples_wrapper').show()
+            var profile_id = $(row).find("td").data("profile_id")
+            $("#profile_id").val(profile_id)
         }
-    })
+        $("#spinner").show()
+        sample_table.ajax.reload(function () { 
+            if (sample_table.data().length == 0) {
+                var header = $("<h4/>", {
+                    html: "No Samples Found"
+                })
+                $("#sample_panel").find(".labelling").empty().append(header)
+                $('#profile_samples_wrapper').hide()
+            } else {
+                var header = $("<h4/>", {
+                    html: "Samples"
+                })
+                $("#sample_panel").find(".labelling").empty().append(header)
+                $('#profile_samples_wrapper').show()
+            }
+        })
 
-    $("#spinner").fadeOut("fast")
+        $("#spinner").fadeOut("fast")
+ 
+    }    
 /*
     $.ajax({
         url: "/copo/update_pending_samples_table",
@@ -393,7 +401,7 @@ function delay(fn, ms) {
 function update_pending_samples_table() {
     // get profiles with samples needing looked at and populate left hand column
     //check whether we are getting my profiles or all profiles
-    var which_profiles = $("#sequencing_centre_filter").find(".active").find("a").attr("href")
+    var which_profiles = $(".profile-filter:visible").find(".active").find("a").attr("href")
     //console.log(which_profiles)
     if (which_profiles == "my_profiles") {
         $("#accept_reject_button").show()
@@ -404,10 +412,10 @@ function update_pending_samples_table() {
         $("#edit-buttons").hide()
     }
     $.ajax({
-        url: "/copo/dtol_submission/update_pending_samples_table",
+        url: "/copo/dtol_submission/update_pending_samples_table/",
         method: "GET",
         dataType: "json",
-        data: {"profiles": which_profiles}
+        data: {"profiles": which_profiles, "group": get_group_id()}
     }).error(function (e) {
         console.error(e)
     }).done(function (data) {
@@ -443,7 +451,13 @@ function update_pending_samples_table() {
             },    
 
         })
-        $($("#profile_titles tr")[1]).click()
+        $(document).removeData("selected_row")
+        if (data.length) {
+            $("#profile_titles").find("tbody").find("tr:first").click()
+        }else {
+            $(".hot_tab.active").click()
+        }
+      
     })
 }
 
@@ -543,4 +557,20 @@ function handle_accept_reject(el) {
         }
     }
 
+}
+
+function update_profile_table() {
+    if ($('#group_id option').length == 1) {
+        $('#group_id').hide()
+    }
+    group = get_group_id()
+    if (group == "erga") {
+        $("#erga").show();
+
+        $("#non_erga").hide();
+    } else {
+        $("#erga").hide();
+        $("#non_erga").show();
+    }
+    update_pending_samples_table()
 }

@@ -50,4 +50,6 @@ class Command(BaseCommand):
         dtolenv_managers, created = Group.objects.get_or_create(name='dtolenv_sample_managers')
         # receive dtol env notification emails
         dtolenv_notifiers, created = Group.objects.get_or_create(name="dtolenv_sample_notifiers")
+        # view bge accept/reject view
+        bge_checkers, created = Group.objects.get_or_create(name='bge_checkers')
        

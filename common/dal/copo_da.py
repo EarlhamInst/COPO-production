@@ -1317,7 +1317,7 @@ class Sample(DAComponent):
         if filter == "pending":
             # $nin will return where status neq to values in array, or status is absent altogether
             find_condition["status"] = {
-                "$nin": ["barcode_only", "rejected", "accepted", "processing", "conflicting", "private", "sending"]}
+                "$nin": ["barcode_only", "rejected", "accepted", "processing", "conflicting", "private", "sending", "bge_pending"]}
 
             # cursor = self.get_collection_handle().find(
             #    { 'profile_id': profile_id,
@@ -1518,8 +1518,15 @@ class Sample(DAComponent):
         sample_obj_ids = [ObjectId(x) for x in sample_ids]
         return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": "processing"}})
 
-    def mark_pending(self, sample_id):
-        return self.get_collection_handle().update_one({"_id": ObjectId(sample_id)}, {"$set": {"status": "pending"}})
+    def mark_pending(self, sample_ids, is_erga=False, is_private=False):
+        if is_erga:
+            status = "bge_pending"
+        elif is_private:
+            status = "private"
+        else :
+            status = "pending"
+        sample_obj_ids = [ObjectId(x) for x in sample_ids]
+        return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": status}})
 
     def get_by_manifest_id(self, manifest_id):
         samples = cursor_to_list(
@@ -2915,6 +2922,14 @@ class Profile(DAComponent):
         if 'dataverse' in p:
             if 'datasets' in p['dataverse']:
                 return p['dataverse']['datasets']
+
+    def get_profiles(self, filter="all_profiles", group_filter=None):
+        if group_filter == "dtol":
+            return self.get_dtol_profiles("all_profiles")
+        elif group_filter == "erga":
+            return self.get_erga_profiles(filter)
+        elif group_filter == "dtolenv":
+            return self.get_dtolenv_profiles("all_profiles")
 
     def get_dtol_profiles(self, filter="all_profiles"):
 
