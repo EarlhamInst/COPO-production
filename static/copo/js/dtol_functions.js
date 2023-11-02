@@ -506,13 +506,20 @@ function update_pending_samples_table() {
           }
         },
       });
-      $($('#profile_titles tr')[1]).click();
-
-      // Adjust the width of the table if it is 'All Profiles'
-      if (which_profiles != 'my_profiles') {
-        $('#profile_titles').css('width', '100%');
+   
+      $(document).removeData("selected_row")
+      if (data.length) {
+          $("#profile_titles").find("tbody").find("tr:first").click()
+      }else {
+          $(".hot_tab.active").click()
       }
-    });
+
+        // Adjust the width of the table if it is 'All Profiles'
+      if (which_profiles != 'my_profiles') {
+          $('#profile_titles').css('width', '100%');
+      }
+  })
+    
 }
 
 function handle_accept_reject(el) {
