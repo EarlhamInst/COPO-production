@@ -150,8 +150,9 @@
 {% block content %}
     <div class="row">
     <div class="col-lg-9 col-sm-9 col-md-9">
-        <h3 class="h3">Choose to Accept or Reject</h3>
+        <h3 class="h3">Choose to Accept or Reject  &nbsp; &nbsp; <select id='group_id' name='group'>{% for group in sample_manager_groups %}<option value='{{ group }}' title='{{group}}' >{{ group }}</option>{% endfor %}</select>  </h3>
         <h3 class="h3"><small>Note clicking accept will immediately send sample info to ENA/Biosamples</small></h3>
+
     </div>
     <div class="col-lg-3 col-sm-3 col-md-3">
         <h4 class="h4">Status</h4>
@@ -167,13 +168,19 @@
     <div class="row">
 
         <div class="col-lg-3 col-md-3 col-sm-3">
-            <ul class="nav nav-tabs" id="sequencing_centre_filter">
-                <li class="hot_tab in active">
+            <ul hidden class="nav nav-tabs profile-filter" id="erga">
+                <li class="hot_tab_profile in active">
                     <a data-toggle="tab" href="my_profiles">Profiles for My Sequencing Centre</a>
                 </li>
-                <li class="hot_tab in">
+                <li class="hot_tab_profile in">
                     <a data-toggle="tab" href="all_profiles">All profiles</a>
                 </li>  
+            </ul>
+
+            <ul hidden class="nav nav-tabs profile-filter" id="non_erga">
+                <li class="hot_tab_profile in active">
+                    <a data-toggle="tab" href="my_profiles">All profiles</a>
+                </li>
             </ul>
 
             <table id="profile_titles" class="table table-hover table-condensed">
@@ -209,9 +216,20 @@
 
 
             <ul class="nav nav-tabs" id="sample_filter">
+
+                {% if is_bge_checker %}
+                <li class="hot_tab in active">
+                    <a data-toggle="tab" href="bge_pending">Pending BGE Checker Samples</a>
+                </li>
+                <li class="hot_tab in ">
+                    <a data-toggle="tab" href="pending">Pending Samples</a>
+                </li>
+                {% else %}
                 <li class="hot_tab in active">
                     <a data-toggle="tab" href="pending">Pending Samples</a>
                 </li>
+                {% endif %}
+
                 <li class="hot_tab in">
                     <a data-toggle="tab" href="processing">Processing Samples</a>
                 </li>
@@ -221,9 +239,9 @@
                 <li class="hot_tab in">
                     <a data-toggle="tab" href="rejected">Rejected Samples</a>
                 </li>
-                <li class="hot_tab in">
+                <!--li class="hot_tab in" >
                     <a data-toggle="tab" href="private">Private Samples</a>
-                </li>
+                </li-->
             </ul>
 
 

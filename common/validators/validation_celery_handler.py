@@ -15,6 +15,8 @@ import jsonpath_rw_ext as jp
 from common.utils.helpers import map_to_dict
 from common.utils.logger import Logger
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.db.models import Q
 
 class ProcessValidationQueue:
 
@@ -70,6 +72,7 @@ class ProcessValidationQueue:
             self.sample_data = pickle.loads(qm["manifest_data"])
             self.profile_id = qm["profile_id"]
             self.file_name = qm["file_name"]
+            self.user_id = qm["user_id"]
             t = Profile().get_type(self.profile_id)
 
             if "ASG" in t:
@@ -304,7 +307,22 @@ class ProcessValidationQueue:
                         html_id="sample_table")
 
     def make_update_notifications(self, qm):
+        is_manager = False
+        group = ""
+        profile = Profile().get_record(self.profile_id)
+        if profile:
+            if "asg" in profile.get("type","").lower() or "dtol" in profile.get("type","").lower():
+                group = "dtol_sample_managers"
+            elif "erga" in profile.get("type","").lower():
+                group = "erga_sample_managers"
+            elif "dtol_env" in profile.get("type","").lower():
+                group = "dtolenv_sample_managers"
+            
+        user = User.objects.get(pk=self.user_id)       
+        if user and group:
+            is_manager = user.groups.filter(name=group).exists()
         sample_data = self.data
+        #sample_data = self.data
         updates = {}
         permits_required = False
         for p in range(0, len(sample_data)):
@@ -317,6 +335,7 @@ class ProcessValidationQueue:
             assert len(exsam) == 1
             exsam = exsam[0]
             updates[rack_tube] = {}
+            is_not_approved = exsam.get("biosampleAccession", "") == ""
 
             # Always ask user to upload permit if it is required
             if any(s.get(x,"") == "Y" for x in
@@ -326,7 +345,7 @@ class ProcessValidationQueue:
             for field in s.keys():
                 if s[field].strip() != exsam.get(field, "") and s[field].strip() != exsam["species_list"][0].get(field,
                                                                                                                  ""):
-                    if field in lookup.DTOL_NO_COMPLIANCE_FIELDS[self.type.lower()]:
+                    if is_manager or is_not_approved or field in lookup.DTOL_NO_COMPLIANCE_FIELDS[self.type.lower()]:
                         updates[rack_tube][field] = {}
                         if field in lookup.SPECIES_LIST_FIELDS:
                             updates[rack_tube][field]["old_value"] = exsam["species_list"][0][field]

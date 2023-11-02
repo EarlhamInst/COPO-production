@@ -120,3 +120,5 @@ ENA_CHECKLIST_URL  = [
     "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/ERT000020?type=sequence",
     "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/*?type=sample"
 ]
+
+SANGER_SEQUENCING_CENTER = "SANGER"
