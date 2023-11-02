@@ -610,6 +610,7 @@ function handle_accept_reject(el) {
     }
 
 }
+}
 
 function update_profile_table() {
     if ($('#group_id option').length == 1) {
