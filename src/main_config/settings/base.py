@@ -275,4 +275,4 @@ TEMPLATES = [
 
 ROOT_URLCONF = 'src.main_config.urls'
 
-UPLOAD_PATH = os.path.join(settings.MEDIA_ROOT, 'uploads')
+UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads')
