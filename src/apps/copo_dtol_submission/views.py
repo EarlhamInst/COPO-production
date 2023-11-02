@@ -116,7 +116,7 @@ def add_sample_to_dtol_submission(request):
         type_sub = profile["type"]
         #is_bge_profile = "BGE" in [ x.get("value","") for x in profile.get("associated_type",[]) ]
         sequence_centres = profile.get("sequencing_centre", [])
-        is_sanger_profile = settings.SANGER_SEQUENCING_CENTER in sequence_centres and "erga" in type_sub.lower()
+        is_sanger_profile = "erga" in type_sub.lower() and settings.SANGER_SEQUENCING_CENTER in sequence_centres
 
         if not sub:
             if type_sub == "Aquatic Symbiosis Genomics (ASG)":
@@ -171,11 +171,15 @@ def add_sample_to_dtol_submission(request):
         # for speciment_id in sepciment_ids:
         #    if speciment_id not in sub["dtol_specimen"]:
         #        sub["dtol_specimen"].append(speciment_id)
-
-        if Submission().save_record(dict(), **sub):
-            return HttpResponse(status=200)
+        if processing_sample_ids:
+            if Submission().save_record(dict(), **sub):
+                return HttpResponse(status=200)
+            else:
+                return HttpResponse(status=500)
         else:
-            return HttpResponse(status=500)
+            notify_frontend(data={"profile_id": profile_id}, msg="", action="hide_sub_spinner",
+                html_id="dtol_sample_info")
+        return HttpResponse(status=200)
     else:
         return HttpResponse(status=500, content="Sample IDs or profile_id not provided")
 

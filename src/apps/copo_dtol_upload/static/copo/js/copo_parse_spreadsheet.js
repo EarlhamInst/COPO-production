@@ -664,6 +664,12 @@ $(document).ready(function () {
           ) {
             $('#confirm_button').fadeOut();
           } else {
+            if ($('#files_label').is(':visible')) {
+              // $("#files_label").fadeOut()
+              $('#files_label').addClass('disabled');
+              $('#files_label').attr('disabled', 'true');
+              $('#files_label').find('input').attr('disabled', 'true');
+            }            
             $('#confirm_button').fadeIn();
           }
         } else if (d.action == 'require_permits') {
