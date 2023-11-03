@@ -3,7 +3,6 @@ var sampleDescriptionToken = '';
 var sampleTableInstance = null;
 
 $(document).ready(function () {
-
   //****************************** Event Handlers Block *************************//
 
   // test begins
@@ -1129,7 +1128,7 @@ $(document).ready(function () {
               columns: cols,
               dom: 'lfit<"row">rp',
             });
-            
+
             $('#' + tableID + '_wrapper')
               .find('.dataTables_filter')
               .find('input')
@@ -1379,16 +1378,22 @@ $(document).ready(function () {
                 carousel_inner_item.addClass('active');
               }
 
+              // Create a clickable image that opens in a new tab
               let figcaption = $('<figcaption/>');
               figcaption.text(image_caption);
 
-              let figure = $('<figure/>').append(
-                $('<img/>', {
-                  class: 'd-block w-100',
-                  src: url,
-                  alt: image_caption,
-                })
-              );
+              let image = $('<img/>', {
+                class: 'd-block w-100',
+                src: url,
+                alt: image_caption,
+              });
+
+              let image_a_tag = $('<a/>', {
+                href: url,
+                target: '_blank',
+              }).append(image);
+
+              let figure = $('<figure/>').append(image_a_tag);
 
               // Ensure that the total number of images in the carousel
               // items is equal to the number of images' urls
