@@ -79,7 +79,7 @@
         $("#myCarousel").on('slide.bs.carousel', function () {
             var count = $('#myCarousel').data('carousel_counter')
             count = count + 1
-            console.log(count)
+            // console.log(count)
             var idx = count % carousel_text.length
             //var image_idx = Math.round((Math.random() * images.length) + 1)
 
