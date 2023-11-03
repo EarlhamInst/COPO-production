@@ -4,6 +4,9 @@ info:
   description: |
     The following are Swagger Application Programming Interface (API) methods for manifests, samples, statistics and profiles 
     in the **Collaborative OPen Omics (COPO)** project.
+
+    Please view our [API methods' documentation](https://copo-docs.readthedocs.io/en/latest/retrieval/copo-api.html) for guidance.
+
   version: 1.1.8
 servers:
   - url: /api
@@ -69,7 +72,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SampleAudit'
+                $ref: '#/components/schemas/SampleAudit_update_log'
         '400':
           description: \'from\' must be earlier than \'to\'
         '500':
@@ -102,7 +105,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SampleAudit'
+                $ref: '#/components/schemas/SampleAudit_update_log'
 
   /audit/sample/copo_id/{copo_id}:
     get:
@@ -132,7 +135,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SampleAudit'
+                $ref: '#/components/schemas/SampleAudit_update_log'
 
   /audit/sample/update_type/{update_type}:
     get:
@@ -170,7 +173,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SampleAudit'
+                $ref: '#/components/schemas/SampleAudit_update_log'
         '400':
           description: Invalid sample type found in request
 
@@ -207,7 +210,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SampleAudit'
+                $ref: '#/components/schemas/SampleAudit_update_log'
         '400':
           description: Invalid value found in request
 
