@@ -20,7 +20,11 @@ var dt_options = {
       className: 'tickbox',
       render: function (data, type, row) {
         var filter = $('#sample_filter').find('.active').find('a').attr('href');
-        if (filter == 'pending' || filter == 'rejected' || filter == 'bge_pending') {
+        if (
+          filter == 'pending' ||
+          filter == 'rejected' ||
+          filter == 'bge_pending'
+        ) {
           return "<input type='checkbox' class='form-check-input checkbox'/>";
         } else {
           return '';
@@ -482,38 +486,58 @@ $(document).ready(function () {
           var rows = [];
           rows.push({ title: '' });
 
-                    let i = 0;
-                    while (i < data.length) {
-                        if (!excluded_fields.includes(data[i])) {
-                                rows.push({"title": data[i], "data": data[i]})
-                            }
-                        i++;
-                    }
-                    if (profile_samples) {
-                        if ($.fn.DataTable.isDataTable('#profile_samples')) {
-                            sample_table.clear().destroy();
-                        }
-                        dt_options["columns"] = rows
-                        dt_options["scrollCollapse"] = true
-                        dt_options["scrollX"] = true
-                        dt_options["scrollY"] = 1000
-                        dt_options["fixedHeader"] = true
-                        sample_table = $("#profile_samples").DataTable(dt_options).columns.adjust().draw();
-                        update_profile_table()
-
-                    }
+          let i = 0;
+          while (i < data.length) {
+            if (!excluded_fields.includes(data[i])) {
+              rows.push({ title: data[i], data: data[i] });
             }
-        })
+            i++;
+          }
+          if (profile_samples) {
+            if ($.fn.DataTable.isDataTable('#profile_samples')) {
+              sample_table.clear().destroy();
+            }
+            dt_options['columns'] = rows;
+            dt_options['scrollCollapse'] = true;
+            dt_options['scrollX'] = true;
+            dt_options['scrollY'] = 1000;
+            dt_options['fixedHeader'] = true;
+            sample_table = $('#profile_samples')
+              .DataTable(dt_options)
+              .columns.adjust()
+              .draw();
+            update_profile_table();
+          }
+        }
+      });
+  }
+  //if (profile_samples) {
+  //update_pending_samples_table()
+  //}
+
+  // Disable 'Download Permits' button and 'View Images' button if the active tab
+  // is 'Processing Samples' or 'Accepted Samples'
+  $('#sample_filter').bind('click', function (e) {
+    let active_tab = $(e.target).attr('href');
+    let download_permits_btn = $('.download-permits');
+    let view_images_btn = $('.view-images');
+
+    if (active_tab === 'processing' || active_tab == 'accepted') {
+      download_permits_btn.prop('disabled', true);
+      view_images_btn.prop('disabled', true);
+    } else {
+      download_permits_btn.prop('disabled', false);
+      view_images_btn.prop('disabled', false);
     }
-    //if (profile_samples) {
-       //update_pending_samples_table()
-    //}
-})
-   var fadeSpeed = 'fast'
+    
+    // Reset carousel on tab change
+    $('#imageCarousel').carousel({}).carousel(0);
+  });
+});
 
-
-
+var fadeSpeed = 'fast';
 var row;
+
 function row_select(ev) {
   $('#accept_reject_button').find('button').prop('disabled', true);
   // get samples for profile clicked in the left hand panel and populate table on the right
@@ -528,36 +552,35 @@ function row_select(ev) {
     row = $(document).data('selected_row');
   }
 
-    if (sample_table != undefined) {
-        var filter = $("#sample_filter").find(".active").find("a").attr("href")
-        if (row == undefined) {
-            $("#profile_id").val("")
-        } else {
-            var profile_id = $(row).find("td").data("profile_id")
-            $("#profile_id").val(profile_id)
-        }
-        $("#spinner").show()
-        sample_table.ajax.reload(function () { 
-            if (sample_table.data().length == 0) {
-                var header = $("<h4/>", {
-                    html: "No Samples Found"
-                })
-                $("#sample_panel").find(".labelling").empty().append(header)
-                $('#profile_samples_wrapper').hide()
-            } else {
-                var header = $("<h4/>", {
-                    html: "Samples"
-                })
-                $("#sample_panel").find(".labelling").empty().append(header)
-                $('#profile_samples_wrapper').show()
-                sample_table.columns.adjust().draw();
-            }
-        })
+  if (sample_table != undefined) {
+    var filter = $('#sample_filter').find('.active').find('a').attr('href');
+    if (row == undefined) {
+      $('#profile_id').val('');
+    } else {
+      var profile_id = $(row).find('td').data('profile_id');
+      $('#profile_id').val(profile_id);
+    }
+    $('#spinner').show();
+    sample_table.ajax.reload(function () {
+      if (sample_table.data().length == 0) {
+        var header = $('<h4/>', {
+          html: 'No Samples Found',
+        });
+        $('#sample_panel').find('.labelling').empty().append(header);
+        $('#profile_samples_wrapper').hide();
+      } else {
+        var header = $('<h4/>', {
+          html: 'Samples',
+        });
+        $('#sample_panel').find('.labelling').empty().append(header);
+        $('#profile_samples_wrapper').show();
+        sample_table.columns.adjust().draw();
+      }
+    });
 
-        $("#spinner").fadeOut("fast")
- 
-    }    
-/*
+    $('#spinner').fadeOut('fast');
+  }
+  /*
     $.ajax({
         url: "/copo/update_pending_samples_table",
         data: d,
@@ -645,7 +668,7 @@ function update_pending_samples_table() {
     url: '/copo/dtol_submission/update_pending_samples_table/',
     method: 'GET',
     dataType: 'json',
-    data: { profiles: which_profiles, "group": get_group_id() },
+    data: { profiles: which_profiles, group: get_group_id() },
   })
     .error(function (e) {
       console.error(e);
@@ -697,20 +720,19 @@ function update_pending_samples_table() {
           }
         },
       });
-   
-      $(document).removeData("selected_row")
+
+      $(document).removeData('selected_row');
       if (data.length) {
-          $("#profile_titles").find("tbody").find("tr:first").click()
-      }else {
-          $(".hot_tab.active").click()
+        $('#profile_titles').find('tbody').find('tr:first').click();
+      } else {
+        $('.hot_tab.active').click();
       }
 
-        // Adjust the width of the table if it is 'All Profiles'
+      // Adjust the width of the table if it is 'All Profiles'
       if (which_profiles != 'my_profiles') {
-          $('#profile_titles').css('width', '100%');
+        $('#profile_titles').css('width', '100%');
       }
-  })
-    
+    });
 }
 
 function handle_accept_reject(el) {
@@ -806,22 +828,21 @@ function handle_accept_reject(el) {
         ],
       });
     }
-
-}
+  }
 }
 
 function update_profile_table() {
-    if ($('#group_id option').length == 1) {
-        $('#group_id').hide()
-    }
-    group = get_group_id()
-    if (group == "erga") {
-        $("#erga").show();
+  if ($('#group_id option').length == 1) {
+    $('#group_id').hide();
+  }
+  group = get_group_id();
+  if (group == 'erga') {
+    $('#erga').show();
 
-        $("#non_erga").hide();
-    } else {
-        $("#erga").hide();
-        $("#non_erga").show();
-    }
-    update_pending_samples_table()
+    $('#non_erga').hide();
+  } else {
+    $('#erga').hide();
+    $('#non_erga').show();
+  }
+  update_pending_samples_table();
 }
