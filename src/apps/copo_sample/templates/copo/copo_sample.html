@@ -7,7 +7,7 @@
 {% block title %}Samples{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="//blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
+    <link rel="stylesheet" href="https://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
     <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
     <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload.css' %}">
     <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui.css' %}">
@@ -98,8 +98,7 @@
         var groups =
         {{ groups|safe }}
     </script>
-    <!--test ends -->
-    <!--test ends -->
+
     <input type="hidden" id="groups" value="{{ groups|safe }}"/>
 
     <div style="display:none;">
@@ -298,218 +297,17 @@
 
     </div>
 
-    <div class="modal fade" tabindex="-1" role="dialog" id="sample_spreadsheet_modal" style="overflow-y: scroll">
-        <div class="modal-dialog modal-lg" role="document" style="width: 99%">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Upload Spreadsheet</h4>
-                </div>
-                <div class="modal-body" style="width: 100%">
-                    <div id="upload_buttons">
-                        <label class="ui blue button" for="file" id="upload_label">
-                            <input id="file" type="file" style="display:none"
-                                   onchange="upload_spreadsheet(this.files[0])">
-                            Upload Sample Manifest
-                        </label>
-                        <!--
-                        <label class="ui violet button" for="images" id="files_label" disabled>
-
-                            <input enctype='multipart/formdata' id="images" name="images" type="file"
-                                   accept=".png,.jpg, .jpeg" multiple style="display:none"
-                                   onchange="upload_image_files(this.files)" disabled>
-                            Upload Barcoding Data
-                        </label>
-                        -->
-                        <label class="ui teal button disabled" for="images" id="images_label" disabled>
-
-                            <input enctype='multipart/formdata' id="images" name="images" type="file"
-                                   accept=".png,.jpg, .jpeg" multiple style="display:none"
-                                   onchange="upload_image_files(this.files)">
-                            Upload Images
-                        </label>
-                        <label class="ui orange button disabled" for="permits" id="files_label" disabled>
-
-                            <input enctype='multipart/formdata' id="permits" name="permits" type="file"
-                                   accept=".pdf" multiple style="display:none"
-                                   onchange="upload_permit_files(this.files)">
-                            Upload Permits
-                        </label>
-                        <button class="ui green button" id="finish_button" style="display:none">Finish</button>
-                        <button class="ui green button" id="confirm_button" style="display:none">Confirm</button>
-                        <div class="ui active inline loader" id="ss_upload_spinner" style="display:none">
-                            <div class="percent"></div>
-                        </div>
-
-                        <button class="ui red button pull-right" style="display:none" id="export_errors_button">Export
-                            Errors
-                        </button>
-
-
-                    </div>
-
-
-                    <div id="upload_controls">
-
-                    </div>
-                    <div style="display:none; margin-top: 30px; " id="warning_info" class="alert alert-info"
-                         role="alert">
-                    </div>
-                    <div style="display:none; margin-top: 30px; " id="warning_info2" class="alert alert-info"
-                         role="alert">
-                    </div>
-                    <div style="display:none; margin-top: 30px; " id="warning_info3" class="alert alert-info"
-                         role="alert">
-                    </div>
-                    <div style="display:none; margin-top: 30px; " id="sample_info" class="alert alert-info"
-                         role="alert"></div>
-                    <!--<div style="display:none; margin-top: 30px; " id="sample_warning" class="alert alert-warning"
-                         role="alert"></div> -->
-                </div>
-                <div style="display:none; margin-top: 30px; " id="sample_valid" class="alert alert-info"
-                     role="alert">Validated
-                </div>
-                <div style="display:none; margin-top: 10px; " id="parse_info" class="alert alert-info" role="alert">
-                    ...
-                </div>
-
-
-                <ul class="nav nav-tabs" id="tabs" style="display:none">
-                    <li class="active">
-                        <a data-toggle="tab" id="meta_table_nav_tab" href="#meta">Sample Metadata</a>
-                    </li>
-                    <!--<li>
-                        <a data-toggle="tab" id="barcode_table_nav_tab" href="#image">Sample Images</a>
-                    </li>-->
-                    <li>
-                        <a data-toggle="tab" id="image_table_nav_tab" href="#image">Sample Images</a>
-                    </li>
-                    <li>
-                        <a data-toggle="tab" id="permits_table_nav_tab" href="#permits_div">Sample Permits</a>
-                    </li>
-
-                </ul>
-                <div class="tab-content" style="padding:30px">
-                    <div class="tab-pane active" id="meta">
-
-                        <table id="sample_parse_table" class="table table-striped table-bordered">
-
-                            <thead></thead>
-                            <tbody></tbody>
-
-
-                        </table>
-
-                    </div>
-                    <div class="tab-pane" id="image">
-                        <table id="image_table" class="table table-striped table-bordered">
-
-                            <thead></thead>
-                            <tbody></tbody>
-
-
-                        </table>
-                    </div>
-                    <div class="tab-pane" id="permits_div">
-                        <table id="permits_table" class="table table-striped table-bordered">
-
-                            <thead></thead>
-                            <tbody></tbody>
-
-
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-
-                </div>
-            </div><!-- /.modal-content -->
-
-
-        </div><!-- /.modal-dialog -->
-    </div>
-
-
-    <div class="modal fade" id="csv_update_modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog  modal-lg" role="document" style="width:90%">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Update Column</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-lg-3 col-md-3 col-sm-3">
-                            <div class="ui attached message">
-                                <div class="header">
-                                    Update Column Data
-                                </div>
-                                <p>Choose a column to update from the dropdown, then click download to get the column
-                                    data
-                                    in spreadsheet form. Make your alterations in your spreadsheet program, and then
-                                    upload
-                                    the edited spreadsheet by clicking browse and navigating to the updated file. Then
-                                    click
-                                    submit.</p>
-                            </div>
-
-
-                            <form class="ui form attached fluid segment" id="csv_upload_form">
-                                <div class="field">
-                                    <label for="column_dropdown">Column Name</label>
-                                    <select class="form-control" id="column_dropdown" placeholder="">
-
-                                    </select>
-                                </div>
-                                <h4 class="ui horizontal header divider">
-                                    <i class="bar chart icon"></i>
-                                    Download -> Edit -> Upload -> Validate
-                                </h4>
-                                <div class="field">
-                                    <button class="ui button" id="ss_download_button">Download Column Data</button>
-                                </div>
-                                <div class="fields">
-                                    <div class="field">
-                                        <label for="csv_upload_button">File input</label>
-
-                                        <input type="file" enctype="multipart/formdata" id="csv_upload_button">
-                                    </div>
-                                    <div class="field" style="margin-top:30px">
-                                        <button id="csv_reload" class="ui icon button">
-                                            <i class="redo icon"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <button id="csv_validate" class="ui button disabled">Validate</button>
-                                <button id="csv_save" class="ui button disabled">Save</button>
-                                <span id="validate_loader" style="display: none"><img height="30px"
-                                                                                      src="{% static "copo/img/loading.gif" %}"/></span>
-                            </form>
-                        </div>
-                        <div class="col-lg-9 col-md-9 col-sm-9">
-                            <h1>Column Inspector</h1>
-                            <div id="column_inspector" style="overflow:scroll; max-height:80vh">
-
-                                <table id="column_inspect_table" class="ui celled table">
-                                    <thead></thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default close_button" data-dismiss="modal">Close</button>
-                </div>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
-
-
+    <!-- sample spreadsheet modal -->
+    {% include './component_sample_spreadsheet_modal.html' %}
+    <!-- end sample spreadsheet modal -->
+    
+    <!-- csv update modal -->
+    {% include './component_csv_update_modal.html' %}
+    <!-- end  csv update modal -->
+    
+    <!-- sample images modal -->
+    {% include 'copo/component_sample_images_modal.html' %}
+    <!-- end sample images modal -->
 {% endblock %}
 
 {% block help_section %}

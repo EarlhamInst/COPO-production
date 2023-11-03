@@ -1,0 +1,251 @@
+<style>
+    * {
+        transition: 0.3s;
+    }
+
+    /*Crop thumbnail images*/
+    #imageGallery img {
+        height: 75vw;
+        object-fit: cover;
+    }
+
+    /*Crop images in lightbox*/
+    .item img {
+        width: 500px;
+        height: 60vw;
+        object-fit: cover;
+    }
+
+    #imageGallery {
+        padding: 0 15px;
+    }
+
+    #imageGallery img {
+        display: block;
+        margin: 15px 0;
+        border-radius: 300px 30px 300px 300px;
+    }
+
+    #imageGallery img:hover {
+        border-radius: 30px 90px 30px 30px;
+    }
+
+    #imageModal .modal-title {
+        color: white;
+    }
+
+    #imageModal .modal-content {
+        background: none;
+        border: none;
+    }
+
+    #imageModal .modal-header {
+        border: none;
+    }
+
+    #imageModal .modal-header button {
+        background: none;
+        padding: 5px 10px;
+        opacity: 1;
+    }
+
+    #imageModal .modal-header button:hover {
+        top: 3px;
+    }
+
+    #imageModal .modal-header button span {
+        color: white;
+    }
+
+    #imageModal .modal-body {
+        padding: 0;
+        border: none;
+        position: relative;
+    }
+
+    #imageModal .modal-body::before,
+    #imageModal .modal-body::after {
+        content: '';
+        display: block;
+        position: relative;
+        background: black;
+        top: 175px;
+    }
+
+    #imageModal .modal-body::before {
+        left: 23px;
+        float: left
+    }
+
+    #imageModal .modal-body::after {
+        right: 23px;
+        float: right;
+        z-index: -1;
+    }
+
+    #imageModal .modal-footer {
+        border: none;
+        margin-top: 60px;
+    }
+
+    #imageModal .modal-footer .btn {
+        margin: auto;
+        border: solid 2px white;
+        background: none;
+        text-transform: uppercase;
+        font-size: 0.8em;
+        letter-spacing: 0.1em;
+        font-weight: bold;
+        padding: 0.2em 0.7em;
+    }
+
+    #imageModal .modal-footer .btn:hover {
+        background-color: white;
+        color: black;
+    }
+
+    .left.carousel-control,
+    .right.carousel-control {
+        border-radius: 50%;
+        height: 40px;
+        width: 40px;
+        background: black;
+        top: 175px;
+        z-index: 1;
+        /*Enables the transition of the images*/
+    }
+
+    .left.carousel-control {
+        left: 23px;
+    }
+
+    .right.carousel-control {
+        right: 23px;
+    }
+
+    .icon-next,
+    .icon-prev {
+        height: 30px;
+        width: 30px;
+    }
+
+    #imageCarousel .carousel-inner {
+        background: white;
+    }
+
+    .carousel-control .icon-prev,
+    .carousel-control .icon-next {
+        font-size: 60px;
+    }
+
+    .carousel-indicators {
+        bottom: -60px;
+    }
+
+    .carousel-indicators li {
+        height: 30px;
+        border-radius: 100px;
+        background: none;
+        border: solid 2px white;
+    }
+
+    .carousel-indicators li:hover {
+        background: white;
+    }
+
+    .carousel-indicators li.active {
+        background: white;
+    }
+
+    figcaption {
+        padding-top: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        /* Display the caption on two lines */
+        word-wrap: break-word;
+        width: 300px;
+        margin: auto;
+        line-height: 1.5em;
+    }
+
+    /* Media queries */
+    @media (min-width: 576px) {
+        .item img {
+            height: 350px;
+        }
+
+        #imageGallery img {
+            height: 35vw;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .carousel-indicators {
+            bottom: -30px;
+        }
+
+        .carousel-indicators li {
+            height: 10px;
+        }
+
+        #imageModal .modal-footer {
+            margin-top: 40px;
+        }
+
+        #imageModal .modal-header button {
+            top: 15px;
+        }
+
+        #imageGallery img {
+            height: 18vw;
+        }
+    }
+</style>
+
+<!-- Image modal (a carousel inside a modal) -->
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #337ab7;">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Sample Images</h4>
+            </div>
+            <div class="modal-body">
+                <!-- Carousel container -->
+                <div id="imageCarousel" style="margin:auto;" class="carousel slide">
+                    <!-- Indicators -->
+                    <ol class="carousel-indicators">
+                    </ol>
+                    <!-- Content -->
+                    <div class="carousel-inner" role="listbox">
+                    </div>
+                    <!-- Previous/Next controls -->
+                    <a class="left carousel-control" href="#imageCarousel" role="button" data-slide="prev">
+                        <span class="icon-prev" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="right carousel-control" href="#imageCarousel" role="button" data-slide="next">
+                        <span class="icon-next" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer" style="display:none">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End of Image modal -->
+
+<script>
+    $(document).ready(function () {
+      // Reset carousel on modal close 
+      $('#imageModal').on('show.bs.modal', function () {
+       $('#imageCarousel').carousel({}).carousel(0);
+      });
+    });
+</script>

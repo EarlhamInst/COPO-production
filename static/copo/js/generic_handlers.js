@@ -2800,7 +2800,11 @@ function get_profile_components() {
       color: 'olive',
       profile_component: 'dtol',
       tableID: 'sample_table',
-      recordActions: ['download_sample_manifest_single'],
+      recordActions: [
+        'download_sample_manifest_single',
+        'download_permits_multiple',
+        'view_images_multiple',
+      ],
       visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
     },
     {

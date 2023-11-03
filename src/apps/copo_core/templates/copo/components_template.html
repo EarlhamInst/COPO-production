@@ -418,15 +418,30 @@
             <span class="action-label" style="padding-left: 3px;">Submit</span>
         </div>
 
-        <div class="download_sample_manifest_single tiny ui basic dtables-dbuttons  teal button copo-dt copo-tooltip" 
+        <div class="download_sample_manifest_single tiny ui basic dtables-dbuttons blue button copo-dt copo-tooltip" 
             data-container="body"
             data-action="download-sample-manifest"
             data-error-message="Please select one of samples in the manifest to download"
             data-btntype="single"
             title="Download Sample Manifest"
             tabindex="0">
-            <i class=" fa fa-download"></i>
-            <span class="action-label"    style="padding-left: 3px;">Download</span>
+            <i class="fa fa-download"></i>
+            <span class="action-label" style="padding-left: 3px;">Download sample manifest</span>
+        </div>
+        <div class="view_images_multiple tiny ui basic dtables-dbuttons teal button copo-dt copo-tooltip" data-container="body"
+            data-action="view-images" data-toggle="modal"
+            data-error-message="Please select one or more sample records from the table shown to view images for"
+            data-btntype="multi" title="View Images" tabindex="0">
+            <i class="fa fa-eye"></i>
+            <span class="action-label" style="padding-left: 3px;">View images</span>
+        </div>
+        
+        <div class="download_permits_multiple tiny ui basic dtables-dbuttons orange button copo-dt copo-tooltip"
+            data-container="body" data-action="download-permits"
+            data-error-message="Please select one or more sample records from the table shown to download permits for"
+            data-btntype="multi" title="Download Permits" tabindex="0">
+            <i class="fa fa-download"></i>
+            <span class="action-label" style="padding-left: 3px;">Download permits</span>
         </div>
 
         <div class="btn-group btn-toggle toggle-view">

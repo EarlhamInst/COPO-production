@@ -1235,42 +1235,205 @@ $(document).ready(function () {
     dialog.open();
   } // end of function
 
-  //handles button events on a record or group of records
+  // Handles button events on a record or group of records
   function do_record_task(event) {
     var task = event.task.toLowerCase(); //action to be performed e.g., 'Edit', 'Delete'
     var tableID = event.tableID; //get target table
-    //retrieve target records and execute task
+
+    // Retrieve target records and execute task
     var table = $('#' + tableID).DataTable();
-    var records = []; //
-    var manifests = [];
+    var records = [];
+    let sample_ids = [];
+    let specimen_ids = [];
+
     $.map(table.rows('.selected').data(), function (item) {
       records.push(item);
+      sample_ids.push(item.record_id);
+      specimen_ids.push(item.SPECIMEN_ID);
     });
 
-    //download sample manifest
-    if (task == 'download-sample-manifest') {   
-      $('#download-sample-manifest-link').attr('href', "/manifests/download_manifest/" +  records[0].manifest_id );
-      $('#download-sample-manifest-link span').trigger("click")
-      return
-    }  
+    // Download sample manifest
+    if (task == 'download-sample-manifest') {
+      $('#download-sample-manifest-link').attr(
+        'href',
+        '/manifests/download_manifest/' + records[0].manifest_id
+      );
+      $('#download-sample-manifest-link span').trigger('click');
+      return;
+    }
 
-    //describe task
+    // Download permit files as a zip
+    if (task == 'download-permits') {
+      // Get URLs of the permit files
+      $.ajax({
+        url: '/manifests/download_permits/',
+        type: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
+        data: {
+          sample_ids: JSON.stringify(sample_ids),
+        },
+        success: function (urls) {
+          // Convert string array to array
+          urls = JSON.parse(urls);
+
+          if (!urls.length) {
+            //alert user
+            button_event_alert(
+              event.title,
+              'No permits exist for the selected sample record(s)'
+            );
+            return;
+          }
+
+          const profile_type = $('#profile_type').val();
+          const manifest_type = get_acronym(profile_type).toUpperCase();
+          const zip = new JSZip();
+          const zipFilename = `${manifest_type}_MANIFEST_PERMITS.zip`;
+
+          let count = 0;
+
+          $.each(urls, async function (index, url) {
+            const urlArr = url.split('/');
+            const filename = urlArr[urlArr.length - 1];
+
+            try {
+              const file = await JSZipUtils.getBinaryContent(url);
+              zip.file(filename, file, { binary: true });
+              count++;
+
+              if (count === urls.length) {
+                zip.generateAsync({ type: 'blob' }).then(function (content) {
+                  // Trigger the download of the zip with FileSaver.js
+                  saveAs(content, zipFilename);
+                });
+              }
+            } catch (err) {
+              console.log(err);
+            }
+          });
+        },
+        error: function (error) {
+          console.log(`Error: ${error}`);
+        },
+      });
+      return;
+    }
+
+    // View images
+    if (task == 'view-images') {
+      // Get URLs of the permit files
+      $.ajax({
+        url: '/manifests/view_images/',
+        type: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
+        data: {
+          specimen_ids: JSON.stringify(specimen_ids),
+        },
+        success: function (urls) {
+          // Convert string array to array
+          urls = JSON.parse(urls);
+
+          if (!urls.length) {
+            // Alert user
+            button_event_alert(
+              event.title,
+              'No images exist for the selected sample record(s)'
+            );
+            return;
+          }
+
+          let carousel_indicator_ol_tag = $('#imageModal .modal-body')
+            .find('#imageCarousel')
+            .find('.carousel-indicators');
+          let carousel_inner_dv = $('#imageModal .modal-body')
+            .find('#imageCarousel')
+            .find('.carousel-inner');
+
+          $.each(urls, async function (index, url) {
+            let urlArr = url.split('/');
+            let filename = urlArr[urlArr.length - 1];
+            let specimen_id = filename.substring(0, filename.lastIndexOf('-'));
+
+            if (
+              $('.carousel-inner').children().length > urls.length &&
+              $('.carousel-indicators').children().length > urls.length
+            ) {
+              $('.carousel-inner').children().empty();
+              $('.carousel-indicators').children().empty();
+            }
+
+            try {
+              let image_caption = `Image: ${filename}; SPECIMEN_ID: ${specimen_id}`;
+
+              let carousel_indicator = $('<li/>', {
+                'data-target': '#imageCarousel',
+                'data-slide-to': index.toString(),
+              });
+
+              let carousel_inner_item = $('<div/>', {
+                class: 'item',
+              });
+
+              if (index === 0) {
+                carousel_indicator.addClass('active');
+                carousel_inner_item.addClass('active');
+              }
+
+              let figcaption = $('<figcaption/>');
+              figcaption.text(image_caption);
+
+              let figure = $('<figure/>').append(
+                $('<img/>', {
+                  class: 'd-block w-100',
+                  src: url,
+                  alt: image_caption,
+                })
+              );
+
+              // Ensure that the total number of images in the carousel
+              // items is equal to the number of images' urls
+              if (
+                $('.carousel-inner').children().length < urls.length &&
+                $('.carousel-indicators').children().length < urls.length
+              ) {
+                figcaption.appendTo(figure);
+                figure.appendTo(carousel_inner_item);
+
+                // Append the carousel indicators to the carousel 'ol' tag
+                carousel_indicator_ol_tag.append(carousel_indicator);
+
+                // Append the carousel inner to the carousel inner 'div' tag
+                carousel_inner_dv.append(carousel_inner_item);
+              }
+
+              // Show the image modal
+              $('#imageModal').modal('show');
+            } catch (err) {
+              console.log(err);
+            }
+          });
+        },
+        error: function (error) {
+          console.log(`Error: ${error}`);
+        },
+      });
+      return;
+    }
+
+    // Describe task
     if (task == 'describe') {
       initiate_description({});
       return false;
     }
 
-    //show sample source table
-    //sample-source
+    // Show sample source table
+    // sample-source
     if (task == 'sample-source') {
       show_sample_source();
       return false;
     }
 
-
-   
-
-    //edit task
+    // Edit task
     if (task == 'edit') {
       $.ajax({
         url: copoFormsURL,
@@ -1492,6 +1655,30 @@ $(document).ready(function () {
     return $('<div>').append(attributesPanel).append(loaderObject);
   }
 
+  function get_acronym(txt) {
+    // Retrieve the parentheses and the enclosed string from the
+    // selected profile type
+    const regex = /\(([^()]*)\)/g;
+    let profile_type_acronym;
+
+    if (!regex.test(txt)) {
+      profile_type_acronym = txt; // Get selected value if no parentheses exist
+    } else {
+      let profile_type_abbreviation_without_parentheses = txt.substring(
+        txt.indexOf('(') + 1,
+        txt.indexOf(')')
+      );
+
+      // Get associated type acronym that is enclosed in parentheses
+      // If empty an empty string is returned, set the acronym as the full string
+      profile_type_acronym =
+        profile_type_abbreviation_without_parentheses === ''
+          ? txt.replace(/\(\s*\)/g, '')
+          : profile_type_abbreviation_without_parentheses.trim();
+    }
+
+    return profile_type_acronym;
+  }
   /*
     function generate_dtol_stage(stage) {
         $('#custom-renderer_' + stage.ref).find(".stage-content").html('');

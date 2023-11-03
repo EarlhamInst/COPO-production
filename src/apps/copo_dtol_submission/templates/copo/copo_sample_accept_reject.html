@@ -7,7 +7,7 @@
 {% block title %}Accept/Reject Samples{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="//blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
+    <link rel="stylesheet" href="https://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
     <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
     <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload.css' %}">
     <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui.css' %}">
@@ -211,7 +211,11 @@
                 <button class="select-none tiny ui basic button" tabindex="0" aria-controls="" type="button"><span>Select None</span></button>
                 <button class="delete-selected tiny ui red basic button" tabindex="0" aria-controls=""
                         type="button"><span>Delete Selected</span></button>
-
+                <button class="download-permits tiny ui orange basic button" tabindex="0" aria-controls="" type="button"><span>Download
+                        Permits</span>
+                </button>
+                <button class="view-images tiny ui teal basic button" tabindex="0" aria-controls="" type="button"><span>View
+                        Images</span>
             </span>
 
 
@@ -256,8 +260,9 @@
         </div>
     </div>
 
-
-
+<!-- sample images modal -->
+{% include 'copo/component_sample_images_modal.html' %}
+<!-- end sample images modal -->
 
 {% endblock %}
 
@@ -271,10 +276,12 @@
     <script src="{% static 'copo/js/copo_form_handlers.js' %}"></script>
     <script src="{% static 'copo/js/dtol_functions.js' %}"></script>
     <script src="{% static 'copo/js/copo_parse_spreadsheet.js' %}"></script>
+    <script src="{% static 'copo/js/filesaver.js' %}"></script>
+    <script src="{% static 'copo/js/jszip-utils.min.js' %}"></script>
+    <script src="{% static 'copo/js/jszip.min.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
     <script src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
     <script src="https://cdn.datatables.net/fixedheader/3.4.0/js/dataTables.fixedHeader.min.js"></script>
     <script src="{% static 'copo_dtol_submission/js/copo_sample_accept_reject.js' %}"></script>
     <script>socket = undefined</script>
-
 {% endblock %}

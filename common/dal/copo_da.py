@@ -9,7 +9,7 @@ import pandas as pd
 import pymongo
 from pymongo import ReturnDocument
 import pymongo.errors as pymongo_errors
-from bson import ObjectId, json_util
+from bson import ObjectId, json_util, regex
 from bson.errors import InvalidId
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -18,7 +18,7 @@ from common.dal.mongo_util import cursor_to_list, cursor_to_list_str, cursor_to_
 from common.dal.copo_base_da import DataSchemas
 from common.lookup.copo_enums import Loglvl, Logtype
 from common.lookup.lookup import DB_TEMPLATES
-from common.schema_versions.lookup.dtol_lookups import STANDALONE_ACCESSION_TYPES, TOL_PROFILE_TYPES, SANGER_TOL_PROFILE_TYPES
+from common.schema_versions.lookup.dtol_lookups import STANDALONE_ACCESSION_TYPES, TOL_PROFILE_TYPES, SANGER_TOL_PROFILE_TYPES, PERMIT_FILENAME_COLUMN_NAMES
 from common.schemas.utils.cg_core.cg_schema_generator import CgCoreSchemas
 from pymongo.collection import ReturnDocument
 from common.utils import helpers
@@ -919,7 +919,27 @@ class Sample(DAComponent):
             out.append(sam)
 
         return out
+    
+    def get_permit_filenames_by_sample_id(self, sample_ids):
+        sample_ids = [ObjectId(x) for x in sample_ids]
+        projection = {col:1 for col in PERMIT_FILENAME_COLUMN_NAMES}
+        projection["_id"] = 0
 
+        filter = {"_id": {"$in": sample_ids}}
+        filter.update({col: {"$exists": True, "$ne": "NOT_APPLICABLE"} for col in PERMIT_FILENAME_COLUMN_NAMES})
+
+        cursor = self.get_collection_handle().find(filter,  projection)
+        
+        results = list(cursor)
+
+        # Remove duplicate permit filenames from list of dictionaries
+        permit_filenames_unique = [element for index, element in enumerate(results) if element not in results[:index]]
+
+        # Get values from list of unique dictionaries
+        permit_filenames = [x for element in permit_filenames_unique for x in element.values()]
+
+        return permit_filenames
+    
     def count_samples_by_specimen_id_for_barcoding(self, specimen_id):
         # specimens must not have already been submitted to ENA so should have status of pending
         return self.get_collection_handle().count_documents(
@@ -2699,7 +2719,27 @@ class DataFile(DAComponent):
             )
 
         return docs
+    
+    def get_image_filenames_by_specimen_id(self, specimen_ids):
+        # Match the SPECIMEN_ID to the beginning of the image file name using regex
+        specimen_ids = [regex.Regex(f'^{x}') for x in specimen_ids]
+        projection = {'_id':0, 'file_location':1}
+        
+        filter = dict()
+        filter['name'] = {'$in': specimen_ids}
+        filter['bucket_name'] = {'$exists': False}
+        filter['ecs_location'] = {'$exists': False}
+        filter['file_location'] = {'$exists': True, '$ne': ''}
+      
+        cursor = self.get_collection_handle().find(filter,  projection)
+        
+        results = list(cursor)
 
+        # Get values from the list of dictionaries
+        image_filenames = [x for element in results for x in element.values()]
+
+        return image_filenames
+    
     def get_record_property(self, datafile_id=str(), elem=str()):
         """
         eases the access to deeply nested properties

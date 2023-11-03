@@ -145,6 +145,197 @@ $(document).ready(function () {
     });
   });
 
+  $(document).on('click', '.download-permits', function (e) {
+    let checked = $('.form-check-input:checked').closest('tr');
+    let sample_ids = [];
+
+    $(checked).each(function (it) {
+      sample_ids.push($(checked[it]).attr('id'));
+    });
+
+    if (sample_ids.length == 0) {
+      alert('Please select samples to download permits for');
+      return;
+    }
+
+    let csrftoken = $.cookie('csrftoken');
+
+    // Get URLs of the permit files
+    $.ajax({
+      url: '/manifests/download_permits/',
+      type: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      data: {
+        sample_ids: JSON.stringify(sample_ids),
+      },
+      success: function (urls) {
+        // Convert string array to array
+        urls = JSON.parse(urls);
+
+        if (!urls.length) {
+          //alert user
+          button_event_alert(
+            'Download permits',
+            'No permits exist for the selected sample record(s)'
+          );
+          return;
+        }
+
+        const zip = new JSZip();
+        const zipFilename = 'SAMPLE_MANIFEST_PERMITS.zip';
+
+        let count = 0;
+
+        $.each(urls, async function (index, url) {
+          const urlArr = url.split('/');
+          const filename = urlArr[urlArr.length - 1];
+
+          try {
+            const file = await JSZipUtils.getBinaryContent(url);
+            zip.file(filename, file, { binary: true });
+            count++;
+
+            if (count === urls.length) {
+              zip.generateAsync({ type: 'blob' }).then(function (content) {
+                // Trigger the download of the zip with FileSaver.js
+                saveAs(content, zipFilename);
+              });
+            }
+          } catch (err) {
+            console.log(err);
+          }
+        });
+      },
+      error: function (error) {
+        console.log(`Error: ${error}`);
+      },
+    });
+    return;
+  });
+
+  $(document).on('click', '.view-images', function (e) {
+    let checked = $('.form-check-input:checked').closest('tr');
+    let specimen_ids = [];
+    let selected_row_index;
+    let specimen_id;
+
+    $(checked).each(function (count, element) {
+      selected_row_index = $(element).index();
+
+      specimen_id = $('#profile_samples')
+        .DataTable()
+        .rows(selected_row_index)
+        .data()[0]['SPECIMEN_ID'];
+
+      specimen_ids.push(specimen_id);
+    });
+
+    if (specimen_ids.length == 0) {
+      alert('Please select samples to view images for');
+      return;
+    }
+
+    let csrftoken = $.cookie('csrftoken');
+
+    // Get URLs of the image files
+    $.ajax({
+      url: '/manifests/view_images/',
+      type: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      data: {
+        specimen_ids: JSON.stringify(specimen_ids),
+      },
+      success: function (urls) {
+        // Convert string array to array
+        urls = JSON.parse(urls);
+
+        if (!urls.length) {
+          // Alert user
+          button_event_alert(
+            'View images',
+            'No images exist for the selected sample record(s)'
+          );
+          return;
+        }
+
+        let carousel_indicator_ol_tag = $('#imageModal .modal-body')
+          .find('#imageCarousel')
+          .find('.carousel-indicators');
+        let carousel_inner_dv = $('#imageModal .modal-body')
+          .find('#imageCarousel')
+          .find('.carousel-inner');
+
+        $.each(urls, async function (index, url) {
+          let urlArr = url.split('/');
+          let filename = urlArr[urlArr.length - 1];
+          let specimen_id = filename.substring(0, filename.lastIndexOf('-'));
+
+          if (
+            $('.carousel-inner').children().length > urls.length &&
+            $('.carousel-indicators').children().length > urls.length
+          ) {
+            $('.carousel-inner').children().empty();
+            $('.carousel-indicators').children().empty();
+          }
+
+          try {
+            let image_caption = `Image: ${filename}; SPECIMEN_ID: ${specimen_id}`;
+
+            let carousel_indicator = $('<li/>', {
+              'data-target': '#imageCarousel',
+              'data-slide-to': index.toString(),
+            });
+
+            let carousel_inner_item = $('<div/>', {
+              class: 'item',
+            });
+
+            if (index === 0) {
+              carousel_indicator.addClass('active');
+              carousel_inner_item.addClass('active');
+            }
+
+            let figcaption = $('<figcaption/>');
+            figcaption.text(image_caption);
+
+            let figure = $('<figure/>').append(
+              $('<img/>', {
+                class: 'd-block w-100',
+                src: url,
+                alt: image_caption,
+              })
+            );
+
+            // Ensure that the total number of images in the carousel
+            // items is equal to the number of images' urls
+            if (
+              $('.carousel-inner').children().length < urls.length &&
+              $('.carousel-indicators').children().length < urls.length
+            ) {
+              figcaption.appendTo(figure);
+              figure.appendTo(carousel_inner_item);
+
+              // Append the carousel indicators to the carousel 'ol' tag
+              carousel_indicator_ol_tag.append(carousel_indicator);
+
+              // Append the carousel inner to the carousel inner 'div' tag
+              carousel_inner_dv.append(carousel_inner_item);
+            }
+
+            // Show the image modal
+            $('#imageModal').modal('show');
+          } catch (err) {
+            console.log(err);
+          }
+        });
+      },
+      error: function (error) {
+        console.log(`Error: ${error}`);
+      },
+    });
+    return;
+  });
+
   $(document).on('click', '.form-check-input', function (el) {
     if ($('.form-check-input:checked').length) {
       $('#accept_reject_button').find('button').prop('disabled', false);

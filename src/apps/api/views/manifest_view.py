@@ -7,14 +7,15 @@ import json
 from django.conf import settings
 import os
 from openpyxl.utils import cell
-from bson import json_util
+from pathlib import Path
+from bson import ObjectId, json_util
 import pandas as pd
 import numpy   as np
 from io import BytesIO
 import re
 import common.schema_versions.lookup.dtol_lookups as lkup
 from django.contrib.auth.decorators import login_required
-from common.dal.copo_da import Profile, Sample
+from common.dal.copo_da import Profile, Sample, DataFile
 
 def get_latest_manifest_versions(request):
     return HttpResponse(json.dumps({'current_asg_manifest_version': settings.MANIFEST_VERSION.get("ASG", ""),
@@ -455,7 +456,53 @@ def download_manifest(request, manifest_id):
 
     return response
 
-def generate_manifest_template(manifest_type, manifest_template_path, initail_data):
+@login_required
+def download_permits(request):
+    # Get array from Ajax call
+    sampleIDs = json.loads(request.POST.get('sample_ids', []))
+
+    permit_filenames = Sample().get_permit_filenames_by_sample_id(sampleIDs)
+
+    if permit_filenames is None:
+        return HttpResponse(json.dumps(list())) # No permits found
+    
+    # Get profile ID using one of the sample IDs i.e. the first sample
+    sample = Sample().get_by_field('_id', [ObjectId(sampleIDs[0])])
+    profile_id = sample[0].get('profile_id','')
+    
+    sample_permits_directory = os.path.join(
+        settings.MEDIA_ROOT, 'sample_permits', profile_id)
+
+    if not os.path.exists(sample_permits_directory):
+        return HttpResponse(json.dumps(list())) # No permits found
+    
+    permit_files_urls = list()
+
+    for file_path, dirs, files in os.walk(sample_permits_directory):
+        for filename in files:
+            if filename.endswith('.pdf'):
+                if any(filename == x for x in permit_filenames) \
+                    or any(filename == x.replace(f'_{x.split("_")[-1]}','.pdf') for x in permit_filenames):
+                    url = f"{file_path.replace('/copo',str())}/{filename}"
+                    permit_files_urls.append(url)
+
+
+    return HttpResponse(json.dumps(permit_files_urls))
+
+
+@login_required
+def view_images(request):
+    # Get array from Ajax call
+    specimen_ids = json.loads(request.POST.get('specimen_ids', []))
+
+    image_filenames = DataFile().get_image_filenames_by_specimen_id(specimen_ids)
+
+    if image_filenames is None:
+        return HttpResponse(json.dumps(list())) # No images found
+    
+    return HttpResponse(json.dumps(image_filenames))
+
+def generate_manifest_template(manifest_type, manifest_template_path, initial_data):
 
         # Get all worksheets from the blank manifest
     blank_manifest_dataframe = pd.read_excel(manifest_template_path, sheet_name=None, index_col=None)
@@ -485,9 +532,9 @@ def generate_manifest_template(manifest_type, manifest_template_path, initail_da
 
     # Concatenate the common field and its common values with the respective column names
     # from the blank manifest template
-    initail_data.drop(columns=initail_data.columns.difference(metadataEntry_worksheet_dataframe.columns), axis=1, inplace=True)
+    initial_data.drop(columns=initial_data.columns.difference(metadataEntry_worksheet_dataframe.columns), axis=1, inplace=True)
     metadataEntry_worksheet_concatenation = pd.concat(
-        [metadataEntry_worksheet_dataframe, initail_data],
+        [metadataEntry_worksheet_dataframe, initial_data],
         ignore_index=True)
 
     bytesIO = BytesIO()

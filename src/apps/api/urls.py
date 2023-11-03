@@ -129,6 +129,10 @@ manifest_patterns = [
          name="prefill_manifest_template"),
     re_path(r'^download_manifest/(?P<manifest_id>[A-Z0-9a-f-]+)', manifest_view.download_manifest,
             name="download_manifest"),
+    path('download_permits/', manifest_view.download_permits,
+         name="download_permits"),
+    path('view_images/', manifest_view.view_images,
+            name="view_images"),
     path('validate_common_value/', manifest_view.validate_common_value,
          name="validate_common_value"),
     path('index', TemplateView.as_view(

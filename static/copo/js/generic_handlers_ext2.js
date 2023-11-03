@@ -127,7 +127,11 @@ function do_table_buttons_events() {
       var btntype = elem.attr('data-btntype'); //type of button: single, multi, all
       var title = elem.find('.action-label').html();
       var message = elem.attr('data-error-message');
-
+      
+      if (!title) {
+          title = 'Record action';
+      }
+      
       if (!message) {
         message = 'No records selected for ' + title + ' action';
       }
@@ -161,7 +165,7 @@ function do_table_buttons_events() {
         $('body').trigger(event);
       } else {
         //alert user
-        button_event_alert(message);
+        button_event_alert(title, message);
       }
     });
 }
@@ -182,7 +186,11 @@ function do_table_buttons_events_server_side(component) {
       var btntype = elem.attr('data-btntype'); //type of button: single, multi, all
       var title = elem.find('.action-label').html();
       var message = elem.attr('data-error-message');
-
+      
+      if (!title) {
+          title = 'Record action';
+      }
+      
       if (!message) {
         message = 'No records selected for ' + title + ' action';
       }
@@ -211,14 +219,14 @@ function do_table_buttons_events_server_side(component) {
         $('body').trigger(event);
       } else {
         //alert user
-        button_event_alert(message);
+        button_event_alert(title, message);
       }
     });
 }
 
-function button_event_alert(message) {
+function button_event_alert(title, message) {
   BootstrapDialog.show({
-    title: 'Record action',
+    title: title,
     message: message,
     cssClass: 'copo-modal3',
     closable: false,
