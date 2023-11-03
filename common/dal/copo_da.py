@@ -924,18 +924,22 @@ class Sample(DAComponent):
         sample_ids = [ObjectId(x) for x in sample_ids]
         projection = {col:1 for col in PERMIT_FILENAME_COLUMN_NAMES}
         projection["_id"] = 0
-
-        filter = {"_id": {"$in": sample_ids}}
-        filter.update({col: {"$exists": True, "$ne": "NOT_APPLICABLE"} for col in PERMIT_FILENAME_COLUMN_NAMES})
+        
+        # Check if any of the permit file name columns exist
+        filter = {col: {'$exists': True} for col in PERMIT_FILENAME_COLUMN_NAMES}
+        filter["_id"] = {"$in": sample_ids}
 
         cursor = self.get_collection_handle().find(filter,  projection)
         
         results = list(cursor)
 
-        # Remove duplicate permit filenames from list of dictionaries
-        permit_filenames_unique = [element for index, element in enumerate(results) if element not in results[:index]]
+        # Remove value from the list of dictionaries if it is equal to "NOT_APPLICABLE"
+        permit_filenames = [{key: value for key, value in element.items() if value.upper().replace(' ', '_').strip() != "NOT_APPLICABLE"} for element in results]
 
-        # Get values from list of unique dictionaries
+        # Remove duplicate permit file names from a list of dictionaries
+        permit_filenames_unique = [element for index, element in enumerate(permit_filenames) if element not in permit_filenames[:index]]
+
+        # Get values from a list of unique dictionaries
         permit_filenames = [x for element in permit_filenames_unique for x in element.values()]
 
         return permit_filenames
