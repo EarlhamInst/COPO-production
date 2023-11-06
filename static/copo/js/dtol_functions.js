@@ -594,7 +594,7 @@ function row_select(ev) {
         $('#profile_samples_wrapper').show();
         sample_table.columns.adjust().draw();
 
-        // Enable table buttons which was disabled on web page load
+        // Enable table buttons when profile has samples in it
         $('.view-images').prop('disabled', false);
         $('.download-permits').prop('disabled', false);
         $('.delete-selected').prop('disabled', false);
