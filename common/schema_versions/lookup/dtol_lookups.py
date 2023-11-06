@@ -478,7 +478,7 @@ DTOL_ENUMS = {
             'UZBEKISTAN',
             'VANUATU',
             'VENEZUELA',
-            'VIET NAM',
+            'VIETNAM',
             'VIRGIN ISLANDS',
             'WAKE ISLAND',
             'WALLIS AND FUTUNA',
@@ -700,6 +700,7 @@ DTOL_ENUMS = {
         'ERGA-associated',
         'ERGA-BGE',
         'ERGA-Pilot',
+        'ERGA-Satellites'
         ],
     'PURPOSE_OF_SPECIMEN': {
         'ASG':

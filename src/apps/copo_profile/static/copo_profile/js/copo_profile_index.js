@@ -1167,7 +1167,12 @@ function filter_associatedProfileTypeList_based_on_selectedProfileType(
           }
           // Exclude erga associated types from the associated profile type dropdown menu options
           // if "ERGA" is not selected as the profile type
-          let erga_associated_types = ['BGE', 'POP_GENOMICS', 'ERGA_PILOT'];
+          let erga_associated_types = [
+            'BGE',
+            'POP_GENOMICS',
+            'ERGA_PILOT',
+            'ERGA_SATELLITES',
+          ];
           if (!selected_type.includes('ERGA')) {
             if (
               erga_associated_types.some((erga_a_type) =>
