@@ -13,7 +13,7 @@ BIOIMAGE_SERVER = get_env("BIOIMAGE_SERVER")  # "bsaspera_w@hx-fasp-1.ebi.ac.uk"
 BIOIMAGE_UPLOAD_PATH = get_env("BIOIMAGE_PATH")  # "/.beta/91/31c15a-f0a0-4847-ab09-4135cefc03bd-a31912"
 BIOIMAGE_LOCAL_ARCHIVE_PARENT_PATH = f"{get_env('MEDIA_PATH')}sample_images/archive"
 BIOIMAGE_LOCAL_ARCHIVE_PATH = {"asg_specimen" : f"{BIOIMAGE_LOCAL_ARCHIVE_PARENT_PATH}/ASG",
-                             "dtol_specimen" : f"{BIOIMAGE_LOCAL_ARCHIVE_PARENT_PATH}/DTOL",
+                             "dtol_specimen" : f"{BIOIMAGE_LOCAL_ARCHIVE_PARENT_PATH}/DToL",
                              "erga_specimen" : f"{BIOIMAGE_LOCAL_ARCHIVE_PARENT_PATH}/ERGA",
                              "copo_specimen" : f"{BIOIMAGE_LOCAL_ARCHIVE_PARENT_PATH}/COPO"}
 
@@ -22,7 +22,7 @@ BIOIMAGE_ARCHIVE = f"{BIOIMAGE_PATH}/archive"
 BIOIMAGE_THUMBNAIL = f"{BIOIMAGE_PATH}/thumbnail"
 
 BIOIMAGE_SENT = {"asg_specimen" : f"{BIOIMAGE_PATH}/ASG",
-                 "dtol_specimen" : f"{BIOIMAGE_PATH}/DTOL",
+                 "dtol_specimen" : f"{BIOIMAGE_PATH}/DToL",
                  "erga_specimen" : f"{BIOIMAGE_PATH}/ERGA",
                  "copo_specimen" : f"{BIOIMAGE_PATH}/COPO"}
 
@@ -32,7 +32,7 @@ BIOIMAGE_ASPERA_CMD = f"{ASPERA_PATH}/bin/ascp -P33001 -l700M --move-after-trans
 
 def housekeeping_bioimage_archive():
     housekeep_timestamp = datetime.timestamp(datetime.now() + timedelta(days=-30))
-    for type in 'ASG', 'DTOL', 'ERGA', 'COPO':
+    for type in 'ASG', 'DToL', 'ERGA', 'COPO':
         try:
             with os.scandir(BIOIMAGE_ARCHIVE + "/" + type) as ls:
                 for file in ls:
