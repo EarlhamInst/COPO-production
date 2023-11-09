@@ -141,3 +141,4 @@ b2drop/permits/*
 .history
 sass.*
 webin-cli.jar
+**/.DS_Store
