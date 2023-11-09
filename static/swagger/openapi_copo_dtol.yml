@@ -82,7 +82,7 @@ paths:
     get:
       tags:
         - Audit
-      summary: Get update audit for sample records
+      summary: Get update audit for sample records by manifest ID
       description: >
         Get a list of sample update records in COPO. </br></br>
         If no parameters are provided, COPO will return a list of all sample updates.
@@ -111,7 +111,7 @@ paths:
     get:
       tags:
         - Audit
-      summary: Get update audit for sample records
+      summary: Get update audit for sample records by copo_id
       description: >
         Get a list of sample update records in COPO. </br></br>
         If no parameters are provided, COPO will return a list of all sample updates.

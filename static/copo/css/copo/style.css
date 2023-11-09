@@ -986,6 +986,10 @@ th {
     padding: 5px 0px 0px 0px;
 }
 
+#copo-global-nav{
+    background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
 #copo-global-nav.navbar-default .navbar-brand {
     color: rgba(119, 119, 119, 1);
 }
@@ -997,7 +1001,7 @@ th {
 }
 
 #copo-global-nav.navbar-default .navbar-nav > li > a {
-    color: rgba(245, 245, 240, 0.99);
+    color: black;
     background: transparent;
     height: 50px !important;
 }

@@ -75,7 +75,18 @@ $(document).ready(function () {
   // functionality
   $(document).data('accepted_warning', false);
   $(document).data('isDtolSamplePage', true);
+
+  // Disable table buttons
+  // This ensures that the buttons are not enabled when a
+  // profile that is clicked by default (on the left-hand
+  // side of the web page) has no samples in it
   $('#accept_reject_button').find('button').prop('disabled', true);
+  $('.view-images').prop('disabled', true);
+  $('.download-permits').prop('disabled', true);
+  $('.delete-selected').prop('disabled', true);
+  $('.select-none').prop('disabled', true);
+  $('.select-all').prop('disabled', true);
+
   // add field names here which you don't want to appear in the supervisors table
   excluded_fields = ['profile_id', 'biosample_id', '_id'];
   searchable_fields = [''];
@@ -529,7 +540,7 @@ $(document).ready(function () {
       download_permits_btn.prop('disabled', false);
       view_images_btn.prop('disabled', false);
     }
-    
+
     // Reset carousel on tab change
     $('#imageCarousel').carousel({}).carousel(0);
   });
@@ -568,6 +579,13 @@ function row_select(ev) {
         });
         $('#sample_panel').find('.labelling').empty().append(header);
         $('#profile_samples_wrapper').hide();
+
+        // Disable table buttons if profile has no samples in it
+        $('.view-images').prop('disabled', true);
+        $('.download-permits').prop('disabled', true);
+        $('.delete-selected').prop('disabled', true);
+        $('.select-none').prop('disabled', true);
+        $('.select-all').prop('disabled', true);
       } else {
         var header = $('<h4/>', {
           html: 'Samples',
@@ -575,6 +593,13 @@ function row_select(ev) {
         $('#sample_panel').find('.labelling').empty().append(header);
         $('#profile_samples_wrapper').show();
         sample_table.columns.adjust().draw();
+
+        // Enable table buttons when profile has samples in it
+        $('.view-images').prop('disabled', false);
+        $('.download-permits').prop('disabled', false);
+        $('.delete-selected').prop('disabled', false);
+        $('.select-none').prop('disabled', false);
+        $('.select-all').prop('disabled', false);
       }
     });
 

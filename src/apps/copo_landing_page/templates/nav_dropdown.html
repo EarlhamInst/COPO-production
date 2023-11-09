@@ -1,4 +1,5 @@
 {% load web_tags %}
+{% load static %}
 <nav class="navbar navbar-inverse navbar-fixed-top navbar-fixed-left" style="height: 10px !important; min-height: 59px;"
      role="navigation">
     <div class="container-fluid" style="display:block">
@@ -6,7 +7,7 @@
             <a class="navbar-brand"
                href="{% if user.is_authenticated %} {% url 'copo_profile_index:index' %} {% else %}{% url 'copo_profile_index:index' %}{% endif %}">
                 <img style="height: 45px; margin-left: 12px; margin-top: -8px; padding: 2px;"
-                     src="/static/copo/img/COPO_icon_white.png"
+                     src="{% static "assets/img/COPO-logo-full-CMYK.png" %}"
                      alt="COPO logo">
             </a>
         </div>
