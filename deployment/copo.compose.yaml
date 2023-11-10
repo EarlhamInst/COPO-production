@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   web:
-    image: copo/copo-new-web:v2.0.0.2
+    image: copo/copo-new-web:v2.0.0.13
     entrypoint:
       - bash
       - -c
@@ -100,7 +100,7 @@ services:
       retries: 3
       start_period: 50s
   celery_job:
-    image: copo/copo-new-web:v2.0.0.2
+    image: copo/copo-new-web:v2.0.0.13
     entrypoint:
       - bash
       - -c
@@ -191,7 +191,7 @@ services:
       - copo_bioimage_path
       - ecs_secret_key      
   nginx:
-    image: copo/copo-nginx:1.23.3
+    image: copo/copo-nginx:1.25.3
     networks:
       - copo-frontend-network
     volumes:
@@ -265,7 +265,7 @@ services:
           cpus: "0.3"
           memory: 512mb
   sample_audit:
-    image: copo/copo-sample-audit:v0.0.2  
+    image: copo/copo-sample-audit:v0.0.6  
     networks:
       - copo-backend-network
     secrets:
