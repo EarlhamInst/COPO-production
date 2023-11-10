@@ -37,7 +37,7 @@
     <link rel="stylesheet" media="print" onload="this.media='all'"
           href="{% static 'copo/select2-405/css/select2.min.css' %}">
 
-    <link rel="shortcut icon" href="{% static 'copo/img/favicon.png' %}"/>
+    <link rel="shortcut icon" href="{% static 'copo/img/favicon_black.png' %}"/>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" media="print" onload="this.media='all'"
@@ -80,7 +80,7 @@
           href="https://cdn.datatables.net/v/bs/jszip-2.5.0/dt-1.13.1/b-2.3.3/b-html5-2.3.3/kt-2.8.0/rg-1.3.0/sl-1.5.0/datatables.min.css"/>
 
     <!-- Google Fonts -->
-    <link href={% static 'copo/css/copo/fonts.css' %} rel='stylesheet' type='text/css'>
+    <link href="{% static 'copo/css/copo/fonts.css' %}" rel='stylesheet' type='text/css'>
 
 
     <!--[if lt IE 9]>
@@ -163,7 +163,7 @@
     <script src="{% static 'copo/js/datepicker/jquery.datepick.min.js' %}"></script>
 
     <!-- favicon -->
-    <link rel="icon" type="image/png" href="{% static 'copo/img/COPO_icon.png' %}"/>
+    <link rel="icon" type="image/png" href="{% static 'copo/img/favicon_black.png' %}"/>
 
     <!-- PAGE LEVEL STYLES -->
     {% block stylesheet_block %}{% endblock %}
@@ -409,13 +409,12 @@
 </div>
 
 
-<nav id="copo-global-nav" class="navbar navbar-default navbar-fixed-top"
-     style="background: rgba(38, 38, 38, 0.95); height: 10px !important;  min-height: 59px;">
+<nav id="copo-global-nav" class="navbar navbar-default navbar-fixed-top">
     <div class="container-fluid" style="display:block">
         <div class="navbar-header">
             <a class="navbar-brand" href="{% url 'copo_profile_index:index' %}">
                 <img class="icon-margin-top" style="height: 45px; margin-left: 0; margin-top: -8px;"
-                     src="{% static "assets/img/COPO-logo-full-CMYK.png" %}"/>
+                     src="{% static 'assets/img/COPO-logo-full-CMYK-black.png' %}"/>
             </a>
             <button type='button' class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                 <span class="icon-bar"></span>

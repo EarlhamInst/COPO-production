@@ -22,9 +22,10 @@
     height: 100%
 }
 
+/*
 .table {
-    /*font-size: 13px;*/
-}
+    font-size: 13px;
+}*/
 
 .button-rw {
     background: rgba(242, 242, 242, 0.5);
@@ -96,15 +97,16 @@
     margin-bottom: 5px;
 }
 
+/*
 div[class^="col-"],
 div[class*=" col-"] {
-/ / border: 1 px solid black;
+  border: 1 px solid black;
 }
 
 .row {
-/ / border: 1 px solid black;
+ border: 1 px solid black;
 }
-
+*/
 .control-row {
     margin-bottom: 5px;
 }
@@ -459,9 +461,11 @@ div.dataTables_processing.ui.segment {
     font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif
 }
 
+/*
 .bolder {
-/ / font-weight: bold;
+  font-weight: bold;
 }
+*/
 
 /*custom styling of bootstrap dialog*/
 .copo-modal2 > .modal-dialog {
@@ -921,12 +925,14 @@ th {
     margin-top: 30px
 }
 
+/*
 .login-button {
-    /*padding-left: 20px;
+    padding-left: 20px;
     padding-top: 20px;
     padding-bottom: 20px;
-    margin-bottom: 30px;*/
+    margin-bottom: 30px;
 }
+*/
 
 .login-underline {
     margin-bottom: 50px
@@ -988,6 +994,9 @@ th {
 
 #copo-global-nav{
     background-color: rgba(255, 255, 255, 0.95) !important;
+    /* background: rgba(38, 38, 38, 0.95); */
+    height: 10px !important;
+    min-height: 59px;
 }
 
 #copo-global-nav.navbar-default .navbar-brand {
@@ -996,8 +1005,10 @@ th {
 
 
 #copo-global-nav.navbar-default {
-    border: none;
+    /* border: none; */
     background: transparent;
+    border-bottom-color: rgba(38, 38, 38, 0.95);
+    border-bottom-width: thin;
 }
 
 #copo-global-nav.navbar-default .navbar-nav > li > a {
@@ -1008,8 +1019,8 @@ th {
 
 #copo-global-nav.navbar-default .navbar-nav > li > a:hover,
 #copo-global-nav.navbar-default .navbar-nav > li > a:focus {
-    color: #D1B37F;
-    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    background-color: black;
 }
 
 #copo-global-nav.navbar-default .navbar-nav > .active > a,
@@ -1041,6 +1052,93 @@ th {
     background-color: transparent;
 }
 
+
+#copo-global-nav.navbar-inverse .navbar-brand {
+    color: rgba(119, 119, 119, 1);
+}
+
+
+#copo-global-nav.navbar-inverse {
+    /* border: none; */
+    background: transparent;
+    border-bottom-color: rgba(38, 38, 38, 0.95);
+    border-bottom-width: thin;
+}
+
+#copo-global-nav.navbar-inverse .navbar-nav>li>a {
+    color: black;
+    background: transparent;
+    height: 50px !important;
+}
+
+#copo-global-nav.navbar-inverse .navbar-nav>li>a:hover,
+#copo-global-nav.navbar-inverse .navbar-nav>li>a:focus {
+    color: #D1B37F;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+#copo-global-nav.navbar-inverse .navbar-nav>.active>a,
+#copo-global-nav.navbar-inverse .navbar-nav>.active>a:hover,
+#copo-global-nav.navbar-inverse .navbar-nav>.active>a:focus {
+    color: rgba(85, 85, 85, 1);
+    background-color: transparent;
+}
+
+#copo-global-nav.navbar-inverse .navbar-nav .dropdown-menu li>a:hover,
+#copo-global-nav.navbar-inverse .navbar-nav.dropdown-menu li>a:focus,
+#copo-global-nav.navbar-inverse .navbar-nav.dropdown-submenu:hover>a {
+    background-image: none;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+}
+
+#copo-global-nav.navbar-inverse .navbar-toggle:hover,
+#copo-global-nav.navbar-inverse .navbar-toggle:focus {
+    background-color: transparent;
+}
+
+#copo-global-nav.navbar-inverse .navbar-toggle .icon-bar {
+    background-color: transparent;
+}
+
+#copo-global-nav.navbar-inverse .navbar-toggle:hover .icon-bar,
+#copo-global-nav.navbar-inverse .navbar-toggle:focus .icon-bar {
+    background-color: transparent;
+}
+
+.navbar-default .dropdown-menu {
+    background-color: white !important;
+}
+
+.navbar-default .dropdown-menu>li>a:focus,
+.navbar-default .dropdown-menu>li>a:hover {
+    background-color: black !important;
+    text-decoration: none;
+    color: white !important;
+}
+
+.navbar-default .dropdown-menu>li>a {
+    font-weight: bold;
+    color: black !important;
+    font-size: 14px !important;
+}
+
+.navbar-inverse .dropdown-menu {
+    background-color: #101010 !important;
+}
+
+.navbar-inverse .dropdown-menu>li>a:focus,
+.navbar-inverse.dropdown-menu>li>a:hover {
+    background-color: #d9d9d9 !important;
+    text-decoration: none;
+    color: #0a0a0a !important;
+}
+
+.navbar-inverse .dropdown-menu>li>a {
+    font-weight: bold;
+    color: white !important;
+    font-size: 14px !important;
+}
 /*end custom nav items*/
 
 /*custom buttons*/
@@ -1226,7 +1324,7 @@ th {
 }
 
 .profiles-legend-circle {
-    display: inline-block;
+    /* display: inline-block; */
     float: right;
     min-width: 10px;
     padding: 3px 7px;
@@ -1750,8 +1848,7 @@ div.shown span.side-help-trigger:before {
 .ui.tiny.buttons .button,
 .ui.tiny.buttons .or,
 .ui.tiny.button {
-    font-size: 11px;
-!important;
+    font-size: 11px !important;
 }
 
 .ui.dropdown .menu > .item {
