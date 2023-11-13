@@ -31,23 +31,22 @@
         {% endif %}
 
         <section>
-
-
             <!-- include navbar html -->
             <div class="pull-right">
                 {% include "nav_dropdown.html" %}
             </div>
-            <br><br><br><br><br><br><br><br><br>
-            <div id="copo-icon">
-                <!--<img src="{% static "assets/img/COPO-logo-full-CMYK-black.png" %}" alt="copo_black image">-->
+            
+            <br><br><br><br><br>
+            
+            <!--<div id="copo-icon">
+               <img src="{% static 'assets/img/COPO-logo-full-CMYK-black.png' %}" alt="copo_black image">
             </div>
-
-            <!--
+            -->
+            
             <div class="green-subtitle">
-                FAIR Data Brokering for the Life Sciences
+                COPO: FAIR Data Brokering for the Life Sciences
             </div>
-        -->
-
+       
             <div class="button_bar big">
                 <a href="https://copo-project.org/copo">
                     <button class="ui big_button inverted button">Submit Data</button>
@@ -57,24 +56,22 @@
                 </a>
             </div>
 
-            <div id="stats_bar">
+            <div id="stats_bar" style="margin-top: 72px;">
                 {% include "statistics.html" %}
             </div>
-
         </section>
+
         <section class="shade">
             <!-- main content block -->
             {% block content %}
             {% endblock %}
             <div class="col-md-3"></div>
-            <div class="col-md-6" id="contact-sec">
+            <div id="contact-sec" class="col-md-6">
                 <div>
-                    <h2 class="big_button" style="width: fit-content">Contact Us</h2>
-
+                    <h2 id="contact-title" class="big_button">Contact Us</h2>
                 </div>
-                <div>
-
-                    <form id="email_form" action="mailto:ei.copo@earlham.ac.uk?subject=I'm intetested in COPO!"
+                <div style="padding-top: 10px;">
+                    <form id="email_form" action="mailto:ei.copo@earlham.ac.uk?subject=I'm interested in COPO!"
                           method="post"
                           enctype="text/plain">
                         <div class="row">
@@ -98,7 +95,7 @@
                                               placeholder="Message"></textarea>
                                 </div>
                                 <div class="form-group">
-                                    <button id="email_submit" type="submit" class="btn btn-default">Submit Request
+                                    <button id="email_submit" type="submit" class="btn btn-default" style="font-weight: bold;">Submit Request
                                     </button>
 
                                 </div>
@@ -110,17 +107,13 @@
                 <div class="col-md-3"></div>
             </div>
         </section>
-
-
     </div>
-    <br/><br/>
-    <footer class="for-full-back" style="background-color: white; min-height: 100px; padding:20px 50px 0 0" id="footer">
-    <div class="pull-right">
-        <a href="https://www.earlham.ac.uk/">
-            <img class="img-responsive" src="/static/assets/img/ei.png" width="200" height="200" style=""
-                 alt="Earlham Institute logo"/>
-        </a>
-    </div>
-</footer>
-
+    
+    <footer id="footer" class="for-full-back" style="background-color: white; min-height: 100px; padding:20px 50px 0 0; margin-top: 1.5px;">
+        <div class="pull-right">
+            <a href="https://www.earlham.ac.uk/">
+                <img class="img-responsive" src="{% static 'assets/img/ei.png' %}" width="200" height="200" alt="Earlham Institute logo"/>
+            </a>
+        </div>
+    </footer>
 {% endblock %}

@@ -158,10 +158,10 @@ body {
 
 .green-subtitle {
     text-align: center;
-    font-size: 2.4em;
+    font-size: 2.8em;
     font-weight: bold;
     padding: 10px;
-    width: 700px;
+    width: 900px;
     margin-top: 20px !important;
     margin: 0 auto;
     background-color: #93d242;
@@ -242,8 +242,8 @@ body {
 
 .button_bar {
     padding-left: 15px;
-    margin-top: 20px !important;
-    font-size: 1.8em;
+    margin-top: 5px !important;
+    font-size: 1.5em;
     text-align: center;
 }
 
@@ -309,8 +309,16 @@ p {
 }
 
 #contact-sec {
-    padding-top: 60px !important;
+    padding-top: 5px !important;
     color: white;
+    margin-top: -40px;
+}
+
+#contact-title {
+    width: fit-content;
+    padding: 10px;
+    font-weight: bold;
+    box-shadow: 0 0 0 1px #fff inset !important;
 }
 
 .warning_banner {
