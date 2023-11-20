@@ -244,8 +244,9 @@
 <script>
     $(document).ready(function () {
       // Reset carousel on modal close 
-      $('#imageModal').on('show.bs.modal', function () {
-       $('#imageCarousel').carousel({}).carousel(0);
+      $('#imageModal').on('hidden.bs.modal', function () {
+        if($('.carousel-inner').children()) $('.carousel-inner').children().remove();
+        if($('.carousel-indicators').children()) $('.carousel-indicators').children().remove();
       });
     });
 </script>

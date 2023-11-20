@@ -1344,6 +1344,7 @@ $(document).ready(function () {
           let carousel_indicator_ol_tag = $('#imageModal .modal-body')
             .find('#imageCarousel')
             .find('.carousel-indicators');
+
           let carousel_inner_dv = $('#imageModal .modal-body')
             .find('#imageCarousel')
             .find('.carousel-inner');

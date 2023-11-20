@@ -276,6 +276,7 @@ $(document).ready(function () {
         let carousel_indicator_ol_tag = $('#imageModal .modal-body')
           .find('#imageCarousel')
           .find('.carousel-indicators');
+
         let carousel_inner_dv = $('#imageModal .modal-body')
           .find('#imageCarousel')
           .find('.carousel-inner');
@@ -310,16 +311,22 @@ $(document).ready(function () {
               carousel_inner_item.addClass('active');
             }
 
+            // Create a clickable image that opens in a new tab
             let figcaption = $('<figcaption/>');
             figcaption.text(image_caption);
 
-            let figure = $('<figure/>').append(
-              $('<img/>', {
-                class: 'd-block w-100',
-                src: url,
-                alt: image_caption,
-              })
-            );
+            let image = $('<img/>', {
+              class: 'd-block w-100',
+              src: url,
+              alt: image_caption,
+            });
+
+            let image_a_tag = $('<a/>', {
+              href: url,
+              target: '_blank',
+            }).append(image);
+
+            let figure = $('<figure/>').append(image_a_tag);
 
             // Ensure that the total number of images in the carousel
             // items is equal to the number of images' urls
