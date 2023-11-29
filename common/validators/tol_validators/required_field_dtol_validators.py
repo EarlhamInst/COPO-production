@@ -99,6 +99,29 @@ class OrphanedSymbiontValidator(Validator):
 
 class RackPlateUniquenessValidator(Validator):
     def validate(self):
+        existing_samples = Sample().get_by_field("profile_id", [self.profile_id])
+          
+        # Check if samples already exist in the profile with the same RACK_OR_PLATE_ID and/ TUBE_OR_WELL_ID
+        # if they do, display an 
+        # This validation step handles when a manifest is downloaded and then uploaded again for the same profile
+        if existing_samples:
+            existing_rack_or_plate_ids = [sample.get("RACK_OR_PLATE_ID",'') for sample in existing_samples]
+            existing_tube_or_well_ids = [sample.get("TUBE_OR_WELL_ID",'') for sample in existing_samples]
+
+            if any(x in value for value in list(self.data.get("RACK_OR_PLATE_ID", "")) for x in existing_rack_or_plate_ids) or \
+                any(x in value for value in list(self.data.get("TUBE_OR_WELL_ID", "")) for x in existing_tube_or_well_ids):
+
+                for index, row in self.data.iterrows():
+                    if row.get("RACK_OR_PLATE_ID", "") and row.get("RACK_OR_PLATE_ID", "") in existing_rack_or_plate_ids:
+                        self.errors.append(
+                            msg["validation_msg_duplicate_tube_or_well_id_in_copo"] % (row.get("RACK_OR_PLATE_ID", "")))
+                        self.flag = False
+                        
+                    if row.get("TUBE_OR_WELL_ID", "") and row.get("TUBE_OR_WELL_ID", "") in existing_tube_or_well_ids:
+                        self.errors.append(
+                            msg["validation_msg_duplicate_tube_or_well_id_in_copo"] % (row.get("TUBE_OR_WELL_ID", "")))
+                        self.flag = False
+                      
         # check for uniqueness of RACK_OR_PLATE_ID and TUBE_OR_WELL_ID in this manifest
         # RACK_OR_PLATE_ID and TUBE_OR_WELL_ID cannot contain any slashes i.e. '/' nor '\'
         if any(slash in value for value in list(self.data.get("RACK_OR_PLATE_ID", "")) for slash in SLASHES_LIST) or \
