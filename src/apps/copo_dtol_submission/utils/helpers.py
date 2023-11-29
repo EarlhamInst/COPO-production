@@ -28,6 +28,6 @@ def query_public_name_service(sample_list):
         Logger().log("name service response: " + str(resp))
         return resp
     except Exception as e:
-        Logger.log("PUBLIC NAME SERVER ERROR: " + str(e))
+        Logger.log(msg="PUBLIC NAME SERVER ERROR: " + str(e))
         return {}
  

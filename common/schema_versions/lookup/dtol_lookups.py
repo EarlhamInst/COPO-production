@@ -193,10 +193,11 @@ DTOL_ENUMS = {
         'NOT_PROVIDED'
         ],
     'BARCODING_STATUS': [
-        'DNA_BARCODE_EXEMPT',
         'DNA_BARCODING_COMPLETED',
+        'DNA_BARCODE_EXEMPT',
         'DNA_BARCODING_FAILED',
-        'DNA_BARCODING_TO_BE_PERFORMED_GAL'
+        'DNA_BARCODING_TO_BE_PERFORMED_GAL',
+        'DNA_BARCODING_VIA_WSI_PROCESS'
         ],
     'CELL_NUMBER': [
         '1',
@@ -677,7 +678,7 @@ DTOL_ENUMS = {
             'WHOLE_PLANT',
             'NOT_APPLICABLE',
             'NOT_COLLECTED',
-            'NOT_PROVIDED',
+            'NOT_PROVIDED'
             ],
     'PARTNER':
         [
@@ -705,28 +706,31 @@ DTOL_ENUMS = {
     'PURPOSE_OF_SPECIMEN': {
         'ASG':
             [
-                'DNA_BARCODING_ONLY',
-                'R&D',
                 'REFERENCE_GENOME',
+                'RESEQUENCING',
+                'DNA_BARCODING_ONLY',
                 'RNA_SEQUENCING',
-                'SHORT_READ_SEQUENCING'
+                'R&D',
+                'NOT_PROVIDED'
             ],
         'DTOL':
             [
-                'DNA_BARCODING_ONLY',
-                'R&D',
                 'REFERENCE_GENOME',
+                'RESEQUENCING',
+                'DNA_BARCODING_ONLY',
                 'RNA_SEQUENCING',
-                'SHORT_READ_SEQUENCING'
+                'R&D',
+                'NOT_PROVIDED'
             ],
 
         'ERGA':
             [
-                'DNA_BARCODING_ONLY',
-                'R&D',
                 'REFERENCE_GENOME',
+                'RESEQUENCING',
+                'DNA_BARCODING_ONLY',
                 'RNA_SEQUENCING',
-                'SHORT_READ_SEQUENCING'
+                'R&D',
+                'NOT_PROVIDED'
             ]
         },
     'REGULATORY_COMPLIANCE':
@@ -751,7 +755,7 @@ DTOL_ENUMS = {
         [
             'EARLHAM INSTITUTE',
             'SANGER INSTITUTE'
-            ],
+        ],
     'SEX':
         [
             'ASEXUAL_MORPH',
@@ -1048,7 +1052,6 @@ DTOL_EXPORT_TO_STS_FIELDS = {
         'OTHER_INFORMATION',
         'associated_tol_project',
         'biosampleAccession',
-        'boldAccession',
         'copo_profile_title',
         'created_by',
         'manifest_id',
@@ -1123,6 +1126,7 @@ DTOL_EXPORT_TO_STS_FIELDS = {
         'TISSUE_FOR_BARCODING',
         'BARCODE_PLATE_PRESERVATIVE',
         'BARCODING_STATUS',
+        'BOLD_ACCESSION_NUMBER',
         'PURPOSE_OF_SPECIMEN',
         'SAMPLE_FORMAT',
         'HAZARD_GROUP',
@@ -1135,7 +1139,6 @@ DTOL_EXPORT_TO_STS_FIELDS = {
         'OTHER_INFORMATION',
         'associated_tol_project',
         'biosampleAccession',
-        'boldAccession',
         'copo_profile_title',
         'created_by',
         'manifest_id',
@@ -1256,7 +1259,6 @@ DTOL_EXPORT_TO_STS_FIELDS = {
         'ASSOCIATED_PROJECT_ACCESSIONS',
         'associated_tol_project',
         'biosampleAccession',
-        'boldAccession',
         'copo_profile_title',
         'created_by',
         'manifest_id',
@@ -1278,6 +1280,7 @@ DTOL_NO_COMPLIANCE_FIELDS = {
     "asg": [
         'BARCODE_HUB',
         'BARCODE_PLATE_PRESERVATIVE',
+        'BOLD_ACCESSION_NUMBER',
         'COLLECTOR_SAMPLE_ID',
         'CULTURE_OR_STRAIN_ID',
         'DATE_OF_PRESERVATION',
@@ -1309,6 +1312,7 @@ DTOL_NO_COMPLIANCE_FIELDS = {
     "dtol": [
         'BARCODE_HUB',
         'BARCODE_PLATE_PRESERVATIVE',
+        'BOLD_ACCESSION_NUMBER',
         'COLLECTOR_SAMPLE_ID',
         'CULTURE_OR_STRAIN_ID',
         'DATE_OF_PRESERVATION',
@@ -1713,6 +1717,7 @@ POP_GENOMICS_OPTIONAL_COLUMNS_DEFAULT_VALUES_MAPPING = {
     'PRESERVED_BY': 'NOT_COLLECTED',
     'PRESERVER_AFFILIATION': 'NOT_COLLECTED',
     'SIZE_OF_TISSUE_IN_TUBE': 'NOT_COLLECTED',
+    'SYMBIONT': 'TARGET',
     'TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION': 'NOT_COLLECTED',
     'TISSUE_FOR_BARCODING': 'NOT_APPLICABLE',
     'TISSUE_FOR_BIOBANKING': 'NOT_APPLICABLE',
@@ -1793,6 +1798,8 @@ SPECIMEN_SUFFIX = {
 
 ##################
 
+ACCEPTED_SAMPLES_DEFAULT_CC_EMAIL_RECIPIENTS = ["thomarc@ibv.uio.no", "r.monteiro@leibniz-lib.de"]
+ 
 API_KEY = helpers.get_env("PUBLIC_NAME_SERVICE_API_KEY")
 
 BLANK_VALS = ['NOT_APPLICABLE', 'NOT_COLLECTED', 'NOT_PROVIDED']
@@ -1813,7 +1820,7 @@ NA_VALS = ['#N/A', '#N/A N/A', '#NA', '-1.#IND', '-1.#QNAN', '-NaN', '-nan', '1.
 
 NIH_API_KEY = helpers.get_env("NIH_API_KEY")
 
-REQUIRED_MEMBER_GROUPS = ['dtol_users', 'dtol_sample_managers', 'dtolenv_users', 'dtolenv_sample_managers',
+REQUIRED_MEMBER_GROUPS = ['bge_checkers','dtol_users', 'dtol_sample_managers', 'dtolenv_users', 'dtolenv_sample_managers',
                           'erga_users', 'erga_sample_managers']
 
 # A list of web pages that can be accessed by both COPO users and sample managers
@@ -1838,3 +1845,7 @@ SYMBIONT_FIELDS = ["ORDER_OR_GROUP", "FAMILY", "GENUS", "TAXON_ID", "SCIENTIFIC_
 SYMBIONT_VALS = ["TARGET", "SYMBIONT"]
 
 TOL_PROFILE_TYPES = ["asg", "dtol", "dtol_env", "erga"]
+
+TOL_PROFILE_TYPES_FULL =["Aquatic Symbiosis Genomics (ASG)", "Darwin Tree of Life (DTOL)",
+                         "European Reference Genome Atlas (ERGA)",
+                         "Darwin Tree of Life Environmental Samples (DTOL_ENV)"]

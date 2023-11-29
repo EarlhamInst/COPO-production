@@ -317,8 +317,8 @@ def release_study(request, profile_id):
             receipt = response.text
             l.log("ENA RECEIPT " + receipt)
         except etree.ParseError as e:
-            l.log("Unrecognized response from ENA " + str(e))
-            message = " Unrecognized response from ENA - " + str(
+            l.log("Unrecognised response from ENA " + str(e))
+            message = " Unrecognised response from ENA - " + str(
                 receipt) + " Please try again later, if it persists contact admins"
             return HttpResponse(status=400, content=message)
         except Exception as e:

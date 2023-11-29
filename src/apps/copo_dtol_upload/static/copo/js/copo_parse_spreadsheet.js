@@ -176,11 +176,10 @@ $(document).ready(function () {
     BootstrapDialog.show({
       title: 'Submit Samples',
       message:
-        'Do you really want to submit these samples? ' +
-        '</br><strong>This must be the ' +
-        "definitive version of the manifest.</strong> You won't be able to update any field " +
-        'involved in the compliance process.</br> ' +
-        'The sample metadata will be sent to a Tree of Life curator for checking',
+        'Are you sure that you would like to submit these samples?</br></br>' +
+        '<strong>This must be the definitive version of the manifest.</strong> ' +
+        "You will not be able to update any sample metadata field that is involved in the <a href='https://copo-docs.readthedocs.io/en/latest/updates/samples.html'>compliance process</a>.</br></br>" +
+        'The sample metadata will be sent to a Tree of Life (ToL) sample manager and/sequencing centre for checking.',
       cssClass: 'copo-modal1',
       closable: true,
       animate: true,
@@ -669,7 +668,7 @@ $(document).ready(function () {
               $('#files_label').addClass('disabled');
               $('#files_label').attr('disabled', 'true');
               $('#files_label').find('input').attr('disabled', 'true');
-            }            
+            }
             $('#confirm_button').fadeIn();
           }
         } else if (d.action == 'require_permits') {
@@ -714,10 +713,11 @@ $(document).on(
     BootstrapDialog.show({
       title: 'Accept Code of Conduct',
       message:
-        "By uploading a manifest to COPO you confirm that you are an ERGA member and thus adhere to ERGA's " +
-        'code of conduct. You further confirm that you read, understood and followed the ' +
+        "By uploading a manifest to Collaborative OPen Omics (COPO), you confirm that you are an European Reference Genome Atlas (ERGA) member and thus adhere to ERGA's " +
+        'code of conduct.' +
+        '\n\nYou further confirm that you read, understood and followed the ' +
         "<a href='https://bit.ly/3zHun36'>ERGA Sample " +
-        'Code of Practice</a>',
+        'Code of Practice</a>.',
       cssClass: 'copo-modal1',
       closable: true,
       animate: true,
@@ -735,7 +735,7 @@ $(document).on(
           },
         },
         {
-          label: 'Ok',
+          label: 'Okay',
           cssClass: 'tiny ui basic button',
           action: function (dialogRef) {
             dialogRef.close();

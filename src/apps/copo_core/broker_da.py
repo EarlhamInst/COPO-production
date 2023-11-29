@@ -13,7 +13,7 @@ from src.apps.copo_file.utils import CopoFiles as copo_file
 from common.utils import html_tags_utils as htags
 from common.utils.copo_lookup_service import COPOLookup
 from common.dal.copo_da import Profile, Source, Person, Sample, Submission, DataFile, DAComponent, \
-    CGCore, MetadataTemplate, Assembly, Sequnece_annotation, TaggedSequence
+    CGCore, MetadataTemplate, Assembly, SequenceAnnotation, TaggedSequence
 from common.schemas.utils import data_utils
 from common.utils import helpers
 from common.utils.logger import Logger
@@ -51,7 +51,7 @@ class BrokerDA:
             cgcore=CGCore,
             metadata_template=MetadataTemplate,
             #repository=Repository
-            seqannotation=Sequnece_annotation,
+            seqannotation=SequenceAnnotation,
             assembly=Assembly,
             files=s3,
             taggedseq=TaggedSequence            

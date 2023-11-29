@@ -1,6 +1,6 @@
 from django_tools.middlewares import ThreadLocal
 from common.utils.logger import Logger
-from common.dal.copo_da import Sample, DataFile, Source, Submission, SubmissionQueue, Sequnece_annotation, EnaFileTransfer, EnaChecklist
+from common.dal.copo_da import Sample, DataFile, Source, Submission, SubmissionQueue, SequenceAnnotation, EnaFileTransfer, EnaChecklist
 from common.utils.helpers import get_datetime, get_not_deleted_flag
 from common.dal.mongo_util import cursor_to_list
 from bson import ObjectId
@@ -95,7 +95,7 @@ def delete_ena_records(profile_id, target_ids=list(), target_id=None):
     other_samples_with_same_file = cursor_to_list(Sample(profile_id=profile_id).get_collection_handle().find(
         {"_id": {"$nin": sample_obj_ids}, "read.file_id": {"$regex": file_regex_ids}}, {"_id": 1, "read.$": 1}))
     other_annotation_with_same_file = cursor_to_list(
-        Sequnece_annotation(profile_id=profile_id).get_collection_handle().find({"files": {"$in": file_ids}},
+        SequenceAnnotation(profile_id=profile_id).get_collection_handle().find({"files": {"$in": file_ids}},
                                                                                 {"_id": 1, "files": 1}))
     for s in other_samples_with_same_file:
         for f in s.get("read", []):

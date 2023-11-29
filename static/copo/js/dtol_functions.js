@@ -549,7 +549,7 @@ $(document).ready(function () {
     }
 
     // Reset carousel on tab change
-    $('#imageCarousel').carousel({}).carousel(0);
+    $('#imageCarousel').carousel({ pause: true, interval: false }).carousel(0);
   });
 });
 

@@ -3655,9 +3655,9 @@ class Assembly(DAComponent):
         return dict(status='success', message="Assembly record/s have been deleted!")
 
 
-class Sequnece_annotation(DAComponent):
+class SequenceAnnotation(DAComponent):
     def __init__(self, profile_id=None):
-        super(Sequnece_annotation, self).__init__(profile_id, "seqannotation")
+        super(SequenceAnnotation, self).__init__(profile_id, "seqannotation")
 
     def add_accession(self, id, accession):
         self.get_collection_handle().update_one({"_id": ObjectId(id)},

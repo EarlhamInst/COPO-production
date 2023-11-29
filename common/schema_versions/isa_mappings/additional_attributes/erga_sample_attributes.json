@@ -1,3190 +1,3617 @@
 [
   {
-    "help_tip": "Tube or Well Id",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#badac5",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/measurementID",
+    "excel_col": "A",
+    "help_tip": "Tube or Well Identifier",
+    "hidden": "false",
+    "id": "copo.sample.TUBE_OR_WELL_ID",
+    "label": "Tube or Well Identifier",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 1,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "TUBE_OR_WELL_ID"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.TUBE_OR_WELL_ID",
-    "label": "Tube or Well Id",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/measurementID",
-    "colour": "#badac5",
-    "excel_col": "A",
-    "order": 1
+    ]
   },
   {
-    "help_tip": "An identifier given to the Occurrence at the time it was recorded. Often serves as a link between field notes and an Occurrence record, such as a specimen collector's number.",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#badac5",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/recordNumber",
+    "excel_col": "B",
+    "help_tip": "An identifier given to the Occurrence at the time it was recorded. Often serves as a link between field notes and an Occurrence record, such as a specimen collector's number.",
+    "hidden": "false",
+    "id": "copo.sample.SPECIMEN_ID",
+    "label": "Specimen Identifier",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 2,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "SPECIMEN_ID"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.SPECIMEN_ID",
-    "label": "Specimen ID",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/recordNumber",
-    "colour": "#badac5",
-    "excel_col": "B",
-    "order": 2
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#badac5",
+    "control": "select",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "C",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.PURPOSE_OF_SPECIMEN",
+    "label": "Purpose of Specimen",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "REFERENCE_GENOME",
+      "RESEQUENCING",
+      "DNA_BARCODING_ONLY",
+      "RNA_SEQUENCING",
+      "R&D",
+      "NOT_PROVIDED"
+    ],
+    "order": 3,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "PURPOSE_OF_SPECIMEN"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Purpose Of Specimen",
-    "show_in_form": true,
-    "id": "copo.sample.PURPOSE_OF_SPECIMEN",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "#badac5",
-    "excel_col": "C",
-    "order": 3
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#badac5",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "D",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.SAMPLE_COORDINATOR",
+    "label": "Sample Coordinator (ERGA Ambassador)",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 4,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "SAMPLE_COORDINATOR"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Sample Coordinator (ERGA Ambassador)",
-    "id": "copo.sample.SAMPLE_COORDINATOR",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#badac5",
-    "excel_col": "D",
-    "order": 4
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#badac5",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "E",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.SAMPLE_COORDINATOR_AFFILIATION",
+    "label": "Sample Coordinator (ERGA Ambassador) Affiliation",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 5,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "SAMPLE_COORDINATOR_AFFILIATION"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Sample Coordinator (ERGA Ambassador) Affiliation",
-    "id": "copo.sample.SAMPLE_COORDINATOR_AFFILIATION",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#badac5",
-    "excel_col": "E",
-    "order": 5
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#badac5",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "F",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.SAMPLE_COORDINATOR_ORCID_ID",
+    "label": "Sample Coordinator (ERGA Ambassador) ORCID Identifier",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 6,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "SAMPLE_COORDINATOR_ORCID_ID"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Sample Coordinator (ERGA Ambassador) ORCID ID",
-    "id": "copo.sample.SAMPLE_COORDINATOR_ORCID_ID",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#badac5",
-    "excel_col": "F",
-    "order": 6
+    ]
   },
   {
-    "help_tip": "The taxonomic Order into which the Family is placed.",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#ffffe6",
     "control": "text",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "ORDER_OR_GROUP"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
+    "control_meta": {},
+    "default_value": "",
     "deprecated": false,
+    "dwc": "",
+    "excel_col": "G",
+    "help_tip": "The taxonomic Order into which the Family is placed.",
     "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
     "id": "copo.sample.ORDER_OR_GROUP",
     "label": "Order or Group",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ffffe6",
-    "excel_col": "G",
-    "order": 7
-  },
-  {
-    "help_tip": "The taxonomic Family into which the Genus is placed.",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 7,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "ORDER_OR_GROUP"
+    ]
+  },
+  {
+    "colour": "#ffffe6",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "H",
+    "help_tip": "The taxonomic Family into which the Genus is placed.",
+    "hidden": "false",
+    "id": "copo.sample.FAMILY",
+    "label": "Family",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
+    "order": 8,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "FAMILY"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.FAMILY",
-    "label": "FAMILY",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ffffe6",
-    "excel_col": "H",
-    "order": 8
+    ]
   },
   {
-    "help_tip": "The taxonomic Genus to which the Species belongs.",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#ffffe6",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "I",
+    "help_tip": "The taxonomic Genus to which the Species belongs.",
+    "hidden": "false",
+    "id": "copo.sample.GENUS",
+    "label": "Genus",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 9,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "GENUS"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.GENUS",
-    "label": "GENUS",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ffffe6",
-    "excel_col": "I",
-    "order": 9
+    ]
   },
   {
-    "help_tip": "A valid NCBI TAXON_ID to the species level is mandatory in order to submit data to public repositories.",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#ffffe6",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "J",
+    "help_tip": "A valid NCBI TAXON_ID to the species level is mandatory in order to submit data to public repositories.",
+    "hidden": "false",
+    "id": "copo.sample.TAXON_ID",
+    "label": "Taxon Identifier",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 10,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "TAXON_ID"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.TAXON_ID",
-    "label": "TAXON_ID",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ffffe6",
-    "excel_col": "J",
-    "order": 10
+    ]
   },
   {
-    "help_tip": "The official scientific name as found in NCBI taxonomy database",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#ffffe6",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "K",
+    "help_tip": "The official scientific name as found in NCBI taxonomy database",
+    "hidden": "false",
+    "id": "copo.sample.SCIENTIFIC_NAME",
+    "label": "Scientific Name",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 11,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "SCIENTIFIC_NAME"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.SCIENTIFIC_NAME",
-    "label": "SCIENTIFIC_NAME",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ffffe6",
-    "excel_col": "K",
-    "order": 11
+    ]
   },
   {
-    "help_tip": "Taxon remarks",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#ffffe6",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "L",
+    "help_tip": "Taxon remarks",
+    "hidden": "false",
+    "id": "copo.sample.TAXON_REMARKS",
+    "label": "Taxon Remarks",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 12,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "TAXON_REMARKS"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.TAXON_REMARKS",
-    "label": "TAXON_REMARKS",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ffffe6",
-    "excel_col": "L",
-    "order": 12
+    ]
   },
   {
-    "help_tip": "Infraspecific epithet",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#ffffe6",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "M",
+    "help_tip": "Infraspecific Epithet",
+    "hidden": "false",
+    "id": "copo.sample.INFRASPECIFIC_EPITHET",
+    "label": "Infraspecific Epithet",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 13,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "INFRASPECIFIC_EPITHET"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.INFRASPECIFIC_EPITHET",
-    "label": "INFRASPECIFIC_EPITHET",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ffffe6",
-    "excel_col": "M",
-    "order": 13
+    ]
   },
   {
-    "help_tip": "Culture or Strain ID",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#ffffe6",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "N",
+    "help_tip": "Culture or Strain Identifier",
+    "hidden": "false",
+    "id": "copo.sample.CULTURE_OR_STRAIN_ID",
+    "label": "Culture or Strain Identifier",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 14,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "CULTURE_OR_STRAIN_ID"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.CULTURE_OR_STRAIN_ID",
-    "label": "CULTURE_OR_STRAIN_ID",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ffffe6",
-    "excel_col": "N",
-    "order": 14
+    ]
   },
   {
-    "help_tip": "Common name",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#ffffe6",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "O",
+    "help_tip": "Common name",
+    "hidden": "false",
+    "id": "copo.sample.COMMON_NAME",
+    "label": "Common Name",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 15,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "COMMON_NAME"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.COMMON_NAME",
-    "label": "COMMON_NAME",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ffffe6",
-    "excel_col": "O",
-    "order": 15
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#dad3ea",
+    "control": "select",
     "control_meta": {},
-    "control": "text",
+    "deprecated": false,
     "dwc": "http://rs.tdwg.org/dwc/terms/lifeStage",
+    "excel_col": "P",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.LIFESTAGE",
+    "label": "Lifestage",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "ADULT",
+      "EGG",
+      "EMBRYO",
+      "GAMETOPHYTE",
+      "JUVENILE",
+      "LARVA",
+      "PUPA",
+      "SPORE_BEARING_STRUCTURE",
+      "SPOROPHYTE",
+      "VEGETATIVE_CELL",
+      "VEGETATIVE_STRUCTURE",
+      "ZYGOTE",
+      "NOT_APPLICABLE",
+      "NOT_COLLECTED",
+      "NOT_PROVIDED"
+    ],
+    "order": 16,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "LIFESTAGE"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Lifestage",
-    "show_in_form": true,
-    "id": "copo.sample.LIFESTAGE",
-    "type": "string",
-    "show_in_table": true,
-    "colour": "#dad3ea",
-    "excel_col": "P",
-    "order": 16
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#dad3ea",
+    "control": "select",
     "control_meta": {},
+    "default_value": "NOT_PROVIDED",
+    "deprecated": false,
     "dwc": "http://rs.tdwg.org/dwc/terms/sex",
+    "excel_col": "Q",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.SEX",
+    "label": "Sex",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "SEX"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Sex",
-    "show_in_form": true,
-    "id": "copo.sample.SEX",
-    "type": "string",
-    "show_in_table": true,
-    "control": "select",
-    "default_value": "Unknown",
     "option_values": [
       "FEMALE",
       "MALE",
       "HERMAPHRODITE_MONOECIOUS",
       "ASEXUAL_MORPH",
       "SEXUAL_MORPH",
-      "NOT_COLLECTED",
       "NOT_APPLICABLE",
+      "NOT_COLLECTED",
       "NOT_PROVIDED"
     ],
-    "colour": "#dad3ea",
-    "excel_col": "Q",
-    "order": 17
-  },
-  {
-    "help_tip": "e.g. Leg removed from complete organism",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "ORGANISM_PART"
-    ],
+    "order": 17,
     "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "SEX"
+    ]
+  },
+  {
+    "colour": "#dad3ea",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "R",
+    "help_tip": "e.g. Leg removed from complete organism",
+    "hidden": "false",
     "id": "copo.sample.ORGANISM_PART",
     "label": "Organism Part",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#dad3ea",
-    "excel_col": "R",
-    "order": 18
-  },
-  {
-    "help_tip": "",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "RELATIONSHIP"
-    ],
+    "order": 18,
     "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
+    "versions": [
+      "ORGANISM_PART"
+    ]
+  },
+  {
+    "colour": "#dad3ea",
+    "control": "select",
+    "control_meta": {},
+    "default_value": "TARGET",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "S",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.SYMBIONT",
+    "label": "Symbiont",
+    "manifest_version": [
+      "2.5"
+    ],
+    "option_values": [
+      "TARGET",
+      "SYMBIONT"
+    ],
+    "order": 19,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
     "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "SYMBIONT"
+    ]
+  },
+  {
+    "colour": "#dad3ea",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "T",
+    "help_tip": "",
+    "hidden": "false",
     "id": "copo.sample.RELATIONSHIP",
     "label": "Relationship",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#dad3ea",
-    "excel_col": "T",
-    "order": 20
-  },
-  {
-    "help_tip": "Genome Acquision Laboratory",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 20,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "RELATIONSHIP"
+    ]
+  },
+  {
+    "colour": "#e2e0e0",
+    "control": "select",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/measurementID",
+    "excel_col": "U",
+    "help_tip": "Genome Acquisition Laboratory",
+    "hidden": "false",
+    "id": "copo.sample.GAL",
+    "label": "GAL (Genome Acquisition Laboratory)",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
+    "option_values": [
+      "CENTRO NACIONAL DE ANÁLISIS GENÓMICO",
+      "DNA SEQUENCING AND GENOMICS LABORATORY, HELSINKI GENOMICS CORE FACILITY",
+      "DRESDEN-CONCEPT",
+      "EARLHAM INSTITUTE",
+      "FUNCTIONAL GENOMIC CENTER ZURICH",
+      "GENOSCOPE",
+      "GIGA-GENOMICS CORE FACILITY UNIVERSITY OF LIEGE",
+      "HANSEN LAB, DENMARK",
+      "INDUSTRY PARTNER",
+      "LAUSANNE GENOMIC TECHNOLOGIES FACILITY",
+      "LEIBNIZ INSTITUTE FOR THE ANALYSIS OF BIODIVERSITY CHANGE, MUSEUM KOENIG, BONN",
+      "NEUROMICS SUPPORT FACILITY, UANTWERP, VIB",
+      "NGS BERN",
+      "NGS COMPETENCE CENTER TÜBINGEN",
+      "NORWEGIAN SEQUENCING CENTRE",
+      "SANGER INSTITUTE",
+      "SCILIFELAB",
+      "SVARDAL LAB, ANTWERP",
+      "UNIVERSITY OF BARI",
+      "UNIVERSITY OF FLORENCE",
+      "WEST GERMAN GENOME CENTRE",
+      "Other_ERGA_Associated_GAL"
+    ],
+    "order": 21,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "GAL"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.GAL",
-    "label": "GAL (Genome Acquision Laboratory)",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/measurementID",
-    "colour": "#e2e0e0",
-    "excel_col": "U",
-    "order": 21
+    ]
   },
   {
-    "help_tip": "Genome Acquision Laboratory Sample ID",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#e2e0e0",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/measurementID",
+    "excel_col": "V",
+    "help_tip": "Genome Acquisition Laboratory Sample ID",
+    "hidden": "false",
+    "id": "copo.sample.GAL_SAMPLE_ID",
+    "label": "GAL (Genome Acquisition Laboratory) Identifier",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 22,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "GAL_SAMPLE_ID"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.GAL_SAMPLE_ID",
-    "label": "GAL (Genome Acquision Laboratory) Identifier",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/measurementID",
-    "colour": "#e2e0e0",
-    "excel_col": "V",
-    "order": 22
+    ]
   },
   {
-    "help_tip": "Collector Sample ID",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#d0e3f3",
     "control": "text",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "COLLECTOR_SAMPLE_ID"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
+    "control_meta": {},
+    "default_value": "",
     "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/measurementID",
+    "excel_col": "W",
+    "help_tip": "Collector Sample ID",
     "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
     "id": "copo.sample.COLLECTOR_SAMPLE_ID",
     "label": "Collector Sample Identifier",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/measurementID",
-    "colour": "#d0e3f3",
-    "excel_col": "W",
-    "order": 23
-  },
-  {
-    "help_tip": "",
-    "required": "true",
-    "control_meta": {},
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 23,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "COLLECTOR_SAMPLE_ID"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/recordedBy",
+    "excel_col": "X",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.COLLECTED_BY",
+    "label": "Collected By",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
+    "order": 24,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "COLLECTED_BY"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Collected By",
-    "id": "copo.sample.COLLECTED_BY",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "http://rs.tdwg.org/dwc/terms/recordedBy",
-    "type": "string",
-    "colour": "#d0e3f3",
-    "excel_col": "X",
-    "order": 24
+    ]
   },
   {
-    "help_tip": "The name (or acronym) in use by the institution having custody of the object(s) or information referred to in the record.",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#d0e3f3",
     "control": "text",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "COLLECTOR_AFFILIATION"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
+    "control_meta": {},
+    "default_value": "",
     "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/institutionCode",
+    "excel_col": "Y",
+    "help_tip": "The name (or acronym) in use by the institution having custody of the object(s) or information referred to in the record.",
     "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
     "id": "copo.sample.COLLECTOR_AFFILIATION",
     "label": "Collector Affiliation",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/institutionCode",
-    "colour": "#d0e3f3",
-    "excel_col": "Y",
-    "order": 25
-  },
-  {
-    "help_tip": "Collector ORCID ID",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "COLLECTOR_ORCID_ID"
-    ],
+    "order": 25,
     "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "COLLECTOR_AFFILIATION"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "Z",
+    "help_tip": "Collector ORCID ID",
+    "hidden": "false",
     "id": "copo.sample.COLLECTOR_ORCID_ID",
     "label": "Collector Orcid Identifier",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#d0e3f3",
-    "excel_col": "Z",
-    "order": 26
-  },
-  {
-    "help_tip": "",
-    "required": "true",
-    "control_meta": {},
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 26,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "COLLECTOR_ORCID_ID"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "date-picker",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/verbatimEventDate",
+    "excel_col": "AA",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.DATE_OF_COLLECTION",
+    "label": "Date of Collection",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
+    "order": 27,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "DATE_OF_COLLECTION"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Date of Collection",
-    "id": "copo.sample.DATE_OF_COLLECTION",
-    "show_in_table": true,
-    "control": "date-picker",
-    "default_value": "",
-    "dwc": "http://rs.tdwg.org/dwc/terms/verbatimEventDate",
-    "type": "string",
-    "colour": "#d0e3f3",
-    "excel_col": "AA",
-    "order": 27
+    ]
   },
   {
-    "help_tip": "Time of Collection",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#d0e3f3",
     "control": "text",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "TIME_OF_COLLECTION"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
+    "control_meta": {},
+    "default_value": "",
     "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/eventTime",
+    "excel_col": "AB",
+    "help_tip": "Time of Collection",
     "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
     "id": "copo.sample.TIME_OF_COLLECTION",
     "label": "Time of Collection",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/eventTime",
-    "colour": "#d0e3f3",
-    "excel_col": "AB",
-    "order": 28
-  },
-  {
-    "help_tip": "A list of geographic names less specific than the information captured in the Collection Site term. Starting with the least specific, add geograhic place names to identify location using the blue plus. E.g. U.K., London, Westminster, Westminster Abbey all as separate list entries.",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "COLLECTION_LOCATION"
-    ],
+    "order": 28,
     "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "TIME_OF_COLLECTION"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/higherGeography",
+    "excel_col": "AC",
+    "help_tip": "A list of geographic names less specific than the information captured in the Collection Site term. Starting with the least specific, add geograhic place names to identify location using the blue plus. E.g. U.K., London, Westminster, Westminster Abbey all as separate list entries.",
+    "hidden": "false",
     "id": "copo.sample.COLLECTION_LOCATION",
     "label": "Collection Location",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/higherGeography",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
     "ontology_names": [
       "gaz"
     ],
-    "colour": "#d0e3f3",
-    "excel_col": "AC",
-    "order": 29
-  },
-  {
-    "help_tip": "The geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "DECIMAL_LATITUDE"
-    ],
+    "order": 29,
     "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "COLLECTION_LOCATION"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/decimalLatitude",
+    "excel_col": "AD",
+    "help_tip": "The geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
+    "hidden": "false",
     "id": "copo.sample.DECIMAL_LATITUDE",
     "label": "decimalLatitude",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/decimalLatitude",
-    "colour": "#d0e3f3",
-    "excel_col": "AD",
-    "order": 30
-  },
-  {
-    "help_tip": "The geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "DECIMAL_LONGITUDE"
-    ],
+    "order": 30,
     "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "DECIMAL_LATITUDE"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/decimalLongitude",
+    "excel_col": "AE",
+    "help_tip": "The geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
+    "hidden": "false",
     "id": "copo.sample.DECIMAL_LONGITUDE",
     "label": "Longitude",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/decimalLongitude",
-    "colour": "#d0e3f3",
-    "excel_col": "AE",
-    "order": 31
-  },
-  {
-    "help_tip": "The geographic latitude start (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
-      "2.4.2"
+      "2.4.2",
+      "2.4.1"
     ],
-    "versions": [
-      "LATITUDE_START"
-    ],
+    "order": 31,
     "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "DECIMAL_LONGITUDE"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/latitudeStart",
+    "excel_col": "AF",
+    "help_tip": "The geographic latitude start (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
+    "hidden": "false",
     "id": "copo.sample.LATITUDE_START",
     "label": "latitudeStart",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/latitudeStart",
-    "colour": "#d0e3f3",
-    "excel_col": "AF",
-    "order": 32
-  },
-  {
-    "help_tip": "The geographic longitude start (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2"
     ],
-    "versions": [
-      "LONGITUDE_START"
-    ],
+    "order": 32,
     "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "LATITUDE_START"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/longitudeStart",
+    "excel_col": "AG",
+    "help_tip": "The geographic longitude start (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
+    "hidden": "false",
     "id": "copo.sample.LONGITUDE_START",
     "label": "Longitude Start",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/longitudeStart",
-    "colour": "#d0e3f3",
-    "excel_col": "AG",
-    "order": 33
-  },
-  {
-    "help_tip": "The geographic latitude end (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2"
     ],
-    "versions": [
-      "LATITUDE_END"
-    ],
+    "order": 33,
     "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "LONGITUDE_START"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/latitudeEnd",
+    "excel_col": "AH",
+    "help_tip": "The geographic latitude end (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
+    "hidden": "false",
     "id": "copo.sample.LATITUDE_END",
     "label": "latitudeEnd",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/latitudeEnd",
-    "colour": "#d0e3f3",
-    "excel_col": "AH",
-    "order": 34
-  },
-  {
-    "help_tip": "The geographic longitude end (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2"
     ],
-    "versions": [
-      "LONGITUDE_END"
-    ],
+    "order": 34,
     "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "LATITUDE_END"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/longitudeEnd",
+    "excel_col": "AI",
+    "help_tip": "The geographic longitude end (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
+    "hidden": "false",
     "id": "copo.sample.LONGITUDE_END",
     "label": "Longitude End",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/longitudeEnd",
-    "colour": "#d0e3f3",
-    "excel_col": "AI",
-    "order": 35
-  },
-  {
-    "help_tip": "Comments or notes about the Location. e.g. Underwater since 2005",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
-      "2.4.2",
-      "2.4.1"
+      "2.4.2"
     ],
-    "versions": [
-      "HABITAT"
-    ],
+    "order": 35,
     "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "LONGITUDE_END"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/locationRemarks",
+    "excel_col": "AJ",
+    "help_tip": "Comments or notes about the Location. e.g. Underwater since 2005",
+    "hidden": "false",
     "id": "copo.sample.HABITAT",
     "label": "Habitat Remarks",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/locationRemarks",
-    "colour": "#d0e3f3",
-    "excel_col": "AJ",
-    "order": 36
-  },
-  {
-    "help_tip": "The original description of the depth below the local surface.",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 36,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "HABITAT"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/verbatimDepth",
+    "excel_col": "AK",
+    "help_tip": "The original description of the depth below the local surface.",
+    "hidden": "false",
+    "id": "copo.sample.DEPTH",
+    "label": "Depth (in metres)",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
+    "order": 37,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "DEPTH"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.DEPTH",
-    "label": "Depth (in meters)",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/verbatimDepth",
-    "colour": "#d0e3f3",
-    "excel_col": "AK",
-    "order": 37
+    ]
   },
   {
-    "help_tip": "The original description of the elevation (altitude, usually above sea level) of the Location.",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#d0e3f3",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/verbatimElevation",
+    "excel_col": "AL",
+    "help_tip": "The original description of the elevation (altitude, usually above sea level) of the Location.",
+    "hidden": "false",
+    "id": "copo.sample.ELEVATION",
+    "label": "Elevation (in metres)",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 38,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "ELEVATION"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.ELEVATION",
-    "label": "Elevation (in meters)",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/verbatimElevation",
-    "colour": "#d0e3f3",
-    "excel_col": "AL",
-    "order": 38
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "#d0e3f3",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "AM",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.ORIGINAL_COLLECTION_DATE",
+    "label": "Original Collection Date",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 39,
+    "ref": "",
+    "required": "false",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "ORIGINAL_COLLECTION_DATE"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Original Collection Date",
-    "show_in_form": true,
-    "id": "copo.sample.ORIGINAL_COLLECTION_DATE",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "#d0e3f3",
-    "excel_col": "AM",
-    "order": 39
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "#d0e3f3",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "AN",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.ORIGINAL_GEOGRAPHIC_LOCATION",
+    "label": "Original Geographic Location",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 40,
+    "ref": "",
+    "required": "false",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "ORIGINAL_GEOGRAPHIC_LOCATION"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Original Geographic Location",
-    "show_in_form": true,
-    "id": "copo.sample.ORIGINAL_GEOGRAPHIC_LOCATION",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "#d0e3f3",
-    "excel_col": "AN",
-    "order": 40
+    ]
   },
   {
-    "help_tip": "The original geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#d0e3f3",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/decimalLatitude",
+    "excel_col": "AO",
+    "help_tip": "The original geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
+    "hidden": "false",
+    "id": "copo.sample.ORIGINAL_DECIMAL_LATITUDE",
+    "label": "Original Decimal Latitude",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 41,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "ORIGINAL_DECIMAL_LATITUDE"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.ORIGINAL_DECIMAL_LATITUDE",
-    "label": "originalDecimalLatitude",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/decimalLatitude",
-    "colour": "#d0e3f3",
-    "excel_col": "AO",
-    "order": 41
+    ]
   },
   {
-    "help_tip": "The original geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#d0e3f3",
     "control": "text",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "ORIGINAL_DECIMAL_LONGITUDE"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
+    "control_meta": {},
+    "default_value": "",
     "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/decimalLongitude",
+    "excel_col": "AP",
+    "help_tip": "The original geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
     "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
     "id": "copo.sample.ORIGINAL_DECIMAL_LONGITUDE",
     "label": "originalDecimalLongitude",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/decimalLongitude",
-    "colour": "#d0e3f3",
-    "excel_col": "AP",
-    "order": 42
-  },
-  {
-    "help_tip": "The name of, reference to, or description of the method or protocol used during an Event. E.g. UV light trap, mist net, bottom trawl, ad hoc observation, point count",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "DESCRIPTION_OF_COLLECTION_METHOD"
-    ],
+    "order": 42,
     "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "ORIGINAL_DECIMAL_LONGITUDE"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/samplingProtocol",
+    "excel_col": "AQ",
+    "help_tip": "The name of, reference to, or description of the method or protocol used during an Event. E.g. UV light trap, mist net, bottom trawl, ad hoc observation, point count",
+    "hidden": "false",
     "id": "copo.sample.DESCRIPTION_OF_COLLECTION_METHOD",
     "label": "Description of Collection Method",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/samplingProtocol",
-    "colour": "#d0e3f3",
-    "excel_col": "AQ",
-    "order": 43
-  },
-  {
-    "help_tip": "Difficulty of sample re-collection. Quantify ie. 'guaranteed same day', 'several days searching', 'requires considerable effort' (offshore boat/Caving/remote location travel)",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 43,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "DESCRIPTION_OF_COLLECTION_METHOD"
+    ]
+  },
+  {
+    "colour": "#d0e3f3",
+    "control": "select",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/samplingEffort",
+    "excel_col": "AR",
+    "help_tip": "Difficulty of sample re-collection. Quantify ie. 'guaranteed same day', 'several days searching', 'requires considerable effort' (offshore boat/Caving/remote location travel)",
+    "hidden": "false",
+    "id": "copo.sample.DIFFICULT_OR_HIGH_PRIORITY_SAMPLE",
+    "label": "Difficult or high priority sample",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
+    "option_values": [
+      "DIFFICULT",
+      "FULL_CURATION",
+      "HIGH_PRIORITY",
+      "NOT_APPLICABLE",
+      "NOT_COLLECTED",
+      "NOT_PROVIDED"
+    ],
+    "order": 44,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "DIFFICULT_OR_HIGH_PRIORITY_SAMPLE"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.DIFFICULT_OR_HIGH_PRIORITY_SAMPLE",
-    "label": "Difficult or High priority sample",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/samplingEffort",
-    "colour": "#d0e3f3",
-    "excel_col": "AR",
-    "order": 44
+    ]
   },
   {
-    "help_tip": "Separate multiple names with '|'",
-    "required": "true",
+    "colour": "#e9efb5",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/identifiedBy",
+    "excel_col": "AS",
+    "help_tip": "Separate multiple names with '|'",
+    "hidden": "false",
+    "id": "copo.sample.IDENTIFIED_BY",
+    "label": "Identified By",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 45,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "IDENTIFIED_BY"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Identified By",
-    "id": "copo.sample.IDENTIFIED_BY",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "http://rs.tdwg.org/dwc/terms/identifiedBy",
-    "type": "string",
-    "colour": "#e9efb5",
-    "excel_col": "AS",
-    "order": 45
+    ]
   },
   {
-    "help_tip": "Separate multiple names with '|'",
-    "required": "true",
+    "colour": "#e9efb5",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/identifierAffiliation",
+    "excel_col": "AT",
+    "help_tip": "Separate multiple names with '|'",
+    "hidden": "false",
+    "id": "copo.sample.IDENTIFIER_AFFILIATION",
+    "label": "Identifier Affiliation",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 46,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "IDENTIFIER_AFFILIATION"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Identifier Affiliation",
-    "id": "copo.sample.IDENTIFIER_AFFILIATION",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "http://rs.tdwg.org/dwc/terms/identifierAffiliation",
-    "type": "string",
-    "colour": "#e9efb5",
-    "excel_col": "AT",
-    "order": 46
+    ]
   },
   {
-    "help_tip": "Comment if chance of misidentification, reference text used to identify, etc",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#e9efb5",
     "control": "text",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "IDENTIFIED_HOW"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
+    "control_meta": {},
+    "default_value": "",
     "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/identificationReferences",
+    "excel_col": "AU",
+    "help_tip": "Comment if chance of misidentification, reference text used to identify, etc",
     "hidden": "true",
-    "type": "string",
-    "show_in_form": true,
     "id": "copo.sample.IDENTIFIED_HOW",
     "label": "Species Determination Method",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/identificationReferences",
-    "colour": "#e9efb5",
-    "excel_col": "AU",
-    "order": 47
-  },
-  {
-    "help_tip": "",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 47,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "IDENTIFIED_HOW"
+    ]
+  },
+  {
+    "colour": "#e9efb5",
+    "control": "select",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/identificationReferences",
+    "excel_col": "AV",
+    "help_tip": "",
+    "hidden": "true",
+    "id": "copo.sample.SPECIMEN_IDENTITY_RISK",
+    "label": "Specimen Identity Risk",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
+    "option_values": [
+      "Y",
+      "N"
+    ],
+    "order": 48,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "SPECIMEN_IDENTITY_RISK"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "true",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.SPECIMEN_IDENTITY_RISK",
-    "label": "Specimen Identification Risk",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/identificationReferences",
-    "colour": "#e9efb5",
-    "excel_col": "AV",
-    "order": 48
+    ]
   },
   {
-    "help_tip": "Mixed sample risk",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
+    "colour": "#e9efb5",
+    "control": "select",
     "control_meta": {},
-    "control": "text",
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "AW",
+    "help_tip": "Mixed sample risk",
+    "hidden": "false",
+    "id": "copo.sample.MIXED_SAMPLE_RISK",
+    "label": "Mixed Sample Risk",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "Y",
+      "N"
+    ],
+    "order": 49,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "MIXED_SAMPLE_RISK"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.MIXED_SAMPLE_RISK",
-    "label": "mixedSampleRisk",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#e9efb5",
-    "excel_col": "AW",
-    "order": 49
+    ]
   },
   {
-    "help_tip": "A list (concatenated and separated) of preparations and preservation methods for a specimen. Example, fossil, cast, photograph, DNA extract, skin, skull, skeleton, whole animal (ETOH), tissue (EDTA)",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#f4ebe2",
     "control": "text",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "PRESERVED_BY"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
+    "control_meta": {},
+    "default_value": "",
     "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/preparations",
+    "excel_col": "AX",
+    "help_tip": "A list (concatenated and separated) of preparations and preservation methods for a specimen. Example, fossil, cast, photograph, DNA extract, skin, skull, skeleton, whole animal (ETOH), tissue (EDTA)",
     "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
     "id": "copo.sample.PRESERVED_BY",
     "label": "Preserved By",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/preparations",
-    "colour": "#f4ebe2",
-    "excel_col": "AX",
-    "order": 50
-  },
-  {
-    "help_tip": "A list of affiliations separated by '|'",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "PRESERVER_AFFILIATION"
-    ],
+    "order": 50,
     "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "PRESERVED_BY"
+    ]
+  },
+  {
+    "colour": "#f4ebe2",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/preparations",
+    "excel_col": "AY",
+    "help_tip": "A list of affiliations separated by '|'",
+    "hidden": "false",
     "id": "copo.sample.PRESERVER_AFFILIATION",
     "label": "Preserver Affiliation",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/preparations",
-    "colour": "#f4ebe2",
-    "excel_col": "AY",
-    "order": 51
-  },
-  {
-    "help_tip": "Preparations and preservation methods for a specimen",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "PRESERVATION_APPROACH"
-    ],
+    "order": 51,
     "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "PRESERVER_AFFILIATION"
+    ]
+  },
+  {
+    "colour": "#f4ebe2",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/preparations",
+    "excel_col": "AZ",
+    "help_tip": "Preparations and preservation methods for a specimen",
+    "hidden": "false",
     "id": "copo.sample.PRESERVATION_APPROACH",
     "label": "Preservation Approach",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/preparations",
-    "colour": "#f4ebe2",
-    "excel_col": "AZ",
-    "order": 52
-  },
-  {
-    "help_tip": "Specific preservative solution used in preparation",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "PRESERVATIVE_SOLUTION"
-    ],
+    "order": 52,
     "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "PRESERVATION_APPROACH"
+    ]
+  },
+  {
+    "colour": "#f4ebe2",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/preparations",
+    "excel_col": "BA",
+    "help_tip": "Specific preservative solution used in preparation",
+    "hidden": "false",
     "id": "copo.sample.PRESERVATIVE_SOLUTION",
     "label": "Preservative Solution",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/preparations",
-    "colour": "#f4ebe2",
-    "excel_col": "BA",
-    "order": 53
-  },
-  {
-    "help_tip": "The date-time or interval during which an Event occurred. For occurrences, this is the date-time when the event was recorded. Not suitable for a time in a geological context. In format YYYY-MM-DD",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 53,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "PRESERVATIVE_SOLUTION"
+    ]
+  },
+  {
+    "colour": "#f4ebe2",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/eventTime",
+    "excel_col": "BB",
+    "help_tip": "The date-time or interval during which an Event occurred. For occurrences, this is the date-time when the event was recorded. Not suitable for a time in a geological context. In format YYYY-MM-DD",
+    "hidden": "false",
+    "id": "copo.sample.TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION",
+    "label": "Time Elapsed from Collection to Preservation (in hours)",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
+    "order": 54,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION",
-    "label": "Time Elapsed From Collection To Preservation (in Hours)",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/eventTime",
-    "colour": "#f4ebe2",
-    "excel_col": "BB",
-    "order": 54
+    ]
   },
   {
-    "help_tip": "The date-time or interval during which an Event occurred. For occurrences, this is the date-time when the event was recorded. Not suitable for a time in a geological context. In format YYYY-MM-DD",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#f4ebe2",
     "control": "date-picker",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "DATE_OF_PRESERVATION"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
+    "control_meta": {},
+    "default_value": "",
     "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/eventDate",
+    "excel_col": "BC",
+    "help_tip": "The date-time or interval during which an Event occurred. For occurrences, this is the date-time when the event was recorded. Not suitable for a time in a geological context. In format YYYY-MM-DD",
     "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
     "id": "copo.sample.DATE_OF_PRESERVATION",
     "label": "Date of Preservation",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/eventDate",
-    "colour": "#f4ebe2",
-    "excel_col": "BC",
-    "order": 55
-  },
-  {
-    "help_tip": "",
-    "required": "true",
-    "control_meta": {},
-    "dwc": "",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 55,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "DATE_OF_PRESERVATION"
+    ]
+  },
+  {
+    "colour": "#f4ebe2",
+    "control": "select",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BD",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.SIZE_OF_TISSUE_IN_TUBE",
+    "label": "Size of Tissue in Tube",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
+    "option_values": [
+      "VS",
+      "S",
+      "M",
+      "L",
+      "SINGLE_CELL",
+      "NOT_APPLICABLE",
+      "NOT_COLLECTED",
+      "NOT_PROVIDED"
+    ],
+    "order": 56,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "SIZE_OF_TISSUE_IN_TUBE"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Size Of Tissue In Tube",
-    "show_in_form": true,
-    "id": "copo.sample.SIZE_OF_TISSUE_IN_TUBE",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "#f4ebe2",
-    "excel_col": "BD",
-    "order": 56
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#c3f6ef",
+    "control": "select",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "BE",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.TISSUE_REMOVED_FOR_BARCODING",
+    "label": "Tissue Removed for Barcoding",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "Y",
+      "N"
+    ],
+    "order": 57,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "TISSUE_REMOVED_FOR_BARCODING"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Tissue Removed for Barcoding",
-    "show_in_form": true,
-    "id": "copo.sample.TISSUE_REMOVED_FOR_BARCODING",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "#c3f6ef",
-    "excel_col": "BE",
-    "order": 57
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#c3f6ef",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "BF",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.TUBE_OR_WELL_ID_FOR_BARCODING",
+    "label": "Tube or Well Identifier for Barcoding",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 58,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "TUBE_OR_WELL_ID_FOR_BARCODING"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Tube or Well ID for Barcoding",
-    "show_in_form": true,
-    "id": "copo.sample.TUBE_OR_WELL_ID_FOR_BARCODING",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "#c3f6ef",
-    "excel_col": "BF",
-    "order": 58
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#c3f6ef",
+    "control": "select",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "BG",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.TISSUE_FOR_BARCODING",
+    "label": "Tissue for Barcoding",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "ABDOMEN",
+      "ANTERIOR_BODY",
+      "BLADE",
+      "BLOOD",
+      "BODYWALL",
+      "BRACT",
+      "BRAIN",
+      "BUD",
+      "CAP",
+      "CEPHALOTHORAX",
+      "DNA_EXTRACT",
+      "EGG",
+      "EGGSHELL",
+      "ENDOCRINE_TISSUE",
+      "EYE",
+      "FAT_BODY",
+      "FIN",
+      "FLOWER",
+      "GILL_ANIMAL",
+      "GILL_FUNGI",
+      "GONAD",
+      "HAIR",
+      "HEAD",
+      "HEART",
+      "HEPATOPANCREAS",
+      "HOLDFAST_FUNGI",
+      "INTESTINE",
+      "KIDNEY",
+      "LEAF",
+      "LEG",
+      "LIVER",
+      "LUNG",
+      "MID_BODY",
+      "MODULAR_COLONY",
+      "MOLLUSC_FOOT",
+      "MULTICELLULAR_ORGANISMS_IN_CULTURE",
+      "MUSCLE",
+      "MYCELIUM",
+      "MYCORRHIZA",
+      "NOT_APPLICABLE",
+      "NOT_COLLECTED",
+      "NOT_PROVIDED",
+      "OVARY_ANIMAL",
+      "OVIDUCT",
+      "PANCREAS",
+      "PETIOLE",
+      "POSTERIOR_BODY",
+      "ROOT",
+      "SCALES",
+      "SCAT",
+      "SEED",
+      "SEEDLING",
+      "SHOOT",
+      "SKIN",
+      "SPERM_SEMINAL_FLUID",
+      "SPLEEN",
+      "SPORE",
+      "SPORE_BEARING_STRUCTURE",
+      "STEM",
+      "STIPE",
+      "STOMACH",
+      "TENTACLE",
+      "TERMINAL_BODY",
+      "TESTIS",
+      "THALLUS_FUNGI",
+      "THALLUS_PLANT",
+      "THORAX",
+      "UNICELLULAR_ORGANISMS_IN_CULTURE",
+      "WHOLE_ORGANISM",
+      "WHOLE_PLANT",
+      "**OTHER_FUNGAL_TISSUE**",
+      "**OTHER_PLANT_TISSUE**",
+      "**OTHER_REPRODUCTIVE_ANIMAL_TISSUE**",
+      "**OTHER_SOMATIC_ANIMAL_TISSUE**"
+    ],
+    "order": 59,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "TISSUE_FOR_BARCODING"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Tissue for Barcoding",
-    "show_in_form": true,
-    "id": "copo.sample.TISSUE_FOR_BARCODING",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "#c3f6ef",
-    "excel_col": "BG",
-    "order": 59
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#c3f6ef",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "BH",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.BARCODE_PLATE_PRESERVATIVE",
+    "label": "Barcode Plate Preservative",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 60,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "BARCODE_PLATE_PRESERVATIVE"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Barcode Plate Preservative",
-    "show_in_form": true,
-    "id": "copo.sample.BARCODE_PLATE_PRESERVATIVE",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "#c3f6ef",
-    "excel_col": "BH",
-    "order": 60
+    ]
   },
   {
-    "help_tip": "Barcoding Status",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
+    "colour": "#c3f6ef",
+    "control": "select",
     "control_meta": {},
-    "control": "text",
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BI",
+    "help_tip": "Barcoding Status",
+    "hidden": "false",
+    "id": "copo.sample.BARCODING_STATUS",
+    "label": "Barcoding Status",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "DNA_BARCODING_COMPLETED",
+      "DNA_BARCODE_EXEMPT",
+      "DNA_BARCODING_FAILED",
+      "DNA_BARCODING_TO_BE_PERFORMED_GAL"
+    ],
+    "order": 61,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "BARCODING_STATUS"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.BARCODING_STATUS",
-    "label": "barcodingStatus",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#c3f6ef",
-    "excel_col": "BI",
-    "order": 61
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#ebd2dd",
+    "control": "select",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BJ",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.TISSUE_REMOVED_FOR_BIOBANKING",
+    "label": "Tissue Removed for Biobanking",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "Y",
+      "N"
+    ],
+    "order": 62,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "TISSUE_REMOVED_FOR_BIOBANKING"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Tissue Removed For Biobanking",
-    "id": "copo.sample.TISSUE_REMOVED_FOR_BIOBANKING",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#ebd2dd",
-    "excel_col": "BJ",
-    "order": 62
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#ebd2dd",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BK",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.TISSUE_VOUCHER_ID_FOR_BIOBANKING",
+    "label": "Tissue Voucher Identifier for Biobanking",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 63,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "TISSUE_VOUCHER_ID_FOR_BIOBANKING"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Tissue Voucher ID For Biobanking",
-    "id": "copo.sample.TISSUE_VOUCHER_ID_FOR_BIOBANKING",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#ebd2dd",
-    "excel_col": "BK",
-    "order": 63
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "#ebd2dd",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BL",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING",
+    "label": "Proxy Tissue Voucher Identifier for Biobanking",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2"
     ],
+    "order": 64,
+    "ref": "",
+    "required": "false",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Proxy Tissue Voucher ID For Biobanking",
-    "id": "copo.sample.PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#ebd2dd",
-    "excel_col": "BL",
-    "order": 64
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#ebd2dd",
+    "control": "select",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BM",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.TISSUE_FOR_BIOBANKING",
+    "label": "Tissue for Biobanking",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "ABDOMEN",
+      "ANTERIOR_BODY",
+      "BLADE",
+      "BLOOD",
+      "BODYWALL",
+      "BRACT",
+      "BRAIN",
+      "BUD",
+      "CAP",
+      "CEPHALOTHORAX",
+      "DNA_EXTRACT",
+      "EGG",
+      "EGGSHELL",
+      "ENDOCRINE_TISSUE",
+      "EYE",
+      "FAT_BODY",
+      "FIN",
+      "FLOWER",
+      "GILL_ANIMAL",
+      "GILL_FUNGI",
+      "GONAD",
+      "HAIR",
+      "HEAD",
+      "HEART",
+      "HEPATOPANCREAS",
+      "HOLDFAST_FUNGI",
+      "INTESTINE",
+      "KIDNEY",
+      "LEAF",
+      "LEG",
+      "LIVER",
+      "LUNG",
+      "MID_BODY",
+      "MODULAR_COLONY",
+      "MOLLUSC_FOOT",
+      "MULTICELLULAR_ORGANISMS_IN_CULTURE",
+      "MUSCLE",
+      "MYCELIUM",
+      "MYCORRHIZA",
+      "NOT_APPLICABLE",
+      "NOT_COLLECTED",
+      "NOT_PROVIDED",
+      "OVARY_ANIMAL",
+      "OVIDUCT",
+      "PANCREAS",
+      "PETIOLE",
+      "POSTERIOR_BODY",
+      "ROOT",
+      "SCALES",
+      "SCAT",
+      "SEED",
+      "SEEDLING",
+      "SHOOT",
+      "SKIN",
+      "SPERM_SEMINAL_FLUID",
+      "SPLEEN",
+      "SPORE",
+      "SPORE_BEARING_STRUCTURE",
+      "STEM",
+      "STIPE",
+      "STOMACH",
+      "TENTACLE",
+      "TERMINAL_BODY",
+      "TESTIS",
+      "THALLUS_FUNGI",
+      "THALLUS_PLANT",
+      "THORAX",
+      "UNICELLULAR_ORGANISMS_IN_CULTURE",
+      "WHOLE_ORGANISM",
+      "WHOLE_PLANT",
+      "**OTHER_FUNGAL_TISSUE**",
+      "**OTHER_PLANT_TISSUE**",
+      "**OTHER_REPRODUCTIVE_ANIMAL_TISSUE**",
+      "**OTHER_SOMATIC_ANIMAL_TISSUE**"
+    ],
+    "order": 65,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "TISSUE_FOR_BIOBANKING"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Tissue For Biobanking",
-    "id": "copo.sample.TISSUE_FOR_BIOBANKING",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#ebd2dd",
-    "excel_col": "BM",
-    "order": 65
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#ebd2dd",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BN",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.BIOBANKED_TISSUE_PRESERVATIVE",
+    "label": "Biobanked Tissue Preservative",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2"
     ],
+    "order": 66,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "BIOBANKED_TISSUE_PRESERVATIVE"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Biobanked Tissue Preservative",
-    "id": "copo.sample.BIOBANKED_TISSUE_PRESERVATIVE",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#ebd2dd",
-    "excel_col": "BN",
-    "order": 66
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#ebd2dd",
+    "control": "select",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BO",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.DNA_REMOVED_FOR_BIOBANKING",
+    "label": "DNA Removed for Biobanking",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "Y",
+      "N"
+    ],
+    "order": 67,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "DNA_REMOVED_FOR_BIOBANKING"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "DNA Removed For Biobanking",
-    "id": "copo.sample.DNA_REMOVED_FOR_BIOBANKING",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#ebd2dd",
-    "excel_col": "BO",
-    "order": 67
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#ebd2dd",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BP",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.DNA_VOUCHER_ID_FOR_BIOBANKING",
+    "label": "DNA Voucher Identifier for Biobanking",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 68,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "DNA_VOUCHER_ID_FOR_BIOBANKING"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "DNA Voucher ID for Biobanking",
-    "id": "copo.sample.DNA_VOUCHER_ID_FOR_BIOBANKING",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#ebd2dd",
-    "excel_col": "BP",
-    "order": 68
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#ebd2dd",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "BQ",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.VOUCHER_ID",
+    "label": "Voucher Identifier",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 69,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "VOUCHER_ID"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Voucher ID",
-    "show_in_form": true,
-    "id": "copo.sample.VOUCHER_ID",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "#ebd2dd",
-    "excel_col": "BQ",
-    "order": 69
+    ]
   },
   {
-    "help_tip": "Proxy voucher ID",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#ebd2dd",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BR",
+    "help_tip": "Proxy Voucher Identifier",
+    "hidden": "false",
+    "id": "copo.sample.PROXY_VOUCHER_ID",
+    "label": "Proxy Voucher Identifier",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 70,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "PROXY_VOUCHER_ID"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.PROXY_VOUCHER_ID",
-    "label": "Proxy Voucher ID",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ebd2dd",
-    "excel_col": "BR",
-    "order": 70
+    ]
   },
   {
-    "help_tip": "Voucher Link",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#ebd2dd",
     "control": "text",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "VOUCHER_LINK"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
+    "control_meta": {},
+    "default_value": "",
     "deprecated": false,
+    "dwc": "",
+    "excel_col": "BS",
+    "help_tip": "Voucher Link",
     "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
     "id": "copo.sample.VOUCHER_LINK",
     "label": "Voucher Link",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ebd2dd",
-    "excel_col": "BS",
-    "order": 71
-  },
-  {
-    "help_tip": "Proxy voucher Link",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 71,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "VOUCHER_LINK"
+    ]
+  },
+  {
+    "colour": "#ebd2dd",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BT",
+    "help_tip": "Proxy Voucher Link",
+    "hidden": "false",
+    "id": "copo.sample.PROXY_VOUCHER_LINK",
+    "label": "Proxy Voucher Link",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
+    "order": 72,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "PROXY_VOUCHER_LINK"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.PROXY_VOUCHER_LINK",
-    "label": "proxyVoucherLink",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ebd2dd",
-    "excel_col": "BT",
-    "order": 72
+    ]
   },
   {
-    "help_tip": "Voucher Institution",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
+    "colour": "#ebd2dd",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BU",
+    "help_tip": "Voucher Institution",
+    "hidden": "false",
+    "id": "copo.sample.VOUCHER_INSTITUTION",
+    "label": "Voucher Institution",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 73,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "VOUCHER_INSTITUTION"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.VOUCHER_INSTITUTION",
-    "label": "voucherInstitution",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#ebd2dd",
-    "excel_col": "BU",
-    "order": 73
+    ]
   },
   {
-    "help_tip": "Regulatory Compliance",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
+    "colour": "#fff2cd",
+    "control": "select",
     "control_meta": {},
-    "control": "text",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "REGULATORY_COMPLIANCE"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
+    "default_value": "",
     "deprecated": false,
+    "dwc": "",
+    "excel_col": "BV",
+    "help_tip": "Regulatory Compliance",
     "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
     "id": "copo.sample.REGULATORY_COMPLIANCE",
     "label": "Regulatory Compliance",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#fff2cd",
-    "excel_col": "BV",
-    "order": 74
-  },
-  {
-    "help_tip": "",
-    "required": "true",
-    "control_meta": {},
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "Y",
+      "N",
+      "NOT_APPLICABLE"
+    ],
+    "order": 74,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "REGULATORY_COMPLIANCE"
+    ]
+  },
+  {
+    "colour": "#fff2cd",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BW",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE",
+    "label": "Associated Traditional Knowledge or Biocultural Rights Applicable",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
+    "order": 75,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Associated Traditional Knowledge Or Biocultural Righta Applicable",
-    "id": "copo.sample.ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "BW",
-    "order": 75
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "#fff2cd",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BX",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.INDIGENOUS_RIGHTS_DEF",
+    "label": "Indigenous Rights Definition",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 76,
+    "ref": "",
+    "required": "false",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "INDIGENOUS_RIGHTS_DEF"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Indigenous Rights Def",
-    "id": "copo.sample.INDIGENOUS_RIGHTS_DEF",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "BX",
-    "order": 76
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "#fff2cd",
+    "control": "select",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BY",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID",
+    "label": "Associated Traditional Knowledge or Biocultural Project Identifier",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "Y",
+      "N"
+    ],
+    "order": 77,
+    "ref": "",
+    "required": "false",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Associated Traditional Knowledge or Biocultural Project ID",
-    "id": "copo.sample.ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "BY",
-    "order": 77
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "#fff2cd",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "BZ",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.ASSOCIATED_TRADITIONAL_KNOWLEDGE_CONTACT",
+    "label": "Associated Traditional Knowledge Contact",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 78,
+    "ref": "",
+    "required": "false",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "ASSOCIATED_TRADITIONAL_KNOWLEDGE_CONTACT"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Associated Traditional Knowledge Contact",
-    "id": "copo.sample.ASSOCIATED_TRADITIONAL_KNOWLEDGE_CONTACT",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "BZ",
-    "order": 78
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#fff2cd",
+    "control": "select",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "CA",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.ETHICS_PERMITS_REQUIRED",
+    "label": "Ethics Permits Required",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "Y",
+      "N"
+    ],
+    "order": 79,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "ETHICS_PERMITS_REQUIRED"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Ethics Permits Required",
-    "id": "copo.sample.ETHICS_PERMITS_REQUIRED",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "CA",
-    "order": 79
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#fff2cd",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "CB",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.ETHICS_PERMITS_DEF",
+    "label": "Ethics Permits Definition",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 80,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "ETHICS_PERMITS_DEF"
-    ],
-    "ref": "",
+    ]
+  },
+  {
+    "colour": "#fff2cd",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
     "deprecated": false,
+    "dwc": "",
+    "excel_col": "CC",
+    "help_tip": "",
     "hidden": "false",
+    "id": "copo.sample.ETHICS_PERMITS_FILENAME",
+    "label": "Ethics Permits File name",
+    "manifest_version": [
+      "2.5",
+      "2.4.3"
+    ],
+    "order": 81,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "show_in_form": true,
-    "label": "Ethics Permits Def",
-    "id": "copo.sample.ETHICS_PERMITS_DEF",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
     "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "CB",
-    "order": 80
-  },
-  {
-    "help_tip": "",
-    "required": "true",
-    "control_meta": {},
-    "manifest_version": [
-      "2.4.3"
-    ],
     "versions": [
       "ETHICS_PERMITS_FILENAME"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Ethics Permits Filename",
-    "id": "copo.sample.ETHICS_PERMITS_FILENAME",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "CC",
-    "order": 81
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#fff2cd",
+    "control": "select",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "CD",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.SAMPLING_PERMITS_REQUIRED",
+    "label": "Sampling Permits Required",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "Y",
+      "N"
+    ],
+    "order": 82,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "SAMPLING_PERMITS_REQUIRED"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Sampling Permits Required",
-    "id": "copo.sample.SAMPLING_PERMITS_REQUIRED",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "CD",
-    "order": 82
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#fff2cd",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "CE",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.SAMPLING_PERMITS_DEF",
+    "label": "Sampling Permits Definition",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 83,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "SAMPLING_PERMITS_DEF"
-    ],
-    "ref": "",
+    ]
+  },
+  {
+    "colour": "#fff2cd",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
     "deprecated": false,
+    "dwc": "",
+    "excel_col": "CF",
+    "help_tip": "",
     "hidden": "false",
+    "id": "copo.sample.SAMPLING_PERMITS_FILENAME",
+    "label": "Sampling Permits File name",
+    "manifest_version": [
+      "2.5",
+      "2.4.3"
+    ],
+    "order": 84,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "show_in_form": true,
-    "label": "Sampling Permits Def",
-    "id": "copo.sample.SAMPLING_PERMITS_DEF",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
     "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "CE",
-    "order": 83
-  },
-  {
-    "help_tip": "",
-    "required": "true",
-    "control_meta": {},
-    "manifest_version": [
-      "2.4.3"
-    ],
     "versions": [
       "SAMPLING_PERMITS_FILENAME"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Sampling Permits Filename",
-    "id": "copo.sample.SAMPLING_PERMITS_FILENAME",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "CF",
-    "order": 84
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#fff2cd",
+    "control": "select",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "CG",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.NAGOYA_PERMITS_REQUIRED",
+    "label": "Nagoya Permits Required",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "option_values": [
+      "Y",
+      "N"
+    ],
+    "order": 85,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "NAGOYA_PERMITS_REQUIRED"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Nagoya Permits Required",
-    "id": "copo.sample.NAGOYA_PERMITS_REQUIRED",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "CG",
-    "order": 85
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#fff2cd",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "CH",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.NAGOYA_PERMITS_DEF",
+    "label": "Nagoya Permits Definition",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 86,
+    "ref": "",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "NAGOYA_PERMITS_DEF"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "specifications": [
-      "erga"
-    ],
-    "show_in_form": true,
-    "label": "Nagoya Permits Def",
-    "id": "copo.sample.NAGOYA_PERMITS_DEF",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
-    "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "CH",
-    "order": 86
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
+    "colour": "#fff2cd",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "CI",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.NAGOYA_PERMITS_FILENAME",
+    "label": "Nagoya Permits File name",
     "manifest_version": [
+      "2.5",
       "2.4.3"
     ],
-    "versions": [
-      "NAGOYA_PERMITS_FILENAME"
-    ],
+    "order": 87,
     "ref": "",
-    "deprecated": false,
-    "hidden": "false",
+    "required": "true",
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "show_in_form": true,
-    "label": "Nagoya Permits Filename",
-    "id": "copo.sample.NAGOYA_PERMITS_FILENAME",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "dwc": "",
     "type": "string",
-    "colour": "#fff2cd",
-    "excel_col": "CI",
-    "order": 87
+    "versions": [
+      "NAGOYA_PERMITS_FILENAME"
+    ]
   },
   {
-    "help_tip": "Hazard Group",
-    "required": "true",
-    "default_value": "",
-    "show_as_attribute": true,
+    "colour": "#daebd4",
+    "control": "select",
     "control_meta": {},
-    "control": "text",
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "CJ",
+    "help_tip": "Hazard Group",
+    "hidden": "false",
+    "id": "copo.sample.HAZARD_GROUP",
+    "label": "Hazard Group",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "HAZARD_GROUP"
+    "option_values": [
+      "1",
+      "2",
+      "3",
+      "4"
     ],
+    "order": 88,
     "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.HAZARD_GROUP",
-    "label": "Hazard Group",
-    "show_in_table": true,
-    "dwc": "",
-    "colour": "#daebd4",
-    "excel_col": "CJ",
-    "order": 88
+    "versions": [
+      "HAZARD_GROUP"
+    ]
   },
   {
-    "help_tip": "Primary Biogenome Project",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
+    "colour": "#daebd4",
+    "control": "select",
     "control_meta": {},
-    "control": "text",
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/dynamicProperties",
+    "excel_col": "CK",
+    "help_tip": "Primary Biogenome Project",
+    "hidden": "false",
+    "id": "copo.sample.PRIMARY_BIOGENOME_PROJECT",
+    "label": "Primary Biogenome Project",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2"
     ],
+    "option_values": [
+      "ERGA-BGE",
+      "ERGA-Pilot",
+      "ERGA-Satellites",
+      "ERGA-associated"
+    ],
+    "order": 89,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "PRIMARY_BIOGENOME_PROJECT"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.PRIMARY_BIOGENOME_PROJECT",
-    "label": "Primary Biogenome Project",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/dynamicProperties",
-    "colour": "#daebd4",
-    "excel_col": "CK",
-    "order": 89
+    ]
   },
   {
-    "help_tip": "Associated Biogenome Projects",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
-    "manifest_version": [
-      "2.4.3"
-    ],
-    "versions": [
-      "ASSOCIATED_BIOGENOME_PROJECTS"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": true,
-    "id": "copo.sample.ASSOCIATED_BIOGENOME_PROJECTS",
-    "label": "Associated Biogenome Projects",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/dynamicProperties",
     "colour": "#daebd4",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/dynamicProperties",
     "excel_col": "CL",
-    "order": 90
-  },
-  {
-    "help_tip": "Other Information",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
-    "control_meta": {},
-    "control": "text",
+    "help_tip": "Multiple projects can be entered by separating names/bioproject identifiers with a '|' (vertical pipe) character.",
+    "hidden": "false",
+    "id": "copo.sample.ASSOCIATED_PROJECT_ACCESSIONS",
+    "label": "Associated Project Accessions",
     "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
+      "2.5"
     ],
-    "versions": [
-      "OTHER_INFORMATION"
-    ],
+    "order": 90,
     "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "string",
-    "show_in_form": true,
+    "versions": [
+      "ASSOCIATED_PROJECT_ACCESSIONS"
+    ]
+  },
+  {
+    "colour": "#daebd4",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/dynamicProperties",
+    "excel_col": "CM",
+    "help_tip": "Other Information",
+    "hidden": "false",
     "id": "copo.sample.OTHER_INFORMATION",
     "label": "Other Information",
-    "show_in_table": true,
-    "dwc": "http://rs.tdwg.org/dwc/terms/dynamicProperties",
-    "colour": "#daebd4",
-    "excel_col": "CM",
-    "order": 91
-  },
-  {
-    "help_tip": "",
-    "required": "false",
-    "control_meta": {},
-    "dwc": "",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": 91,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
+    "versions": [
+      "OTHER_INFORMATION"
+    ]
+  },
+  {
+    "colour": "",
+    "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.associated_tol_project",
+    "label": "Associated TOL (Tree of Life) Project",
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
+    "order": null,
+    "ref": "",
+    "required": "false",
+    "show_in_form": false,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "associated_tol_project"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Associated TOL Project",
-    "show_in_form": false,
-    "id": "copo.sample.associated_tol_project",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "",
-    "excel_col": "",
-    "order": null
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.biosampleAccession",
+    "label": "Biosample Accession",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": null,
+    "ref": "",
+    "required": "false",
+    "show_in_form": false,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "biosampleAccession"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Biosample Accession",
-    "show_in_form": false,
-    "id": "copo.sample.biosampleAccession",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "",
-    "excel_col": "",
-    "order": null
+    ]
   },
   {
-    "help_tip": "Characteristics of the sample e.g., height, sex",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
+    "colour": "",
+    "control": "copo-characteristics",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "excel_col": "",
+    "help_tip": "Characteristics of the sample e.g., height, sex",
+    "hidden": "false",
+    "id": "copo.sample.characteristics",
+    "label": "Characteristics",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "characteristics"
-    ],
+    "order": null,
     "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": false,
     "specifications": [
       "isasample",
       "biosample"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "array",
-    "show_in_form": true,
-    "id": "copo.sample.characteristics",
-    "label": "Characteristics",
-    "show_in_table": false,
-    "control": "copo-characteristics"
+    "versions": [
+      "characteristics"
+    ]
   },
   {
-    "help_tip": "Factors express treatments on the sample, e.g., compound, dose, duration",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": true,
+    "colour": "",
+    "control": "copo-characteristics",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "excel_col": "",
+    "help_tip": "Factors express treatments on the sample, e.g., compound, dose, duration",
+    "hidden": "false",
+    "id": "copo.sample.factorValues",
+    "label": "Factors",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "factorValues"
-    ],
+    "order": null,
     "ref": "",
+    "required": "false",
+    "show_as_attribute": true,
+    "show_in_form": true,
+    "show_in_table": false,
     "specifications": [
       "isasample"
     ],
-    "deprecated": false,
-    "hidden": "false",
     "type": "array",
-    "show_in_form": true,
-    "id": "copo.sample.factorValues",
-    "label": "Factors",
-    "show_in_table": false,
-    "control": "copo-characteristics"
+    "versions": [
+      "factorValues"
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
-    "default_value": "na",
+    "colour": "",
+    "control": "text",
     "control_meta": {},
+    "default_value": "na",
+    "deprecated": false,
+    "excel_col": "",
+    "help_tip": "",
+    "hidden": "true",
+    "id": "copo.sample.manifest_id",
+    "label": "Manifest Identifier",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": null,
+    "ref": "",
+    "required": "false",
+    "show_in_form": false,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "manifest_id"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "true",
-    "label": "Manifest ID",
-    "show_in_form": false,
-    "id": "copo.sample.manifest_id",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "colour": "",
-    "excel_col": "",
-    "order": null
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "",
+    "help_tip": "",
+    "hidden": "true",
+    "id": "copo.sample.manifest_version",
+    "label": "Manifest Version",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": null,
+    "ref": "",
+    "required": "false",
+    "show_in_form": false,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "manifest_version"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "true",
-    "label": "Manifest Version",
-    "show_in_form": false,
-    "id": "copo.sample.manifest_version",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "",
-    "excel_col": "",
-    "order": null
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
-    "default_value": "",
+    "colour": "",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "excel_col": "",
+    "help_tip": "",
+    "hidden": "true",
+    "id": "copo.sample.profile_id",
+    "label": "Profile Identifier",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": null,
+    "ref": "",
+    "required": "true",
+    "show_in_form": false,
+    "show_in_table": false,
+    "type": "string",
     "versions": [
       "profile_id"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "true",
-    "label": "Profile ID",
-    "show_in_form": false,
-    "id": "copo.sample.profile_id",
-    "type": "string",
-    "show_in_table": false,
-    "control": "text"
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.public_name",
+    "label": "Public Name",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": null,
+    "ref": "",
+    "required": "false",
+    "show_in_form": false,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "public_name"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Public Name",
-    "show_in_form": false,
-    "id": "copo.sample.public_name",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "",
-    "excel_col": "",
-    "order": null
+    ]
   },
   {
-    "help_tip": "rack_tube",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": false,
-    "control_meta": {},
+    "colour": "",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "http://rs.tdwg.org/dwc/terms/dynamicProperties",
+    "excel_col": "",
+    "help_tip": "rack_tube",
+    "hidden": "true",
+    "id": "copo.sample.rack_tube",
+    "label": "Rack Tube",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": null,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": false,
+    "show_in_form": false,
+    "show_in_table": false,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "rack_tube"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "true",
-    "type": "string",
-    "show_in_form": false,
-    "id": "copo.sample.rack_tube",
-    "label": "",
-    "show_in_table": false,
-    "dwc": "http://rs.tdwg.org/dwc/terms/dynamicProperties",
-    "colour": "",
-    "excel_col": "",
-    "order": null
+    ]
   },
   {
-    "help_tip": "",
-    "required": "true",
-    "default_value": "",
-    "control_meta": {},
+    "colour": "",
     "control": "select",
-    "manifest_version": [
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "versions": [
-      "sample_type"
-    ],
+    "control_meta": {},
+    "default_value": "",
     "deprecated": false,
+    "excel_col": "",
+    "help_tip": "",
     "hidden": "true",
     "id": "copo.sample.sample_type",
     "label": "Sample Type",
-    "show_in_form": false,
-    "ref": "",
-    "type": "string",
-    "show_in_table": false,
-    "show_as_attribute": true,
+    "manifest_version": [
+      "2.5",
+      "2.4.3",
+      "2.4.2",
+      "2.4.1"
+    ],
     "option_values": {
       "callback": {
         "parameter": "",
         "function": "get_sample_type_options"
       }
-    }
+    },
+    "order": null,
+    "ref": "",
+    "required": "true",
+    "show_as_attribute": true,
+    "show_in_form": false,
+    "show_in_table": false,
+    "type": "string",
+    "versions": [
+      "sample_type"
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
-    "default_value": "",
-    "show_as_attribute": false,
-    "control_meta": {},
+    "colour": "",
     "control": "text",
+    "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
+    "dwc": "",
+    "excel_col": "",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.species_list",
+    "label": "Species List",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": null,
+    "ref": "",
+    "required": "false",
+    "show_as_attribute": false,
+    "show_in_form": false,
+    "show_in_table": false,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "species_list"
-    ],
-    "ref": "",
-    "specifications": [
-      "erga"
-    ],
-    "deprecated": false,
-    "hidden": "false",
-    "type": "string",
-    "show_in_form": false,
-    "id": "copo.sample.species_list",
-    "label": "species_list",
-    "show_in_table": false,
-    "dwc": "",
-    "colour": "",
-    "excel_col": "",
-    "order": null
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.sraAccession",
+    "label": "SRA Accession",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": null,
+    "ref": "",
+    "required": "false",
+    "show_in_form": false,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "sraAccession"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "SRA Accession",
-    "show_in_form": false,
-    "id": "copo.sample.sraAccession",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "",
-    "excel_col": "",
-    "order": null
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "",
+    "control": "text",
     "control_meta": {},
+    "default_value": "pending",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.status",
+    "label": "Status",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": null,
+    "ref": "",
+    "required": "false",
+    "show_in_form": false,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "status"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Status",
-    "show_in_form": false,
-    "id": "copo.sample.status",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "pending",
-    "colour": "",
-    "excel_col": "",
-    "order": null
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.submissionAccession",
+    "label": "Submission Accession",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
+    "order": null,
+    "ref": "",
+    "required": "false",
+    "show_in_form": false,
+    "show_in_table": true,
+    "specifications": [
+      "erga"
+    ],
+    "type": "string",
     "versions": [
       "submissionAccession"
-    ],
-    "specifications": [
-      "erga"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Submission Accession",
-    "show_in_form": false,
-    "id": "copo.sample.submissionAccession",
-    "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "",
-    "excel_col": "",
-    "order": null
+    ]
   },
   {
-    "help_tip": "",
-    "required": "false",
+    "colour": "",
+    "control": "text",
     "control_meta": {},
+    "default_value": "",
+    "deprecated": false,
     "dwc": "",
+    "excel_col": "",
+    "help_tip": "",
+    "hidden": "false",
+    "id": "copo.sample.tol_project",
+    "label": "TOL (Tree of Life) Project",
     "manifest_version": [
+      "2.5",
       "2.4.3",
       "2.4.2",
       "2.4.1"
     ],
-    "versions": [
-      "tol_project"
-    ],
+    "order": null,
+    "ref": "",
+    "required": "false",
+    "show_in_form": false,
+    "show_in_table": true,
     "specifications": [
       "erga"
     ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "TOL Project",
-    "show_in_form": false,
-    "id": "copo.sample.tol_project",
     "type": "string",
-    "show_in_table": true,
-    "control": "text",
-    "default_value": "",
-    "colour": "",
-    "excel_col": "",
-    "order": null
+    "versions": [
+      "tol_project"
+    ]
   }
 ]

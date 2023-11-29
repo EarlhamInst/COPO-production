@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from common.lookup.lookup import HTML_TAGS
 import common.lookup.lookup as lkup
 import common.schemas.utils.data_utils as d_utils
+from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES_FULL
 from .copo_lookup_service import COPOLookup
 from common.dal.copo_base_da import DataSchemas
 from src.apps.copo_core.models import SequencingCentre
@@ -465,9 +466,7 @@ def generate_table_records(profile_id=str(), component=str(), record_id=str()):
         current_schema_version = settings.MANIFEST_VERSION.get(
             profile_type.upper(), '')
 
-        get_dtol_fields = type in ["Aquatic Symbiosis Genomics (ASG)", "Darwin Tree of Life (DTOL)",
-                                   "European Reference Genome Atlas (ERGA)",
-                                   "Darwin Tree of Life Environmental Samples (DTOL_ENV)"]
+        get_dtol_fields = type in TOL_PROFILE_TYPES_FULL
         # get and filter schema elements based on displayable columns and profile type
         if get_dtol_fields:
 

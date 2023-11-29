@@ -48,10 +48,14 @@ def notify_frontend(action="message", msg=str(), data={}, html_id="", profile_id
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
     event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
     channel_layer = get_channel_layer()
+
+    # The following line sometimes causes a RuntimeError - 
+    # 'you cannot use AsyncToSync in the same thread as an async event loop'
     async_to_sync(channel_layer.group_send)(
         group_name,
         event
     )
+
     return True
 
 def notify_assembly_status(action="message", msg=str(), data={}, html_id="", profile_id=""):

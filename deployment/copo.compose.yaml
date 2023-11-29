@@ -13,7 +13,7 @@ services:
       - logs-data:/copo/logs
       - b2drop-permits:/copo/b2drop/permits
     environment:
-      - ENVIRONMENT_TYPE=prod
+      - ENVIRONMENT_TYPE=demo
       - ASPERA_PLUGIN_DIRECTORY=aspera_linux_plugin
       - SECRET_KEY_FILE=/run/secrets/copo_web_secret_key
       - MEDIA_PATH=media/
@@ -111,7 +111,7 @@ services:
       - logs-data:/copo/logs
       - b2drop-permits:/copo/b2drop/permits
     environment:
-      - ENVIRONMENT_TYPE=prod
+      - ENVIRONMENT_TYPE=demo
       - ASPERA_PLUGIN_DIRECTORY=aspera_linux_plugin
       - SECRET_KEY_FILE=/run/secrets/copo_web_secret_key
       - MEDIA_PATH=media/

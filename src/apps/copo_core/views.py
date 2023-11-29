@@ -544,7 +544,7 @@ def edit_group(request):
 
 
 def delete_group(request):
-    id = request.GET['group_id']
+    id = request.GET.get('group_id','')
     deleted = CopoGroup().delete_group(group_id=id)
     if deleted:
         return HttpResponse(json.dumps({'deleted': True}))
@@ -553,7 +553,7 @@ def delete_group(request):
 
 
 def view_group(request):
-    id = request.GET['group_id']
+    id = request.GET.get('group_id','')
     group_info = CopoGroup().view_shared_group(group_id=id)
     if group_info:
         return HttpResponse(json_util.dumps({'resp': group_info}))
@@ -562,8 +562,8 @@ def view_group(request):
 
 
 def add_profile_to_group(request):
-    group_id = request.GET['group_id']
-    profile_id = request.GET['profile_id']
+    group_id = request.GET.get('group_id','')
+    profile_id = request.GET.get('profile_id','')
     resp = CopoGroup().add_profile(group_id=group_id, profile_id=profile_id)
     if resp:
         return HttpResponse(json.dumps({'resp': 'Added to Group'}))
@@ -572,8 +572,8 @@ def add_profile_to_group(request):
 
 
 def remove_profile_from_group(request):
-    group_id = request.GET['group_id']
-    profile_id = request.GET['profile_id']
+    group_id = request.GET.get('group_id','')
+    profile_id = request.GET.get('profile_id','')
     resp = CopoGroup().remove_profile(group_id=group_id, profile_id=profile_id)
     if resp:
         return HttpResponse(json.dumps({'resp': 'Removed from Group'}))
@@ -582,13 +582,13 @@ def remove_profile_from_group(request):
 
 
 def get_profiles_in_group(request):
-    group_id = request.GET['group_id']
+    group_id = request.GET.get('group_id','')
     grp_info = CopoGroup().get_profiles_for_group_info(group_id=group_id)
     return HttpResponse(json_util.dumps({'resp': grp_info}))
 
 
 def get_users_in_group(request):
-    group_id = request.GET['group_id']
+    group_id = request.GET.get('group_id','')
     usr_info = CopoGroup().get_users_for_group_info(group_id=group_id)
     return HttpResponse(json_util.dumps({'resp': usr_info}))
 
@@ -604,15 +604,15 @@ def get_users(request):
 
 
 def add_user_to_group(request):
-    group_id = request.GET['group_id']
-    user_id = request.GET['user_id']
+    group_id = request.GET.get('group_id','')
+    user_id = request.GET.get('user_id','')
     grp_info = CopoGroup().add_user_to_group(group_id=group_id, user_id=user_id)
     return HttpResponse(json_util.dumps({'resp': grp_info}))
 
 
 def remove_user_from_group(request):
-    group_id = request.GET['group_id']
-    user_id = request.GET['user_id']
+    group_id = request.GET.get('group_id','')
+    user_id = request.GET.get('user_id','')
     grp_info = CopoGroup().remove_user_from_group(
         group_id=group_id, user_id=user_id)
     return HttpResponse(json_util.dumps({'resp': grp_info}))

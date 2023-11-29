@@ -10,7 +10,7 @@ services:
     volumes:
       - /Users/fshaw/Documents/dev/COPO-production:/copo
     environment:
-      - ENVIRONMENT_TYPE=prod
+      - ENVIRONMENT_TYPE=local
       - ASPERA_PLUGIN_DIRECTORY=aspera_linux_plugin
       - SECRET_KEY_FILE=/run/secrets/copo_web_secret_key
       - MEDIA_PATH=media/

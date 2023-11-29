@@ -1294,6 +1294,8 @@ components:
           type: string
         REGULATORY_COMPLIANCE:
           type: string
+        BOLD_ACCESSION_NUMBER:
+          type: string
         VOUCHER_ID:
           type: string
         RELATIONSHIP:
@@ -1319,8 +1321,6 @@ components:
         ORIGINAL_GEOGRAPHIC_LOCATION:
           type: string
         ORIGINAL_COLLECTION_DATE:
-          type: string
-        boldAccession:
           type: string
         public_name:
           type: string
@@ -1495,6 +1495,7 @@ components:
         [
           BARCODE_HUB,
           BARCODE_PLATE_PRESERVATIVE,
+          BOLD_ACCESSION_NUMBER,
           COLLECTOR_SAMPLE_ID,
           CULTURE_OR_STRAIN_ID,
           DATE_OF_PRESERVATION,
@@ -1531,6 +1532,7 @@ components:
         [
           BARCODE_HUB,
           BARCODE_PLATE_PRESERVATIVE,
+          BOLD_ACCESSION_NUMBER,
           COLLECTOR_SAMPLE_ID,
           CULTURE_OR_STRAIN_ID,
           DATE_OF_PRESERVATION,

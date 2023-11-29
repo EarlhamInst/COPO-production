@@ -326,11 +326,17 @@ def process_pending_dtol_samples():
                                                     async_send=False)
                 # l.log("submission status is " + str(accessions.get("status", "")), type=Logtype.FILE)
                 if not accessions or accessions.get("status", "") == "error":
-                    if handle_common_ENA_error(accessions.get("msg", ""), sour['_id']):
-                        pass
+                    # Check for type/instance of accessions because it can be a boolean
+                    if isinstance(accessions, dict): 
+                        if handle_common_ENA_error(accessions.get("msg", ""), sour['_id']):
+                            pass
                     else:
-                        msg = "Submission Rejected: specimen level " + sam["SPECIMEN_ID"] + "<p>" + accessions[
-                            "msg"] if accessions else " ERROR " + "</p>"
+                        # msg = "Submission Rejected: specimen level " + sam["SPECIMEN_ID"] + "<p>" + accessions[
+                        #     "msg"] + "</p>" if accessions else "<p>" + " ERROR " + "</p>"
+                        
+                        msg_content =  "<p>" + accessions.get("msg", "") + "</p>" if accessions else "<p>" + " ERROR " + "</p>"
+                        msg =  "Submission Rejected: specimen level " + sam["SPECIMEN_ID"] + msg_content
+
                         notify_frontend(data={"profile_id": profile_id}, msg=msg, action="error",
                                         html_id="dtol_sample_info")
                         status = {}
@@ -348,7 +354,7 @@ def process_pending_dtol_samples():
                                                                                                 "")
 
                 if not specimen_accession:
-                    l.log("no accession found, set submission to pending")
+                    l.log("No accessions found, set submission to pending")
                     Submission().make_dtol_status_pending(submission['_id'])
                     msg = "Connection issue - please try resubmit later"
                     log_message(msg, Loglvl.INFO, profile_id=profile_id)
@@ -1048,8 +1054,8 @@ def submit_biosample_v2(subfix, sampleobj, collection_id, sample_ids, type="samp
                             html_id="dtol_sample_info")
             Submission().reset_dtol_submission_status(collection_id, sample_ids)
     except ET.ParseError as e:
-        l.log("Unrecognized response from ENA " + str(e), type=Logtype.FILE)
-        message = " Unrecognized response from ENA - " + str(
+        l.log("Unrecognised response from ENA " + str(e), type=Logtype.FILE)
+        message = " Unrecognised response from ENA - " + str(
             receipt) + " Please try again later, if it persists contact admins"
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
                         html_id="dtol_sample_info")
@@ -1094,9 +1100,9 @@ def poll_asyn_ena_submission():
                         accessions = handle_submit_receipt(
                             Sample(), submission["_id"], tree)
                     except ET.ParseError as e:
-                        l.log("Unrecognized response from ENA " +
+                        l.log("Unrecognised response from ENA " +
                               str(e), type=Logtype.FILE)
-                        message = " Unrecognized response from ENA - " + str(
+                        message = " Unrecognised response from ENA - " + str(
                             response.content) + " Please try again later, if it persists contact admins"
                         notify_frontend(data={"profile_id": submission["profile_id"]}, msg=message, action="error",
                                         html_id="dtol_sample_info")
@@ -1217,9 +1223,9 @@ def submit_biosample(subfix, sampleobj, collection_id, type="sample"):
     try:
         tree = ET.fromstring(receipt)
     except ET.ParseError as e:
-        l.log("Unrecognized response from ENA " + str(e), type=Logtype.FILE)
-        message = " Unrecognized response from ENA - " + str(
-            receipt) + " Please try again later, if it persists contact admins"
+        l.log("Unrecognised response from ENA " + str(e), type=Logtype.FILE)
+        message = " Unrecognised response from ENA - " + str(
+            receipt) + " Please try again later, if it persists, contact admin"
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
                         html_id="dtol_sample_info")
         os.remove(submissionfile)
@@ -1270,9 +1276,25 @@ def get_bundle_biosampleId(tree, collection_id, type="sample"):
                                        sra_accession, submission_accession, sample_id)
                 Submission().add_accession(biosample_accession, sra_accession, submission_accession, sample_id,
                                            collection_id)
+                
+                # Send an email to user and contact person for the sequencing centre 
+                # conveying that the manifest/samples have been accepted
+                # after the accessions have been added to the sample
+                sample = Sample().get_sample_by_id(ObjectId(sample_id))
+                profile_id = sample[0].get('profile_id','') # Get the profile ID from the sample
+                profile = Profile().get_record(profile_id)
+
+                if profile and isinstance(profile, dict):
+                    Email().notify_sample_accepted_after_approval(project=get_profile_type(profile.get('type','')), sequencing_centres=profile.get('sequencing_centre',[]), title=profile.get('title',''))
+                else:
+                    l.log("No profiles found to send email for accepted samples")
+
             elif type == "source":
                 Source().add_accession(biosample_accession,
                                        sra_accession, submission_accession, sample_id)
+                
+
+
     accessions = {"submission_accession": submission_accession, "status": "ok"}
     return accessions
 
@@ -1342,7 +1364,7 @@ def create_study(profile_id, collection_id):
     try:
         tree = ET.fromstring(receipt)
     except ET.ParseError as e:
-        message = " Unrecognized response from ENA - " + str(
+        message = " Unrecognised response from ENA - " + str(
             receipt) + " Please try again later, if it persists contact admins"
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
                         html_id="dtol_sample_info")
@@ -1395,7 +1417,7 @@ def handle_common_ENA_error(error_to_parse, source_id):
     try:
         report = json.loads(receipt.decode('utf8').replace("'", '"'))
     except Exception as e:
-        l.log("Unrecognized response from ENA - " + str(e), type=Logtype.FILE)
+        l.log("Unrecognised response from ENA - " + str(e), type=Logtype.FILE)
         return False
 
     sra_accession = report[0]["report"].get("id", "")

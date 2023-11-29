@@ -196,9 +196,9 @@ class DtolEnumerationValidator(Validator):
                                     ))
                                     self.flag = False
                         elif c_value.strip() not in allowed_vals:
-                            # extra handling for empty SYMBIONT ind DTOL and ERGA manifest, which means TARGET
+                            # extra handling for empty SYMBIONT in "ASG", DTOL and ERGA manifests, which means TARGET
                             if not c_value.strip() and header == "SYMBIONT" and any(
-                                    x in p_type for x in ["DTOL", "ERGA"]):
+                                    x in p_type for x in ["ASG","DTOL", "ERGA"]):
                                 self.data.at[cellcount - 1,
                                              "SYMBIONT"] = "TARGET"
 

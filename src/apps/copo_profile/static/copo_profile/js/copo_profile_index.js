@@ -53,7 +53,7 @@ $(document).ready(function () {
       // Display 'Accept/reject' button for sample managers
       if (groups[g].includes('sample_managers')) {
         $('#accept_reject_shortcut').show();
-        break;
+        // break;
       }
       $('#copo_accessions_dashboard_shortcut').show(); // Show 'Accessions tol_dashboard' button for all users
       $('#copo_tol_dashboard_shortcut').show(); // Show 'Tree of life tol_dashboard' button for all users
@@ -455,12 +455,12 @@ function deleteProfileRecord(profileRecordID) {
                 type: BootstrapDialog.TYPE_INFO,
               });
 
-              document
-                .getElementById(profileRecordID)
-                .closest('.copo-records-panel').style.display = 'none';
-
               // Refresh web page to have change reflected
               setTimeout(function () {
+                document
+                  .getElementById(profileRecordID)
+                  .closest('.copo-records-panel').style.display = 'none';
+
                 window.location.reload();
               }, 1000);
             })

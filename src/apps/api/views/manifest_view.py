@@ -421,13 +421,17 @@ def download_manifest(request, manifest_id):
         else:
             sample["SYMBIONT"] = "TARGET"
 
-    #special handling for popgenomic
-    for associated_type in  profile.get("associated_type", []) :
-        if associated_type.get("value", "") == "POP_GENOMICS":
-            for sample in samples:
-                if sample.get("PURPOSE_OF_SPECIMEN", []) == "RESEQUENCING":
-                    sample["PURPOSE_OF_SPECIMEN"] = "SHORT_READ_SEQUENCING"
-          
+    # Special handling for 'POP_GENOMICS' associated project type
+    # The following code is no longer needed since "RESEQUENCING" is now a valid value for 
+    # "PURPOSE_OF_SPECIMEN" as manifest v2.5
+    '''
+     for associated_type in  profile.get("associated_type", []) :
+         if associated_type.get("value", "") == "POP_GENOMICS":
+             for sample in samples:
+                 if sample.get("PURPOSE_OF_SPECIMEN", []) == "RESEQUENCING":
+                     sample["PURPOSE_OF_SPECIMEN"] = "SHORT_READ_SEQUENCING"
+    '''
+
     #special handling for permit file
     sample_df = pd.DataFrame.from_records(samples)
     for prefix in lkup.PERMIT_COLUMN_NAMES_PREFIX:

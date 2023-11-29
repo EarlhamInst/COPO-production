@@ -50,9 +50,10 @@ MESSAGES = {
                                   '<strong>%s</strong>. Date cannot be in the future.',
     'validation_msg_invalid_associated_tol_project': 'Invalid associated profile type for profile, '
                                                      '<strong>%s</strong>. Expected value should include '
-                                                     '<strong>Population Genomics (POP_GENOMICS)</strong> if value of column '
+                                                     '<strong>Population Genomics (POP_GENOMICS)</strong> and '
+                                                     '<strong>Biodiversity Genomics Europe (BGE)</strong> if value of column '
                                                      '<strong>PURPOSE_OF_SPECIMEN</strong> is '
-                                                     '<strong>SHORT_READ_SEQUENCING</strong>. Please update/edit the '
+                                                     '<strong>RESEQUENCING</strong>. Please update/edit the '
                                                      'associated profile type for the profile then, reupload the '
                                                      'manifest.',
     'validation_msg_invalid_binomial_name': "For the TAXON_ID,  <strong>%s</strong>, the scientific name, <strong>%s</strong>, is not a valid binomial name. "
@@ -73,9 +74,10 @@ MESSAGES = {
                                               'row <strong>%s</strong>. Expected value should be <strong>%s</strong>',
     'validation_msg_invalid_purpose_of_specimen': 'Invalid data: <strong>%s</strong> in column '
                                                   '<strong>PURPOSE_OF_SPECIMEN</strong> at row <strong>%s</strong>. '
-                                                  'Expected value should be <strong>SHORT_READ_SEQUENCING</strong> '
-                                                  'since associated profile type is '
-                                                  '<strong>Population Genomics (POP_GENOMICS)</strong>.',
+                                                  'Expected value should be <strong>RESEQUENCING</strong> '
+                                                  'since associated profile types are '
+                                                  '<strong>Population Genomics (POP_GENOMICS)</strong> '
+                                                  'and <strong>Biodiversity Genomics Europe (BGE)</strong>.',
     'validation_msg_invalid_rank': 'Invalid scientific name or taxon ID: row <strong>%s</strong> - rank of scientific '
                                    'name and taxon id should be species.',
     'validation_msg_invalid_taxon': "TAXON_ID <strong>%s</strong> at row <strong>%s</strong> is invalid. Check "
@@ -146,9 +148,6 @@ MESSAGES = {
                                                "<strong>%s</strong>. ERGA requires to voucher your sample, if you "
                                                "don't, be aware the sequencing may not continue until you have provided "
                                                "<strong>%s</strong>.",
-    'validation_msg_warning_purpose_of_specimen': 'Warning: Overwriting <strong>PURPOSE_OF_SPECIMEN</strong> value with '
-                                                  '<strong>RESEQUENCING</strong> because PURPOSE_OF_SPECIMEN is '
-                                                  '<strong>SHORT_READ_SEQUENCING</strong>',
     'validation_msg_warning_racktube_format': "Warning: <strong>%s</strong> in column <strong>%s</strong> at row "
                                               "<strong>%s</strong> does not look like  FluidX format. "
                                               "Please check that this is correct before clicking 'Finish'.",

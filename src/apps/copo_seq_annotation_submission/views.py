@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from common.dal.copo_da import Submission, Profile, Sequnece_annotation
+from common.dal.copo_da import Submission, Profile, SequenceAnnotation
 from common.utils.helpers import notify_annotation_status
 from django.http import HttpResponse, JsonResponse
 from .forms import AnnotationFilesForm, AnnotationForm
@@ -26,7 +26,7 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
     seq_annotation = None
 
     if seq_annotation_id:
-        seq_annotation = Sequnece_annotation().get_record(seq_annotation_id)
+        seq_annotation = SequenceAnnotation().get_record(seq_annotation_id)
         if not seq_annotation:
             return HttpResponse(content="Sequence Annotation not exists", status=400)
 

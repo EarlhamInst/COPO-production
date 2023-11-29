@@ -33,8 +33,8 @@ def copo_sample_accept_reject(request):
 
 @login_required
 def get_samples_column_names(request):
-    columnanmes = Sample().get_sample_display_column_names()
-    return HttpResponse(json_util.dumps(columnanmes))
+    column_names = Sample().get_sample_display_column_names()
+    return HttpResponse(json_util.dumps(column_names))
 
 
 @login_required
@@ -116,7 +116,7 @@ def add_sample_to_dtol_submission(request):
         type_sub = profile["type"]
         #is_bge_profile = "BGE" in [ x.get("value","") for x in profile.get("associated_type",[]) ]
         sequence_centres = profile.get("sequencing_centre", [])
-        is_sanger_profile = "erga" in type_sub.lower() and settings.SANGER_SEQUENCING_CENTER in sequence_centres
+        is_sanger_profile = "erga" in type_sub.lower() and settings.SANGER_SEQUENCING_CENTRE in sequence_centres
 
         if not sub:
             if type_sub == "Aquatic Symbiosis Genomics (ASG)":
@@ -136,6 +136,7 @@ def add_sample_to_dtol_submission(request):
         processing_sample_ids = []
         pending_sample_ids = []
         bge_pending_sample_ids = []
+
         for sample in samples:
             sample_id = str(sample["_id"])
             notify_frontend(action="delete_row", html_id=str(sample_id), data={})
@@ -151,18 +152,25 @@ def add_sample_to_dtol_submission(request):
                 if not sample_id in sub["dtol_samples"]:
                     sub["dtol_samples"].append(sample_id)
                     # Sample().get_all_records_columns()
+
+        # Processing samples
         if processing_sample_ids:
             Sample().mark_processing(sample_ids=processing_sample_ids)
+
+        # Pending samples
         if pending_sample_ids:
             Sample().mark_pending(sample_ids=pending_sample_ids)
             uri = request.build_absolute_uri('/')
             #send email to Sangar to notify them of new samples
-            Email().notify_manifest_pending_for_sequencing_center(data=uri + 'copo/dtol_submission/accept_reject_sample/', profile_id=profile_id,  title=profile["title"], description=profile["description"] )
+            Email().notify_manifest_pending_for_sequencing_centre(data=uri + 'copo/dtol_submission/accept_reject_sample/', profile_id=profile_id,  title=profile["title"], description=profile["description"] )
+        
+        # BGE pending samples
         if bge_pending_sample_ids:
             Sample().mark_pending(sample_ids=bge_pending_sample_ids, is_erga=True)
             uri = request.build_absolute_uri('/')
             #send email to BGE to notify them of new samples
             Email().notify_manifest_pending_for_bge_checker(data=uri + 'copo/dtol_submission/accept_reject_sample/', profile_id=profile_id,  title=profile["title"], description=profile["description"] )
+        
         Sample().timestamp_dtol_sample_updated(sample_ids=sample_ids)
         # sample_ids_bson = list(map(lambda id: ObjectId(id), sample_ids))
         # sepciment_ids = Sample().get_collection_handle().distinct( 'SPECIMEN_ID', {"_id": {"$in": sample_ids_bson}});

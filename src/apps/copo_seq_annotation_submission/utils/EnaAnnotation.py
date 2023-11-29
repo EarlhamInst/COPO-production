@@ -1,7 +1,7 @@
 from django.conf import settings
 from django_tools.middlewares import ThreadLocal
 from common.utils.helpers import get_env, get_datetime, get_deleted_flag, get_not_deleted_flag
-from common.dal.copo_da import Submission, EnaFileTransfer, DataFile, Sequnece_annotation
+from common.dal.copo_da import Submission, EnaFileTransfer, DataFile, SequenceAnnotation
 from common.utils.logger import Logger
 from common.s3.s3Connection import S3Connection as s3
 from bson import ObjectId
@@ -124,17 +124,17 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
 
     
     form_data.pop("id", None)
-    annotation_rec = Sequnece_annotation().save_record(auto_fields={},**form_data, target_id=seq_annotation_id)    
+    annotation_rec = SequenceAnnotation().save_record(auto_fields={},**form_data, target_id=seq_annotation_id)    
 
     '''
     if seq_annotation_id:
         form_data["seq_annotation_id"] = seq_annotation_id
         form_data["date_modified"] = dt
-        annotation_rec = Sequnece_annotation().get_collection_handle().find_one_and_update({"_id": ObjectId(seq_annotation_id)},
+        annotation_rec = SequenceAnnotation().get_collection_handle().find_one_and_update({"_id": ObjectId(seq_annotation_id)},
                                                                             {"$set": form_data},
                                                                             return_document=ReturnDocument.AFTER)
     else:
-        annotation_rec = Sequnece_annotation().save_record(auto_fields={},**form_data, target_id=seq_annotation_id)    
+        annotation_rec = SequenceAnnotation().save_record(auto_fields={},**form_data, target_id=seq_annotation_id)    
     '''    
 
     #schedule annotation submission in SubmisisonCollection
@@ -246,7 +246,7 @@ def submit_ena_dtol_v2(submission_dom, analysis_dom, sub, seq_annotation_ids):
                 reset_seq_annotation_submission_status(sub["_id"])
         except ET.ParseError as e:
             l.exception(e)
-            message = " Unrecognized response from ENA - " + str(
+            message = " Unrecognised response from ENA - " + str(
                 receipt) + " Please try again later, if it persists contact admins"
             notify_annotation_status(data={"profile_id": sub["profile_id"]}, msg=message, action="error",
                             html_id="annotation_info")
@@ -286,7 +286,7 @@ def process_seq_annotation_pending_submission():
         seq_annotation_id_new = []
         seq_annotation_id_edit = []
         for seq_annotation_id in sub["seq_annotations"]:
-            seq_annotation = Sequnece_annotation().get_record(seq_annotation_id)
+            seq_annotation = SequenceAnnotation().get_record(seq_annotation_id)
             if not seq_annotation:
                 l.log("Seq annotation not found " + seq_annotation_id)
                 message = " Seq annotation not found " + seq_annotation_id
@@ -327,8 +327,8 @@ def poll_asyn_seq_annotation_submission_receipt():
                         tree = ET.fromstring(response.text)
                         accessions = handle_submit_receipt(  submission, tree, seq_annotation_sub["id"])
                     except ET.ParseError as e:
-                        l.log("Unrecognized response from ENA " + str(e))
-                        message = " Unrecognized response from ENA - " + str(
+                        l.log("Unrecognised response from ENA " + str(e))
+                        message = " Unrecognised response from ENA - " + str(
                             response.content) + " Please try again later, if it persists contact admins"
                         notify_annotation_status(data={"profile_id": submission["profile_id"]}, msg=message, action="error",
                                         html_id="annotation_info")
@@ -381,7 +381,7 @@ def handle_submit_receipt( sub, tree, seq_annotation_sub_id):
         notify_annotation_status(data={"profile_id": sub["profile_id"]}, msg=msg, action="error",
             html_id="annotation_info")
         #Submission().update_seq_annotation_submission_error(str(sub["_id"]), seq_annotation_sub_id, msg)
-        Sequnece_annotation().update_seq_annotation_error(seq_annotation_ids, seq_annotation_sub_id, msg)
+        SequenceAnnotation().update_seq_annotation_error(seq_annotation_ids, seq_annotation_sub_id, msg)
         l.error(msg)
         return status
     else:
@@ -401,7 +401,7 @@ def get_accession(tree, sub_id, submission_id):
             seq_annotation_id = child.get('alias')
             accession = child.get('accession')
                                   
-            Sequnece_annotation().add_accession(seq_annotation_id, accession)
+            SequenceAnnotation().add_accession(seq_annotation_id, accession)
             if accession not in annotation_accession:
                 submission_accession.append({"alias": seq_annotation_id, "accession": accession})
     if submission_accession:
@@ -417,7 +417,7 @@ def update_seq_annotation_submission_pending():
     for sub in subs:
         all_file_uploaded = True
         for seq_annotation_id in sub["seq_annotations"]:
-            seq_annotation = Sequnece_annotation().get_record(seq_annotation_id)
+            seq_annotation = SequenceAnnotation().get_record(seq_annotation_id)
             if not seq_annotation:
                 Submission().update_seq_annotation_submission(sub_id=str(sub["_id"]), seq_annotation_id= seq_annotation_id)
                 continue
