@@ -5,9 +5,11 @@ MESSAGES = {
     'validation_msg_conflicted_permit_filename_values': 'Conflicted data: <strong>%s</strong> in column '
                                                         '<strong>%s</strong> at row <strong>%s</strong>'
                                                         'for SPECIMEN_ID <strong>%s</strong>.',
-    'validation_msg_duplicate_tube_or_well_id': 'Duplicate RACK_OR_PLATE_ID and TUBE_OR_WELL_ID found in this '
-                                                'Manifest: <strong>%s</strong>',
-    'validation_msg_duplicate_tube_or_well_id_in_copo': 'Duplicate RACK_OR_PLATE_ID and TUBE_OR_WELL_ID already in '
+    'validation_msg_duplicate_rack_or_plate_id': 'Duplicate RACK_OR_PLATE_ID found. Data: '
+                                                 '<strong>%s</strong> already exists in COPO',                                                       
+    'validation_msg_duplicate_tube_or_well_id': 'Duplicate TUBE_OR_WELL_ID found. Data: '
+                                                '<strong>%s</strong> already exists in COPO',
+    'validation_msg_duplicate_tube_or_well_id_in_copo': 'Duplicate RACK_OR_PLATE_ID and TUBE_OR_WELL_ID already exist in '
                                                         'COPO: <strong>%s</strong>',
     'validation_msg_duplicate_without_target': 'Duplicate RACK_OR_PLATE_ID and TUBE_OR_WELL_ID <strong>%s</strong> '
                                                'found without TARGET in SYMBIONT field. One of these duplicates '

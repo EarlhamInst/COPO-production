@@ -112,14 +112,19 @@ class RackPlateUniquenessValidator(Validator):
                 any(x in value for value in list(self.data.get("TUBE_OR_WELL_ID", "")) for x in existing_tube_or_well_ids):
 
                 for index, row in self.data.iterrows():
-                    if row.get("RACK_OR_PLATE_ID", "") and row.get("RACK_OR_PLATE_ID", "") in existing_rack_or_plate_ids:
+                    if row.get("RACK_OR_PLATE_ID", "") and row.get("TUBE_OR_WELL_ID", "") and \
+                        row.get("RACK_OR_PLATE_ID", "") in existing_rack_or_plate_ids and \
+                            row.get("TUBE_OR_WELL_ID", "") in existing_tube_or_well_ids:
                         self.errors.append(
-                            msg["validation_msg_duplicate_tube_or_well_id_in_copo"] % (row.get("RACK_OR_PLATE_ID", "")))
+                            msg["validation_msg_duplicate_tube_or_well_id_in_copo"] % (row.get("RACK_OR_PLATE_ID", "") + "/" + row.get("TUBE_OR_WELL_ID", "")))
                         self.flag = False
-                        
-                    if row.get("TUBE_OR_WELL_ID", "") and row.get("TUBE_OR_WELL_ID", "") in existing_tube_or_well_ids:
+                    elif row.get("RACK_OR_PLATE_ID", "") and row.get("RACK_OR_PLATE_ID", "") in existing_rack_or_plate_ids:
                         self.errors.append(
-                            msg["validation_msg_duplicate_tube_or_well_id_in_copo"] % (row.get("TUBE_OR_WELL_ID", "")))
+                           msg["validation_msg_duplicate_rack_or_plate_id"] % (row.get("RACK_OR_PLATE_ID", "")))
+                        self.flag = False
+                    elif row.get("TUBE_OR_WELL_ID", "") and row.get("TUBE_OR_WELL_ID", "") in existing_tube_or_well_ids:
+                        self.errors.append(
+                            msg["validation_msg_duplicate_tube_or_well_id"] % (row.get("TUBE_OR_WELL_ID", "")))
                         self.flag = False
                       
         # check for uniqueness of RACK_OR_PLATE_ID and TUBE_OR_WELL_ID in this manifest
