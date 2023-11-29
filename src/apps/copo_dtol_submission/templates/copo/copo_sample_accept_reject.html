@@ -150,7 +150,7 @@
 {% block content %}
     <div class="row">
     <div class="col-lg-9 col-sm-9 col-md-9">
-        <h3 class="h3">Choose to Accept or Reject  &nbsp; &nbsp; <select id='group_id' name='group' title="Type of manifest to accept/reject samples for">{% for group in sample_manager_groups %}<option value='{{ group }}' title='{{group}}' >{{ group }}</option>{% endfor %}</select>  </h3>
+        <h3 class="h3">Choose to Accept or Reject  &nbsp; &nbsp; <select id='group_id' class="form-control" style="display: inline-block; width: fit-content;" name='group' title="Type of manifest to accept/reject samples for">{% for group in sample_manager_groups %}<option value='{{ group }}' title='{{group}}' >{{ group }}</option>{% endfor %}</select>  </h3>
         <h3 class="h3"><small>Note clicking accept will immediately send sample info to ENA/Biosamples</small></h3>
 
     </div>
