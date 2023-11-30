@@ -1,5 +1,6 @@
 from common.validators.validator import Validator
-from common.dal.copo_da import Sample 
+from common.dal.copo_da import Sample
+from datetime import datetime 
 import re
 
 #check mandatory fields are present in spreadsheet
@@ -52,8 +53,22 @@ class IncorrectValueValidator(Validator):
                             regex = field.get("regex","")
                             if regex:
                                 if not re.match(regex, row):
-                                    self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i))
-                                    self.flag = False
+                                    if column == 'collection date':
+                                        # Remove the time part from the date string if it is present
+                                        try:
+                                            result = bool(datetime.strptime(row, "%Y-%m-%d %H:%M:%S"))
+                                        except ValueError:
+                                               result = False
+
+                                        if result:
+                                            row = row.split(' ')[0]
+                                            self.data.at[i-2, column] = row
+                                        else:
+                                            self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i))
+                                            self.flag = False
+                                    else:
+                                        self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i))
+                                        self.flag = False
                         elif type == "TAXON_FIELD":
                             if row not in biosampleAccessionsMap.keys():
                                 self.errors.append("Invalid value " + row + " in column:'" + field["name"] + "'")
