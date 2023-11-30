@@ -131,6 +131,7 @@ GitHub.sublime-settings
 static/assets/manifests/ERC*
 static/assets/manifests/ERT*
 b2drop/permits/*
+bundle_*.xml
 
 # Visual Studio Code #
 .vscode/*
