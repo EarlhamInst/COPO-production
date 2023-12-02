@@ -168,7 +168,7 @@ $(document).ready(function () {
                         alert("Study released successfully")
                         */
             })
-            .error(function (data) {
+            .fail(function (data) {
               alert(data.responseText);
             });
         }
@@ -464,7 +464,7 @@ function deleteProfileRecord(profileRecordID) {
                 window.location.reload();
               }, 1000);
             })
-            .error(function (data_response) {
+            .fail(function (data_response) {
               const message =
                 "Profile couldn't be removed. Only profiles that have no datafiles or" +
                 ' samples associated can be deleted.';

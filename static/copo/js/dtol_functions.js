@@ -151,8 +151,8 @@ $(document).ready(function () {
                 $('#dtol_sample_info').text('Deleted');
                 dialog.close();
               })
-              .error(function (e) {
-                console.error(e);
+              .fail(function (e) {
+                console.log(e);
               });
           },
         },
@@ -438,7 +438,7 @@ $(document).ready(function () {
           }
           $('.loading-spinner').removeClass('loading-spinner');
         })
-        .error(function (error) {
+        .fail(function (error) {
           BootstrapDialog.alert(error.responseText);
         });
     })
@@ -491,8 +491,8 @@ $(document).ready(function () {
       method: 'GET',
       dataType: 'json',
     })
-      .error(function (data) {
-        console.error('ERROR: ' + data);
+      .fail(function (data) {
+        console.log('ERROR: ' + data);
       })
       .done(function (data) {
         if (data.length) {
@@ -618,8 +618,8 @@ function row_select(ev) {
         data: d,
         method: "GET",
         dataType: "json"
-    }).error(function (data) {
-        console.error("ERROR: " + data)
+    }).fail(function (data) {
+        console.log("ERROR: " + data)
     }).done(function (data) {
             sample_table.clear();
             if (data.length) {
@@ -702,8 +702,8 @@ function update_pending_samples_table() {
     dataType: 'json',
     data: { profiles: which_profiles, group: get_group_id() },
   })
-    .error(function (e) {
-      console.error(e);
+    .fail(function (e) {
+      console.log(e);
     })
     .done(function (data) {
       if ($.fn.DataTable.isDataTable('#profile_titles')) {

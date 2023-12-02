@@ -24,7 +24,7 @@
     }
     // AMD module is defined
     else if (typeof define === "function" && define.amd) {
-        define("bootstrap-dialog", ["jquery-1.11.1.min.js"], function($) {
+        define("bootstrap-dialog", ["3.7.1.min.js"], function($) {
             return factory($);
         });
     } else {

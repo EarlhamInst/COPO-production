@@ -52,10 +52,10 @@ function upload_image_files(file) {
         return xhr;
       },
     })
-    .error(function (data) {
+    .fail(function (data) {
       $('#ss_upload_spinner').fadeOut('fast');
       $('#upload_controls').fadeIn();
-      console.error(data);
+      console.log(data);
       BootstrapDialog.show({
         title: 'Error',
         message: 'Error ' + data.status + ': ' + data.statusText,
@@ -103,10 +103,10 @@ function upload_permit_files(file) {
         return xhr;
       },
     })
-    .error(function (data) {
+    .fail(function (data) {
       $('#ss_upload_spinner').fadeOut('fast');
       $('#upload_controls').fadeIn();
-      console.error(data);
+      console.log(data);
       BootstrapDialog.show({
         title: 'Error',
         message: 'Error ' + data.status + ': ' + data.statusText,
@@ -152,10 +152,10 @@ function upload_spreadsheet(file = file) {
         return xhr;
       },
     })
-    .error(function (data) {
+    .fail(function (data) {
       $('#ss_upload_spinner').fadeOut('fast');
       $('#upload_controls').fadeIn();
-      console.error(data);
+      console.log(data);
       BootstrapDialog.show({
         title: 'Error',
         message: 'Error ' + data.status + ': ' + data.responseText,
@@ -233,8 +233,8 @@ $(document).ready(function () {
                 }
                 $('#sample_spreadsheet_modal').modal('hide'); // Close 'Upload Spreadsheet' modal
               })
-              .error(function (data) {
-                console.error(data);
+              .fail(function (data) {
+                console.log(data);
               });
           },
         },
@@ -301,8 +301,8 @@ $(document).ready(function () {
                 }
                 $('#sample_spreadsheet_modal').modal('hide'); // Close 'Upload Spreadsheet' modal
               })
-              .error(function (data) {
-                console.error(data);
+              .fail(function (data) {
+                console.log(data);
               });
           },
         },

@@ -51,7 +51,7 @@ function get_ontologies_for_filter() {
             $('#ontology_dropdown_filter').append(anchor)
 
         })
-    }).error(function (msg) {
+    }).fail(function (msg) {
         console.log("HERE WE GOO")
     })
 }

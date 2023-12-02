@@ -1,65 +1,67 @@
 var dialog = new BootstrapDialog({
-    title: "Upload local files",
-    message: "<div><input type='file' id='file' style='display:block' /></div>",
-    size: BootstrapDialog.SIZE_WIDE,
-    buttons: [{
-        id: 'upload_local_files_button',
-        label: 'Upload Local Files',
-        cssClass: 'btn-primary',
-        title: 'Upload Local Files',
-        action: function () {
-            document.getElementById('file').click();
-            //upload_spreadsheet($('#file').prop('files')[0])
-
-        }
-    }, {
-        label: 'Close',
-        action: function (dialogItself) {
-            dialogItself.close();
-        }
-    }]
+  title: 'Upload local files',
+  message: "<div><input type='file' id='file' style='display:block' /></div>",
+  size: BootstrapDialog.SIZE_WIDE,
+  buttons: [
+    {
+      id: 'upload_local_files_button',
+      label: 'Upload Local Files',
+      cssClass: 'btn-primary',
+      title: 'Upload Local Files',
+      action: function () {
+        document.getElementById('file').click();
+        //upload_spreadsheet($('#file').prop('files')[0])
+      },
+    },
+    {
+      label: 'Close',
+      action: function (dialogItself) {
+        dialogItself.close();
+      },
+    },
+  ],
 });
 
-uid = document.location.href
-uid = uid.split("/")
-uid = uid[uid.length - 2]
+uid = document.location.href;
+uid = uid.split('/');
+uid = uid[uid.length - 2];
 
 $(document).ready(function () {
-    //uid = document.location.href
-    //uid = uid.split("/")
-    //uid = uid[uid.length - 2]
+  //uid = document.location.href
+  //uid = uid.split("/")
+  //uid = uid[uid.length - 2]
 
-    //******************************Event Handlers Block*************************//
-    var component = 'files';
-    //var copoVisualsURL = "/copo/copo_visuals/";
-    var csrftoken = $.cookie('csrftoken');
+  //******************************Event Handlers Block*************************//
+  var component = 'files';
+  //var copoVisualsURL = "/copo/copo_visuals/";
+  var csrftoken = $.cookie('csrftoken');
 
-    //get component metadata
-    var componentMeta = get_component_meta(component);
+  //get component metadata
+  var componentMeta = get_component_meta(component);
 
-    load_records(componentMeta); // call to load component records
+  load_records(componentMeta); // call to load component records
 
-    //register_resolvers_event(); //register event for publication resolvers
+  //register_resolvers_event(); //register event for publication resolvers
 
-    //instantiate/refresh tooltips
-    refresh_tool_tips();
+  //instantiate/refresh tooltips
+  refresh_tool_tips();
 
-    //trigger refresh of table
-    $('body').on('refreshtable', function (event) {
-        do_render_component_table(globalDataBuffer, componentMeta);
-    });
+  //trigger refresh of table
+  $('body').on('refreshtable', function (event) {
+    do_render_component_table(globalDataBuffer, componentMeta);
+  });
 
-    //handle task button event
-    $('body').on('addbuttonevents', function (event) {
-        do_record_task(event);
-    });
+  //handle task button event
+  $('body').on('addbuttonevents', function (event) {
+    do_record_task(event);
+  });
 
-    // Remove profile title if present
-    if (
-        $('.page-title-custom').find("span[title='Profile title']").is(':visible')
-    )
-        $('.page-title-custom').find("span[title='Profile title']").remove();
-    
+  // Remove profile title if present
+  if (
+    $('.page-title-custom').find("span[title='Profile title']").is(':visible')
+  )
+    $('.page-title-custom').find("span[title='Profile title']").remove();
+
   //details button hover
   /*
     $(document).on("mouseover", ".detail-hover-message", function (event) {
@@ -177,70 +179,68 @@ $(document).ready(function () {
   });
 });
 
-
 function upload_files(files) {
-    $("#warning_info").fadeOut("fast")
-    $("#warning_info2").fadeOut("fast")
+  $('#warning_info').fadeOut('fast');
+  $('#warning_info2').fadeOut('fast');
 
-    var csrftoken = $.cookie('csrftoken');
-    form = new FormData()
-    for (var i = 0; i < files.length; i++) {
-        form.append(i.toString(), files[i])
-    }
+  var csrftoken = $.cookie('csrftoken');
+  form = new FormData();
+  for (var i = 0; i < files.length; i++) {
+    form.append(i.toString(), files[i]);
+  }
 
+  $('#upload_local_files_button').fadeOut();
+  var percent = $('.percent');
+  $('#ss_upload_spinner').fadeIn('fast');
 
-    $('#upload_local_files_button').fadeOut()
-    var percent = $(".percent")
-    $("#ss_upload_spinner").fadeIn("fast")
+  jQuery
+    .ajax({
+      url: '/copo/copo_files/upload_ecs_files/' + uid,
+      data: form,
+      files: files,
+      cache: false,
+      dataType: 'json',
+      contentType: false,
+      processData: false,
+      method: 'POST',
+      type: 'POST', // For jQuery < 1.9
+      headers: { 'X-CSRFToken': csrftoken },
 
-    jQuery.ajax({
-        url: "/copo/copo_files/upload_ecs_files/" + uid,
-        data: form,
-        files: files,
-        cache: false,
-        dataType: "json",
-        contentType: false,
-        processData: false,
-        method: 'POST',
-        type: 'POST', // For jQuery < 1.9
-        headers: {"X-CSRFToken": csrftoken},
-
-        xhr: function () {
-            var xhr = jQuery.ajaxSettings.xhr();
-            xhr.upload.onprogress = function (evt) {
-                var percentVal = Math.round(evt.loaded / evt.total * 100)
-                percent.html("<b>" + percentVal + "%</b>")
-                console.log('progress', percentVal)
-            };
-            xhr.upload.onload = function () {
-                percent.html("")
-                console.log('DONE!')
-            };
-            return xhr;
-        }
-
-    }).error(function (data) {
-        $('#upload_local_files_button').fadeIn()
-        $("#ss_upload_spinner").fadeOut("fast")
-        BootstrapDialog.show({
-            title: 'Error',
-            message: "Error " + data.status + ": " + data.responseText,
-            type: BootstrapDialog.TYPE_DANGER
-        });
-
-    }).done(function (data) {
-        $('#upload_local_files_button').fadeIn()
-        $("#ss_upload_spinner").fadeOut("fast")
-        $("#uploadModal").modal("hide")
-        result_dict = {}
-        result_dict["status"] = "success"
-        result_dict["message"] = "File(s) have been uploaded!"
-        do_crud_action_feedback(result_dict);
-        globalDataBuffer = data;
-        if (data.hasOwnProperty("table_data")) {
-            var event = jQuery.Event("refreshtable");
-            $('body').trigger(event);
-        }
-
+      xhr: function () {
+        var xhr = jQuery.ajaxSettings.xhr();
+        xhr.upload.onprogress = function (evt) {
+          var percentVal = Math.round((evt.loaded / evt.total) * 100);
+          percent.html('<b>' + percentVal + '%</b>');
+          console.log('progress', percentVal);
+        };
+        xhr.upload.onload = function () {
+          percent.html('');
+          console.log('DONE!');
+        };
+        return xhr;
+      },
     })
+    .fail(function (data) {
+      $('#upload_local_files_button').fadeIn();
+      $('#ss_upload_spinner').fadeOut('fast');
+      BootstrapDialog.show({
+        title: 'Error',
+        message: 'Error ' + data.status + ': ' + data.responseText,
+        type: BootstrapDialog.TYPE_DANGER,
+      });
+    })
+    .done(function (data) {
+      $('#upload_local_files_button').fadeIn();
+      $('#ss_upload_spinner').fadeOut('fast');
+      $('#uploadModal').modal('hide');
+      result_dict = {};
+      result_dict['status'] = 'success';
+      result_dict['message'] = 'File(s) have been uploaded!';
+      do_crud_action_feedback(result_dict);
+      globalDataBuffer = data;
+      if (data.hasOwnProperty('table_data')) {
+        var event = jQuery.Event('refreshtable');
+        $('body').trigger(event);
+      }
+    });
 }

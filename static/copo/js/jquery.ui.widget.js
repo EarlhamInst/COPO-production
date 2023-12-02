@@ -7,7 +7,7 @@
 	if ( typeof define === "function" && define.amd ) {
 
 		// AMD. Register as an anonymous module.
-		define([ "jquery-1.11.1.min.js" ], factory );
+		define([ "jquery-3.7.1.min.js" ], factory );
 
 	} else if (typeof exports === "object") {
 		// Node/CommonJS:

@@ -19,7 +19,9 @@ urlpatterns = [
          name="get_profile_titles_nav_tabs"),
     path('get_gal_names/', views.get_gal_names, name="get_gal_names"),
     path('get_samples_by_search_faceting/', views.get_samples_by_search_faceting,
-         name="get_samples_by_search_faceting"), 
+         name="get_samples_by_search_faceting"),
+    path('get_sample_details/', views.get_sample_details,
+         name="get_sample_details"),   
     path('stats/<str:view>', views.stats, name='stats'),
     path('stats/', views.stats, name='stats'),            
 ]

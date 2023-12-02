@@ -80,8 +80,8 @@
                     cookie_response: getCookie('cookiesAccepted'),
                 },
             }).done(function () {})
-            .error(function (e) {
-                console.error(e);
+            .fail(function (e) {
+                // console.log(e); // Cookies have been rejected
             });
         }
 

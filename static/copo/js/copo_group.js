@@ -167,7 +167,7 @@ $(document).ready(function () {
             const alertMessage = 'Group created!';
             display_copo_alert(alertType, alertMessage);
           })
-          .error(function (data) {
+          .fail(function (data) {
             $('.helpDivRow').show();
             $('.helpDivRow').addClass('errorDiv');
             $('.helpDivRowMessage').text(data['responseText']);
@@ -221,7 +221,7 @@ $(document).ready(function () {
                 const alertMessage = 'Group deleted!';
                 display_copo_alert(alertType, alertMessage);
               })
-              .error(function (e) {
+              .fail(function (e) {
                 console.log(e);
               });
             dialogRef.close();
@@ -296,7 +296,7 @@ $(document).ready(function () {
                 display_copo_alert(alertType, alertMessage);
                 dialogRef.close();
               })
-              .error(function (data) {
+              .fail(function (data) {
                 $('.helpDivRow').show();
                 $('.helpDivRow').addClass('errorDiv');
                 $('.helpDivRowMessage').text(data['responseText']);
@@ -327,7 +327,7 @@ $(document).ready(function () {
         //console.log(d.resp);
       })
       .fail(function (e, d) {
-        console.error(e.responseJSON.resp);
+        console.log(e.responseJSON.resp);
       });
   }
 
@@ -344,7 +344,7 @@ $(document).ready(function () {
         //console.log(d.resp);
       })
       .fail(function (e, d) {
-        console.error(e.responseJSON.resp);
+        console.log(e.responseJSON.resp);
       });
   }
 
@@ -363,7 +363,7 @@ $(document).ready(function () {
         console.log(d.resp);
       })
       .fail(function (e, d) {
-        console.error(e.responseJSON.resp);
+        console.log(e.responseJSON.resp);
       });
   }
 
@@ -380,7 +380,7 @@ $(document).ready(function () {
         console.log(d.resp);
       })
       .fail(function (e, d) {
-        console.error(e.responseJSON.resp);
+        console.log(e.responseJSON.resp);
       });
   }
 

@@ -70,7 +70,7 @@
     };
 
     xhr.onerror = function () {
-      console.error('could not download file');
+      console.log('could not download file');
     };
 
     xhr.send();

@@ -86,7 +86,7 @@ $(document).ready(function () {
     }
     submissionSocket.onclose = function (e) {
         console.log(e)
-        console.error('Submission socket closed unexpectedly' + e);
+        console.log('Submission socket closed unexpectedly' + e);
     };
 
     //submission tasks

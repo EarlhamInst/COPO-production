@@ -2,8 +2,6 @@ async function draw_line_graph() {
 
     const dataset = await d3.json("/api/stats/combined_stats_json")
     // accessors
-    console.log(dataset)
-
 
     let dimensions = {
         width: $("#graph").innerWidth() * 0.7,
@@ -59,7 +57,6 @@ async function draw_line_graph() {
 
 
     function update(metric) {
-        console.log(metric)
         const listeningRect = bounds.append("rect")
             .attr("class", "listening-rect")
             .attr("width", dimensions.boundedWidth)

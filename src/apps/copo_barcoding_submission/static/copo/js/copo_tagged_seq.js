@@ -348,11 +348,11 @@ function upload_spreadsheet(file) {
         return xhr;
       },
     })
-    .error(function (data) {
+    .fail(function (data) {
       dialog.getButton('upload_taggedseq_manifest_button').enable();
       dialog.setClosable(true);
       dialog.getButton('upload_taggedseq_manifest_button').stopSpin();
-      //console.error(data)
+      //console.log(data)
       responseText = data.responseText;
       if (responseText != '') {
         BootstrapDialog.show({
