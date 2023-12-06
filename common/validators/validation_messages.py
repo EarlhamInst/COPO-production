@@ -55,9 +55,10 @@ MESSAGES = {
                                                      '<strong>Population Genomics (POP_GENOMICS)</strong> and '
                                                      '<strong>Biodiversity Genomics Europe (BGE)</strong> if value of column '
                                                      '<strong>PURPOSE_OF_SPECIMEN</strong> is '
-                                                     '<strong>RESEQUENCING</strong>. Please update/edit the '
+                                                     '<strong>RESEQUENCING</strong>. And vice versa. Please update/edit the '
                                                      'associated profile type for the profile then, reupload the '
                                                      'manifest.',
+                                    
     'validation_msg_invalid_binomial_name': "For the TAXON_ID,  <strong>%s</strong>, the scientific name, <strong>%s</strong>, is not a valid binomial name. "
                                             "Please contact <a href='mailto:ena-asg@ebi.ac.uk'>ena-asg@ebi.ac.uk</a> or "
                                             "<a href='mailto:ena-dtol@ebi.ac.uk'>ena-dtol@ebi.ac.uk</a> or "
