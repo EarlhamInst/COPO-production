@@ -128,7 +128,7 @@ MESSAGES = {
     'validation_msg_overwrite_symbionts': '<strong>Warning: COPO will overwrite any <strong>SYMBIONT</strong> field '
                                           'to match the corresponding TARGET, unless otherwise stated in the SOP</br>'
                                           '</strong><strong>%s</strong>. Date cannot be in the future.',
-    'validation_msg_paired_file_error': 'Field indicates that files should be paired, 2 filenames are allowed '
+    'validation_msg_paired_file_error': 'Field indicates that files should be paired, 2 filenames and 2 checksums are allowed '
                                         'at row <strong>%s</strong>',
     'validation_msg_rack_tube_both_na': 'NOT_APPLICABLE, NOT_PROVIDED or NOT_COLLECTED value found in both RACK_OR_PLATE_ID '
                                         'and TUBE_OR_WELL_ID at row <strong>%s</strong>.',
@@ -136,7 +136,7 @@ MESSAGES = {
                                                     'Expected value should not contain any slashes (i.e. no <strong>/</strong> or <strong>\</strong>).',
     'validation_msg_rack_or_tube_is_na': 'NOT_APPLICABLE, NOT_PROVIDED, NOT_COLLECTED or "NA" value found in column, RACK_OR_PLATE_ID '
                                         'or column, TUBE_OR_WELL_ID at row <strong>%s</strong>.',
-    'validation_msg_single_file_error': 'Field indicates that files should be single, but multiple filenames were '
+    'validation_msg_single_file_error': 'Field indicates that files and checksum should be single, but multiple filenames or checksums were '
                                         'provided at row <strong>%s</strong>',
     'validation_msg_string_in_taxon_id': 'Non numeric TAXON_ID found in row <strong>%s</strong>. Taxon ids must be '
                                          'integer',

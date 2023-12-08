@@ -1117,7 +1117,7 @@ class Sample(DAComponent):
                 sample.get("SPECIMEN_ID", ""), sample.get("biosampleAccession", "X"))
         else:
             # delete sample from mongo
-            self.get_collection_handle().DeleteOne(
+            self.get_collection_handle().delete_one(
                 {"_id": ObjectId(sample_id)})
             message = "Sample {} was deleted".format(
                 sample.get("SPECIMEN_ID", ""))

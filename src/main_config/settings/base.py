@@ -15,14 +15,6 @@ SCHEMA_VERSIONS_DIR = os.path.join(BASE_DIR, 'common', 'schema_versions')
 # files based on schema versions
 SCHEMA_VERSIONS_FILE_LIST = ["sample.json", "ena_seq.json"]
 
-MANIFEST_PATH = os.path.join(BASE_DIR, 'static', 'assets', 'manifests')
-MANIFEST_FILE_NAME = "{0}_MANIFEST_TEMPLATE{1}.xlsx"
-MANIFEST_DOWNLOAD_URL = "/static/assets/manifests/" + MANIFEST_FILE_NAME
-
-SOP_PATH = os.path.join(BASE_DIR, 'static', 'assets', 'sops')
-SOP_FILE_NAME = "{0}_MANIFEST_SOP{1}.pdf"
-SOP_DOWNLOAD_URL = "/static/assets/sops/" + SOP_FILE_NAME
-
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 PROFILE_LOG_BASE = os.path.join(BASE_DIR, 'profiler')
@@ -197,7 +189,15 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_ROOT = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'))
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
+
+MANIFEST_PATH = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'), 'assets', 'manifests')
+MANIFEST_FILE_NAME = "{0}_MANIFEST_TEMPLATE{1}.xlsx"
+MANIFEST_DOWNLOAD_URL = MEDIA_URL + "assets/manifests/" + MANIFEST_FILE_NAME
+
+SOP_PATH = os.path.join(BASE_DIR, 'static', 'assets', 'sops')
+SOP_FILE_NAME = "{0}_MANIFEST_SOP{1}.pdf"
+SOP_DOWNLOAD_URL = "/static/assets/sops/" + SOP_FILE_NAME
 
 ELASTIC_SEARCH_URL = 'http://localhost:9200/ontologies/plant_ontology/_search'
 

@@ -358,7 +358,21 @@ function upload_spreadsheet(file) {
 function save_read_data() {
   $.ajax({
     url: '/copo/copo_read/save_ena_records',
-  }).done(function (data) {
+  })
+  .fail(function (data) {
+    dialog.getButton('upload_read_manifest_button').enable();
+    dialog.setClosable(true);
+    dialog.getButton('upload_read_manifest_button').stopSpin();
+    console.log(data);
+    responseText = data.responseText;
+    if (responseText != '') {
+      BootstrapDialog.show({
+        title: 'Error',
+        message: 'Error ' + data.status + ': ' + data.responseText,
+      });
+    }
+  })
+  .done(function (data) {
     result_dict = {};
     result_dict['status'] = 'success';
     result_dict['message'] = 'Read records are saved';

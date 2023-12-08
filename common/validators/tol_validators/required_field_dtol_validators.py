@@ -99,6 +99,7 @@ class OrphanedSymbiontValidator(Validator):
 
 class RackPlateUniquenessValidator(Validator):
     def validate(self):
+        """
         existing_samples = Sample().get_by_field("profile_id", [self.profile_id])
           
         # Check if samples already exist in the profile with the same RACK_OR_PLATE_ID and/ TUBE_OR_WELL_ID
@@ -126,7 +127,7 @@ class RackPlateUniquenessValidator(Validator):
                         self.errors.append(
                             msg["validation_msg_duplicate_tube_or_well_id"] % (row.get("TUBE_OR_WELL_ID", "")))
                         self.flag = False
-                      
+        """              
         # check for uniqueness of RACK_OR_PLATE_ID and TUBE_OR_WELL_ID in this manifest
         # RACK_OR_PLATE_ID and TUBE_OR_WELL_ID cannot contain any slashes i.e. '/' nor '\'
         if any(slash in value for value in list(self.data.get("RACK_OR_PLATE_ID", "")) for slash in SLASHES_LIST) or \
@@ -154,19 +155,13 @@ class RackPlateUniquenessValidator(Validator):
                     "rack_tube", err)  # [str(rack_tube[0])])
                 for exsam in existingsam:
                     if exsam["profile_id"] == self.profile_id:
+                        self.kwargs["isupdate"] = True
                         # todo check SYMBIONT value in species list is the same too
                         # check accessions do not exist yet and status is pending
                         if not exsam["biosampleAccession"]:
-                            if "ERGA" in p_type and exsam["status"] in ["pending", "rejected"]:
-                                self.warnings.append(
+                            self.warnings.append(
                                     msg["validation_msg_isupdate"] % exsam["rack_tube"])
-                                self.kwargs["isupdate"] = True
-                            elif exsam["status"] == "pending":
-                                self.warnings.append(
-                                    msg["validation_msg_isupdate"] % exsam["rack_tube"])
-                                self.kwargs["isupdate"] = True
                         else:  # allow for update after approval in the same profile
-                            self.kwargs["isupdate"] = True
                             self.warnings.append(msg["validation_msg_warning_update_submitted_sample"] % (
                                 exsam["rack_tube"], exsam["biosampleAccession"]))
                         #    #rack_tube has already been approved by sample manager and can't be updated any more

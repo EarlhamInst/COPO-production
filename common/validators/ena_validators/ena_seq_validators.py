@@ -14,12 +14,13 @@ class SinglePairedValuesValidator(Validator):
             row_count = row_count + 1
             layout = row[1]["library_layout"]
             files = row[1]["file_name"]
+            file_checksums = row[1]["file_md5"]
             if layout == "PAIRED":
-                if len(files.split(",")) != 2:
+                if len(files.split(",")) != 2 or len(file_checksums.split(",")) != 2:
                     self.errors.append(msg["validation_msg_paired_file_error"] % (str(row_count)))
                     self.flag = False
             elif layout == "SINGLE":
-                if len(files.split(",")) != 1:
+                if len(files.split(",")) != 1 or len(file_checksums.split(",")) != 1:
                     self.errors.append(msg["validation_msg_single_file_error"] % (str(row_count)))
                     self.flag = False
 

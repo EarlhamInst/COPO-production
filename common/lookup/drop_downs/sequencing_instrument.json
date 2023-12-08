@@ -90,6 +90,16 @@
     "platform": "ILLUMINA"
   },
   {
+  "value": "Illumina NovaSeq X",
+  "label": "Illumina NovaSeq X",
+  "platform": "ILLUMINA"
+ },
+  {
+    "value": "Illumina iSeq 100",
+    "label": "Illumina iSeq 100",
+    "platform": "ILLUMINA"
+  },
+  {
     "value": "Illumina MiSeq",
     "label": "Illumina MiSeq",
     "platform": "ILLUMINA"
@@ -105,15 +115,30 @@
     "platform": "ILLUMINA"
   },
   {
+    "value": "Illumina NovaSeq X",
+    "label": "Illumina NovaSeq X",
+    "platform": "ILLUMINA"
+  },
+  {
     "value": "NextSeq 500",
     "label": "NextSeq 500",
     "platform": "ILLUMINA"
   },
   {
-    "value": "NextSeq 550",
-    "label": "NextSeq 550",
+    "value": "NextSeq 1000",
+    "label": "NextSeq 1000",
     "platform": "ILLUMINA"
   },
+  {
+    "value": "NextSeq 2000",
+    "label": "NextSeq 2000",
+    "platform": "ILLUMINA"
+  },
+  {
+    "value": "Illumina HiSeq X",
+    "label": "Illumina HiSeq X",
+    "platform": "ILLUMINA"
+   },
   {
     "value": "PacBio RS",
     "label": "PacBio RS",
@@ -127,6 +152,16 @@
   {
     "value": "Sequel",
     "label": "Sequel",
+    "platform": "PACBIO_SMRT"
+  },
+  {
+    "value": "Sequel II",
+    "label": "Sequel II",
+    "platform": "PACBIO_SMRT"
+  },
+  {
+    "value": "Sequel IIe",
+    "label": "Sequel IIe",
     "platform": "PACBIO_SMRT"
   },
   {
@@ -149,6 +184,27 @@
     "label": "Ion Torrent S5 XL",
     "platform": "ION_TORRENT"
   },
+  {
+    "value": "Ion GeneStudio S5 Prime",
+    "label": "Ion GeneStudio S5 Prime",
+    "platform": "ION_TORRENT"
+  },
+  {
+    "value": "Ion GeneStudio S5 Plus",
+    "label": "Ion GeneStudio S5 Plus",
+    "platform": "ION_TORRENT"
+  },
+  {
+    "value": "Ion GeneStudio S5",
+    "label": "Ion GeneStudio S5",
+    "platform": "ION_TORRENT"
+  },
+  {
+    "value": "Ion Torrent Genexus",
+    "label": "Ion Torrent Genexus",
+    "platform": "ION_TORRENT"
+  },
+
   {
     "value": "AB 3730xL Genetic Analyzer",
     "label": "AB 3730xL Genetic Analyzer",
@@ -185,6 +241,61 @@
     "platform": "CAPILLARY"
   },
   {
+    "value": "AB 3130 Genetic Analyzer",
+    "label": "AB 3130 Genetic Analyzer",
+    "platform": "CAPILLARY"
+  },
+  {
+    "value": "AB SOLiD System",
+    "label": "AB SOLiD System",
+    "platform": "ABI_SOLID"
+  },
+  {
+    "value": "AB SOLiD System 2.0",
+    "label": "AB SOLiD System 2.0",
+    "platform": "ABI_SOLID"
+  },
+  {
+    "value": "AB SOLiD System 3.0",
+    "label": "AB SOLiD System 3.0",
+    "platform": "ABI_SOLID"
+  },
+  {
+    "value": "AB SOLiD 3 Plus System",
+    "label": "AB SOLiD 3 Plus System",
+    "platform": "ABI_SOLID"
+  },
+  {
+    "value": "AB SOLiD 4 System",
+    "label": "AB SOLiD 4 System",
+    "platform": "ABI_SOLID"
+  },
+  {
+    "value": "AB SOLiD 4hq System",
+    "label": "AB SOLiD 4hq System",
+    "platform": "ABI_SOLID"
+  },
+  {
+    "value": "AB SOLiD PI System",
+    "label": "AB SOLiD PI System",
+    "platform": "ABI_SOLID"
+  },
+  {
+    "value": "AB 5500 Genetic Analyzer",
+    "label": "AB 5500 Genetic Analyzer",
+    "platform": "ABI_SOLID"
+  },
+  {
+    "value": "AB 5500xl Genetic Analyzer",
+    "label": "AB 5500xl Genetic Analyzer",
+    "platform": "ABI_SOLID"
+  },
+  {
+    "value": "AB 5500xl-W Genetic Analysis System",
+    "label": "AB 5500xl-W Genetic Analysis System",
+    "platform": "ABI_SOLID"
+  },
+  {
     "value": "MinION",
     "label": "MinION",
     "platform": "OXFORD_NANOPORE"
@@ -205,8 +316,98 @@
     "platform": "BGISEQ"
   },
   {
-    "value": "unspecified",
-    "label": "unspecified",
-    "platform": ""
+    "value": "BGISEQ-T7",
+    "label": "BGISEQ-T7",
+    "platform": "BGISEQ"
+  },
+  {
+    "value": "BGISEQ-G400",
+    "label": "BGISEQ-G400",
+    "platform": "BGISEQ"
+  },
+  {
+    "value": "BGISEQ-G50",
+    "label": "BGISEQ-G50",
+    "platform": "BGISEQ"
+  },
+  {
+    "value": "BGISEQ-G400 FAST",
+    "label": "BGISEQ-G400 FAST",
+    "platform": "BGISEQ"
+  },
+  {
+    "value": "BGISEQ-50",
+    "label": "BGISEQ-50",
+    "platform": "BGISEQ"
+  },
+  {
+    "value": "Complete Genomics",
+    "label": "Complete Genomics",
+    "platform": "COMPLETE_GENOMICS"
+  },
+  {
+    "value": "Onso",
+    "label": "Onso",
+    "platform": "PACBIO_SMRT"
+  },
+  {
+    "value": "Revio",
+    "label": "Revio",
+    "platform": "PACBIO_SMRT"
+  },
+  {
+    "value": "MGISEQ-2000RS",
+    "label": "MGISEQ-2000RS",
+    "platform": "BGISEQ"
+  },
+  {
+    "value": "Element AVITI",
+    "label": "Element AVITI",
+    "platform": "ELEMENT"
+  },
+  {
+    "value": "UG 100",
+    "label": "UG 100",
+    "platform": "ULTIMA"
+  },
+  {
+    "value": "Sentosa SQ301",
+    "label": "Sentosa SQ301",
+    "platform": "VELA_DIAGNOSTICS"
+  },
+  {
+    "value": "GENIUS",
+    "label": "GENIUS",
+    "platform": "GENAPSYS"
+  },
+  {
+    "value": "Genapsys Sequencer",
+    "label": "Genapsys Sequencer",
+    "platform": "GENAPSYS"
+  },
+  {
+    "value": "GS111",
+    "label": "GS111",
+    "platform": "GENAPSYS"
+  },
+  {
+    "value": "GenoCare 1600",
+    "label": "GenoCare 1600",
+    "platform": "GENEMIND"
+  },
+  {
+    "value": "GenoLab M",
+    "label": "GenoLab M",
+    "platform": "GENEMIND"
+  },
+  {
+    "value": "FASTASeq 300",
+    "label": "FASTASeq 300",
+    "platform": "GENEMIND"
+  },
+  {
+    "value": "Tapestri",
+    "label": "Tapestri",
+    "platform": "TAPESTRI"
   }
 ]

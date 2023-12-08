@@ -53,6 +53,7 @@ class IncorrectValueValidator(Validator):
                             regex = field.get("regex","")
                             if regex:
                                 if not re.match(regex, row):
+                                    '''
                                     if column == 'collection date':
                                         # Remove the time part from the date string if it is present
                                         try:
@@ -65,10 +66,11 @@ class IncorrectValueValidator(Validator):
                                             self.data.at[i-2, column] = row
                                         else:
                                             self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i))
-                                            self.flag = False
+                                            self.flag = False        
                                     else:
-                                        self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i))
-                                        self.flag = False
+                                    '''
+                                    self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i))
+                                    self.flag = False
                         elif type == "TAXON_FIELD":
                             if row not in biosampleAccessionsMap.keys():
                                 self.errors.append("Invalid value " + row + " in column:'" + field["name"] + "'")

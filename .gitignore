@@ -5,6 +5,11 @@
 __pycache__
 db.sqlite3
 media
+!media/assets/manifests/ERGA*
+!media/assets/manifests/DTOL*
+!media/assets/manifests/ASG*
+!media/assets/manifests/BARCODING*
+
 
 # Backup files #
 *.bak
@@ -128,8 +133,8 @@ Control.ca-bundle
 Control.system-ca-bundle
 GitHub.sublime-settings
 
-static/assets/manifests/ERC*
-static/assets/manifests/ERT*
+static/assets/manifests*/*
+static/assets/manifests*/*
 b2drop/permits/*
 bundle_*.xml
 
