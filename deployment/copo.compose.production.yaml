@@ -98,7 +98,7 @@ services:
       interval: 2m
       timeout: 10s
       retries: 3
-      start_period: 50s 
+      start_period: 30s 
   celery_job:
     image: copo/copo-new-web:v2.0.0.13
     entrypoint:
@@ -191,11 +191,12 @@ services:
       - copo_bioimage_path
       - ecs_secret_key      
   nginx:
-    image: copo/copo-nginx:1.25.3
+    image: copo/copo-nginx:1.25.3.1
     networks:
       - copo-frontend-network
     volumes:
       - static-data:/www/static
+      - web-data:/www/media
     secrets:
       - copo-project.crt
       - copo-project.key
