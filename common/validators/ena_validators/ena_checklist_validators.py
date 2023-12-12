@@ -69,7 +69,7 @@ class IncorrectValueValidator(Validator):
                                             self.flag = False        
                                     else:
                                     '''
-                                    self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i))
+                                    self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i) + ". Valid value should match: " + str(regex))
                                     self.flag = False
                         elif type == "TAXON_FIELD":
                             if row not in biosampleAccessionsMap.keys():

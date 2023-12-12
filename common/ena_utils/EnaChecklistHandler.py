@@ -653,11 +653,16 @@ def write_manifest(checklist, for_dtol=False, samples=None, file_path=None):
         data_validation_column_index = 0
         for field in checklist["fields"].values():
             name = field["name"] if field["mandatory"] == "mandatory"  else field["name"] + " (optional)"
+            type = field.get("type","TEXT_FIELD")
             if name not in df1.columns:
                 continue
             column_index = df1.columns.get_loc(name)
             column_length = len(name)
-            writer.sheets[sheet_name].set_column(column_index, column_index, column_length)
+            cell_format = writer.book.add_format()
+            if type.startswith("TEXT_"):
+                cell_format.set_num_format('@')
+            writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
+
             if "choice" in field:
                 choice = field["choice"]
                 column_letter = get_column_letter(column_index + 1)
@@ -679,6 +684,7 @@ def write_manifest(checklist, for_dtol=False, samples=None, file_path=None):
                     writer.sheets[sheet_name].data_validation(cell_start_end,
                                                             {'validate': 'list',
                                                             'source': source})
+
 
         sheet_name = 'field_descriptions'           
         df.to_excel(writer, sheet_name=sheet_name)
