@@ -12,7 +12,11 @@ submission_collection = mydb["SubmissionCollection"]
 cursor = submission_collection.find({})
 
 for submission in cursor:
-    sample_accessions = submission.get("accessions", dict()).get("sample_accessions", dict())
+    old_accessions = submission.get("accessions", dict())
+    sample_accessions = dict()
+    if isinstance(old_accessions,dict):
+          sample_accessions = old_accessions.get("sample_accessions", dict())
+    
     accessions = []
     print("updating submission: ", submission["_id"])
     for key, sample_accession in sample_accessions.items():
@@ -20,4 +24,4 @@ for submission in cursor:
                                    biosample_accession=sample_accession.get("biosampleAccession",""), 
                                     sample_id=key))
             sample = submission_collection.update_one({"_id": submission["_id"]}, 
-                                                        {"$set": {"accessions.sample": accessions}})
+                                                        {"$addToSet": {"accessions.sample": {"$each": accessions}}})

@@ -278,7 +278,6 @@ function render_accessions_table(data) {
               $(td).addClass('cell-no-content');
               $(td).text('');
             }
-            _all;
           },
         },
         {
