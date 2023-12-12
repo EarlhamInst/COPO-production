@@ -669,34 +669,7 @@ function append_component_buttons(record_id, profile_type) {
     }
 
     // Create button html
-    let pcomponent_count_span = $('<span></span>');
-    if (item.countsKey) {
-      pcomponent_count_span = $('<span></span>')
-        .attr('class', 'pcomponent-count')
-        .attr('id', record_id + '_' + item.countsKey)
-        .html(
-          '<i class="fa fa-spinner fa-pulse" style="font-size: 10px;"></i>'
-        );
-    }
-
     let pcomponent_count_div = $('<div></div>');
-    let component_count_exclusion_lst = [
-      'accessions',
-      'files',
-      'read',
-      'taggedseq',
-    ];
-
-    // Do not show the count for "accessions" component, "files", "read" and "barcoding manifest" component
-    if (!component_count_exclusion_lst.includes(item.component)) {
-      // if (item.component !== "accessions" && item.component !== "files") {
-      pcomponent_count_div
-        .attr(
-          'class',
-          `tiny ui basic pcomponent-color left pointing label ${item.color}`
-        )
-        .html(pcomponent_count_span);
-    }
 
     let pcomponent_name_div = $('<div></div>')
       .attr('class', `tiny ui button pcomponent-color ${item.color}`)
@@ -707,20 +680,17 @@ function append_component_buttons(record_id, profile_type) {
           '</span>'
       );
 
-    // Add border radius to "accessions" component and "files" component
-    if (component_count_exclusion_lst.includes(item.component)) {
-      // if (item.component === "accessions" || item.component === "files") {
-      pcomponent_name_div.css('border-radius', '.28571429rem');
-    }
+    // Add border radius to all components in the 'Components' menu
+    // i.e. Do not show the count for all components in the 'Components' menu
+    pcomponent_name_div.css('border-radius', '.28571429rem');
 
     let buttonHTML = $('<a></a>')
       .attr('title', 'Navigate to ' + item.title)
       .attr('href', component_link)
       .attr('class', 'tiny ui labeled button pcomponent-button')
       .attr('tabindex', '0')
-      .css('margin', '3px 15px 3px 3px') // Set the component buttons to the same width // css("margin", "3px")
-      .append(pcomponent_name_div)
-      .append(pcomponent_count_div);
+      .css('margin', '3px 15px 3px 3px') // Set the component buttons to the same width
+      .append(pcomponent_name_div);
 
     componentsDIV.append(buttonHTML);
   });
