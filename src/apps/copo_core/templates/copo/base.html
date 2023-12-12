@@ -245,11 +245,12 @@
 
             var message = "<b>An email address is required for your user account</b>";
             var errMessage = "Please enter a valid email address!";
+
             var $content = '<div>';
             $content += '<div style="margin-bottom: 10px;">' + message + '</div>';
             $content += '<input id="emaddres" type="text" class="form-control" placeholder="Enter email address">';
-
-            $content += '<p style="margin-top:10px"  for="gdpr_check">Please check this box if you consent to your identifiable information being stored in COPO. We do not use this information for any process but this information will be submitted to public repositories and well be part of the public record.</p>';
+            $content += '<p style="margin-top:15px">If you <b>cannot</b> enter your email address, please ensure that your browser is not in incognito or private mode.</p>';
+            $content += '<p style="margin-top:20px" for="gdpr_check">Please check the following box if you consent to your identifiable information being stored in COPO. The information will be submitted to public repositories and will be a part of the public record. See our <a style="text-decoration: underline;" href="/about/privacy_notice">Privacy Notice</a> for more details.</p>';
             $content += '<input class="form-check-input" type="checkbox" value="" id="gdpr_check">'
             $content += '<label class="form-check-label" for="gdpr_check">&ensp; I Agree</label>'
             $content += '</div>';
