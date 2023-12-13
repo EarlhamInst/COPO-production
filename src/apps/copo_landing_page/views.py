@@ -47,25 +47,28 @@ def cookie_response(request):
     cookie_consent_dict['cookie_response_date_created'] = datetime.now(
         timezone.utc).replace(microsecond=0).isoformat()
 
+    user = User.objects.get(pk=user_id)
     try:
-        user_details = UserDetails.objects.get(pk=user_id)
-
-        if user_details.repo_manager is None:
-            user_details.repo_manager = list()
-
-        if user_details.repo_submitter is None:
-            user_details.repo_submitter = list()
-
-        if user_details.cookie_consent_log is None:
-            user_details.cookie_consent_log = list()
-
-        user_details.cookie_consent_log.append(
-            json.dumps(cookie_consent_dict, default=dict))
-        user_details.save()
-
-        response = HttpResponse(json.dumps({'resp': 'user details updated'}))
+        user_details = UserDetails.objects.get(user=user)
+    except UserDetails.DoesNotExist as e:
+        l.exception(e)
+        user_details = UserDetails.objects.create(user=user)
     except Exception as e:
         l.exception(e)
-        response = HttpResponseBadRequest(json.dumps({'resp': 'Error'}))
+        return HttpResponseBadRequest(json.dumps({'resp': 'error'}))
 
+    if user_details.repo_manager is None:
+        user_details.repo_manager = list()
+
+    if user_details.repo_submitter is None:
+        user_details.repo_submitter = list()
+
+    if user_details.cookie_consent_log is None:
+        user_details.cookie_consent_log = list()
+
+    user_details.cookie_consent_log.append(
+        json.dumps(cookie_consent_dict, default=dict))
+    user_details.save()
+
+    response = HttpResponse(json.dumps({'resp': 'user details updated'}))
     return response
