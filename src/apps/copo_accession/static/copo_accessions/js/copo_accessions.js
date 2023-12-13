@@ -378,9 +378,10 @@ function render_accessions_table(data) {
     searchHighlight: true,
     ordering: true,
     lengthChange: true,
+    lengthMenu: [10, 25, 50, 75, 100, 500, 1000, 2000, 3000, 4000, 5000],
     scrollX: true,
     responsive: true,
-    scrollY: 350,
+    scrollY: 500,
     bDestroy: true,
     buttons: [
       {
