@@ -10,7 +10,7 @@ def generate_accessions_record(profile_id=str(), isUserProfileActive=str(), isSa
 
     columns.append(dict(data="record_id", visible=False))
     columns.append(dict(data="DT_RowId", visible=False))
-    columns.append(dict(data="accession_type", visible=False))
+    columns.append(dict(data="accession_type", title="Accession Type", visible=True))
 
     if isSampleProfileTypeStandalone:
         if isUserProfileActive and profile_id:
