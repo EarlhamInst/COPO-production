@@ -93,18 +93,42 @@ $(document).ready(function () {
   // populate profiles panel on left
 
   $(document).on('click', '.select-all', function () {
-    $('.form-check-input:not(:checked)').each(function (idx, element) {
-      $(element).click();
+    // Note: Sample table rows within the 'Accepted Samples' tab do not have checkboxes
+    // displayed to be checked therefore, they have to be programmatically clicked
+    let unchecked_records = $('.form-check-input:not(:checked)');
+
+    let unchecked = unchecked_records.length
+      ? unchecked_records
+      : $('#profile_samples').find('tr.sample_table_row').not('selected');
+
+    unchecked.each(function (idx, element) {
+      unchecked_records.length
+        ? $(element).click()
+        : $(element).children('.tickbox').click();
     });
   });
+
   $(document).on('click', '.select-none', function () {
-    $('.form-check-input:checked').each(function (idx, element) {
-      $(element).click();
+    // Note: Sample table rows within the 'Accepted Samples' tab do not have checkboxes
+    // displayed to be checked therefore, they have to be programmatically clicked
+    let checked_records = $('.form-check-input:checked');
+
+    let checked = checked_records.length
+      ? checked_records
+      : $('#profile_samples').find('tr.sample_table_row.selected');
+
+    checked.each(function (idx, element) {
+      checked_records.length
+        ? $(element).click()
+        : $(element).children('.tickbox').click();
     });
   });
 
   $(document).on('click', 'tr.sample_table_row', function (e) {
-    var cb = $($(e.target).siblings('.tickbox').find('input'));
+    // Note: Sample table rows within the 'Accepted Samples' tab do not have checkboxes
+    // displayed to be checked therefore, they have to be programmatically clicked
+    let checkbox = $($(e.target).siblings('.tickbox').find('input'));
+    var cb = checkbox.length ? checkbox : $($(e.target).siblings('.tickbox'));
     cb.click();
   });
 
@@ -161,7 +185,12 @@ $(document).ready(function () {
   });
 
   $(document).on('click', '.download-permits', function (e) {
-    let checked = $('.form-check-input:checked').closest('tr');
+    // Note: Sample table rows within the 'Accepted Samples' tab do not have checkboxes
+    // displayed to be checked therefore, they have to be programmatically clicked
+    let checked = $('.form-check-input:checked').length
+      ? $('.form-check-input:checked').closest('tr')
+      : $('#profile_samples').find('tr.selected');
+
     let sample_ids = [];
 
     $(checked).each(function (it) {
@@ -169,7 +198,7 @@ $(document).ready(function () {
     });
 
     if (sample_ids.length == 0) {
-      alert('Please select samples to download permits for');
+      alert('Please select sample(s) to download permits for');
       return;
     }
 
@@ -229,7 +258,12 @@ $(document).ready(function () {
   });
 
   $(document).on('click', '.view-images', function (e) {
-    let checked = $('.form-check-input:checked').closest('tr');
+    // Note: Sample table rows within the 'Accepted Samples' tab do not have checkboxes
+    // displayed to be checked therefore, they have to be programmatically clicked
+    let checked = $('.form-check-input:checked').length
+      ? $('.form-check-input:checked').closest('tr')
+      : $('#profile_samples').find('tr.selected');
+
     let specimen_ids = [];
     let selected_row_index;
     let specimen_id;
@@ -246,7 +280,7 @@ $(document).ready(function () {
     });
 
     if (specimen_ids.length == 0) {
-      alert('Please select samples to view images for');
+      alert('Please select sample(s) to view images for');
       return;
     }
 
@@ -533,19 +567,21 @@ $(document).ready(function () {
   //update_pending_samples_table()
   //}
 
-  // Disable 'Download Permits' button and 'View Images' button if the active tab
-  // is 'Processing Samples' or 'Accepted Samples'
   $('#sample_filter').bind('click', function (e) {
     let active_tab = $(e.target).attr('href');
     let download_permits_btn = $('.download-permits');
     let view_images_btn = $('.view-images');
+    let delete_selected_btn = $('.delete-selected');
+    let accept_reject_btn = $('#accept_reject_button');
 
-    if (active_tab === 'processing' || active_tab == 'accepted') {
-      download_permits_btn.prop('disabled', true);
-      view_images_btn.prop('disabled', true);
+    if (active_tab === 'processing' || active_tab === 'accepted') {
+      delete_selected_btn.prop('disabled', true).hide(); // Disable 'Delete selected' button
+      accept_reject_btn.hide(); // Hide 'Accept/Reject' button
     } else {
       download_permits_btn.prop('disabled', false);
       view_images_btn.prop('disabled', false);
+      accept_reject_btn.show();
+      delete_selected_btn.prop('disabled', false).show();
     }
 
     // Reset carousel on tab change
