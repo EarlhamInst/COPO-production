@@ -2612,8 +2612,8 @@ function get_profile_components() {
     {
       component: 'accessions',
       title: 'Accessions',
-      iconClass: 'fa fa-barcode',
-      semanticIcon: 'barcode', //semantic UI equivalence of fontawesome icon
+      iconClass: 'fa fa-sitemap',
+      semanticIcon: 'sitemap', //semantic UI equivalence of fontawesome icon
       countsKey: 'num_accessions',
       buttons: [
         'copo_accessions',
@@ -2632,8 +2632,8 @@ function get_profile_components() {
     {
       component: 'accessions',
       title: 'Accessions',
-      iconClass: 'fa fa-barcode',
-      semanticIcon: 'barcode', //semantic UI equivalence of fontawesome icon
+      iconClass: 'fa fa-sitemap',
+      semanticIcon: 'sitemap', //semantic UI equivalence of fontawesome icon
       countsKey: 'num_accessions',
       buttons: [
         'copo_accessions',
@@ -2652,8 +2652,8 @@ function get_profile_components() {
     {
       component: 'accessions_dashboard',
       title: 'Accessions',
-      iconClass: 'fa fa-barcode',
-      semanticIcon: 'barcode', //semantic UI equivalence of fontawesome icon
+      iconClass: 'fa fa-sitemap',
+      semanticIcon: 'sitemap', //semantic UI equivalence of fontawesome icon
       countsKey: 'num_accessions',
       buttons: [
         'copo_accessions',
@@ -2672,8 +2672,8 @@ function get_profile_components() {
     {
       component: 'assembly',
       title: 'Assembly',
-      iconClass: 'fa fa-database',
-      semanticIcon: 'database',
+      iconClass: 'fa fa-puzzle-piece',
+      semanticIcon: 'puzzle piece',
       countsKey: 'num_assembly',
       buttons: ['new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
@@ -2692,8 +2692,8 @@ function get_profile_components() {
     {
       component: 'assembly',
       title: 'Assembly',
-      iconClass: 'fa fa-database',
-      semanticIcon: 'database',
+      iconClass: 'fa fa-puzzle-piece',
+      semanticIcon: 'puzzle piece',
       countsKey: 'num_assembly',
       buttons: ['new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
@@ -2713,8 +2713,8 @@ function get_profile_components() {
       component: 'taggedseq',
       title: 'Barcoding Manifests',
       subtitle: '#component_subtitle',
-      iconClass: 'fa fa-database',
-      semanticIcon: 'database',
+      iconClass: 'fa fa-barcode',
+      semanticIcon: 'barcode',
       countsKey1: 'num_barcode_manifest',
       buttons: [
         'new-taggedseq-spreadsheet-template',
@@ -2811,8 +2811,8 @@ function get_profile_components() {
       component: 'read',
       title: 'Reads',
       subtitle: '#component_subtitle',
-      iconClass: 'fa fa-database',
-      semanticIcon: 'database', //semantic UI equivalence of fontawesome icon
+      iconClass: 'fa fa-dna',
+      semanticIcon: 'dna', //semantic UI equivalence of fontawesome icon
       //   countsKey: 'num_read',
       buttons: [
         'new-reads-spreadsheet-template',
@@ -2830,8 +2830,8 @@ function get_profile_components() {
       component: 'read',
       title: 'Reads',
       //subtitle: "#component_subtitle",
-      iconClass: 'fa fa-database',
-      semanticIcon: 'database', //semantic UI equivalence of fontawesome icon
+      iconClass: 'fa fa-dna',
+      semanticIcon: 'dna', //semantic UI equivalence of fontawesome icon
       // countsKey: "num_read",
       buttons: [
         'new-reads-spreadsheet-template',
@@ -2848,8 +2848,8 @@ function get_profile_components() {
     {
       component: 'seqannotation',
       title: 'Sequence Annotations',
-      iconClass: 'fa fa-database',
-      semanticIcon: 'database',
+      iconClass: 'fa fa-tag',
+      semanticIcon: 'tag',
       countsKey: 'num_seqannotation',
       buttons: ['quick-tour-template', 'new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
@@ -2868,8 +2868,8 @@ function get_profile_components() {
     {
       component: 'seqannotation',
       title: 'Sequence Annotations',
-      iconClass: 'fa fa-database',
-      semanticIcon: 'database',
+      iconClass: 'fa fa-tag',
+      semanticIcon: 'tag',
       countsKey: 'num_seqannotation',
       buttons: ['quick-tour-template', 'new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
