@@ -1,7 +1,8 @@
-from common.dal.copo_da import Sample, Profile
+from common.dal.sample_da import Sample
+from common.dal.profile_da import Profile
 from common.utils.helpers import notify_frontend
 from common.validators.validator import Validator
-from common.validators.validation_messages import MESSAGES as msg
+from .validation_messages import MESSAGES as msg
 from collections import Counter
 from common.schema_versions.lookup.dtol_lookups import BLANK_VALS, \
     NA_VALS, POP_GENOMICS_OPTIONAL_COLUMNS_DEFAULT_VALUES_MAPPING, SLASHES_LIST

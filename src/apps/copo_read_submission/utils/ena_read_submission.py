@@ -15,7 +15,9 @@ from common.utils.helpers import notify_read_status, get_env, get_datetime, json
 from common.schemas.utils.data_utils import simple_utc
 from django.conf import settings
 from common.ena_utils import generic_helper as ghlper
-from common.dal.copo_da import Submission, EnaChecklist, Sample
+from common.dal.copo_da import EnaChecklist
+from common.dal.sample_da import Sample
+from common.dal.submission_da import Submission
 from common.lookup.lookup import SRA_SETTINGS
 from common.ena_utils.ena_helper import SubmissionHelper
 #import common.schemas.utils.data_utils as d_utils

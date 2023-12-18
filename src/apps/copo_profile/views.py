@@ -1,6 +1,7 @@
 from common.dal.mongo_util import cursor_to_list_str2
 # from dal.broker_da import BrokerDA, BrokerVisuals
-from common.dal.copo_da import ProfileInfo, Profile, Submission
+from common.dal.profile_da import Profile, ProfileInfo
+from common.dal.submission_da import Submission
 from src.apps.copo_core.models import SequencingCentre
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse

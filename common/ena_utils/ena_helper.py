@@ -8,7 +8,7 @@ from datetime import datetime
 from common.dal.mongo_util import cursor_to_list
 from collections import defaultdict
 from . import generic_helper as ghlper
-from common.dal.copo_da import Profile
+from common.dal.profile_da import Profile
 from common.utils import helpers
 
 __author__ = 'etuka'

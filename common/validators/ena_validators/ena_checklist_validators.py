@@ -1,6 +1,5 @@
 from common.validators.validator import Validator
-from common.dal.copo_da import Sample
-from datetime import datetime 
+from common.dal.sample_da import Sample
 import re
 
 #check mandatory fields are present in spreadsheet

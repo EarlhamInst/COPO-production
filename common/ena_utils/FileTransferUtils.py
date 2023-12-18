@@ -1,6 +1,7 @@
 __author__ = 'fshaw'
 import os
-from common.dal.copo_da import EnaFileTransfer, DataFile, Profile
+from common.dal.copo_da import EnaFileTransfer, DataFile
+from common.dal.profile_da import Profile
 from common.s3.s3Connection import S3Connection as s3
 from datetime import datetime
 from bson import ObjectId

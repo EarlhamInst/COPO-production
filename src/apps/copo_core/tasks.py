@@ -1,5 +1,6 @@
 import celery
-from common.dal.copo_da import Sample, Stats
+from common.dal.copo_da import Stats
+from common.dal.sample_da import Sample
 from .models import ViewLock
 from src.celery import app
 from common.utils.logger import Logger

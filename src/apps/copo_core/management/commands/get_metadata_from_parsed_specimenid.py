@@ -1,13 +1,12 @@
 from bson import json_util
 from common.dal import cursor_to_list
-from common.dal.copo_da import Sample
+from common.dal.sample_da import Sample, Source
 from datetime import datetime, timezone
 from django.conf import settings as settings
 from django.core.management import BaseCommand
 from openpyxl import load_workbook
 from xlrd import open_workbook, XLRDError
 import ast
-import common.dal.copo_da as da
 import importlib
 import json
 import pandas as pd
@@ -139,7 +138,7 @@ class Command(BaseCommand):
                 print("Iterating through the list of specimen IDs...")
 
                 sample_in_db = cursor_to_list(Sample().get_sample_by_specimen_id_regex(specimen))
-                source_in_db = da.Source().get_by_specimen_id_regex(specimen)
+                source_in_db = Source().get_by_specimen_id_regex(specimen)
 
                 if not sample_in_db and not source_in_db:
                     specimen_ids_not_in_db.append(specimen)

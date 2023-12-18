@@ -1,5 +1,6 @@
 from bson import json_util
-from common.dal.copo_da import Profile, Sample
+from common.dal.profile_da import Profile
+from common.dal.sample_da import Sample
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render

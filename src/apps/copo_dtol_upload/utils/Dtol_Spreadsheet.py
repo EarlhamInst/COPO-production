@@ -15,7 +15,10 @@ from django.core.files.storage import default_storage
 from django_tools.middlewares import ThreadLocal
 import common.schemas.utils.data_utils as d_utils
 from common.utils.helpers import map_to_dict, get_datetime, notify_frontend
-from common.dal.copo_da import Sample, DataFile, Profile, ValidationQueue
+from common.dal.copo_da import  DataFile
+from common.dal.profile_da import Profile
+from common.dal.sample_da import Sample
+from .da import ValidationQueue
 from .copo_email import Email
 from common.lookup import lookup as lk
 from common.lookup.lookup import SRA_SETTINGS

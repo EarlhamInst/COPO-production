@@ -6,7 +6,7 @@ import subprocess
 from common.utils import helpers
 import os
 from common.schema_versions.lookup.dtol_lookups import DTOL_ENA_MAPPINGS
-import common.dal.copo_da as da
+import common.dal.sample_da as da
 
 
 # The class must be named Command, and subclass BaseCommand

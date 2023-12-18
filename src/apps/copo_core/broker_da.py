@@ -12,16 +12,13 @@ from src.apps.copo_accession.utils import Accession as accession
 from src.apps.copo_file.utils import CopoFiles as copo_file
 from common.utils import html_tags_utils as htags
 from common.utils.copo_lookup_service import COPOLookup
-from common.dal.copo_da import Profile, Source, Person, Sample, Submission, DataFile, DAComponent, \
-    CGCore, MetadataTemplate, Assembly, SequenceAnnotation, TaggedSequence
+from common.dal.copo_base_da import   DAComponent
+from common.dal.profile_da import Profile
+from common.dal.submission_da import Submission
 from common.schemas.utils import data_utils
 from common.utils import helpers
-from common.utils.logger import Logger
 from common.dal.mongo_util import cursor_to_list_str 
 from src.apps.copo_barcoding_submission.utils.EnaTaggedSequence import EnaTaggedSequence
-from common.s3.s3Connection import S3Connection as s3
-
-
 
 class BrokerDA:
     def __init__(self, **kwargs):
@@ -32,33 +29,12 @@ class BrokerDA:
         self.profile_id = self.param_dict.get("profile_id", str())
         self.auto_fields = self.param_dict.get("auto_fields", dict())
         self.request_dict = self.param_dict.get("request_dict", dict())
+        self.da_object = self.param_dict.get("da_object", DAComponent(self.profile_id, self.component))
 
         if self.auto_fields and isinstance(self.auto_fields, str):
             self.auto_fields = json.loads(self.auto_fields)
 
         self.broker_visuals = BrokerVisuals(**kwargs)
-        self.da_object = DAComponent(self.profile_id, self.component)
-
-        da_dict = dict(
-            #publication=Publication,
-            person=Person,
-            sample=Sample,
-            source=Source,
-            profile=Profile,
-            datafile=DataFile,
-            submission=Submission,
-            #annotation=Annotation,
-            cgcore=CGCore,
-            metadata_template=MetadataTemplate,
-            #repository=Repository
-            seqannotation=SequenceAnnotation,
-            assembly=Assembly,
-            files=s3,
-            taggedseq=TaggedSequence            
-        )
-
-        if self.component in da_dict:
-            self.da_object = da_dict[self.component](self.profile_id)
 
     def set_extra_params(self, extra_param):
         for k, v in extra_param.items():
@@ -148,7 +124,7 @@ class BrokerDA:
             targetprofiletitle = self.da_object.get_record(targetid).get("title", "")
             user_id = helpers.get_user_id()
             existing_profiles_ids = Profile().get_collection_handle().find(
-                {"user_id": user_id, "title": self.auto_fields["copo.profile.title"]}, {"_id": 1})
+                {"title": self.auto_fields["copo.profile.title"]}, {"_id": 1})
 
             # Get a list of profile IDs that have the same profile title as the profile record to be edited
             lst_of_profile_ids = cursor_to_list_str(existing_profiles_ids)
@@ -558,6 +534,7 @@ class BrokerVisuals:
         self.user_id = self.param_dict.get("user_id", str())
         self.context = self.param_dict.get("context", dict())
         self.request_dict = self.param_dict.get("request_dict", dict())
+        self.da_object = self.param_dict.get("da_object", DAComponent(self.profile_id, self.component)) 
 
     def set_extra_params(self, extra_param):
         for k, v in extra_param.items():
@@ -571,14 +548,14 @@ class BrokerVisuals:
             #publication=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
             #person=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
             #datafile=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            sample=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            sample=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
             #source=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
             #repository=(htags.generate_repositories_records, dict(component=self.component)),
-            metadata_template=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            metadata_template=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
             profile=(htags.generate_copo_profiles_data, dict(profiles=Profile().get_all_profiles())),
-            submission=(htags.generate_submissions_records, dict(profile_id=self.profile_id, component=self.component)),
-            seqannotation=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            assembly=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            #submission=(htags.generate_submissions_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
+            seqannotation=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
+            assembly=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
             read = (ena_read.generate_read_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("sample_checklist_id", str()))),
             files = (copo_file.generate_files_record, dict(user_id=self.user_id)),
             taggedseq = (EnaTaggedSequence().generate_taggedseq_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("tagged_seq_checklist_id", str()))),
@@ -751,8 +728,8 @@ class BrokerVisuals:
         return self.context
     '''
     def do_attributes_display(self):
-        target_id = self.param_dict.get("target_id", str())
-        self.context['component_attributes'] = htags.generate_attributes(self.component, target_id)
+        target_id = self.param_dict.get("target_id", str())        
+        self.context['component_attributes'] = htags.generate_attributes(self.da_object, target_id)
         self.context['component_label'] = htags.get_labels().get(self.component, dict()).get("label", str())
 
         return self.context

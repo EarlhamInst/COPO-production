@@ -103,7 +103,7 @@ class COPOLookup:
         :return:
         """
         import html_tags_utils as htags
-        from common.dal.copo_da import Source
+        from common.dal.sample_da import Source
 
 
         df = pd.DataFrame()
@@ -242,7 +242,7 @@ class COPOLookup:
         """
 
         import html_tags_utils as htags
-        from common.dal.copo_da import Sample
+        from common.dal.sample_da import Sample
 
         df = pd.DataFrame()
 
@@ -302,7 +302,7 @@ class COPOLookup:
         """
 
         import html_tags_utils as htags
-        from common.dal.copo_da import Sample
+        from common.dal.sample_da import Sample
 
         df = pd.DataFrame()
 
@@ -366,7 +366,7 @@ class COPOLookup:
         return html
     
     def get_runs(self):
-        from common.dal.copo_da import Submission
+        from common.dal.submission_da import Submission
         existing_sub = Submission().get_records_by_field("profile_id", self.profile_id)
         df = pd.DataFrame()
 
@@ -392,7 +392,7 @@ class COPOLookup:
         return result
 
     def get_studies(self):
-        from common.dal.copo_da import Submission
+        from common.dal.submission_da import Submission
         existing_sub = Submission().get_records_by_field("profile_id", self.profile_id)
         df = pd.DataFrame()
 
@@ -419,7 +419,7 @@ class COPOLookup:
         return result
 
     def get_experiments(self):
-        from common.dal.copo_da import Submission
+        from common.dal.submission_da import Submission
         existing_sub = Submission().get_records_by_field("profile_id", self.profile_id)
         df = pd.DataFrame()
         existing_accessions = ""
@@ -443,7 +443,7 @@ class COPOLookup:
         return result
 
     def get_samples(self):
-        from common.dal.copo_da import Submission
+        from common.dal.submission_da import Submission
         existing_sub = Submission().get_records_by_field("profile_id", self.profile_id)
         df = pd.DataFrame()
 

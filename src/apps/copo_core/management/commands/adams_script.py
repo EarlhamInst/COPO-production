@@ -2,12 +2,12 @@ from django.core.management import BaseCommand
 
 import xml.etree.ElementTree as ET
 import subprocess
-from tools import resolve_env
+from common.utils.helpers import resolve_env
 import os
 
 
-import dal.copo_da as da
-
+from common.dal.profile_da import Profile
+from common.dal.submission_da import Submission
 
 
 # The class must be named Command, and subclass BaseCommand
@@ -34,11 +34,11 @@ class Command(BaseCommand):
             for line in checksums_file.readlines():
                 line = line.split()
                 checksum_dict[line[1]] = line[0]
-        profile = da.Profile().get_by_title(options['profile_title'].strip())
+        profile = Profile().get_by_title(options['profile_title'].strip())
         assert len(profile) == 1
         profile_id = profile[0].get('_id',"")
         print(profile_id)
-        submission = da.Submission().get_records_by_field("profile_id", str(profile_id))
+        submission = Submission().get_records_by_field("profile_id", str(profile_id))
         assert len(submission) == 1
         runs = submission[0].get("accessions","").get("run", "")
         bundle_meta = submission[0].get("bundle_meta", "")

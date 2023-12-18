@@ -1,5 +1,5 @@
 from django.core.management import BaseCommand
-import common.dal.copo_da as da
+from common.dal.sample_da  import Sample
 
 
 # The class must be named Command, and subclass BaseCommand
@@ -14,10 +14,10 @@ class Command(BaseCommand):
 
     # A command must define handle()
     def handle(self, *args, **options):
-        samples_to_update = da.Sample().get_by_project_and_field(
+        samples_to_update = Sample().get_by_project_and_field(
             "ERGA", "manifest_version", ["pilot"])
         for sample in samples_to_update:
             print(sample.get("_id", ""))
             for field in self.TO_UPDATE_FIELDS:
-                da.Sample().update_field(
+                Sample().update_field(
                     self.TO_UPDATE_FIELDS[field], sample.get(field), sample['_id'])

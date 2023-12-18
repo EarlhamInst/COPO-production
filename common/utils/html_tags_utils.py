@@ -15,9 +15,9 @@ from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES_FULL
 from .copo_lookup_service import COPOLookup
 from common.dal.copo_base_da import DataSchemas
 from src.apps.copo_core.models import SequencingCentre
-from common.dal.copo_da import ProfileInfo, Description, Profile, Source, Person, Sample, \
-    Submission, EnaChecklist, TaggedSequence, \
-    DataFile, DAComponent, CGCore, MetadataTemplate, Read
+from common.dal.copo_da import DAComponent,  DataFile, Description
+from common.dal.profile_da import Profile, ProfileInfo
+from common.dal.submission_da import Submission
 # from hurry.filesize import size as hurrysize
 from django_tools.middlewares import ThreadLocal
 from common.utils.logger import Logger
@@ -35,6 +35,7 @@ table_id_dict = dict(  # publication="publication_table",
     profile="profile_table",
     metadata_template="metadata_template_table"
 )
+'''
 da_dict = dict(
     # publication=Publication,
     person=Person,
@@ -49,7 +50,7 @@ da_dict = dict(
     taggedseq=TaggedSequence,
     read=Read,
 )
-
+'''
 
 '''
 @register.simple_tag
@@ -146,8 +147,8 @@ def generate_copo_form(component=str(), target_id=str(), component_dict=dict(), 
 
     da_object = DAComponent(component=component, profile_id=profile_id)
 
-    if component in da_dict:
-        da_object = da_dict[component](profile_id)
+    #if component in da_dict:
+    #    da_object = da_dict[component](profile_id)
 
     form_value = component_dict
 
@@ -262,8 +263,8 @@ def filter_sample_type(form_value, elem):
 def generate_component_records(component=str(), profile_id=str(), label_key=str(), **kwargs):
     da_object = DAComponent(component=component, profile_id=profile_id)
 
-    if component in da_dict:
-        da_object = da_dict[component](profile_id)
+    #if component in da_dict:
+    #    da_object = da_dict[component](profile_id)
 
     component_records = list()
     schema = da_object.get_component_schema(**kwargs)
@@ -299,8 +300,8 @@ def generate_unique_items(component=str(), profile_id=str(), elem_id=str(), reco
 
 
 # @register.filter("generate_table_columns")
-def generate_table_columns(component=str()):
-    da_object = DAComponent(component=component)
+def generate_table_columns(da_object=None):
+    #da_object = DAComponent(component=component)
 
     # get and filter schema elements based on displayable columns
     schema = [x for x in da_object.get_schema().get(
@@ -329,7 +330,7 @@ def generate_table_columns(component=str()):
         # columns.append(dict(data=x["id"], title=x["label"], orderable=orderable))
 
     # add column for annotation control
-    if component == "datafile":
+    if da_object.component == "datafile":
         special_dict = dict(className='annotate-datafile', orderable=False, data=None,
                             title='', width="1%",
                             defaultContent='<span title="Annotate datafile" style="cursor: '
@@ -341,7 +342,7 @@ def generate_table_columns(component=str()):
 
 
 # @register.filter("generate_server_side_table_records")
-def generate_server_side_table_records(profile_id=str(), component=str(), request=dict()):
+def generate_server_side_table_records(profile_id=str(), da_object=None, request=dict()):
     # function generates component records for building an UI table using server-side processing
     # - please note that for effective data display,
     # all array and object-type fields (e.g., characteristics) are deferred to sub-table display.
@@ -355,7 +356,7 @@ def generate_server_side_table_records(profile_id=str(), component=str(), reques
     start = int(request.get("start", 0))
 
     # instantiate data access object
-    da_object = DAComponent(profile_id, component)
+    #da_object = DAComponent(profile_id, component)
 
     return_dict = dict()
 
@@ -365,7 +366,7 @@ def generate_server_side_table_records(profile_id=str(), component=str(), reques
     # retrieve and process records
     filter_by = dict()
 
-    if component == "datafile":
+    if da_object.component == "datafile":
         # get all active bundles in the profile
         existing_bundles = Description().get_all_records_columns(projection=dict(_id=1),
                                                                  filter_by=dict(profile_id=profile_id,
@@ -437,18 +438,18 @@ def generate_server_side_table_records(profile_id=str(), component=str(), reques
 # @register.filter("generate_table_records")
 
 
-def generate_table_records(profile_id=str(), component=str(), record_id=str()):
+def generate_table_records(profile_id=str(), da_object=None, record_id=str()):
     # function generates component records for building an UI table - please note that for effective tabular display,
     # all array and object-type fields (e.g., characteristics) are deferred to sub-table display.
     # please define such in the schema as "show_in_table": false and "show_as_attribute": true
     type = Profile().get_type(profile_id=profile_id)
     columns = list()
     data_set = list()
+    schema = list()
 
     # instantiate data access object
-    da_object = DAComponent(profile_id, component)
 
-    if component == "sample":
+    if da_object.component == "sample":
 
         profile_type = type.lower()
         if "asg" in profile_type:
@@ -464,22 +465,20 @@ def generate_table_records(profile_id=str(), component=str(), record_id=str()):
             profile_type = "erga"
 
         current_schema_version = settings.MANIFEST_VERSION.get(
-            profile_type.upper(), '')
+            profile_type.upper(), '') if profile_type else ''
 
         get_dtol_fields = type in TOL_PROFILE_TYPES_FULL
         # get and filter schema elements based on displayable columns and profile type
         if get_dtol_fields:
-
             schema = list()
             for x in da_object.get_schema().get("schema_dict"):
                 if x.get("show_in_table", True) and profile_type in x.get("specifications",
-                                                                          []) and current_schema_version in x.get(
+                                                                            []) and current_schema_version in x.get(
                         "manifest_version", ""):
                     schema.append(x)
-    else:
-        schema = list()
+    if not schema:
         for x in da_object.get_schema().get("schema_dict"):
-            if (x.get("show_in_table", True) and (component != 'sample' or component == 'sample' and (
+            if (x.get("show_in_table", True) and (da_object.component != 'sample' or da_object.component == 'sample' and (
                     "biosample" in x.get("specifications", []) or "isasample" in x.get(
                     "specifications", [])))):
                 schema.append(x)
@@ -531,7 +530,7 @@ def generate_table_records(profile_id=str(), component=str(), record_id=str()):
 
     return return_dict
 
-
+'''
 # @register.filter("generate_submissions_records")
 def generate_submissions_records(profile_id=str(), component=str(), record_id=str()):
     # function generates component records for building an UI table - please note that for effective tabular display,
@@ -650,8 +649,6 @@ def generate_submissions_records(profile_id=str(), component=str(), record_id=st
 
     return dict(dataSet=data_set, )
 
-
-'''
 @register.filter("generate_repositories_records")
 def generate_repositories_records(component=str(), record_id=str()):
     # function generates component records for building an UI table - please note that for effective tabular display,
@@ -1279,14 +1276,14 @@ def generate_submission_accessions_data(submission_id=str()):
 
 
 # @register.filter("generate_attributes")
-def generate_attributes(component, target_id):
-    da_object = DAComponent(component=component)
+def generate_attributes(da_object, target_id):
+    #da_object = DAComponent(component=component)
 
-    if component in da_dict:
-        da_object = da_dict[component]()
+    #if component in da_dict:
+    #    da_object = da_dict[component]()
 
-    if component == "read":
-        target_id = target_id.split("_")[0]
+    #if da_object.component == "read":
+    #    target_id = target_id.split("_")[0]
 
     # get and filter schema elements based on displayable columns
     schema = [x for x in da_object.get_schema(target_id=target_id).get(
@@ -1296,7 +1293,7 @@ def generate_attributes(component, target_id):
     projection = [(x["id"].split(".")[-1], 1) for x in schema]
 
     # account for description metadata in datafiles
-    if component == "datafile":
+    if da_object.component == "datafile":
         projection.append(('description', 1))
 
     filter_by = dict(_id=ObjectId(target_id))
@@ -1308,7 +1305,7 @@ def generate_attributes(component, target_id):
     if len(record):
         record = record[0]
 
-        if component == "sample":  # filter based on sample type
+        if da_object.component == "sample":  # filter based on sample type
             sample_types = [s_t['value'] for s_t in COPOLookup(
                 data_source='sample_type_options').broker_data_source()]
             sample_type = record.get("sample_type", str())
@@ -1318,7 +1315,7 @@ def generate_attributes(component, target_id):
         for x in schema:
             x['id'] = x["id"].split(".")[-1]
 
-        if component == "datafile":
+        if da_object.component == "datafile":
             key_split = "___0___"
             attributes = record.get("description", dict()).get(
                 "attributes", dict())

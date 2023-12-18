@@ -1,7 +1,9 @@
 from common.schemas.utils import data_utils
 from common.utils.logger import Logger
 from pathlib import Path
-from common.dal.copo_da import Submission, Source, DataFile, Sample
+from common.dal.copo_da import DataFile
+from common.dal.submission_da import Submission
+from common.dal.sample_da import Source
 import subprocess
 from common.lookup.copo_enums import Loglvl
 import os

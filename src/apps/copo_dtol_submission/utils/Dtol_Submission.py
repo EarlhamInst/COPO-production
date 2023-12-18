@@ -11,7 +11,9 @@ import requests
 # from celery.utils.log import get_task_logger
 from common.lookup.copo_enums import *
 import common.schemas.utils.data_utils as d_utils
-from common.dal.copo_da import Submission, Sample, Profile, Source
+from common.dal.sample_da import Sample, Source
+from common.dal.profile_da import Profile
+from common.dal.submission_da import Submission
 from common.utils.helpers import notify_frontend, get_env
 from common.schema_versions.lookup.dtol_lookups import DTOL_ENA_MAPPINGS, DTOL_UNITS, PERMIT_COLUMN_NAMES_PREFIX, PERMIT_FILENAME_COLUMN_NAMES
 from common.lookup.lookup import SRA_SETTINGS, SRA_SUBMISSION_TEMPLATE, SRA_SAMPLE_TEMPLATE, SRA_PROJECT_TEMPLATE, DTOL_SAMPLE_COLLECTION_LOCATION_STATEMENT

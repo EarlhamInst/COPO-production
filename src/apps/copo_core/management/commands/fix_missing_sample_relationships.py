@@ -3,7 +3,7 @@ import re
 import subprocess
 from Bio import Entrez
 from common.dal.mongo_util import cursor_to_list
-from common.dal.copo_da import Sample
+from common.dal.sample_da import Sample
 from django.core.management import BaseCommand
 from src.apps.copo_core.management.commands import update_samplefield
 

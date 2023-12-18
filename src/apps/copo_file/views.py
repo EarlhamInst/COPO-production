@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from common.dal.copo_da import Profile
+from common.dal.profile_da import Profile
 from common.s3.s3Connection import S3Connection
 from django.shortcuts import render
 import jsonpickle
@@ -10,7 +10,6 @@ from src.apps.copo_core.views import web_page_access_checker
 import json
 
 
-@web_page_access_checker
 @login_required()
 def copo_files(request, profile_id):
     request.session["profile_id"] = profile_id

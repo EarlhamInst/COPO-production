@@ -8,7 +8,7 @@ services:
       - "8001:8001"
       - "8101:8101"
     volumes:
-      - /Users/fshaw/Documents/dev/COPO-production:/copo
+      - /Users/zef22hak/development/COPO_refactoring/COPO-production:/copo
     environment:
       - ENVIRONMENT_TYPE=local
       - ASPERA_PLUGIN_DIRECTORY=aspera_linux_plugin
@@ -122,7 +122,7 @@ services:
     networks:
       - copo-backend-network
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data1:/var/lib/postgresql/data
     secrets:
       - copo_postgres_user_password
     environment:
@@ -151,7 +151,7 @@ services:
           memory: 512mb
 
   mongo:
-    image: copo/copo-mongo:v4.4.6_1
+    image: debbyku/mongodb:v7.0.1_1
     command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
     entrypoint:
        - bash
@@ -165,7 +165,7 @@ services:
     networks:
       - copo-backend-network
     volumes:
-      - mongo-data:/data/db
+      - mongo-data2:/data/db
     secrets:
       - copo_mongo_initdb_root_password
       - copo_mongo_user_password
@@ -249,8 +249,8 @@ volumes:
     external: true
   postgres-backup:
     external: true
-  mongo-data:
+  mongo-data2:
     external: true
-  postgres-data:
+  postgres-data1:
     external: true
 

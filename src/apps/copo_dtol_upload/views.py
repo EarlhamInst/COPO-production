@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from common.dal.copo_da import   ValidationQueue
+from .utils.da import   ValidationQueue
 from .utils.Dtol_Spreadsheet import DtolSpreadsheet
 from common.utils import html_tags_utils as htags
 import pickle

@@ -9,7 +9,7 @@ import os
 from common.schema_versions.lookup.dtol_lookups import DTOL_ENA_MAPPINGS
 import json
 
-import common.dal.copo_da as da
+from common.dal.sample_da import Sample, Source
 
 '''this is a script to solve the issue observed in db
 in which there are sources with different specimen ids, sra accessions
@@ -62,7 +62,7 @@ class Command(BaseCommand):
                   accession, " is ", correct_specimen)
             print(
                 "\n************************************************************************\n")
-            source_list = da.Source().get_by_field("biosampleAccession", accession)
+            source_list = Source().get_by_field("biosampleAccession", accession)
             for possible_source in source_list:
                 if possible_source["SPECIMEN_ID"] == correct_specimen:
                     pass
@@ -90,11 +90,11 @@ class Command(BaseCommand):
                     oldvalue = accession
 
                     # update source and record change in the 'AuditCollection'
-                    da.Source().update_field("biosampleAccession",
+                    Source().update_field("biosampleAccession",
                                              value, possible_source['_id'])
                     # correct children samples
                     # identify all samples to be corrected
-                    samples_to_correct = da.Sample().get_sample_by_specimen_id(specimen_to_correct)
+                    samples_to_correct = Sample().get_sample_by_specimen_id(specimen_to_correct)
                     for sample in samples_to_correct:
                         # todo local update in db as for source
                         if sample["ORGANISM_PART"] == "WHOLE_ORGANISM":
@@ -103,20 +103,20 @@ class Command(BaseCommand):
                             # the relationship to update is sampleSameAs
 
                             # update sample and record change in the 'AuditCollection'
-                            da.Sample().update_field(
+                            Sample().update_field(
                                 "sampleSameAs", value, sample["_id"])
                         else:
                             # the relationship to update is sampleDerivedFrom
 
                             # update sample and record change in the 'AuditCollection'
-                            da.Sample().update_field(
+                            Sample().update_field(
                                 "sampleDerivedFrom", value, sample["_id"])
                         # todo change function -this needs to be updated in ENA too-
                         self.update_sample(sample['_id'])
 
     def update_sample(self, sample):
         # update ENA record
-        updatedrecord = da.Sample().get_record(sample)
+        updatedrecord = Sample().get_record(sample)
         # retrieve submitted XML for sample
         # curl_cmd = "curl -u " + self.user_token + \
         #           ':' + self.pass_word + " " + self.ena_sample_retrieval \

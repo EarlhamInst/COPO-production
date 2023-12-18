@@ -869,7 +869,9 @@ class renameRecordThread(threading.Thread):
 
 class ISAHelpers:
     def broker_copo_records(self, submission_token=str()):
-        from common.dal.copo_da import Submission, DataFile, DAComponent, Person, Sample
+        from common.dal.copo_da import DataFile, DAComponent, Person
+        from common.dal.sample_da import Sample
+        from common.dal.submission_da import Submission
         profile_id = Submission().get_record(submission_token).get("profile_id", str())
         copo_records = dict()
 

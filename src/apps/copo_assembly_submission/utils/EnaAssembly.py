@@ -7,7 +7,9 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django_tools.middlewares import ThreadLocal
 from common.utils.helpers import get_env, get_datetime, get_deleted_flag, get_not_deleted_flag
-from common.dal.copo_da import Assembly, Submission, EnaFileTransfer, DataFile
+from common.dal.copo_da import EnaFileTransfer, DataFile
+from common.dal.submission_da import Submission
+from .da import Assembly
 from common.utils.logger import Logger
 import glob
 from common.ena_utils import generic_helper as ghlper

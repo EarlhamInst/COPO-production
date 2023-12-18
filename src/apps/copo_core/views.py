@@ -15,14 +15,31 @@ from jsonpickle import encode
 from src.apps.api.views.general import *
 from common.dal.mongo_util import cursor_to_list
 from .broker_da import BrokerDA, BrokerVisuals
-from common.dal.copo_da import DataFile
-from common.dal.copo_da import ProfileInfo, Profile, Submission, CopoGroup, MetadataTemplate
+from common.dal.copo_da import DataFile, CopoGroup, MetadataTemplate
+from common.dal.profile_da import ProfileInfo, Profile
+from common.dal.sample_da import Sample
+from common.dal.submission_da import Submission
+from common.dal.copo_base_da import   DAComponent
+
+from src.apps.copo_barcoding_submission.utils.da import TaggedSequence
+from src.apps.copo_assembly_submission.utils.da import Assembly
+from src.apps.copo_seq_annotation_submission.utils.da import SequenceAnnotation
+from common.s3.s3Connection import S3Connection as s3
 from common.lookup.lookup import REPO_NAME_LOOKUP
 from .models import banner_view
 from common.schemas.utils import data_utils
 from common.utils.helpers import get_env, get_group_membership_asString
 LOGGER = settings.LOGGER
 
+da_dict = dict(
+    profile=Profile,
+    submission=Submission,
+    seqannotation=SequenceAnnotation,
+    assembly=Assembly,
+    files=s3,
+    taggedseq=TaggedSequence,
+    read=Sample          
+)
 """
 @login_required
 def index(request):
@@ -49,7 +66,6 @@ def web_page_access_checker(func):
     # Custom decorator to check if the current web page should be
     # viewed/accessed by the current web page viewer
     def verify_view_access(request, *args, **kwargs):
-        response = func(request, *args, **kwargs)
         member_groups = get_group_membership_asString()
         current_view = request.resolver_match.view_name
 
@@ -58,10 +74,12 @@ def web_page_access_checker(func):
         if not profile_id:
             # Check if current web page viewer is a sample manager and current web page is
             # 'accept/reject samples' web page, if 'yes', grant web page access if not, deny access
-            if not (any(x.endswith('sample_managers') for x in member_groups) and 'accept_reject' in current_view):
-                response = handler403(request)
-            return response
-
+            if any(x.endswith('sample_managers') for x in member_groups) and 'accept_reject' in current_view:
+                return func(request, *args, **kwargs)
+            profile_id = request.session.get("profile_id", str())
+            if not profile_id:
+                    response = handler403(request)
+                
         user_id = Profile().get_record(ObjectId(profile_id))['user_id']
         profile_type = Profile().get_type(profile_id).lower()
 
@@ -112,9 +130,13 @@ def web_page_access_checker(func):
             
             # Deny access to the Files' web page because
             # it depends on the ECS bucket name of the loggged-in user               
-            if 'copo_files' in current_view:              
-                response = handler403(request)
-
+#            if 'copo_files' in current_view:              
+#                response = handler403(request)
+        else:
+            # Grant web page access if the profile (ID) associated with the current web page
+            # is owned/created by the current web page viewer
+            response = func(request, *args, **kwargs)
+            
         return response
     return verify_view_access
 
@@ -207,6 +229,14 @@ def copo_visualize(request):
     context["quick_tour_flag"] = request.session.get("quick_tour_flag", True)
     # for displaying tour message across site
     request.session["quick_tour_flag"] = context["quick_tour_flag"]
+    component = request.POST.get("component", str())
+    da_object = DAComponent(profile_id=profile_id, component=request.POST.get("component", str()))
+    if component in da_dict:
+        da_object = da_dict[component](profile_id=profile_id)
+        
+    target_id=request.POST.get("target_id", None)    
+    if component == "read" and target_id:
+        target_id = target_id.split("_")[0]
 
     broker_visuals = BrokerVisuals(context=context,
                                    profile_id=profile_id,
@@ -214,13 +244,13 @@ def copo_visualize(request):
                                    user_id=request.user.id,
                                    component=request.POST.get(
                                        "component", str()),
-                                   target_id=request.POST.get(
-                                       "target_id", str()),
+                                   target_id=target_id,
                                    quick_tour_flag=request.POST.get(
                                        "quick_tour_flag", False),
                                    datafile_ids=json.loads(
                                        request.POST.get("datafile_ids", "[]")),
                                    request_dict=request.POST.dict(),
+                                   da_object=da_object
                                    )
 
     task_dict = dict(table_data=broker_visuals.do_table_data,
@@ -250,7 +280,7 @@ def copo_visualize(request):
     out = jsonpickle.encode(context, unpicklable=False)
     return HttpResponse(out, content_type='application/json')
 
-
+@web_page_access_checker
 @login_required
 def copo_forms(request):
     context = dict()
@@ -261,6 +291,11 @@ def copo_forms(request):
     if request.POST.get("profile_id", str()):
         profile_id = request.POST.get("profile_id")
         request.session["profile_id"] = profile_id
+
+    component = request.POST.get("component", str())
+    da_object = DAComponent(profile_id=profile_id, component=request.POST.get("component", str()))
+    if component in da_dict:
+        da_object = da_dict[component](profile_id=profile_id)
 
     broker_da = BrokerDA(context=context,
                          profile_id=profile_id,
@@ -284,6 +319,7 @@ def copo_forms(request):
                          user_email=request.POST.get("user_email", str()),
                          bundle_name=request.POST.get("bundle_name", str()),
                          request_dict=request.POST.dict(),
+                         da_object=da_object
                          )
 
     task_dict = dict(resources=broker_da.do_form_control_schemas,

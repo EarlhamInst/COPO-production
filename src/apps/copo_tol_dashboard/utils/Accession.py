@@ -1,5 +1,6 @@
 import common.schemas.utils.data_utils as d_utils
-from common.dal.copo_da import Submission, Sample
+from common.dal.sample_da import Sample
+from common.dal.submission_da import Submission
 
 def generate_accessions_record(profile_id=str(), isUserProfileActive=str(), isSampleProfileTypeStandalone=str()):
     isUserProfileActive = d_utils.convertStringToBoolean(isUserProfileActive)

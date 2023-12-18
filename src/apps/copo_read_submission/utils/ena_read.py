@@ -1,6 +1,9 @@
 from django_tools.middlewares import ThreadLocal
 from common.utils.logger import Logger
-from common.dal.copo_da import Sample, DataFile, Source, Submission, SubmissionQueue, SequenceAnnotation, EnaFileTransfer, EnaChecklist
+from common.dal.copo_da import DataFile, EnaFileTransfer, EnaChecklist
+from common.dal.submission_da import Submission
+from common.dal.sample_da import Sample, Source
+from .da import SubmissionQueue
 from common.utils.helpers import get_datetime, get_not_deleted_flag
 from common.dal.mongo_util import cursor_to_list
 from bson import ObjectId
@@ -94,17 +97,19 @@ def delete_ena_records(profile_id, target_ids=list(), target_id=None):
     # remove datafile records if no sample is using it
     other_samples_with_same_file = cursor_to_list(Sample(profile_id=profile_id).get_collection_handle().find(
         {"_id": {"$nin": sample_obj_ids}, "read.file_id": {"$regex": file_regex_ids}}, {"_id": 1, "read.$": 1}))
-    other_annotation_with_same_file = cursor_to_list(
-        SequenceAnnotation(profile_id=profile_id).get_collection_handle().find({"files": {"$in": file_ids}},
-                                                                                {"_id": 1, "files": 1}))
+    #other_annotation_with_same_file = cursor_to_list(
+    #    SequenceAnnotation(profile_id=profile_id).get_collection_handle().find({"files": {"$in": file_ids}},
+    #                                                                            {"_id": 1, "files": 1}))
     for s in other_samples_with_same_file:
         for f in s.get("read", []):
             for file_id in f["file_id"].split(","):
                 file_ids.remove(file_id) if file_id in file_ids else None
 
+    '''
     for a in other_annotation_with_same_file:
         for f in a.get("files", []):
             file_ids.remove(f) if f in file_ids else None
+    '''
 
     if file_ids:
         DataFile(profile_id=profile_id).get_collection_handle().delete_many(

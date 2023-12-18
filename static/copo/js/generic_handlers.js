@@ -16,16 +16,16 @@ $(document).ready(function () {
   do_page_controls(componentName);
 
   //global_help_call
-  do_global_help(componentName);
+  //do_global_help(componentName);
 
   //context help event
-  do_context_help_event();
+  //do_context_help_event();
 
   //input fields help tips event
   //set_inputs_help();
 
   //add event for ontology field change
-  ontology_value_change();
+  //ontology_value_change();
 
   var timeout;
   var delay = 1000;
