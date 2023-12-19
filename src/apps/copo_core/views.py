@@ -87,6 +87,7 @@ def web_page_access_checker(func):
                     request.session['profile_id'] = profile_id
 
                 response = func(request, *args, **kwargs)
+                
             elif any(x.endswith('sample_managers') for x in member_groups):
                 # Check if current web page viewer is a sample manager
                 # with permission to view the web page
@@ -108,11 +109,6 @@ def web_page_access_checker(func):
             else:
                 # Deny web page access if the profile (ID) associated with the current web page
                 # is not owned/created by the current web page viewer
-                response = handler403(request)
-            
-            # Deny access to the Files' web page because
-            # it depends on the ECS bucket name of the loggged-in user               
-            if 'copo_files' in current_view:              
                 response = handler403(request)
 
         return response
