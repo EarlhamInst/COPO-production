@@ -11,7 +11,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% endblock %} | COPO</title>
 
-
     <!-- Bootstrap -->
     <link rel="stylesheet" media="print" onload="this.media='all'"
           href="{% static 'copo/css/bootstrap/bootstrap.min.css' %}">
@@ -48,48 +47,15 @@
     <link rel="stylesheet" media="print" onload="this.media='all'"
           href="{% static 'copo/selectize/selectize.bootstrap3.css' %}">
 
-    <!-- DataTables components -->
-    <!--
-    <link rel="stylesheet" media="print" onload="this.media='all'"
-          href="{% static 'copo/datatables/css/jquery.dataTables.min.css' %}">
-    <link rel="stylesheet" media="print" onload="this.media='all'"
-          href="{% static 'copo/datatables/css/dataTables.bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'copo/datatables/css/select.dataTables.min.css' %}">
-    <link rel="stylesheet" href="{% static 'copo/datatables/css/buttons.dataTables.min.css' %}">
-    <link rel="stylesheet" media="print" onload="this.media='all'"
-          href="{% static 'copo/datatables/css/keyTable.dataTables.min.css' %}">
-    <link rel="stylesheet" media="print" onload="this.media='all'"
-          href="{% static 'copo/datatables/css/keyTable.bootstrap.min.css' %}">
-    <link rel="stylesheet" media="print" onload="this.media='all'"
-          href="{% static 'copo/datatables/css/rowGroup.dataTables.min.css' %}">
-    <link rel="stylesheet" media="print" onload="this.media='all'"
-          href="{% static 'copo/datatables/css/rowGroup.semanticui.min.css' %}">
-    <link rel="stylesheet" href="{% static 'copo/datatables/css/buttons.bootstrap.min.css' %}">
-    <link rel="stylesheet" media="print" onload="this.media='all'"
-          href="{% static 'copo/search_highlight/dataTables.searchHighlight.css' %}">
-    <link rel="stylesheet" media="print" onload="this.media='all'"
-          href="{% static 'copo/autocomplete.js-2.1.0/autocomplete.min.css' %}">
-    <link rel="stylesheet" media="print" onload="this.media='all'"
-          href="{% static 'copo/css/copo/copo_annotation_spreadsheet.css' %}"/>
-
--->
-    <!--link rel="stylesheet" type="text/css"
-    href="https://cdn.datatables.net/v/bs/jszip-2.5.0/dt-1.10.21/b-1.6.3/b-html5-1.6.3/kt-2.5.2/rg-1.1.2/sl-1.3.1/datatables.min.css"/-->
-
     <link rel="stylesheet" type="text/css"
           href="https://cdn.datatables.net/v/bs/jszip-2.5.0/dt-1.13.1/b-2.3.3/b-html5-2.3.3/kt-2.8.0/rg-1.3.0/sl-1.5.0/datatables.min.css"/>
 
     <!-- Google Fonts -->
     <link href="{% static 'copo/css/copo/fonts.css' %}" rel='stylesheet' type='text/css'>
 
-
-    <!--[if lt IE 9]>
-    <script src="{% static 'copo/js/jquery-3.7.1.min.js' %}"></script>
-    <![endif]-->
-    <!--[if gte IE 9]><!-->
     <script src="{% static 'copo/js/jquery-3.7.1.min.js' %}"></script>
     <script src="{% static 'copo/js/jquery-ui.min.js' %}"></script>
-    <!--<![endif]-->
+
     <script src="{% static 'copo/semantic_ui/semantic.min.js' %}"></script>
     <script src="{% static 'copo/autocomplete.js-2.1.0/autocomplete.min.js' %}"></script>
     <script src="{% static 'copo/js/jquery.cookie.js' %}"></script>
@@ -106,33 +72,8 @@
     <script src="{% static 'copo/js/jquery.alterclass.js' %}"></script>
 
     <script src="{% static 'copo/js/base.js' %}"></script>
-    <script>
-        $(document).ready(function () {
-            {% if user.is_authenticated %}
-                {% if not user.email %}
-                   do_email_form()
-                {% endif %}
-            {% endif %}
-        });
-    </script>
-    <!--
-    <script src="{% static 'copo/datatables/js/jquery.dataTables.min.js' %}"></script>
-    <script src="{% static 'copo/datatables/js/dataTables.bootstrap.min.js' %}"></script>
-    <script src="{% static 'copo/datatables/js/dataTables.select.min.js' %}"></script>
-    <script src="{% static 'copo/datatables/js/dataTables.keyTable.min.js' %}"></script>
-    <script src="{% static 'copo/datatables/js/dataTables.buttons.min.js' %}"></script>
-    <script src="{% static 'copo/datatables/js/buttons.html5.min.js' %}"></script>
-    <script src="{% static 'copo/datatables/js/jszip.min.js' %}"></script>
-    <script src="{% static 'copo/datatables/js/dataTables.semanticui.min.js' %}"></script>
-    <script src="{% static 'copo/datatables/js/dataTables.rowGroup.min.js' %}"></script>
-    <script src="{% static 'copo/datatables/js/buttons.bootstrap.min.js' %}"></script>
-    -->
-
-    <!--script type="text/javascript"
-    src="https://cdn.datatables.net/v/bs/jszip-2.5.0/dt-1.10.21/b-1.6.3/b-html5-1.6.3/kt-2.5.2/rg-1.1.2/sl-1.3.1/datatables.min.js"/-->
     <script type="text/javascript"
             src="https://cdn.datatables.net/v/bs/jszip-2.5.0/dt-1.13.1/b-2.3.3/b-html5-2.3.3/kt-2.8.0/rg-1.3.0/sl-1.5.0/datatables.min.js"></script>
-
 
     <script src="{% static 'copo/search_highlight/dataTables.searchHighlight.min.js' %}"></script>
     <script src="{% static 'copo/search_highlight/jquery.highlight.js' %}"></script>
@@ -143,6 +84,7 @@
     <script src="{% static 'copo/semantic_ui/components/popup.min.js' %}"></script>
     <script src="{% static 'copo/reconnecting-websocket-master/reconnecting-websocket.min.js' %}"></script>
     <script src="{% static 'copo/js/fastdom.js' %}"></script>
+
     <!-- Semantic UI -->
     <link rel="stylesheet" media="print" onload="this.media='all'"
           href="{% static 'copo/semantic_ui/semantic.min.css' %}">
@@ -173,17 +115,7 @@
         <link rel="stylesheet" type="text/scss" href="{% static 'copo/css/copo/colors/sass.scss' %}"/>
     {% endcompress %}
 
-
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-
-
     <script>
-
         $(document).ready(function () {
             $("#bell_notification").popover({
                 html: true,
@@ -223,8 +155,6 @@
                     $("#gdpr_check").closest(".modal-dialog").find("button").attr("disabled", true)
                 }
             })
-
-
         });
 
         function trigger_global_notification() {
@@ -237,78 +167,6 @@
                 return infoPanelElement
             }
         }
-
-
-        function do_email_form() {
-            var component = "";
-            var copoFormsURL = "/copo/copo_forms/";
-
-            var message = "<b>An email address is required for your user account</b>";
-            var errMessage = "Please enter a valid email address!";
-
-            var $content = '<div>';
-            $content += '<div style="margin-bottom: 10px;">' + message + '</div>';
-            $content += '<input id="emaddres" type="text" class="form-control" placeholder="Enter email address">';
-            $content += '<p style="margin-top:15px">If you <b>cannot</b> enter your email address, please ensure that your browser is not in incognito or private mode.</p>';
-            $content += '<p style="margin-top:20px" for="gdpr_check">Please check the following box if you consent to your identifiable information being stored in COPO. The information will be submitted to public repositories and will be a part of the public record. See our <a style="text-decoration: underline;" href="/about/privacy_notice">Privacy Notice</a> for more details.</p>';
-            $content += '<input class="form-check-input" type="checkbox" value="" id="gdpr_check">'
-            $content += '<label class="form-check-label" for="gdpr_check">&ensp; I Agree</label>'
-            $content += '</div>';
-
-            var dialog = new BootstrapDialog({
-                type: BootstrapDialog.TYPE_WARNING,
-                title: "Add Email Address",
-                message: $content,
-                closable: false,
-                onhide: function (dialogRef) {
-                    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-                    var emaddres = dialogRef.getModalBody().find('#emaddres').val();
-                    emaddres = $.trim(emaddres);
-                    if (emaddres == '' || !re.test(emaddres)) {
-                        alert(errMessage);
-                        return false;
-                    } else {
-                        //save to db
-                        var csrftoken = $.cookie('csrftoken');
-
-                        $.ajax({
-                            url: copoFormsURL,
-                            type: "POST",
-                            headers: {'X-CSRFToken': csrftoken},
-                            data: {
-                                'task': 'user_email',
-                                'component': component,
-                                'user_email': emaddres
-                            },
-                            success: function (data) {
-                                //$(".takeatour").trigger("click");
-                            },
-                            error: function () {
-                                alert("Couldn't add email!");
-                            }
-                        });
-
-                    }
-                },
-                buttons: [{
-                    label: 'Submit',
-                    cssClass: 'btn-custom3',
-                    hotkey: 13,
-                    action: function (dialogRef) {
-                        dialogRef.close();
-                    }
-                }]
-            });
-
-            dialog.realize();
-            dialog.getModalFooter().removeClass('modal-footer');
-            dialog.getModalFooter().css({"padding": "15px", "text-align": "right"});
-
-            dialog.open();
-
-        } //end of do_email_form
-
-
     </script>
 
     <style type="text/css">
@@ -324,7 +182,7 @@
             right: 34px;
             width: 16px;
             height: 16px;
-            background: url({% static 'copo/img/ajax_loader1.gif' %});
+            background: url("{% static 'copo/img/ajax_loader1.gif' %}");
             background-size: 16px 16px;
             opacity: 0;
         }
@@ -349,7 +207,7 @@
             right: 34px;
             width: 16px;
             height: 16px;
-            background: url({% static 'copo/img/ajax_loader1.gif' %});
+            background: url("{% static 'copo/img/ajax_loader1.gif' %}");
             background-size: 16px 16px;
             opacity: 0;
         }
@@ -370,7 +228,7 @@
             right: 34px;
             width: 16px;
             height: 16px;
-            background: url({% static 'copo/img/loading.gif' %});
+            background: url("{% static 'copo/img/loading.gif' %}");
             background-size: 16px 16px;
             opacity: 0;
         }
@@ -386,9 +244,7 @@
 
 </head>
 
-
 <body>
-
 <!-- hidden fields -->
 <input type="hidden" id="elastic_search_ajax" value="{# url 'copo:ajax_search_ontology' ontology_names='999' #}"/>
 <input type="hidden" id="ajax_search_copo_local" value="{# url 'copo:ajax_search_copo_local' data_source='999' #}"/>
@@ -399,7 +255,7 @@
 <!-- end template components -->
 
 <!-- cookie modal -->
-{% include 'component_cookie_modal.html' %}
+{% include "component_cookie_modal.html" with user=user%}
 <!-- end cookie modal -->
 
 <div id="hidden_notification" class="hidden">
@@ -408,7 +264,6 @@
     <br/>
     <b>{{ latest_message }}</b>
 </div>
-
 
 <nav id="copo-global-nav" class="navbar navbar-default navbar-fixed-top">
     <div class="container-fluid" style="display:block">
@@ -497,31 +352,8 @@
                                 </div>
                             </a>
                         </li>
-
-
-
-                        <!--li>
-                            <a href="{ url 'copo:import_ena_accession' %}" role="menuitem" tabindex="-1">
-                                <div class="custom-nav-items">
-                                    <i class="fa fa-download" aria-hidden="true"></i>
-                                    <span class="icon_text">Import Metadata from ENA</span>
-                                </div>
-                            </a>
-                        </li-->
-
-                        
-
-                        <!--li>
-                            <a href="{ url 'copo:import_ena_accession' %}" role="menuitem" tabindex="-1">
-                                <div class="custom-nav-items">
-                                    <i class="fa fa-download" aria-hidden="true"></i>
-                                    <span class="icon_text">Import Metadata from ENA</span>
-                                </div>
-                            </a>
-                        </li-->
-
                         <li role="presentation"><a role="menuitem" tabindex="-1"
-                                                   href="{%  url 'copo_login:logout' %}"/>
+                                                   href="{%  url 'copo_login:logout' %}">
                                                    
                             <div class="custom-nav-items">
                                 <i class="fa fa-sign-out" aria-hidden="true"></i>
@@ -547,7 +379,7 @@
 
 
 {% block page_banner %}
-    <!-- fiter tag to check if there are partial submissions -->
+    <!-- filter tag to check if there are partial submissions -->
     {% comment %}
         {{ partial_submissions|partial_submission_banner }}
     {% endcomment %}
@@ -557,7 +389,6 @@
     {#    this block will be inherited by one of two page types i.e., single column (base_1col.html), two columns (base_2col.html - for fixed side navbar) #}
     {#    include either of the two templates (inheriting this base template) in your working page and not the base.html directly. #}
 {% endblock content_area %}
-
 
 </body>
 </html>
