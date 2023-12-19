@@ -72,3 +72,15 @@ def cookie_response(request):
 
     response = HttpResponse(json.dumps({'resp': 'user details updated'}))
     return response
+
+def is_user_email_address_provided(request):
+    user_id = str(request.user.id)
+    user = User.objects.get(pk=user_id)
+    cookie_response = d_utils.convertStringToBoolean(request.POST.get('cookie_response', None))
+    response = HttpResponse(json.dumps({'resp': True}))
+
+    if cookie_response and not user.email:
+        response = HttpResponse(json.dumps({'resp': False}))
+    
+    return response
+

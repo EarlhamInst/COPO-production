@@ -84,6 +84,92 @@
                 // console.log(e); // Cookies have been rejected
             });
         }
+        
+        function do_email_form() {
+            let component = "";
+            let copoFormsURL = "/copo/copo_forms/";
+
+            let message = "<b>An email address is required for your user account</b>";
+            let errMessage = "Please enter a valid email address!";
+
+            let $content = '<div>';
+            $content += '<div style="margin-bottom: 10px;">' + message + '</div>';
+            $content += '<input id="emaddres" type="text" class="form-control" placeholder="Enter email address">';
+            $content += '<p style="margin-top:20px" for="gdpr_check">Please check the following box if you consent to your identifiable information being stored in COPO. The information will be submitted to public repositories and will be a part of the public record. See our <a style="text-decoration: underline;" href="/about/privacy_notice">Privacy Notice</a> for more details.</p>';
+            $content += '<input class="form-check-input" type="checkbox" value="" id="gdpr_check">'
+            $content += '<label class="form-check-label" for="gdpr_check">&ensp; I Agree</label>'
+            $content += '</div>';
+
+            let dialog = new BootstrapDialog({
+                type: BootstrapDialog.TYPE_WARNING,
+                title: "Add Email Address",
+                message: $content,
+                closable: false,
+                onhide: function (dialogRef) {
+                    let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                    let emaddres = dialogRef.getModalBody().find('#emaddres').val();
+                    emaddres = $.trim(emaddres);
+
+                    if (emaddres == '' || !re.test(emaddres)) {
+                        alert(errMessage);
+                        return false;
+                    } else {
+                        // Save to db
+                        $.ajax({
+                            url: copoFormsURL,
+                            type: "POST",
+                            headers: {'X-CSRFToken': $.cookie('csrftoken') },
+                            data: {
+                                'task': 'user_email',
+                                'component': component,
+                                'user_email': emaddres
+                            },
+                            success: function (data) {
+                                //$(".takeatour").trigger("click");
+                            },
+                            error: function () {
+                                alert("Couldn't add email address!");
+                            }
+                        });
+
+                    }
+                },
+                buttons: [{
+                    label: 'Submit',
+                    cssClass: 'btn-custom3',
+                    hotkey: 13,
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }]
+            });
+
+            dialog.realize();
+            dialog.getModalFooter().removeClass('modal-footer');
+            dialog.getModalFooter().css({"padding": "15px", "text-align": "right"});
+
+            dialog.open();
+
+        } //end of do_email_form
+
+        function isUserEmailAddressProvided() {
+            $.ajax({
+                headers: { 'X-CSRFToken': $.cookie('csrftoken') },
+                url: '/is_user_email_address_provided/',
+                method: 'POST',
+                data: {
+                    cookie_response: getCookie('cookiesAccepted'),
+                },
+            }).done(function (data) { 
+                if (!JSON.parse(data).resp && getCookie('cookiesAccepted') === 'true') {
+                    $('#cookieModal').modal('hide'); // Hide cookie consent modal
+                    do_email_form(); // Show 'Add email address' modal
+                }
+
+            }).fail(function (e) {
+                    // console.log(e); // Cookies have been rejected or email has been provideduser 
+            });
+        }
 
         // Show cookie consent modal if cookies have not been accepted yet or if cookies are rejected
         if (getCookie('cookiesAccepted') === null || getCookie('cookiesAccepted').toLowerCase() === 'null'  || getCookie('cookiesAccepted') === 'false') {
@@ -94,6 +180,8 @@
         $('#acceptCookies').on('click', function () {
             setCookie('cookiesAccepted', 'true', 365);
             recordCookieResponse();
+            // Check if user email address has been provided
+            isUserEmailAddressProvided();
         });
 
         $('#rejectCookies').on('click', function () {
@@ -101,5 +189,9 @@
             recordCookieResponse();
             document.location = '/'; // Redirect to homepage
         });
+        // End of cookie consent functions
+
+        // Check if user email address has been provided
+        isUserEmailAddressProvided();
     });
 </script>

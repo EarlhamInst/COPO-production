@@ -34,6 +34,7 @@ urlpatterns = [
    
     path('', landing_views.index, name='index'),
     path('cookie_response/', landing_views.cookie_response, name='cookie_response'),
+    path('is_user_email_address_provided/', landing_views.is_user_email_address_provided, name='is_user_email_address_provided'),
     path('about/', TemplateView.as_view(template_name="about.html"), name='about'),
     path('about/privacy_notice/', TemplateView.as_view(template_name="privacy_notice.html"),
          name='privacy_notice'),
