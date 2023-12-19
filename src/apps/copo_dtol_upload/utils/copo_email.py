@@ -1,11 +1,6 @@
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-
-from django.conf import settings
 from src.apps.copo_core.models import User, SequencingCentre
 from common.utils.copo_email import CopoEmail
-from common.dal.copo_da import get_users_seq_centres, Profile
+from common.dal.profile_da import Profile
 from common.utils.logger import Logger
 
 logger = Logger()

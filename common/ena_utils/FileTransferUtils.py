@@ -1,6 +1,7 @@
 __author__ = 'fshaw'
 import os
-from common.dal.copo_da import EnaFileTransfer, DataFile, Profile
+from common.dal.copo_da import EnaFileTransfer, DataFile
+from common.dal.profile_da import Profile
 from common.s3.s3Connection import S3Connection as s3
 from datetime import datetime
 from bson import ObjectId
@@ -12,6 +13,7 @@ from datetime import datetime
 from src.apps.copo_core.models import StatusMessage, User
 import threading
 import hashlib
+from pathlib import Path
 
 def make_transfer_record(file_id, submission_id):
     # N.B. called from celery
@@ -211,6 +213,8 @@ def update_last_checked(tx):
 
 def get_ecs_file(tx):
     file = DataFile().get_collection_handle().find_one({"_id": ObjectId(tx["file_id"])})
+    Path(tx["local_path"]).parent.mkdir(parents=True,exist_ok=True)
+
     s3().get_object(bucket=file["bucket_name"], key=file["file_name"], loc=tx["local_path"])
     if not file["file_hash"]:
         hash_md5 = hashlib.md5()

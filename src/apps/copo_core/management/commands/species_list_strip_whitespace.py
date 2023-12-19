@@ -1,7 +1,7 @@
 from bson import ObjectId
 from django.core.management import BaseCommand
 
-from common.dal import copo_da as da
+from common.dal import copo_base_da as da
 
 
 # The class must be named Command, and subclass BaseCommand

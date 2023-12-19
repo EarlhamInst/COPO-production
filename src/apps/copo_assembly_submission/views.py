@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from common.dal.copo_da import Submission, Assembly, Profile
+from common.dal.profile_da import Profile
+from common.dal.submission_da import Submission
+from .utils.da import Assembly
 from common.utils.helpers import notify_assembly_status
 from django.http import HttpResponse, JsonResponse
 from .forms import AssemblyForm

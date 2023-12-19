@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from common.dal.copo_da import Profile, EnaChecklist
+from common.dal.copo_da import EnaChecklist
+from common.dal.profile_da import Profile
 from src.apps.copo_core.views import web_page_access_checker
 
 

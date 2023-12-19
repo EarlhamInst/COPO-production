@@ -1,9 +1,21 @@
 import subprocess
 import json
-from common.validators.validation_messages import MESSAGES as msg
 import datetime
 from common.utils.logger import Logger
 l = Logger()
+
+MESSAGE = {
+    'validation_msg_invalid_binomial_name': "For the TAXON_ID,  <strong>%s</strong>, the scientific name, <strong>%s</strong>, is not a valid binomial name. "
+                                            "Please contact <a href='mailto:ena-asg@ebi.ac.uk'>ena-asg@ebi.ac.uk</a> or "
+                                            "<a href='mailto:ena-dtol@ebi.ac.uk'>ena-dtol@ebi.ac.uk</a> or "
+                                            "<a href='mailto:ena-bge@ebi.ac.uk'>ena-bge@ebi.ac.uk</a> to request assistance for this taxonomy.",
+    'validation_msg_not_submittable_taxon': "TAXON_ID <strong>%s</strong> is not 'submittable' to ENA. Please see "
+                                            "<a href='https://ena-docs.readthedocs.io/en/latest/faq/taxonomy_requests.html#creating-taxon-requests'>here</a> "
+                                            "and contact <a href='mailto:ena-asg@ebi.ac.uk'>ena-asg@ebi.ac.uk</a> or "
+                                            "<a href='mailto:ena-dtol@ebi.ac.uk'>ena-dtol@ebi.ac.uk</a> or "
+                                            "<a href='mailto:ena-bge@ebi.ac.uk'>ena-bge@ebi.ac.uk</a> to request an "
+                                            "informal placeholder species name. Please also refer to the ASG/DTOL/ERGA SOP.",                                            
+}
 
 def validate_date(date_text):
     try:
@@ -40,14 +52,14 @@ def check_taxon_ena_submittable(taxon, by="id"):
             if taxinfo["rank"] not in ["species", "subspecies"]:
                 errors.append("TAXON_ID " + taxon + " is not a 'species' or 'subspecies' level entity.")
             if taxinfo["binomial"] == "false":  
-                errors.append(msg['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))    
+                errors.append(MESSAGE['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))    
         elif by == "binomial":
             if taxinfo[0]["submittable"] != 'true':
                 errors.append("TAXON_ID " + taxon + " is not submittable to ENA")
             if taxinfo[0]["rank"] not in ["species", "subspecies"]:
                 errors.append("TAXON_ID " + taxon + " is not a 'species' or 'subspecies' level entity.")
             if taxinfo[0]["binomial"] == "false":
-                errors.append(msg['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))    
+                errors.append(MESSAGE['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))    
     except Exception as e:
         l.exception(e)
         if receipt:
@@ -62,5 +74,5 @@ def check_taxon_ena_submittable(taxon, by="id"):
                     errors.append(
                         "ENA returned - " + receipt.decode("utf-8") + " - for TAXON_ID " + taxon)
         else:
-            errors.append(msg['validation_msg_not_submittable_taxon'] % (taxon))
+            errors.append(MESSAGE['validation_msg_not_submittable_taxon'] % (taxon))
     return errors

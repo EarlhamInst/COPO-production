@@ -1,11 +1,7 @@
 from django_tools.middlewares import ThreadLocal
-from .copo_da import Sample, Source, Submission, DataFile, Profile, DAComponent
-from django.conf import settings
-from bson import ObjectId
-import pandas as pd
-from common.utils import helpers
-from src.apps.copo_core.models import SequencingCentre
-
+from .copo_da import DataFile
+from .sample_da import Sample, Source
+from .submission_da import Submission
 
 
 def get_current_request():
@@ -183,96 +179,11 @@ def get_datafiles_json(target_id=None):
 
     return elem_json
 
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 
-def generate_table_records(profile_id=str(), component=str(), record_id=str()):
-    # function generates component records for building an UI table - please note that for effective tabular display,
-    # all array and object-type fields (e.g., characteristics) are deferred to sub-table display.
-    # please define such in the schema as "show_in_table": false and "show_as_attribute": true
-    type = Profile().get_type(profile_id=profile_id)
-    columns = list()
-    data_set = list()
 
-    # instantiate data access object
-    da_object = DAComponent(profile_id, component)
-
-    profile_type = type.lower()
-    if "asg" in profile_type:
-        profile_type = "asg"
-
-    elif "dtol_env" in profile_type:
-        profile_type = "dotl_env"
-
-    elif "dtol" in profile_type:
-        profile_type = "dtol"
-
-    elif "erga" in profile_type:
-        profile_type = "erga"
-
-    current_schema_version = settings.MANIFEST_VERSION.get(profile_type.upper(), '')
-
-    get_dtol_fields = type in ["Aquatic Symbiosis Genomics (ASG)", "Darwin Tree of Life (DTOL)",
-                               "European Reference Genome Atlas (ERGA)",
-                               "Darwin Tree of Life Environmental Samples (DTOL_ENV)"]
-    # get and filter schema elements based on displayable columns and profile type
-    if get_dtol_fields:
-
-        schema = list()
-        for x in da_object.get_schema().get("schema_dict"):
-            if x.get("show_in_table", True) and profile_type in x.get("specifications",
-                                                                      []) and current_schema_version in x.get(
-                    "manifest_version", ""):
-                schema.append(x)
-    else:
-        schema = list()
-        for x in da_object.get_schema().get("schema_dict"):
-            if (x.get("show_in_table", True) and (component != 'sample' or component == 'sample' and (
-                    "biosample" in x.get("specifications", []) or "isasample" in x.get(
-                    "specifications", [])))):
-                schema.append(x)
-
-    # build db column projection
-    projection = [(x["id"].split(".")[-1], 1) for x in schema]
-
-    filter_by = dict()
-    if record_id:
-        filter_by["_id"] = ObjectId(str(record_id))
-
-    # retrieve and process records
-    records = da_object.get_all_records_columns(sort_by="date_modified", sort_direction=1,
-                                                projection=dict(projection), filter_by=filter_by)
-
-    if len(records):
-        df = pd.DataFrame(records)
-        df['s_n'] = df.index
-
-        df['record_id'] = df._id.astype(str)
-        df["DT_RowId"] = df.record_id
-        df.DT_RowId = 'row_' + df.DT_RowId
-        df = df.drop('_id', axis='columns')
-
-        columns.append(dict(data="record_id", visible=False))
-        detail_dict = dict(className='summary-details-control detail-hover-message', orderable=False, data=None,
-                           title='', defaultContent='', width="5%")
-
-        columns.insert(0, detail_dict)
-
-        df_columns = list(df.columns)
-
-        for x in schema:
-            x["id"] = x["id"].split(".")[-1]
-            columns.append(dict(data=x["id"], title=x["label"]))
-            if x["id"] not in df_columns:
-                df[x["id"]] = str()
-            df[x["id"]] = df[x["id"]].fillna('')
-
-            if "dtol" not in x.get("specifications", []) or "asg" not in x.get("specifications", []):
-                df[x["id"]] = df[x["id"]].apply(
-                    helpers.resolve_control_output_apply, args=(x,))
-
-        data_set = df.to_dict('records')
-
-    return_dict = dict(dataSet=data_set,
-                       columns=columns
-                       )
-
-    return return_dict

@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 
-from common.dal import copo_da as da
+from common.dal.sample_da import Sample
 
 
 # The class must be named Command, and subclass BaseCommand
@@ -17,9 +17,9 @@ class Command(BaseCommand):
     # A command must define handle()
     def handle(self, *args, **options):
         manifest_id = options["manifest_id"]
-        fromdb = da.handle_dict["sample"].count_documents({"manifest_id": manifest_id, "status": "processing"})
+        fromdb = Sample().get_collection_handle().count_documents({"manifest_id": manifest_id, "status": "processing"})
         print("samples stuck: " + str(fromdb))
-        fromdb = da.handle_dict["sample"].update_many({"manifest_id": manifest_id, "status": "processing"},
+        fromdb =  Sample().get_collection_handle().update_many({"manifest_id": manifest_id, "status": "processing"},
                                                       {"$set": {"status": "pending"}})
         print("samples unstuck: " + str(fromdb.modified_count))
         print("done")

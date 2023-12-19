@@ -12,7 +12,10 @@ import json
 import jsonpath_rw_ext as jp
 from bson.errors import InvalidId
 from src.apps.api.utils import get_return_template, extract_to_template, finish_request
-from common.dal.copo_da import Sample, Source, Submission, APIValidationReport, Profile, ValidationQueue
+from common.dal.copo_da import APIValidationReport
+from common.dal.sample_da import Sample, Source
+from common.dal.submission_da import Submission
+from common.dal.profile_da import Profile
 from itertools import chain
 from common.utils.helpers import json_to_pytype
 from common.schema_versions.lookup import dtol_lookups as lookup
@@ -25,6 +28,7 @@ from rest_framework import authentication, permissions
 from common.utils.logger import Logger
 import pickle
 from src.apps.copo_dtol_upload.utils.Dtol_Spreadsheet import DtolSpreadsheet
+from src.apps.copo_dtol_upload.utils.da import ValidationQueue
 
 def get(request, id):
     """

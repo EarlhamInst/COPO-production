@@ -1,7 +1,7 @@
 from .utils import Dtol_Submission as dtol
 from .utils import Dtol_Bioimage_Submission as dtol_bioimage
 
-from common.dal.copo_da import Sample
+from common.dal.sample_da import Sample
 from src.celery import app
 from src.apps.copo_core.tasks import only_one, CopoBaseClassForTask
 from common.utils.logger import Logger

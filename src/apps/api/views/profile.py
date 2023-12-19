@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from common.dal.copo_da import Profile
+from common.dal.profile_da import Profile
 
 
 class APICreateProfile(APIView):

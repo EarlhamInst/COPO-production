@@ -3,7 +3,6 @@ from django.http import HttpResponse
 from common.dal.copo_da import MetadataTemplate
 from django.urls import reverse
 from bson import json_util
-from common.dal.copo_da import MetadataTemplate
 import pandas as pd
 import common.lookup.lookup as lkup
 

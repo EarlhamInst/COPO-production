@@ -1,7 +1,9 @@
 from django.conf import settings
 from django_tools.middlewares import ThreadLocal
 from common.utils.helpers import get_env, get_datetime, get_deleted_flag, get_not_deleted_flag
-from common.dal.copo_da import Submission, EnaFileTransfer, DataFile, SequenceAnnotation
+from common.dal.copo_da import EnaFileTransfer, DataFile
+from common.dal.submission_da import Submission
+from .da import SequenceAnnotation
 from common.utils.logger import Logger
 from common.s3.s3Connection import S3Connection as s3
 from bson import ObjectId
@@ -94,7 +96,7 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
         sub_id = sub["_id"]   
 
     for f_name in files:
-        file_location = join(settings.UPLOAD_PATH, request.user.username, f_name)
+        file_location = join(settings.UPLOAD_PATH, request.user.username, "seq_annotation", f_name)
         df = DataFile().get_collection_handle().find_one({"file_location": file_location, "deleted": {"$ne": get_deleted_flag()}})
         if df and df.get("s3_etag","") == s3_file_etags[f_name]:
             file_ids.append(str(df["_id"]))
@@ -138,7 +140,7 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
     '''    
 
     #schedule annotation submission in SubmisisonCollection
-    table_data = htags.generate_table_records(profile_id, "seqannotation", None)
+    table_data = htags.generate_table_records(profile_id=profile_id, da_object=SequenceAnnotation(profile_id=profile_id))
     result = Submission().make_seq_annotation_submission_uploading(sub_id, [str(annotation_rec["_id"])])
     if result["status"] == "error":
         return {"success": "Annotation has been saved but not scheduled to submit as the submission is already in progress. Please submit it later", "table_data": table_data, "component": "seqannotation"}
@@ -348,7 +350,7 @@ def poll_asyn_seq_annotation_submission_receipt():
                     elif accessions["status"] == "ok":
                         msg = "Last Sequence Annotation Submitted:  - Seq Annotation Access: " + ','.join(str(x["accession"]) for x in accessions["accession"])   # + " - Biosample ID: " + accessions["biosample_accession"]
 
-                        table_data = htags.generate_table_records(profile_id=submission["profile_id"], component="seqannotation")
+                        table_data = htags.generate_table_records(profile_id=submission["profile_id"], da_object=SequenceAnnotation(profile_id=submission["profile_id"]))
                         #ghlper.notify_annotation_status(data={"profile_id": submission["profile_id"], "table_data": table_data, "component": "seqannotation"}, msg=msg, action="refresh_table", )
                         notify_annotation_status(data={"profile_id": submission["profile_id"], "table_data": table_data, "component": "seqannotation"}, msg=msg, action="info",
                                         html_id="annotation_info")

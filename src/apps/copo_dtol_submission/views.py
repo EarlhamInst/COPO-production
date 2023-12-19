@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseBadRequest
-from common.dal.copo_da import Sample, Profile, Submission
+from django.http import HttpResponse
+from common.dal.sample_da import Sample 
+from common.dal.profile_da import Profile
+from common.dal.submission_da import Submission
 from bson import json_util
 from common.utils.helpers import get_group_membership_asString, notify_frontend
 from src.apps.copo_core.models import ViewLock

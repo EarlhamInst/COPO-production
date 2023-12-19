@@ -7,7 +7,9 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django_tools.middlewares import ThreadLocal
 from common.utils.helpers import get_env, get_datetime, get_deleted_flag, get_not_deleted_flag
-from common.dal.copo_da import Assembly, Submission, EnaFileTransfer, DataFile
+from common.dal.copo_da import EnaFileTransfer, DataFile
+from common.dal.submission_da import Submission
+from .da import Assembly
 from common.utils.logger import Logger
 import glob
 from common.ena_utils import generic_helper as ghlper
@@ -17,6 +19,7 @@ from os.path import join
 from pymongo import ReturnDocument
 import common.ena_utils.FileTransferUtils as tx
 from common.utils import html_tags_utils as htags
+from .da import Assembly
 
 l = Logger()
 # other types of assemblies (not individualss or cultured isolates):
@@ -153,7 +156,7 @@ def validate_assembly(form, profile_id, assembly_id):
     form["files"] = file_ids
     form["profile_id"] = profile_id
     assembly_rec = Assembly().save_record(auto_fields={},**form, target_id=assembly_id)
-    table_data = htags.generate_table_records(profile_id, "assembly", None)
+    table_data = htags.generate_table_records(profile_id=profile_id, da_object=Assembly(profile_id=profile_id))
 
     if not assembly_id or not assembly_rec["accession"]:
         result = Submission().make_assembly_submission_uploading(sub_id, [str(assembly_rec["_id"])])
@@ -300,7 +303,7 @@ def process_assembly_pending_submission():
                 Assembly().add_accession(id=assembly_id, accession=accession)
                 Submission().add_assembly_accession(sub["_id"], accession, "webin-genome-" + assembly["assemblyname"], assembly_id)
 
-                table_data = htags.generate_table_records(sub["profile_id"], "assembly", None)
+                table_data = htags.generate_table_records(profile_id=sub["profile_id"], da_object=Assembly(profile_id=sub["profile_id"]))
                 ghlper.notify_assembly_status(data={"profile_id": sub["profile_id"],"table_data": table_data, "component": "assembly"}, msg="Assembly has been submitted", action="info",
                 html_id="assembly_info")
             else:

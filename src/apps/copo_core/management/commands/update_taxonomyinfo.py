@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 import subprocess
 from common.utils.helpers import get_env
 import os
-import common.dal.copo_da as da
+import common.dal.sample_da as da
 from common.utils.logger import Logger
 
 

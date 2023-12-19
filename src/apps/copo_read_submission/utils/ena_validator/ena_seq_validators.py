@@ -1,9 +1,9 @@
 from  common.validators.validator import Validator
-from common.dal.copo_da import Sample
+from common.dal.sample_da import Sample
 from common.schema_versions.lookup import dtol_lookups as lookup
 from common.utils.helpers import notify_frontend
 from common.validators.helpers import check_taxon_ena_submittable
-from common.validators.validation_messages import MESSAGES as msg
+from .validation_messages import MESSAGES as msg
 from Bio import Entrez
 from django_tools.middlewares import ThreadLocal
 

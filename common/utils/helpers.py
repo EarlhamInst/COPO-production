@@ -227,3 +227,9 @@ def map_to_dict(x, y):
     for idx, el in enumerate(x):
         out[el] = y[idx]
     return out
+
+def get_users_seq_centres():
+    from src.apps.copo_core.models import SequencingCentre
+    user = ThreadLocal.get_current_user()
+    seq_centres = SequencingCentre.objects.filter(users=user)
+    return seq_centres

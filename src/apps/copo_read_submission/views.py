@@ -2,7 +2,10 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 import json
 import subprocess
-from common.dal.copo_da import Sample, DataFile, Profile, Source, Submission, EnaChecklist
+from common.dal.copo_da import  DataFile, EnaChecklist
+from common.dal.submission_da import Submission
+from common.dal.profile_da import Profile
+from common.dal.sample_da import Sample, Source
 from common.utils import helpers 
 from django.http import HttpResponse, JsonResponse
 import datetime
@@ -18,7 +21,7 @@ import jsonpickle
 from common.ena_utils import generic_helper as ghlper
 import inspect
 from common.validators.validator import Validator
-from common.validators.ena_validators import ena_seq_validators as required_validators
+from .utils.ena_validator import ena_seq_validators as required_validators
 from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreedsheet, write_manifest
 
 from common.utils.helpers import get_datetime, get_not_deleted_flag,map_to_dict
@@ -277,7 +280,7 @@ def save_ena_records(request):
             df["ecs_location"] = uid + "_" + username + "/" + f_name
             # df["ecs_location"] = username + "/" + f_name   #temp-solution
             df["file_name"] = f_name
-            file_location = join(settings.UPLOAD_PATH, username, f_name)
+            file_location = join(settings.UPLOAD_PATH, username, "read", f_name)
             df["file_location"] = file_location
             df["name"] = f_name
             df["file_id"] = "NA"
@@ -309,7 +312,7 @@ def save_ena_records(request):
             df["file_name"] = f_name
             df["ecs_location"] = uid + "_" + username + "/" + f_name
             # df["ecs_location"] = username + "/" + f_name   #temp-solution
-            file_location = join(settings.UPLOAD_PATH, username, f_name)
+            file_location = join(settings.UPLOAD_PATH, username, "read", f_name)
             df["file_location"] = file_location
             df["name"] = f_name
             df["file_id"] = "NA"
@@ -338,7 +341,7 @@ def save_ena_records(request):
             df["file_name"] = f_name
             df["ecs_location"] = uid + "_" + username + "/" + f_name
             # df["ecs_location"] = request.user.username + "/" + f_name
-            file_location = join(settings.UPLOAD_PATH, username, f_name)
+            file_location = join(settings.UPLOAD_PATH, username, "read", f_name)
             df["file_location"] = file_location
             df["name"] = f_name
             df["file_id"] = "NA"

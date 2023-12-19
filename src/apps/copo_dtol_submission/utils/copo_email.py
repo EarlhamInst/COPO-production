@@ -1,4 +1,4 @@
-from common.dal.copo_da import Profile
+from common.dal.profile_da import Profile
 from common.schema_versions.lookup.dtol_lookups import ACCEPTED_SAMPLES_DEFAULT_CC_EMAIL_RECIPIENTS
 from common.utils.copo_email import CopoEmail
 from common.utils.logger import Logger

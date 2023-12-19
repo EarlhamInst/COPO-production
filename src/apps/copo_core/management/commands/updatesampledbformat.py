@@ -1,5 +1,5 @@
 from django.core.management import BaseCommand
-from common.dal.copo_da import Sample
+from common.dal.sample_da import Sample
 
 
 # The class must be named Command, and subclass BaseCommand

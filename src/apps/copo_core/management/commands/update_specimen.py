@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 
 import datetime
 from common.dal.mongo_util import cursor_to_list
-from common.dal.copo_da import Source, Sample
+from common.dal.sample_da import Source, Sample
 from common.utils.helpers import get_env
 from common.schema_versions.lookup.dtol_lookups import DTOL_ENA_MAPPINGS, DTOL_UNITS
 from common.utils.logger import Logger

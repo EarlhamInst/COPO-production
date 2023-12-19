@@ -44,12 +44,12 @@ def numbers(request):
 
 
 def number_of_profiles():
-    from common.dal.copo_da import Profile
+    from common.dal.profile_da import Profile
     return Profile().get_number()
 
 
 def number_of_samples():
-    from common.dal.copo_da import Sample
+    from common.dal.sample_da import Sample
     # get total number of sample records in COPO instance
     return Sample().get_number()
 

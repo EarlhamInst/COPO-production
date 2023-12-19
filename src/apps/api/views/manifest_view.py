@@ -15,7 +15,9 @@ from io import BytesIO
 import re
 import common.schema_versions.lookup.dtol_lookups as lkup
 from django.contrib.auth.decorators import login_required
-from common.dal.copo_da import Profile, Sample, DataFile
+from common.dal.copo_da import DataFile
+from common.dal.sample_da import Sample
+from common.dal.profile_da import Profile
 
 def get_latest_manifest_versions(request):
     return HttpResponse(json.dumps({'current_asg_manifest_version': settings.MANIFEST_VERSION.get("ASG", ""),
@@ -442,12 +444,12 @@ def download_manifest(request, manifest_id):
             else :
                 sample_df[filename_column] = np.where (sample_df[f"{prefix}_REQUIRED"] == "Y", "", "NOT_APPLICABLE")
 
-    manifests_dir = os.path.join("static", "assets", "manifests")
+    #manifests_dir = os.path.join("static", "assets", "manifests")
 
     # Set the path to the blank manifest template based on the manifest type
     filename = get_manifest_filename(manifest_type)
 
-    manifest_template_path = os.path.join(manifests_dir, filename)
+    manifest_template_path = os.path.join(settings.MANIFEST_PATH, filename)
 
     bytesIO = generate_manifest_template( manifest_type , manifest_template_path, sample_df)
 
