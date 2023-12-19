@@ -8,6 +8,7 @@ import jsonpickle
 from datetime import datetime 
 import json
 from common.utils.logger import Logger 
+from common.dal.sample_da import Sample
 l = Logger()
 
 @login_required
@@ -73,7 +74,7 @@ def create_spreadsheet_samples(request):
 
     # Save table_data
     context = dict()
-    context["table_data"] = htags.generate_table_records(profile_id=request.session["profile_id"], component="sample")
+    context["table_data"] = htags.generate_table_records(profile_id=request.session["profile_id"], da_object=Sample(profile_id=request.session["profile_id"]))
     context["component"] = "sample"
     out = jsonpickle.encode(context, unpicklable=False)
     return HttpResponse(status=200, content=out, content_type='application/json')
@@ -87,7 +88,8 @@ def update_spreadsheet_samples(request):
 
     # Save table_data
     context = dict()
-    context["table_data"] = htags.generate_table_records(profile_id=request.session["profile_id"], component="sample")
+    profile_id = request.session["profile_id"]
+    context["table_data"] = htags.generate_table_records(profile_id=profile_id, da_object=Sample(profile_id=profile_id))
     context["component"] = "sample"
     out = jsonpickle.encode(context, unpicklable=False)
     return HttpResponse(status=200, content=out, content_type='application/json')

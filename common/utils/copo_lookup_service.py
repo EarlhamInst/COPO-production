@@ -102,7 +102,7 @@ class COPOLookup:
         lookup sources related to a sample
         :return:
         """
-        import html_tags_utils as htags
+        import common.utils.html_tags_utils as htags
         from common.dal.sample_da import Source
 
 
@@ -119,7 +119,7 @@ class COPOLookup:
                 df = pd.DataFrame(records)
                 df['accession'] = df._id.astype(str)
                 df['label'] = df['name']
-                df['desc'] = df['accession'].apply(lambda x: htags.generate_attributes("source", x))
+                df['desc'] = df['accession'].apply(lambda x: htags.generate_attributes(Source(), x))
                 df['description'] = df['desc'].apply(lambda x: self.format_description(x))
                 df['server-side'] = True  # ...to request callback to server for resolving item description
         elif self.search_term:

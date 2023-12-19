@@ -140,7 +140,7 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
     '''    
 
     #schedule annotation submission in SubmisisonCollection
-    table_data = htags.generate_table_records(profile_id, "seqannotation", None)
+    table_data = htags.generate_table_records(profile_id=profile_id, da_object=SequenceAnnotation(profile_id=profile_id))
     result = Submission().make_seq_annotation_submission_uploading(sub_id, [str(annotation_rec["_id"])])
     if result["status"] == "error":
         return {"success": "Annotation has been saved but not scheduled to submit as the submission is already in progress. Please submit it later", "table_data": table_data, "component": "seqannotation"}
@@ -350,7 +350,7 @@ def poll_asyn_seq_annotation_submission_receipt():
                     elif accessions["status"] == "ok":
                         msg = "Last Sequence Annotation Submitted:  - Seq Annotation Access: " + ','.join(str(x["accession"]) for x in accessions["accession"])   # + " - Biosample ID: " + accessions["biosample_accession"]
 
-                        table_data = htags.generate_table_records(profile_id=submission["profile_id"], component="seqannotation")
+                        table_data = htags.generate_table_records(profile_id=submission["profile_id"], da_object=SequenceAnnotation(profile_id=submission["profile_id"]))
                         #ghlper.notify_annotation_status(data={"profile_id": submission["profile_id"], "table_data": table_data, "component": "seqannotation"}, msg=msg, action="refresh_table", )
                         notify_annotation_status(data={"profile_id": submission["profile_id"], "table_data": table_data, "component": "seqannotation"}, msg=msg, action="info",
                                         html_id="annotation_info")

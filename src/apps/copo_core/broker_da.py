@@ -619,11 +619,11 @@ class BrokerVisuals:
         target_id = record_object.get("_id", str())
 
         table_data_dict = dict(
-            publication=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            person=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            sample=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            publication=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
+            person=(htags.generate_table_records, dict(profile_id=self.profile_id,  da_object=self.da_object)),
+            sample=(htags.generate_table_records, dict(profile_id=self.profile_id,  da_object=self.da_object)),
             profile=(htags.generate_copo_profiles_data, dict(profiles=Profile().get_for_user())),
-            datafile=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            datafile=(htags.generate_table_records, dict(profile_id=self.profile_id,  da_object=self.da_object)),
             #repository=(htags.generate_repositories_records, dict(component=self.component)),
         )
 

@@ -166,8 +166,8 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
     columns = []
     label_set = set()
 
-    detail_dict = dict(className='summary-details-control detail-hover-message', orderable=False, data=None,
-                        title='', defaultContent='', width="5%")
+    detail_dict = dict(className1='summary-details-control detail-hover-message', orderable=False, data=None,
+                        title='', defaultContent='', width="5%")   # remove the details 
     columns.insert(0, detail_dict)
     columns.append(dict(data="record_id", visible=False))
     columns.append(dict(data="DT_RowId", visible=False))

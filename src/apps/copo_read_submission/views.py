@@ -312,7 +312,7 @@ def save_ena_records(request):
             df["file_name"] = f_name
             df["ecs_location"] = uid + "_" + username + "/" + f_name
             # df["ecs_location"] = username + "/" + f_name   #temp-solution
-            file_location = join(settings.UPLOAD_PATH, username, f_name)
+            file_location = join(settings.UPLOAD_PATH, username, "read", f_name)
             df["file_location"] = file_location
             df["name"] = f_name
             df["file_id"] = "NA"
@@ -341,7 +341,7 @@ def save_ena_records(request):
             df["file_name"] = f_name
             df["ecs_location"] = uid + "_" + username + "/" + f_name
             # df["ecs_location"] = request.user.username + "/" + f_name
-            file_location = join(settings.UPLOAD_PATH, username, f_name)
+            file_location = join(settings.UPLOAD_PATH, username, "read", f_name)
             df["file_location"] = file_location
             df["name"] = f_name
             df["file_id"] = "NA"
