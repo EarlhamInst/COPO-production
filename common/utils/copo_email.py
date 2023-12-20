@@ -7,19 +7,20 @@ from django.conf import settings
 
 class CopoEmail:
 
-    def send(self, to, sub, content, html=False, is_cc_required=False, cc=None, is_bcc_required=False, bcc=None):
+    def send(self, to, sub, content, html=False, is_cc_required=False, cc=list(), is_bcc_required=False, bcc=list()):
         msg = MIMEMultipart()
         msg['From'] = settings.MAIL_ADDRESS
 
         msg['Subject'] = sub
 
         if is_cc_required:
-            msg['CC'] = cc
+            msg['CC'] = ",".join(cc) # Convert list to string
             to.extend(cc)
-
+           
         if is_bcc_required:
-            # 'bcc' recipients cannot be added to 'msg' multipart/* type message because "to and cc" receivers will know 
-            #  who the 'bcc' recipients are so, the 'bcc' recipents are only added to the 'to' email address list
+            # 'bcc' recipients cannot be added to 'msg' multipart/* type message
+            # because the 'to' and 'cc' receivers will know  who the 'bcc' recipients are 
+            # so, the 'bcc' recipients are only added to the 'to' email address list
             to.extend(bcc)
             
         if html:

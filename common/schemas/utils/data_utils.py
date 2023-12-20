@@ -51,7 +51,26 @@ def convertStringToTitleCase(str):
         .replace("Sra", "SRA") \
         .replace("Seq", "Sequence")
 
-
+def get_profile_type(profile_type):
+    if "ASG" in profile_type:
+        return "ASG"
+    elif "ERGA" in profile_type:
+        return "ERGA"
+    elif "DTOL_ENV" in profile_type:
+        return "DTOL_ENV"
+    else:
+        return "DTOL"
+    
+def join_list_with_and_as_last_entry(lst):
+    # Join the list of sequencing centre labels 
+    # with commas then, have 'and' as the last entry
+    if len(lst) > 2:
+        return ', '.join(lst[:-1]) + ", and " + str(lst[-1])
+    elif len(lst) == 2:
+        return ' and '.join(lst)
+    elif len(lst) == 1:
+        return lst[0]
+    
 def json_to_object(data_object):
     # converts a dictionary to object
     data = ""

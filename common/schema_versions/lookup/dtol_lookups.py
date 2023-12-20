@@ -1797,9 +1797,6 @@ SPECIMEN_SUFFIX = {
 }
 
 ##################
-
-ACCEPTED_SAMPLES_DEFAULT_CC_EMAIL_RECIPIENTS = ["thomarc@ibv.uio.no", "r.monteiro@leibniz-lib.de"]
- 
 API_KEY = helpers.get_env("PUBLIC_NAME_SERVICE_API_KEY")
 
 BLANK_VALS = ['NOT_APPLICABLE', 'NOT_COLLECTED', 'NOT_PROVIDED']

@@ -52,4 +52,6 @@ class Command(BaseCommand):
         dtolenv_notifiers, created = Group.objects.get_or_create(name="dtolenv_sample_notifiers")
         # view bge accept/reject view
         bge_checkers, created = Group.objects.get_or_create(name='bge_checkers')
+        # receive email notification if erga samples have been accepted
+        erga_accepted_samples_notifiers, created = Group.objects.get_or_create(name='erga_accepted_samples_notifiers')
        

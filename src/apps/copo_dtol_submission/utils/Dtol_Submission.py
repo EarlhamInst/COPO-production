@@ -530,7 +530,7 @@ def process_pending_dtol_samples():
             if rejected_sample:
                 profile = Profile().get_record(profile_id)
                 if profile:
-                    Email().notify_sample_rejected_after_approval(project=get_profile_type(profile["type"]),
+                    Email().notify_sample_rejected_after_approval(project=d_utils.get_profile_type(profile["type"]),
                                                                   title=profile["title"],
                                                                   description=profile["description"],
                                                                   rejected_sample=rejected_sample)
@@ -631,7 +631,7 @@ def query_awaiting_tolids():
         if rejected_sample:
             profile = Profile().get_record(profile_id)
             if profile:
-                Email().notify_sample_rejected_after_approval(project=get_profile_type(profile["type"]),
+                Email().notify_sample_rejected_after_approval(project=d_utils.get_profile_type(profile["type"]),
                                                               title=profile["title"],
                                                               description=profile["description"],
                                                               rejected_sample=rejected_sample)
@@ -1139,6 +1139,16 @@ def poll_asyn_ena_submission():
                         submission['_id'], specimens)
                     Submission().dtol_sample_processed(
                         sub_id=submission["_id"], submission_id=sub["id"])
+                    
+                    # Send an email to user and contact person for the sequencing centre 
+                    # conveying that the manifest/samples have been accepted
+                    # after the accessions have been added to the sample
+                    profile = Profile().get_record(submission["profile_id"])
+
+                    if profile and isinstance(profile, dict):
+                        Email().notify_sample_accepted_after_approval(profile=profile)
+                    else:
+                        l.log("No profiles found to send email for accepted samples")                    
 
                 else:
                     msg = "Submission Rejected: <p>" + \
@@ -1177,7 +1187,7 @@ def handle_submit_receipt(sampleobj, collection_id, tree, type="sample"):
         if rejected_sample:
             profile = Profile().get_record(profile_id)
             if profile:
-                Email().notify_sample_rejected_after_approval(project=get_profile_type(profile["type"]),
+                Email().notify_sample_rejected_after_approval(project=d_utils.get_profile_type(profile["type"]),
                                                               title=profile["title"],
                                                               description=profile["description"],
                                                               rejected_sample=rejected_sample)
@@ -1278,25 +1288,10 @@ def get_bundle_biosampleId(tree, collection_id, type="sample"):
                                        sra_accession, submission_accession, sample_id)
                 Submission().add_accession(biosample_accession, sra_accession, submission_accession, sample_id,
                                            collection_id)
-                
-                # Send an email to user and contact person for the sequencing centre 
-                # conveying that the manifest/samples have been accepted
-                # after the accessions have been added to the sample
-                sample = Sample().get_sample_by_id(ObjectId(sample_id))
-                profile_id = sample[0].get('profile_id','') # Get the profile ID from the sample
-                profile = Profile().get_record(profile_id)
-
-                if profile and isinstance(profile, dict):
-                    Email().notify_sample_accepted_after_approval(project=get_profile_type(profile.get('type','')), sequencing_centres=profile.get('sequencing_centre',[]), title=profile.get('title',''))
-                else:
-                    l.log("No profiles found to send email for accepted samples")
-
             elif type == "source":
                 Source().add_accession(biosample_accession,
                                        sra_accession, submission_accession, sample_id)
                 
-
-
     accessions = {"submission_accession": submission_accession, "status": "ok"}
     return accessions
 
@@ -1475,14 +1470,3 @@ def log_message(msg, loglvl=Loglvl.INFO, to_frontend=True, profile_id=profile_id
                         msg=msg, action=action, html_id="dtol_sample_info")
     l.log("Dtol submission for profile " +
           profile_id + " : " + msg, level=loglvl)
-
-
-def get_profile_type(profile_type):
-    if "ASG" in profile_type:
-        return "ASG"
-    elif "ERGA" in profile_type:
-        return "ERGA"
-    elif "DTOL_ENV" in profile_type:
-        return "DTOL_ENV"
-    else:
-        return "DTOL"
