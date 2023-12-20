@@ -155,15 +155,15 @@ class SequencingCentre(models.Model):
     description = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     label = models.CharField(max_length=100)
-    contact_details = ArrayField(
-        JSONField(default=dict),
+    contact_details = models.CharField(
+        max_length=800,
         blank=True,
         null=True)
 
     def __str__(self):
         return self.name
 
-    def create_sequencing_centre(self, name, description, label, contact_details ):
+    def create_sequencing_centre(self, name, description, label, contact_details=str() ):
         self.name = name
         self.description = description
         self.label = label

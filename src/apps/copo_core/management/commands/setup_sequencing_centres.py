@@ -20,7 +20,7 @@ class Command(BaseCommand):
         SequencingCentre().create_sequencing_centre(name="UNIBA",
                                                              description="UNIVERSITY OF BARI",
                                                              label="UNIVERSITY OF BARI",
-                                                             contact_details=[{"contact_name": "Carmela Gissi", "contact_email": "carmela.gissi@uniba.it"},{"contact_name": "Claudio Ciofi", "contact_email": "claudio.ciofi@unifi.it"}])
+                                                             contact_details='[{"contact_name": "Carmela Gissi", "contact_email": "carmela.gissi@uniba.it"},{"contact_name": "Claudio Ciofi", "contact_email": "claudio.ciofi@unifi.it"}]')
 
         SequencingCentre().create_sequencing_centre(name="BIDGEN",
                                      description="DNA SEQUENCING AND GENOMICS LABORATORY, HELSINKI GENOMICS CORE FACILITY",
@@ -29,7 +29,7 @@ class Command(BaseCommand):
         SequencingCentre().create_sequencing_centre(name="CNAG",
                                      description="CENTRO NACIONAL DE ANÁLISIS GENÓMICO ",
                                      label="CENTRO NACIONAL DE ANÁLISIS GENÓMICO",
-                                     contact_details=[{"contact_name": "Sanchez Escudero", "contact_email": "ignacio.sanchez@cnag.eu"},{"contact_name": "Maria Aguilera", "contact_email": "laura.aguilera@cnag.eu"}])
+                                     contact_details='[{"contact_name": "Sanchez Escudero", "contact_email": "ignacio.sanchez@cnag.eu"},{"contact_name": "Maria Aguilera", "contact_email": "laura.aguilera@cnag.eu"}]')
         
         SequencingCentre().create_sequencing_centre(name="EI",
                                       description="EARLHAM INSTITUTE",
@@ -42,7 +42,7 @@ class Command(BaseCommand):
         SequencingCentre().create_sequencing_centre(name="GENOSCOPE",
                                                              description="GENOSCOPE",
                                                              label="GENOSCOPE",
-                                                             contact_details=[{"contact_name":"Pedro Oliveira", "contact_email":"pcoutool@genoscope.cns.fr"}])
+                                                             contact_details='[{"contact_name":"Pedro Oliveira", "contact_email":"pcoutool@genoscope.cns.fr"}]')
         
         SequencingCentre().create_sequencing_centre(name="GTF",
                                                              description="LAUSANNE GENOMIC TECHNOLOGIES FACILITY",
@@ -67,7 +67,7 @@ class Command(BaseCommand):
         SequencingCentre().create_sequencing_centre(name="NSC",
                                                              description="NORWEGIAN SEQUENCING CENTRE",
                                                              label="NORWEGIAN SEQUENCING CENTRE",
-                                                             contact_details=[{"contact_name":"Ave Tooming-Klunderud", "contact_email":"ave.tooming-klunderud@ibv.uio.no"}])  
+                                                             contact_details='[{"contact_name":"Ave Tooming-Klunderud", "contact_email":"ave.tooming-klunderud@ibv.uio.no"}]')  
         
         SequencingCentre().create_sequencing_centre(name="NSF",
                                                              description="NEUROMICS SUPPORT FACILITY, UANTWERP, VIB",
@@ -80,13 +80,13 @@ class Command(BaseCommand):
         SequencingCentre().create_sequencing_centre(name="SANGER",
                                                              description="SANGER INSTITUTE",
                                                              label="SANGER INSTITUTE",
-                                                             contact_details=[{"contact_name":"Wiesia Johnson", "contact_email":"wj3@sanger.ac.uk"}])
+                                                             contact_details='[{"contact_name":"Wiesia Johnson", "contact_email":"wj3@sanger.ac.uk"}]')
 
 
         SequencingCentre().create_sequencing_centre(name="SCILIFE",
                                                              description="SCILIFELAB",
                                                              label="SCILIFELAB",
-                                                             contact_details=[{"contact_name":"Olga Vinnere Pettersson", "contact_email":"olga.pettersson@scilifelab.uu.se"}])
+                                                             contact_details='[{"contact_name":"Olga Vinnere Pettersson", "contact_email":"olga.pettersson@scilifelab.uu.se"}]')
         
         SequencingCentre().create_sequencing_centre(name="SVARDAL",
                                                              description="SVARDAL LAB, ANTWERP",
@@ -95,7 +95,7 @@ class Command(BaseCommand):
         SequencingCentre().create_sequencing_centre(name="UNIFI",
                                                              description="UNIVERSITY OF FLORENCE",
                                                              label="UNIVERSITY OF FLORENCE",
-                                                             contact_details=[{"contact_name":"Claudio Ciofi", "contact_email":"claudio.ciofi@unifi.it"}])
+                                                             contact_details='[{"contact_name":"Claudio Ciofi", "contact_email":"claudio.ciofi@unifi.it"}]')
 
         SequencingCentre().create_sequencing_centre(name="WGGC",
                                                              description="WEST GERMAN GENOME CENTRE",
