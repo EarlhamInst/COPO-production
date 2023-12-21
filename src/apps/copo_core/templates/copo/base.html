@@ -124,7 +124,6 @@
                 },
             })
 
-            $("#gdpr_check").closest(".modal-dialog").find("button").attr("disabled", true)
             //global search box
             $("#global_search_form").submit(function (event) {
                 event.preventDefault();
@@ -147,14 +146,6 @@
             $(document).on("click", "#trigger-notifications", function (event) {
                 trigger_global_notification();
             });
-
-            $(document).on("change", "#gdpr_check", function (e) {
-                if ($("#gdpr_check").is(":checked")) {
-                    $("#gdpr_check").closest(".modal-dialog").find("button").attr("disabled", false)
-                } else {
-                    $("#gdpr_check").closest(".modal-dialog").find("button").attr("disabled", true)
-                }
-            })
         });
 
         function trigger_global_notification() {
