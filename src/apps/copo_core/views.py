@@ -76,9 +76,12 @@ def web_page_access_checker(func):
             # 'accept/reject samples' web page, if 'yes', grant web page access if not, deny access
             if any(x.endswith('sample_managers') for x in member_groups) and 'accept_reject' in current_view:
                 return func(request, *args, **kwargs)
+            
             profile_id = request.session.get("profile_id", str())
+
+            # Access web page if no profile ID exists in the request or session
             if not profile_id:
-                    response = handler403(request)
+                return func(request, *args, **kwargs)
                 
         user_id = Profile().get_record(ObjectId(profile_id))['user_id']
         profile_type = Profile().get_type(profile_id).lower()
@@ -95,7 +98,7 @@ def web_page_access_checker(func):
             if any(str(x['_id']) == profile_id for x in shared_profiles):
                 # Grant web page access if the profile (ID) associated with the current web page
                 # belongs to a profile that is shared with the current web page viewer
-                response = func(request, *args, **kwargs)
+                return func(request, *args, **kwargs)
             elif 'data_managers' in member_groups:
                 # Grant web page access if the current web page viewer is a data manager
                 # i.e. a COPO developer/team member
@@ -104,7 +107,7 @@ def web_page_access_checker(func):
                 if profile_type:
                     request.session['profile_id'] = profile_id
 
-                response = func(request, *args, **kwargs)
+                return func(request, *args, **kwargs)
                 
             elif any(x.endswith('sample_managers') for x in member_groups):
                 # Check if current web page viewer is a sample manager
@@ -112,33 +115,26 @@ def web_page_access_checker(func):
                 if any(x in current_view for x in SAMPLE_MANAGERS_ACCESSIBLE_WEB_PAGES):
                     if 'asg' in profile_type and 'dtol_sample_managers' in member_groups:
                         request.session['profile_id'] = profile_id
-                        response = func(request, *args, **kwargs)
+                        return func(request, *args, **kwargs)
                     elif 'dtol_env' in profile_type and 'dtolenv_sample_managers' in member_groups:
                         request.session['profile_id'] = profile_id
-                        response = func(request, *args, **kwargs)
+                        return func(request, *args, **kwargs)
                     elif 'dtol' in profile_type and 'dtol_sample_managers' in member_groups:
                         request.session['profile_id'] = profile_id
-                        response = func(request, *args, **kwargs)
+                        return func(request, *args, **kwargs)
                     elif 'erga' in profile_type and 'erga_sample_managers' in member_groups:
                         request.session['profile_id'] = profile_id
-                        response = func(request, *args, **kwargs)
+                        return func(request, *args, **kwargs)
                 else:
-                    response = handler403(request)
+                    return handler403(request)
             else:
                 # Deny web page access if the profile (ID) associated with the current web page
                 # is not owned/created by the current web page viewer
-                response = handler403(request)
-            
-            # Deny access to the Files' web page because
-            # it depends on the ECS bucket name of the loggged-in user               
-#            if 'copo_files' in current_view:              
-#                response = handler403(request)
+                return handler403(request)
         else:
             # Grant web page access if the profile (ID) associated with the current web page
             # is owned/created by the current web page viewer
-            response = func(request, *args, **kwargs)
-            
-        return response
+            return func(request, *args, **kwargs)
     return verify_view_access
 
 
