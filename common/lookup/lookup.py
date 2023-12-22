@@ -792,7 +792,7 @@ BUTTON_TEMPLATES = {
         "delete_record_multi": {
             "text": "Delete",
             "className": " red button copo-dt",
-            "iconClass": "fa fa-trash-o",
+            "iconClass": "fa fa-trash-can",
             "btnAction": "delete",
             "btnType": "multi",
             "btnMessage": "Delete selected"
@@ -823,7 +823,7 @@ BUTTON_TEMPLATES = {
         "delete_row": {
             "text": "Delete",
             "className": "copo-dt btn btn-danger",
-            "iconClass": "fa fa-trash-o",
+            "iconClass": "fa fa-trash-can",
             "btnAction": "delete"
         },
         "describe_row": {
@@ -853,7 +853,7 @@ BUTTON_TEMPLATES = {
         "delete_global": {
             "text": "Delete selected",
             "className": "copo-dt btn btn-danger",
-            "iconClass": "fa fa-trash-o",
+            "iconClass": "fa fa-trash-can",
             "btnAction": "delete"
         },
         "describe_global": {
@@ -889,7 +889,7 @@ BUTTON_TEMPLATES = {
         "delete_read_multi": {
             "text": "Delete",
             "className": " red button copo-dt",
-            "iconClass": "fa fa-trash-o",
+            "iconClass": "fa fa-trash-can",
             "btnAction": "delete",
             "btnType": "multi",
             "btnMessage": "Delete selected"
