@@ -71,7 +71,9 @@
                                         <div class="sequencing_centre_div_value">
                                             <ul class="sequencing_centre_ulTag">
                                                 {% for element in profile.sequencing_centre%}
-                                                    <li> {{ element }} </li>
+                                                    <li> {{ element }} 
+                                                        <i class="fa fa-info-circle sequencing_centre_info_icon" title="{{ element | get_sequencing_centre_label }}"></i>
+                                                    </li>
                                                 {% endfor %}
                                             </ul>
                                         </div>

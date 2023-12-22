@@ -3,6 +3,7 @@ from django import template
 from django.contrib.auth.models import Group
 from django.conf import settings
 from datetime import datetime
+from src.apps.copo_core.models import SequencingCentre
 import re
 
 register = template.Library()
@@ -100,3 +101,10 @@ def is_list_empty(value):
         return True
     else:
         return False
+    
+@register.filter(is_safe=True, name="get_sequencing_centre_label")
+def get_sequencing_centre_label(value):
+    # Get the label of the sequencing centre based on the abbreviation
+    centre = SequencingCentre.objects.get(name=value)
+    return f"{centre.label.title()} ({value})"
+

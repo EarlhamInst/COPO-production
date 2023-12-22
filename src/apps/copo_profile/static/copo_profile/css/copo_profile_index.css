@@ -240,6 +240,11 @@ ul.associated_type_ulTag {
 }
 
 /* Sequencing centres */
+.sequencing_centre_info_icon {
+    position: relative;
+    left: 2px;
+}
+
 .sequencing_centre_div_value {
     height: fit-content;
     margin-bottom: 10px;

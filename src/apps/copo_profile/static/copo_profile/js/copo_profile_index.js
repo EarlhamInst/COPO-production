@@ -92,7 +92,7 @@ $(document).ready(function () {
         '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil-square-o"></i>&nbsp;Edit</button>'
       );
       const $deleteButton = $(
-        '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-o"></i>&nbsp;Delete</button>'
+        '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
       );
 
       $deleteButton.css('margin-left', '15px');
@@ -1046,7 +1046,7 @@ function initialise_loaded_records(
         '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil-square-o"></i>&nbsp;Edit</button>'
       );
       const $deleteButton = $(
-        '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-o"></i>&nbsp;Delete</button>'
+        '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
       );
 
       $deleteButton.css('margin-left', '15px');
@@ -1260,6 +1260,15 @@ function showMoreProfileInfoPopover(grids) {
           $(this).popover().find('.associated_type_info_icon')
         ) {
           $('.associated_type_info_icon').tooltip();
+        }
+
+        // Initialise the tooltip for the sequencing centre info icon
+        // if the profile has sequencing centres to display
+        if (
+          $(this).popover().is(':visible') &&
+          $(this).popover().find('.sequencing_centre_info_icon')
+        ) {
+          $('.sequencing_centre_info_icon').tooltip();
         }
       });
   });
