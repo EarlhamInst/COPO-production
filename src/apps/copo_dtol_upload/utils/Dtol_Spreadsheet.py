@@ -730,7 +730,7 @@ class DtolSpreadsheet:
                         Sample().update_field(
                             field, s[field], recorded_sample["_id"])
                         is_updated = True
-
+                       
             if recorded_sample["biosampleAccession"] and is_updated:
                 is_private = "erga" in self.type.lower() and s["ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID"]
                 is_erga = "erga" in self.type.lower()
@@ -746,10 +746,23 @@ class DtolSpreadsheet:
                         name['specimen']["specimenId"])
                     continue
                 Sample().update_public_name(name)
+            
             profile_id = request.session["profile_id"]
             profile = Profile().get_record(profile_id)
             title = profile["title"]
             description = profile["description"]
+
+            # Update the associated tol project for each sample in the manifest
+            # get associated profile type(s) of manifest
+            associated_type_lst = Profile().get_associated_type(
+                profile_id, value=True, label=False)
+            
+            # Get associated type(s) as string separated by '|' symbol
+            # then, update the associated tol project field in the sample
+            associated_type = " | ".join(associated_type_lst)
+            
+            Sample().update_field("associated_tol_project",
+                                    associated_type, recorded_sample["_id"])
 
         if need_send_email:
             Email().notify_manifest_pending_approval(uri + 'copo/dtol_submission/accept_reject_sample/', title=title,
