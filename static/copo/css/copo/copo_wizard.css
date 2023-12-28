@@ -57,12 +57,12 @@ td.summary-details-control {
 
 td.summary-details-control:before {
     position: absolute;
-    font-family: 'FontAwesome';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
     content: "\f055";
     color: forestgreen;
     top: 30%;
-    left: 50%;
-
+    left: 20%;
 }
 
 tr.shown td.summary-details-control {
@@ -72,11 +72,12 @@ tr.shown td.summary-details-control {
 
 tr.shown td.summary-details-control:before {
     position: absolute;
-    font-family: 'FontAwesome';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
     content: "\f056";
     color: darkred;
     top: 30%;
-    left: 50%;
+    left: 20%;
 
 }
 
@@ -87,7 +88,8 @@ span.summary-details-control {
 
 span.summary-details-control:before {
     position: absolute;
-    font-family: 'FontAwesome';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
     content: "\f055";
     color: #3a6c55;
     top: 10%;
@@ -98,11 +100,12 @@ span.summary-details-control:before {
 
 div.shown span.summary-details-control:before {
     position: absolute;
-    font-family: 'FontAwesome';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;;
     content: "\f056";
     color: darkred;
     top: 10%;
-    left: 50%;
+    left: 20%;
     font-size: 13px;
 
 }

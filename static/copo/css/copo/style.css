@@ -1619,7 +1619,8 @@ td.summary-details-control {
 td.summary-details-control:before {
     color: forestgreen;
     content: "\f055";
-    font-family: "FontAwesome";
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
     font-size: 14px;
     /*top: 30%;*/
     left: 50%;
@@ -1634,10 +1635,11 @@ tr.shown td.summary-details-control {
 tr.shown td.summary-details-control:before {
     color: darkred;
     content: "\f056";
-    font-family: "FontAwesome";
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
     font-size: 14px;
     /*top: 30%;*/
-    left: 50%;
+    left: 20%;
     position: absolute;
 }
 
@@ -1663,7 +1665,8 @@ span.summary-details-control {
 span.summary-details-control:before {
     color: #3a6c55;
     content: "\f055";
-    font-family: "FontAwesome";
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
     font-size: 14px;
     /*top: 10%;*/
     left: 50%;
@@ -1673,10 +1676,11 @@ span.summary-details-control:before {
 div.shown span.summary-details-control:before {
     color: darkred;
     content: "\f056";
-    font-family: "FontAwesome";
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
     font-size: 14px;
     /*top: 10%;*/
-    left: 50%;
+    left: 20%;
     position: absolute;
 }
 
@@ -1687,14 +1691,16 @@ span.panel-details-control {
 span.panel-details-control:before {
     color: rgba(0, 51, 102, 0.4);
     content: "\f055";
-    font-family: "FontAwesome";
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
     font-size: 14px;
 }
 
 div.shown span.panel-details-control:before {
     color: rgba(0, 51, 102, 0.4);
     content: "\f056";
-    font-family: "FontAwesome";
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
     font-size: 14px;
 }
 
