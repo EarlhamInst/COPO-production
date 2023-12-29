@@ -32,14 +32,14 @@ jobs:
                 local TRY_TIMEOUT=120
                 local TRY_INTERVAL=5
                 local REMAINING_TIME=$TRY_TIMEOUT
-                while ! docker exec $(docker-compose ps -q copo_web) bash -c 'curl http://127.0.0.1:8000 -s -I | head -n1 | grep -q 200' ;
+                while ! docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_web) bash -c 'curl http://127.0.0.1:8000 -s -I | head -n1 | grep -q 200' ;
                 do
                   REMAINING_TIME=$((REMAINING_TIME-TRY_INTERVAL))
                   if [ $REMAINING_TIME -lt 0 ];
                   then
                     echo "Error: ${SERVICE} did not start in expected duration."
                     docker ps -a
-                    docker logs   $(docker-compose ps -q copo_web)
+                    docker logs   $(docker-compose -f test/docker-compose.yaml ps -q copo_web)
                     curl http://127.0.0.1:8000/
                     exit 1
                   fi
@@ -50,9 +50,9 @@ jobs:
               }
   
               wait_for_readiness  copo_web 8000
-              docker exec $(docker-compose ps -q copo_web) bash -c 'python manage.py makemigrations && python manage.py makemigrations allauth && python manage.py migrate && python manage.py setup_sequencing_centres'
-      - run: "docker exec $(docker-compose ps -q copo_web) bash -c  'python -m pytest /copo/test/testcases/'"
-      - run: "docker logs $(docker-compose ps -q copo_web)"
+              docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_web) bash -c 'python manage.py makemigrations && python manage.py makemigrations allauth && python manage.py migrate && python manage.py setup_sequencing_centres'
+      - run: "docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_web) bash -c  'python -m pytest /copo/test/testcases/'"
+      - run: "docker logs $(docker-compose -f test/docker-compose.yaml ps -q copo_web)"
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
