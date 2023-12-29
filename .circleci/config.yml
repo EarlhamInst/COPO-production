@@ -38,8 +38,8 @@ jobs:
                   if [ $REMAINING_TIME -lt 0 ];
                   then
                     echo "Error: ${SERVICE} did not start in expected duration."
-                    docker logs   $(docker-compose ps -q copo_web)  
-                    docker ps
+                    docker ps -a
+                    docker logs   $(docker-compose ps -q copo_web)
                     curl http://127.0.0.1:8000/
                     exit 1
                   fi
