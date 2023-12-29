@@ -18,9 +18,9 @@ jobs:
       - checkout
       #- attach_workspace: {at: /home/circleci}
       - setup_remote_docker
-      - run: "docker build . -f /deployment/web/Dockerfile -t local_copo_web:v1.0" 
+      - run: "docker build . -f deployment/web/Dockerfile -t local_copo_web:v1.0" 
       - run: |
-          docker-compose -f /test/docker-compose.yaml up -d          
+          docker-compose -f test/docker-compose.yaml up -d          
       - run:
           name: wait for copo_web
           command: |
