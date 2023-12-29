@@ -60,4 +60,4 @@ workflows:
   build_and_test:
     jobs:
       - build:
-          context: "test copo"
+          context: "COPO-WEB"
