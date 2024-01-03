@@ -47,6 +47,10 @@ class TestCopologinlogout():
     self.driver.find_element(By.ID, "acceptCookies").click()
     elements = self.driver.find_elements(By.XPATH, "//span[contains(.,\'Work Profiles\')]")
     assert len(elements) > 0
+    self.driver.find_element(By.ID, "emaddres").send_keys(os.environ['COPO_WEB_USER'])
+    self.driver.find_element(By.ID, "gdpr_check").click()
+    self.driver.find_element(By.XPATH, "//button[contains(.,\'Submit\')]").click()
+    WebDriverWait(self.driver, 30).until(expected_conditions.invisibility_of_element_located((By.ID, "emaddres")))
   
   def test_logout(self):
     self.driver.get("http://copo-new.cyverseuk.org:8000/copo/")
