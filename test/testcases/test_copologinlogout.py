@@ -47,6 +47,7 @@ class TestCopologinlogout():
     self.driver.find_element(By.ID, "acceptCookies").click()
     elements = self.driver.find_elements(By.XPATH, "//span[contains(.,\'Work Profiles\')]")
     assert len(elements) > 0
+    WebDriverWait(self.driver, 10).until(expected_conditions.presence_of_element_located((By.ID, "emaddres")))
     self.driver.find_element(By.ID, "emaddres").send_keys(os.environ['COPO_WEB_USER'])
     self.driver.find_element(By.ID, "gdpr_check").click()
     self.driver.find_element(By.XPATH, "//button[contains(.,\'Submit\')]").click()
