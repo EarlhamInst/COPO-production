@@ -60,8 +60,11 @@ services:
       - postgres
       - mongo
     networks:
-      - copo-frontend-network
-      - copo-backend-network
+      default:
+        aliases:
+           - copo-new.cyverseuk.org    
+      copo-frontend-network:
+      copo-backend-network:
     deploy:
       replicas: 1
       endpoint_mode: dnsrr
@@ -394,7 +397,29 @@ services:
         reservations:
           cpus: "0.4"
           memory: 512mb
-
+  browser:
+    image: browserless/chrome
+    networks:
+      - default
+      - copo-frontend-network
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: any
+      placement:
+        constraints:
+          - "node.labels.web-service==true"
+      update_config:
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1GB
+        reservations:
+          cpus: "0.3"
+          memory: 512mb
 networks:
   copo-backend-network:
     external: true
