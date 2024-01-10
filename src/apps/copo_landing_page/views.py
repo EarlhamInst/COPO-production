@@ -71,6 +71,7 @@ def cookie_response(request):
     user_details.save()
 
     response = HttpResponse(json.dumps({'resp': 'user details updated'}))
+    response.set_cookie('cookiesAccepted', cookie_response, max_age=31536000)
     return response
 
 def is_user_email_address_provided(request):

@@ -736,6 +736,7 @@ $(document).on(
         },
         {
           label: 'Okay',
+          id: 'code_okay',
           cssClass: 'tiny ui basic button',
           action: function (dialogRef) {
             dialogRef.close();

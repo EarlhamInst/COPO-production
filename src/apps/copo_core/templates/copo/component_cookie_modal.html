@@ -47,6 +47,31 @@
 </div>
 <!-- End of Cookie modal -->
 
+<!-- Email modal -->
+<div id="emailModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div id="emailModalHeader" class="modal-header">
+                <h5 id="emailModalTitle" class="modal-title">Privacy & Transparency</h5>
+            </div>
+            <div id="emailModalBody" class="modal-body">
+                <div style="margin-bottom: 10px;"><b>An email address is required for your user account</b></div>
+                <input id="emaddres" type="text" class="form-control" placeholder="Enter email address">
+                <p style="margin-top:20px" for="gdpr_check">Please check the following box if you consent to your identifiable information being stored in COPO. The information will be submitted to public repositories and will be a part of the public record. See our <a style="text-decoration: underline;" href="/about/privacy_notice">Privacy Notice</a> for more details.</p>
+                <input class="form-check-input" type="checkbox" value="" id="gdpr_check">
+                <label class="form-check-label" for="gdpr_check">&ensp; I Agree</label>
+            </div>
+            <div class="modal-footer">
+                <button id="submit" type="button" class="btn-custom3" data-dismiss="modal">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End of Email modal -->
+
+
+
+ 
 <script>
     $(document).ready(function () {
         // Disable 'I agree' button in 'Add Emaill Address' modal if GDPR checkbox is not checked
@@ -68,14 +93,14 @@
         // Handle cookie consent choices
         $('#acceptCookies').on('click', function () {
             setCookie('cookiesAccepted', 'true', 365);
-            recordCookieResponse();
+            recordCookieResponse(true);
             // Check if user email address has been provided
-            isUserEmailAddressProvided();
+            //isUserEmailAddressProvided();
         });
 
         $('#rejectCookies').on('click', function () {
             setCookie('cookiesAccepted', 'false', 365);
-            recordCookieResponse();
+            recordCookieResponse(false);
             document.location = '/'; // Redirect to homepage
         });
 
@@ -105,15 +130,17 @@
         return null;
     }
 
-    function recordCookieResponse() {
+    function recordCookieResponse(is_accepted) {
         $.ajax({
             headers: { 'X-CSRFToken': $.cookie('csrftoken') },
             url: '/cookie_response/',
             method: 'POST',
             data: {
-                cookie_response: getCookie('cookiesAccepted'),
+                cookie_response: is_accepted //getCookie('cookiesAccepted'),
             },
-        }).done(function () { })
+        }).done(function () {
+            isUserEmailAddressProvided();
+         })
             .fail(function (e) {
                 // console.log(e); // Cookies have been rejected
             });
@@ -135,7 +162,47 @@
         $content += '<label class="form-check-label" for="gdpr_check">&ensp; I Agree</label>'
         $content += '</div>';
 
-        let dialog = new BootstrapDialog({
+        let dialog = $("#emailModal")
+        dialog.on('shown.bs.modal', function () {
+            dialog.find('#emaddres').focus();
+        
+            if ($("#gdpr_check").is(":checked")) {
+                    $("#gdpr_check").closest(".modal-dialog").find("button").attr("disabled", false)
+                } else {
+                    $("#gdpr_check").closest(".modal-dialog").find("button").attr("disabled", true)
+                }
+        })
+        dialog.on('hide.bs.modal', function () {
+            let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                let emaddres = dialog.find('#emaddres').val();
+                emaddres = $.trim(emaddres);
+
+                if (emaddres == '' || !re.test(emaddres)) {
+                    alert(errMessage);
+                    return false;
+                } else {
+                    // Save to db
+                    $.ajax({
+                        url: copoFormsURL,
+                        type: "POST",
+                        headers: { 'X-CSRFToken': $.cookie('csrftoken') },
+                        data: {
+                            'task': 'user_email',
+                            'component': component,
+                            'user_email': emaddres
+                        },
+                        success: function (data) {
+                            //$(".takeatour").trigger("click");
+                        },
+                        error: function () {
+                            alert("Couldn't add email address!");
+                        }
+                    });
+                }
+        })
+
+         /*
+        let dialog1 = new BootstrapDialog({
             type: BootstrapDialog.TYPE_WARNING,
             title: "Add Email Address",
             message: $content,
@@ -193,6 +260,8 @@
         dialog.getModalFooter().css({ "padding": "15px", "text-align": "right" });
 
         dialog.open();
+        */
+        dialog.modal("show");
 
     } //end of do_email_form
 
@@ -202,10 +271,10 @@
             url: '/is_user_email_address_provided/',
             method: 'POST',
             data: {
-                cookie_response: getCookie('cookiesAccepted'),
+                cookie_response: $.cookie('cookiesAccepted'),
             },
         }).done(function (data) {
-            if (!JSON.parse(data).resp && getCookie('cookiesAccepted') === 'true') {
+            if (!JSON.parse(data).resp && $.cookie('cookiesAccepted') === 'true') {
                 $('#cookieModal').modal('hide'); // Hide cookie consent modal
                 do_email_form(); // Show 'Add email address' modal
             }
