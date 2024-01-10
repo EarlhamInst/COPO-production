@@ -94,7 +94,7 @@ services:
     environment:
       - COPO_WEB_USER=${COPO_WEB_USER}
       - COPO_WEB_USER_PW=${COPO_WEB_USER_PW}
-      - COPO_WEB_URL=http://copo-new.cyverseuk.org:8000/copo
+      - COPO_WEB_URL=http://copo-new.cyverseuk.org:8000
       - BROWSERLESS_HTTP_URL=http://copo_browser:3000
       - BROWSERLESS_WS_URL=ws://copo_browser:3000
       - CHROME_REFRESH_TIME=1800000
