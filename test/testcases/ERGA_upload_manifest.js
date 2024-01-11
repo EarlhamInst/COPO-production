@@ -170,14 +170,13 @@ let browser = null;
               },
             });
     }
-    
     {
       const targetPage = page;
       await puppeteer.Locator.race([
-          targetPage.locator('::-p-aria(Update)'),
-          targetPage.locator('#updateBtnID'),
-          targetPage.locator('::-p-xpath(//*[@id=\\"updateBtnID\\"])'),
-          targetPage.locator(':scope >>> #updateBtnID')
+          targetPage.locator('::-p-aria(Confirm)'),
+          targetPage.locator('#confirmBtnID'),
+          targetPage.locator('::-p-xpath(//*[@id=\\"confirmBtnID\\"])'),
+          targetPage.locator(':scope >>> #confirmBtnID')
       ])
           .setTimeout(timeout)
           .click({
