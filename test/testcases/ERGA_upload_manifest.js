@@ -13,7 +13,7 @@ let browser = null;
     let browser_id = await get_browser_id();
     browser = await puppeteer.connect({ browserWSEndpoint: process.env.BROWSERLESS_WS_URL + '/devtools/browser/' + browser_id +  '?--user-data-dir=/tmp/puppeteer' });
     const page = await browser.newPage();
-    const timeout = 5000;
+    const timeout = 10000;
     page.setDefaultTimeout(timeout);
 
     {
