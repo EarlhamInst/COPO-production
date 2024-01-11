@@ -52,19 +52,21 @@ jobs:
               wait_for_readiness  copo_web 8000
               docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_web) bash -c 'python manage.py makemigrations && python manage.py makemigrations allauth && python manage.py migrate && python manage.py setup_sequencing_centres && python manage.py createsuperuser --noinput'
       - run: "docker cp test/testcases/ERGA_SAMPLE_MANIFEST_v2.5_success_several_samples1.xlsx $(docker-compose -f test/docker-compose.yaml ps -q copo_browser):/usr/src/app/workspace/"
-      - run: | 
-          echo "running copo-login-logout.js"
-          docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/copo-login-logout.js)"
-          echo "running assign_permission.js"
-          docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/assign_permission.js)"
-          echo "running assign_sequencing_center.js"
-          docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/assign_sequencing_center.js)"
-          echo "running ERGA_profile.js"
-          docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_profile.js)"
-          echo "running ERGA_upload_manifest.js"
-          docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_upload_manifest.js)"
-          echo "running ERGA_approve_samples.js"
-          docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_approve_samples.js)"
+      - run:  
+         shell: /bin/bash
+         command: |
+            echo "running copo-login-logout.js"
+            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/copo-login-logout.js)"
+            echo "running assign_permission.js"
+            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/assign_permission.js)"
+            echo "running assign_sequencing_center.js"
+            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/assign_sequencing_center.js)"
+            echo "running ERGA_profile.js"
+            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_profile.js)"
+            echo "running ERGA_upload_manifest.js"
+            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_upload_manifest.js)"
+            echo "running ERGA_approve_samples.js"
+            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_approve_samples.js)"
       - run: |
           docker logs $(docker-compose -f test/docker-compose.yaml ps -q copo_web)
 
