@@ -134,9 +134,7 @@ let browser = null;
         const targetPage = page;
         await puppeteer.Locator.race([
             targetPage.locator('::-p-aria(EARLHAM INSTITUTE[role=\\"treeitem\\"])'),
-            targetPage.locator('#select2-copoprofilesequencing_centre-result-3et2-EI'),
-            targetPage.locator('::-p-xpath(//*[@id=\\"select2-copoprofilesequencing_centre-result-3et2-EI\\"])'),
-            targetPage.locator(':scope >>> #select2-copoprofilesequencing_centre-result-3et2-EI')
+            targetPage.locator('::-p-xpath(//*[contains(@id, \\"-EI\\")])'),
         ])
             .setTimeout(timeout)
             .click({
@@ -246,9 +244,7 @@ let browser = null;
         const targetPage = page;
         await puppeteer.Locator.race([
             targetPage.locator('::-p-aria(Biodiversity Genomics Europe \\(BGE\\)[role=\\"treeitem\\"])'),
-            targetPage.locator('#select2-copoprofileassociated_type-result-vmp3-BGE'),
-            targetPage.locator('::-p-xpath(//*[@id=\\"select2-copoprofileassociated_type-result-vmp3-BGE\\"])'),
-            targetPage.locator(':scope >>> #select2-copoprofileassociated_type-result-vmp3-BGE')
+            targetPage.locator('::-p-xpath(//*[contains(@id=, "-BGE\\"])'),
         ])
             .setTimeout(timeout)
             .click({
