@@ -24,7 +24,7 @@ class Email:
             logger.debug(profile)
             checker_users = User.objects.filter(groups__name='bge_checkers')
             logger.debug(checker_users)
-            
+
             sequencing_centres = profile.get("sequencing_centre", [])
             '''
             is_bge_profile = "BGE" in [ x.get("value","") for x in profile.get("associated_type",[]) ]
@@ -39,6 +39,7 @@ class Email:
                 for sc in sequencing_centres:
                     centre = SequencingCentre.objects.get(name=sc)
                     users += centre.users.all()
+                    logger.debug(users)
                 checker_users = User.objects.filter(groups__name='bge_checkers')
                 users = list(set(users) & set(checker_users))
             elif type in ["DTOL", "ASG"]:
@@ -64,4 +65,4 @@ class Email:
             sub = demo_notification + is_new + kwargs["project"] + " Manifest - " + kwargs["title"]
             CopoEmail().send(to=email_addresses, sub=sub, content=msg, html=True)
         else:
-            logger.log("No users found for sequencing centre " + sequencing_centres )
+            logger.log("No users found for sequencing centre " )
