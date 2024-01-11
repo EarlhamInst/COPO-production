@@ -103,9 +103,7 @@ const get_browser_id  = async () => {
         }
         await puppeteer.Locator.race([
             targetPage.locator('::-p-aria(EI[role=\\"link\\"])'),
-            targetPage.locator('tr:nth-of-type(19) a'),
-            targetPage.locator('::-p-xpath(//*[@id=\\"result_list\\"]/tbody/tr[19]/th/a)'),
-            targetPage.locator(':scope >>> tr:nth-of-type(19) a'),
+            targetPage.locator('::-p-xpath(//*[@id=\\"result_list\\"]/tbody/tr/th/a[text()=\"EI\"])'),
             targetPage.locator('::-p-text(EI)')
         ])
             .setTimeout(timeout)
