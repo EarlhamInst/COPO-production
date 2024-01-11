@@ -24,8 +24,13 @@ class Email:
             logger.debug(profile)
             checker_users = User.objects.filter(groups__name='bge_checkers')
             logger.debug(checker_users)
+            all_seq_centres = SequencingCentre.objects.all()
+            for centre in all_seq_centers:
+                logger.debug(centre)
+                logger.debug(centre.users.all())
 
             sequencing_centres = profile.get("sequencing_centre", [])
+
             '''
             is_bge_profile = "BGE" in [ x.get("value","") for x in profile.get("associated_type",[]) ]
             if is_bge_profile:
