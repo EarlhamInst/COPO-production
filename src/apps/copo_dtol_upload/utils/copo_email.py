@@ -18,8 +18,13 @@ class Email:
         users = []
         p_id = kwargs.get("profile_id", "")
         type = kwargs.get("project", "")
+        sequencing_centres = []
         if p_id:
             profile = Profile().get_record(p_id)
+            logger.debug(profile)
+            checker_users = User.objects.filter(groups__name='bge_checkers')
+            logger.debug(checker_users)
+            
             sequencing_centres = profile.get("sequencing_centre", [])
             '''
             is_bge_profile = "BGE" in [ x.get("value","") for x in profile.get("associated_type",[]) ]
@@ -59,4 +64,4 @@ class Email:
             sub = demo_notification + is_new + kwargs["project"] + " Manifest - " + kwargs["title"]
             CopoEmail().send(to=email_addresses, sub=sub, content=msg, html=True)
         else:
-            logger.log("No users found for sequencing centre")
+            logger.log("No users found for sequencing centre " + sequencing_centres )
