@@ -68,6 +68,7 @@ jobs:
             echo "running ERGA_approve_samples.js"
             docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_approve_samples.js)"
             docker logs $(docker-compose -f test/docker-compose.yaml ps -q copo_web)
+            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_web) bash -c "less /copo/logs/*.log"
     
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
