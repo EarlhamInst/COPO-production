@@ -25,7 +25,7 @@ class Email:
             checker_users = User.objects.filter(groups__name='bge_checkers')
             logger.debug(checker_users)
             all_seq_centres = SequencingCentre.objects.all()
-            for centre in all_seq_centers:
+            for centre in all_seq_centres:
                 logger.debug(centre)
                 logger.debug(centre.users.all())
 
