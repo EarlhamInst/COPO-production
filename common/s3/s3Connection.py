@@ -167,13 +167,13 @@ class S3Connection():
                 return etags
 
         except KeyError as e:
-            notify_read_status(data={"profile_id": profile_id}, msg="Key Error Occured...cannot find key: " + str(e),
+            notify_read_status(data={"profile_id": profile_id}, msg="Key Error occurred...cannot find key: " + str(e),
                                action="info",
                                html_id="sample_info")
             return False
         except Exception as e:
             Logger().exception(e)
-            notify_read_status(data={"profile_id": profile_id}, msg="An error occured: " + str(e), action="info",
+            notify_read_status(data={"profile_id": profile_id}, msg="An error has occurred: " + str(e), action="info",
                                html_id="sample_info")
             raise e
 
