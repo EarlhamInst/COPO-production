@@ -602,11 +602,27 @@ $(document).ready(function () {
     }
   });
 
-  // Generate status log when the sample status is updated
-  $('#dtol_sample_info').bind('DOMSubtreeModified', function () {
-    // Ensure that added content is not empty and prevent duplicates
-    // from being in the status log
-    if (this.value && $('.status_content:last-child').text() != this.value) {
+  // Create a MutationObserver which detects
+  // when 'dtol_sample_info' changes
+  let dtol_sample_info_element = document.getElementById('dtol_sample_info');
+
+  let observer = new MutationObserver(function (mutations, observer) {
+    if (mutations[0].attributeName == 'value') {
+      $(dtol_sample_info_element).change();
+    }
+  });
+
+  observer.observe(dtol_sample_info_element, {
+    attributes: true,
+  });
+
+  // Ensure that added content is not empty and prevent duplicates
+  // from being in the status log when a new status is detected
+  $(dtol_sample_info_element).change(function (e) {
+    if (
+      $(this).val() &&
+      $('.status_content:last-child').text() != $(this).val()
+    ) {
       generate_status_log($(this));
     }
   });
