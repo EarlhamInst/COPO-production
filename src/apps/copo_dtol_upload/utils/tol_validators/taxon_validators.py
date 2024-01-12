@@ -37,7 +37,7 @@ class DtolEnumerationValidator(Validator):
         # build dictionary of species in this manifest  max 200 IDs per query
         taxon_id_set = set([x for x in self.data['TAXON_ID'].tolist() if x])
         notify_frontend(data={"profile_id": self.profile_id},
-                        msg="Querying NCBI for TAXON_IDs in manifest ",
+                        msg="Querying NCBI for TAXON_IDs in manifest",
                         action="info",
                         html_id="sample_info")
         taxon_id_list = list(taxon_id_set)
@@ -48,7 +48,7 @@ class DtolEnumerationValidator(Validator):
                     #    pass
                     int(taxon)
                     notify_frontend(data={"profile_id": self.profile_id},
-                                    msg="Checking Taxonomic ID: " + str(taxon),
+                                    msg="Checking taxonomic identifications",
                                     action="info",
                                     html_id="sample_info")
                     # check if taxon is submittable
@@ -94,9 +94,7 @@ class DtolEnumerationValidator(Validator):
                 self.flag = False
                 continue
             notify_frontend(data={"profile_id": self.profile_id},
-                            msg="Checking taxonomy information at row <strong>%s</strong> - "
-                                "<strong>%s</strong>" % (
-                                    str(index + 2), row['SCIENTIFIC_NAME']),
+                            msg="Checking taxonomy information",
                             action="info",
                             html_id="sample_info")
             scientific_name = row['SCIENTIFIC_NAME'].strip()
@@ -140,7 +138,7 @@ class DtolEnumerationValidator(Validator):
                 elif scientific_name.upper() != self.taxonomy_dict[taxon_id]['ScientificName'].upper():
                     handle = Entrez.esearch(db="Taxonomy", term=scientific_name)
                     records = Entrez.read(handle)
-                    # check if the scientific name provided is a synonim
+                    # check if the scientific name provided is a synonym
                     if taxon_id in records['IdList']:
                         self.warnings.append(msg["validation_warning_synonym"] % (scientific_name, str(index + 2),
                                                                                   self.taxonomy_dict[taxon_id][

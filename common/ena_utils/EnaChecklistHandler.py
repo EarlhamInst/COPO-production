@@ -390,7 +390,7 @@ class EnaCheckListSpreedsheet:
    def loadManifest(self, m_format):
 
         if self.profile_id is not None:
-            notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Loading..", action="info",
+            notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Loading...", action="info",
                             html_id=self.component_info, checklist_id=self.checklist_id)
 
             try:
@@ -458,7 +458,7 @@ class EnaCheckListSpreedsheet:
         if warnings:
             l.log(",".join(warnings))
             notify_ena_object_status(data={"profile_id": self.profile_id},
-                            msg="<br>".join(warnings),
+                            msg="<h2>Warnings</h2>" + "<br>".join(warnings),
                             action="warning",
                             html_id="warning_info2", checklist_id=self.checklist_id)
         # if flag is false, compile list of errors
@@ -467,13 +467,13 @@ class EnaCheckListSpreedsheet:
             errors = "".join(errors)
             l.log(errors)
             notify_ena_object_status(data={"profile_id": self.profile_id},
-                            msg="<h4>" + self.file.name + "</h4><ol>" + errors + "</ol>",
+                            msg="<h4>" + self.file.name + "</h4><h2>Errors</h2><ol>" + errors + "</ol>",
                             action="error",
                             html_id=self.component_info, checklist_id=self.checklist_id)
             return False
  
         # if we get here we have a valid spreadsheet
-        notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Spreadsheet is Valid", action="info",
+        notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid", action="info",
                         html_id=self.component_info)
         notify_ena_object_status(data={"profile_id": self.profile_id}, msg="", action="close", html_id="upload_controls", checklist_id=self.checklist_id)
         notify_ena_object_status(data={"profile_id": self.profile_id}, msg="", action="make_valid", html_id=self.component_info, checklist_id=self.checklist_id)

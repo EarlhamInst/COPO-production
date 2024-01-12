@@ -43,11 +43,11 @@ function upload_image_files(file) {
         xhr.upload.onprogress = function (evt) {
           var percentVal = Math.round((evt.loaded / evt.total) * 100);
           percent.html('<b>' + percentVal + '%</b>');
-          console.log('progress', percentVal);
+          // console.log('progress', percentVal);
         };
         xhr.upload.onload = function () {
           percent.html('');
-          console.log('DONE!');
+          // console.log('DONE!');
         };
         return xhr;
       },
@@ -94,11 +94,11 @@ function upload_permit_files(file) {
         xhr.upload.onprogress = function (evt) {
           var percentVal = Math.round((evt.loaded / evt.total) * 100);
           percent.html('<b>' + percentVal + '%</b>');
-          console.log('progress', percentVal);
+          // console.log('progress', percentVal);
         };
         xhr.upload.onload = function () {
           percent.html('');
-          console.log('DONE!');
+          // console.log('DONE!');
         };
         return xhr;
       },
@@ -121,7 +121,13 @@ function upload_permit_files(file) {
 function upload_spreadsheet(file = file) {
   url = '/copo/dtol_manifest/sample_spreadsheet/';
   $('#upload_label').fadeOut('fast');
-  $('#ss_upload_spinner').fadeIn('fast');
+  $('#sample_info')
+     .animatedEllipsis({
+       speed: 400,
+       maxDots: 3,
+       word: 'Loading',
+     })
+     .fadeIn('fast');
   $('#warning_info').fadeOut('fast');
   $('#warning_info2').fadeOut('fast');
   var csrftoken = $.cookie('csrftoken');
@@ -143,17 +149,17 @@ function upload_spreadsheet(file = file) {
         xhr.upload.onprogress = function (evt) {
           var percentVal = Math.round((evt.loaded / evt.total) * 100);
           percent.html('<b>' + percentVal + '%</b>');
-          console.log('progress', percentVal);
+          // console.log('progress', percentVal);
         };
         xhr.upload.onload = function () {
           percent.html('');
-          console.log('DONE!');
+          // console.log('DONE!');
         };
         return xhr;
       },
     })
     .fail(function (data) {
-      $('#ss_upload_spinner').fadeOut('fast');
+      $('#sample_info').fadeOut('fast');
       $('#upload_controls').fadeIn();
       console.log(data);
       BootstrapDialog.show({
@@ -163,7 +169,7 @@ function upload_spreadsheet(file = file) {
       });
     })
     .done(function (data) {
-      $('#ss_upload_spinner').fadeOut('fast');
+      // $('#sample_info').fadeOut('fast');
     });
 }
 
@@ -348,15 +354,16 @@ $(document).ready(function () {
     console.log('opened ', e);
   };
   socket2.onmessage = function (e) {
-    console.log('received message');
+    // console.log('received message');
     //handlers for channels messages sent from backend
     d = JSON.parse(e.data);
+
     //actions here should be performed regardeless of profile
     if (d.action === 'store_validation_record_id') {
       $(document).data('validation_record_id', d.message);
     }
     if (d.action === 'delete_row') {
-      console.log('deleteing row');
+      // console.log('deleting row');
       s_id = d.html_id;
       //$('tr[sample_id=s_id]').fadeOut()
       $('tr[sample_id="' + s_id + '"]').remove();
@@ -368,24 +375,38 @@ $(document).ready(function () {
         if (d.action == 'hide_sub_spinner') {
           $('#sub_spinner').fadeOut(fadeSpeed);
         }
+
         if (d.action === 'close') {
           $('#' + d.html_id).fadeOut('50');
         } else if (d.action === 'make_valid') {
           $('#' + d.html_id)
-            .html('Validated')
-            .removeClass('alert-info, alert-danger')
-            .addClass('alert-success');
+            .empty()
+            .removeClass('sample-alert-info sample-alert-error')
+            .addClass('sample-alert-success');
+
+          $('#' + d.html_id).html('Validated');
         } else if (d.action === 'info') {
           // show something on the info div
           // check info div is visible
           if (!$('#' + d.html_id).is(':visible')) {
             $('#' + d.html_id).fadeIn('50');
           }
-          $('#' + d.html_id)
-            .removeClass('alert-danger')
-            .addClass('alert-info');
 
-          $('#' + d.html_id).html(d.message);
+          $('#' + d.html_id)
+            .removeClass('sample-alert-error sample-alert-success')
+            .addClass('sample-alert-info');
+
+          if (d.html_id === 'dtol_sample_info') {
+            $('#' + d.html_id).val(d.message);
+          } else {
+            // Animate text with ellipsis plugin
+            $('#' + d.html_id).animatedEllipsis({
+              speed: 400,
+              maxDots: d.max_ellipsis_length,
+              word: d.message,
+            });
+          }
+
           $('#spinner').fadeOut();
         } else if (d.action === 'csv_updates') {
           // show something on the info div
@@ -407,20 +428,43 @@ $(document).ready(function () {
           if (!$('#' + d.html_id).is(':visible')) {
             $('#' + d.html_id).fadeIn('50');
           }
+
           $('#' + d.html_id)
-            .removeClass('alert-info')
-            .addClass('alert-warning');
+            .removeClass(
+              'sample-alert-info sample-alert-error sample-alert-success'
+            )
+            .addClass('sample-alert-warning');
+          
           $('#' + d.html_id).html(d.message);
+
+          // Remove duplicate warning headers and reduce the margin-top
+          if (
+            $('#warning_info > h2').length &&
+            $('#warning_info2 > h2').length
+          ) {
+            $('#warning_info2 > h2').remove();
+            $('#warning_info2').css('margin-top', '5px');
+          }
+
           $('#spinner').fadeOut();
         } else if (d.action === 'error') {
           // check info div is visible
           if (!$('#' + d.html_id).is(':visible')) {
             $('#' + d.html_id).fadeIn('50');
           }
+
           $('#' + d.html_id)
-            .removeClass('alert-info')
-            .addClass('alert-danger');
-          $('#' + d.html_id).html(d.message);
+            .removeClass(
+              'sample-alert-info sample-alert-success sample-alert-warning'
+            )
+            .addClass('sample-alert-error');
+
+          if (d.html_id === 'dtol_sample_info') {
+            $('#' + d.html_id).val(d.message);
+          } else {
+            $('#' + d.html_id).html(d.message);
+          }
+
           $('#export_errors_button').fadeIn();
           $('#spinner').fadeOut();
         } else if (d.action === 'success') {
@@ -429,8 +473,11 @@ $(document).ready(function () {
             $('#' + d.html_id).fadeIn('50');
           }
           $('#' + d.html_id)
-            .removeClass('alert-info')
-            .addClass('alert-success');
+            .removeClass(
+              'sample-alert-info sample-alert-error sample-alert-warning'
+            )
+            .addClass('sample-alert-success');
+          
           $('#' + d.html_id).html(d.message);
           $('#export_errors_button').fadeIn();
           $('#spinner').fadeOut();
@@ -441,12 +488,15 @@ $(document).ready(function () {
           $('#images_label').removeAttr('disabled');
           $('#images_label').find('input').removeAttr('disabled');
           $('#ss_upload_spinner').fadeOut('fast');
+
           if (!finishBtnStatus) {
             $('#finish_button').show();
           }
+
           if (!confirmBtnStatus) {
             $('#confirm_button').show();
           }
+          
           if (!permitBtnStatus) {
             $('#files_label').removeClass('disabled');
             $('#files_label').removeAttr('disabled');

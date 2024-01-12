@@ -1,0 +1,243 @@
+/* Table CSS styles */
+th {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 9;
+    background-color: rgba(255, 255, 255, 1);
+
+}
+
+td {
+    z-index: 1;
+}
+
+.confirm {
+    border: 1px solid rgba(221, 221, 221, 0.95);
+    border-radius: 11px;
+    padding: 10px;
+    width: 400px;
+    margin-bottom: 20px;
+}
+
+/*
+.selected {
+    background-color: #e1e1e1 !important; 
+}
+*/
+#profile_titles .selected a {
+    color: #e1e1e1 !important;
+}
+
+.na_color {
+    background-color: #eee;
+}
+
+.empty_color {
+    background-color: #f7eded;
+}
+
+.selectable_row {
+    cursor: pointer;
+}
+
+/* Truncate profile title when it is too long */
+.profile_title_header_my_profiles {
+    max-height: 4em;
+    /* fallback */
+    max-width: 200px;
+    -webkit-line-clamp: 3;
+    /* number of lines to show */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+    -ms-text-overflow: ellipsis;
+    -moz-binding: url('ellipsis.xml#ellipsis');
+    display: -webkit-box;
+    text-align: left;
+}
+
+.profile_title_header_all_profiles {
+    max-height: 4em;
+    /* fallback */
+    max-width: 150px;
+    -webkit-line-clamp: 3;
+    /* number of lines to show */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+    -ms-text-overflow: ellipsis;
+    -moz-binding: url('ellipsis.xml#ellipsis');
+    text-align: left;
+}
+
+.table_viewport {
+    max-height: 600px;
+    overflow: scroll;
+}
+
+.tickbox {
+    vertical-align: middle !important;
+}
+
+.processing_row {
+    background-color: rgba(0, 52, 255, 0.16);
+}
+
+.table_viewport {
+    padding-left: 20px
+}
+
+.selected_row {
+    background-color: #fff3ce !important;
+}
+
+.filter_margin {
+    margin-top: 46px
+}
+
+/* Status CSS styles*/
+/*  clear status log button CSS styles */
+#clearStatusLogBtn {
+    cursor: pointer;
+    border-radius: 50%;
+    /* top right bottom left */
+    padding: 0 0 0.5em 0;
+    width: 25px;
+    height: 25px;
+    border: 2px solid #000;
+    position: absolute;
+    float: right;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    opacity: 0.5;
+    top: 0;
+    right: 0;
+    margin: 5px 12px 5px 5px;
+    /* top right bottom left */
+}
+
+#clearStatusLogBtn:hover {
+    border: 2px solid #000;
+    background-color: #b94a48;
+    color: #ffffff;
+    opacity: 1;
+}
+
+#clearStatusLogBtn[disabled],
+#clearStatusLogBtn[disabled]:hover,
+#clearStatusLogBtn[disabled]:focus,
+#clearStatusLogBtn[disabled]:active {
+    cursor: default;
+    border: 2px solid #000;
+    background-color: #cce2ff;
+    color: #000;
+    opacity: 0.5;
+}
+
+/* Status log CSS styles*/
+.status_log {
+    overflow: auto;
+    border: 1px solid rgb(184, 190, 193);
+    padding-top: 10px;
+    width: 370px;
+    position: relative;
+    z-index: 0;
+    box-sizing: border-box;
+}
+
+.status_log_overlayed {
+    position: relative;
+    z-index: -1;
+}
+
+.status_log_collapse {
+    min-height: 55px;
+    max-height: 100px;
+    position: absolute;
+    z-index: 0;
+}
+
+.status_log_extend {
+    position: absolute;
+    z-index: 10;
+    transform: scaleY(2);
+    transform-origin: right top;
+    transition: transform 0.5s, z-index 0.5s;
+    max-height: 400px;
+    height: fit-content;
+    background-color: #fff;
+}
+
+.status_log_extend button,
+.status_log_extend p {
+    transform: scaleY(0.5);
+    transition: transform 0.5s, z-index 0.5s;
+    transform-origin: right top;
+}
+
+/* .status_log_extend p:not(:first-child) {
+    margin: -10px 0 0 0;
+} */
+
+/* Apply CSS to the first status content in the status log 
+i.e. the second child element in the status log */
+.status_log_extend p:nth-child(2) {
+    margin: -2px 0 5px 0;
+}
+
+/* Apply CSS to all child p elements except 
+the first one  in the status log 
+i.e. the second child element in the status log */
+.status_log_extend p:nth-child(2)~p {
+    margin: -10px 0 0 0;
+}
+
+.status_content {
+    font-family: "Courier";
+    font-size: 14px;
+    overflow: hidden;
+    padding-left: 10px;
+    padding-right: 5px;
+    width: fit-content;
+    /* Fading effect */
+    animation: fadeIn 5s;
+}
+
+/* The fading in effect */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+        animation: 'none';
+    }
+}
+
+.status_content:last-child {
+    animation: 'none';
+}
+
+.status_content_error {
+    color: #b94a48;
+}
+
+.hr-margin-top {
+    margin-top: 80px;
+
+}
+
+/* spinner CSS */
+.status-spinner {
+    position: absolute !important;
+    margin: 45px 47px 0px 70px !important;
+    display: none;
+    ;
+}

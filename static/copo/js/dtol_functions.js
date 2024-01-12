@@ -587,6 +587,73 @@ $(document).ready(function () {
     // Reset carousel on tab change
     $('#imageCarousel').carousel({ pause: true, interval: false }).carousel(0);
   });
+  $(document).on('click', '#clearStatusLogBtn', function () {
+    let status_content = $('.status_content');
+
+    status_content.not(':first').remove();
+    $('#sample_panel').removeClass('status_log_overlayed');
+
+    toggle_clear_status_log_btn_interaction();
+
+    if (status_content.hasClass('status_log_extend')) {
+      status_content
+        .removeClass('status_log_extend')
+        .addClass('status_log_collapse');
+    }
+  });
+
+  // Generate status log when the sample status is updated
+  $('#dtol_sample_info').bind('DOMSubtreeModified', function () {
+    // Ensure that added content is not empty and prevent duplicates
+    // from being in the status log
+    if (this.value && $('.status_content:last-child').text() != this.value) {
+      generate_status_log($(this));
+    }
+  });
+
+  // Create an overlay of the status log when the
+  // status log is hovered over
+  $('.status_log').hover(
+    function (e) {
+      e.stopPropagation();
+
+      // Only add overlay and hover properties if there is more than
+      // one status in the status log
+      if ($('.status_content').length != 1) {
+        $(e.currentTarget)
+          .removeClass('status_log_collapse')
+          .addClass('status_log_extend');
+
+        // Add an overlay over the sample panel when the status log is extended
+        // i.e. move the sample panel div behind the status log
+        $('#sample_panel').addClass('status_log_overlayed');
+      }
+
+      toggle_clear_status_log_btn_interaction();
+    },
+    function (e) {
+      e.stopPropagation();
+      // Only remove overlay and hover properties if there is more than
+      // one status in the status log
+      if ($('.status_content').length != 1) {
+        $(e.currentTarget)
+          .addClass('status_log_collapse')
+          .removeClass('status_log_extend');
+
+        // Remove overlay
+        $('#sample_panel').removeClass('status_log_overlayed');
+      }
+
+      toggle_clear_status_log_btn_interaction();
+    }
+  );
+
+  // Scroll to bottom of status log when window is resized
+  $(window).on('resize', () => {
+    if ($('.status_content').length != 1) {
+      $('.status_log').scrollTop($('.status_log')[0].scrollHeight);
+    }
+  });
 });
 
 var fadeSpeed = 'fast';
@@ -614,7 +681,9 @@ function row_select(ev) {
       var profile_id = $(row).find('td').data('profile_id');
       $('#profile_id').val(profile_id);
     }
+
     $('#spinner').show();
+
     sample_table.ajax.reload(function () {
       if (sample_table.data().length == 0) {
         var header = $('<h4/>', {
@@ -856,11 +925,13 @@ function handle_accept_reject(el) {
       BootstrapDialog.show({
         title: 'ENA Submission',
         message:
-          'By accepting the samples, these will immediately be submitted to ENA. This action is' +
+          'By accepting the samples, the samples will immediately be submitted to European Nucleotide Archive (ENA). This action is' +
           ' irreversible.',
         cssClass: 'copo-modal1',
         closable: true,
         animate: true,
+        closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
+        closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
         type: BootstrapDialog.TYPE_INFO,
         buttons: [
           {
@@ -914,4 +985,42 @@ function update_profile_table() {
     $('#non_erga').show();
   }
   update_pending_samples_table();
+}
+
+function generate_status_log(item) {
+  let status_log = $('.status_log');
+
+  let status_content = $('<p/>', {
+    class: 'status_content',
+  });
+
+  // Append the status content to the 'status_log' div with the
+  // latest status at the bottom
+  if (item.hasClass('sample-alert-error')) {
+    status_content.addClass('status_content_error');
+  }
+
+  status_content.html(item.val());
+
+  // Prevent duplicates from being added to the status log
+  if ($('.status_content:last-child').text() != status_content.text()) {
+    status_log.append(status_content);
+  }
+
+  // Set the scrollbar to the bottom of the status log
+  status_log.scrollTop($('.status_log')[0].scrollHeight);
+}
+
+function toggle_clear_status_log_btn_interaction() {
+  // Disable clear status log button if there is
+  // only one status in the status log
+  let clear_status_log_btn = $('#clearStatusLogBtn');
+
+  if ($('.status_content').length === 1) {
+    clear_status_log_btn.prop('disabled', true).prop('title', '');
+  } else {
+    clear_status_log_btn
+      .prop('disabled', false)
+      .prop('title', 'Clear status log');
+  }
 }

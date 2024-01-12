@@ -12,16 +12,24 @@ class ColumnValidator(Validator):
     def validate(self):
         p_type = Profile().get_type(profile_id=self.profile_id)
         columns = list(self.data.columns)
+
+        notify_frontend(data={"profile_id": self.profile_id}, msg="Validating columns",
+                action="info",
+                html_id="sample_info")
+        
         # check required fields are present in spreadsheet
         for item in self.fields:
-            notify_frontend(data={"profile_id": self.profile_id}, msg="Validating Column- " + item,
-                            action="info",
-                            html_id="sample_info")
             if item not in columns:
                 # invalid or missing field, inform user and return false
                 self.errors.append("Field not found - " + item)
                 self.flag = False
                 # if we have a required fields, check that there are no missing values
+        
+        notify_frontend(data={"profile_id": self.profile_id}, msg="Validating columns: Finished",
+            action="info",
+            max_ellipsis_length=0,
+            html_id="sample_info")
+                
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
 

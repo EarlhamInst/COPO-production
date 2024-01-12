@@ -23,47 +23,8 @@
     <link rel="stylesheet" href="{% static 'copo/css/copo/sample.css' %}">
 
     <style>
-        th {
-            position: -webkit-sticky;
-            position: sticky;
-            top: 0;
-            z-index: 2;
-        }
-
-        .confirm {
-            border: 1px solid rgba(221, 221, 221, 0.95);
-            border-radius: 11px;
-            padding: 10px;
-            width: 400px;
-            margin-bottom: 20px;
-        }
-
-        #image_table img {
-            height: 100px
-        }
-
-        .cell_highlight_in_column {
-            background-color: #e0e1e2 !important;
-        }
-
-        .cell_updated {
-            background-color: #1678c2 !important;
-            color: white !important;
-        }
-
-        .cell_accepted {
-            background-color: #16ab39 !important;
-            color: white !important
-        }
-
-        .cell_tentative {
-            background-color: #eaae00 !important;
-            color: white !important;
-        }
     </style>
 {% endblock %}
-
-
 
 {% block title_block %} Sample {% endblock %}
 
@@ -91,7 +52,6 @@
 {% block page_tile %}
     {% include "component_navbar.html" %}
 {% endblock page_tile %}
-
 
 {% block content %}
     <script>
@@ -320,6 +280,7 @@
     <script src="{% static 'copo/js/copo_form_handlers.js' %}"></script>
     <script src="{% static 'copo/js/copo_sample.js' %}"></script>
     <script src="{% static 'copo/js/dtol_functions.js' %}"></script>
+    <script src="{% static 'copo/js/animated_ellipsis.js' %}"></script>
     <script src="{% static 'copo/js/copo_parse_spreadsheet.js' %}"></script>
     <!-- <script src="{% static 'copo/js/csv_column_updates.js' %}"></script> -->
     <script src="{% static 'copo/js/fastdom.js' %}"></script>

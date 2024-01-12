@@ -124,11 +124,11 @@ class DtolEnumerationValidator(Validator):
         if p_type == "ERGA":
             barcoding_fields.pop(0)
 
+        notify_frontend(data={"profile_id": self.profile_id}, msg="Validating headers",
+                action="info",
+                html_id="sample_info")
+            
         for header, cells in self.data.items():
-
-            notify_frontend(data={"profile_id": self.profile_id}, msg="Validating Header- " + header,
-                            action="info",
-                            html_id="sample_info")
             if header in self.fields:
                 # check if there is an enum for this header specific to the project
                 lookup_entry = lookup.DTOL_ENUMS.get(header, "")
@@ -392,7 +392,12 @@ class DtolEnumerationValidator(Validator):
                                 self.errors.append(
                                     msg["validation_msg_future_date"] % (c, header, str(cellcount + 1)))
                                 self.flag = False
-
+        
+        notify_frontend(data={"profile_id": self.profile_id}, msg="Validating headers: Finished",
+            action="info",
+            max_ellipsis_length=0,
+            html_id="sample_info")
+        
         if flag_symbiont:
             self.warnings.insert(0, msg["validation_msg_overwrite_symbionts"])
         return self.errors, self.warnings, self.flag
