@@ -172,10 +172,6 @@ let browser = null;
     }
     {
       const targetPage = page;
-      const promises = [];
-      const startWaitingForEvents = () => {
-          promises.push(targetPage.waitForXPath('//*[@id=\\"confirmBtnID\\"]', {timeout: 120000, hidden:true}));
-      }
       await puppeteer.Locator.race([
           targetPage.locator('::-p-aria(Confirm)'),
           targetPage.locator('#confirmBtnID'),
@@ -183,7 +179,6 @@ let browser = null;
           targetPage.locator(':scope >>> #confirmBtnID')
       ])
           .setTimeout(timeout)
-          .on('action', () => startWaitingForEvents())
           .click({
             offset: {
               x: 39.4453125,
@@ -191,7 +186,15 @@ let browser = null;
             },
           });
    }
- 
+
+   {
+    const targetPage = page;
+    await puppeteer.Locator.race([
+        targetPage.locator('::-p-xpath(//*[@id=\\"page_alert_panel\\"]/div/span[text()=\\"Samples have been created successfully\\"]'),
+    ])
+        .setTimeout(timeout);
+   }
+
   })().catch(err => {
     console.error(err);
     process.exit(1);

@@ -172,10 +172,6 @@ let browser = null;
     }
     {
       const targetPage = page;
-      const promises = [];
-      const startWaitingForEvents = () => {
-          promises.push(targetPage.waitForXPath('//*[@id=\\"updateBtnID\\"]', {timeout: 120000, hidden:true}));
-      }
       await puppeteer.Locator.race([
           targetPage.locator('::-p-aria(Update)'),
           targetPage.locator('#updateBtnID'),
@@ -183,7 +179,6 @@ let browser = null;
           targetPage.locator(':scope >>> #updateBtnID')
       ])
           .setTimeout(timeout)
-          .on('action', () => startWaitingForEvents())
           .click({
             offset: {
               x: 39.4453125,
@@ -192,7 +187,15 @@ let browser = null;
           });
    }
 
- 
+
+   {
+    const targetPage = page;
+    await puppeteer.Locator.race([
+        targetPage.locator('::-p-xpath(//*[@id=\\"page_alert_panel\\"]/div/span[text()=\\"Samples have been updated successfully\\"]'),
+    ])
+        .setTimeout(timeout);
+   }
+
 
   })().catch(err => {
     console.error(err);
