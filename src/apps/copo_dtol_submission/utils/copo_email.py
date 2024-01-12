@@ -65,8 +65,9 @@ class Email:
             for sc in sequencing_centres:
                 centre = SequencingCentre.objects.get(name=sc)
                 centre_labels.append(centre.label)
-               
-                if centre.contact_details and len(centre.contact_details) > 0:
+                
+                # Get contact details of the sequencing centre only if the environment is production
+                if settings.ENVIRONMENT_TYPE == "prod" and centre.contact_details and len(centre.contact_details) > 0:
                     # Contact name and email address of the partner for the sequencing centre
                     centre_contact_details.extend(json.loads(centre.contact_details)) 
             

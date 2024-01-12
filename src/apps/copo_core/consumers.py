@@ -119,6 +119,7 @@ class DtolConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'message': event["message"],
             'action': event["action"],
+            'max_ellipsis_length': event["max_ellipsis_length"],
             'html_id': event["html_id"],
             'data': event["data"]
         }))

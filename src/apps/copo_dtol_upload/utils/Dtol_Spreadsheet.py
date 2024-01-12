@@ -177,8 +177,8 @@ class DtolSpreadsheet:
     def loadManifest(self, m_format):
 
         if self.profile_id is not None:
-            notify_frontend(data={"profile_id": self.profile_id}, msg="Loading..", action="info",
-                            html_id="sample_info")
+            notify_frontend(data={"profile_id": self.profile_id}, msg="Loading", action="info",
+                            max_ellipsis_length=3, html_id="sample_info")
             try:
                 # read excel and convert all to string
                 if m_format == "xls":
@@ -239,7 +239,7 @@ class DtolSpreadsheet:
             # send warnings
             if warnings:
                 notify_frontend(data={"profile_id": self.profile_id},
-                                msg="<br>".join(warnings),
+                                msg="<h2>Warnings</h2>" + "<br>".join(warnings),
                                 action="warning",
                                 html_id="warning_info2")
             # if flag is false, compile list of errors
@@ -248,7 +248,7 @@ class DtolSpreadsheet:
                 errors = "".join(errors)
 
                 notify_frontend(data={"profile_id": self.profile_id},
-                                msg="<h4>" + self.file.name + "</h4><ol>" + errors + "</ol>",
+                                msg="<h4>" + self.file.name + "</h4><h2>Errors</h2><ol>" + errors + "</ol>",
                                 action="error",
                                 html_id="sample_info")
                 return False
@@ -264,7 +264,7 @@ class DtolSpreadsheet:
             raise
 
         # if we get here we have a valid spreadsheet
-        notify_frontend(data={"profile_id": self.profile_id}, msg="Spreadsheet is Valid", action="info",
+        notify_frontend(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid", action="info",
                         html_id="sample_info")
         notify_frontend(data={"profile_id": self.profile_id}, msg="", action="close", html_id="upload_controls")
         notify_frontend(data={"profile_id": self.profile_id}, msg="", action="make_valid", html_id="sample_info")
@@ -288,7 +288,7 @@ class DtolSpreadsheet:
             # send warnings
             if warnings:
                 notify_frontend(data={"profile_id": self.profile_id},
-                                msg="<br>".join(warnings),
+                                msg="<h2>Warnings</h2>" + "<br>".join(warnings),
                                 action="warning",
                                 html_id="warning_info")
 
@@ -296,7 +296,7 @@ class DtolSpreadsheet:
                 errors = list(map(lambda x: "<li>" + x + "</li>", errors))
                 errors = "".join(errors)
                 notify_frontend(data={"profile_id": self.profile_id},
-                                msg="<h4>" + self.file.name + "</h4><ol>" + errors + "</ol>",
+                                msg="<h4>" + self.file.name + "</h4><h2>Errors</h2><ol>" + errors + "</ol>",
                                 action="error",
                                 html_id="sample_info")
                 return False

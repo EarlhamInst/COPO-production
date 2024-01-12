@@ -144,11 +144,16 @@ div[class*=" col-"] {
 
 .dataTables_info {
     padding-bottom: 15px !important;
+    padding-top: 15px !important;
 }
 
 /*server-side processing styling for datatables*/
 div.dataTables_wrapper div.dataTables_processing {
     background: transparent !important;
+}
+
+div.dataTables_paginate {
+    padding-top: 15px !important;
 }
 
 div.dataTables_processing.ui.segment {

@@ -37,7 +37,7 @@ public_name_service = get_env('PUBLIC_NAME_SERVICE')
 l = Logger()
 
 
-def notify_frontend(action="message", msg=str(), data={}, html_id="", profile_id="", group_name='dtol_status'):
+def notify_frontend(action="message", msg=str(), data={}, html_id="", max_ellipsis_length=100, profile_id="", group_name='dtol_status'):
     """
         function notifies client changes in Sample creation status
         :param profile_id:
@@ -46,7 +46,7 @@ def notify_frontend(action="message", msg=str(), data={}, html_id="", profile_id
         :return:
     """
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
-    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id, "max_ellipsis_length": max_ellipsis_length}
     channel_layer = get_channel_layer()
 
     # The following line sometimes causes a RuntimeError - 

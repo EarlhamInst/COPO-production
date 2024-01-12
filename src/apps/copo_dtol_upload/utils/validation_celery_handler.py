@@ -97,8 +97,8 @@ class ProcessValidationQueue:
                                 html_id="sample_info")
                 return False
 
-            notify_frontend(data={"profile_id": self.profile_id}, msg="Loading..", action="info",
-                            html_id="sample_info")
+            notify_frontend(data={"profile_id": self.profile_id}, msg="Loading", action="info",
+                            max_ellipsis_length=3, html_id="sample_info")
 
             try:
                 self.data = self.data.loc[:, ~self.data.columns.str.contains('^Unnamed')]
@@ -115,7 +115,7 @@ class ProcessValidationQueue:
 
                 # validate for an empty manifest/excel file
                 if len(self.data.index) == 0 or len(self.data.columns) == 0:
-                    msg = "<h4>" + self.file_name + "</h4><ol><li>Manifest uploaded is empty</li></ol>"
+                    msg = "<h4>" + self.file_name + "</h4><h2>Errors</h2><ol><li>Manifest uploaded is empty</li></ol>"
                     notify_frontend(data={"profile_id": self.profile_id},
                                     msg=msg,
                                     action="error",
@@ -148,14 +148,14 @@ class ProcessValidationQueue:
                 # send warnings
                 if warnings:
                     notify_frontend(data={"profile_id": self.profile_id},
-                                    msg="<br>".join(warnings),
+                                    msg="<h2>Warnings</h2>" + "<br>".join(warnings),
                                     action="warning",
                                     html_id="warning_info")
 
                 if not flag:
                     errors = list(map(lambda x: "<li>" + x + "</li>", errors))
                     errors = "".join(errors)
-                    msg = "<h4>" + self.file_name + "</h4><ol>" + errors + "</ol>"
+                    msg = "<h4>" + self.file_name + "</h4><h2>Errors</h2><ol>" + errors + "</ol>"
                     notify_frontend(data={"profile_id": self.profile_id},
                                     msg=msg,
                                     action="error",
@@ -232,14 +232,14 @@ class ProcessValidationQueue:
                 # send warnings
                 if warnings:
                     notify_frontend(data={"profile_id": self.profile_id},
-                                    msg="<br>".join(warnings),
+                                    msg="<h2>Warnings</h2>" + "<br>".join(warnings),
                                     action="warning",
                                     html_id="warning_info2")
                 # if flag is false, compile list of errors
                 if not flag:
                     errors = list(map(lambda x: "<li>" + x + "</li>", errors))
                     errors = "".join(errors)
-                    msg = "<h4>" + self.file_name + "</h4><ol>" + errors + "</ol>"
+                    msg = "<h4>" + self.file_name + "</h4><h2>Errors</h2><ol>" + errors + "</ol>"
                     notify_frontend(data={"profile_id": self.profile_id},
                                     msg=msg,
                                     action="error",
@@ -284,8 +284,8 @@ class ProcessValidationQueue:
 
     def make_table(self, qm):
         permits_required = False
-        notify_frontend(data={"profile_id": self.profile_id}, msg="Spreadsheet is Valid", action="info",
-                        html_id="sample_info")
+        notify_frontend(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid", action="info",
+                        max_ellipsis_length=0, html_id="sample_info")
         notify_frontend(data={"profile_id": self.profile_id}, msg="", action="close", html_id="upload_controls")
         notify_frontend(data={"profile_id": self.profile_id}, msg="", action="make_valid", html_id="sample_info")
 
@@ -362,7 +362,7 @@ class ProcessValidationQueue:
                             updates[rack_tube][field]["old_value"] = exsam[field]
                             updates[rack_tube][field]["new_value"] = s[field]
                     else:
-                        msg = "Field " + field + " cannot be updated as it is part of the compliance process"
+                        msg = "Field " + field + " cannot be updated because it is a part of the compliance process"
                         notify_frontend(data={"profile_id": self.profile_id}, msg=msg, action="error",
                                         html_id="sample_info")
                         return False

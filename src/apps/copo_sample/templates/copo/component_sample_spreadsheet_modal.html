@@ -43,33 +43,29 @@
                     <button class="ui red button pull-right" style="display:none" id="export_errors_button">Export
                         Errors
                     </button>
-
-
                 </div>
 
+                <div id="upload_controls"></div>
 
-                <div id="upload_controls">
-
-                </div>
-                <div style="display:none; margin-top: 30px; " id="sample_info" class="alert alert-info" role="alert">
-                </div>
-                <div style="display:none; margin-top: 30px; " id="warning_info" class="alert alert-info" role="alert">
-                </div>
-                <div style="display:none; margin-top: 30px; " id="warning_info2" class="alert alert-info" role="alert">
-                </div>
-                <div style="display:none; margin-top: 30px; " id="warning_info3" class="alert alert-info" role="alert">
-                </div>
+                <div id="sample_info" class="sample-alert sample-alert-info"></div>
+                
+                <div id="warning_info" class="sample-alert sample-alert-info"></div>
+                
+                <div id="warning_info2" class="sample-alert sample-alert-info"></div>
+                
+                <div id="warning_info3" class="sample-alert sample-alert-info"></div>
 
                 <!--<div style="display:none; margin-top: 30px; " id="sample_warning" class="alert alert-warning"
                          role="alert"></div> -->
             </div>
+
             <div style="display:none; margin-top: 30px; " id="sample_valid" class="alert alert-info" role="alert">
                 Validated
             </div>
+
             <div style="display:none; margin-top: 10px; " id="parse_info" class="alert alert-info" role="alert">
                 ...
             </div>
-
 
             <ul class="nav nav-tabs" id="tabs" style="display:none">
                 <li class="active">
@@ -84,45 +80,34 @@
                 <li>
                     <a data-toggle="tab" id="permits_table_nav_tab" href="#permits_div">Sample Permits</a>
                 </li>
-
             </ul>
+            
             <div class="tab-content" style="padding:30px">
                 <div class="tab-pane active" id="meta">
-
                     <table id="sample_parse_table" class="table table-striped table-bordered">
-
                         <thead></thead>
                         <tbody></tbody>
-
-
                     </table>
-
                 </div>
+
                 <div class="tab-pane" id="image">
                     <table id="image_table" class="table table-striped table-bordered">
-
                         <thead></thead>
                         <tbody></tbody>
-
-
                     </table>
                 </div>
+
                 <div class="tab-pane" id="permits_div">
                     <table id="permits_table" class="table table-striped table-bordered">
-
                         <thead></thead>
                         <tbody></tbody>
-
-
                     </table>
                 </div>
             </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-
             </div>
         </div><!-- /.modal-content -->
-
-
     </div><!-- /.modal-dialog -->
 </div>

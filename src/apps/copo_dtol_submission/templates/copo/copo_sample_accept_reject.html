@@ -20,110 +20,14 @@
               href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui-noscript.css' %}">
     </noscript>
     <link rel="stylesheet" href="{% static 'copo/css/copo/copo_wizard.css' %}">
+    <link rel="stylesheet" href="{% static 'copo_dtol_submission/css/copo_sample_accept_reject.css' %}">
     <link rel="stylesheet" href="{% static 'copo/css/copo/sample.css' %}">
     <link rel="stylesheet" href="{% static 'copo/bootstrap-treeview-1.2.0/dist/bootstrap-treeview.min.css' %}">
     <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.4.0/css/fixedHeader.dataTables.min.css">
 
     <style>
-        th {
-            position: -webkit-sticky;
-            position: sticky;
-            top: 0;
-            z-index: 9;
-            background-color: rgba(255, 255, 255, 1);
-
-        }
-
-        td {
-            z-index: 1;
-        }
-
-        .confirm {
-            border: 1px solid rgba(221, 221, 221, 0.95);
-            border-radius: 11px;
-            padding: 10px;
-            width: 400px;
-            margin-bottom: 20px;
-        }
-
-        .selected {
-            background-color: #e1e1e1 !important;
-        }
-
-        #profile_titles .selected a{
-            color: #e1e1e1 !important;
-        }
-
-        .na_color {
-            background-color: #eee;
-        }
-
-        .empty_color {
-            background-color: #f7eded;
-        }
-
-        .selectable_row {
-            cursor: pointer;
-        }
-
-        /* Truncate profile title when it is too long */
-        .profile_title_header_my_profiles {
-            max-height: 4em; /* fallback */
-            max-width: 200px;
-            -webkit-line-clamp: 3; /* number of lines to show */
-            -webkit-box-orient: vertical; 
-            overflow: hidden;
-            text-overflow: ellipsis;
-            -o-text-overflow: ellipsis;
-            -ms-text-overflow: ellipsis;
-            -moz-binding: url('ellipsis.xml#ellipsis');
-            display: -webkit-box;
-            text-align: left;
-        }
-        
-        .profile_title_header_all_profiles {
-            max-height: 4em; /* fallback */
-            max-width: 150px;
-            -webkit-line-clamp: 3; /* number of lines to show */
-            -webkit-box-orient: vertical; 
-            overflow: hidden;
-            text-overflow: ellipsis;
-            -o-text-overflow: ellipsis;
-            -ms-text-overflow: ellipsis;
-            -moz-binding: url('ellipsis.xml#ellipsis');
-            text-align: left;
-        }
-
-        .table_viewport {
-            max-height: 600px;
-            overflow: scroll;
-        }
-
-        .tickbox {
-            vertical-align: middle !important;
-        }
-
-        .processing_row {
-            background-color: rgba(0, 52, 255, 0.16);
-        }
-
-        .table_viewport {
-            padding-left: 20px
-        }
-
-        .selected_row {
-            background-color: #fff3ce !important;
-        }
-
-        .filter_margin {
-            margin-top: 46px
-        }
-
-
     </style>
 {% endblock %}
-
-
 
 {% block title_block %} Index {% endblock %}
 
@@ -138,7 +42,7 @@
         <input type="hidden" id="nav_component_name" value="sample"/>
         <input type="hidden" id="profile_id" value="None"/>
         <input type="hidden" id="profile_title" value="None"/>
-
+        <input type="hidden" id="dtol_sample_info" value="Idle"/>
     </div>
 {% endblock browse_header_block %}
 
@@ -146,27 +50,28 @@
 
 {% endblock page_tile %}
 
-
 {% block content %}
     <div class="row">
-    <div class="col-lg-9 col-sm-9 col-md-9">
-        <h3 class="h3">Choose to Accept or Reject  &nbsp; &nbsp; <select id='group_id' class="form-control" style="display: inline-block; width: fit-content;" name='group' title="Type of manifest to accept/reject samples for">{% for group in sample_manager_groups %}<option value='{{ group }}' title='{{group}}' >{{ group }}</option>{% endfor %}</select>  </h3>
-        <h3 class="h3"><small>Note clicking accept will immediately send sample info to ENA/Biosamples</small></h3>
+        <div class="col-lg-9 col-sm-9 col-md-9">
+            <h3 class="h3">Choose to Accept or Reject  &nbsp; &nbsp; <select id='group_id' class="form-control" style="display: inline-block; width: fit-content;" name='group' title="Type of manifest to accept/reject samples for">{% for group in sample_manager_groups %}<option value='{{ group }}' title='{{group}}' >{{ group }}</option>{% endfor %}</select>  </h3>
+            <h3 class="h3"><small>Note clicking accept will immediately send sample info to ENA/Biosamples</small></h3>
 
-    </div>
-    <div class="col-lg-3 col-sm-3 col-md-3">
-        <h4 class="h4">Status</h4>
-        <div class="alert alert-info" style="min-width: 400px; min-height: 55px; max-height: 100px; overflow:auto " role="alert">
-            <span id="spinner" style="display:none" class="pull-right ui tiny active inline loader"></span>
-            <div id="sub_spinner" class="pull-right ui tiny indeterminate inline loader"></div>
-            <p id="dtol_sample_info">Idle</p>
+        </div>
+        <div class="col-lg-3 col-sm-3 col-md-3">
+            <h4 class="h4">Status</h4>
+            <div id="spinner" class="pull-right ui tiny active inline loader status-spinner"></div>
+            <div class="status_log status_log_collapse">
+                <button id="clearStatusLogBtn" type="button" aria-label="Clear" disabled>
+                    &times;
+                </button>
+                <p class="status_content">Idle</p>
+            </div>
         </div>
     </div>
-    </div>
-    <hr/>
+
+    <hr class="hr-margin-top"/>
 
     <div class="row">
-
         <div class="col-lg-3 col-md-3 col-sm-3">
             <ul hidden class="nav nav-tabs profile-filter" id="erga">
                 <li class="hot_tab_profile in active">

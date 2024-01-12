@@ -78,11 +78,11 @@ def process_pending_dtol_samples():
         rejected_sample = {}
         for s_id in submission["dtol_samples"]:
             log_message(
-                f"Dtol_submission : processing {s_id}", Loglvl.INFO, profile_id=profile_id)
+                f"Submission: Processing {s_id}", Loglvl.INFO, profile_id=profile_id)
             try:
                 sam = Sample().get_record(s_id)
                 if not sam:
-                    log_message("No sample found for id " + str(s_id),
+                    log_message("No samples found for ID: " + str(s_id),
                                 Loglvl.ERROR, profile_id=profile_id)
                     Submission().dtol_sample_rejected(
                         submission['_id'], sam_ids=[str(s_id)], submission_id=[])
@@ -91,7 +91,7 @@ def process_pending_dtol_samples():
                     # l.error("Dtol submission : 74 - no sample found for id " + str(s_id))
                     continue
             except:
-                log_message("No sample found for id " + str(s_id),
+                log_message("No samples found for ID: " + str(s_id),
                             Loglvl.ERROR, profile_id=profile_id)
                 Submission().dtol_sample_rejected(
                     submission['_id'], sam_ids=[str(s_id)], submission_id=[])
@@ -102,7 +102,7 @@ def process_pending_dtol_samples():
                 continue
 
             if sam["status"] == "sending":
-                log_message(f"{s_id} is processing by another celery task",
+                log_message(f"{s_id} is being processed by another celery task",
                             Loglvl.INFO, profile_id=profile_id)
                 continue
             else:
@@ -115,7 +115,7 @@ def process_pending_dtol_samples():
                 try:
                     assert targetsam
                 except AssertionError:
-                    log_message("No target found by specimen_id " + sam["SPECIMEN_ID"], Loglvl.ERROR,
+                    log_message("No target found by SPECIMEN_ID: " + sam["SPECIMEN_ID"], Loglvl.ERROR,
                                 profile_id=profile_id)
                     # notify_frontend(data={"profile_id": profile_id}, msg="No target found " + sam["SPECIMEN_ID"], action="error",
                     #        html_id="dtol_sample_info")
@@ -126,7 +126,7 @@ def process_pending_dtol_samples():
                     assert all(x["species_list"][0]["TAXON_ID"] == targetsam[0]["species_list"][0]["TAXON_ID"] for x in
                                targetsam)
                 except AssertionError:
-                    log_message("All taxon id are not the same, they can only be associated to one specimen",
+                    log_message("All taxon IDs are not the same, they can only be associated to one specimen",
                                 Loglvl.ERROR, profile_id=profile_id)
                     # l.error("Dtol submission : 83 - Assertion error")
                     break
@@ -178,7 +178,7 @@ def process_pending_dtol_samples():
                 #    l.log("Specimen accession at 119 is " + specimen_accession)
                 #else:
                     # create specimen object and submit
-                log_message("Creating / Upldate Sample for SPECIMEN_ID " + sam.get("RACK_OR_PLATE_ID", "") + "/" + sam[
+                log_message("Creating/Updating sample for SPECIMEN_ID: " + sam.get("RACK_OR_PLATE_ID", "") + "/" + sam[
                     "SPECIMEN_ID"], Loglvl.INFO, profile_id=profile_id)
                 # l.log("creating specimen level sample for " + sam["SPECIMEN_ID"])
                 # notify_frontend(data={"profile_id": profile_id},
@@ -248,7 +248,7 @@ def process_pending_dtol_samples():
                 sour = Source().get_by_specimen(sam["SPECIMEN_ID"])[0]
                 Source().add_fields(specimen_obj_fields, str(sour['_id']))
 
-                log_message("Specimen level sample for " + sam["SPECIMEN_ID"] + " created/Updated", Loglvl.INFO,
+                log_message("Specimen level sample for " + sam["SPECIMEN_ID"] + " was created/updated", Loglvl.INFO,
                             profile_id=profile_id)
                 # l.log("created specimen level sample for " + sam["SPECIMEN_ID"])
 
@@ -322,7 +322,7 @@ def process_pending_dtol_samples():
 
                 build_specimen_sample_xml(sour)
                 build_submission_xml(str(sour['_id']), release=True, modify=sour.get("biosampleAccession", ""))
-                log_message("submitting specimen level sample to ENA for " + sam["SPECIMEN_ID"], Loglvl.INFO,
+                log_message("Submitting specimen level sample to ENA for " + sam["SPECIMEN_ID"], Loglvl.INFO,
                             profile_id=profile_id)
                 accessions = submit_biosample_v2(str(sour['_id']), Source(), submission['_id'], {}, type="source",
                                                     async_send=False)
@@ -333,11 +333,11 @@ def process_pending_dtol_samples():
                         if handle_common_ENA_error(accessions.get("msg", ""), sour['_id']):
                             pass
                     else:
-                        # msg = "Submission Rejected: specimen level " + sam["SPECIMEN_ID"] + "<p>" + accessions[
+                        # msg = "Submission rejected: specimen level " + sam["SPECIMEN_ID"] + "<p>" + accessions[
                         #     "msg"] + "</p>" if accessions else "<p>" + " ERROR " + "</p>"
                         
-                        msg_content =  "<p>" + accessions.get("msg", "") + "</p>" if accessions else "<p>" + " ERROR " + "</p>"
-                        msg =  "Submission Rejected: specimen level " + sam["SPECIMEN_ID"] + msg_content
+                        msg_content =  "<br>" + accessions.get("msg", "") if accessions else "<br>" + " ERROR "
+                        msg =  "Submission rejected: Specimen level " + sam["SPECIMEN_ID"] + msg_content
 
                         notify_frontend(data={"profile_id": profile_id}, msg=msg, action="error",
                                         html_id="dtol_sample_info")
@@ -483,9 +483,9 @@ def process_pending_dtol_samples():
         else:
 
             # query for public names and update
-            notify_frontend(data={"profile_id": profile_id}, msg="Querying Public Naming Service", action="info",
+            notify_frontend(data={"profile_id": profile_id}, msg="Querying public naming service", action="info",
                             html_id="dtol_sample_info")
-            l.log("querying public name service for line 251")
+            l.log("Querying public name service at line 489")
             public_names = query_public_name_service(public_name_list)
             tolidflag = True
             if any(not public_names[x].get("tolId", "") for x in range(len(public_names))):
@@ -499,7 +499,7 @@ def process_pending_dtol_samples():
                 else:
                     # change dtol_status to "awaiting_tolids"
                     # l.log("one or more public names missing, setting to awaiting_tolids")
-                    msg = "We couldn't retrieve one or more public names, a request for a new tolId has been sent, " \
+                    msg = "We couldn't retrieve one or more public names, a request for a new public name (tolId) has been sent, " \
                           "COPO will try again in 24 hours"
                     log_message(msg, Loglvl.INFO, profile_id=profile_id)
                     # notify_frontend(data={"profile_id": profile_id}, msg=msg, action="info",
@@ -1051,21 +1051,21 @@ def submit_biosample_v2(subfix, sampleobj, collection_id, sample_ids, type="samp
         else:
             l.log("General Error " + response.status_code)
             message = 'API call error ' + \
-                "Submitting project xml to ENA via CURL. CURL command is: " + cmd
+                "Submitting project xml to ENA via cURL. cURL command is: " + cmd
             notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
                             html_id="dtol_sample_info")
             Submission().reset_dtol_submission_status(collection_id, sample_ids)
     except ET.ParseError as e:
         l.log("Unrecognised response from ENA " + str(e), type=Logtype.FILE)
         message = " Unrecognised response from ENA - " + str(
-            receipt) + " Please try again later, if it persists contact admins"
+            receipt) + " Please try again later, if it persists, contact admin"
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
                         html_id="dtol_sample_info")
         Submission().reset_dtol_submission_status(collection_id, sample_ids)
         return False
     except Exception as e:
         l.exception(e)
-        message = 'API call error ' + "Submitting project xml to ENA via CURL. href is: " + cmd
+        message = 'API call error ' + "Submitting project xml to ENA via cURL. href is: " + cmd
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
                         html_id="dtol_sample_info")
         Submission().reset_dtol_submission_status(collection_id, sample_ids)
@@ -1105,14 +1105,14 @@ def poll_asyn_ena_submission():
                         l.log("Unrecognised response from ENA " +
                               str(e), type=Logtype.FILE)
                         message = " Unrecognised response from ENA - " + str(
-                            response.content) + " Please try again later, if it persists contact admins"
+                            response.content) + " Please try again later, if it persists, contact admin"
                         notify_frontend(data={"profile_id": submission["profile_id"]}, msg=message, action="error",
                                         html_id="dtol_sample_info")
                         continue
                     except Exception as e:
                         l.exception(e)
                         message = 'API call error ' + \
-                            "Submitting project xml to ENA via CURL. href is: " + \
+                            "Submitting project xml to ENA via cURL. href is: " + \
                             sub["href"]
                         notify_frontend(data={"profile_id": submission["profile_id"]}, msg=message, action="error",
                                         html_id="dtol_sample_info")
@@ -1120,12 +1120,12 @@ def poll_asyn_ena_submission():
 
                 if not accessions:
                     notify_frontend(data={"profile_id": submission["profile_id"]},
-                                    msg="Error creating sample - no accessions found",
+                                    msg="Error creating sample: No accessions were found",
                                     action="info",
                                     html_id="dtol_sample_info")
                     continue
                 elif accessions["status"] == "ok":
-                    msg = "Last Sample Submitted:  - ENA Submission ID: " + accessions[
+                    msg = "Last sample submitted:  - ENA Submission ID: " + accessions[
                         "submission_accession"]  # + " - Biosample ID: " + accessions["biosample_accession"]
                     notify_frontend(data={"profile_id": submission["profile_id"]}, msg=msg, action="info",
                                     html_id="dtol_sample_info")
@@ -1151,8 +1151,8 @@ def poll_asyn_ena_submission():
                         l.log("No profiles found to send email for accepted samples")                    
 
                 else:
-                    msg = "Submission Rejected: <p>" + \
-                        accessions["msg"] + "</p>"
+                    msg = "Submission rejected: <br>" + \
+                        accessions["msg"]
                     notify_frontend(data={"profile_id": submission["profile_id"]}, msg=msg, action="error",
                                     html_id="dtol_sample_info")
                     Submission().dtol_sample_rejected(
@@ -1221,7 +1221,7 @@ def submit_biosample(subfix, sampleobj, collection_id, type="sample"):
         print(receipt)
     except Exception as e:
         l.log("General Error " + str(e), type=Logtype.FILE)
-        message = 'API call error ' + "Submitting project xml to ENA via CURL. CURL command is: " + curl_cmd.replace(
+        message = 'API call error ' + "Submitting project xml to ENA via cURL. cURL command is: " + curl_cmd.replace(
             pass_word, "xxxxxx")
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
                         html_id="dtol_sample_info")
@@ -1349,7 +1349,7 @@ def create_study(profile_id, collection_id):
         receipt = subprocess.check_output(curl_cmd, shell=True)
         # print(receipt)
     except Exception as e:
-        message = 'API call error ' + "Submitting project xml to ENA via CURL. CURL command is: " + curl_cmd.replace(
+        message = 'API call error ' + "Submitting project xml to ENA via cURL. cURL command is: " + curl_cmd.replace(
             pass_word, "xxxxxx")
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
                         html_id="dtol_sample_info")
@@ -1362,7 +1362,7 @@ def create_study(profile_id, collection_id):
         tree = ET.fromstring(receipt)
     except ET.ParseError as e:
         message = " Unrecognised response from ENA - " + str(
-            receipt) + " Please try again later, if it persists contact admins"
+            receipt) + " Please try again later, if it persists, contact admin"
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
                         html_id="dtol_sample_info")
         os.remove(submissionfile)
@@ -1382,12 +1382,12 @@ def create_study(profile_id, collection_id):
         accessions = get_studyId(receipt, collection_id)
 
     if accessions["status"] == "ok":
-        msg = "Study Submitted " + " - BioProject ID: " + accessions["bioproject_accession"] + " - SRA Study ID: " + \
+        msg = "Study submitted " + " - BioProject ID: " + accessions["bioproject_accession"] + " - SRA study ID: " + \
               accessions["sra_study_accession"]
         notify_frontend(data={"profile_id": profile_id}, msg=msg, action="info",
                         html_id="dtol_sample_info")
     else:
-        msg = "Submission Rejected: " + "<p>" + accessions["msg"] + "</p>"
+        msg = "Submission rejected: " + "<br>" + accessions["msg"]
         notify_frontend(data={"profile_id": profile_id}, msg=msg, action="error",
                         html_id="dtol_sample_info")
 
@@ -1468,5 +1468,5 @@ def log_message(msg, loglvl=Loglvl.INFO, to_frontend=True, profile_id=profile_id
             action = "info"
         notify_frontend(data={"profile_id": profile_id},
                         msg=msg, action=action, html_id="dtol_sample_info")
-    l.log("Dtol submission for profile " +
+    l.log("Submission for profile " +
           profile_id + " : " + msg, level=loglvl)
