@@ -148,7 +148,8 @@ let browser = null;
               'xpath///*[@id="dtol_sample_info" and contains(text(),"Bioimage not submitted")]',
               'pierce/#dtol_sample_info',
               'text/Bioimage not'
-          ]
+          ],
+          count: 1
       }, targetPage, timeout);
   }
 
