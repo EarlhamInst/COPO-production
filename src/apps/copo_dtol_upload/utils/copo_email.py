@@ -21,13 +21,13 @@ class Email:
         sequencing_centres = []
         if p_id:
             profile = Profile().get_record(p_id)
-            logger.debug(profile)
+            #logger.debug(profile)
             checker_users = User.objects.filter(groups__name='bge_checkers')
-            logger.debug(checker_users)
-            all_seq_centres = SequencingCentre.objects.all()
-            for centre in all_seq_centres:
-                logger.debug(centre)
-                logger.debug(centre.users.all())
+            #logger.debug(checker_users)
+            #all_seq_centres = SequencingCentre.objects.all()
+            #for centre in all_seq_centres:
+            #    logger.debug(centre)
+            #    logger.debug(centre.users.all())
 
             sequencing_centres = profile.get("sequencing_centre", [])
 
@@ -44,7 +44,7 @@ class Email:
                 for sc in sequencing_centres:
                     centre = SequencingCentre.objects.get(name=sc)
                     users += centre.users.all()
-                    logger.debug(users)
+                    #logger.debug(users)
                 checker_users = User.objects.filter(groups__name='bge_checkers')
                 users = list(set(users) & set(checker_users))
             elif type in ["DTOL", "ASG"]:
