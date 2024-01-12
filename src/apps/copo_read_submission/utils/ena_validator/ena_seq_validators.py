@@ -37,7 +37,7 @@ class TaxonValidator(Validator):
         # build dictioanry of species in this manifest  max 200 IDs per query
         taxon_id_set = set([x for x in self.data['organism'].tolist() if x])
         notify_frontend(data={"profile_id": self.profile_id},
-                        msg="Querying NCBI for TAXON_IDs in manifest ",
+                        msg="Querying NCBI for TAXON_IDs in manifest",
                         action="info",
                         html_id="sample_info")
         taxon_id_list = list(taxon_id_set)
