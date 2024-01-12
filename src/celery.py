@@ -26,11 +26,11 @@ app.conf.beat_schedule = {
     },
     'update_ena_checklist': {
         'task': 'src.apps.copo_core.tasks.update_ena_checklist',
-        'schedule': timedelta(seconds=10)
+        'schedule': timedelta(days=1)
     },     
     'update_ena_read_checklist': {
         'task': 'src.apps.copo_core.tasks.update_ena_read_checklist',
-        'schedule': timedelta(seconds=10)
+        'schedule': timedelta(days=1)
     },
     'process_tol_validations': {
         'task': 'src.apps.copo_dtol_upload.tasks.process_tol_validations',

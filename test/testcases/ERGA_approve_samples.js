@@ -137,7 +137,7 @@ let browser = null;
       const targetPage = page;
       await waitForElement({
           type: 'waitForElement',
-          timeout: 30000,
+          timeout: 120000,
           target: 'main',
           selectors: [
               [

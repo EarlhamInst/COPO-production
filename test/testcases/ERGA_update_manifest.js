@@ -132,7 +132,7 @@ let browser = null;
 
              // prepare file to upload, I'm using test_to_upload.jpg file on same directory as this script
             // Photo by Ave Calvar Martinez from Pexels https://www.pexels.com/photo/lighthouse-3361704/
-            let fileToUpload = '/usr/src/app/workspace/ERGA_SAMPLE_MANIFEST_v2.5_success_several_samples.xlsx';
+            let fileToUpload = '/usr/src/app/workspace/ERGA_SAMPLE_MANIFEST_v2.5_success_several_samples_2.xlsx';
             // Sets the value of the file input to fileToUpload
             inputUploadHandle.uploadFile(fileToUpload);
     }
@@ -157,10 +157,10 @@ let browser = null;
     {
         const targetPage = page;
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(Finish)'),
-            targetPage.locator('#finish_button'),
-            targetPage.locator('::-p-xpath(//*[@id=\\"finish_button\\"])'),
-            targetPage.locator(':scope >>> #finish_button')
+            targetPage.locator('::-p-aria(Confirm)'),
+            targetPage.locator('#confirm_button'),
+            targetPage.locator('::-p-xpath(//*[@id=\\"confirm_button\\"])'),
+            targetPage.locator(':scope >>> #confirm_button')
         ])
             .setTimeout(120000)
             .click({
@@ -173,10 +173,10 @@ let browser = null;
     {
       const targetPage = page;
       await puppeteer.Locator.race([
-          targetPage.locator('::-p-aria(Confirm)'),
-          targetPage.locator('#confirmBtnID'),
-          targetPage.locator('::-p-xpath(//*[@id=\\"confirmBtnID\\"])'),
-          targetPage.locator(':scope >>> #confirmBtnID')
+          targetPage.locator('::-p-aria(Update)'),
+          targetPage.locator('#updateBtnID'),
+          targetPage.locator('::-p-xpath(//*[@id=\\"updateBtnID\\"])'),
+          targetPage.locator(':scope >>> #updateBtnID')
       ])
           .setTimeout(timeout)
           .click({
