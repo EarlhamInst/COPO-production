@@ -174,7 +174,7 @@ let browser = null;
       const targetPage = page;
       const promises = [];
       const startWaitingForEvents = () => {
-          promises.push(targetPage.waitForNavigation());
+          promises.push(targetPage.waitForXPath('//*[@id=\\"updateBtnID\\"]', {timeout: 120000, hidden:true}));
       }
       await puppeteer.Locator.race([
           targetPage.locator('::-p-aria(Update)'),
@@ -191,6 +191,8 @@ let browser = null;
             },
           });
    }
+
+ 
 
   })().catch(err => {
     console.error(err);
