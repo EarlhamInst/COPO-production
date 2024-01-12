@@ -86,6 +86,7 @@ hr {
     border: none;
     /* Apply scroll view to the warning message if it exceeds the max-height */
     max-height: 300px;
+    /* Always show scrollbar */
     overflow: scroll;
 }
 
@@ -106,6 +107,7 @@ hr {
 #warning_info {
     /* Apply scroll view to the warning message if it exceeds the max-height */
     max-height: 180px;
+    /* Always show scrollbar */
     overflow: scroll;
 }
 
@@ -113,6 +115,7 @@ hr {
 #warning_info2 {
     /* Apply scroll view to the warning message if it exceeds the max-height */
     max-height: 200px;
+    /* Always show scrollbar */
     overflow: scroll;
 }
 
@@ -120,6 +123,7 @@ hr {
     border-top: 2px dotted black;
     /* Apply scroll view to the warning message if it exceeds the max-height */
     max-height: 200px;
+    /* Always show scrollbar */
     overflow: scroll;
 }
 

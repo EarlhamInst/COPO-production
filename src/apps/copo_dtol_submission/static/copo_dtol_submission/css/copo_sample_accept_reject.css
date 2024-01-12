@@ -142,7 +142,8 @@ td {
 
 /* Status log CSS styles*/
 .status_log {
-    overflow: auto;
+    /* Always show scrollbar */
+    overflow-y: scroll;
     border: 1px solid rgb(184, 190, 193);
     padding-top: 10px;
     width: 370px;
