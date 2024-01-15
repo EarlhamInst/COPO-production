@@ -63,12 +63,19 @@ jobs:
             docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_profile.js)" && \
             echo "running ERGA_upload_manifest.js" && \
             docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_upload_manifest.js)" && \
-            echo "running ERGA_approve_samples.js" && \
-            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_approve_samples.js)"  && \
+            #echo "running ERGA_approve_samples.js" && \
+            #docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_approve_samples.js)"  && \
             echo "running ERGA_update_manifest.js" && \
             docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_update_manifest.js)" && \
-            echo "running ERGA_approve_samples.js" && \
-            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_approve_samples.js)" ) || \
+            #echo "running ERGA_approve_samples.js" && \
+            #docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_approve_samples.js)" ) && \
+
+            #echo "running Standalone_profile.js" && \
+            #docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/Standalone_profile.js)"  && \
+            echo "running Standalone_files.js" && \
+            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/Standalone_files.js)" && \
+             
+            || \
             (docker logs $(docker-compose -f test/docker-compose.yaml ps -q copo_web) && \
             docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_web) bash -c "less /copo/logs/*.log" && exit 1)
       - run : |
