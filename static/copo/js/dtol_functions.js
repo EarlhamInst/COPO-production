@@ -606,26 +606,28 @@ $(document).ready(function () {
   // when 'dtol_sample_info' changes
   let dtol_sample_info_element = document.getElementById('dtol_sample_info');
 
-  let observer = new MutationObserver(function (mutations, observer) {
-    if (mutations[0].attributeName == 'value') {
-      $(dtol_sample_info_element).change();
-    }
-  });
+  if ($(dtol_sample_info_element).length) {
+    let observer = new MutationObserver(function (mutations, observer) {
+      if (mutations[0].attributeName == 'value') {
+        $(dtol_sample_info_element).change();
+      }
+    });
 
-  observer.observe(dtol_sample_info_element, {
-    attributes: true,
-  });
+    observer.observe(dtol_sample_info_element, {
+      attributes: true,
+    });
 
-  // Ensure that added content is not empty and prevent duplicates
-  // from being in the status log when a new status is detected
-  $(dtol_sample_info_element).change(function (e) {
-    if (
-      $(this).val() &&
-      $('.status_content:last-child').text() != $(this).val()
-    ) {
-      generate_status_log($(this));
-    }
-  });
+    // Ensure that added content is not empty and prevent duplicates
+    // from being in the status log when a new status is detected
+    $(dtol_sample_info_element).change(function (e) {
+      if (
+        $(this).val() &&
+        $('.status_content:last-child').text() != $(this).val()
+      ) {
+        generate_status_log($(this));
+      }
+    });
+  }
 
   // Create an overlay of the status log when the
   // status log is hovered over
@@ -664,9 +666,9 @@ $(document).ready(function () {
     }
   );
 
-  // Scroll to bottom of status log when window is resized
+  // Scroll to the bottom of the status log when the window is resized
   $(window).on('resize', () => {
-    if ($('.status_content').length != 1) {
+    if ($('.status_log').length && $('.status_content').length != 1) {
       $('.status_log').scrollTop($('.status_log')[0].scrollHeight);
     }
   });
