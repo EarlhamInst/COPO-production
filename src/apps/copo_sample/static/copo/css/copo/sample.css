@@ -97,11 +97,13 @@ hr {
 }
 
 .sample-alert-error>ol>li>strong {
-    text-decoration: underline;
+    /* text-decoration: underline; */
+    background-color: #f9eded;
 }
 
 .sample-alert-error>ol>li {
     font-weight: bold;
+    padding-bottom: 10px;
 }
 
 #warning_info {
@@ -136,7 +138,7 @@ hr {
 }
 
 .sample-alert-warning>h2 {
-    background-color: #fcf8e3;
+    background-color: #fbf4d0;
     animation: none;
     width: fit-content;
 }
@@ -153,7 +155,8 @@ hr {
 #warning_info2>strong,
 #warning_info3>ul>li>ul>li>strong,
 #warning_info3>ul>li>strong {
-    text-decoration: underline;
+    /* text-decoration: underline; */
+    background-color: #fffbe0;
 }
 
 /* Successful messages */
@@ -196,4 +199,20 @@ hr {
     50% {
         border-color: transparent;
     }
+}
+
+ /* CSS styles for the headings within 
+    the 'Upload Spreadsheet' modal 
+ */
+.header-info-icon {
+    position: relative;
+    left: 2px;
+    font-size: 17px;
+    padding-top: 5px;
+    top: -0.5em;
+}
+
+.header-info-icon-popover {
+    font-size: 15px !important;
+    width: 200px !important;
 }
