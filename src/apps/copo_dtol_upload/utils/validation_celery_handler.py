@@ -148,7 +148,7 @@ class ProcessValidationQueue:
                 # send warnings
                 if warnings:
                     notify_frontend(data={"profile_id": self.profile_id},
-                                    msg="<h2>Warnings</h2>" + "<br>".join(warnings),
+                                    msg="<h2>Warnings</h2>" + "<br><br>".join(warnings),
                                     action="warning",
                                     html_id="warning_info")
 
@@ -232,7 +232,7 @@ class ProcessValidationQueue:
                 # send warnings
                 if warnings:
                     notify_frontend(data={"profile_id": self.profile_id},
-                                    msg="<h2>Warnings</h2>" + "<br>".join(warnings),
+                                    msg="<h2>Warnings</h2>" + "<br><br>".join(warnings),
                                     action="warning",
                                     html_id="warning_info2")
                 # if flag is false, compile list of errors
