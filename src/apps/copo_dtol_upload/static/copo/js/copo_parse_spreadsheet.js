@@ -122,12 +122,12 @@ function upload_spreadsheet(file = file) {
   url = '/copo/dtol_manifest/sample_spreadsheet/';
   $('#upload_label').fadeOut('fast');
   $('#sample_info')
-     .animatedEllipsis({
-       speed: 400,
-       maxDots: 3,
-       word: 'Loading',
-     })
-     .fadeIn('fast');
+    .animatedEllipsis({
+      speed: 400,
+      maxDots: 3,
+      word: 'Loading',
+    })
+    .fadeIn('fast');
   $('#warning_info').fadeOut('fast');
   $('#warning_info2').fadeOut('fast');
   var csrftoken = $.cookie('csrftoken');
@@ -170,6 +170,33 @@ function upload_spreadsheet(file = file) {
     })
     .done(function (data) {
       // $('#sample_info').fadeOut('fast');
+    });
+}
+function create_header_info_icon(iconID) {
+  return $('<i></i>')
+    .attr('class', 'fa fa-info-circle header-info-icon')
+    .attr('id', `${iconID}`)
+    .attr('data-toggle', 'popover');
+}
+
+function initialise_header_info_icon_popover(popoverID, info_type) {
+  $(`#${popoverID}[data-toggle="popover"]`)
+    .popover({
+      sanitize: false,
+      trigger: 'focus',
+      placement: 'right',
+      html: true,
+      content: function () {
+        let $popover_content = '<p class="header-info-icon-popover">';
+        $popover_content += `To view more ${info_type}, scroll downwards within the area containing the ${info_type}`;
+        $popover_content += '</p>';
+
+        return $popover_content;
+      },
+    })
+    .click(function (e) {
+      e.stopPropagation();
+      $(this).popover('toggle');
     });
 }
 
@@ -434,7 +461,7 @@ $(document).ready(function () {
               'sample-alert-info sample-alert-error sample-alert-success'
             )
             .addClass('sample-alert-warning');
-          
+
           $('#' + d.html_id).html(d.message);
 
           // Remove duplicate warning headers and reduce the margin-top
@@ -444,6 +471,32 @@ $(document).ready(function () {
           ) {
             $('#warning_info2 > h2').remove();
             $('#warning_info2').css('margin-top', '5px');
+          }
+
+          // Add info icon to the 'Warnings' header if the
+          // warnings' div is scrollable
+          let warning_info = $('#warning_info');
+          let warning_info2 = $('#warning_info2');
+          let warning_info3 = $('#warning_info3');
+
+          if (
+            warning_info.height() > 150 ||
+            warning_info2.height() > 170 ||
+            warning_info3.height() > 168
+          ) {
+            // Create icon
+            let header_warnings_icon = create_header_info_icon(
+              'sampleWarningsIconID'
+            );
+
+            // Append the icon to the warnings' header
+            $(`#${d.html_id} h2`).append(header_warnings_icon);
+
+            // Initialise the info icon popover
+            initialise_header_info_icon_popover(
+              'sampleWarningsIconID',
+              'warnings'
+            );
           }
 
           $('#spinner').fadeOut();
@@ -463,6 +516,24 @@ $(document).ready(function () {
             $('#' + d.html_id).val(d.message);
           } else {
             $('#' + d.html_id).html(d.message);
+
+            // Add info icon to the 'Errors' header if the
+            // errors' div is scrollable
+            if ($('#' + d.html_id).height() > 270) {
+              // Create icon
+              let sample_errors_icon = create_header_info_icon(
+                (iconID = 'sampleErrorsIconID')
+              );
+
+              // Append the icon to the errors' header
+              $(`#${d.html_id} h2`).append(sample_errors_icon);
+
+              // Initialise the info icon popover
+              initialise_header_info_icon_popover(
+                (popoverID = 'sampleErrorsIconID'),
+                (info_type = 'errors')
+              );
+            }
           }
 
           $('#export_errors_button').fadeIn();
@@ -477,7 +548,7 @@ $(document).ready(function () {
               'sample-alert-info sample-alert-error sample-alert-warning'
             )
             .addClass('sample-alert-success');
-          
+
           $('#' + d.html_id).html(d.message);
           $('#export_errors_button').fadeIn();
           $('#spinner').fadeOut();
@@ -496,7 +567,7 @@ $(document).ready(function () {
           if (!confirmBtnStatus) {
             $('#confirm_button').show();
           }
-          
+
           if (!permitBtnStatus) {
             $('#files_label').removeClass('disabled');
             $('#files_label').removeAttr('disabled');
@@ -799,6 +870,19 @@ $(document).on(
 
 $(document).on('click', '#code_cancel', function (event) {
   var data = $('#sample_info').html();
+});
+
+$(document).on('click', 'body', function (e) {
+  // Hide opened popovers when outside the
+  // popover or anywhere is clicked
+  // NB: This is a workaround for the data-trigger="focus"
+  // which does not work as a parameter to initialise the popover
+  if (
+    $(e.target).data('toggle') !== 'popover' &&
+    $(e.target).parents('.popover.in').length === 0
+  ) {
+    $('[data-toggle="popover"]').popover('hide');
+  }
 });
 
 $(document).on('click', '#export_errors_button', function (event) {
