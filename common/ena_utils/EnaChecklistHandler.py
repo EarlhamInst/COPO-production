@@ -458,7 +458,7 @@ class EnaCheckListSpreedsheet:
         if warnings:
             l.log(",".join(warnings))
             notify_ena_object_status(data={"profile_id": self.profile_id},
-                            msg="<h2>Warnings</h2>" + "<br>".join(warnings),
+                            msg="<br>".join(warnings),
                             action="warning",
                             html_id="warning_info2", checklist_id=self.checklist_id)
         # if flag is false, compile list of errors
