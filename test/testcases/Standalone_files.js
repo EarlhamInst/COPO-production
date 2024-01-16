@@ -12,7 +12,7 @@ let browser = null;
     browser_id = await get_browser_id();
     browser = await puppeteer.connect({ browserWSEndpoint: process.env.BROWSERLESS_WS_URL + '/devtools/browser/' + browser_id + '?--user-data-dir=/tmp/puppeteer' });
     const page = await browser.newPage();
-    const timeout = 5000;
+    const timeout = 10000;
     page.setDefaultTimeout(timeout);
     {
         const targetPage = page;
@@ -102,37 +102,34 @@ let browser = null;
             });
     }
     
- 
+  
     {
-      const targetPage = page;
+      const targetPage = page;  
+      await targetPage.waitForSelector('input[id=file]')
+      const inputUploadHandle = await targetPage.$('input[id=file]')
+
+        // prepare file to upload, I'm using test_to_upload.jpg file on same directory as this script
+      // Photo by Ave Calvar Martinez from Pexels https://www.pexels.com/photo/lighthouse-3361704/
    
-          await targetPage.waitForSelector('input[id=file]')
-          const inputUploadHandle = await targetPage.$('input[id=file]')
-
-           // prepare file to upload, I'm using test_to_upload.jpg file on same directory as this script
-          // Photo by Ave Calvar Martinez from Pexels https://www.pexels.com/photo/lighthouse-3361704/
-
-          let fileToUploads = ['/usr/src/app/workspace/small1_r1.fastq.gz',
-              '/usr/src/app/workspace/small1_r2.fastq.gz',
-              '/usr/src/app/workspace/small2_r1.fastq.gz',
-              '/usr/src/app/workspace/small2_r2.fastq.gz'
-            ];
-            
-          // Sets the value of the file input to fileToUpload
-          inputUploadHandle.uploadFile(...fileToUploads);
+      let fileToUploads = ['/usr/src/app/workspace/small1_r1.fastq.gz',
+          '/usr/src/app/workspace/small1_r2.fastq.gz',
+          '/usr/src/app/workspace/small2_r1.fastq.gz',
+          '/usr/src/app/workspace/small2_r2.fastq.gz'
+        ];
+     
+      //let fileToUpload = '/usr/src/app/workspace/small1_r1.fastq.gz';          
+      // Sets the value of the file input to fileToUpload
+      inputUploadHandle.uploadFile(...fileToUploads);
+      
     }
     
-  
     {
       const targetPage = page;
-      await puppeteer.Locator.race([
-          targetPage.locator('::-p-xpath(//*[@id=\\"page_alert_panel\\"]/div/span[text()=\\"File(s) have been uploaded!\\"]'),
-      ])
-          .setTimeout(30000);
-     }
-    
+      await  targetPage.locator('::-p-xpath(//*[@id=\\"page_alert_panel\\"]/div/span[contains(text(), \\"have been uploaded!\\")])').setTimeout(120000).wait()
+      console.info("done")
+    }
   
-  })().catch(err => {
+  })().catch(err => {s
     console.error(err);
     process.exit(1);
   }).finally(() => {

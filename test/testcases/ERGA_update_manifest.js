@@ -187,7 +187,12 @@ let browser = null;
           });
    }
 
-
+   {
+    const targetPage = page;
+    await  targetPage.locator('::-p-xpath(//*[@id=\\"page_alert_panel\\"]/div/span[contains(text(), \\"Samples have been updated successfully\\")])').setTimeout(120000).wait()
+    console.info("done")
+   }
+/*
    {
     const targetPage = page;
     await puppeteer.Locator.race([
@@ -195,7 +200,7 @@ let browser = null;
     ])
         .setTimeout(timeout);
    }
-
+*/
 
   })().catch(err => {
     console.error(err);
