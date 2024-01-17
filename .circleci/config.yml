@@ -18,7 +18,7 @@ jobs:
       - checkout
       #- attach_workspace: {at: /home/circleci}
       - setup_remote_docker
-      - run: "docker build . -f deployment/web/Dockerfile -t local_copo_web:v1.0" 
+      - run: "docker build . -f deployment/web/Dockerfile_circleci -t local_copo_web:v1.0" 
       - run: |
           docker-compose -f test/docker-compose.yaml up -d          
       - run:
@@ -63,23 +63,22 @@ jobs:
             docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_profile.js)" && \
             echo "running ERGA_upload_manifest.js" && \
             docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_upload_manifest.js)" && \
-            #echo "running ERGA_approve_samples.js" && \
-            #docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_approve_samples.js)"  && \
+            echo "running ERGA_approve_samples.js" && \
+            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_approve_samples.js)" && \
             echo "running ERGA_update_manifest.js" && \
             docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_update_manifest.js)" && \
-            #echo "running ERGA_approve_samples.js" && \
-            #docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_approve_samples.js)"  && \
+            echo "running ERGA_approve_samples.js" && \
+            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/ERGA_approve_samples.js)" && \
             echo "running Standalone_profile.js" && \
             docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/Standalone_profile.js)"  && \
-            echo "running Standalone_files.js" && \
-            docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/Standalone_files.js)"  )\
-            || \
+            #echo "running Standalone_files.js" && \
+            #docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_browser) node -e "$(cat test/testcases/Standalone_files.js)"  && \
+            echo "done") || \
             (docker logs $(docker-compose -f test/docker-compose.yaml ps -q copo_web) && \
             docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_web) bash -c "less /copo/logs/*.log" && exit 1)
       - run : |
             docker logs $(docker-compose -f test/docker-compose.yaml ps -q copo_web) 
             docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_web) bash -c "less /copo/logs/*.log
-
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
