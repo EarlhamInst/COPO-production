@@ -1125,7 +1125,7 @@ def poll_asyn_ena_submission():
                                     html_id="dtol_sample_info")
                     continue
                 elif accessions["status"] == "ok":
-                    msg = "Last sample submitted:  - ENA Submission ID: " + accessions[
+                    msg = "<br>Last sample submitted:  - ENA Submission ID: " + accessions[
                         "submission_accession"]  # + " - Biosample ID: " + accessions["biosample_accession"]
                     notify_frontend(data={"profile_id": submission["profile_id"]}, msg=msg, action="info",
                                     html_id="dtol_sample_info")

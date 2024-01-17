@@ -60,7 +60,7 @@ def process_bioimage_pending_submission():
         return
 
     for sub in submissions:
-        notify_frontend(data={"profile_id": sub["profile_id"]}, msg="Bioimage submitting...", action="info",
+        notify_frontend(data={"profile_id": sub["profile_id"]}, msg="Bioimage is being submitted", action="info",
                         html_id="dtol_sample_info")
         specimen_ids.extend(sub["dtol_specimen"])
         sub_ids.append(sub["_id"])
@@ -106,19 +106,19 @@ def process_bioimage_pending_submission():
         try:
             Logger().log(BIOIMAGE_ASPERA_CMD, level=Loglvl.DEBUG)
             output = subprocess.check_output(BIOIMAGE_ASPERA_CMD, shell=True)
-            notify_frontend(data={"profile_id": sub["profile_id"]}, msg="Bioimage submitted", action="info",
+            notify_frontend(data={"profile_id": sub["profile_id"]}, msg="<br>Bioimage has been submitted", action="info",
                             html_id="dtol_sample_info")
             Logger().log(output)
         except subprocess.CalledProcessError as e:
             Logger().log(e.output, level=Loglvl.ERROR)
-            Logger().log("bioimage not submitted", level=Loglvl.ERROR)
-            notify_frontend(data={"profile_id": sub["profile_id"]}, msg="Bioimage not submitted due to error",
+            Logger().log("Bioimage was not submitted", level=Loglvl.ERROR)
+            notify_frontend(data={"profile_id": sub["profile_id"]}, msg="<br>Bioimage was not submitted due to an error",
                             action="error",
                             html_id="dtol_sample_info")
             print("error code", e.returncode, e.output)
             return
     else:
-        notify_frontend(data={"profile_id": sub["profile_id"]}, msg="Bioimage not submitted", action="info",
+        notify_frontend(data={"profile_id": sub["profile_id"]}, msg="<br>Bioimage was not submitted", action="info",
                         html_id="dtol_sample_info")
 
     Submission().get_collection_handle().update_many(
