@@ -480,9 +480,9 @@ $(document).ready(function () {
           let warning_info3 = $('#warning_info3');
 
           if (
-            warning_info.height() > 150 ||
-            warning_info2.height() > 170 ||
-            warning_info3.height() > 168
+            warning_info.height() >= 150 ||
+            warning_info2.height() >= 170 ||
+            warning_info3.height() >= 168
           ) {
             // Create icon
             let header_warnings_icon = create_header_info_icon(
@@ -519,7 +519,7 @@ $(document).ready(function () {
 
             // Add info icon to the 'Errors' header if the
             // errors' div is scrollable
-            if ($('#' + d.html_id).height() > 270) {
+            if ($('#' + d.html_id).height() >= 270) {
               // Create icon
               let sample_errors_icon = create_header_info_icon(
                 (iconID = 'sampleErrorsIconID')
