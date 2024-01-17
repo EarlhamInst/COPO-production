@@ -88,7 +88,8 @@ class ReadNotInSubmissionQueueValidator(Validator):
                         self.errors.append("File " + file_names + " already in submission queue for sample " + sample_name)
                         self.flag = False 
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
-    
+
+'''    
 class DuplicatedSample(Validator):
     def validate(self):
         if "biosampleAccession" in self.data.columns:
@@ -101,19 +102,21 @@ class DuplicatedSample(Validator):
                 self.errors.append("Sample " + s + " is duplicated in manifest")
                 self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")        
-
+'''
     
 class DuplicatedDataFile(Validator):
     def validate(self):
+        checklist = self.kwargs.get("checklist", {})
+        checklist_id = checklist.get('primary_id',"")  
         user = ThreadLocal.get_current_user()
         file_names = list(self.data["file_name"])
-        samples = Sample(profile_id=self.profile_id).get_collection_handle().find({"$or" : [{"created_by" : str(user.id)}, {"updated_by" : str(user.id)}], "read":{"$exists": True}} ,{"read":1,"name":1, "biosampleAccession":1, "profile_id":1})
+        samples = Sample(profile_id=self.profile_id).get_collection_handle().find({"$or" : [{"created_by" : str(user.id)}, {"updated_by" : str(user.id)}], "read":{"$exists": True}} ,{"checklist_id":1, "read":1,"name":1, "biosampleAccession":1, "profile_id":1})
         fileMap = {}
         for sample in samples:
             for read in sample.get("read", []):
                 files = read.get("file_name", str()).split(",")
                 for f in files:
-                    fileMap[f] = sample["profile_id"]+ " | "+ (sample["name"] if "name" in sample else sample["biosampleAccession"])
+                    fileMap[f] = sample["profile_id"]+   "|" + read.get("checklist_id", sample["checklist_id"]) +  "|"+ (sample["name"] if "name" in sample else sample["biosampleAccession"])
 
         file_name_list = [ file_name  for paried_names in file_names if paried_names.strip() != "" for file_name in paried_names.split(",")]
         file = [ x for x in file_name_list if file_name_list.count(x) > 1]
@@ -124,7 +127,7 @@ class DuplicatedDataFile(Validator):
 
         for index, row in self.data.iterrows():
             file_names = row["file_name"]
-            sample_name = self.profile_id + " | " + (row["sample"] if "sample" in self.data.columns else row["biosampleAccession"])
+            sample_name = self.profile_id + "|" + checklist_id +  "|" + (row["sample"] if "sample" in self.data.columns else row["biosampleAccession"])
             files = file_names.split(",")
             for f in files:
                 sample = fileMap.get(f, None)

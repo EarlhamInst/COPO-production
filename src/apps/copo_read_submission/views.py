@@ -109,7 +109,7 @@ def save_ena_records(request):
     # create mongo sample objects from info parsed from manifest and saved to session variable
     sample_data = request.session.get("sample_data")
     profile_id = request.session["profile_id"]
-    profile_name = Profile().get_name(profile_id)
+    #profile_name = Profile().get_name(profile_id)
     uid = str(request.user.id)
     username = request.user.username
     checklist = EnaChecklist().get_collection_handle().find_one({"primary_id": request.session["checklist_id"]})
@@ -121,8 +121,8 @@ def save_ena_records(request):
     #bundle_meta = list()
     pairing = list()
     datafile_list = list()
-    existing_bundle = list()
-    existing_bundle_meta = list()
+    #existing_bundle = list()
+    #existing_bundle_meta = list()
     sub = Submission().get_collection_handle().find_one(
         {"profile_id": profile_id, "deleted": get_not_deleted_flag()})
     # override the bundle files for every manifest upload
@@ -219,7 +219,8 @@ def save_ena_records(request):
         sample["date_modified"] = dt 
         sample["deleted"] = get_not_deleted_flag()           
         sample["updated_by"] = uid
-        sample["checklist_id"] = request.session["checklist_id"]
+
+        #sample["checklist_id"] = request.session["checklist_id"]
 
             
         for key, value in s.items():
@@ -228,7 +229,6 @@ def save_ena_records(request):
             upper_key = header.upper()
             if upper_key in column_name_mapping:
                 sample[column_name_mapping[upper_key]] = value
-
 
         condition = {"profile_id": profile_id}
         if "biosampleAccession" in s:
@@ -299,8 +299,7 @@ def save_ena_records(request):
                 file_id = str(result.upserted_id)
             if file_changed:
                 datafile_list.append(file_id)
-
-            f_meta = {"file_id": file_id, "file_name": f_name, "status": "pending"}
+            f_meta = {"file_id": file_id, "file_name": f_name, "status": "pending", "checklist_id": request.session["checklist_id"]}
             # Sample(profile_id=profile_id).get_collection_handle().update_one({"_id": ObjectId(sample_id)}, {"$addToSet": {"read": f_meta}})
         else:
             file_id1 = None
@@ -362,7 +361,7 @@ def save_ena_records(request):
                 datafile_list.append(file_id)
 
             file_id2 = file_id
-            f_meta = {"file_id": f"{file_id1},{file_id2}", "file_name": s["File name"], "status": "pending"}
+            f_meta = {"file_id": f"{file_id1},{file_id2}", "file_name": s["File name"], "status": "pending", "checklist_id": request.session["checklist_id"]}
             tmp_pairing["_id2"] = file_id
             pairing.append(tmp_pairing)
             # Sample(profile_id=profile_id).get_collection_handle().update_one({"_id": ObjectId(sample_id)}, {"$addToSet": {"read": f_meta }} )
@@ -373,7 +372,7 @@ def save_ena_records(request):
                 is_found = True
                 break
         if not is_found:
-            Sample(profile_id=profile_id).get_collection_handle().update_one({"_id": ObjectId(sample_id)}, {"$set": {"read": [f_meta] }} )
+            Sample(profile_id=profile_id).get_collection_handle().update_one({"_id": ObjectId(sample_id)}, {"$addToSet": {"read": f_meta }} )
 
 
     # attributes["datafiles_pairing"] = pairing

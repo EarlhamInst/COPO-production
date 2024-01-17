@@ -34,23 +34,24 @@ def generate_accessions_record(profile_id=str(), isUserProfileActive=str(), isSa
             # Records exist
             for i in records:
                 for key, value in i.get('accessions','').items():
-                    row_data = dict()
-                    row_data["record_id"] = i.get('id','')
-                    row_data["DT_RowId"] = "row_" + i.get('id','')
-                    row_data["profile_id"] = i.get('profile_id','')
-                    row_data["accession_type"] = key
-                    
-                    # Filter value dictionary to get 'accession' and 'alias' key-value pair
-                    if key == 'sample':
-                        # Account for'sample' accession which has accession and alias in a different format 
-                        value_dict = {k.split("_")[1]: v for k, v in value[0].items() if k in sample_accession_labels}
-                    else:
-                        value_dict = {k: v for k, v in value[0].items() if k in labels}
+                    for accession in value:
+                        row_data = dict()
+                        row_data["record_id"] = i.get('id','')
+                        row_data["DT_RowId"] = "row_" + i.get('id','')
+                        row_data["profile_id"] = i.get('profile_id','')
+                        row_data["accession_type"] = key
+                        
+                        # Filter value dictionary to get 'accession' and 'alias' key-value pair
+                        if key == 'sample':
+                            # Account for'sample' accession which has accession and alias in a different format 
+                            value_dict = {k.split("_")[1]: v for k, v in accession.items() if k in sample_accession_labels}
+                        else:
+                            value_dict = {k: v for k, v in accession.items() if k in labels}
 
-                    for k, v in value_dict.items():
-                        row_data.update({k: v})
-                    row_data.update({'profile_title': i.get('profile_title','')})
-                    data_set.append(row_data)
+                        for k, v in value_dict.items():
+                            row_data.update({k: v})
+                        row_data.update({'profile_title': i.get('profile_title','')})
+                        data_set.append(row_data)
                 
 
             return_dict = dict(dataSet=data_set, columns=columns)
