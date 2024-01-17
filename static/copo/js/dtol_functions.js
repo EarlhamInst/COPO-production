@@ -587,6 +587,7 @@ $(document).ready(function () {
     // Reset carousel on tab change
     $('#imageCarousel').carousel({ pause: true, interval: false }).carousel(0);
   });
+
   $(document).on('click', '#clearStatusLogBtn', function () {
     let status_content = $('.status_content');
 
@@ -602,31 +603,24 @@ $(document).ready(function () {
     }
   });
 
-  // Create a MutationObserver which detects
-  // when 'dtol_sample_info' changes
-  let dtol_sample_info_element = document.getElementById('dtol_sample_info');
+  let dtol_sample_info_element = document.querySelector('#dtol_sample_info');
 
   if ($(dtol_sample_info_element).length) {
-    let observer = new MutationObserver(function (mutations, observer) {
-      if (mutations[0].attributeName == 'value') {
-        $(dtol_sample_info_element).change();
-      }
+    dtol_sample_info_element.addEventListener('input', function () {
+      let isErrorStatus = $(this).hasClass('sample-alert-error');
+      let newValue = this.value;
+
+      generate_status_log(isErrorStatus, newValue);
     });
 
-    observer.observe(dtol_sample_info_element, {
-      attributes: true,
+    observeElement(dtol_sample_info_element, 'value', function (newValue) {
+      let isErrorStatus = $(this).hasClass('sample-alert-error');
+
+      generate_status_log(isErrorStatus, newValue);
     });
 
-    // Ensure that added content is not empty and prevent duplicates
-    // from being in the status log when a new status is detected
-    $(dtol_sample_info_element).change(function (e) {
-      if (
-        $(this).val() &&
-        $('.status_content:last-child').text() != $(this).val()
-      ) {
-        generate_status_log($(this));
-      }
-    });
+    // Set the scrollbar to the bottom of the status log
+    scrollToBottomOfStatusLog();
   }
 
   // Create an overlay of the status log when the
@@ -658,6 +652,9 @@ $(document).ready(function () {
           .addClass('status_log_collapse')
           .removeClass('status_log_extend');
 
+        // Set the scrollbar to the bottom of the status log
+        scrollToBottomOfStatusLog();
+
         // Remove overlay
         $('#sample_panel').removeClass('status_log_overlayed');
       }
@@ -669,7 +666,8 @@ $(document).ready(function () {
   // Scroll to the bottom of the status log when the window is resized
   $(window).on('resize', () => {
     if ($('.status_log').length && $('.status_content').length != 1) {
-      $('.status_log').scrollTop($('.status_log')[0].scrollHeight);
+      // Set the scrollbar to the bottom of the status log
+      scrollToBottomOfStatusLog();
     }
   });
 });
@@ -969,7 +967,7 @@ function handle_accept_reject(el) {
               $(document).data('accepted_warning', true);
               // create or update dtol submission record
               var profile_id = $('#profile_id').val();
-              $('#sub_spinner').fadeIn(fadeSpeed);
+              $('#spinner').fadeIn(fadeSpeed);
               $.ajax({
                 url: '/copo/dtol_submission/add_sample_to_dtol_submission/',
                 method: 'GET',
@@ -979,7 +977,7 @@ function handle_accept_reject(el) {
                 },
               }).done(function () {
                 $('#profile_titles').find('.selected').click();
-                $('#spinner').fadeOut(fadeSpeed);
+                // $('#spinner').fadeOut(fadeSpeed);
               });
             },
           },
@@ -1005,28 +1003,54 @@ function update_profile_table() {
   update_pending_samples_table();
 }
 
-function generate_status_log(item) {
+function observeElement(element, property, callback, delay = 0) {
+  let elementPrototype = Object.getPrototypeOf(element);
+  if (elementPrototype.hasOwnProperty(property)) {
+    let descriptor = Object.getOwnPropertyDescriptor(
+      elementPrototype,
+      property
+    );
+    Object.defineProperty(element, property, {
+      get: function () {
+        return descriptor.get.apply(this, arguments);
+      },
+      set: function () {
+        let oldValue = this[property];
+        descriptor.set.apply(this, arguments);
+        let newValue = this[property];
+        if (typeof callback == 'function') {
+          //  setTimeout(callback.bind(this, oldValue, newValue), delay);
+          setTimeout(callback.bind(this, newValue), delay);
+        }
+        return newValue;
+      },
+    });
+  }
+}
+
+function generate_status_log(isErrorStatus, newStatus) {
   let status_log = $('.status_log');
+  let spinner = $('#spinner');
 
   let status_content = $('<p/>', {
     class: 'status_content',
   });
 
-  // Append the status content to the 'status_log' div with the
-  // latest status at the bottom
-  if (item.hasClass('sample-alert-error')) {
+  if (isErrorStatus) {
     status_content.addClass('status_content_error');
   }
 
-  status_content.html(item.val());
+  status_content.html(newStatus);
 
-  // Prevent duplicates from being added to the status log
-  if ($('.status_content:last-child').text() != status_content.text()) {
-    status_log.append(status_content);
-  }
+  // Append the status content to the 'status_log' div with the
+  // latest status at the bottom
+  status_log.append(status_content);
+
+  // Hide spinner if it is shown
+  if (spinner.is(':visible').length) spinner.fadeOut(fadeSpeed);
 
   // Set the scrollbar to the bottom of the status log
-  status_log.scrollTop($('.status_log')[0].scrollHeight);
+  scrollToBottomOfStatusLog();
 }
 
 function toggle_clear_status_log_btn_interaction() {
@@ -1040,5 +1064,15 @@ function toggle_clear_status_log_btn_interaction() {
     clear_status_log_btn
       .prop('disabled', false)
       .prop('title', 'Clear status log');
+  }
+}
+
+// Set the scrollbar to the bottom of the status log
+// if the status log is not hovered over
+function scrollToBottomOfStatusLog() {
+  let status_log = $('.status_log');
+
+  if ($('.status_content').length != 1 && $('.status_log:hover').length === 0) {
+    status_log.scrollTop(status_log[0].scrollHeight);
   }
 }
