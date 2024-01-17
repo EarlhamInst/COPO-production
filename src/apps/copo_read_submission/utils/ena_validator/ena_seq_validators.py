@@ -116,7 +116,7 @@ class DuplicatedDataFile(Validator):
             for read in sample.get("read", []):
                 files = read.get("file_name", str()).split(",")
                 for f in files:
-                    fileMap[f] = sample["profile_id"]+   "|" + read.get("checklist_id", sample["checklist_id"]) +  "|"+ (sample["name"] if "name" in sample else sample["biosampleAccession"])
+                    fileMap[f] = sample["profile_id"]+   "|" + read.get("checklist_id", sample.get("checklist_id","")) +  "|"+ (sample["name"] if "name" in sample else sample["biosampleAccession"])
 
         file_name_list = [ file_name  for paried_names in file_names if paried_names.strip() != "" for file_name in paried_names.split(",")]
         file = [ x for x in file_name_list if file_name_list.count(x) > 1]
