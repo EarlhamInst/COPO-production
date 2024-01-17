@@ -134,9 +134,15 @@ let browser = null;
     }
     {
       const targetPage = page;
+      await  targetPage.locator('::-p-xpath(//*[@id=\\"dtol_sample_info\\" and contains(text(),\\"Bioimage not submitted\\")])').setTimeout(120000).wait()
+      console.info("done")
+     }
+     /*
+    {
+      const targetPage = page;
       targetPage.waitForXPath('//*[@id="dtol_sample_info" and contains(text(),"Bioimage not submitted")]', {timeout: 120000})
       .then(() => console.log('Sample accessed'));
-    }
+    }*/
  
 })().catch(err => {
     console.error(err);
