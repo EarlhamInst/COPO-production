@@ -182,10 +182,6 @@ td {
     transform-origin: right top;
 }
 
-/* .status_log_extend p:not(:first-child) {
-    margin: -10px 0 0 0;
-} */
-
 /* Apply CSS to the first status content in the status log 
 i.e. the second child element in the status log */
 .status_log_extend p:nth-child(2) {
@@ -193,7 +189,7 @@ i.e. the second child element in the status log */
 }
 
 /* Apply CSS to all child p elements except 
-the first one  in the status log 
+the first one in the status log 
 i.e. the second child element in the status log */
 .status_log_extend p:nth-child(2)~p {
     margin: -10px 0 0 0;
@@ -207,7 +203,7 @@ i.e. the second child element in the status log */
     padding-right: 5px;
     width: fit-content;
     /* Fading effect */
-    animation: fadeIn 5s;
+    animation: fadeIn 0.5s;
 }
 
 /* The fading in effect */
@@ -219,6 +215,7 @@ i.e. the second child element in the status log */
     100% {
         opacity: 1;
         animation: 'none';
+        display: none;
     }
 }
 
@@ -228,9 +225,15 @@ i.e. the second child element in the status log */
 
 .status_content_error {
     color: #b94a48;
+    padding-top: 20px;
 }
 
-.hr-margin-top {
+ /* Remove trailing whitespaces after scaling the status log */
+.status_log_extend .status_content_error:last-child {
+    margin-bottom: -50px;
+}
+
+.hr_margin_top {
     margin-top: 80px;
 
 }
@@ -240,5 +243,4 @@ i.e. the second child element in the status log */
     position: absolute !important;
     margin: 45px 47px 0px 70px !important;
     display: none;
-    ;
 }
