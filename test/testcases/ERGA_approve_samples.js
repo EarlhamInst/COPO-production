@@ -82,6 +82,21 @@ let browser = null;
             .setTimeout(timeout)
             .fill('erga');
     }
+
+    {
+      const targetPage = page;
+      await puppeteer.Locator.race([
+          targetPage.locator('::-p-xpath(//table[@id=\\"profile_titles\\"]//td[contains(text(), \\"' + process.argv[1].toUpperCase() + '\\")])'),
+      ])
+          .setTimeout(timeout)
+          .click({
+            offset: {
+              x: 44,
+              y: 31.046875,
+            },
+          });
+    }
+
     {
         const targetPage = page;
         await puppeteer.Locator.race([
@@ -132,10 +147,69 @@ let browser = null;
               },
             });
     }
+    
     {
+      if (process.argv[1] == 'sanger') {
+        await page.waitForTimeout(10000)
+        const targetPage = page;
+        await puppeteer.Locator.race([
+            targetPage.locator('::-p-aria(Pending Samples)'),
+            targetPage.locator('#sample_filter > li:nth-of-type(2) > a'),
+            targetPage.locator('::-p-xpath(//*[@id=\\"sample_filter\\"]/li[2]/a)'),
+            targetPage.locator(':scope >>> #sample_filter > li:nth-of-type(2) > a'),
+            targetPage.locator('::-p-text(Pending Samples)')
+        ])
+            .setTimeout(timeout)
+            .click({
+              offset: {
+                x: 49.734375,
+                y: 10.046875,
+              },
+            });
+      }  
+    }
+    {
+      if (process.argv[1] == 'sanger') {
+        const targetPage = page;
+        await puppeteer.Locator.race([
+            targetPage.locator('::-p-aria(Select all visible) >>>> ::-p-aria([role=\\"generic\\"])'),
+            targetPage.locator('button.select-all > span'),
+            targetPage.locator('::-p-xpath(//*[@id=\\"edit-buttons\\"]/button[1]/span)'),
+            targetPage.locator(':scope >>> button.select-all > span'),
+            targetPage.locator('::-p-text(Select all visible)')
+        ])
+            .setTimeout(timeout)
+            .click({
+              offset: {
+                x: 38.078125,
+                y: 10.703125,
+              },
+            });
+      }
+  }
+  {
+    if (process.argv[1] == 'sanger') {
       const targetPage = page;
-      await  targetPage.locator('::-p-xpath(//*[@id=\\"dtol_sample_info\\" and contains(@value,\\"Bioimage was not submitted\\")])').setTimeout(120000).wait()
-      console.info("done")
+      await puppeteer.Locator.race([
+          targetPage.locator('::-p-aria( Accept)'),
+          targetPage.locator('button.positive'),
+          targetPage.locator('::-p-xpath(//*[@id=\\"accept_reject_button\\"]/button[2])'),
+          targetPage.locator(':scope >>> button.positive')
+      ])
+          .setTimeout(timeout)
+          .click({
+            offset: {
+              x: 77.1015625,
+              y: 17.203125,
+            },
+          });
+    }
+  }   
+   
+    {
+        const targetPage = page;
+        await  targetPage.locator('::-p-xpath(//*[@id=\\"dtol_sample_info\\" and contains(@value,\\"Bioimage was not submitted\\")])').setTimeout(120000).wait()
+        console.info("done")
      }
      /*
     {

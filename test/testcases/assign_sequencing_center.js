@@ -102,9 +102,9 @@ const get_browser_id  = async () => {
             promises.push(targetPage.waitForNavigation());
         }
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(EI[role=\\"link\\"])'),
-            targetPage.locator('::-p-xpath(//*[@id=\\"result_list\\"]/tbody/tr/th/a[text()=\"EI\"])'),
-            targetPage.locator('::-p-text(EI)')
+            targetPage.locator('::-p-aria('+ process.argv[1].toUpperCase() + '[role=\\"link\\"])'),
+            targetPage.locator('::-p-xpath(//*[@id=\\"result_list\\"]/tbody/tr/th/a[text()=\"'+ process.argv[1].toUpperCase() + '\"])'),
+            targetPage.locator('::-p-text(' + process.argv[1].toUpperCase() + ')')
         ])
             .setTimeout(timeout)
             .on('action', () => startWaitingForEvents())

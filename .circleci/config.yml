@@ -61,32 +61,38 @@ jobs:
             docker exec $copo_browser node -e "$(cat test/testcases/copo-login-logout.js)" && \
             echo "running assign_permission.js" && \
             docker exec $copo_browser node -e "$(cat test/testcases/assign_permission.js)" && \
-            echo "running assign_sequencing_center.js" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/assign_sequencing_center.js)" && \
-            echo "running ERGA_profile.js" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_profile.js)" && \
-            echo "running ERGA_upload_manifest.js" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_upload_manifest.js)" && \
-            echo "running ERGA_approve_samples.js" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" && \
-            echo "running ERGA_update_manifest.js" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_update_manifest.js)" && \
-            echo "running ERGA_approve_samples.js" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" && \
+            echo "running assign_sequencing_center.js ei" && \
+            docker exec $copo_browser node -e "$(cat test/testcases/assign_sequencing_center.js)" ei && \
+            echo "running assign_sequencing_center.js sanger" && \
+            docker exec $copo_browser node -e "$(cat test/testcases/assign_sequencing_center.js)" sanger && \            
+            echo "running ERGA_profile.js ei" && \
+            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_profile.js)" ei "EARLHAM INSTITUTE" && \
+            echo "running ERGA_upload_manifest.js" ei && \
+            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_upload_manifest.js)" ei && \
+            echo "running ERGA_approve_samples.js ei" && \
+            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" ei && \
+            echo "running ERGA_update_manifest.js" ei && \
+            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_update_manifest.js)" ei && \
+            echo "running ERGA_approve_samples.js ei" && \
+            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" ei && \
             echo "running ERGA_permit.js" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_permit.js)" && \
-            echo "running ERGA_approve_samples.js" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" && \            
+            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_permit.js)" ei && \
+            echo "running ERGA_approve_samples.js ei" && \
+            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" ei && \        
+            echo "running ERGA_profile.js sanger" && \
+            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_profile.js)" sanger "SANGER INSTITUTE" && \
+            echo "running ERGA_upload_manifest.js" sanger && \
+            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_upload_manifest.js)" sanger && \
+            echo "running ERGA_approve_samples.js sanger" && \
+            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" sanger && \
             echo "running Standalone_profile.js" && \
             docker exec $copo_browser node -e "$(cat test/testcases/Standalone_profile.js)"  && \
-            #echo "running Standalone_files.js" && \
-            #docker exec $copo_browser node -e "$(cat test/testcases/Standalone_files.js)"  && \
             echo "done" ) || \
             (docker logs $copo_web && \
             docker exec $copo_web bash -c "less /copo/logs/*.log" && exit 1)
       - run : |
             docker logs $copo_web 
-            docker exec $copo_web bash -c "less /copo/logs/*.log
+            docker exec $copo_web bash -c "less /copo/logs/*.log"
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows

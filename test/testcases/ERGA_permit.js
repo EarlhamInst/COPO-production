@@ -35,7 +35,9 @@ let browser = null;
     {
         const targetPage = page;
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-xpath(//*[starts-with(@id, \\"menu_\\")]/div[1])'),
+          targetPage.locator('div.upward'),
+          targetPage.locator('::-p-xpath(//span[contains(text(), \\"'+ process.argv[1].toUpperCase() + '\\")]/ancestor::div[@class=\\"copo-records-panel\\"]//*[starts-with(@id, \\"menu_\\")]/div[1])'),
+          targetPage.locator(':scope >>> div.upward')
         ])
             .setTimeout(timeout)
             .click({
@@ -53,7 +55,7 @@ let browser = null;
         }
         await puppeteer.Locator.race([
             targetPage.locator('div.upward a:nth-of-type(6)'),
-            targetPage.locator('::-p-xpath(//*[starts-with(@id, \\"menu_\\")]/div[1]/div/a[6])'),
+            targetPage.locator('::-p-xpath(//span[contains(text(), \\"'+ process.argv[1].toUpperCase() + '\\")]/ancestor::div[@class=\\"copo-records-panel\\"]//*[starts-with(@id, \\"menu_\\")]/div[1]/div/a[6])'),
             targetPage.locator(':scope >>> div.upward a:nth-of-type(6)')
         ])
             .setTimeout(timeout)
@@ -119,7 +121,7 @@ let browser = null;
       const targetPage = page;
       await targetPage.waitForSelector('input[id=file]')
       const inputUploadHandle = await targetPage.$('input[id=file]')
-      let fileToUpload = '/usr/src/app/workspace/ERGA_SAMPLE_MANIFEST_v2.5_with_permit.xlsx';
+      let fileToUpload = '/usr/src/app/workspace/ERGA_SAMPLE_MANIFEST_with_permit_' + process.argv[1] + '.xlsx';
       // Sets the value of the file input to fileToUpload
       inputUploadHandle.uploadFile(fileToUpload);
   }

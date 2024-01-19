@@ -58,7 +58,7 @@ let browser = null;
             targetPage.locator(':scope >>> #copo\\.profile\\.title')
         ])
             .setTimeout(timeout)
-            .fill('test ERGA profile');
+            .fill('test ERGA ' + process.argv[1].toUpperCase() + ' profile');
     }
     {
         const targetPage = page;
@@ -133,8 +133,8 @@ let browser = null;
     {
         const targetPage = page;
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(EARLHAM INSTITUTE[role=\\"treeitem\\"])'),
-            targetPage.locator('::-p-xpath(//*[contains(@id, \\"-EI\\")])'),
+            targetPage.locator('::-p-aria(' + process.argv[2].toUpperCase() + '[role=\\"treeitem\\"])'),
+            targetPage.locator('::-p-xpath(//*[contains(@id, \\"-' + process.argv[1].toUpperCase() + '\\")])'),
         ])
             .setTimeout(timeout)
             .click({
@@ -223,7 +223,7 @@ let browser = null;
             targetPage.locator(':scope >>> #copo\\.profile\\.description')
         ])
             .setTimeout(timeout)
-            .fill('It is ERGA profile. It is a updated');
+            .fill('It is ERGA '+ process.argv[1].toUpperCase() + ' profile. It is a updated');
     }
     {
         const targetPage = page;
