@@ -71,7 +71,7 @@ def get_sample_updates_by_sample_field_and_value(field, field_value):
     return finish_request(out)
 
 
-def get_sample_updates_by_manifest_id(manifest_id):
+def get_sample_updates_by_manifest_id(request, manifest_id):
     # Split the string into a list
     manifest_id_list = manifest_id.split(',')
     manifest_id_list = list(map(lambda x: x.strip(), manifest_id_list))
@@ -94,7 +94,7 @@ def get_sample_updates_by_manifest_id(manifest_id):
     return finish_request(out)
 
 
-def get_sample_updates_by_copo_id(copo_id):
+def get_sample_updates_by_copo_id(request, copo_id):
     # NB: 'sample_id' is the 'copo_id' key in DB
 
     # Split the string into a list

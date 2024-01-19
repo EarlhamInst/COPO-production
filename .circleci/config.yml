@@ -91,6 +91,7 @@ jobs:
             (docker logs $copo_web && \
             docker exec $copo_web bash -c "less /copo/logs/*.log" && exit 1)
       - run : |
+            copo_web=$(docker-compose -f test/docker-compose.yaml ps -q copo_web)
             docker logs $copo_web 
             docker exec $copo_web bash -c "less /copo/logs/*.log"
 

@@ -161,7 +161,7 @@ def get_gal_names(request):
 
 
 def get_location_details(latitude, longitude):
-    geolocator = Nominatim(user_agent="geoapiExercises")
+    geolocator = Nominatim(user_agent="copo_tol_dashboard")
     location = geolocator.reverse(str(latitude) + "," + str(longitude))
     address = location.raw['address']
     out = {"city": address.get("city", ""), "state": address.get(
