@@ -59,7 +59,7 @@ class S3Connection():
         self.s3_client.download_file(bucket, key, loc, Config=config)
         Logger().log("transfer complete: " + loc)
 
-    def get_presigned_url(self, bucket, key, expires_seconds=60*60):
+    def get_presigned_url(self, bucket, key, expires_seconds=24*60*60):
         '''
         Create a pre-signed url for uploading a single file to the s3 ECS
         :param bucket: name of the bucket to which the object sould be uploaded
