@@ -90,7 +90,7 @@ paths:
         - name: manifest_id
           in: path
           description: If known, provide a uuid 'manifest_id'. To query multiple 'manifest_id', separate them with a comma.
-          required: true
+          required: false
           schema:
             type: string
         - in: query
@@ -119,7 +119,7 @@ paths:
         - name: copo_id
           in: path
           description: If known, provide a hexadecimal 'copo_id'. To query multiple 'copo_id', separate them with a comma.
-          required: true
+          required: false
           schema:
             type: string
             minimum: 1

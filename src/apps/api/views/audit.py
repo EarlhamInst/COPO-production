@@ -51,7 +51,7 @@ def filtered_audits_by_updatable_field(sample_id, updatable_field, sample_type):
     return filter_audits_for_API(sample_updates)
 
 
-def get_sample_updates_by_sample_field_and_value(field, field_value):
+def get_sample_updates_by_sample_field_and_value(request,field, field_value):
     '''
     Get sample updates by one of the following fields and their respective value:
         'RACK_OR_PLATE_ID' field 

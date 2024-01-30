@@ -29,8 +29,10 @@ class Audit(DAComponent):
         self.projection = {'_id': 0, 'update_log': 1}
 
     def get_sample_update_audits_field_value_lst(self, value_lst, key):
-        filter = {'action': 'update', 'update_log': {
-            '$elemMatch': {key: {'$in': value_lst}}}}
+        filter = {'action': 'update'}
+
+        if value_lst:
+            filter['update_log']  = {'$elemMatch': {key: {'$in': value_lst}}}
 
         return cursor_to_list(
             self.get_collection_handle().find(filter,  self.projection))
@@ -39,8 +41,23 @@ class Audit(DAComponent):
         filter = {'action': 'update', 'update_log': {
             '$elemMatch': {field: value}}}
 
-        return cursor_to_list(
+        cursor = cursor_to_list(
             self.get_collection_handle().find(filter,  self.projection))
+    
+        # Filter data in the 'update_log' by the field and value provided
+        lst = list()
+        out = list()
+        data = dict()
+
+        for element in list(cursor):
+            for x in element['update_log']:
+                if x[field] == value:
+                    lst.append(x)
+
+            data['update_log'] = lst
+            out.append(data)
+
+        return out
 
     def get_sample_update_audits_by_field_updated(self, sample_type, sample_id_list, updatable_field):
         filter = {'action': 'update', 'update_log': {
@@ -52,7 +69,7 @@ class Audit(DAComponent):
 
         cursor = self.get_collection_handle().find(filter,  self.projection)
 
-        # Filter data in the 'update_log' by the field provided
+        # Filter data in the 'update_log' by the updatable field provided
         lst = list()
         out = list()
         data = dict()
@@ -76,8 +93,23 @@ class Audit(DAComponent):
         else:
             filter['update_log'] = {'$elemMatch': {'update_type': update_type}}
 
-        return cursor_to_list(
+        cursor = cursor_to_list(
             self.get_collection_handle().find(filter,  self.projection))
+        
+        # Filter data in the 'update_log' by update type provided
+        lst = list()
+        out = list()
+        data = dict()
+
+        for element in list(cursor):
+            for x in element['update_log']:
+                if x['update_type'] == update_type:
+                    lst.append(x)
+
+            data['update_log'] = lst
+            out.append(data)
+
+        return out
 
     def get_sample_update_audits_by_date(self, d_from, d_to):
         return cursor_to_list(self.get_collection_handle().aggregate(
