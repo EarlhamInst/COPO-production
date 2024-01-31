@@ -267,7 +267,7 @@ services:
           cpus: "1"
           memory: 1GB
   sample_audit:
-    image: copo/copo-sample-audit:v0.0.8
+    image: copo/copo-sample-audit:v0.0.9
     networks:
       - copo-backend-network
     secrets:
