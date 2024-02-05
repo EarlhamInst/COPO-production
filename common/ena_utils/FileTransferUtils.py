@@ -70,12 +70,12 @@ def check_for_stuck_transfers():
                     Logger().log("resetting to pending transfer: " + tx["local_path"])
             elif tx_status == 2:
                 # these are the processes which could take a long time so should have a much longer timeout
-                if delta.seconds > 60 * 60 * 1:
+                if delta.seconds > 60 * 60 * 12:
                     EnaFileTransfer().set_pending(tx["_id"])
                     Logger().log("resetting to pending transfer: " + tx["local_path"])
             elif tx_status == 5:
                 # these are the processes which could take a long time so should have a much longer timeout
-                if delta.seconds > 60 * 60 * 1:
+                if delta.seconds > 60 * 60 * 12:
                     EnaFileTransfer().set_pending(tx["_id"])
                     Logger().log("resetting to pending transfer: " + tx["local_path"])
 
