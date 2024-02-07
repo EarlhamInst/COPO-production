@@ -62,7 +62,7 @@ services:
     networks:
       default:
         aliases:
-           - copo-new.cyverseuk.org    
+           - copo-new.cyverseuk.org
       copo-frontend-network:
       copo-backend-network:
     deploy:
@@ -192,7 +192,7 @@ services:
       - copo_public_name_service_api_key
       - copo_mail_password
       - copo_bioimage_path
-      - ecs_secret_key      
+      - ecs_secret_key
   nginx:
     image: copo/copo-nginx:1.25.3.1
     networks:
@@ -230,7 +230,7 @@ services:
   backup:
     image: copo/copo-backup:v20.04_1
     command: >
-      bash -c "printenv >> /etc/environment && cron && sleep infinity"    
+      bash -c "printenv >> /etc/environment && cron && sleep infinity"
     networks:
       - copo-backend-network
     volumes:
@@ -269,7 +269,7 @@ services:
           cpus: "0.3"
           memory: 512mb
   sample_audit:
-    image: copo/copo-sample-audit:v0.0.12
+    image: copo/copo-sample-audit:v0.0.13
     networks:
       - copo-backend-network
     secrets:
@@ -416,7 +416,7 @@ services:
 #      - MAX_CONCURRENT_SESSIONS=5
 #      - PREBOOT_CHROME=true
 #      - MAX_QUEUE_LENGTH=10
-#      - PREBOOT_QUANTITY=2      
+#      - PREBOOT_QUANTITY=2
 #    deploy:
 #      replicas: 1
 #      endpoint_mode: dnsrr
