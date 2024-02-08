@@ -229,6 +229,8 @@ class SubmissionHelper:
             # retrieve sample source
             source_id = sample.get("derivesFrom", str())
             #source_id = source_id[0] if source_id else ''
+            if not source_id:
+                continue
             sample_source = sra_sources.get(source_id, dict())
 
             if sample_source:

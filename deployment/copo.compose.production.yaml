@@ -55,6 +55,7 @@ services:
       - ENA_V2_SERVICE_SYNC=https://www.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://www.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
+      - ENA_V1_SAMPLE_SERVICE=https://www.ebi.ac.uk/ena/submit/drop-box/samples
     depends_on:
       - redis
       - postgres 

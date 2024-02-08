@@ -35,7 +35,7 @@ Image.MAX_IMAGE_PIXELS = None
 
 l = Logger()
 
-
+'''
 def make_target_sample(sample):
     # need to pop taxon info, and add back into sample_list
     if not "species_list" in sample:
@@ -60,7 +60,7 @@ def make_target_sample(sample):
     sample["species_list"].append(out)
 
     return sample
-
+    '''
 
 def make_species_list(sample):
     # need to pop taxon info, and add back into sample_list

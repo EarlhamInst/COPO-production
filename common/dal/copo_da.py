@@ -1180,7 +1180,7 @@ class EnaChecklist(DAComponent):
         return self.get_all_records_columns(filter_by={"primary_id": {"$in": settings.BARCODING_CHECKLIST}},  projection={"primary_id": 1, "name": 1, "description": 1})
 
     def get_sample_checklists_no_fields(self):
-        return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^ERC"}},  projection={"primary_id": 1, "name": 1, "description": 1})
+        return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^(ERC|read)"}},  projection={"primary_id": 1, "name": 1, "description": 1})
 
 '''
 class EnaObject(DAComponent):

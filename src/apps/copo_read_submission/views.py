@@ -131,8 +131,10 @@ def save_ena_records(request):
     #    existing_bundle_meta = sub["bundle_meta"]
     dt = get_datetime()
     project_release_date = None
+    submission_external_sample_accession=[]
 
     for line in range(1, len(sample_data)):
+        is_external_sample = False
         # for each row in the manifest
 
         s = (map_to_dict(sample_data[0], sample_data[line]))
@@ -168,6 +170,10 @@ def save_ena_records(request):
             sample = Sample().get_collection_handle().find_one({"name": s["Sample"], "profile_id": profile_id})
 
         insert_record = {}
+        insert_record["created_by"] = uid
+        insert_record["time_created"] = get_datetime()
+        insert_record["date_created"] = dt
+        insert_record["profile_id"] = profile_id    
 
         if "Organism" in s:
             if not sample or sample.get("organism","") != s["Organism"]:
@@ -193,29 +199,41 @@ def save_ena_records(request):
                 source["deleted"] = "0"
                 source["name"] = s["Sample"]
                 source["profile_id"] = profile_id                
-                insert_record["created_by"] = uid
-                insert_record["time_created"] = get_datetime()
-                insert_record["date_created"] = dt
-
                 source_id = str(
                     Source().get_collection_handle().find_one_and_update({"organism.termAccession": termAccession, "profile_id": profile_id},
                                                                         {"$set": source, "$setOnInsert": insert_record},
                                                                         upsert=True, return_document=ReturnDocument.AFTER)["_id"])
                 sample["derivesFrom"] = source_id
-                insert_record["status"] = "pending"
-                insert_record["profile_id"] = profile_id                
                 sample["name"] = s["Sample"]
                 # create associated sample
                 insert_record["sample_type"] = "isasample"
+                insert_record["status"] = "pending"
                 #sample["derivesFrom"] = source_id
                 #sample["read"] = {"file_name": [s["file_name"]] }
         else:
+            if not sample:
+                sample = dict()
+                is_external_sample = True
+                insert_record["sraAccession"] = s["sraAccession"]
+                insert_record["sample_type"] = "isasample"
+                insert_record["status"] = "accepted"
+                insert_record["biosampleAccession"] = s["biosampleAccession"]
+                insert_record["is_external"] = "1"
+                insert_record["TAXON_ID"] = s["TAXON_ID"]
+
+
             sample["name"] = s["biosampleAccession"]
-                
+
+
         sample.pop("created_by", None)
         sample.pop("time_created", None)
         sample.pop("date_created", None)
         sample.pop("status", None) 
+        sample.pop("profile_id", None)
+        sample.pop("sample_type", None)
+        sample.pop("TAXON_ID", None)
+        sample.pop("biosampleAccession", None)
+        sample.pop("is_external", None)
         sample["date_modified"] = dt 
         sample["deleted"] = get_not_deleted_flag()           
         sample["updated_by"] = uid
@@ -233,9 +251,15 @@ def save_ena_records(request):
         condition = {"profile_id": profile_id}
         if "biosampleAccession" in s:
             condition["biosampleAccession"] = s["biosampleAccession"]
-            Sample().get_collection_handle().update_one(condition,
-                                                                    {"$set": sample})
-                                                                
+            sample = Sample().get_collection_handle().find_one_and_update(condition,
+                                                                    {"$set": sample, "$setOnInsert": insert_record },
+                                                                    upsert=True,  return_document=ReturnDocument.AFTER)   
+
+
+            if is_external_sample:
+                sample_accession={"sample_accession":s["sraAccession"], "biosample_accession": s["biosampleAccession"], "sample_id" : str(sample["_id"])}
+                submission_external_sample_accession.append(sample_accession)
+
         else:
             condition["name"] = s["Sample"]
             sample.pop("profile_id", None)
@@ -396,7 +420,7 @@ def save_ena_records(request):
     sub["manifest_submission"] = 1
     sub["deleted"] = get_not_deleted_flag()
     sub["project_release_date"] = project_release_date
-
+ 
     # make description records and submissions record
     # dr = Description().create_description(attributes=attributes, profile_id=profile_id, component='datafile',
     #                                      name=profile_name)
@@ -407,6 +431,9 @@ def save_ena_records(request):
         sub_id = sub["_id"]
     else:
         sub_id = Submission().get_collection_handle().insert_one(sub).inserted_id
+
+    if submission_external_sample_accession:
+        Submission().get_collection_handle().update_one({"_id": sub["_id"]},{"$addToSet" : {"accessions.sample":{"$each": submission_external_sample_accession}}})
 
     for f in datafile_list:
         tx.make_transfer_record(file_id=str(f), submission_id=str(sub_id))
