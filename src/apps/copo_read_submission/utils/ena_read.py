@@ -69,6 +69,7 @@ def delete_ena_records(profile_id, target_ids=list(), target_id=None):
     existing_sample_with_file = []
     delete_samples = []
     delete_sources = []
+    delete_sample_accessions_4_external_samples = []
 
     file_ids = [file_id for id in target_ids for file_id in id.split("_")[1].split(",")]
     sample_obj_ids = [ObjectId(id.split("_")[0]) for id in target_ids]
@@ -119,12 +120,13 @@ def delete_ena_records(profile_id, target_ids=list(), target_id=None):
     # remove sample records if no file inside
 
     samples = Sample(profile_id=profile_id).get_all_records_columns(filter_by={"_id": {"$in": sample_obj_ids}},
-                                                                    projection={"biosampleAccession": 1, "read": 1,
+                                                                    projection={"biosampleAccession": 1, "read": 1,"is_external":1,
                                                                                 "derivesFrom": 1})
 
     for sample in samples:
-        if not sample.get("read", []) and not sample.get("biosampleAccession", ""):
-            delete_sources.append(sample["derivesFrom"])
+        if not sample.get("read", []) and ( sample.get("is_external", "0") == "1" or not sample.get("biosampleAccession", "")):
+            if  "derivesFrom" in sample:
+                delete_sources.append(sample["derivesFrom"])
             delete_samples.append(sample["_id"])
 
     if delete_sources:
@@ -137,6 +139,7 @@ def delete_ena_records(profile_id, target_ids=list(), target_id=None):
 
     if delete_samples:
         Sample(profile_id=profile_id).get_collection_handle().delete_many({"_id": {"$in": delete_samples}})
+        Submission().get_collection_handle().update_one({"profile_id": profile_id}, {"$pull": {"accessions.sample": {"sample_id": {"$in": [str(id) for id in delete_samples]}}}})
 
     return dict(status='success', message="Read record/s have been deleted!")
 

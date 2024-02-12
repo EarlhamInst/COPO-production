@@ -472,6 +472,10 @@ class EnaCheckListSpreedsheet:
                             html_id=self.component_info, checklist_id=self.checklist_id)
             return False
  
+        for column in self.new_data.columns:
+            if column.startswith(Validator.PREFIX_4_NEW_FIELD):
+                self.data[column.removeprefix(Validator.PREFIX_4_NEW_FIELD)] = self.new_data[column]
+
         # if we get here we have a valid spreadsheet
         notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid", action="info",
                         html_id=self.component_info)

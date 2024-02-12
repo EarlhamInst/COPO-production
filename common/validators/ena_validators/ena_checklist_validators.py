@@ -1,12 +1,20 @@
 from common.validators.validator import Validator
 from common.dal.sample_da import Sample
 import re
+import requests
+from common.utils.helpers import get_env
+import xml.etree.ElementTree as ET
+ 
 
 #check mandatory fields are present in spreadsheet
 #check mandatory fields are not empty
 #check values are valid: enum, regex
+ena_sample_service = get_env("ENA_V1_SAMPLE_SERVICE")
+pass_word = get_env('WEBIN_USER_PASSWORD')
+user_token = get_env('WEBIN_USER').split("@")[0]
+session = requests.Session()
+session.auth = (user_token, pass_word) 
 
- 
 class MandatoryValuesValidator(Validator):
     def validate(self):
         checklist = self.kwargs.get("checklist", {})
@@ -72,14 +80,34 @@ class IncorrectValueValidator(Validator):
                                     self.flag = False
                         elif type == "TAXON_FIELD":
                             if row not in biosampleAccessionsMap.keys():
-                                self.errors.append("Invalid value " + row + " in column:'" + field["name"] + "'")
-                                self.flag = False
+                                #check biosample from ena
+                                try:
+                                    response = session.get(f"{ena_sample_service}/{row}", data={})
+                                    if response.status_code == requests.codes.ok:
+                                        root = ET.fromstring(response.text)
+                                        sample_name = root.find(".//SAMPLE_NAME")
+                                        taxon_id = sample_name.find('TAXON_ID').text
+                                        sample_accession = root.find(".//SAMPLE").attrib['accession']
+                                        if taxon_id :
+                                            read_taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
+                                            if taxon_id != read_taxon_id:
+                                                self.errors.append("Invalid value " + read_taxon_id + " not match with " + taxon_id + " in column: 'TAXON_ID' at row " + str(i)) 
+                                                self.flag = False
+                                            else:
+                                                self.data[f"{Validator.PREFIX_4_NEW_FIELD}sraAccession"] = sample_accession
+                                    else:
+                                        self.errors.append("Invalid value " + row + " in column:'" + field["name"] + "'")
+                                        self.flag = False
+                                except: 
+                                    self.errors.append("Invalid value " + row + " in column:'" + field["name"] + "'")
+                                    self.flag = False
+
                             else:
                       
                                 specimen_id = self.data.iloc[i-2].get("SPECIMEN_ID","")
                                 taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
                                 sample = biosampleAccessionsMap.get(row)
-                                if sample.get("SPECIMEN_ID","") != specimen_id:
+                                if "SPECIMEN_ID" in sample and sample["SPECIMEN_ID"] != specimen_id:
                                     self.errors.append("Invalid value " + specimen_id + " not match with " + sample.get("SPECIMEN_ID","")+ " in column: 'SPECIMEN_ID' at row " + str(i)) 
                                     self.flag = False
                                 if  sample.get("TAXON_ID","") != taxon_id:

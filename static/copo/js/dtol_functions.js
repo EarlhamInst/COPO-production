@@ -694,7 +694,7 @@ function row_select(ev) {
     if (row == undefined) {
       $('#profile_id').val('');
     } else {
-      var profile_id = $(row).find('td').data('profile_id');
+      var profile_id = $(row).attr("id");
       $('#profile_id').val(profile_id);
     }
 
@@ -793,35 +793,46 @@ function update_pending_samples_table() {
     .find('a')
     .attr('href');
   //console.log(which_profiles)
-  let columnDefs = [];
+  let columnDefs = [
+    { name:"date_created", data:"date_created", title:"Date Created", type:"date",targets: [1],className: 'dt-center text-center',
+      render: function(data, type, row) {
+        let date = new Date(data.$date).toLocaleDateString(
+          'en-GB',
+          { timeZone: 'UTC' }
+        );
+        return date
+      }
+    }
+  ];
 
   if (which_profiles == 'my_profiles') {
     $('#accept_reject_button').show();
     $('#edit-buttons').show();
-    columnDefs = [
-      {
-        targets: [1, 2],
-        className: 'dt-center text-center',
-      },
-      { targets: [0], className: 'profile_title_header_my_profiles' },
-    ];
+    columnDefs.push(
+      { name:"title", data:"title", title:"Profile Title", targets: [0], className: 'profile_title_header_my_profiles' },
+      { data:"_id", title:"Samples Link", targets: [2], orderable: false,
+       className: 'dt-center text-center',
+       render: function(data, type, row) {
+         return "<a href='/copo/copo_sample/" +
+         data.$oid +
+         "/view'><i class='fa fa-link' aria-hidden='true'></i></a>"
+       }
+      }
+    );
   } else {
     $('#accept_reject_button').hide();
     $('#edit-buttons').hide();
-
-    columnDefs = [
-      {
-        targets: [1],
-        className: 'dt-center text-center',
-      },
-      { targets: [0], className: 'profile_title_header_all_profiles' },
-    ];
+    columnDefs.push(
+      { name:"title", data:"title", title:"Profile Title", targets: [0], className: 'profile_title_header_all_profiles' }
+    );
   }
+ 
+  /*
   $.ajax({
     url: '/copo/dtol_submission/update_pending_samples_table/',
     method: 'GET',
     dataType: 'json',
-    data: { profiles: which_profiles, group: get_group_id() },
+    data: { profiles: which_profiles, group: get_group_id(), keyword: "" },
   })
     .fail(function (e) {
       console.log(e);
@@ -830,7 +841,7 @@ function update_pending_samples_table() {
       if ($.fn.DataTable.isDataTable('#profile_titles')) {
         $('#profile_titles').DataTable().clear().destroy();
       }
-
+      
       $(data).each(function (d) {
         let date = new Date(data[d].date_created.$date).toLocaleDateString(
           'en-GB',
@@ -856,37 +867,76 @@ function update_pending_samples_table() {
               link +
               '</tr>'
           );
-      });
-
-      $.fn.dataTable.moment('DD/MM/YYYY');
-      $('#profile_titles').DataTable({
-        responsive: true,
-        paging: false,
-        dom: '<"top"f>rt<"bottom"lp><"clear">',
-        order: [[1, 'desc']],
-        columnDefs: columnDefs,
-        initComplete: function () {
-          var api = this.api();
-          if (which_profiles != 'my_profiles') {
-            // Hide Office column
-            api.column(2).visible(false);
-          }
-        },
-      });
-
-      $(document).removeData('selected_row');
-      if (data.length) {
-        $('#profile_titles').find('tbody').find('tr:first').click();
-      } else {
-        $('.hot_tab.active').click();
       }
+      );
+      
 
-      // Adjust the width of the table if it is 'All Profiles'
-      if (which_profiles != 'my_profiles') {
-        $('#profile_titles').css('width', '100%');
-      }
     });
-}
+    */
+
+    if ($.fn.DataTable.isDataTable('#profile_titles')) {
+      $('#profile_titles').DataTable().clear().destroy();
+      $('#profile_titles').empty();
+    }
+    
+    $.fn.dataTable.moment('DD/MM/YYYY');
+    profile_table = $('#profile_titles').DataTable({
+      rowId: "_id.$oid",
+      ajax: {
+        url: '/copo/dtol_submission/update_pending_samples_table/',
+        data: function (d) {
+          columnIdx = d.order[0].column
+          orderby = ""
+          if (columnIdx == 0) {
+            orderby = "title"
+          } else if (columnIdx == 1) {
+            orderby = "date_created"
+          }
+          return {
+            profiles: which_profiles, 
+            group: get_group_id(), 
+            search: d.search.value,
+            order: orderby,
+            dir: d.order[0].dir,
+            draw: d.draw
+          };
+        },
+        dataSrc: 'data',
+      },
+      createdRow:  function (row, data, dataIndex) {
+        $(row).addClass('selectable_row')
+      },
+      processing: true,
+      serverSide: true,
+      responsive: true,
+      paging: false,
+      dom: '<"top"f>rt<"bottom"lp><"clear">',
+      order: [[1, 'desc']],
+      columnDefs: columnDefs,
+      search: {
+        return: true,
+      },
+      initComplete: function () {
+        $(document).removeData('selected_row');
+        var api = this.api()
+        if (api.row(0) != undefined) {
+          this.find('tbody').find('tr:first').click()
+        } else {
+          $('.hot_tab.active').click();
+        }
+
+      },
+      
+    });
+
+
+
+    // Adjust the width of the table if it is 'All Profiles'
+    if (which_profiles != 'my_profiles') {
+      $('#profile_titles').css('width', '100%');
+    }
+
+  }
 
 function handle_accept_reject(el) {
   $('#spinner').fadeIn(fadeSpeed);
