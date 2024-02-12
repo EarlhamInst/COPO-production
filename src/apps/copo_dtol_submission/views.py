@@ -43,13 +43,18 @@ def get_samples_column_names(request):
 def update_pending_samples_table(request):
     profile_filter = request.GET.get("profiles", "")
     group_filter = request.GET.get("group", "")
-
+    search_filter = request.GET.get("search", "")
+    sort_by = request.GET.get("order", "")
+    direction = request.GET.get("dir", "")
+    dir = 1
+    if direction == "desc":
+        dir = -1
     # samples = Sample().get_unregistered_dtol_samples()
     member_groups = get_group_membership_asString()
     # todo control for someone being both
     profiles = []
     if f"{group_filter}_sample_managers" in member_groups:
-        profiles = Profile().get_profiles(filter=profile_filter, group_filter=group_filter)
+        profiles = Profile().get_profiles(filter=profile_filter, group_filter=group_filter, search_filter=search_filter, sort_by=sort_by, dir=dir)
 
     """     
     if "dtol_sample_managers" in member_groups:
@@ -58,8 +63,9 @@ def update_pending_samples_table(request):
         profiles += Profile().get_erga_profiles(filter=profile_filter)
     if "dtolenv_sample_managers" in member_groups:
         profiles += Profile().get_dtolenv_profiles(filter=profile_filter) """
-
-    return HttpResponse(json_util.dumps(profiles))
+    
+    result = {"data": profiles}
+    return HttpResponse(json_util.dumps(result))
 
 
 @login_required

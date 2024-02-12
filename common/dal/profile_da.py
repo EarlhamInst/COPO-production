@@ -181,19 +181,35 @@ class Profile(DAComponent):
             if 'datasets' in p['dataverse']:
                 return p['dataverse']['datasets']
 
-    def get_profiles(self, filter="all_profiles", group_filter=None):
+    def get_profiles(self, filter="all_profiles", group_filter=None, search_filter=None, sort_by="date_created", dir=-1):
+        from .sample_da import Sample
+        profile_ids_from_sample = Sample().get_collection_handle().distinct("profile_id", {"$text": {"$search": search_filter} })
+        profile_oids_from_sample = [ObjectId(id) for id in profile_ids_from_sample ]
+        profile_condition = {"$or" : [{"_id": {"$in" : profile_oids_from_sample }}, {"title": { "$regex" : search_filter, "$options": "i"}}]}
         if group_filter == "dtol":
-            return self.get_dtol_profiles("all_profiles")
+            profile_condition["type"] = {"$in": ["Darwin Tree of Life (DTOL)", "Aquatic Symbiosis Genomics (ASG)"]}
+            #return self.get_dtol_profiles("all_profiles", search_filter, profile_oids_from_sample)
         elif group_filter == "erga":
-            return self.get_erga_profiles(filter)
+            profile_condition["type"] = {"$in": ["European Reference Genome Atlas (ERGA)"]}
+            #return self.get_erga_profiles(filter, search_filter, profile_oids_from_sample)
         elif group_filter == "dtolenv":
-            return self.get_dtolenv_profiles("all_profiles")
+            profile_condition["type"] = {"$in": ["Darwin Tree of Life Environmental Samples (DTOL_ENV)"]}
+            #return self.get_dtolenv_profiles("all_profiles", search_filter, profile_oids_from_sample)
 
-    def get_dtol_profiles(self, filter="all_profiles"):
+        if filter == "my_profiles" and group_filter=="erga": 
+            seq_centres = helpers.get_users_seq_centres()
+            seq_centres = [str(x.name) for x in seq_centres]
+            profile_condition["sequencing_centre"] = {"$in": seq_centres}
+
+        p = self.get_collection_handle().find(profile_condition).sort(sort_by, pymongo.DESCENDING if dir == -1 else pymongo.ASCENDING)
+        return cursor_to_list(p)
+
+    '''
+    def get_dtol_profiles(self, filter="all_profiles", search_filter=None, profile_oids_from_sample=[]):
 
         if filter == "all_profiles":
             p = self.get_collection_handle().find(
-                {"type": {"$in": ["Darwin Tree of Life (DTOL)", "Aquatic Symbiosis Genomics (ASG)"]}}).sort(
+                {"type": {"$in": ["Darwin Tree of Life (DTOL)", "Aquatic Symbiosis Genomics (ASG)"]}} ).sort(
                 "date_created",
                 pymongo.DESCENDING)
         elif filter == 'my_profiles':
@@ -206,7 +222,7 @@ class Profile(DAComponent):
                 pymongo.DESCENDING)
         return cursor_to_list(p)
 
-    def get_erga_profiles(self, filter="all_profiles"):
+    def get_erga_profiles(self, filter="all_profiles", search_filter=None, profile_ids_from_sample=[]):
 
         if filter == "all_profiles":
             p = self.get_collection_handle().find(
@@ -221,7 +237,7 @@ class Profile(DAComponent):
                 pymongo.DESCENDING)
         return cursor_to_list(p)
 
-    def get_dtolenv_profiles(self, filter="all_profiles"):
+    def get_dtolenv_profiles(self, filter="all_profiles", search_filter=None, profile_ids_from_sample=[]):
         if filter == "all_profiles":
             p = self.get_collection_handle().find(
                 {"type": {"$in": ["Darwin Tree of Life Environmental Samples (DTOL_ENV)"]}}).sort("date_modified",
@@ -235,9 +251,10 @@ class Profile(DAComponent):
                 "date_created",
                 pymongo.DESCENDING)
         return cursor_to_list(p)
+    '''
 
     def get_profile_records(self, data, currentUser=True):
-        from common.schemas.utils import data_utils
+        #from common.schemas.utils import data_utils
         p = None
         owner_id = helpers.get_user_id()
 
