@@ -521,7 +521,7 @@ $(document).ready(function () {
     profile_samples.getElementsByTagName('thead')[0].children.length == 0
   ) {
     $.ajax({
-      url: '/copo/dtol_submission/get_sample_column_names',
+      url: '/copo/dtol_submission/get_sample_column_names/',
       method: 'GET',
       dataType: 'json',
     })
@@ -794,23 +794,42 @@ function update_pending_samples_table() {
     .attr('href');
   //console.log(which_profiles)
   let columnDefs = [
-    { name:"date_created", data:"date_created", title:"Date Created", type:"date",targets: [1],className: 'dt-center text-center',
+    { name:"first_manifest_created", data:"first_manifest_date_created", title:"First manifest upload", type:"date",targets: [1],className: 'dt-center text-center',
       render: function(data, type, row) {
-        let date = new Date(data.$date).toLocaleDateString(
-          'en-GB',
-          { timeZone: 'UTC' }
-        );
-        return date
+        if (data != undefined && data != "") {
+          let date = new Date(data.$date).toLocaleDateString(
+            'en-GB',
+            { timeZone: 'UTC' }
+          );
+          return date
+        } else {
+          return ""
+        }
       }
-    }
+    },
+
+    { name:"last_manifest_updated", data:"last_manifest_date_modified", title:"Last manifest upload", type:"date",targets: [2],className: 'dt-center text-center',
+      render: function(data, type, row) {
+        if (data != undefined && data != "") {
+          let date = new Date(data.$date).toLocaleDateString(
+            'en-GB',
+            { timeZone: 'UTC' }
+          );
+          return date
+        } else {
+          return ""
+        }
+      }
+    } 
   ];
 
   if (which_profiles == 'my_profiles') {
     $('#accept_reject_button').show();
     $('#edit-buttons').show();
     columnDefs.push(
-      { name:"title", data:"title", title:"Profile Title", targets: [0], className: 'profile_title_header_my_profiles' },
-      { data:"_id", title:"Samples Link", targets: [2], orderable: false,
+      { name:"title", data:"title", title:"Profile Title &emsp;&emsp;", targets: [0], className: 'profile_title_header_my_profiles' });
+    columnDefs.push(  
+      { data:"_id", title:"Samples Link", targets: [3], orderable: false,
        className: 'dt-center text-center',
        render: function(data, type, row) {
          return "<a href='/copo/copo_sample/" +
@@ -890,7 +909,9 @@ function update_pending_samples_table() {
           if (columnIdx == 0) {
             orderby = "title"
           } else if (columnIdx == 1) {
-            orderby = "date_created"
+            orderby = "first_manifest_date_created"
+          } else if (columnIdx == 2) {
+            orderby = "last_manifest_date_modified"
           }
           return {
             profiles: which_profiles, 
@@ -911,7 +932,7 @@ function update_pending_samples_table() {
       responsive: true,
       paging: false,
       dom: '<"top"f>rt<"bottom"lp><"clear">',
-      order: [[1, 'desc']],
+      order: [[0, 'desc']],
       columnDefs: columnDefs,
       search: {
         return: true,

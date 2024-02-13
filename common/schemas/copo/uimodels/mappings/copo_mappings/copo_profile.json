@@ -231,22 +231,40 @@
     },
     {
       "help_tip": "",
-      "required": "true",
+      "required": "false",
       "default_value": "",
       "control_meta": {},
       "versions": [
-        "user_id"
+        "first_manifest_date_created"
       ],
       "ref": "",
       "deprecated": false,
       "hidden": "true",
-      "label": "User ID",
+      "label": "First Manifest Created",
       "show_in_form": false,
-      "id": "copo.profile.user_id",
+      "id": "copo.profile.first_manifest_date_created",
       "type": "string",
       "show_in_table": false,
-      "control": "text"
-    }
+      "control": "datetime"
+    },
+    {
+      "help_tip": "",
+      "required": "false",
+      "default_value": "",
+      "control_meta": {},
+      "versions": [
+        "last_manifest_date_modified"
+      ],
+      "ref": "",
+      "deprecated": false,
+      "hidden": "true",
+      "label": "Last Manifest Modified",
+      "show_in_form": false,
+      "id": "copo.profile.last_manifest_date_modified",
+      "type": "string",
+      "show_in_table": false,
+      "control": "datetime"
+    }    
   ],
   "description": "Attributes for COPO Profile schema.",
   "title": "Profile mappings"
