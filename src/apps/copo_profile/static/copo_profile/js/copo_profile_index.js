@@ -5,8 +5,6 @@ $(document).ready(function () {
   const component = 'profile';
   const copoProfileIndexURL = '/copo/';
   const copoAcceptRejectURL = '/copo/dtol_submission/accept_reject_sample';
-  const copoAccessionsDashboardURL = '/copo/copo_accessions/dashboard';
-  const copoTolDashboardURL = '/copo/tol_dashboard/tol';
   const copoSamplesURL = '/copo/copo_sample/';
   const copoENAReadManifestValidateURL = '/copo/copo_read/';
   const copoENAAssemblyURL = '/copo/copo_assembly/';
@@ -36,27 +34,13 @@ $(document).ready(function () {
     document.location = copoAcceptRejectURL;
   });
 
-  $(document).on('click', '#copo_tol_dashboard_shortcut', function () {
-    document.location = copoTolDashboardURL;
-  });
-
-  $(document).on('click', '#copo_accessions_dashboard_shortcut', function () {
-    document.location = copoAccessionsDashboardURL;
-  });
-
   // Show web page buttons according to the group that the users are associated with
-  if (groups.length === 0) {
-    $('#copo_accessions_dashboard_shortcut').show(); // Show 'Accessions tol_dashboard' button for all users
-    $('#copo_tol_dashboard_shortcut').show(); // Show 'Tree of life tol_dashboard' button for all users
-  } else {
+  if (groups.length != 0) {
     for (let g in groups) {
       // Display 'Accept/reject' button for sample managers
       if (groups[g].includes('sample_managers')) {
         $('#accept_reject_shortcut').show();
-        // break;
       }
-      $('#copo_accessions_dashboard_shortcut').show(); // Show 'Accessions tol_dashboard' button for all users
-      $('#copo_tol_dashboard_shortcut').show(); // Show 'Tree of life tol_dashboard' button for all users
     }
   }
 
