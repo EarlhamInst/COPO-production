@@ -2,7 +2,8 @@ openapi: 3.0.0
 info:
   title: COPO API
   description: |
-    The following are Swagger Application Programming Interface (API) methods for manifests, samples, statistics and profiles 
+    The following are Swagger Application Programming Interface (API) methods for audits, 
+    manifests, samples, profiles, statistics and Tree of Life (ToL) fields mapping 
     in the **Collaborative OPen Omics (COPO)** project.
 
     Please view our [API methods' documentation](https://copo-docs.readthedocs.io/en/latest/retrieval/copo-api.html) for guidance.
@@ -61,11 +62,7 @@ paths:
           schema:
             type: string
             format: date-time
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of sample objects
@@ -84,8 +81,8 @@ paths:
         - Audit
       summary: Get update audit for sample records by manifest ID
       description: >
-        Get a list of sample update records in COPO. </br></br>
-        If no parameters are provided, COPO will return a list of all sample updates.
+        Get a list of sample update records in COPO by manifest ID. </br></br>
+        If manifest_id is not provided, COPO will return a list of all sample updates.
       parameters:
         - name: manifest_id
           in: path
@@ -93,12 +90,7 @@ paths:
           required: false
           schema:
             type: string
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample update objects
@@ -113,8 +105,8 @@ paths:
         - Audit
       summary: Get update audit for sample records by copo_id
       description: >
-        Get a list of sample update records in COPO. </br></br>
-        If no parameters are provided, COPO will return a list of all sample updates.
+        Get a list of sample update records in COPO by copo ID. </br></br>
+        If copo_id is not provided, COPO will return a list of all sample updates.
       parameters:
         - name: copo_id
           in: path
@@ -123,12 +115,7 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample update objects
@@ -161,12 +148,7 @@ paths:
           schema:
             type: string
             enum: [system, user]
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample update objects
@@ -198,12 +180,7 @@ paths:
           description: The value of the field to query sample updates by
           schema:
             type: string
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample update objects
@@ -220,7 +197,7 @@ paths:
         - Audit
       summary: Get update audit for 'ASG' sample records by an updatable field
       description: >
-        If no 'copo_id' is provided, COPO will return a list of updates for the 'ASG' sample type for all updatable fields if an update was done on it
+        If no 'copo_id' is provided, COPO will return a list of updates for the Aquatic Symbiosis Genomics (ASG) sample type for all updatable fields if an update was done on it
       parameters:
         - name: copo_id
           in: query
@@ -234,12 +211,7 @@ paths:
           schema:
             $ref: '#/components/schemas/UpdatableFields_ASG'
           description: A list of fields that can be updated for 'ASG' sample types
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         200:
           description: A JSON array of the latest manifest version for a given project type
@@ -250,7 +222,7 @@ paths:
         - Audit
       summary: Get update audit for 'DTOL' sample records by an updatable field
       description: >
-        If no 'copo_id' is selected, COPO will return a list of updates for the 'DTOL' sample type for all updatable fields if an update was done on it
+        If no 'copo_id' is selected, COPO will return a list of updates for the Darwin Tree of Life (DTOL) sample type for all updatable fields if an update was done on it
       parameters:
         - name: copo_id
           in: query
@@ -264,12 +236,7 @@ paths:
           schema:
             $ref: '#/components/schemas/UpdatableFields_DTOL'
           description: A list of fields that can be updated for 'DTOL' sample types
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         200:
           description: A JSON array of the latest manifest version for a given project type
@@ -280,7 +247,7 @@ paths:
         - Audit
       summary: Get update audit for 'ERGA' sample records by an updatable field
       description: >
-        If no 'copo_id' is provided, COPO will return a list of updates for the 'ERGA' sample type for the desired field if an update was done on it
+        If no 'copo_id' is provided, COPO will return a list of updates for the European Reference Genome Atlas (ERGA) sample type for the desired field if an update was done on it
       parameters:
         - name: copo_id
           in: query
@@ -300,12 +267,7 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         200:
           description: A JSON array of the latest manifest version for a given project type
@@ -317,13 +279,9 @@ paths:
         - Manifest
       summary: Get all manifests
       description: >
-        If no manifest ID is provided, COPO simply returns a list of all manifest ids
+        COPO will return a list of manifest ids
       parameters:
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         200:
           description: A JSON array sample objects
@@ -344,11 +302,7 @@ paths:
           name: manifest_type
           schema:
             $ref: '#/components/schemas/ManifestTypes'
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         200:
           description: A JSON array of the latest manifest version for a given project type
@@ -368,10 +322,11 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
+        - $ref: '#/components/parameters/standard'
+        - name: return_type
+          in: query
           schema:
-            enum: [json, csv, rocrate]
+            $ref: '#/components/schemas/ReturnTypes_with_rocrate'
           description: Export data into selected format
       responses:
         '200': # status code
@@ -405,11 +360,7 @@ paths:
           schema:
             type: string
             format: date-time
-        - in: query
-          name: return_type
-          schema:
-            type: string
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of sample manifest uuid objects
@@ -448,11 +399,7 @@ paths:
           schema:
             type: string
             format: date-time
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of sample manifest uuid objects
@@ -463,7 +410,7 @@ paths:
         '400':
           description: \'from\' must be earlier than \'to\ and project must be in the list of supported projects'
 
-  /manifest/{manifest_id}/sample_statuses:
+  /manifest/{manifest_id}/sample_status:
     get:
       tags:
         - Manifest
@@ -478,11 +425,7 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of sample status objects
@@ -493,7 +436,7 @@ paths:
         '400':
           description: invalid manifest_id
 
-  /manifest/validate/:
+  /manifest/validate:
     post:
       tags:
         - Manifest
@@ -517,7 +460,7 @@ paths:
         '200':
           description: id of queued validation report to be queried
 
-  /manifest/validate/report/:
+  /manifest/validate/report:
     post:
       tags:
         - Manifest
@@ -539,7 +482,7 @@ paths:
         '200':
           description: status and/or validation errors for given manifest validation
 
-  /manifest/validations/:
+  /manifest/validations:
     post:
       tags:
         - Manifest
@@ -554,9 +497,9 @@ paths:
     get:
       tags:
         - Sample
-      summary: Get sample records in a project
+      summary: Get copo_ids of sample records within a project
       description: >
-        Get a list of all the samples of a project in COPO
+        Get a list of copo IDs of samples within a project in COPO
       parameters:
         - name: project
           in: path
@@ -565,11 +508,7 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample copo_ids
@@ -598,11 +537,8 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -635,11 +571,8 @@ paths:
           in: query
           schema:
             $ref: '#/components/schemas/ManifestVersions'
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of fields for a given manifest version
@@ -677,11 +610,8 @@ paths:
           schema:
             type: string
             format: date-time
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of sample objects
@@ -707,11 +637,11 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
+        - $ref: '#/components/parameters/standard'
+        - name: return_type
+          in: query
           schema:
-            enum: [json, csv]
-          description: Export data into csv format
+            $ref: '#/components/schemas/ReturnTypes'
       responses:
         '200': # status code
           description: A JSON array of updatable sample fields
@@ -740,11 +670,8 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -755,26 +682,23 @@ paths:
         '400':
           description: InvalidId found in request
 
-  /sample/biosample_id/{biosample_ids}:
+  /sample/biosampleAccession/{biosampleAccessions}:
     get:
       tags:
         - Sample
       summary: Get sample records by biosampleAccession
       description: >
-        Get full sample information for the samples returned from the given {biosample_ids}
+        Get full sample information for the samples returned from the given {biosampleAccessions}
       parameters:
-        - name: biosample_ids
+        - name: biosampleAccessions
           in: path
           required: true
-          description: biosample accessions created by ENA, separated by commas
+          description: Biosample accessions created by European Nucleotide Archive (ENA), separated by commas
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -806,11 +730,8 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -830,16 +751,13 @@ paths:
         - name: sample_ids
           in: path
           required: true
-          description: Format - a comma separated list of biosample accessions or ENA/SRA accessions
+          description: Format - a comma separated list of biosample accessions or European Nucleotide Archive (ENA)/ sraAccessions
           schema:
             type: string
             minimum: 1
             maximum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -862,11 +780,8 @@ paths:
           description: Format - a comma separated list of biostudy accessions
           schema:
             type: string
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -876,7 +791,7 @@ paths:
                 $ref: '#/components/schemas/SampleAccessionList'
 
   # Section: Profile
-  /profile/make_profile/:
+  /profile/make_profile:
     post:
       tags:
         - Profile
@@ -916,7 +831,7 @@ paths:
         '200':
           description: representation of the created profile
 
-  /profile/get_for_user/:
+  /profile/get_for_user:
     post:
       tags:
         - Profile
@@ -930,10 +845,10 @@ paths:
           description: representation of the created profile
 
   # Section: Statistics
-  /stats/number_of_users/:
+  /stats/number_of_users:
     get:
       tags:
-        - Stats
+        - Statistics
       summary: Get number of registered COPO users
       responses:
         '200': # status code
@@ -943,10 +858,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/StatsNumber'
 
-  /stats/number_of_samples/{sample_type}/:
+  /stats/number_of_samples/{sample_type}:
     get:
       tags:
-        - Stats
+        - Statistics
       summary: Get the number of registered samples by sample type
       description: If no sample type is provided, COPO will return the total number of samples.
       parameters:
@@ -962,10 +877,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/StatsNumber'
 
-  /stats/tol_projects/:
+  /stats/tol_projects:
     get:
       tags:
-        - Stats
+        - Statistics
       summary: Get all Tree of Life (ToL) projects or main projects brokered through COPO
       responses:
         '200': # status code
@@ -975,10 +890,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/TOLProjectList'
 
-  /stats/associated_tol_projects/:
+  /stats/associated_tol_projects:
     get:
       tags:
-        - Stats
+        - Statistics
       summary: Get all associated Tree of Life (ToL) projects or subprojects brokered through COPO
       responses:
         '200': # status code
@@ -993,7 +908,90 @@ paths:
         '500':
           description: No samples exist for given project(s)
 
+  # Section: TOL Mapping
+  /mapping:
+    get:
+      tags:
+        - Tree of Life (ToL) Mapping
+      summary: >
+        Get a mapping of ToL manifest fields brokered through COPO 
+        by DWC standard, MIxS standard or ENA standard
+      description: >
+        If no standard is provided, COPO will return a list of mapping of Tree of Life (ToL) fields to Darwin Core (DWC) standard, 
+        Minimum Information about any (X) Sequence (MIxS) standard and European Nucleotide Archive (ENA) standard.
+      parameters:
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
+      responses:
+        '200': # status code
+          description: A JSON array of mapping
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TOLProjectList'
+        '400':
+          description: Invalid mapping type found in request
+
+        '500':
+          description: No mapping exist for the given mapping type
+
+  /mapping/manifest_type/{manifest_type}:
+    get:
+      tags:
+        - Tree of Life (ToL) Mapping
+      summary: >
+        Get a mapping of ToL fields by manifest type - ASG, DTOL, DTOL_ENV or ERGA
+        to DWC fields, MIxS fields and ENA fields
+      description: >
+        COPO will return a list of mapping for one of the manifests project types - Aquatic Symbiosis Genomics (ASG), 
+        Darwin Tree of Life (DTOL), Darwin Tree of Life Environmental Samples (DTOL_ENV) or European Reference Genome Atlas (ERGA)
+        to Darwin Core (DWC) fields, Minimum Information about any (X) Sequence (MIxS) fields and European Nucleotide Archive (ENA) fields
+      parameters:
+        - in: path
+          name: manifest_type
+          required: true
+          schema:
+            $ref: '#/components/schemas/ManifestTypes'
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
+      responses:
+        '200': # status code
+          description: A JSON array of mapping
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TOLProjectList'
+        '400':
+          description: Invalid mapping type found in request
+
+        '500':
+          description: No mapping exist for the given mapping type
+
 components:
+  parameters:
+    standard:
+      name: standard
+      in: query
+      description: |
+        Available standards - **dwc**, **ena**, **mixs**, **tol**
+
+        To query multiple standards, separate them with a comma.
+
+        - **dwc** refers to Darwin Core (DWC)
+        - **ena** refers to European Nucleotide Archive (ENA)
+        - **mixs** refers to Minimum Information about any (X) Sequence (MIxS)
+        - **tol** refers Tree of Life (ToL)
+      example: dwc, ena, mixs, tol
+      schema:
+        type: string
+
+    return_type:
+      name: return_type
+      in: query
+      description: Export data into selected format
+      schema:
+        $ref: '#/components/schemas/ReturnTypes'
+
   securitySchemes:
     app_id:
       type: apiKey
@@ -1047,7 +1045,17 @@ components:
 
     ManifestVersions:
       type: string
-      enum: ['2.4', '2.4.1', '2.4.2', '2.4.3']
+      enum: ['2.5', '2.4', '2.4.1', '2.4.2', '2.4.3']
+
+    ReturnTypes:
+      type: string
+      enum: [json, csv]
+      description: Return file formats
+
+    ReturnTypes_with_rocrate:
+      type: string
+      enum: [json, csv, rocrate]
+      description: Return file formats including RO-Crate
 
     Profile:
       type: object
