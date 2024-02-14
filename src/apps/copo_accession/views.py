@@ -24,7 +24,6 @@ def copo_accessions(request, profile_id):
 
 def copo_accessions_dashboard(request):
     # Determine if users are in the appropriate membership group to view the web page
-    member_groups = get_group_membership_asString()
     groups = get_group_membership_asString()
 
     return render(request, 'copo/accessions/copo_accessions.html',

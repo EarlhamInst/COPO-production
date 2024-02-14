@@ -59,7 +59,7 @@ def copo_tol_dashboard(request):
     # Determine if users are in the appropriate membership group to view the web page
     member_groups = get_group_membership_asString()
 
-    # Stand-alone users/annoymous users can only view certain aspects of the tol dashboard
+    # Stand-alone users/anonymous users can only view certain aspects of the tol dashboard
     if any(item in member_groups for item in REQUIRED_MEMBER_GROUPS):
         context = {'group_status': False}
     else:
