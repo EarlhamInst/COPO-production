@@ -12,27 +12,30 @@ from src.apps.api.utils import finish_request
 def filter_audits_for_API(audits):
     time_fields = ['time_updated']
     email_fields = ['updated_by']
-    audit_log_types = ['update_log', 'removal_log', 'truncated_log']
+    audit_log_types = ['update_log', 'removal_log', 'truncated_log']   
     out = list()
-    data = dict()
 
     for audit in audits:
         for log_type in audit_log_types:
-            audit_log = audit.get(log_type, list())
+            if log_type in audit:
+                audit_log = audit.get(log_type, list())
 
-            for element in audit_log:
-                for k, v in element.items():
-                    if k in time_fields:
-                        data[k] = format_date(v)
-                    elif k in email_fields:
-                        data[k] = '*****@' + \
-                            (v.split('@')[1] if '@' in v else '')
-                    elif k == 'copo_id':
-                        # Convert the 'copo_id' to a string so that it can be displayed
-                        data[k] = str(element[k])
-                    else:
-                        data[k] = v
-                out.append(data)
+                for element in audit_log:
+                    data = dict()
+
+                    for k, v in element.items():
+                        if k in time_fields:
+                            data[k] = format_date(v)
+                        elif k in email_fields:
+                            data[k] = '*****@' + \
+                                (v.split('@')[1] if '@' in v else '')
+                        elif k == 'copo_id':
+                            # Convert the 'copo_id' to a string so that it can be displayed
+                            data[k] = str(element[k])
+                        else:
+                            data[k] = v
+
+                    out.append(data)
     return out
 
 
@@ -41,7 +44,7 @@ def filtered_audits_by_updatable_field(sample_id, updatable_field, sample_type):
     sample_id_list = sample_id.split(',')
     sample_id_list = list(map(lambda x: x.strip().lower(), sample_id_list))
 
-    # Remove any empty elements in the list (e.g.
+    # Remove any empty elements in the list e.g.
     # where 2 or more commas have been typed in error
     sample_id_list[:] = [x for x in sample_id_list if x]
 
@@ -61,6 +64,7 @@ def get_sample_updates_by_sample_field_and_value(request,field, field_value):
         'public_name' field
         'sraAccession' field
     '''
+    
     out = list()
 
     sample_updates = Audit().get_sample_update_audits_by_field_and_value(
@@ -71,7 +75,8 @@ def get_sample_updates_by_sample_field_and_value(request,field, field_value):
     return finish_request(out)
 
 
-def get_sample_updates_by_manifest_id(request, manifest_id):
+def get_sample_updates_by_manifest_id(request):
+    manifest_id = request.GET.get('manifest_id', str())
     # Split the string into a list
     manifest_id_list = manifest_id.split(',')
     manifest_id_list = list(map(lambda x: x.strip(), manifest_id_list))
@@ -121,7 +126,6 @@ def get_sample_updates_by_copo_id(request, copo_id):
 
     return finish_request(out)
 
-
 def get_asg_sample_updates_by_updatable_field(request):
     sample_id = request.GET.get('copo_id', str())
     updatable_field = request.GET.get('updatable_field', str())
@@ -129,7 +133,6 @@ def get_asg_sample_updates_by_updatable_field(request):
         sample_id, updatable_field, sample_type='asg',)
 
     return finish_request(out)
-
 
 def get_dtol_sample_updates_by_updatable_field(request):
     sample_id = request.GET.get('copo_id', str())
@@ -139,7 +142,6 @@ def get_dtol_sample_updates_by_updatable_field(request):
 
     return finish_request(out)
 
-
 def get_erga_sample_updates_by_updatable_field(request):
     sample_id = request.GET.get('copo_id', str())
     updatable_field = request.GET.get('updatable_field', str())
@@ -148,11 +150,10 @@ def get_erga_sample_updates_by_updatable_field(request):
 
     return finish_request(out)
 
-
 def get_sample_updates_by_update_type(request, update_type):
     # Get all sample updates by 'sample_type' and 'update_type'
     # 'update_type' can be 'system' or 'user'
-    sample_type = request.GET.get('sample_type', str()).lower()
+    sample_type = request.GET.get('sample_type',str())
     sample_type_list = sample_type.split(',')
     sample_type_list = list(map(lambda x: x.strip().lower(), sample_type_list))
 
@@ -171,7 +172,6 @@ def get_sample_updates_by_update_type(request, update_type):
     out = filter_audits_for_API(sample_updates)
 
     return finish_request(out)
-
 
 def get_sample_updates_between_dates(request, d_from, d_to):
     # Get all sample updates between d_from and d_to
