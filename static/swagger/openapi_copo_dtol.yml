@@ -2,8 +2,8 @@ openapi: 3.0.0
 info:
   title: COPO API
   description: |
-    The following are Swagger Application Programming Interface (API) methods for manifests, samples, statistics and profiles 
-    in the **Collaborative OPen Omics (COPO)** project.
+    The following are Swagger Application Programming Interface (API) methods for audits, 
+    manifests, samples, profiles and statistics. 
 
     Please view our [API methods' documentation](https://copo-docs.readthedocs.io/en/latest/retrieval/copo-api.html) for guidance.
 
@@ -61,11 +61,7 @@ paths:
           schema:
             type: string
             format: date-time
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of sample objects
@@ -84,8 +80,8 @@ paths:
         - Audit
       summary: Get update audit for sample records by manifest ID
       description: >
-        Get a list of sample update records in COPO. </br></br>
-        If no parameters are provided, COPO will return a list of all sample updates.
+        Get a list of sample update records in COPO by manifest ID. </br></br>
+        If manifest_id is not provided, COPO will return a list of all sample updates.
       parameters:
         - name: manifest_id
           in: path
@@ -93,12 +89,7 @@ paths:
           required: false
           schema:
             type: string
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample update objects
@@ -113,8 +104,8 @@ paths:
         - Audit
       summary: Get update audit for sample records by copo_id
       description: >
-        Get a list of sample update records in COPO. </br></br>
-        If no parameters are provided, COPO will return a list of all sample updates.
+        Get a list of sample update records in COPO by copo ID. </br></br>
+        If copo_id is not provided, COPO will return a list of all sample updates.
       parameters:
         - name: copo_id
           in: path
@@ -123,12 +114,7 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample update objects
@@ -161,12 +147,7 @@ paths:
           schema:
             type: string
             enum: [system, user]
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample update objects
@@ -198,12 +179,7 @@ paths:
           description: The value of the field to query sample updates by
           schema:
             type: string
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample update objects
@@ -220,7 +196,7 @@ paths:
         - Audit
       summary: Get update audit for 'ASG' sample records by an updatable field
       description: >
-        If no 'copo_id' is provided, COPO will return a list of updates for the 'ASG' sample type for all updatable fields if an update was done on it
+        If no 'copo_id' is provided, COPO will return a list of updates for the Aquatic Symbiosis Genomics (ASG) sample type for all updatable fields if an update was done on it
       parameters:
         - name: copo_id
           in: query
@@ -234,12 +210,7 @@ paths:
           schema:
             $ref: '#/components/schemas/UpdatableFields_ASG'
           description: A list of fields that can be updated for 'ASG' sample types
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         200:
           description: A JSON array of the latest manifest version for a given project type
@@ -250,7 +221,7 @@ paths:
         - Audit
       summary: Get update audit for 'DTOL' sample records by an updatable field
       description: >
-        If no 'copo_id' is selected, COPO will return a list of updates for the 'DTOL' sample type for all updatable fields if an update was done on it
+        If no 'copo_id' is selected, COPO will return a list of updates for the Darwin Tree of Life (DTOL) sample type for all updatable fields if an update was done on it
       parameters:
         - name: copo_id
           in: query
@@ -264,12 +235,7 @@ paths:
           schema:
             $ref: '#/components/schemas/UpdatableFields_DTOL'
           description: A list of fields that can be updated for 'DTOL' sample types
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         200:
           description: A JSON array of the latest manifest version for a given project type
@@ -280,7 +246,7 @@ paths:
         - Audit
       summary: Get update audit for 'ERGA' sample records by an updatable field
       description: >
-        If no 'copo_id' is provided, COPO will return a list of updates for the 'ERGA' sample type for the desired field if an update was done on it
+        If no 'copo_id' is provided, COPO will return a list of updates for the European Reference Genome Atlas (ERGA) sample type for the desired field if an update was done on it
       parameters:
         - name: copo_id
           in: query
@@ -300,12 +266,7 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            type: string
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         200:
           description: A JSON array of the latest manifest version for a given project type
@@ -317,13 +278,9 @@ paths:
         - Manifest
       summary: Get all manifests
       description: >
-        If no manifest ID is provided, COPO simply returns a list of all manifest ids
+        COPO will return a list of manifest ids
       parameters:
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         200:
           description: A JSON array sample objects
@@ -344,11 +301,7 @@ paths:
           name: manifest_type
           schema:
             $ref: '#/components/schemas/ManifestTypes'
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         200:
           description: A JSON array of the latest manifest version for a given project type
@@ -368,11 +321,11 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv, rocrate]
+        - name: return_type
+          in: query
           description: Export data into selected format
+          schema:
+            $ref: '#/components/schemas/ReturnTypes_with_rocrate'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -448,11 +401,7 @@ paths:
           schema:
             type: string
             format: date-time
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of sample manifest uuid objects
@@ -478,11 +427,7 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of sample status objects
@@ -554,9 +499,9 @@ paths:
     get:
       tags:
         - Sample
-      summary: Get sample records in a project
+      summary: Get copo_ids of sample records within a project
       description: >
-        Get a list of all the samples of a project in COPO
+        Get a list of copo IDs of samples within a project in COPO
       parameters:
         - name: project
           in: path
@@ -565,11 +510,7 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample copo_ids
@@ -598,11 +539,7 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -635,11 +572,7 @@ paths:
           in: query
           schema:
             $ref: '#/components/schemas/ManifestVersions'
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of fields for a given manifest version
@@ -677,11 +610,7 @@ paths:
           schema:
             type: string
             format: date-time
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of sample objects
@@ -707,11 +636,7 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into csv format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of updatable sample fields
@@ -740,11 +665,7 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -766,15 +687,11 @@ paths:
         - name: biosample_ids
           in: path
           required: true
-          description: biosample accessions created by ENA, separated by commas
+          description: Biosample accessions created by European Nucleotide Archive (ENA), separated by commas
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -806,11 +723,7 @@ paths:
           schema:
             type: string
             minimum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -830,16 +743,12 @@ paths:
         - name: sample_ids
           in: path
           required: true
-          description: Format - a comma separated list of biosample accessions or ENA/SRA accessions
+          description: Format - a comma separated list of biosample accessions or European Nucleotide Archive (ENA)/sraAccessions
           schema:
             type: string
             minimum: 1
             maximum: 1
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -862,11 +771,7 @@ paths:
           description: Format - a comma separated list of biostudy accessions
           schema:
             type: string
-        - in: query
-          name: return_type
-          schema:
-            enum: [json, csv]
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array sample objects
@@ -933,7 +838,7 @@ paths:
   /stats/number_of_users/:
     get:
       tags:
-        - Stats
+        - Statistics
       summary: Get number of registered COPO users
       responses:
         '200': # status code
@@ -946,7 +851,7 @@ paths:
   /stats/number_of_samples/{sample_type}/:
     get:
       tags:
-        - Stats
+        - Statistics
       summary: Get the number of registered samples by sample type
       description: If no sample type is provided, COPO will return the total number of samples.
       parameters:
@@ -965,7 +870,7 @@ paths:
   /stats/tol_projects/:
     get:
       tags:
-        - Stats
+        - Statistics
       summary: Get all Tree of Life (ToL) projects or main projects brokered through COPO
       responses:
         '200': # status code
@@ -978,7 +883,7 @@ paths:
   /stats/associated_tol_projects/:
     get:
       tags:
-        - Stats
+        - Statistics
       summary: Get all associated Tree of Life (ToL) projects or subprojects brokered through COPO
       responses:
         '200': # status code
@@ -994,6 +899,14 @@ paths:
           description: No samples exist for given project(s)
 
 components:
+  parameters:
+    return_type:
+      name: return_type
+      in: query
+      description: Export data into selected format
+      schema:
+        $ref: '#/components/schemas/ReturnTypes'
+
   securitySchemes:
     app_id:
       type: apiKey
@@ -1047,7 +960,17 @@ components:
 
     ManifestVersions:
       type: string
-      enum: ['2.4', '2.4.1', '2.4.2', '2.4.3']
+      enum: ['2.5', '2.4', '2.4.1', '2.4.2', '2.4.3']
+
+    ReturnTypes:
+      type: string
+      enum: [json, csv]
+      description: Return file formats
+
+    ReturnTypes_with_rocrate:
+      type: string
+      enum: [json, csv, rocrate]
+      description: Return file formats including RO-Crate
 
     Profile:
       type: object
