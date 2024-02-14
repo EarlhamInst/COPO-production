@@ -2,7 +2,7 @@ $(document).ready(function () {
   const acceptRejectSampleURL = '/copo/dtol_submission/accept_reject_sample';
   const accessionsDashboardURL = '/copo/copo_accessions/dashboard';
   const tolInspectURL = '/copo/tol_dashboard/tol_inspect';
-  const tolInspectByGALURL = '/copo/tol_dashboard/tol_inspect/gal/';
+  const tolInspectByGALURL = '/copo/tol_dashboard/tol_inspect/gal';
 
   // Store 'showAllCOPOAccessions' value
   $('#showAllCOPOAccessions').val() == 'True'
@@ -132,7 +132,7 @@ const filterDataByAccessionType = function () {
 
 function get_filter_accession_titles(accession_types) {
   $.ajax({
-    url: '/copo/copo_accessions/get_filter_accession_titles/',
+    url: '/copo/copo_accessions/get_filter_accession_titles',
     method: 'POST',
     headers: { 'X-CSRFToken': $.cookie('csrftoken') },
     dataType: 'json',
@@ -256,7 +256,7 @@ function render_accessions_table(data) {
     $(tableID + ' tbody').empty();
     $(tableID + ' thead').empty();
 
-    // Set toggle button on accessions' dashboard only
+    // Set toggle button on accessions dashboard only
     if ($(document).data('showAllCOPOAccessions')) set_toggle_button();
 
     // table = $(tableID).DataTable();
@@ -445,7 +445,7 @@ function render_accessions_table(data) {
       $(this).removeClass('btn btn-default').addClass('tiny ui basic button');
     });
 
-  // Show task buttons for accessions' dashboard only
+  // Show task buttons for accessions dashboard only
   if ($(document).data('showAllCOPOAccessions'))
     place_accessions_task_buttons(componentMeta);
   // }
@@ -462,7 +462,7 @@ function render_accessions_table(data) {
       accession_types.push(value);
     });
 
-  // Add filter checkbox to under info panel to right side of screen on accessions' dashboard only
+  // Add filter checkbox to under info panel to right side of screen on accessions dashboard only
   if ($(document).data('showAllCOPOAccessions'))
     get_filter_accession_titles(accession_types);
 
@@ -529,7 +529,7 @@ function load_accessions_records() {
   }
 
   // URL for accessions dashboard where the view for it does not require user to be logged in
-  let url = '/copo/copo_visualize/';
+  let url = '/copo/copo_visualize_accessions/';
 
   $.ajax({
     url: $(document).data('showAllCOPOAccessions') ? url : copoVisualsURL,
@@ -571,7 +571,7 @@ function load_accessions_records() {
             $('.accessions-legend').hide(); // Hide the filter accessions' legend
           }
         } else {
-          // Show empty component message for 'Other projects' accessions'
+          // Show empty component message for Tree of Life accessions
           set_empty_component_message(data.table_data.dataSet.length); //display empty component message when there's no record
           // if (accessions_checkboxes.find('.form-check').length)
           accessions_checkboxes.empty();
@@ -590,6 +590,7 @@ function load_accessions_records() {
         if ($(document).data('showAllCOPOAccessions')) {
           // On accessions dashboard
           $('.copo_accessions').hide();
+          $('.copo-page-icons').hide();
         } else {
           // On accessions web page for a given profile
           $('.copo_accessions').show();
@@ -599,7 +600,8 @@ function load_accessions_records() {
         }
       }
     },
-    error: function () {
+    error: function (error) {
+      console.log('Error: ' + error);
       alert("Couldn't retrieve " + componentMeta.component + ' data!');
     },
   });

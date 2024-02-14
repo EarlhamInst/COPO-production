@@ -215,8 +215,14 @@ def resolve_submission_id(request, submission_id):
     return HttpResponse(j.dumps(output))
 
 
+def copo_visualize_accessions(request):
+    return _core_visualize(request)
+
 @login_required
 def copo_visualize(request):
+    return _core_visualize(request) 
+
+def _core_visualize(request):
     context = dict()
 
     task = request.POST.get("task", str())
