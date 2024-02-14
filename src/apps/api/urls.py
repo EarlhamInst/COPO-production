@@ -39,7 +39,7 @@ dtol_api_patterns = [
 
     re_path(r'^manifest/current_version', s.get_current_manifest_version,
             name='get_current_manifest_version'),
-    re_path(r'^manifest/(?P<project>[a-zA-Z, ]+)/(?P<d_from>[A-Z0-9a-f- .:+]+)/(?P<d_to>[A-Z0-9a-f- .:+]+)',
+    re_path(r'^manifest/(?P<project>[a-zA-Z-_, ]+)/(?P<d_from>[A-Z0-9a-f- .:+]+)/(?P<d_to>[A-Z0-9a-f- .:+]+)',
             s.get_project_manifests_between_dates, name='get_project_manifests_between_dates'),
     re_path(r'^manifest/(?P<d_from>[A-Z0-9a-f- .:+]+)/(?P<d_to>[A-Z0-9a-f- .:+]+)',
             s.get_all_manifest_between_dates, name='get_all_manifests_between_dates'),
@@ -82,7 +82,7 @@ dtol_api_patterns = [
             audit.get_erga_sample_updates_by_updatable_field, name='get_erga_sample_updates_by_updatable_field'),
     re_path(r'^audit/sample/update_type/(?P<update_type>[a-zA-Z, ]+)',
             audit.get_sample_updates_by_update_type, name='get_sample_updates_by_update_type'),
-    re_path(r'^audit/sample/manifest_id/(?P<manifest_id>[A-Z0-9a-f-,]+)',
+    re_path(r'^audit/sample/manifest_id/',
             audit.get_sample_updates_by_manifest_id, name='get_sample_updates_by_manifest_id'),
     re_path(r'^audit/sample/(?P<d_from>[A-Z0-9a-f- .:+]+)/(?P<d_to>[A-Z0-9a-f- .:+]+)',
             audit.get_sample_updates_between_dates, name='get_sample_updates_between_dates'),
