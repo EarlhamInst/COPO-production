@@ -35,7 +35,8 @@ def copo_sample_accept_reject(request):
 
 @login_required
 def get_samples_column_names(request):
-    column_names = Sample().get_sample_display_column_names()
+    group_filter = request.GET.get("group", "")
+    column_names = Sample().get_sample_display_column_names(group_filter=group_filter)
     return HttpResponse(json_util.dumps(column_names))
 
 

@@ -656,13 +656,17 @@ class Sample(DAComponent):
         result["data"] = out
         return result
 
-    def get_sample_display_column_names(self):
+    def get_sample_display_column_names(self, group_filter=None):
 
         sc = self.get_component_schema()
         columns = []
         columns.append("_id")
+        group_set = set(TOL_PROFILE_TYPES)
+        if group_filter:
+            group_set = {group_filter}
         for field in sc:
-            if set(TOL_PROFILE_TYPES).intersection(set(field.get("specifications", ""))) and field.get("show_in_table",
+
+            if  group_set.intersection(set(field.get("specifications", ""))) and field.get("show_in_table",
                                                                                                        ""):
                 column = field.get("id", "").split(".")[-1]
                 if column not in columns:

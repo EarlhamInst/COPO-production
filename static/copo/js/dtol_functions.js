@@ -515,6 +515,9 @@ $(document).ready(function () {
     }
   });
 
+  update_profile_table();
+
+  /*
   var profile_samples = document.getElementById('profile_samples');
   if (
     profile_samples &&
@@ -563,6 +566,9 @@ $(document).ready(function () {
         }
       });
   }
+  */
+
+
   //if (profile_samples) {
   //update_pending_samples_table()
   //}
@@ -720,16 +726,14 @@ function row_select(ev) {
         });
         $('#sample_panel').find('.labelling').empty().append(header);
         $('#profile_samples_wrapper').show();
-        sample_table.columns.adjust().draw();
-
+        sample_table.columns.adjust().draw()
         // Enable table buttons when profile has samples in it
         $('.view-images').prop('disabled', false);
         $('.download-permits').prop('disabled', false);
         $('.delete-selected').prop('disabled', false);
         $('.select-none').prop('disabled', false);
         $('.select-all').prop('disabled', false);
-      }
-    });
+      }});
 
     $('#spinner').fadeOut('fast');
   }
@@ -899,6 +903,51 @@ function update_pending_samples_table() {
     }
     
     $.fn.dataTable.moment('DD/MM/YYYY');
+
+    $.ajax({
+      url: '/copo/dtol_submission/get_sample_column_names/',
+      data: {"group":get_group_id() },
+      method: 'GET',
+      dataType: 'json',
+    })
+      .fail(function (data) {
+        console.log('ERROR: ' + data);
+      })
+      .done(function (data) {
+        if (data.length) {
+          var header = $('<h4/>', {
+            html: 'Samples',
+          });
+          $('#sample_panel').find('.labelling').empty().append(header);
+
+          var rows = [];
+          rows.push({ title: '' });
+
+          let i = 0;
+          while (i < data.length) {
+            if (!excluded_fields.includes(data[i])) {
+              rows.push({ title: data[i], data: data[i] });
+            }
+            i++;
+          }
+          if ($.fn.DataTable.isDataTable('#profile_samples')) {
+            $('#profile_samples').DataTable().clear().destroy();
+            $('#profile_samples').empty();
+          }
+          dt_options['columns'] = rows;
+          dt_options['scrollCollapse'] = true;
+          dt_options['scrollX'] = true;
+          dt_options['scrollY'] = 1000;
+          dt_options['fixedHeader'] = true;
+          sample_table = $('#profile_samples')
+            .DataTable(dt_options)
+            .columns.adjust()
+            .draw();
+        }
+      });
+
+
+
     profile_table = $('#profile_titles').DataTable({
       rowId: "_id.$oid",
       ajax: {
