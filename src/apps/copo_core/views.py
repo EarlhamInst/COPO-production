@@ -475,9 +475,25 @@ def view_user_info(request):
 
 @login_required()
 def view_groups(request):
-    # g = Group().create_group(description="test descrition")
-    profile_list = cursor_to_list(Profile().get_for_user())
+    # g = Group().create_group(description="test description")
+    member_groups = helpers.get_group_membership_asString()
+
+    # If current logged in  user is in the 'data_manager' group i.e. 
+    # if current user is a member of the  COPO development team, return all profiles
+    # If not, return only the profiles for the current logged in user
+    profiles = Profile().get_profiles(search_filter=str()) if 'data_managers' in member_groups else Profile().get_for_user()
+    profile_list = cursor_to_list(profiles)
+
+    # Sort list of profiles by 'title' key
+    profile_list = sorted(profile_list, key=lambda x: x['title'])
+
+    # Display 'All COPO Profiles' title if current logged in user is a data manager 
+    # i.e. if current user is a member of the COPO development team
+    # If not, display 'Your Profiles' for the current logged in user
+    profile_tab_title = 'All COPO Profiles' if 'data_managers' in member_groups else 'Your Profiles'
+
     group_list = cursor_to_list(CopoGroup().get_by_owner(request.user.id))
+
     # Get a list of uppercase manifest types
     manifest_types_lst = list(map(str.upper, TOL_PROFILE_TYPES))
 
@@ -486,7 +502,7 @@ def view_groups(request):
         manifest_types_lst[:-1]), manifest_types_lst[-1]] if len(manifest_types_lst) > 2 else manifest_types_lst)
 
     return render(request, 'copo/copo_group.html',
-                  {'request': request, 'profile_list': profile_list, 'group_list': group_list, 'manifest_types': manifest_types_str})
+                  {'request': request, 'profile_list': profile_list,'profile_tab_title': profile_tab_title, 'group_list': group_list, 'manifest_types': manifest_types_str})
 
 
 """

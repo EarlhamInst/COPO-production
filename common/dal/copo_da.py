@@ -1049,7 +1049,17 @@ class CopoGroup(DAComponent):
 
     def get_profiles_for_group_info(self, group_id):
         from .profile_da import Profile
-        p_list = cursor_to_list(Profile().get_for_user(helpers.get_user_id()))
+        
+        # If current logged in  user is in the 'data_manager' group i.e. 
+        # if current user is a member of the  COPO development team, return all profiles
+        # If not, return only the profiles for the current logged in user
+        member_groups = helpers.get_group_membership_asString()
+        profiles = Profile().get_profiles(search_filter=str()) if 'data_managers' in member_groups else Profile().get_for_user(helpers.get_user_id())
+        p_list = cursor_to_list(profiles)
+
+        # Sort list of profiles by 'title' key
+        p_list = sorted(p_list, key=lambda x: x['title'])
+        
         group = CopoGroup().get_record(group_id)
         for p in p_list:
             if p['_id'] in group['shared_profile_ids']:
