@@ -1264,6 +1264,7 @@ th {
         position: fixed;
         border-radius: 6px 6px 0px 0px;
         top: 55px;
+        padding-top: 20px;
     }
 }
 
@@ -1279,6 +1280,7 @@ th {
         padding: 5px;
         border-radius: 6px 6px 0px 0px;
         top: 55px;
+        padding-top: 20px;
     }
 }
 
