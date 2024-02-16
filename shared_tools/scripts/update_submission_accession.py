@@ -19,5 +19,5 @@ for submission in cursor:
                  pass
             elif isinstance(value, dict):
                   submission_collection.update_one({"_id": submission["_id"]}, 
-                                                        {"$et": {f"accessions.{key}": [value]}})
+                                                        {"$set": {f"accessions.{key}": [value]}})
                    
