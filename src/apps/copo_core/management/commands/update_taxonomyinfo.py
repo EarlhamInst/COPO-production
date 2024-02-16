@@ -47,7 +47,7 @@ class Command(BaseCommand):
         # retrieve sample from db
         print(type(list(d_updates.keys())))
         print(list(d_updates.keys()))
-        samplesindb = da.Sample().get_by_biosample_ids(list(d_updates.keys()))
+        samplesindb = da.Sample().get_by_biosampleAccessions(list(d_updates.keys()))
         if len(samplesindb) < len(list(d_updates.keys())):
             print(
                 "**********************************************************************************")

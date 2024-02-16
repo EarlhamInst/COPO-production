@@ -1154,7 +1154,7 @@ DTOL_EXPORT_TO_STS_FIELDS = {
         'tol_project',
         'updated_by'
     ],
-    'env': [],
+    'dtol_env': [],
     'erga': [
         'TUBE_OR_WELL_ID',
         'SPECIMEN_ID',
@@ -1816,6 +1816,10 @@ NA_VALS = ['#N/A', '#N/A N/A', '#NA', '-1.#IND', '-1.#QNAN', '-NaN', '-nan', '1.
            'NaN', 'n/a', 'nan', 'NaT', 'null', 'NIL', 'nil', 'NA', 'na', 'NAN', 'Nan', 'NA']
 
 NIH_API_KEY = helpers.get_env("NIH_API_KEY")
+
+STANDARDS = ["dwc", "ena", "mixs", "tol"]
+
+STANDARDS_MAPPING_FILE_PATH = "/copo/common/schema_versions/isa_mappings/dwc_ena_mixs_tol_fields_mapping.json"
 
 REQUIRED_MEMBER_GROUPS = ['bge_checkers','dtol_users', 'dtol_sample_managers', 'dtolenv_users', 'dtolenv_sample_managers',
                           'erga_users', 'erga_sample_managers']

@@ -8,7 +8,6 @@ from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from django.http import HttpResponse
 from src.apps.api.utils import finish_request
 
-
 def filter_audits_for_API(audits):
     time_fields = ['time_updated']
     email_fields = ['updated_by']
@@ -38,7 +37,6 @@ def filter_audits_for_API(audits):
                     out.append(data)
     return out
 
-
 def filtered_audits_by_updatable_field(sample_id, updatable_field, sample_type):
     # Split the string into a list
     sample_id_list = sample_id.split(',')
@@ -53,7 +51,6 @@ def filtered_audits_by_updatable_field(sample_id, updatable_field, sample_type):
 
     return filter_audits_for_API(sample_updates)
 
-
 def get_sample_updates_by_sample_field_and_value(request,field, field_value):
     '''
     Get sample updates by one of the following fields and their respective value:
@@ -64,7 +61,7 @@ def get_sample_updates_by_sample_field_and_value(request,field, field_value):
         'public_name' field
         'sraAccession' field
     '''
-    
+
     out = list()
 
     sample_updates = Audit().get_sample_update_audits_by_field_and_value(
@@ -73,7 +70,6 @@ def get_sample_updates_by_sample_field_and_value(request,field, field_value):
     out = filter_audits_for_API(sample_updates)
 
     return finish_request(out)
-
 
 def get_sample_updates_by_manifest_id(request):
     manifest_id = request.GET.get('manifest_id', str())
@@ -97,7 +93,6 @@ def get_sample_updates_by_manifest_id(request):
     out = filter_audits_for_API(sample_updates)
 
     return finish_request(out)
-
 
 def get_sample_updates_by_copo_id(request, copo_id):
     # NB: 'sample_id' is the 'copo_id' key in DB
@@ -153,7 +148,7 @@ def get_erga_sample_updates_by_updatable_field(request):
 def get_sample_updates_by_update_type(request, update_type):
     # Get all sample updates by 'sample_type' and 'update_type'
     # 'update_type' can be 'system' or 'user'
-    sample_type = request.GET.get('sample_type',str())
+    sample_type = request.GET.get('sample_type', str())
     sample_type_list = sample_type.split(',')
     sample_type_list = list(map(lambda x: x.strip().lower(), sample_type_list))
 

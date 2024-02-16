@@ -17,11 +17,7 @@ from common.utils import helpers
 from common.schemas.utils.cg_core.cg_schema_generator import CgCoreSchemas
 from .copo_base_da import DAComponent, handle_dict
 
-
 lg = settings.LOGGER
-
-
-
 
 class Audit(DAComponent):
     def __init__(self, profile_id=None):

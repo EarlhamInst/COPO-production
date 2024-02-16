@@ -782,13 +782,13 @@ class Sample(DAComponent):
             [{"$match": {"tol_project": {"$in": projects}, "manifest_id": {"$in": manifest_ids}}},
              {"$project": {"profile_id": 1}}]))
 
-    def get_statuses_by_manifest_id(self, manifest_id):
+    def get_status_by_manifest_id(self, manifest_id):
         return cursor_to_list(self.get_collection_handle().find({"manifest_id": manifest_id},
                                                                 {"status": 1, "copo_id": 1, "manifest_id": 1,
                                                                  "time_created": 1, "time_updated": 1}))
 
-    def get_by_biosample_ids(self, biosample_ids):
-        return cursor_to_list(self.get_collection_handle().find({"biosampleAccession": {"$in": biosample_ids}}))
+    def get_by_biosampleAccessions(self, biosampleAccessions):
+        return cursor_to_list(self.get_collection_handle().find({"biosampleAccession": {"$in": biosampleAccessions}}))
 
     def get_by_field(self, dtol_field, value):
         return cursor_to_list(self.get_collection_handle().find({dtol_field: {"$in": value}}))

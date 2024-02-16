@@ -65,7 +65,7 @@ class Command(BaseCommand):
                                       sour["biosampleAccession"], reference_sam["_id"])
                 Sample().remove_field(
                     "sampleDerivedFrom", reference_sam["_id"])
-                sample = Sample().get_by_biosample_ids(
+                sample = Sample().get_by_biosampleAccessions(
                     [reference_sam['biosampleAccession']])[0]
 
                 # retrieve submitted xml
