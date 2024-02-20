@@ -151,7 +151,7 @@
     <div hidden id="hidden_attrs">
         <!-- hidden attributes  -->
         <input type="hidden" id="nav_component_name" value="group"/>
-
+        <input type="hidden" id="profile_tab_title" value="{{ profile_tab_title }}" />
     </div>
 {% endblock browse_header_block %}
 
@@ -161,7 +161,7 @@
         <div class="page-title-custom" style="margin-left:10px;">Groups
             <span class="pull-right saving_status">
                 <span class="lead label label-default">Accessing</span>
-                <img height="20px" src="{% static "copo/img/ajax.gif" %}"/>
+                <img height="20px" src="{% static 'copo/img/ajax.gif' %}"/>
             </span>
         </div>
     </div>
@@ -186,7 +186,7 @@
             </div>
             <i data-toggle="modal" data-target="#add_group_modal"
                class="fa fa-plus-square fa-2x group-button plus-color" title="Add a group"></i>
-            <i data-toggle="modal" style="visibility:hidden" id="edit_group_button" class="fa fa-pencil-square-o fa-2x group-button edit-color" title="Edit group"></i>
+            <i data-toggle="modal" style="visibility:hidden" id="edit_group_button" class="fa fa-pencil-square fa-2x group-button edit-color" title="Edit group"></i>
             <i data-toggle="modal" style="visibility:hidden" id="delete_group_button"
                class="fa fa-minus-square fa-2x group-button minus-color" title="Delete group"></i>
             <span class="lead pull-right">Selected Group: <span id="selected_group" class="label label-default">Choose Group</span>

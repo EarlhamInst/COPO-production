@@ -17,32 +17,89 @@ from common.utils import helpers
 from common.schemas.utils.cg_core.cg_schema_generator import CgCoreSchemas
 from .copo_base_da import DAComponent, handle_dict
 
-
 lg = settings.LOGGER
-
-
-
 
 class Audit(DAComponent):
     def __init__(self, profile_id=None):
         super(Audit, self).__init__(profile_id, 'audit')
-        self.projection = {'_id': 0, 'update_log': 1}
+        self.filter = {'action': 'update','collection_name': 'SampleCollection'}
+        self.projection = {}
+        self.doc_included_field_lst = ['copo_id', 'manifest_id','sample_type', 'RACK_OR_PLATE_ID', 'TUBE_OR_WELL_ID']
+        self.doc_excluded_field_lst = ['biosampleAccession','public_name','SPECIMEN_ID', 'sraAccession' ]
 
+        self.update_log_addtl_fields = [*self.doc_included_field_lst, *self.doc_excluded_field_lst]
+        self.update_log_addtl_fields.sort()
+
+    def get_sample_info_based_on_audit(self, sample_id, document):
+        from .sample_da import Sample
+
+        # Fields outside the document, excluded from the 'update_log' 
+        # dictionary but found in the sample
+        sample = Sample().get_by_field('_id', [sample_id])
+        sample_info = {field: sample[0].get(field, str()) for field in self.doc_excluded_field_lst if sample[0] is not None and len(sample) > 0}
+
+        # Fields in the document but outside the 'update_log' dictionary
+        audit_info = {field: document.get(field, str()) for field in self.doc_included_field_lst if field in list(document.keys())}
+
+        out = sample_info | audit_info
+
+        # Sort the dictionary by key
+        out = {key:out[key] for key in sorted(out)}
+
+        return out
+    
     def get_sample_update_audits_field_value_lst(self, value_lst, key):
-        filter = {'action': 'update'}
-
         if value_lst:
-            filter['update_log']  = {'$elemMatch': {key: {'$in': value_lst}}}
-
-        return cursor_to_list(
-            self.get_collection_handle().find(filter,  self.projection))
-
-    def get_sample_update_audits_by_field_and_value(self, field, value):
-        filter = {'action': 'update', 'update_log': {
-            '$elemMatch': {field: value}}}
+            self.filter |= {key: {'$in': value_lst}}
 
         cursor = cursor_to_list(
-            self.get_collection_handle().find(filter,  self.projection))
+            self.get_collection_handle().find(self.filter,  self.projection))
+        
+        # Filter data in the 'update_log' by the field and value provided
+        lst = list()
+        out = list()
+        data = dict()
+
+        for element in list(cursor):
+            sample_id = element.get("copo_id", ObjectId())
+
+            audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
+            
+            for x in element['update_log']:
+                # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
+                x |= audit_addtl_out
+
+                lst.append(x)
+
+            data['update_log'] = lst
+            out.append(data)
+            
+        return out
+    
+    def get_sample_update_audits_by_field_and_value(self, field, value):
+        from .sample_da import Sample
+
+        # Fields in the document but outside the 'update_log' dictionary
+        if field in self.doc_included_field_lst:
+            #self.projection |=  {field: 1} # Merge the projection dictionary with the field
+            self.filter[field] = value
+
+        elif field in self.doc_excluded_field_lst:
+            # Fields excluded from the document and 'update_log' dictionary
+            sample = Sample().get_by_field(field, [value])
+
+            if sample is  None or len(sample) == 0:
+                return list()
+            
+            copo_id = sample[0]['_id']
+            self.filter['copo_id'] = copo_id
+
+        else:
+            # Fields in the 'update_log' dictionary
+            self.filter['update_log'] = {'$elemMatch': {field: value}}
+
+        cursor = cursor_to_list(
+            self.get_collection_handle().find(self.filter, self.projection))
     
         # Filter data in the 'update_log' by the field and value provided
         lst = list()
@@ -50,24 +107,35 @@ class Audit(DAComponent):
         data = dict()
 
         for element in list(cursor):
+            sample_id = element.get("copo_id", ObjectId())
+
+            audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
+            
             for x in element['update_log']:
-                if x[field] == value:
+                # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
+                x |= audit_addtl_out
+
+                if field not in self.doc_included_field_lst and field not in self.doc_excluded_field_lst:
+                    if x[field] == value:
+                        lst.append(x)
+                else:
                     lst.append(x)
 
             data['update_log'] = lst
             out.append(data)
 
-        return out
+        return out    
 
     def get_sample_update_audits_by_field_updated(self, sample_type, sample_id_list, updatable_field):
-        filter = {'action': 'update', 'update_log': {
-            '$elemMatch': {'sample_type': sample_type, 'field': updatable_field}}}
-
+        self.filter['sample_type'] = sample_type
+       
         if sample_id_list:
-            filter['update_log'] = {
-                '$elemMatch': {'sample_type': sample_type, 'copo_id': {'$in': sample_id_list}, 'field': updatable_field}}
+            self.filter['update_log'] = {
+                '$elemMatch': {'copo_id': {'$in': sample_id_list}, 'field': updatable_field}}
+        else:
+             self.filter['update_log'] = {'$elemMatch': {'field': updatable_field}}
 
-        cursor = self.get_collection_handle().find(filter,  self.projection)
+        cursor = self.get_collection_handle().find(self.filter,  self.projection)
 
         # Filter data in the 'update_log' by the updatable field provided
         lst = list()
@@ -75,8 +143,14 @@ class Audit(DAComponent):
         data = dict()
 
         for element in list(cursor):
+            sample_id = element.get("copo_id", ObjectId())
+
+            audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
+            
             for x in element['update_log']:
                 if x['field'] == updatable_field:
+                    # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
+                    x |= audit_addtl_out
                     lst.append(x)
 
             data['update_log'] = lst
@@ -85,16 +159,15 @@ class Audit(DAComponent):
         return out
 
     def get_sample_update_audits_by_update_type(self, sample_type_list, update_type):
-        filter = {'action': 'update'}
-
         if sample_type_list:
-            filter['update_log'] = {
-                '$elemMatch': {'update_type': update_type, 'sample_type': {'$all': sample_type_list}}}
+            self.filter['sample_type'] = {'$in': sample_type_list}
+            self.filter['update_log'] = {
+                '$elemMatch': {'update_type': update_type}}
         else:
-            filter['update_log'] = {'$elemMatch': {'update_type': update_type}}
+            self.filter['update_log'] = {'$elemMatch': {'update_type': update_type}}
 
         cursor = cursor_to_list(
-            self.get_collection_handle().find(filter,  self.projection))
+            self.get_collection_handle().find(self.filter,  self.projection))
         
         # Filter data in the 'update_log' by update type provided
         lst = list()
@@ -102,8 +175,15 @@ class Audit(DAComponent):
         data = dict()
 
         for element in list(cursor):
+            sample_id = element.get("copo_id", ObjectId())
+
+            audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
+            
             for x in element['update_log']:
                 if x['update_type'] == update_type:
+                    # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
+                    x |= audit_addtl_out
+
                     lst.append(x)
 
             data['update_log'] = lst
@@ -112,15 +192,36 @@ class Audit(DAComponent):
         return out
 
     def get_sample_update_audits_by_date(self, d_from, d_to):
-        return cursor_to_list(self.get_collection_handle().aggregate(
-            [
-                {'$match': {'update_log': {'$elemMatch': {
-                    'time_updated': {'$gte': d_from, '$lt': d_to}}, '$elemMatch': {
-                    'sample_type': {'$in': TOL_PROFILE_TYPES}}}}},
-                {'$sort': {'time_updated': -1}},
-                {'$project':  self.projection}
+        self.filter['sample_type'] = {'$in': TOL_PROFILE_TYPES}
+        self.filter['update_log'] = {'$elemMatch': {
+            'time_updated': {'$gte': d_from, '$lt': d_to}}}
+        
+        # projection = {x:1 for x in  self.doc_included_field_lst}
+        # projection |= {"update_log":1} # Merge dictionaries
 
-            ]))
+        cursor = cursor_to_list(
+            self.get_collection_handle().find(self.filter,  self.projection).sort([['update_log.time_updated', -1]]))
+        
+        # Filter data in the 'update_log'
+        lst = list()
+        out = list()
+        data = dict()
+
+        for element in list(cursor):
+            sample_id = element.get("copo_id", ObjectId())
+
+            audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
+            
+            for x in element['update_log']:
+                # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
+                x |= audit_addtl_out
+
+                lst.append(x)
+
+            data['update_log'] = lst
+            out.append(data)
+
+        return out
 
 
 class TestObjectType(DAComponent):
@@ -948,7 +1049,17 @@ class CopoGroup(DAComponent):
 
     def get_profiles_for_group_info(self, group_id):
         from .profile_da import Profile
-        p_list = cursor_to_list(Profile().get_for_user(helpers.get_user_id()))
+        
+        # If current logged in  user is in the 'data_manager' group i.e. 
+        # if current user is a member of the  COPO development team, return all profiles
+        # If not, return only the profiles for the current logged in user
+        member_groups = helpers.get_group_membership_asString()
+        profiles = Profile().get_profiles(search_filter=str()) if 'data_managers' in member_groups else Profile().get_for_user(helpers.get_user_id())
+        p_list = cursor_to_list(profiles)
+
+        # Sort list of profiles by 'title' key
+        p_list = sorted(p_list, key=lambda x: x['title'])
+        
         group = CopoGroup().get_record(group_id)
         for p in p_list:
             if p['_id'] in group['shared_profile_ids']:

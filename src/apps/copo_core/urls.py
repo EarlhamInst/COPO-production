@@ -25,7 +25,7 @@ urlpatterns = [
     path('copo_forms/', views.copo_forms, name="copo_forms"),
     #path('delete_profile/', views.delete_profile, name="delete_profile"),
     path('copo_visualize/', views.copo_visualize, name="copo_visualize"),
-
+    path('copo_visualize_accessions/', views.copo_visualize_accessions, name="copo_visualize_accessions"),
     path('groups/', views.view_groups, name='groups'),
     path('create_group/', views.create_group, name='create_group'),
     path('edit_group/', views.edit_group, name='edit_group'),

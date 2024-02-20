@@ -27,8 +27,10 @@ $(document).ready(function () {
   $(document).on('click', '#submit_group', validate_group_form);
   $(document).on('click', '#edit_group_button', show_edit_dialog);
   $(document).on('click', '#delete_group_button', show_delete_dialog);
+
   $('#profiles_in_group').multiSelect({
-    selectableHeader: "<div class='custom-header'>Your Profiles</div>",
+    selectableHeader:
+      "<div class='custom-header'>" + $('#profile_tab_title').val() + '</div>',
     selectionHeader: "<div class='custom-header'>Added to Group</div>",
     dblClick: true,
     afterSelect: add_profile_in_group_handler,
