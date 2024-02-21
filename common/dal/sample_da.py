@@ -428,11 +428,23 @@ class Sample(DAComponent):
     def get_all_tol_samples(self):
         return self.get_collection_handle().find({"tol_project": {"$in": ["ASG", "DTOL"]}})
 
-    def get_number_of_samples_by_sample_type(self, sample_type):
+    def get_number_of_samples_by_sample_type(self, sample_type, d_from, d_to):
+        filter = dict()
+
         if sample_type:
-            return self.get_collection_handle().count_documents({"sample_type": sample_type})
+            filter["sample_type"] = sample_type
+        
+        if d_from and d_to:
+            filter["time_created"] = {"$gte": d_from, "$lt": d_to}
+        
+        if not sample_type and d_from is None and d_to is None:
+            return self.get_number_of_samples()
+        elif sample_type and d_from and d_to:
+            return self.get_collection_handle().count_documents(filter)
+        elif sample_type and d_from is None and d_to is None:
+            return self.get_collection_handle().count_documents(filter)
         else:
-            self.get_number_of_samples()
+            return self.get_number_of_samples()
 
     def get_number_of_samples(self):
         return self.get_collection_handle().count_documents({})
