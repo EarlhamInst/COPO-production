@@ -58,7 +58,7 @@ class S3Connection():
                                 max_concurrency=3, use_threads=True )
         #self.s3_client.download_file(bucket, key, loc, Config=config)
         with open(loc, 'wb') as data:
-            self.s3_client.download_fileobj(bucket, key, data, config=config)
+            self.s3_client.download_fileobj(Bucket=bucket, Key=key, Fileobj=data, Config=config)
 
         Logger().log("transfer complete: " + loc)
 
