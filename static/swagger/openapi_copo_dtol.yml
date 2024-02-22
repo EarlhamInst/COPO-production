@@ -848,17 +848,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/StatsNumber'
 
-  /stats/number_of_samples/{sample_type}/:
+  /stats/number_of_samples/{sample_type}:
     get:
       tags:
         - Statistics
-      summary: Get the number of registered samples by sample type
-      description: If no sample type is provided, COPO will return the total number of samples.
+      summary: Get the number of registered samples by sample type as well as by start date and end date
+      description: |
+        If no sample type is provided and no start date as well as end date are provided, COPO will return the total number of samples.
       parameters:
         - name: sample_type
           in: path
           schema:
             $ref: '#/components/schemas/SampleTypes'
+        - name: d_from
+          in: query
+          description: ISO 8601 formatted full date-time, samples updated greater than or equal to this date will be matched, e.g. 2023-09-01T00:00:00+00:00
+          schema:
+            type: string
+            pattern: '^([A-Z0-9a-f- .:+]+)+$'
+            format: date-time
+        - name: d_to
+          in: query
+          description: ISO 8601 formatted full date-time, samples updated less than this date will be matched, e.g. 2023-09-30T00:00:00+00:00
+          schema:
+            type: string
+            pattern: '^([A-Z0-9a-f- .:+]+)+$'
+            format: date-time
       responses:
         '200': # status code
           description: A JSON array sample objects
