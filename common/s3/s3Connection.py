@@ -55,8 +55,11 @@ class S3Connection():
         GB = KB * MB
 
         config = TransferConfig(multipart_threshold=1 * GB, multipart_chunksize=1024 * MB, io_chunksize=1024 * MB,
-                                max_concurrency=2, use_threads=True)
-        self.s3_client.download_file(bucket, key, loc, Config=config)
+                                max_concurrency=3, use_threads=True )
+        #self.s3_client.download_file(bucket, key, loc, Config=config)
+        with open(loc, 'wb') as data:
+            self.s3_client.download_fileobj(bucket, key, data, config=config)
+
         Logger().log("transfer complete: " + loc)
 
     def get_presigned_url(self, bucket, key, expires_seconds=24*60*60):
