@@ -48,6 +48,8 @@ MESSAGES = {
     'validation_msg_error_specimen_regex_dtol': 'Invalid data: <strong>%s</strong> in column <strong>%s</strong> at '
                                                 'row <strong>%s</strong>. Expected format for %s <strong>%s</strong> '
                                                 'is <strong>%s</strong> followed by <strong>%s</strong>.',
+    'validation_msg_error_updating_compliance_field': 'Field <strong>%s</strong> cannot be updated because it is a part of the compliance process. '
+                                                      'Please contact your <strong>%s</strong> sample manager for the update.',
     'validation_msg_future_date': 'Invalid date: <strong>%s</strong> in column <strong>%s</strong> at row '
                                   '<strong>%s</strong>. Date cannot be in the future.',
     'validation_msg_invalid_associated_tol_project': 'Invalid associated profile type for profile, '
