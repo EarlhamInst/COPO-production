@@ -6,6 +6,7 @@ from common.dal.sample_da import Sample
 from .da import ValidationQueue
 from .tol_validators import optional_field_dtol_validators as optional_validators, taxon_validators
 from .tol_validators import required_field_dtol_validators as required_validators
+from .tol_validators.validation_messages import MESSAGES as validation_msg
 from common.validators.validator import Validator
 import pandas
 import inspect
@@ -362,7 +363,7 @@ class ProcessValidationQueue:
                             updates[rack_tube][field]["old_value"] = exsam[field]
                             updates[rack_tube][field]["new_value"] = s[field]
                     else:
-                        msg = "Field " + field + " cannot be updated because it is a part of the compliance process"
+                        msg = validation_msg["validation_msg_error_updating_compliance_field"] % (field, profile.get("type",""))
                         notify_frontend(data={"profile_id": self.profile_id}, msg=msg, action="error",
                                         html_id="sample_info")
                         return False
