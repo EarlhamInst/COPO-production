@@ -99,9 +99,7 @@ services:
       interval: 2m
       timeout: 10s
       retries: 3
-      start_period: 30s 
-    extra_hosts:
-      - "ei-copo.obj-data.nbi.ac.uk:10.0.72.144"     
+      start_period: 30s    
   celery_job:
     image: copo/copo-new-web:v2.0.0.13
     entrypoint:
@@ -192,9 +190,7 @@ services:
       - copo_public_name_service_api_key
       - copo_mail_password
       - copo_bioimage_path
-      - ecs_secret_key
-    extra_hosts:
-      - "ei-copo.obj-data.nbi.ac.uk:10.0.72.144"        
+      - ecs_secret_key        
   nginx:
     image: copo/copo-nginx:1.25.3.1
     networks:
