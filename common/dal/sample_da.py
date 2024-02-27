@@ -567,6 +567,8 @@ class Sample(DAComponent):
         )
 
     def add_rejected_status(self, status, oid):
+        return self.update_field(field_values={'error': status["msg"],'status': "rejected"}, oid=oid)
+        '''
         return self.get_collection_handle().update_one(
             {
                 "_id": ObjectId(oid)
@@ -576,6 +578,7 @@ class Sample(DAComponent):
               'status': "rejected"}
              }
         )
+        '''
 
     def add_rejected_status_for_tolid(self, specimen_id):
         return self.get_collection_handle().update_many(
@@ -981,11 +984,17 @@ class Sample(DAComponent):
 
     def update_read_accession(self, sample_accessions):
         for accession in sample_accessions:
+            update_fields = {"biosampleAccession": accession["biosample_accession"],
+                                                               "sraAccession": accession["sample_accession"],
+                                                               "status": "accepted"}
+            self.update_field(field_values=update_fields, oid=accession["sample_id"])
+            '''
             self.get_collection_handle().update_many({"_id": ObjectId(accession["sample_id"])},
                                                      {"$set": {"biosampleAccession": accession["biosample_accession"],
                                                                "sraAccession": accession["sample_accession"],
                                                                "status": "accepted"}})
-
+            '''
+            
     def update_datafile_status(self, datafile_ids, status):
         dt = helpers.get_datetime()
         for id in datafile_ids:
