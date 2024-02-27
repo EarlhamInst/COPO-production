@@ -1026,6 +1026,7 @@ class CopoGroup(DAComponent):
         
     def get_shared_users_info_by_owner_and_profile_id(self, owner_id, profile_id):
         # Get user name and email address of the shared users of a profile
+        # NB: 'member_ids' is a list of dictionaries containing user IDs
         member_ids = cursor_to_list(self.Group.find({'owner_id':owner_id,'shared_profile_ids': {'$in': [profile_id]}},{'_id':0,'member_ids':1}))
         shared_users_info = list()
 
@@ -1033,9 +1034,11 @@ class CopoGroup(DAComponent):
             return list()
         
         for u in member_ids:
-            shared_user = User.objects.get(pk=u)
-            x = {'email': shared_user.email, 'name': f"{shared_user.first_name} {shared_user.last_name}"}
-            shared_users_info.append(x)
+            user_ids = u.get('member_ids',list())
+            for id in user_ids:
+                shared_user = User.objects.get(pk=id)
+                x = {'email': shared_user.email, 'name': f"{shared_user.first_name} {shared_user.last_name}"}
+                shared_users_info.append(x)
         return shared_users_info
     
     def add_profile(self, group_id, profile_id):
