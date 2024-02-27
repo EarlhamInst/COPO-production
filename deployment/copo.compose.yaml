@@ -51,7 +51,7 @@ services:
       - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
       - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
-      - ECS_ENDPOINT=http://ei-copo.obj-data.nbi.ac.uk
+      - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
@@ -154,7 +154,7 @@ services:
       - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
       - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
-      - ECS_ENDPOINT=http://ei-copo.obj-data.nbi.ac.uk
+      - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
