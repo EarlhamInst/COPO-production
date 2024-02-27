@@ -180,7 +180,7 @@ def add_sample_to_dtol_submission(request):
             #send email to BGE to notify them of new samples
             Email().notify_manifest_pending_for_bge_checker(data=uri + 'copo/dtol_submission/accept_reject_sample/', profile_id=profile_id,  title=profile["title"], description=profile["description"] )
         
-        Sample().timestamp_dtol_sample_updated(sample_ids=sample_ids)
+        #Sample().timestamp_dtol_sample_updated(sample_ids=sample_ids)
         # sample_ids_bson = list(map(lambda id: ObjectId(id), sample_ids))
         # sepciment_ids = Sample().get_collection_handle().distinct( 'SPECIMEN_ID', {"_id": {"$in": sample_ids_bson}});
         # if "dtol_specimen" not in sub:
