@@ -20,7 +20,7 @@ class S3Connection():
 
         self.expiration = 60 * 60 * 24
         self.path = '/'
-        boto3.set_stream_logger(name='', level=logging.Debug, format_string=None)
+        boto3.set_stream_logger(name='', level=logging.DEBUG, format_string=None)
         self.s3_client = boto3.client('s3', endpoint_url=self.ecs_endpoint, verify=False,  
                                       config=Config(signature_version='s3v4', connect_timeout=60,
                                                     retries={"max_attempts": 10}, s3={'addressing_style': "path"}),
