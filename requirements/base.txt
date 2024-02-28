@@ -19,8 +19,8 @@ billiard==4.1.0
 #biopy-isatab==0.1.1
 biopython==1.81
 bleach==6.0.0
-boto3==1.26.96
-botocore==1.29.96
+boto3==1.34.51
+botocore==1.34.51
 Brotli==1.0.9
 bs4==0.0.1
 celery==5.3.1
