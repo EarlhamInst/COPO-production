@@ -9,6 +9,7 @@ from pymongo.collection import ReturnDocument
 from common.utils import helpers
 from bson.objectid import ObjectId
 from .copo_base_da import DAComponent, handle_dict
+import shortuuid
  
 
 lg = settings.LOGGER
@@ -549,7 +550,7 @@ class Sample(DAComponent):
             set_update_data['update_type'] = 'system'
         else:
             set_update_data['updated_by'] = email
-            set_update_data['update_type'] = 'user'
+            set_update_data['update_type'] = 'tempuser_'+str(shortuuid.ShortUUID().random(length=10)) #special handling for audit log
 
         set_update_data.update(field_values)
 
