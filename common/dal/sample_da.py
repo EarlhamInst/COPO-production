@@ -537,21 +537,18 @@ class Sample(DAComponent):
         if field:
             field_values[field] = value
 
-        try:
-            email = ThreadLocal.get_current_user().email
-        except:
-            email = "copo@earlham.ac.uk"
-
         # Determine if the update is being done by a user or by the system
         set_update_data = {'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(timezone.utc).replace(
             microsecond=0)}
 
-        if "copo@earlham.ac.uk" in email:
-            set_update_data['update_type'] = 'system'
-        else:
+        try:
+            email = ThreadLocal.get_current_user().email
             set_update_data['updated_by'] = email
             set_update_data['update_type'] = 'tempuser_'+str(shortuuid.ShortUUID().random(length=10)) #special handling for audit log
-
+        except:
+            set_update_data['updated_by'] = 'system'
+            set_update_data['update_type'] = 'system'
+      
         set_update_data.update(field_values)
 
         return self.get_collection_handle().update_many({"_id": {"$in": [ObjectId(oid) for oid in oids]}}, {"$set": set_update_data})
