@@ -469,7 +469,7 @@ def process_pending_dtol_samples():
                 assert any([updated_sample.get("sampleSymbiontOf", ""), updated_sample.get("sampleSameAs", ""),
                             updated_sample.get("sampleDerivedFrom", "")])
             except AssertionError:
-                log_message("Missing relationship to parent sample for sample " + sam["_id"], Loglvl.ERROR,
+                log_message("Missing relationship to parent sample for sample " + str(sam["_id"]), Loglvl.ERROR,
                             profile_id=profile_id)
                 Submission().make_dtol_status_pending(submission['_id'])
                 break
