@@ -219,6 +219,10 @@ class SubmissionHelper:
 
         for sample in sample_records:
             sra_sample = sample.copy()
+            #find first checklist, TBC: find the submitted checklist
+            read = sample.get("read",[])
+            if read:
+                sra_sample["checklist_id"] = read[0]["checklist_id"]
             sra_sample['sample_id'] = str(sample['_id'])
             sra_sample['name'] = sample['name']
         
