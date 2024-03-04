@@ -16,7 +16,7 @@ source_collection = mydb["SourceCollection"]
 
 
 x = profile_collection.count_documents({"type":"European Reference Genome Atlas (ERGA)"})
-print("Number of ERGA profiles: " + json.dumps(x,indent=4,default=str))
+print("Number of ERGA profiles: " + json.dumps(x))
 
 x = profile_collection.count_documents({"type":"Darwin Tree of Life (DTOL)"})
 print("Number of DTOL profiles: " + json.dumps(x))
