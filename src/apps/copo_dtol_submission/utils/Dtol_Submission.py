@@ -772,7 +772,7 @@ def update_bundle_sample_xml(sample_list, bundlefile, is_modify=False):
                         collection_dates = item[1].split("-")
                         collection_date =  collection_dates[0]+("-"+ collection_dates[1] if len(collection_dates) >= 2 else "") + ("-"+ collection_dates[2] if len(collection_dates) >= 3 else "")
                         value.text = collection_date
-                        if len(collection_dates) >= 3 and "TIME_OF_COLLECTION" in sample:
+                        if len(collection_dates) >= 3 and sample.get("TIME_OF_COLLECTION",""):
                             collection_date = datetime.strptime(collection_date + " " + sample["TIME_OF_COLLECTION"], "%Y-%m-%d %H:%M")
                             value.text = collection_date.isoformat()
 
@@ -787,7 +787,6 @@ def update_bundle_sample_xml(sample_list, bundlefile, is_modify=False):
                             value.text = str(round(float(item[1]), 8))
                         else:
                             continue
-
                     # handling annoying edge case below
                     elif item[0] == "LIFESTAGE" and item[1] == "SPORE_BEARING_STRUCTURE":
                         attribute_name = DTOL_ENA_MAPPINGS[item[0]]['ena']
@@ -881,22 +880,32 @@ def build_specimen_sample_xml(sample):
                     tag.text = attribute_name
                     value = ET.SubElement(sample_attribute, 'VALUE')
                     value.text = '|'.join(str(item[1]).split('|')[1:])
-                elif item[0] in ["DATE_OF_COLLECTION", "DECIMAL_LATITUDE", "DECIMAL_LONGITUDE"]:
+                elif item[0] in ["DATE_OF_COLLECTION"]:
                     attribute_name = DTOL_ENA_MAPPINGS[item[0]]['ena']
                     sample_attribute = ET.SubElement(
                         sample_attributes, 'SAMPLE_ATTRIBUTE')
                     tag = ET.SubElement(sample_attribute, 'TAG')
                     tag.text = attribute_name
                     value = ET.SubElement(sample_attribute, 'VALUE')
-                    if item[0] in ["DECIMAL_LATITUDE", "DECIMAL_LONGITUDE"]:
-                        # round to 8 decimal points only as ENA maximum accepts
-                        try:
-                            value.text = str(round(float(item[1]), 8))
-                        except ValueError:
-                            value.text = str(item[1]).lower().replace("_", " ")
+                    collection_dates = item[1].split("-")
+                    collection_date =  collection_dates[0]+("-"+ collection_dates[1] if len(collection_dates) >= 2 else "") + ("-"+ collection_dates[2] if len(collection_dates) >= 3 else "")
+                    value.text = collection_date
+                    if len(collection_dates) >= 3 and sample.get("TIME_OF_COLLECTION",""):
+                        collection_date = datetime.strptime(collection_date + " " + sample["TIME_OF_COLLECTION"], "%Y-%m-%d %H:%M")
+                        value.text = collection_date.isoformat()
+
+                elif item[0] in ["DECIMAL_LATITUDE", "DECIMAL_LONGITUDE", "LATITUDE_START", "LONGITUDE_START", "LATITUDE_END", "LONGITUDE_END"]:
+                    if item[1] != "NOT_COLLECTED":
+                        attribute_name = DTOL_ENA_MAPPINGS[item[0]]['ena']
+                        sample_attribute = ET.SubElement(
+                            sample_attributes, 'SAMPLE_ATTRIBUTE')
+                        tag = ET.SubElement(sample_attribute, 'TAG')
+                        tag.text = attribute_name
+                        value = ET.SubElement(sample_attribute, 'VALUE')
+                        value.text = str(round(float(item[1]), 8))
                     else:
-                        value.text = str(item[1]).lower().replace("_", " ")
-                # handling annoying edge case below
+                        continue
+
                 elif item[0] == "LIFESTAGE" and item[1] == "SPORE_BEARING_STRUCTURE":
                     attribute_name = DTOL_ENA_MAPPINGS[item[0]]['ena']
                     sample_attribute = ET.SubElement(
