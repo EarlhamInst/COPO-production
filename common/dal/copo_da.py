@@ -36,6 +36,10 @@ class Audit(DAComponent):
         # Fields outside the document, excluded from the 'update_log' 
         # dictionary but found in the sample
         sample = Sample().get_by_field('_id', [sample_id])
+
+        if not sample:
+            return list()
+        
         sample_info = {field: sample[0].get(field, str()) for field in self.doc_excluded_field_lst if sample[0] is not None and len(sample) > 0}
 
         # Fields in the document but outside the 'update_log' dictionary
