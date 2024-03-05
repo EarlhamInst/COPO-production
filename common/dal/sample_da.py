@@ -8,6 +8,8 @@ from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES, SANGER
 from pymongo.collection import ReturnDocument
 from common.utils import helpers
 from bson.objectid import ObjectId
+
+from src.apps.copo_core.models import SequencingCentre
 from .copo_base_da import DAComponent, handle_dict
 import shortuuid
  
@@ -807,7 +809,49 @@ class Sample(DAComponent):
             for s in samples:
                 s["copo_profile_title"] = profile_title
         return samples
+    
+    def get_by_sequencing_centre(self, sequencing_centre, isQueryByManifestLevel=False):
+        from .profile_da import Profile
 
+        # Get the value of the sequencing centre based on the label
+        sequencing_centre = SequencingCentre.objects.get(label=sequencing_centre)
+
+        # Get the profile id based on the sequencing centre
+        profile_ids = cursor_to_list_no_ids(Profile().get_profile_by_sequencing_centre(sequencing_centre.name, getIDOnly=True))
+
+        # Get string only from ObjectId, 'profile_id'
+        profile_ids = [str(x) for x in profile_ids]
+
+        if not profile_ids:
+            return list()
+        
+        # Get the manifest ids based on the profile ids
+        filter = dict()
+        filter['sample_type'] = {"$in": SANGER_TOL_PROFILE_TYPES}
+        filter['profile_id'] = {"$in": profile_ids}
+
+        if isQueryByManifestLevel:        
+            cursor = self.get_collection_handle().aggregate(
+                [
+                    {
+                        "$match": filter
+                    },
+                    {"$sort":
+                        {"time_created": -1}
+                    },
+                    {"$group":
+                        {
+                            "_id": "$manifest_id",
+                            "created": {"$first": "$time_created"}
+                        }
+                    }
+                ])
+            out =  cursor_to_list_no_ids(cursor)
+        else:
+            out = cursor_to_list(self.get_collection_handle().find(filter))
+
+        return out
+    
     def get_profileID_by_project_and_manifest_id(self, projects, manifest_ids):
         return cursor_to_list(self.get_collection_handle().aggregate(
             [{"$match": {"tol_project": {"$in": projects}, "manifest_id": {"$in": manifest_ids}}},
@@ -858,7 +902,7 @@ class Sample(DAComponent):
                     }
                  }
             ])
-        return cursor_to_list_no_ids(cursor)
+        return cursor_to_list_no_ids(cursor)  
 
     def get_manifests_by_date(self, d_from, d_to):
         ids = self.get_collection_handle().aggregate(

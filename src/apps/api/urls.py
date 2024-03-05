@@ -37,6 +37,8 @@ dtol_api_patterns = [
     re_path(r'^manifest/validate/', APIValidateManifest.as_view(),
             name='manifest/validate'),
 
+    re_path(r'^manifest/sequencing_centre', s.get_manifests_by_sequencing_centre,
+            name='get_manifests_by_sequencing_centre'),
     re_path(r'^manifest/current_version', s.get_current_manifest_version,
             name='get_current_manifest_version'),
     re_path(r'^manifest/(?P<project>[a-zA-Z-_, ]+)/(?P<d_from>[A-Z0-9a-f- .:+]+)/(?P<d_to>[A-Z0-9a-f- .:+]+)',
@@ -56,6 +58,8 @@ dtol_api_patterns = [
             s.get_by_copo_ids, name='get_by_biosample_ids'),
     re_path(r'^sample/sample_field/(?P<dtol_field>[A-Za-z0-9-_]+)/(?P<value>[A-Za-z0-9-_ ,.@]+)', s.get_by_field,
             name='get_by_dtol_field'),
+    re_path(r'^sample/sequencing_centre', s.get_samples_by_sequencing_centre,
+            name='get_samples_by_sequencing_centre'),
     re_path(r'^sample/dtol/num_samples', s.get_num_dtol_samples,
             name='get_num_dtol_samples'),
     re_path(r'^sample/associated_tol_project/(?P<values>[a-zA-Z, ]+)',

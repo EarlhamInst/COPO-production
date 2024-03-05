@@ -289,6 +289,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/ManifestList'
 
+  /manifest/sequencing_centre:
+    get:
+      tags:
+        - Manifest
+      summary: Get all manifests by sequencing centre
+      description: >
+        COPO will return a list of manifest ids based on the given sequencing_centre
+      parameters:
+        - $ref: '#/components/parameters/sequencing_centre'
+        - $ref: '#/components/parameters/return_type'
+      responses:
+        200:
+          description: A JSON array sample objects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManifestList'
+
   /manifest/current_version:
     get:
       tags:
@@ -732,6 +750,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/SampleList'
 
+  /sample/sequencing_centre:
+    get:
+      tags:
+        - Sample
+      summary: Get sample records by sequencing centre
+      description: >
+        Get full sample information for the samples returned based on the given sequencing_centre
+      parameters:
+        - $ref: '#/components/parameters/sequencing_centre'
+        - $ref: '#/components/parameters/return_type'
+      responses:
+        '200': # status code
+          description: A JSON array sample objects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleList'
+
   /sample/StudyFromSampleAccession/{sample_ids}:
     get:
       tags:
@@ -922,6 +958,14 @@ components:
       schema:
         $ref: '#/components/schemas/ReturnTypes'
 
+    sequencing_centre:
+      name: sequencing_centre
+      in: query
+      required: true
+      description: A list of sequencing centres
+      schema:
+        $ref: '#/components/schemas/SequencingCentres'
+
   securitySchemes:
     app_id:
       type: apiKey
@@ -986,6 +1030,33 @@ components:
       type: string
       enum: [json, csv, rocrate]
       description: Return file formats including RO-Crate
+
+    SequencingCentres:
+      type: string
+      enum:
+        [
+          CENTRO NACIONAL DE ANÁLISIS GENÓMICO,
+          'DNA SEQUENCING AND GENOMICS LABORATORY, HELSINKI GENOMICS CORE FACILITY',
+          EARLHAM INSTITUTE,
+          FUNCTIONAL GENOMIC CENTER ZURICH,
+          GENOSCOPE,
+          'HANSEN LAB, DENMARK',
+          INDUSTRY PARTNER,
+          LAUSANNE GENOMIC TECHNOLOGIES FACILITY,
+          'LEIBNIZ INSTITUTE FOR THE ANALYSIS OF BIODIVERSITY CHANGE, MUSEUM KOENIG, BONN',
+          'NEUROMICS SUPPORT FACILITY, UANTWERP, VIB',
+          NGS BERN,
+          NGS COMPETENCE CENTER TÜBINGEN,
+          NORWEGIAN SEQUENCING CENTRE,
+          Other_ERGA_Associated_GAL,
+          SANGER INSTITUTE,
+          SCILIFELAB,
+          'SVARDAL LAB, ANTWERP',
+          UNIVERSITY OF BARI,
+          UNIVERSITY OF FLORENCE,
+          WEST GERMAN GENOME CENTRE,
+        ]
+      description: A list of sequencing centres
 
     Profile:
       type: object
