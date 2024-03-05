@@ -827,6 +827,9 @@ class Sample(DAComponent):
         
         # Get string only from ObjectId, 'profile_id'
         profile_ids_based_on_profile = [str(x) for x in profile_ids_based_on_profile]
+        
+        # Get 'profile_id' string only from dictionary object
+        profile_ids_based_on_sample = [x.get('profile_id', str()) for x in profile_ids_based_on_sample]
 
         # Get unique profile ids i.e. remove duplicates
         profile_ids = list(set(profile_ids_based_on_profile + profile_ids_based_on_sample))
