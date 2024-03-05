@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from bson import json_util
 from common.dal.sample_da import Sample
 import common.dal.copo_base_da as da
+import dateutil.parser as parser
 from common.dal.mongo_util import cursor_to_list
 from ..utils import finish_request
 
@@ -16,7 +17,32 @@ def get_number_of_users(request):
 
 
 def get_number_of_samples_by_sample_type(request, sample_type):
-    number = Sample().get_number_of_samples_by_sample_type(sample_type.lower())
+    # Dates must be ISO 8601 formatted
+    try:                
+        d_from = parser.parse(request.GET.get('d_from', None))
+    except TypeError: 
+        d_from = None
+
+    try:                
+        d_to = parser.parse(request.GET.get('d_to', None))
+    except TypeError: 
+        d_to = None
+
+
+    if d_from and d_to is None:
+        return HttpResponse(status=400, content=f'\'to date\' is required when \'from date\' is entered')
+
+    if d_from is None and d_to:
+        return HttpResponse(status=400, content=f'\'from date\' is required when \'to date\' is entered')
+
+    if d_from and d_to and d_from > d_to:
+        return HttpResponse(status=400, content=f'\'from date\' must be earlier than \'to date\'')
+    
+    # Strange Swagger API bug where sample_type is being passed 
+    # as a comma instead of an empty string if it is not specified/provided
+    sample_type = str() if sample_type == ',' else sample_type
+
+    number = Sample().get_number_of_samples_by_sample_type(sample_type.lower(), d_from, d_to)
     return HttpResponse(number)
 
 

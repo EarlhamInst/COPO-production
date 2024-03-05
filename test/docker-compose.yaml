@@ -75,7 +75,7 @@ services:
       - POSTGRES_PASSWORD=password
 
   copo_mongo:
-    image: copo/copo-mongo:v7.0.1
+    image: copo/copo-mongo:v7.0.1.1
     ports:
       - "27017:27017"
     environment:

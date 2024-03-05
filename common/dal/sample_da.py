@@ -8,7 +8,10 @@ from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES, SANGER
 from pymongo.collection import ReturnDocument
 from common.utils import helpers
 from bson.objectid import ObjectId
+
+from src.apps.copo_core.models import SequencingCentre
 from .copo_base_da import DAComponent, handle_dict
+import shortuuid
  
 
 lg = settings.LOGGER
@@ -428,11 +431,23 @@ class Sample(DAComponent):
     def get_all_tol_samples(self):
         return self.get_collection_handle().find({"tol_project": {"$in": ["ASG", "DTOL"]}})
 
-    def get_number_of_samples_by_sample_type(self, sample_type):
+    def get_number_of_samples_by_sample_type(self, sample_type, d_from, d_to):
+        filter = dict()
+
         if sample_type:
-            return self.get_collection_handle().count_documents({"sample_type": sample_type})
+            filter["sample_type"] = sample_type
+        
+        if d_from and d_to:
+            filter["time_created"] = {"$gte": d_from, "$lt": d_to}
+        
+        if not sample_type and d_from is None and d_to is None:
+            return self.get_number_of_samples()
+        elif sample_type and d_from and d_to:
+            return self.get_collection_handle().count_documents(filter)
+        elif sample_type and d_from is None and d_to is None:
+            return self.get_collection_handle().count_documents(filter)
         else:
-            self.get_number_of_samples()
+            return self.get_number_of_samples()
 
     def get_number_of_samples(self):
         return self.get_collection_handle().count_documents({})
@@ -512,23 +527,33 @@ class Sample(DAComponent):
                 }
              })
 
-    def update_field(self, field, value, oid):
-        try:
-            email = ThreadLocal.get_current_user().email
-        except:
-            email = "copo@earlham.ac.uk"
+    def update_field(self, field=None, value=None, oid=None, field_values={}, oids=[]):
+        if not oids:
+            oids = []
+        if oid:
+            oids.append(oid)
+
+        if not field_values:
+            field_values = {}
+        
+        if field:
+            field_values[field] = value
 
         # Determine if the update is being done by a user or by the system
-        set_update_data = {field: value, 'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(timezone.utc).replace(
+        set_update_data = {'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(timezone.utc).replace(
             microsecond=0)}
 
-        if "copo@earlham.ac.uk" in email:
-            set_update_data['update_type'] = 'system'
-        else:
+        try:
+            email = ThreadLocal.get_current_user().email
             set_update_data['updated_by'] = email
-            set_update_data['update_type'] = 'user'
+            set_update_data['update_type'] = 'tempuser_'+str(shortuuid.ShortUUID().random(length=10)) #special handling for audit log
+        except:
+            set_update_data['updated_by'] = 'system'
+            set_update_data['update_type'] = 'system'
+      
+        set_update_data.update(field_values)
 
-        return self.get_collection_handle().update_one({"_id": ObjectId(oid)}, {"$set": set_update_data})
+        return self.get_collection_handle().update_many({"_id": {"$in": [ObjectId(oid) for oid in oids]}}, {"$set": set_update_data})
 
     def remove_field(self, field, oid):
         return self.get_collection_handle().update_one(
@@ -542,6 +567,8 @@ class Sample(DAComponent):
         )
 
     def add_rejected_status(self, status, oid):
+        return self.update_field(field_values={'error': status["msg"],'status': "rejected"}, oid=oid)
+        '''
         return self.get_collection_handle().update_one(
             {
                 "_id": ObjectId(oid)
@@ -551,6 +578,7 @@ class Sample(DAComponent):
               'status': "rejected"}
              }
         )
+        '''
 
     def add_rejected_status_for_tolid(self, specimen_id):
         return self.get_collection_handle().update_many(
@@ -744,16 +772,20 @@ class Sample(DAComponent):
         return out
 
     def mark_rejected(self, sample_id, reason="Sample rejected by curator."):
-        return self.get_collection_handle().update_one({"_id": ObjectId(sample_id)},
-                                                       {"$set": {"status": "rejected", "error": reason}})
+
+        #return self.get_collection_handle().update_one({"_id": ObjectId(sample_id)},
+        #                                               {"$set": {"status": "rejected", "error": reason}})
+        self.update_field(field_values={"status": "rejected", "error": reason}, oid=sample_id)
+
 
     def mark_processing(self, sample_id=str(), sample_ids=[]):
         if not sample_ids:
             sample_ids = list()
         if sample_id:
             sample_ids.append(sample_id)
-        sample_obj_ids = [ObjectId(x) for x in sample_ids]
-        return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": "processing"}})
+        return self.update_field(field="status", value="processing", oids=sample_ids)
+        #sample_obj_ids = [ObjectId(x) for x in sample_ids]
+        #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": "processing"}})
 
     def mark_pending(self, sample_ids, is_erga=False, is_private=False):
         if is_erga:
@@ -762,8 +794,9 @@ class Sample(DAComponent):
             status = "private"
         else :
             status = "pending"
-        sample_obj_ids = [ObjectId(x) for x in sample_ids]
-        return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": status}})
+        return self.update_field(field="status", value=status, oids=sample_ids)    
+        #sample_obj_ids = [ObjectId(x) for x in sample_ids]
+        #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": status}})
 
     def get_by_manifest_id(self, manifest_id):
         samples = cursor_to_list(
@@ -776,7 +809,49 @@ class Sample(DAComponent):
             for s in samples:
                 s["copo_profile_title"] = profile_title
         return samples
+    
+    def get_by_sequencing_centre(self, sequencing_centre, isQueryByManifestLevel=False):
+        from .profile_da import Profile
 
+        # Get the value of the sequencing centre based on the label
+        sequencing_centre = SequencingCentre.objects.get(label=sequencing_centre)
+
+        # Get the profile id based on the sequencing centre
+        profile_ids = cursor_to_list_no_ids(Profile().get_profile_by_sequencing_centre(sequencing_centre.name, getIDOnly=True))
+
+        # Get string only from ObjectId, 'profile_id'
+        profile_ids = [str(x) for x in profile_ids]
+
+        if not profile_ids:
+            return list()
+        
+        # Get the manifest ids based on the profile ids
+        filter = dict()
+        filter['sample_type'] = {"$in": SANGER_TOL_PROFILE_TYPES}
+        filter['profile_id'] = {"$in": profile_ids}
+
+        if isQueryByManifestLevel:        
+            cursor = self.get_collection_handle().aggregate(
+                [
+                    {
+                        "$match": filter
+                    },
+                    {"$sort":
+                        {"time_created": -1}
+                    },
+                    {"$group":
+                        {
+                            "_id": "$manifest_id",
+                            "created": {"$first": "$time_created"}
+                        }
+                    }
+                ])
+            out =  cursor_to_list_no_ids(cursor)
+        else:
+            out = cursor_to_list(self.get_collection_handle().find(filter))
+
+        return out
+    
     def get_profileID_by_project_and_manifest_id(self, projects, manifest_ids):
         return cursor_to_list(self.get_collection_handle().aggregate(
             [{"$match": {"tol_project": {"$in": projects}, "manifest_id": {"$in": manifest_ids}}},
@@ -827,7 +902,7 @@ class Sample(DAComponent):
                     }
                  }
             ])
-        return cursor_to_list_no_ids(cursor)
+        return cursor_to_list_no_ids(cursor)  
 
     def get_manifests_by_date(self, d_from, d_to):
         ids = self.get_collection_handle().aggregate(
@@ -951,11 +1026,17 @@ class Sample(DAComponent):
 
     def update_read_accession(self, sample_accessions):
         for accession in sample_accessions:
+            update_fields = {"biosampleAccession": accession["biosample_accession"],
+                                                               "sraAccession": accession["sample_accession"],
+                                                               "status": "accepted"}
+            self.update_field(field_values=update_fields, oid=accession["sample_id"])
+            '''
             self.get_collection_handle().update_many({"_id": ObjectId(accession["sample_id"])},
                                                      {"$set": {"biosampleAccession": accession["biosample_accession"],
                                                                "sraAccession": accession["sample_accession"],
                                                                "status": "accepted"}})
-
+            '''
+            
     def update_datafile_status(self, datafile_ids, status):
         dt = helpers.get_datetime()
         for id in datafile_ids:

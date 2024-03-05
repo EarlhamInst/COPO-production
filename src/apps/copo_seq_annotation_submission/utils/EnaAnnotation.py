@@ -44,9 +44,9 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
         if f_name:
             if f_name not in files:
                 type = formset_data.get("type", "")
-                if type == "gff":
-                    if not f_name.endswith(".gff"):
-                        return {"error": f'File {f_name} should be ended with .gff'}
+#                if type == "gff":
+#                    if not f_name.endswith(".gff"):
+#                        return {"error": f'File {f_name} should be ended with .gff'}
                 files.append( f_name)
                 files_type_list.append(type)
                 file_types[f_name] = type

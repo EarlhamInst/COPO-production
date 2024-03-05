@@ -177,6 +177,11 @@ def get_manifests(request):
     manifest_ids = Sample().get_manifests()
     return finish_request(manifest_ids)
 
+def get_manifests_by_sequencing_centre(request):
+    sequencing_centre = request.GET.get('sequencing_centre', str())
+    manifest_ids = Sample().get_by_sequencing_centre(sequencing_centre, isQueryByManifestLevel=True)
+    return finish_request(manifest_ids)
+
 def get_current_manifest_version(request):
     manifest_type = request.GET.get('manifest_type', str()).upper()
     out = list()
@@ -274,6 +279,15 @@ def get_project_samples(request, project):
     # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
     projectlist[:] = [x for x in projectlist if x]
     samples = Sample().get_project_samples(projectlist)
+    out = list()
+    if samples:
+        out = filter_for_API(samples)
+    return finish_request(out)
+
+def get_samples_by_sequencing_centre(request):
+    sequencing_centre = request.GET.get('sequencing_centre', str())
+    samples = Sample().get_by_sequencing_centre(sequencing_centre, isQueryByManifestLevel=False)
+    
     out = list()
     if samples:
         out = filter_for_API(samples)

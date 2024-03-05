@@ -86,19 +86,19 @@ DTOL_ENA_MAPPINGS = {
         'ena': 'identifier_affiliation'
     },
     'LATITUDE_END': {
-        'ena': 'geographic location end (latitude_end)'
+        'ena': 'Latitude End'
     },
     'LATITUDE_START': {
-        'ena': 'geographic location start (latitude_start)'
+        'ena': 'Longitude End'
     },
     'LIFESTAGE': {
         'ena': 'lifestage'
     },
     'LONGITUDE_END': {
-        'ena': 'geographic location end (longitude_end)'
+        'ena': 'Longitude End'
     },
     'LONGITUDE_START': {
-        'ena': 'geographic location start (longitude_start)'
+        'ena': 'Longitude Start'
     },
     'ORGANISM_PART': {
         'ena': 'organism part'
@@ -113,7 +113,7 @@ DTOL_ENA_MAPPINGS = {
         'ena': 'original geographic location (longitude)'
     },
     'ORIGINAL_GEOGRAPHIC_LOCATION': {
-        'ena': 'original collection location'
+        'ena': 'original geographic location'
     },
     'PARTNER': {
         'ena': 'GAL'
@@ -148,9 +148,9 @@ DTOL_ENA_MAPPINGS = {
     'SPECIMEN_ID': {
         'ena': 'specimen_id'
     },
-    'TIME_OF_COLLECTION': {
-        'ena': 'time of collection'
-    },
+    #'TIME_OF_COLLECTION': {
+    #    'ena': 'time of collection'
+    #},
     'TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
         'ena': 'bio_material'
     },

@@ -289,7 +289,12 @@ class Profile(DAComponent):
     def get_by_title(self, title):
         p = self.get_collection_handle().find({"title": title})
         return cursor_to_list(p)
-
+    
+    def get_profile_by_sequencing_centre(self, sequencing_centre, getIDOnly=False):
+        projection = {"_id": 1} if getIDOnly else dict()
+        p = self.get_collection_handle().find({'sequencing_centre': {'$in': [sequencing_centre]}}, projection)
+        return cursor_to_list(p)
+    
     def validate_and_delete(self, profile_id):
         # check if any submission object reference this profile, if so do not delete
         condition = {"profile_id": profile_id}

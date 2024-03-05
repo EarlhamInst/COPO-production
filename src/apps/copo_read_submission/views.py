@@ -173,7 +173,6 @@ def save_ena_records(request):
         insert_record["created_by"] = uid
         insert_record["time_created"] = get_datetime()
         insert_record["date_created"] = dt
-        insert_record["profile_id"] = profile_id    
 
         if "Organism" in s:
             if not sample or sample.get("organism","") != s["Organism"]:
@@ -220,7 +219,7 @@ def save_ena_records(request):
                 insert_record["biosampleAccession"] = s["biosampleAccession"]
                 insert_record["is_external"] = "1"
                 insert_record["TAXON_ID"] = s["TAXON_ID"]
-
+                insert_record["profile_id"] = profile_id    
 
             sample["name"] = s["biosampleAccession"]
 

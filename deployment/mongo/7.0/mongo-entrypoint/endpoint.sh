@@ -45,4 +45,5 @@ ROLE=readWrite
 echo "creating Mongo user: \"$USER\"..."
 mongosh admin -u $ADMIN_USER -p $ADMIN_PASS --eval "db.createUser({ user: '$USER', pwd: '$PASS', roles: [ { role: '$ROLE', db: '$DB' } ] });"
 
+mongosh mongodb://127.0.0.1/copo_mongo -u $USER -p $PASS --authenticationDatabase admin  --eval "db.SampleCollection.createIndex( { '$**': 'text' } );"
 echo "Mongo user created!"

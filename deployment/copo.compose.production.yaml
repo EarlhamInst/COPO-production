@@ -51,7 +51,7 @@ services:
       - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
       - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
-      - ECS_ENDPOINT=http://ei-copo.obj-data.nbi.ac.uk
+      - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
       - ENA_V2_SERVICE_SYNC=https://www.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://www.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
@@ -99,7 +99,7 @@ services:
       interval: 2m
       timeout: 10s
       retries: 3
-      start_period: 30s 
+      start_period: 30s    
   celery_job:
     image: copo/copo-new-web:v2.0.0.13
     entrypoint:
@@ -150,7 +150,7 @@ services:
       - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
       - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
-      - ECS_ENDPOINT=http://ei-copo.obj-data.nbi.ac.uk
+      - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
       - ENA_V2_SERVICE_SYNC=https://www.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://www.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
@@ -190,7 +190,7 @@ services:
       - copo_public_name_service_api_key
       - copo_mail_password
       - copo_bioimage_path
-      - ecs_secret_key
+      - ecs_secret_key        
   nginx:
     image: copo/copo-nginx:1.25.3.1
     networks:
@@ -268,7 +268,7 @@ services:
           cpus: "1"
           memory: 1GB
   sample_audit:
-    image: copo/copo-sample-audit:v0.0.13
+    image: copo/copo-sample-audit:v0.0.16
     networks:
       - copo-backend-network
     secrets:

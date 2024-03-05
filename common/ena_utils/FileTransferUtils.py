@@ -133,6 +133,7 @@ def process_pending_file_transfers():
                     get_ecs_file(tx)
                     increment_status_counter(tx)
                 except Exception as e:
+                    log.exception(e)
                     log.error("error downloading from ecs: " + str(e))
                     reset_status_counter(tx)
             elif tx_status == 3:
