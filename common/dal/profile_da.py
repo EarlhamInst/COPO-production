@@ -290,8 +290,8 @@ class Profile(DAComponent):
         p = self.get_collection_handle().find({"title": title})
         return cursor_to_list(p)
     
-    def get_profile_by_sequencing_centre(self, sequencing_centre, getIDOnly=False):
-        projection = {"_id": 1} if getIDOnly else dict()
+    def get_profile_by_sequencing_centre(self, sequencing_centre, getProfileIDOnly=False):
+        projection = {"_id": 1} if getProfileIDOnly else dict()
         p = self.get_collection_handle().find({'sequencing_centre': {'$in': [sequencing_centre]}}, projection)
         return cursor_to_list(p)
     

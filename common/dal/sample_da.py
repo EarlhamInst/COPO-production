@@ -202,6 +202,11 @@ class Sample(DAComponent):
 
         return permit_filenames
     
+    def get_sample_by_GAL(self, gal, getProfileIDOnly=False):
+        projection = {'_id': 0, 'profile_id':1} if getProfileIDOnly else dict()
+        samples = self.get_collection_handle().find({'GAL': {'$in': [gal]}}, projection)
+        return cursor_to_list(samples)
+    
     def count_samples_by_specimen_id_for_barcoding(self, specimen_id):
         # specimens must not have already been submitted to ENA so should have status of pending
         return self.get_collection_handle().count_documents(
@@ -817,10 +822,14 @@ class Sample(DAComponent):
         sequencing_centre = SequencingCentre.objects.get(label=sequencing_centre)
 
         # Get the profile id based on the sequencing centre
-        profile_ids = cursor_to_list_no_ids(Profile().get_profile_by_sequencing_centre(sequencing_centre.name, getIDOnly=True))
-
+        profile_ids_based_on_profile = cursor_to_list_no_ids(Profile().get_profile_by_sequencing_centre(sequencing_centre.name, getProfileIDOnly=True))
+        profile_ids_based_on_sample = self.get_sample_by_GAL(sequencing_centre.label, getProfileIDOnly=True)
+        
         # Get string only from ObjectId, 'profile_id'
-        profile_ids = [str(x) for x in profile_ids]
+        profile_ids_based_on_profile = [str(x) for x in profile_ids_based_on_profile]
+
+        # Get unique profile ids i.e. remove duplicates
+        profile_ids = list(set(profile_ids_based_on_profile + profile_ids_based_on_sample))
 
         if not profile_ids:
             return list()
