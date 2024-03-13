@@ -31,8 +31,11 @@ def update_xml(data):
            continue
         element = root.find(f".//*[TAG='{i}']")
         if element != None:   
-             value = element.find('VALUE')
-             value.text = data[i]
+             if data[i]:
+               value = element.find('VALUE')
+               value.text = data[i]
+             else:
+               sampleAttributes.remove(element)
         else:
              element = root.find(f".//{i}")
              if element != None:
