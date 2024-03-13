@@ -586,7 +586,7 @@ class DtolSpreadsheet:
             s["associated_tol_project"] = self.associated_type
             s["biosample_accession"] = []
             s["manifest_id"] = manifest_id
-            if "erga" in self.type.lower() and s["ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID"]:
+            if "erga" in self.type.lower() and s.get("ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID", str()):
                 s["status"] = "private"
             elif type == "ERGA":
                 s["status"] = "bge_pending"
