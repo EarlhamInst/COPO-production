@@ -657,7 +657,7 @@ def populate_source_fields(sampleobj):
                     fields[item[0]] = "NOT_PROVIDED"
                 elif item[0] == "ORGANISM_PART":
                     fields[item[0]] = "WHOLE_ORGANISM"
-                else:
+                elif item[0] != "sampleDerivedFrom" :
                     fields[item[0]] = item[1]
         except KeyError:
             pass
