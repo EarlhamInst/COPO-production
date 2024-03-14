@@ -6,6 +6,7 @@ from common.validators.helpers import check_taxon_ena_submittable
 from .validation_messages import MESSAGES as msg
 from Bio import Entrez
 from django_tools.middlewares import ThreadLocal
+import os
 
 class SinglePairedValuesValidator(Validator):
     def validate(self):
@@ -50,7 +51,7 @@ class TaxonValidator(Validator):
                     self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
-
+"""
 class GzipValidator(Validator):
 
     def validate(self):
@@ -63,6 +64,31 @@ class GzipValidator(Validator):
                     error_str = f + ": File not gzipped. All files must be gzipped and end in '.gz'"
                     self.errors.append(error_str)
                     self.flag = False
+        return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
+"""
+
+class FileSuffixValidator(Validator):
+    def validate(self):
+        for row in self.data.iterrows():
+            file_names = row[1]["file_name"]
+            if file_names.strip() == "":
+                continue
+            no_of_file = 0
+            for f in file_names.split(","):
+                no_of_file += 1 
+                # unpacking the tuple
+                file_name, file_extension = os.path.splitext(f.strip())
+                if file_extension not in [".gz", ".bz2", ".bam", ".cram"]:
+                    error_str = f + ": File must be a gz / bz2 file for fastq or bam / cram file."
+                    self.errors.append(error_str)
+                    self.flag = False
+                if file_extension in [".bam", ".cram"] and no_of_file > 1:
+                    error_str = f + ": File cannot be in pair for bam / cram type."
+                    self.errors.append(error_str)
+                    self.flag = False
+                if file_extension in [".gz", ".bz2"] and not file_name.endswith(".fastq"):
+                    error_str = f + ": for gz / bz2 file, please make sure it is fastq type"
+                    self.warnings.append(error_str)
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
 
