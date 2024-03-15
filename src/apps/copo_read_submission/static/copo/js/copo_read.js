@@ -86,6 +86,12 @@ $(document).ready(function () {
       $(element).removeClass('alert-danger').addClass('alert-info');
       $(element).html(d.message);
       //$("#spinner").fadeOut()
+    } else if (d.action === 'warning') {
+        // show something on the info div
+        // check info div is visible
+        $(element).removeClass('alert-danger').addClass('alert-warning');
+        $(element).html(d.message);
+        //$("#spinner").fadeOut()      
     } else if (d.action === 'error') {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');

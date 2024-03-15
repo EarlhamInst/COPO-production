@@ -13,9 +13,10 @@ lat=${ADDR[1]}
 long=${ADDR[2]}
 
 output=$(curl -s -X POST -H 'Content-Type: application/x-www-form-urlencoded' -d "result=sample&query=accession=${biosampleAccession}&fields=secondary_sample_accession&format=tsv" 'https://www.ebi.ac.uk/ena/portal/api/search')
-  sraAccession=`echo $output | sed 's/.*\ERS\(.*\)$/\1/'`
+  sraAccession=`echo $output | awk '{print $3}'`
+  #sraAccession=`echo $output | sed 's/.*\ERS\(.*\)$/\1/'`
   echo "{"
-  echo '"sample_accession": "'ERS$sraAccession'",'
+  echo '"sample_accession": "'$sraAccession'",'
   echo '"geographic location (latitude)" : "'$lat'",'
   echo '"geographic location (longitude)" : "'$long'"'
   echo "}," 

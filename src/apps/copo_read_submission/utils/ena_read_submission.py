@@ -1184,7 +1184,12 @@ class EnaReads:
             for file in files_pair:
                 run_file_node = etree.SubElement(run_files_node, 'FILE')
                 run_file_node.set("filename", os.path.join(self.remote_location, file.datafile_name))
-                run_file_node.set("filetype", "fastq")  # todo: what about BAM, CRAM files?
+                
+                file_name, file_extension = os.path.splitext(file.datafile_name)
+                if file_extension in [".cram", ".bam"]:
+                    run_file_node.set("filetype", file_extension[1:]) 
+                else :
+                    run_file_node.set("filetype", "fastq")  # todo: what about BAM, CRAM files?
                 run_file_node.set("checksum", file.datafile_hash)  # todo: is this correct as submission time?
                 run_file_node.set("checksum_method", "MD5")
 

@@ -381,17 +381,17 @@ class DtolEnumerationValidator(Validator):
                             ))
                             self.flag = False
                         # validation checks for date types
-                        if header in lookup.DATE_FIELDS and c_value.strip() not in lookup.BLANK_VALS:
-                            try:
-                                validate_date(c)
-                            except ValueError as e:
-                                self.errors.append(
-                                    msg["validation_msg_invalid_date"] % (c, header, str(cellcount + 1)))
-                                self.flag = False
-                            except AssertionError as e:
-                                self.errors.append(
-                                    msg["validation_msg_future_date"] % (c, header, str(cellcount + 1)))
-                                self.flag = False
+                    if header in lookup.DATE_FIELDS and c_value.strip() not in lookup.BLANK_VALS:
+                        try:
+                            validate_date(c)
+                        except ValueError as e:
+                            self.errors.append(
+                                msg["validation_msg_invalid_date"] % (c, header, str(cellcount + 1)))
+                            self.flag = False
+                        except AssertionError as e:
+                            self.errors.append(
+                                msg["validation_msg_future_date"] % (c, header, str(cellcount + 1)))
+                            self.flag = False
         
         notify_frontend(data={"profile_id": self.profile_id}, msg="Validating headers: Finished",
             action="info",
