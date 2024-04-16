@@ -150,7 +150,7 @@ $(document).ready(function () {
         $(d).each(function (idx, obj) {
           out =
             out +
-            "curl --progress-bar -v -T '" +
+            "curl --progress-bar -v -k -T '" +
             obj.name +
             "' '" +
             obj.url +
@@ -168,10 +168,18 @@ $(document).ready(function () {
       });
   });
 
-  $(document).on('click', '#copy_urls_button', function (evt) {
+  $(document).on("click", "#copy_urls_button", function (evt) {
     //  $("#command_area").select()
-    navigator.clipboard.writeText($('#command_area').text());
-  });
+    //navigator.clipboard.writeText($("#command_area").text());
+        //navigator.clipboard.writeText($("#command_area").text());
+        doDL($("#command_area").text());
+    })
+    
+    function doDL(s){
+        function dataUrl(data) {return "data:x-application/text," + data;}
+        window.open(dataUrl(s));
+    }
+
 
   $(document).on('click', '#upload_local_files_button', function (evt) {
     //  $("#command_area").select()
