@@ -15,7 +15,7 @@ from common.utils.helpers import notify_read_status, get_env, get_datetime, json
 from common.schemas.utils.data_utils import simple_utc
 from django.conf import settings
 from common.ena_utils import generic_helper as ghlper
-from common.dal.copo_da import EnaChecklist
+from common.dal.copo_da import EnaChecklist, EnaFileTransfer
 from common.dal.sample_da import Sample
 from common.dal.submission_da import Submission
 from common.lookup.lookup import SRA_SETTINGS
@@ -1016,12 +1016,17 @@ class EnaReads:
             result = dict(status=False, value='', message=message)
             return result
 
-        # retrieve already uploaded files
-        files_in_remote = [x.get('report', dict()).get('fileName', str()) for x in
-                           ghlper.get_ena_remote_files(user_token=self.user_token, pass_word=self.pass_word)]
+        #retrieve file upload status 
 
-        files_not_in_remote = [x for x in list(datafiles_df.datafile_name) if
-                               os.path.join(self.remote_location, x) not in files_in_remote]
+        file_submit_status_map = EnaFileTransfer().get_transfer_status_by_local_path(profile_id=self.profile_id, local_paths=list(datafiles_df.datafile_location))
+        files_not_in_remote = [ os.path.basename(x) for x in list(datafiles_df.datafile_location) if file_submit_status_map.get(x, 1) != 0 ]
+
+        # retrieve already uploaded files
+        #files_in_remote = [x.get('report', dict()).get('fileName', str()) for x in
+        #                   ghlper.get_ena_remote_files(user_token=self.user_token, pass_word=self.pass_word)]
+
+        #files_not_in_remote = [x for x in list(datafiles_df.datafile_name) if
+        #                       os.path.join(self.remote_location, x) not in files_in_remote]
 
         mock_file_names = [os.path.join(self.tmp_folder, x) for x in files_not_in_remote]
 

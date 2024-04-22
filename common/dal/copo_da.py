@@ -895,6 +895,11 @@ class EnaFileTransfer(DAComponent):
         self.get_collection_handle().update_one(
             {"_id": ObjectId(tx_id)}, {"$set": {"status": "complete"}})
 
+    def get_transfer_status_by_local_path(self, profile_id, local_paths):
+        #return self.get_collection_handle().find({"profile_id"})
+        result = self.get_collection_handle().find({"local_path": {"$in": local_paths}, "profile_id": profile_id},{"transfer_status":1, "local_path":1})
+        result_map = {x["local_path"] : x["transfer_status"]  for x in list(result)}
+        return result_map
 
 class APIValidationReport(DAComponent):
     def __init__(self, profile_id=None):
