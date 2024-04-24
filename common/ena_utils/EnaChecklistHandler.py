@@ -299,7 +299,7 @@ class ChecklistHandler:
         file = request.FILES["file"]
         checklist_id = request.POST["checklist_id"]
         name = file.name
-        ena = EnaCheckListSpreedsheet(file=file, checklist_id=checklist_id)
+        ena = EnaCheckListSpreadsheet(file=file, checklist_id=checklist_id)
         if name.endswith("xlsx") or name.endswith("xls"):
             fmt = 'xls'
         else:
@@ -353,7 +353,7 @@ class ChecklistHandler:
         return JsonResponse(status=200, data=result)                    
 '''
     
-class EnaCheckListSpreedsheet:
+class EnaCheckListSpreadsheet:
    def __init__(self, file, checklist_id, component, validators=[]):
         self.req = ThreadLocal.get_current_request()
         self.profile_id = self.req.session.get("profile_id", None)

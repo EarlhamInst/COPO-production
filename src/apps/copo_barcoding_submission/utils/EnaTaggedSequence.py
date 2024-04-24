@@ -21,7 +21,7 @@ import gzip
 import shutil
 import re
 import glob
-from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreedsheet
+from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreadsheet
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 import numpy as np
@@ -170,7 +170,7 @@ class EnaTaggedSequence:
         file = request.FILES["file"]
         checklist_id = request.POST["checklist_id"]
         name = file.name
-        ena = EnaCheckListSpreedsheet(file=file, checklist_id=checklist_id, component="tagged_seq")
+        ena = EnaCheckListSpreadsheet(file=file, checklist_id=checklist_id, component="tagged_seq")
         if name.endswith("xlsx") or name.endswith("xls"):
             fmt = 'xls'
         else:

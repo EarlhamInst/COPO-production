@@ -22,7 +22,7 @@ from common.ena_utils import generic_helper as ghlper
 import inspect
 from common.validators.validator import Validator
 from .utils.ena_validator import ena_seq_validators as required_validators
-from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreedsheet, write_manifest
+from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreadsheet, write_manifest
 
 from common.utils.helpers import get_datetime, get_not_deleted_flag,map_to_dict
 from .utils import ena_read  
@@ -63,7 +63,7 @@ def parse_ena_spreadsheet(request):
         if inspect.isclass(element) and issubclass(element, Validator) and not element.__name__ == "Validator":
             required_validators.append(element)
 
-    ena = EnaCheckListSpreedsheet(file=file, checklist_id=checklist_id, component="sample", validators=required_validators)
+    ena = EnaCheckListSpreadsheet(file=file, checklist_id=checklist_id, component="sample", validators=required_validators)
     s3obj = s3()
     if name.endswith("xlsx") or name.endswith("xls"):
         fmt = 'xls'
