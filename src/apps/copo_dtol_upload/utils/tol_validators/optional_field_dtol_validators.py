@@ -4,9 +4,10 @@ from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
 from common.utils.helpers import notify_frontend
 from common.schema_versions.lookup import dtol_lookups as lookup
-from common.validators.helpers import validate_date
+from common.validators.helpers import validate_date, check_biocollection
 from common.validators.validator import Validator
 from .validation_messages import MESSAGES as msg
+
 import validators
 
 
@@ -146,25 +147,30 @@ class DtolEnumerationValidator(Validator):
                     header_rules = lookup.DTOL_RULES.get(header, "")
 
                 # Check if header contains the profile type at the end
+
                 if header_rules:
                     # control for when ENA regex is too permissive
                     if header_rules.get("strict_regex", ""):
                         regex_rule = header_rules.get("strict_regex", "")
                     else:
                         regex_rule = header_rules.get("ena_regex", "")
-
                     regex_human_readable = header_rules.get(
                         "human_readable", "")
                     optional_regex = header_rules.get("optional_regex", "")
+                    biocollection_regex = header_rules.get("biocollection_regex", "")
+                    biocollection_qualifier_type = header_rules.get("biocollection_qualifier_type", "specimen_voucher")
                 else:
                     regex_rule = ""
                     optional_regex = ""
+                    biocollection_regex = ""
+                    biocollection_qualifier_type = ""
                 cellcount = 0
                 for c in cells:
                     cellcount += 1
 
                     c_value = c
 
+                    do_biocollection_checking = False
                     # reformat time of collection to handle excel format
                     if header == "TIME_OF_COLLECTION":
                         csplit = c.split(":")
@@ -237,7 +243,9 @@ class DtolEnumerationValidator(Validator):
                             else:  # not in use atm, here in case we add more optional validations
                                 self.warnings.append(msg["validation_msg_warning_racktube_format"] % (
                                     c, header, str(cellcount + 1)))
-
+                    if biocollection_regex:
+                        if c and re.match(biocollection_regex, c):
+                            do_biocollection_checking = True
                     # validate link fields
                     if header.endswith('_LINK') or header == "VOUCHER_INSTITUTION":
                         if c.strip() and not validators.url(c.strip()):
@@ -393,6 +401,17 @@ class DtolEnumerationValidator(Validator):
                                 msg["validation_msg_future_date"] % (c, header, str(cellcount + 1)))
                             self.flag = False
         
+                    if do_biocollection_checking:
+                        ids = c_value.strip().split("|")
+                        for id in ids:
+                            #check the id against the ENA API
+                            code = id.split(":")
+                            if not check_biocollection(code[0], code[1], biocollection_qualifier_type):
+                                self.errors.append(msg["validation_msg_invalid_data"] % (
+                                c, header, str(cellcount + 1), regex_human_readable))
+                                self.flag = False
+                                break
+
         notify_frontend(data={"profile_id": self.profile_id}, msg="Validating headers: Finished",
             action="info",
             max_ellipsis_length=0,

@@ -2,6 +2,7 @@ import subprocess
 import json
 import datetime
 from common.utils.logger import Logger
+import requests
 l = Logger()
 
 MESSAGE = {
@@ -28,6 +29,24 @@ def validate_date(date_text):
         assert todayis > enteredtime
     except AssertionError:
         raise AssertionError("Incorrect date entered: date is in the future")
+
+def check_biocollection(institute_code, collection_code, qualifier_type):
+    url = f"https://www.ebi.ac.uk/ena/sah/api/institution/{institute_code}/collection/{collection_code}?qualifier_type={qualifier_type}"
+
+    try:
+        response = requests.get(url)
+        if response.status_code == requests.codes.ok:
+            is_success = response.json().get('success')
+            if is_success:
+                return True
+            else:
+                l.debug( f"{institute_code}:{collection_code} for {qualifier_type} not registered" )
+        else:
+            l.error(str(response.status_code) + ":" + response.text)
+    except Exception as e:
+        l.exception(e)
+    return False
+
 
 def check_taxon_ena_submittable(taxon, by="id"):
     errors = []
