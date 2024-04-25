@@ -6,7 +6,7 @@ from common.dal.profile_da import Profile
 from common.dal.submission_da import Submission
 from bson import json_util
 from common.utils.helpers import get_group_membership_asString, notify_frontend
-from src.apps.copo_core.models import ViewLock
+from src.apps.copo_core.models import AssociatedProfileType, SequencingCentre, ViewLock
 from src.apps.copo_core.views import web_page_access_checker
 from common.utils.helpers import  get_group_membership_asString, get_current_user
 import json
@@ -117,6 +117,7 @@ def add_sample_to_dtol_submission(request):
     profile = Profile().get_record(profile_id)
     group = get_group_membership_asString()
     is_bge_checker =  "bge_checkers" in group
+    
  
     # check we have required params
     if sample_ids and profile:
@@ -125,7 +126,18 @@ def add_sample_to_dtol_submission(request):
         type_sub = profile["type"]
         #is_bge_profile = "BGE" in [ x.get("value","") for x in profile.get("associated_type",[]) ]
         sequence_centres = profile.get("sequencing_centre", [])
-        is_sanger_profile = "erga" in type_sub.lower() and settings.SANGER_SEQUENCING_CENTRE in sequence_centres
+        sequence_centre_objects = SequencingCentre.objects.all()
+
+        # Check if approval is required for the assigned sequencing centre in an ERGA profile
+        is_sequencing_centre_approval_required = "erga" in type_sub.lower() and \
+        any(sc_obj.is_approval_required for sc in sequence_centres for sc_obj in sequence_centre_objects if sc_obj.name == sc)
+    
+        #is_sanger_profile = "erga" in type_sub.lower() and settings.SANGER_SEQUENCING_CENTRE in sequence_centres
+
+        associated_profile_types = profile.get("associated_type",[])
+        associated_profile_types_objects = AssociatedProfileType.objects.all()
+        is_associated_project_type_approval_required = "erga" in type_sub.lower() and \
+            any(apt_obj.is_approval_required for apt in associated_profile_types for apt_obj in associated_profile_types_objects if apt_obj.name == apt.get("value",""))
 
         if not sub:
             if type_sub == "Aquatic Symbiosis Genomics (ASG)":
@@ -145,22 +157,29 @@ def add_sample_to_dtol_submission(request):
         processing_sample_ids = []
         pending_sample_ids = []
         bge_pending_sample_ids = []
+        associated_project_sample_ids = []
 
         for sample in samples:
             sample_id = str(sample["_id"])
             notify_frontend(action="delete_row", html_id=str(sample_id), data={})
 
-            if is_sanger_profile and sample["status"] != "pending":
+            # Check if approval is required for the assigned sequencing centre
+            if is_sequencing_centre_approval_required and sample["status"] != "pending":
+                # Check if approval is required from BGE checkers
                 if is_bge_checker and sample["status"] == "bge_pending":
                     pending_sample_ids.append(sample_id)
                 else:
                     bge_pending_sample_ids.append(sample_id)
             else:
-                processing_sample_ids.append(sample_id)
-                # iterate over samples and add to submission
-                if not sample_id in sub["dtol_samples"]:
-                    sub["dtol_samples"].append(sample_id)
-                    # Sample().get_all_records_columns()
+                # Check if approval is required for the associated profile type
+                if is_associated_project_type_approval_required:
+                    associated_project_sample_ids.append(sample_id)
+                else:
+                    processing_sample_ids.append(sample_id)
+                    # iterate over samples and add to submission
+                    if not sample_id in sub["dtol_samples"]:
+                        sub["dtol_samples"].append(sample_id)
+                        # Sample().get_all_records_columns()
 
         # Processing samples
         if processing_sample_ids:
@@ -180,6 +199,13 @@ def add_sample_to_dtol_submission(request):
             #send email to BGE to notify them of new samples
             Email().notify_manifest_pending_for_bge_checker(data=uri + 'copo/dtol_submission/accept_reject_sample/', profile_id=profile_id,  title=profile["title"], description=profile["description"] )
         
+        # Associated project type samples
+        if associated_project_sample_ids:
+            Sample().mark_pending(sample_ids=associated_project_sample_ids, is_associated_project_check_required=True)
+            uri = request.build_absolute_uri('/')
+            # Send email to associated project type checkers to notify them of new samples
+            Email().notify_manifest_pending_for_associated_project_type_checker(data=uri + 'copo/dtol_submission/accept_reject_sample/', profile_id=profile_id,  title=profile["title"], description=profile["description"] )
+
         #Sample().timestamp_dtol_sample_updated(sample_ids=sample_ids)
         # sample_ids_bson = list(map(lambda id: ObjectId(id), sample_ids))
         # sepciment_ids = Sample().get_collection_handle().distinct( 'SPECIMEN_ID', {"_id": {"$in": sample_ids_bson}});

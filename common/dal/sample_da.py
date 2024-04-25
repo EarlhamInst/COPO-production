@@ -792,12 +792,14 @@ class Sample(DAComponent):
         #sample_obj_ids = [ObjectId(x) for x in sample_ids]
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": "processing"}})
 
-    def mark_pending(self, sample_ids, is_erga=False, is_private=False):
+    def mark_pending(self, sample_ids, is_erga=False, is_associated_project_check_required=False, is_private=False):
         if is_erga:
             status = "bge_pending"
+        elif is_associated_project_check_required:
+            status = "associated_project_pending"
         elif is_private:
             status = "private"
-        else :
+        else:
             status = "pending"
         return self.update_field(field="status", value=status, oids=sample_ids)    
         #sample_obj_ids = [ObjectId(x) for x in sample_ids]

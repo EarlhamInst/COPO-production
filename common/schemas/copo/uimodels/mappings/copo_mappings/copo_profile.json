@@ -94,6 +94,10 @@
           "label": "Biodiversity Genomics Europe (BGE)"
         },
         {
+          "value": "CBP",
+          "label": "Catalan Initiative for the Earth BioGenome Project (CBP)"
+        },
+        {
           "value": "DTOL",
           "label": "Darwin Tree of Life (DTOL)"
         },

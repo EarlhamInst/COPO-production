@@ -23,7 +23,8 @@ var dt_options = {
         if (
           filter == 'pending' ||
           filter == 'rejected' ||
-          filter == 'bge_pending'
+          filter == 'bge_pending' ||
+          filter == 'associated_project_pending'
         ) {
           return "<input type='checkbox' class='form-check-input checkbox'/>";
         } else {
@@ -1074,6 +1075,9 @@ function handle_accept_reject(el) {
         $('#spinner').fadeOut(fadeSpeed);
       });
     } else {
+      // check if associated profile check is required
+
+
       BootstrapDialog.show({
         title: 'ENA Submission',
         message:
