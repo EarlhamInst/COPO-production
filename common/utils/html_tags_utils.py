@@ -438,7 +438,7 @@ def generate_server_side_table_records(profile_id=str(), da_object=None, request
 # @register.filter("generate_table_records")
 
 
-def generate_table_records(profile_id=str(), da_object=None, record_id=str()):
+def generate_table_records(profile_id=str(), da_object=None, record_id=str(), additional_columns=pd.DataFrame()):
     # function generates component records for building an UI table - please note that for effective tabular display,
     # all array and object-type fields (e.g., characteristics) are deferred to sub-table display.
     # please define such in the schema as "show_in_table": false and "show_as_attribute": true
@@ -485,6 +485,7 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str()):
 
     # build db column projection
     projection = [(x["id"].split(".")[-1], 1) for x in schema]
+    projection.append(("_id", 1))
 
     filter_by = dict()
     if record_id:
@@ -496,6 +497,10 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str()):
 
     if len(records):
         df = pd.DataFrame(records)
+        if  "_id" in additional_columns:
+            df = df.merge(additional_columns, on='_id', how="left")
+            df = df.fillna("")
+
         df['s_n'] = df.index
 
         df['record_id'] = df._id.astype(str)
@@ -523,6 +528,10 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str()):
                     resolve_control_output_apply, args=(x,))
 
         data_set = df.to_dict('records')
+
+    for name in additional_columns.columns:
+        if name != '_id':
+          columns.append(dict(data=name, title=name))
 
     return_dict = dict(dataSet=data_set,
                        columns=columns

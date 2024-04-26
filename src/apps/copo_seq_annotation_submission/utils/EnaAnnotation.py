@@ -20,11 +20,40 @@ import requests
 import json
 from bson import ObjectId
 from common.utils.helpers import notify_annotation_status
+import pandas as pd
 
 l = Logger() 
 pass_word = get_env('WEBIN_USER_PASSWORD')
 user_token = get_env('WEBIN_USER').split("@")[0]
 ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
+
+pass_word = get_env('WEBIN_USER_PASSWORD')
+user_token = get_env('WEBIN_USER').split("@")[0]
+
+def _query_ena_file_processing_status(accession_no):
+    result = ""
+    url = f"https://www.ebi.ac.uk/ena/submit/report/analysis-files/{accession_no}?format=json"
+    with requests.Session() as session:
+        session.auth = (user_token, pass_word)
+        headers = {'Accept': '/'}
+
+        try:
+            response = session.get(url, headers=headers)
+            if response.status_code == requests.codes.ok:
+                response_body = response.json()
+                for r in response_body:
+                    report = r.get("report",{})
+                    if report:
+                        result += "|"+ report.get("fileName") + " : " + report.get("archiveStatus") + " : " + report.get("releaseStatus")
+                if result:
+                    result = result[1:].replace("|", "<br/>")
+
+            else:
+                result = "Cannot get file processing result from ENA"
+                l.error(str(response.status_code) + ":" + response.text)
+        except Exception as e:
+            l.exception(e)
+        return result
 
 
 def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
@@ -140,7 +169,7 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
     '''    
 
     #schedule annotation submission in SubmisisonCollection
-    table_data = htags.generate_table_records(profile_id=profile_id, da_object=SequenceAnnotation(profile_id=profile_id))
+    table_data = htags.generate_table_records(profile_id=profile_id, da_object=SequenceAnnotation(profile_id=profile_id), additional_columns=generate_additional_columns(profile_id))
     result = Submission().make_seq_annotation_submission_uploading(sub_id, [str(annotation_rec["_id"])])
     if result["status"] == "error":
         return {"success": "Annotation has been saved but not scheduled to submit as the submission is already in progress. Please submit it later", "table_data": table_data, "component": "seqannotation"}
@@ -350,7 +379,7 @@ def poll_asyn_seq_annotation_submission_receipt():
                     elif accessions["status"] == "ok":
                         msg = "Last Sequence Annotation Submitted:  - Seq Annotation Access: " + ','.join(str(x["accession"]) for x in accessions["accession"])   # + " - Biosample ID: " + accessions["biosample_accession"]
 
-                        table_data = htags.generate_table_records(profile_id=submission["profile_id"], da_object=SequenceAnnotation(profile_id=submission["profile_id"]))
+                        table_data = htags.generate_table_records(profile_id=submission["profile_id"], da_object=SequenceAnnotation(profile_id=submission["profile_id"]), additional_columns=generate_additional_columns(submission["profile_id"]))
                         #ghlper.notify_annotation_status(data={"profile_id": submission["profile_id"], "table_data": table_data, "component": "seqannotation"}, msg=msg, action="refresh_table", )
                         notify_annotation_status(data={"profile_id": submission["profile_id"], "table_data": table_data, "component": "seqannotation"}, msg=msg, action="info",
                                         html_id="annotation_info")
@@ -451,4 +480,15 @@ def submit_seq_annotation(profile_id, target_ids,  target_id):
 
     return dict(status='error', message="System error. Sequence annotation submission has not been scheduled! Please contact system administrator.")        
 
-    
+
+def generate_additional_columns(profile_id):
+    result = []
+    submissions = Submission().get_records_by_field("profile_id", profile_id)
+    if submissions and len(submissions) > 0:
+        assembly_accessions = submissions[0].get("accessions",[]).get("seq_annotation",[])
+        for accession_obj in assembly_accessions:
+            accession = accession_obj.get("accession","") 
+            if accession:
+                status = _query_ena_file_processing_status(accession)
+                result.append({"_id": ObjectId(accession_obj.get("alias")), "ena_file_processing_status":status})
+    return pd.DataFrame.from_dict(result)

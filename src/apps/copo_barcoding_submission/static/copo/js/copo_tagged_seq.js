@@ -294,10 +294,11 @@ $(document).ready(function () {
 
   $('body').on('posttablerefresh', function (event) {
     table = $('#' + componentMeta.tableID).DataTable();
-    var numCols = $('#' + componentMeta.tableID + ' thead th').length;
+    //var numCols = $('#' + componentMeta.tableID + ' thead th').length;
+    var numCols = table.columns().nodes().length;
     table.rows().nodes().to$().addClass('highlight_accession');
 
-    for (var i = 1; i <= numCols; i++) {
+    for (var i = 0; i < numCols; i++) {
       if ($(table.column(i).header()).text() == 'ACCESSION') {
         var no_accessiion_indexes = table
           .rows()
@@ -310,8 +311,24 @@ $(document).ready(function () {
           .nodes()
           .to$()
           .addClass('highlight_no_accession');
-        break;
       }
+      if ($(table.column(i).header()).text() == 'ena_file_processing_status') {
+        var error = table
+          .rows()
+          .eq(0)
+          .filter(function (rowIdx) {
+            file_processing_status = table.cell(rowIdx, i).data()
+            if (file_processing_status == "" || file_processing_status.includes('File archived'))
+               return false;
+            else
+               return true;
+          });
+        table
+          .rows(error)
+          .nodes()
+          .to$()
+          .addClass('highlight_error_file_processing_status');
+      }      
     }
   });
 });

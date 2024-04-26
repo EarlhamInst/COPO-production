@@ -1,10 +1,8 @@
 import os
-from shutil import rmtree
 from pathlib import Path
 import subprocess
 import re
 from django.conf import settings
-from django.core.files.storage import default_storage
 from django_tools.middlewares import ThreadLocal
 from common.utils.helpers import get_env, get_datetime, get_deleted_flag, get_not_deleted_flag
 from common.dal.copo_da import EnaFileTransfer, DataFile
@@ -20,6 +18,8 @@ from pymongo import ReturnDocument
 import common.ena_utils.FileTransferUtils as tx
 from common.utils import html_tags_utils as htags
 from .da import Assembly
+import requests
+import pandas as pd
 
 l = Logger()
 # other types of assemblies (not individualss or cultured isolates):
@@ -35,9 +35,38 @@ l = Logger()
 # file types allowed are FASTA and flatfile
 # Metatranscriptome Assemblies: as transcriptome assembly
 
+
+
 pass_word = get_env('WEBIN_USER_PASSWORD')
 user_token = get_env('WEBIN_USER').split("@")[0]
 ena_service = get_env('ENA_SERVICE')
+
+
+def _query_ena_file_processing_status(accession_no):
+    result = ""
+    url = f"https://www.ebi.ac.uk/ena/submit/report/analysis-files/{accession_no}?format=json"
+    with requests.Session() as session:
+        session.auth = (user_token, pass_word)
+        headers = {'Accept': '/'}
+
+        try:
+            response = session.get(url, headers=headers)
+            if response.status_code == requests.codes.ok:
+                response_body = response.json()
+                for r in response_body:
+                    report = r.get("report",{})
+                    if report:
+                        result += "|"+ report.get("fileName") + " : " + report.get("archiveStatus") + " : " + report.get("releaseStatus")
+                if result:
+                    result = result[1:].replace("|", "<br/>")
+
+            else:
+                result = "Cannot get file processing result from ENA"
+                l.error(str(response.status_code) + ":" + response.text)
+        except Exception as e:
+            l.exception(e)
+        return result
+
 
 """
 def upload_assembly_files(files):
@@ -156,7 +185,7 @@ def validate_assembly(form, profile_id, assembly_id):
     form["files"] = file_ids
     form["profile_id"] = profile_id
     assembly_rec = Assembly().save_record(auto_fields={},**form, target_id=assembly_id)
-    table_data = htags.generate_table_records(profile_id=profile_id, da_object=Assembly(profile_id=profile_id))
+    table_data = htags.generate_table_records(profile_id=profile_id, da_object=Assembly(profile_id=profile_id), additional_columns=generate_additional_columns(profile_id))
 
     if not assembly_id or not assembly_rec["accession"]:
         result = Submission().make_assembly_submission_uploading(sub_id, [str(assembly_rec["_id"])])
@@ -303,7 +332,7 @@ def process_assembly_pending_submission():
                 Assembly().add_accession(id=assembly_id, accession=accession)
                 Submission().add_assembly_accession(sub["_id"], accession, "webin-genome-" + assembly["assemblyname"], assembly_id)
 
-                table_data = htags.generate_table_records(profile_id=sub["profile_id"], da_object=Assembly(profile_id=sub["profile_id"]))
+                table_data = htags.generate_table_records(profile_id=sub["profile_id"], da_object=Assembly(profile_id=sub["profile_id"]), additional_columns=generate_additional_columns(sub["profile_id"]))
                 ghlper.notify_assembly_status(data={"profile_id": sub["profile_id"],"table_data": table_data, "component": "assembly"}, msg="Assembly has been submitted", action="info",
                 html_id="assembly_info")
             else:
@@ -343,4 +372,14 @@ def submit_assembly(profile_id, target_ids=list(),  target_id=str()):
             
     return dict(status='error', message="System error. Assembly submission has not been scheduled! Please contact system administrator.")        
 
-    
+def generate_additional_columns(profile_id):
+    result = []
+    submissions = Submission().get_records_by_field("profile_id", profile_id)
+    if submissions and len(submissions) > 0:
+        assembly_accessions = submissions[0].get("accessions",[]).get("assembly",[])
+        for accession_obj in assembly_accessions:
+            accession = accession_obj.get("accession","") 
+            if accession:
+                status = _query_ena_file_processing_status(accession)
+                result.append({"_id": ObjectId(accession_obj["assembly_id"]), "ena_file_processing_status":status})
+    return pd.DataFrame.from_dict(result)
