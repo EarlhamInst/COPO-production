@@ -1075,9 +1075,6 @@ function handle_accept_reject(el) {
         $('#spinner').fadeOut(fadeSpeed);
       });
     } else {
-      // check if associated profile check is required
-
-
       BootstrapDialog.show({
         title: 'ENA Submission',
         message:
