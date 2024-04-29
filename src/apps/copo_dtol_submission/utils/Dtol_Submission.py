@@ -35,7 +35,7 @@ exclude_from_sample_xml = []
 ena_service = get_env('ENA_SERVICE')
 ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
 ena_v2_service_sync = get_env("ENA_V2_SERVICE_SYNC")
-ena_report = get_env('ENA_ENDPOINT_REPORT')
+ena_report = get_env('ENA_ENDPOINT_REPORT') + "samples"
 
 # public_name_service = resolve_env.get_env('PUBLIC_NAME_SERVICE')
 

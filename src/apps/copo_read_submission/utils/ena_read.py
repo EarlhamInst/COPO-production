@@ -17,7 +17,7 @@ session.auth = (user_token, pass_word)
 
 def _query_ena_file_processing_status(accession_no):
     result = ""
-    url = f"https://www.ebi.ac.uk/ena/submit/report/run-files/{accession_no}?format=json"
+    url = f"{get_env('ENA_ENDPOINT_REPORT')}run-files/{accession_no}?format=json"
     with requests.Session() as session:
         session.auth = (user_token, pass_word)
         headers = {'Accept': '/'}

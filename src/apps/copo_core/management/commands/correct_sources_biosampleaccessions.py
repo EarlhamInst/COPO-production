@@ -33,7 +33,7 @@ class Command(BaseCommand):
         self.ena_service = resolve_env.get_env('ENA_SERVICE')
         self.ena_sample_retrieval = self.ena_service[:-len(
             'submit/')] + "samples/"  # https://devwww.ebi.ac.uk/ena/submit/drop-box/samples/" \
-        self.ena_report = resolve_env.get_env('ENA_ENDPOINT_REPORT')
+        self.ena_report = resolve_env.get_env('ENA_ENDPOINT_REPORT') + "samples"
 
     def add_arguments(self, parser):
         parser.add_argument('accessions', type=str)

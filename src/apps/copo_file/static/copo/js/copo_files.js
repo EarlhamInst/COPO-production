@@ -176,7 +176,7 @@ $(document).ready(function () {
     })
     
     function doDL(s){
-        function dataUrl(data) {return "data:x-application/text," + data;}
+        function dataUrl(data) {return "data:x-application/text," + encodeURI(data);}
         window.open(dataUrl(s));
     }
 

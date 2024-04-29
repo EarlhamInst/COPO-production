@@ -10,6 +10,8 @@ from bson import ObjectId
 from os.path import join
 from pymongo import ReturnDocument
 import common.ena_utils.FileTransferUtils as tx
+from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_project
+
 from common.utils import html_tags_utils as htags
 
 from django.conf import settings
@@ -26,35 +28,6 @@ l = Logger()
 pass_word = get_env('WEBIN_USER_PASSWORD')
 user_token = get_env('WEBIN_USER').split("@")[0]
 ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
-
-pass_word = get_env('WEBIN_USER_PASSWORD')
-user_token = get_env('WEBIN_USER').split("@")[0]
-
-def _query_ena_file_processing_status(accession_no):
-    result = ""
-    url = f"https://www.ebi.ac.uk/ena/submit/report/analysis-files/{accession_no}?format=json"
-    with requests.Session() as session:
-        session.auth = (user_token, pass_word)
-        headers = {'Accept': '/'}
-
-        try:
-            response = session.get(url, headers=headers)
-            if response.status_code == requests.codes.ok:
-                response_body = response.json()
-                for r in response_body:
-                    report = r.get("report",{})
-                    if report:
-                        result += "|"+ report.get("fileName") + " : " + report.get("archiveStatus") + " : " + report.get("releaseStatus")
-                if result:
-                    result = result[1:].replace("|", "<br/>")
-
-            else:
-                result = "Cannot get file processing result from ENA"
-                l.error(str(response.status_code) + ":" + response.text)
-        except Exception as e:
-            l.exception(e)
-        return result
-
 
 def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
     request = ThreadLocal.get_current_request()
@@ -485,10 +458,10 @@ def generate_additional_columns(profile_id):
     result = []
     submissions = Submission().get_records_by_field("profile_id", profile_id)
     if submissions and len(submissions) > 0:
-        assembly_accessions = submissions[0].get("accessions",[]).get("seq_annotation",[])
-        for accession_obj in assembly_accessions:
-            accession = accession_obj.get("accession","") 
-            if accession:
-                status = _query_ena_file_processing_status(accession)
-                result.append({"_id": ObjectId(accession_obj.get("alias")), "ena_file_processing_status":status})
+        project_accessions = submissions[0].get("accessions",[]).get("project",[])
+        if project_accessions:
+            assembly_accessions = submissions[0].get("accessions",[]).get("seq_annotation",[])
+            if assembly_accessions:
+                assession_map = query_ena_file_processing_status_by_project(project_accessions[0].get("accession"), "SEQUENCE_ANNOTATION")
+                result = [{ "_id": ObjectId(accession_obj["alias"]), "ena_file_processing_status":assession_map.get(accession_obj["accession"], "") } for accession_obj in assembly_accessions if accession_obj.get("accession","") ]        
     return pd.DataFrame.from_dict(result)
