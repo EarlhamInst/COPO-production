@@ -531,7 +531,7 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
 
     for name in additional_columns.columns:
         if name != '_id':
-          columns.append(dict(data=name, title=name))
+          columns.append(dict(data=name, title=name.upper().replace("_", " ")))
 
     return_dict = dict(dataSet=data_set,
                        columns=columns
