@@ -437,7 +437,7 @@ $(document).ready(function () {
           .to$()
           .addClass('highlight_no_accession');
       }
-      if ($(table.column(i).header()).text() == 'ena_file_processing_status') {
+      if ($(table.column(i).header()).text() == 'ENA FILE PROCESSING STATUS') {
         var error = table
           .rows()
           .eq(0)
