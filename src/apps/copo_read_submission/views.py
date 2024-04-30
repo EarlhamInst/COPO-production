@@ -586,12 +586,12 @@ def copo_reads(request, profile_id):
 
 
 @login_required
-def download_initial_read_manfiest(request, profile_id):
+def download_initial_read_manifest(request, profile_id):
     request.session["profile_id"] = profile_id
     samples = Sample().get_all_records_columns(filter_by={"profile_id": profile_id}, projection={"_id":0, "biosampleAccession":1, "TAXON_ID":1, "SPECIMEN_ID":1})
     checklist = EnaChecklist().get_collection_handle().find_one({"primary_id": "read"})
     bytesstring = BytesIO()
     write_manifest(checklist=checklist, samples=samples, for_dtol=True, file_path=bytesstring)
     response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response['Content-Disposition'] = f"attachment; filename=read_manfiest_{profile_id}.xlsx"
+    response['Content-Disposition'] = f"attachment; filename=read_manifest_{profile_id}.xlsx"
     return response

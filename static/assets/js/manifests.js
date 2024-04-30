@@ -597,7 +597,7 @@ function generateManifestTemplate(event) {
       let link = document.createElement('a');
       let blob = new Blob([this.response], {});
 
-      link.download = get_manifest_filename(manifest_type); // set manfiest filename
+      link.download = get_manifest_filename(manifest_type); // set manifest filename
       link.href = URL.createObjectURL(blob);
       link.click();
       window.URL.revokeObjectURL(link.href);
