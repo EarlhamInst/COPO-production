@@ -45,7 +45,7 @@ services:
       - MAIL_USERNAME=eidata@nbi.ac.uk
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v2/
-      - ENA_ENDPOINT_REPORT=https://www.ebi.ac.uk/ena/submit/report/samples
+      - ENA_ENDPOINT_REPORT=https://www.ebi.ac.uk/ena/submit/report/
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
       - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk
@@ -144,7 +144,7 @@ services:
       - MAIL_USERNAME=eidata@nbi.ac.uk
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v2/
-      - ENA_ENDPOINT_REPORT=https://www.ebi.ac.uk/ena/submit/report/samples
+      - ENA_ENDPOINT_REPORT=https://www.ebi.ac.uk/ena/submit/report/
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
       - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk

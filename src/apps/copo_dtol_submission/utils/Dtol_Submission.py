@@ -35,7 +35,7 @@ exclude_from_sample_xml = []
 ena_service = get_env('ENA_SERVICE')
 ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
 ena_v2_service_sync = get_env("ENA_V2_SERVICE_SYNC")
-ena_report = get_env('ENA_ENDPOINT_REPORT')
+ena_report = get_env('ENA_ENDPOINT_REPORT') + "samples"
 
 # public_name_service = resolve_env.get_env('PUBLIC_NAME_SERVICE')
 
@@ -512,7 +512,7 @@ def process_pending_dtol_samples():
                     tolidflag = False
 
             for name in public_names:
-                l.log("adding public names to samples", type=Logtype.FILE)
+                l.log("adding public names to samples")
                 if name.get("tolId", ""):
                     Sample().update_public_name(name)
                 if name.get("status", "") == "Rejected":
@@ -536,11 +536,11 @@ def process_pending_dtol_samples():
                                                                   rejected_sample=rejected_sample)
             # if tolid missing for specimen skip
             if not tolidflag:
-                l.log("missing tolid, removing draft xml", type=Logtype.FILE)
+                l.log("missing tolid, removing draft xml")
                 os.remove("bundle_" + file_subfix + ".xml")
                 continue
 
-            l.log("updating bundle xml", type=Logtype.FILE)
+            l.log("updating bundle xml")
             if len(s_ids) == 0:
                 notify_frontend(data={"profile_id": profile_id}, msg="Nothing more to submit", action="info",
                                 html_id="dtol_sample_info")
@@ -552,7 +552,7 @@ def process_pending_dtol_samples():
             if update_bundle_sample_xml(s_ids, "bundle_" + file_subfix + "-01" + ".xml", is_modify=True):
                 build_submission_xml(file_subfix + "-01", modify=True)
                 # store accessions, remove sample id from bundle and on last removal, set status of submission
-                l.log("submitting modify bundle xml to ENA", type=Logtype.FILE)
+                l.log("submitting modify bundle xml to ENA")
                 accessions = submit_biosample_v2(file_subfix + "-01", Sample(), submission['_id'], s_ids,
                                                  async_send=True)
 
@@ -561,7 +561,7 @@ def process_pending_dtol_samples():
             if update_bundle_sample_xml(s_ids, "bundle_" + file_subfix + "-02" + ".xml", is_modify=False):
                 build_submission_xml(file_subfix + "-02", release=True)
                 # store accessions, remove sample id from bundle and on last removal, set status of submission
-                l.log("submitting bundle xml to ENA", type=Logtype.FILE)
+                l.log("submitting bundle xml to ENA")
                 accessions = submit_biosample_v2(file_subfix + "-02", Sample(), submission['_id'], s_ids,
                                                  async_send=True)
 
@@ -601,10 +601,8 @@ def query_awaiting_tolids():
             return
         # update samples and set dtol_sattus to pending
         else:
-            l.log("line 292", type=Logtype.FILE)
             for name in public_names:
                 if name.get("tolId", ""):
-                    l.log("line 295", type=Logtype.FILE)
                     Sample().update_public_name(name)
                 elif name.get("status", "") == "Rejected":
                     toliderror = "public name error - " + \
@@ -1059,7 +1057,7 @@ def submit_biosample_v2(subfix, sampleobj, collection_id, sample_ids, type="samp
         response = session.post(cmd, data={}, files={
                                 'file': open(save_path_file)})
         receipt = response.text
-        l.log("ENA RECEIPT " + receipt, type=Logtype.FILE)
+        l.log("ENA RECEIPT " + receipt)
         print(receipt)
         if response.status_code == requests.codes.ok:
             # receipt = subprocess.check_output(curl_cmd, shell=True)
@@ -1076,7 +1074,7 @@ def submit_biosample_v2(subfix, sampleobj, collection_id, sample_ids, type="samp
                             html_id="dtol_sample_info")
             Submission().reset_dtol_submission_status(collection_id, sample_ids)
     except ET.ParseError as e:
-        l.log("Unrecognised response from ENA " + str(e), type=Logtype.FILE)
+        l.log("Unrecognised response from ENA " + str(e))
         message = " Unrecognised response from ENA - " + str(
             receipt) + " Please try again later, if it persists, contact admin"
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
@@ -1116,14 +1114,14 @@ def poll_asyn_ena_submission():
                 if response.status_code == requests.codes.accepted:
                     continue
                 elif response.status_code == requests.codes.ok:
-                    l.log("ENA RECEIPT " + response.text, type=Logtype.FILE)
+                    l.log("ENA RECEIPT " + response.text)
                     try:
                         tree = ET.fromstring(response.text)
                         accessions = handle_submit_receipt(
                             Sample(), submission["_id"], tree)
                     except ET.ParseError as e:
                         l.log("Unrecognised response from ENA " +
-                              str(e), type=Logtype.FILE)
+                              str(e))
                         message = " Unrecognised response from ENA - " + str(
                             response.content) + " Please try again later, if it persists, contact admin"
                         notify_frontend(data={"profile_id": submission["profile_id"]}, msg=message, action="error",
@@ -1213,7 +1211,7 @@ def handle_submit_receipt(sampleobj, collection_id, tree, type="sample"):
                                                               rejected_sample=rejected_sample)
 
                 # print('error')
-        l.log("Success False" + str(msg), type=Logtype.FILE)
+        l.log("Success False" + str(msg))
         return status
     else:
         # retrieve id and update record
@@ -1237,10 +1235,10 @@ def submit_biosample(subfix, sampleobj, collection_id, type="sample"):
     try:
         receipt = subprocess.check_output(curl_cmd, shell=True)
 
-        l.log("ENA RECEIPT " + str(receipt), type=Logtype.FILE)
+        l.log("ENA RECEIPT " + str(receipt))
         print(receipt)
     except Exception as e:
-        l.log("General Error " + str(e), type=Logtype.FILE)
+        l.log("General Error " + str(e))
         message = 'API call error ' + "Submitting project xml to ENA via cURL. cURL command is: " + curl_cmd.replace(
             pass_word, "xxxxxx")
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
@@ -1255,7 +1253,7 @@ def submit_biosample(subfix, sampleobj, collection_id, type="sample"):
     try:
         tree = ET.fromstring(receipt)
     except ET.ParseError as e:
-        l.log("Unrecognised response from ENA " + str(e), type=Logtype.FILE)
+        l.log("Unrecognised response from ENA " + str(e))
         message = " Unrecognised response from ENA - " + str(
             receipt) + " Please try again later, if it persists, contact admin"
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
@@ -1284,7 +1282,7 @@ def submit_biosample(subfix, sampleobj, collection_id, type="sample"):
                 sampleobj.add_rejected_status(status, sample_id)
 
         # print('error')
-        l.log("Success False" + str(msg), type=Logtype.FILE)
+        l.log("Success False" + str(msg))
         return status
     else:
         # retrieve id and update record
@@ -1426,15 +1424,15 @@ def handle_common_ENA_error(error_to_parse, source_id):
     try:
         receipt = subprocess.check_output(curl_cmd, shell=True)
         l.log("ENA RECEIPT REGISTERED SAMPLE for sample " +
-              accession + " " + str(receipt), type=Logtype.FILE)
+              accession + " " + str(receipt))
     except Exception as e:
-        l.log("General Error " + str(e), type=Logtype.FILE)
+        l.log("General Error " + str(e))
         return False
 
     try:
         report = json.loads(receipt.decode('utf8').replace("'", '"'))
     except Exception as e:
-        l.log("Unrecognised response from ENA - " + str(e), type=Logtype.FILE)
+        l.log("Unrecognised response from ENA - " + str(e))
         return False
 
     sra_accession = report[0]["report"].get("id", "")
