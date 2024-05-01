@@ -2,7 +2,6 @@
 import pymongo
 from bson.errors import InvalidId
 from common.dal.mongo_util import cursor_to_list, cursor_to_list_str
-from common.lookup.lookup import DB_TEMPLATES
 from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from common.utils import helpers
 from bson.objectid import ObjectId

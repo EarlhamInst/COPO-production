@@ -603,7 +603,7 @@ class Sample(DAComponent):
     def get_by_project_and_field(self, project, field, value):
         return cursor_to_list(self.get_collection_handle().find({field: {"$in": value}, "tol_project": project}))
 
-    def get_dtol_from_profile_id(self, profile_id, filter, draw, start, length, sort_by, dir, search):
+    def get_dtol_from_profile_id(self, profile_id, filter, draw, start, length, sort_by, dir, search, profile_type):
 
         sc = self.get_component_schema()
         if sort_by == "0":
@@ -612,7 +612,7 @@ class Sample(DAComponent):
             i = 0
             sort_by_column = ""
             for field in sc:
-                if set(TOL_PROFILE_TYPES).intersection(set(field.get("specifications", ""))) and field.get(
+                if profile_type in field.get("specifications", []) and field.get(
                         "show_in_table", ""):
                     i = i + 1
                     if i == int(sort_by):
@@ -674,7 +674,7 @@ class Sample(DAComponent):
             sam = dict()
             sam["_id"] = str(i["_id"])
             for field in sc:
-                if set(TOL_PROFILE_TYPES).intersection(set(field.get("specifications", ""))) and field.get(
+                if profile_type in field.get("specifications", []) and field.get(
                         "show_in_table", ""):
                     name = field.get("id", "").split(".")[-1]
                     sam[name] = i.get(name, "")
