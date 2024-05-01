@@ -334,7 +334,7 @@ class Profile(DAComponent):
         if not is_error_found and locus_tags:
             regex = "^[A-Z][A-Z0-9]{2,11}(,[A-Z][A-Z0-9]{2,11})*$"
             if not re.match(regex, locus_tags):
-                local_result["message"] = "ENA locus tag format error : It should start with a captial letter and follow by 2 or 11 captial letters or digits"
+                local_result["message"] = "ENA locus tag format error : It should start with a captial letter and follow by 2 to 11 captial letters or digits"
                 is_error_found = True
             elif not profile_id:
                 local_result["status"] = "warning"
