@@ -1600,7 +1600,7 @@ class EnaReads:
         elif status.upper() == "PUBLIC":
             extra_info = "<li>" \
                          "To view this study on the ENA browser, select <strong>" \
-                         "View in Remote</strong> from the <b>Actions</b> menu associated with the profile (<span style='font-size:10px;'>Recently " \
+                         "View Accessions</strong> from the <b>Actions</b> menu associated with the profile on the <b>Work Profiles</b> web page</li>(<span style='font-size:10px;'>Recently " \
                          "completed submissions can take up to 24 hours to appear on ENA</span>)</li>"
 
         # add transfer status
@@ -1609,8 +1609,8 @@ class EnaReads:
         #if transfer_status['status'] is True and transfer_status['message']:
         #    transfer_status_message = "<li>" + transfer_status['message'] + "</li>"
 
-        status_message = f'<div>Submission completed.</div><ul><li>To view accessions, ' \
-                         f'select <strong>View Accessions</strong> from the <b>Actions</b> menu associated with the profile on the <b>Work Profiles</b> web page</li>{extra_info}</ul>'
+        status_message = f'<div>Submission completed.</div><ul><li>The accessions are shown in the table on the current page.</li>' \
+                         f'{extra_info}</ul>'
 
         ghlper.update_submission_status(status='success', message=status_message, submission_id=self.submission_id)
         notify_read_status(data={"profile_id": self.profile_id},
