@@ -7,7 +7,7 @@ from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from common.utils import helpers
 from bson.objectid import ObjectId
 from .copo_base_da import DAComponent, handle_dict
-
+import re
 
 class ProfileInfo:
     def __init__(self, profile_id=None):
@@ -287,7 +287,7 @@ class Profile(DAComponent):
             return "profile not exists"
 
     def get_by_title(self, title):
-        p = self.get_collection_handle().find({"title": title})
+        p = self.get_collection_handle().find({"title": title}, {"_id":1})
         return cursor_to_list(p)
     
     def get_profile_by_sequencing_centre(self, sequencing_centre, getProfileIDOnly=False):
@@ -305,4 +305,43 @@ class Profile(DAComponent):
         return True
 
 
+    def validate_record(self, auto_fields=dict(), validation_result=dict(), **kwargs):
+        """
+        validates record. useful before CRUD actions
+        :param auto_fields:
+        :param validation_result:
+        :param kwargs:
+        :return:
+        """
+        if validation_result.get("status", "success") == "error":  # no need continuing with validation, propagate error
+            return super(Profile, self).validate_record(auto_fields, result=validation_result, **kwargs)
+        local_result = dict(status="success", message="")
+
+        profile_id = kwargs.get("target_id","")
+
+        is_error_found = False
+        profile_with_same_titles = self.get_by_title(auto_fields["copo.profile.title"])
+        if profile_with_same_titles:
+            if not profile_id or  ObjectId(profile_id) != profile_with_same_titles[0].get("_id",""):
+                #status = "error"
+                local_result["message"] = "Record already exist with title, " + auto_fields["copo.profile.title"]
+                is_error_found = True
+        if not is_error_found and profile_id:
+            targetprofiletype = self.get_record(kwargs["target_id"]).get("type", "")
+            if targetprofiletype != auto_fields["copo.profile.type"]:
+                local_result["message"] = "It is not possible to modify the profile type"
+                is_error_found = True
+        locus_tags = auto_fields["copo.profile.ena_locus_tags"]
+        if not is_error_found and locus_tags:
+            regex = "^[A-Z][A-Z0-9]{2,11}(,[A-Z][A-Z0-9]{2,11})*$"
+            if not re.match(regex, locus_tags):
+                local_result["message"] = "ENA locus tag format error : It should start with a captial letter and follow by 2 or 11 captial letters or digits"
+                is_error_found = True
+            elif not profile_id:
+                local_result["status"] = "warning"
+                local_result["message"] = "ENA locus tag will be submitted to ENA with the READ submission"
+
+        if is_error_found:
+            local_result["status"] = "error"
  
+        return super(Profile, self).validate_record(auto_fields, validation_result=local_result, **kwargs)

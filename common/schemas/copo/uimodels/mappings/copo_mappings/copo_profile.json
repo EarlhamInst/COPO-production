@@ -264,7 +264,25 @@
       "type": "string",
       "show_in_table": false,
       "control": "datetime"
-    }    
+    },
+    {
+      "help_tip": "Please separate the locus tag by ','",
+      "required": "false",
+      "default_value": "",
+      "control_meta": {},
+      "versions": [
+        "ena_locus_tag"
+      ],
+      "ref": "",
+      "deprecated": false,
+      "hidden": "false",
+      "label": "ENA locus tags",
+      "show_in_form": true,
+      "id": "copo.profile.ena_locus_tags",
+      "type": "string",
+      "show_in_table": true,
+      "control": "textarea"
+    }        
   ],
   "description": "Attributes for COPO Profile schema.",
   "title": "Profile mappings"
