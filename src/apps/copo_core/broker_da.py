@@ -17,8 +17,8 @@ from common.dal.profile_da import Profile
 from common.dal.submission_da import Submission
 from common.schemas.utils import data_utils
 from common.utils import helpers
-from common.dal.mongo_util import cursor_to_list_str 
 from src.apps.copo_barcoding_submission.utils.EnaTaggedSequence import EnaTaggedSequence
+from src.apps.copo_read_submission.utils.ena_read_submission import EnaReads
 
 class BrokerDA:
     def __init__(self, **kwargs):
@@ -63,16 +63,18 @@ class BrokerDA:
         action_type = "add"
         action_message = "creating"
 
-        report_metadata = dict()
+        report_metadata = {"message": ""}
 
-        if self.param_dict.get("target_id", str()):
+        if kwargs["target_id"]:
             action_type = "edit"
             action_message = "updating"
 
         # validate record
         validation_result = self.da_object.validate_record(auto_fields=self.auto_fields, **kwargs)
 
-        if validation_result.get("status", True) is False:
+        status = validation_result.get("status", "success")
+
+        if status == "error":
             report_metadata["status"] = "error"
             report_metadata["message"] = validation_result.get("message",
                                                                "There was a problem " + action_message
@@ -80,40 +82,41 @@ class BrokerDA:
             self.context["action_feedback"] = report_metadata
             return self.context
 
-        # check the title is not duplicated for profiles
-        # initialise to empty to keep a single check for all types
-        existingprofile = []
-        if isinstance(self.da_object, Profile):
-            existingprofile = self.da_object.get_by_title(self.auto_fields["copo.profile.title"])
-
-        if not existingprofile:
             # check users are not changing the type of an existing profile
-            if action_type == "edit":
-                targetprofiletype = self.da_object.get_record(kwargs["target_id"]).get("type", "")
-                if targetprofiletype != self.auto_fields["copo.profile.type"]:
-                    record_object = {}
-                    status = "forbidden action"
-                else:
-                    # edit record
-                    record_object = self.da_object.save_record(auto_fields=self.auto_fields, **kwargs)
-            else:
-                # save record
-                record_object = self.da_object.save_record(auto_fields=self.auto_fields, **kwargs)
+        if action_type == "edit":
+            # edit record
+            record_object = self.da_object.save_record(auto_fields=self.auto_fields, **kwargs)
+            report_metadata["message"] += " Record updated!"
+
+            #update ENA project 
+            if isinstance(self.da_object, Profile):
+                submissions = Submission().get_all_records_columns(filter_by={"profile_id": kwargs["target_id"]}, projection={"accessions":1})
+                if submissions:
+                    project_accession = submissions[0].get("accessions",[]).get("project",[])
+                    if project_accession:
+                        result = EnaReads(submission_id=str(submissions[0]["_id"])).register_project()
+                        if result.get("status", False):
+                            report_metadata["message"] += " Profile has been updated to ENA. "
+                        else:
+                            report_metadata["message"] += " However, profile ENA submission failed! " + result.get("message", str())
+                            status = "warning"
+
         else:
-            record_object = {}
-            status = "duplicated"
+            # save record
+            record_object = self.da_object.save_record(auto_fields=self.auto_fields, **kwargs)
+            report_metadata["message"] += " New " + self.component + " record created! " + validation_result.get ("message","")
+            #status = "success"
 
-        if not record_object and status not in ["duplicated", "forbidden action"]:
-            status = "danger"
 
+#        if not record_object and status not in ["duplicated", "forbidden action", "error"]:
+#            status = "danger"
+
+        '''
         if action_type == "add" and status == "success":
-            if "profile" in self.component:
-                report_metadata[
-                    "message"] = "New " + self.component + " record created!"
-            else:
-                report_metadata["message"] = "New " + self.component + " record created!"
+            #report_metadata["message"] = "New " + self.component + " record created!"
+            pass
         elif action_type == "add" and status == "duplicated":
-            report_metadata["message"] = "Record already exist with title, " + self.auto_fields["copo.profile.title"]
+            #report_metadata["message"] = "Record already exist with title, " + self.auto_fields["copo.profile.title"]
             status = "error"
         elif action_type == "add" and status != "success":
             report_metadata["message"] = "There was a problem creating the " + self.component + " record!"
@@ -156,7 +159,8 @@ class BrokerDA:
             report_metadata["message"] = "Forbidden action, it is not possible to modify the profile type"
             status = "error"
         elif action_type == "edit" and status != "success":
-            report_metadata["message"] = "There was a problem updating the " + self.component + " record!"
+            report_metadata["message"] = "There was a problem updating the " + self.component + " record! " + report_metadata["message"]
+        '''
 
         report_metadata["status"] = status
         self.context["action_feedback"] = report_metadata

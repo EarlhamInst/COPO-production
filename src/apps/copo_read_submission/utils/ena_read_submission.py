@@ -121,7 +121,7 @@ class EnaReads:
 
         try:
 
-            result = self._submit()
+            result = self._submit(profile_only=False)
             if not result.get("status", False):
                 message = "Submission processing failed! " + result.get("message", str())
                 ghlper.logging_info(message, self.submission_id)
@@ -147,7 +147,7 @@ class EnaReads:
         #notify_read_status(data={"profile_id": self.profile_id, "table_data":table_data, "component": "read"}, action="refresh_table", html_id="read_table"  )
         return True
 
-    def _submit(self):
+    def _submit(self, profile_only=False):
         """
         function acts as a controller for the submission process
         :return:
@@ -168,7 +168,7 @@ class EnaReads:
         if not submission_record:
             return dict(status=False, message='Submission record not found!')
 
-        if str(submission_record.get("complete", False)).lower() == 'true':
+        if not profile_only and str(submission_record.get("complete", False)).lower() == 'true':
             message = 'Submission is marked as completed.'
             ghlper.logging_info(message, self.submission_id)
 
@@ -224,6 +224,9 @@ class EnaReads:
                                html_id="sample_info")
             ghlper.update_submission_status(status='error', message=context.get("message", str()),
                                             submission_id=self.submission_id)
+            return context
+
+        if profile_only:
             return context
 
         # register samples
@@ -400,7 +403,7 @@ class EnaReads:
         study_attributes = self.submission_helper.get_study_descriptors()
 
         if study_attributes.get("name", str()):
-            etree.SubElement(project, 'NAME').text = study_attributes.get("name", str())
+            etree.SubElement(project, 'NAME').text = study_attributes.get("name", str()) 
 
         if study_attributes.get("title", str()):
             etree.SubElement(project, 'TITLE').text = study_attributes.get("title", str())
@@ -410,7 +413,12 @@ class EnaReads:
 
         # set project type - sequencing project
         submission_project = etree.SubElement(project, 'SUBMISSION_PROJECT')
-        etree.SubElement(submission_project, 'SEQUENCING_PROJECT')
+        sequencing_project = etree.SubElement(submission_project, 'SEQUENCING_PROJECT')
+
+        locus_tags = study_attributes.get("ena_locus_tags","")
+        if locus_tags:
+            for tag in locus_tags.split(","):
+                etree.SubElement(sequencing_project, 'LOCUS_TAG_PREFIX').text = tag.strip()
 
         # write project xml
         result = self.write_xml_file(xml_object=root, file_name="project.xml")
@@ -1733,3 +1741,8 @@ class EnaReads:
         submission = Submission().get_record(submission_record_id)
         for file_id in submission["bundle"]:
             tx.make_transfer_record(file_id=file_id, submission_id=submission_record_id)
+
+
+    def register_project(self):
+        return self._submit(profile_only=True)
+        

@@ -108,6 +108,7 @@ class SubmissionHelper:
         study_attributes["name"] = self.profile.get("title", str())
         study_attributes["title"] = self.profile.get("title", str())
         study_attributes["description"] = self.profile.get("description", str())
+        study_attributes["ena_locus_tags"] = self.profile.get("ena_locus_tags", str())
         
         #attributes = self.description.get("attributes", dict())
         #study_attributes["name"] = attributes.get("project_details", dict()).get("project_name", str())
