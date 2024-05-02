@@ -65,10 +65,11 @@ def upload_ecs_files(request, profile_id):
     s3 = S3Connection()
     if not s3.check_for_s3_bucket(bucket):
         s3.make_s3_bucket(bucket)
-
+    KB = 1024
+    MB = KB * KB
     for f in files:
         file = files[f]
-        for chunk in file.chunks():
+        for chunk in file.chunks(chunk_size=50*MB):
             s3.upload_file(chunk, bucket, file.name.replace(" ", "_"))
 
     context = dict()
