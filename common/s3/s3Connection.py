@@ -52,8 +52,6 @@ class S3Connection():
         Logger().log("transfering file to: " + loc)
         KB = 1024
         MB = KB * KB
-        GB = KB * MB
-
         config = TransferConfig(multipart_threshold=100 * MB, multipart_chunksize=50 * MB, io_chunksize=1 * MB,
                                 max_concurrency=3, use_threads=True )
         #self.s3_client.download_file(bucket, key, loc, Config=config)
@@ -186,6 +184,5 @@ class S3Connection():
         for key in target_ids:
             self.s3_client.delete_object(Bucket=bucket_name, Key=key)
         return dict(status='success', message="File(s) have been deleted!")
-
-    def upload_file(self, chunk, bucket=str(), filename=str()):
-        self.s3_client.upload_fileobj(BytesIO(chunk), bucket, filename)
+ 
+        
