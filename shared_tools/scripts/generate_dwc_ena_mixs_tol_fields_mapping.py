@@ -3184,9 +3184,9 @@ DWC_MAPPING = create_tol_dwc_mapping()
 
 # Generate 'dwc_ena_mixs_tol_fields_mapping.json' file
 output =list()
-tol_field_dict = dict()
 
 for tol_field in tol_fields_lst:
+    tol_field_dict = dict()
     # European Nucleotide Archive (ENA)
     ena = dict()
   
