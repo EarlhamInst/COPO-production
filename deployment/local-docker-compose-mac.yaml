@@ -1,19 +1,23 @@
+#it is for mac, change some of the docker images if you want to use it for linux environment
+#export $(cat .env) > /dev/null 2>&1; docker compose -f local-docker-compose-mac.yaml up -d
 version: "3.9"
 services:
   copo_web:
-    image: local_copo_web:v1.0
+    image: debbyku/copo_new:v2.0.u2204
+    command: >
+      sleep infinity
     ports:
       - "8000:8000"
     environment:
-      - ENVIRONMENT_TYPE=demo
+      - ENVIRONMENT_TYPE=local
       - ASPERA_PLUGIN_DIRECTORY=aspera_linux_plugin
-      - SECRET_KEY=${SECRET_KEY}
+      - SECRET_KEY=${vault_copo_web_secret_key}
       - MEDIA_PATH=media/
       - DEBUG=true
       - REDIS_HOST=copo_redis
       - REDIS_PORT=6379
-      - WEBIN_USER=${WEBIN_USER}
-      - WEBIN_USER_PASSWORD=${WEBIN_USER_PASSWORD}
+      - WEBIN_USER=${vault_copo_webin_user}
+      - WEBIN_USER_PASSWORD=${vault_copo_webin_user_password}
       - ENA_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD=password
@@ -26,11 +30,11 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_SERVICE=copo_postgres
       - POSTGRES_PASSWORD=password
-      - ORCID_SECRET=${ORCID_SECRET}
-      - ORCID_CLIENT=${ORCID_CLIENT}
-      - NIH_API_KEY=${NIH_API_KEY}
-      - PUBLIC_NAME_SERVICE_API_KEY=${PUBLIC_NAME_SERVICE_API_KEY}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - ORCID_SECRET=${vault_copo_orcid_secret_key}
+      - ORCID_CLIENT=${vault_copo_orcid_client_id}
+      - NIH_API_KEY=${vault_copo_nih_api_key}
+      - PUBLIC_NAME_SERVICE_API_KEY=${vault_copo_public_name_service_api_key}
+      - MAIL_PASSWORD=${vault_copo_mail_password}
       - MAIL_PORT=587
       - MAIL_ADDRESS=data@earlham.ac.uk
       - MAIL_SERVER=outlook.office365.com
@@ -39,11 +43,11 @@ services:
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v2/
       - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
       - ASPERA_PATH=/root/.aspera/cli
-      - BIOIMAGE_PATH=${BIOIMAGE_PATH}
+      - BIOIMAGE_PATH=${vault_copo_bioimage_path}
       - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk
-      - ECS_SECRET_KEY=${ECS_SECRET_KEY}
+      - ECS_SECRET_KEY=${vault_ecs_secret_key}
       - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
-      - ECS_ENDPOINT=http://ei-copo.obj-data.nbi.ac.uk
+      - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
@@ -61,12 +65,12 @@ services:
       retries: 3
       start_period: 30s
     volumes:
-      - ./testsuits:/testsuits
+      - /Users/zef22hak/development/COPO_refactoring/COPO-production:/copo
   copo_redis:
-    image: copo/copo-redis:redis-v6.2.6.18
+    image: redis:6.2.8
 
   copo_postgres:
-    image: postgres:15-bullseye
+    image: postgres:15
     ports:
       - "5432:5432"  
     environment:
@@ -75,7 +79,17 @@ services:
       - POSTGRES_PASSWORD=password
 
   copo_mongo:
-    image: copo/copo-mongo:v7.0.1.1
+    image: copo/copo-mongo-mac:v7.0.1
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
+    entrypoint:
+       - bash
+       - -c
+       - |
+          openssl rand -base64 756 > /data/replica.key
+          chmod 400 /data/replica.key
+          chown 999:999 /data/replica.key
+          exec docker-entrypoint.sh $$@
+    hostname: copo-mongo-server
     ports:
       - "27017:27017"
     environment:
@@ -84,9 +98,10 @@ services:
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD=password
       - MONGO_DB=copo_mongo
-
   copo_browser:
-    image: browserless/chrome
+    image: debbyku/browserless.chrome
+    ports: 
+      - "3000:3000"
     links:
       - copo_web:copo-new.cyverseuk.org
     environment:
@@ -103,3 +118,14 @@ services:
       - MAX_CONCURRENT_SESSIONS=5
       - MAX_QUEUE_LENGTH=10
       - PREBOOT_QUANTITY=2
+  edp:
+    image: python:3.10.13-bullseye
+    command: sleep infinity
+    volumes:
+      - /Users/zef22hak/development/EDP:/EDP
+    environment:
+      - SAPIOURL=${SAPIOURL}
+      - SAPIOGUID=${SAPIOGUID}
+      - SAPIOTOKEN=${SAPIOTOKEN}
+      - ZENODOURL=https://zenodo.org/api
+      - ZENODOTOKEN=${ZENODOTOKEN}

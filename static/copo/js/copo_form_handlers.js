@@ -181,6 +181,7 @@ function json2HtmlForm(data) {
       refresh_tool_tips();
     },
     onshown: function (dialogRef) {
+      dialog.getButton('btnFormClose').disable();
       //prevent enter keypress from submitting form automatically
       $('form').keypress(function (e) {
         //Enter key
@@ -289,6 +290,15 @@ function json2HtmlForm(data) {
         action: function (dialogRef) {
           validate_forms(htmlForm.find('form'));
         },
+      },
+      {
+        id: 'btnFormClose',
+        label:
+          '<i class="copo-components-icons glyphicon glyphicon-close"></i> Close',
+        cssClass: 'tiny ui basic button',
+        action: function (dialogRef) {
+            window.location.reload();
+        }
       },
     ],
   });
@@ -3485,8 +3495,10 @@ function save_form(formJSON, dialogRef) {
 
   const btnSave = dialogRef.getButton('btnFormSave');
   const btnCancel = dialogRef.getButton('btnFormCancel');
+  const btnClose = dialogRef.getButton('btnFormClose');
   btnSave.disable();
   btnCancel.disable();
+  btnClose.disable()
   btnSave.spin();
 
   $.ajax({
@@ -3544,6 +3556,35 @@ function save_form(formJSON, dialogRef) {
           $('#' + modalId).scrollTop(0);
 
           return true;
+        } else if (['warning'].indexOf(data.action_feedback.status) > -1) {
+
+          let feedbackControl = get_alert_control();
+          let alertClass = 'alert-warning';
+
+          feedbackControl.removeClass('alert-success').addClass(alertClass);
+          feedbackControl
+            .find('.alert-message')
+            .html(data.action_feedback.message);
+
+          dialogRef
+            .getModalBody()
+            .find('.formMessageDiv')
+            .html(feedbackControl);
+
+          btnClose.enable()
+          btnSave.enable();
+          btnCancel.disable();
+          btnSave.stopSpin();
+
+          let modalId = dialogRef
+            .getModal()
+            .closest('.bootstrap-dialog')
+            .attr('id');
+          $('#' + modalId).scrollTop(0);
+
+          return true;
+
+
         } else {
           dialogRef.close();
 

@@ -1,12 +1,15 @@
 __author__ = 'fshaw'
 import re
-from django.urls import reverse
-from django.core.exceptions import ObjectDoesNotExist
 import os
 
 import PyPDF2
 from datetime import time
 #from dal.ena_da import EnaCollection
+import requests
+from common.utils.helpers import get_env
+from common.utils.logger import Logger
+
+l = Logger() 
 
 """   deprecated
 def get_sample_html_from_details_id(details_id):
@@ -131,3 +134,35 @@ def filesize_toString(f_size):
     else:
         out = "%.2f" % (f_size / TB) + " TB"
     return out
+
+
+def query_ena_file_processing_status_by_project(project_accession, type):
+    url = f"{get_env('ENA_ENDPOINT_REPORT')}analysis-files/{project_accession}?format=json"
+    result_map = dict()
+
+    pass_word = get_env('WEBIN_USER_PASSWORD')
+    user_token = get_env('WEBIN_USER').split("@")[0]
+    ena_service = get_env('ENA_SERVICE')
+
+    with requests.Session() as session:
+        session.auth = (user_token, pass_word)
+        headers = {'Accept': '/'}
+
+        try:
+            response = session.get(url, headers=headers)
+            if response.status_code == requests.codes.ok:
+                response_body = response.json()
+                for r in response_body:
+                    report = r.get("report",{})
+                    if report and report["analysisType"]==type:
+                        result = result_map.get(report["id"],"")
+                        if result:
+                            result += "<br/>"
+                        result += report.get("fileName") + " : " + report.get("archiveStatus") + " : " + report.get("releaseStatus")            
+                        result_map[report["id"]] = result 
+            else:
+                result = "Cannot get file processing result from ENA"
+                l.error(str(response.status_code) + ":" + response.text)
+        except Exception as e:
+            l.exception(e)
+        return result_map

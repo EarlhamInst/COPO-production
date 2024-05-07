@@ -15,6 +15,8 @@ from common.lookup.copo_enums import Loglvl, Logtype
 from common.utils import helpers
 from common.utils.logger import Logger
 lg = Logger()
+from common.utils.helpers import get_env
+
 BASE_DIR = settings.BASE_DIR
 #REPOSITORIES = settings.REPOSITORIES
 
@@ -348,6 +350,7 @@ def schedule_file_transfer(submission_id=str(), remote_location=str()):
     return True
 '''
 
+'''
 def get_ena_remote_files(user_token=str(), pass_word=str()):
     """
     function returns unsubmitted files in ENA's Dropbox
@@ -376,7 +379,7 @@ def get_ena_remote_files(user_token=str(), pass_word=str()):
         return list()
 
     return response.json()
-
+'''
 
 def get_study_status(user_token=str(), pass_word=str(), project_accession=str()):
     """
@@ -397,7 +400,7 @@ def get_study_status(user_token=str(), pass_word=str(), project_accession=str())
     )
 
     try:
-        response = requests.get('https://wwwdev.ebi.ac.uk/ena/submit/report/projects/' + project_accession,
+        response = requests.get(f"{get_env('ENA_ENDPOINT_REPORT')}projects/{project_accession}",
                                 headers=headers,
                                 params=params,
                                 auth=(user_token, pass_word))
@@ -541,5 +544,5 @@ def transfer_to_ena(webin_user, pass_word, remote_path, file_paths=list(), **kwa
 
 
 def delete_submisison_bundle(submission_id):
-    submission = get_submission_handle().find_one({"_id": ObjectId(submission_id)})
+    #submission = get_submission_handle().find_one({"_id": ObjectId(submission_id)})
     get_submission_handle().update_one({"_id": ObjectId(submission_id)}, {"$set": {"bundle": []}})

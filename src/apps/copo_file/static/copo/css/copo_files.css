@@ -1,0 +1,9 @@
+.warning-content{
+    color: black;
+    font-size: 16px;
+}
+
+.file-size-alert-warning{
+    background-image: -webkit-linear-gradient(top, #fcf8e3 0%, #f8efc0 100%);
+    border-color: #f5e79e;
+}

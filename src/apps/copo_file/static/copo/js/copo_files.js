@@ -150,7 +150,7 @@ $(document).ready(function () {
         $(d).each(function (idx, obj) {
           out =
             out +
-            "curl --progress-bar -v -T '" +
+            "curl --progress-bar -v -k -T '" +
             obj.name +
             "' '" +
             obj.url +
@@ -168,10 +168,18 @@ $(document).ready(function () {
       });
   });
 
-  $(document).on('click', '#copy_urls_button', function (evt) {
+  $(document).on("click", "#copy_urls_button", function (evt) {
     //  $("#command_area").select()
-    navigator.clipboard.writeText($('#command_area').text());
-  });
+    //navigator.clipboard.writeText($("#command_area").text());
+        //navigator.clipboard.writeText($("#command_area").text());
+        doDL($("#command_area").text());
+    })
+    
+    function doDL(s){
+        function dataUrl(data) {return "data:x-application/text," + encodeURI(data);}
+        window.open(dataUrl(s));
+    }
+
 
   $(document).on('click', '#upload_local_files_button', function (evt) {
     //  $("#command_area").select()
@@ -211,7 +219,7 @@ function upload_files(files) {
         xhr.upload.onprogress = function (evt) {
           var percentVal = Math.round((evt.loaded / evt.total) * 100);
           percent.html('<b>' + percentVal + '%</b>');
-          console.log('progress', percentVal);
+          //console.log('progress', percentVal);
         };
         xhr.upload.onload = function () {
           percent.html('');
@@ -220,12 +228,18 @@ function upload_files(files) {
         return xhr;
       },
     })
-    .fail(function (data) {
+    .fail(function (jqXHR, status, error) {
       $('#upload_local_files_button').fadeIn();
       $('#ss_upload_spinner').fadeOut('fast');
+      //console.log(jqXHR) 
+      var message = "Cannot upload files, please check your file size"
+      if (jqXHR.status != "0"){
+        message = jqXHR.status + " " + error
+      }
+
       BootstrapDialog.show({
         title: 'Error',
-        message: 'Error ' + data.status + ': ' + data.responseText,
+        message: message,
         type: BootstrapDialog.TYPE_DANGER,
       });
     })

@@ -22,7 +22,7 @@ from common.ena_utils import generic_helper as ghlper
 import inspect
 from common.validators.validator import Validator
 from .utils.ena_validator import ena_seq_validators as required_validators
-from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreedsheet, write_manifest
+from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreadsheet, write_manifest
 
 from common.utils.helpers import get_datetime, get_not_deleted_flag,map_to_dict
 from .utils import ena_read  
@@ -63,7 +63,7 @@ def parse_ena_spreadsheet(request):
         if inspect.isclass(element) and issubclass(element, Validator) and not element.__name__ == "Validator":
             required_validators.append(element)
 
-    ena = EnaCheckListSpreedsheet(file=file, checklist_id=checklist_id, component="sample", validators=required_validators)
+    ena = EnaCheckListSpreadsheet(file=file, checklist_id=checklist_id, component="sample", validators=required_validators)
     s3obj = s3()
     if name.endswith("xlsx") or name.endswith("xls"):
         fmt = 'xls'
@@ -586,12 +586,12 @@ def copo_reads(request, profile_id):
 
 
 @login_required
-def download_initial_read_manfiest(request, profile_id):
+def download_initial_read_manifest(request, profile_id):
     request.session["profile_id"] = profile_id
     samples = Sample().get_all_records_columns(filter_by={"profile_id": profile_id}, projection={"_id":0, "biosampleAccession":1, "TAXON_ID":1, "SPECIMEN_ID":1})
     checklist = EnaChecklist().get_collection_handle().find_one({"primary_id": "read"})
     bytesstring = BytesIO()
     write_manifest(checklist=checklist, samples=samples, for_dtol=True, file_path=bytesstring)
     response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response['Content-Disposition'] = f"attachment; filename=read_manfiest_{profile_id}.xlsx"
+    response['Content-Disposition'] = f"attachment; filename=read_manifest_{profile_id}.xlsx"
     return response

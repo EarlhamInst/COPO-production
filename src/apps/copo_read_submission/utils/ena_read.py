@@ -4,11 +4,41 @@ from common.dal.copo_da import DataFile, EnaFileTransfer, EnaChecklist
 from common.dal.submission_da import Submission
 from common.dal.sample_da import Sample, Source
 from .da import SubmissionQueue
-from common.utils.helpers import get_datetime, get_not_deleted_flag
+from common.utils.helpers import get_datetime, get_not_deleted_flag, get_env
 from common.dal.mongo_util import cursor_to_list
 from bson import ObjectId
+import requests
 
 l = Logger()
+pass_word = get_env('WEBIN_USER_PASSWORD')
+user_token = get_env('WEBIN_USER').split("@")[0]
+session = requests.Session()
+session.auth = (user_token, pass_word)
+
+def _query_ena_file_processing_status(accession_no):
+    result = ""
+    url = f"{get_env('ENA_ENDPOINT_REPORT')}run-files/{accession_no}?format=json"
+    with requests.Session() as session:
+        session.auth = (user_token, pass_word)
+        headers = {'Accept': '/'}
+
+        try:
+            response = session.get(url, headers=headers)
+            if response.status_code == requests.codes.ok:
+                response_body = response.json()
+                for r in response_body:
+                    report = r.get("report",{})
+                    if report:
+                        result += "|"+ report.get("fileName") + " : " + report.get("archiveStatus") + " : " + report.get("releaseStatus")
+                if result:
+                    result = result[1:].replace("|", "<br/>")
+
+            else:
+                result = "Cannot get file processing result from ENA"
+                l.error(str(response.status_code) + ":" + response.text)
+        except Exception as e:
+            l.exception(e)
+        return result
 
 def submit_read(profile_id,  target_ids=list(), target_id=None, checklist_id=None):
 
@@ -156,11 +186,11 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
     fields = checklist[0]["fields"]
     if checklist_id == 'read':
         label =  [ x for x in fields.keys() if fields[x]["type"] != "TEXT_AREA_FIELD" and fields[x].get("for_dtol", True) ]
-        default_label = ["ena_file_upload_status", "study_accession",  "sraAccession", "status",  "run_accession", "experiment_accession"]
+        default_label = ["ena_file_upload_status", "study_accession",  "sraAccession", "status",  "run_accession", "experiment_accession", "ena_file_processing_status"]
 
     else:
         label = [ x for x in fields.keys() if fields[x]["type"] != "TEXT_AREA_FIELD" and not fields[x].get("for_dtol", False) ]
-        default_label = ["ena_file_upload_status", "study_accession",  "biosampleAccession", "sraAccession", "status",  "run_accession", "experiment_accession"]
+        default_label = ["ena_file_upload_status", "study_accession",  "biosampleAccession", "sraAccession", "status",  "run_accession", "experiment_accession", "ena_file_processing_status"]
 
 
     read_label =  [ x for x in fields.keys() if fields[x]["type"] != "TEXT_AREA_FIELD" and fields[x].get("read_field", False) ] 
@@ -174,17 +204,16 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
     columns.insert(0, detail_dict)
     columns.append(dict(data="record_id", visible=False))
     columns.append(dict(data="DT_RowId", visible=False))
-    columns.extend([dict(data=x, title=fields[x]["name"], defaultContent='') for x in label  ])
-    columns.extend([dict(data=x, title=x.upper().replace("_", " "), defaultContent='') for x in default_label ])  
+    columns.extend([dict(data=x, title=fields[x]["name"], defaultContent='', className="ena-accession" if x.lower().endswith("accession") else "") for x in label  ])
+    columns.extend([dict(data=x, title=x.upper().replace("_", " "), defaultContent='', className="ena-accession" if x.lower().endswith("accession") else "") for x in default_label ])  
 
     label.extend(default_label)
-
 
     submission = Submission().get_all_records_columns(filter_by={"profile_id": profile_id}, projection={"_id": 1, "name": 1, "accessions": 1})
     if not submission:
         return dict(dataSet=data_set,
-                columns=columns,
-                )
+                columns=columns
+        )
         
     project_accession = submission[0].get("accessions",dict()).get("project",[])
     study_accession = ""
@@ -236,6 +265,10 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
                     if files:
                         read_values = files[0].get("description", dict()).get("attributes",dict())
                         row_data.update({key : read_values.get(key, str()) for key in read_label})
+
+                row_data["ena_file_processing_status"] = ""
+                if row_data["run_accession"]:
+                    row_data["ena_file_processing_status"] = _query_ena_file_processing_status(row_data["run_accession"])
 
                 data_set.append(row_data)
 

@@ -33,7 +33,7 @@ RUN mkdir /code
 WORKDIR /copo
 COPY . /code/
 
-RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/6.5.1/webin-cli-6.5.1.jar
+RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/7.0.1/webin-cli-7.0.1.jar
 
 # add aspera client to path
 COPY ./shared_tools/reposit/.aspera/ /root/.aspera/

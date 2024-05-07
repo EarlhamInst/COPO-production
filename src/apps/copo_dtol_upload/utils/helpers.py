@@ -3,10 +3,6 @@ from urllib.parse import urljoin
 import requests
 from common.utils.logger import Logger
 from common.schema_versions.lookup.dtol_lookups import API_KEY
-from common.lookup.copo_enums import *
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
-from django_tools.middlewares import ThreadLocal
 from common.utils import helpers
 
 
@@ -34,9 +30,12 @@ l = Logger()
 
 
 def query_public_name_service(sample_list):
+    if not sample_list:
+        return {}
+    
     headers = {"api-key": API_KEY}
     url = urljoin(public_name_service, 'tol-ids')  # public-name
-    l.log("name service urls: " + url, type=Logtype.FILE)
+    l.log("name service urls: " + url)
     try:
         r = requests.post(url=url, json=sample_list, headers=headers, verify=False)
         if r.status_code == 200:
@@ -46,10 +45,10 @@ def query_public_name_service(sample_list):
             # in the case there is a network issue, just return an empty dict
             resp = {}
             l.error('Name service response status code: ' + str(r.status_code) + ' ' + r.text)
-        l.log("name service response: " + str(resp), type=Logtype.FILE)
+        l.log("name service response: " + str(resp))
         return resp
     except Exception as e:
-        l.log("PUBLIC NAME SERVER ERROR: " + str(e), type=Logtype.FILE)
+        l.log("PUBLIC NAME SERVER ERROR: " + str(e))
         l.exception(e)
         return {}
 

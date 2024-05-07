@@ -360,7 +360,7 @@ def copo_forms(request):
 
     out = jsonpickle.encode(context, unpicklable=False)
     status = context.get("action_feedback", dict()).get("status", "success")
-    if status == "success":
+    if status == "success" or status=="warning":
         return HttpResponse(status=200, content=out, content_type='application/json')
 
     return HttpResponse(out, content_type='application/json')

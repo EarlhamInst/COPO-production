@@ -204,10 +204,10 @@ class DAComponent:
         :param auto_fields:
         :param validation_result:
         :param kwargs:
-        :return:
+        :return:  validation_result["status"]: "success", "error", "warning", validation_result["message"]
         """
 
-        local_result = dict(status=validation_result.get("status", True),
+        local_result = dict(status=validation_result.get("status", "success"),
                             message=validation_result.get("message", str()))
 
         return local_result

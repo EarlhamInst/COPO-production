@@ -17,7 +17,7 @@ import common.schemas.utils.data_utils as d_utils
 from common.utils.helpers import map_to_dict, get_datetime, notify_frontend
 from common.dal.copo_da import  DataFile
 from common.dal.profile_da import Profile
-from common.dal.sample_da import Sample
+from common.dal.sample_da import Sample, Source
 from .da import ValidationQueue
 from .copo_email import Email
 from common.lookup import lookup as lk
@@ -735,13 +735,32 @@ class DtolSpreadsheet:
                         # update sample and record change in the 'AuditCollection'
                         Sample().update_field("species_list.0." + str(field),
                                            s[field], recorded_sample["_id"])
-                        is_updated = True
-                    else:
-                        # update sample and record change in the 'AuditCollection'
-                        Sample().update_field(
-                            field, s[field], recorded_sample["_id"])
-                        is_updated = True
-                       
+                        #is_updated = True
+                                        
+                    # update sample and record change in the 'AuditCollection'
+                    Sample().update_field(
+                        field, s[field], recorded_sample["_id"])
+                    is_updated = True
+
+                    #remove public name if specimen_id / taxon_id changes   
+                    if field in ['SPECIMEN_ID','TAXON_ID']:
+                        if field == 'SPECIMEN_ID':
+                           original_value = recorded_sample.get(field, "")
+                           sources = Source().get_all_records_columns(filter_by={field: original_value}, projection={"_id":1, "biosampleAccession":1})
+                           if sources:
+                             if sources[0].get("biosampleAccession",""):
+                               samples_w_same_source = Sample().get_all_records_columns(filter_by={field:original_value}, projection={"_id":1})
+                               if not samples_w_same_source:
+                                  source = Source().get_collection_handle().find({field: s[field]})
+                                  if not source:
+                                     Source().get_collection_handle().update_one({"_id": sources[0]["_id"]},{"$set":{field : s[field], "public_name": ""}})
+                                  else:
+                                     l.log(f"source : {source[0]['_id']} can be deleted")  
+                             Sample().update_field('sampleDerivedFrom', '', recorded_sample["_id"])
+                        Sample().update_field('public_name', '', recorded_sample["_id"])
+
+
+
             if recorded_sample["biosampleAccession"] and is_updated:
                 is_private = "erga" in self.type.lower() and s["ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID"]
                 is_erga = "erga" in self.type.lower()

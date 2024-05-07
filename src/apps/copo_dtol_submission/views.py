@@ -84,11 +84,25 @@ def get_samples_for_profile(request):
         dir = 1
         if direction == "desc":
             dir = -1
-
-        samples = Sample().get_dtol_from_profile_id(
-            profile_id, filter, draw, start, length, sort_by, dir, search)
-        # notify_frontend(msg="Creating Sample: " + "sprog", action="info",
-        #                     html_id="dtol_sample_info")
+        samples = []
+        if profile_id and profile_id != 'None':
+            profile_type = Profile().get_type(profile_id)
+            if profile_type:
+                type = ""
+                match profile_type:
+                    case "Aquatic Symbiosis Genomics (ASG)":
+                        type = "asg"
+                    case "European Reference Genome Atlas (ERGA)":
+                        type = "erga"
+                    case "Darwin Tree of Life (DTOL)":
+                        type = "dtol"
+                    case "Darwin Tree of Life Environmental Samples (DTOL_ENV)":
+                        type = "dtol_env"
+                if type:
+                    samples = Sample().get_dtol_from_profile_id(
+                        profile_id, filter, draw, start, length, sort_by, dir, search, type)
+                # notify_frontend(msg="Creating Sample: " + "sprog", action="info",
+                #                     html_id="dtol_sample_info")
 
         return HttpResponse(json_util.dumps(samples))
     else:

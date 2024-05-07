@@ -5,6 +5,11 @@
 {% load html_tags %}
 
 {% block title %}Files{% endblock %}
+
+{% block stylesheet_block %}
+    <link rel="stylesheet" href="{% static 'copo/css/copo_files.css' %}">
+{% endblock %}
+
 {% block title_block %}Files{% endblock %}
 
 {% block tagline_block %}
@@ -88,7 +93,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" id="copy_urls_button" class="btn btn-primary">Copy</button>
+                    <button type="button" id="copy_urls_button" class="btn btn-primary">Download</button>
                     <button type="button" id="process_urls_button" class="btn btn-primary">Process</button>
                 </div>
             </div><!-- /.modal-content -->
@@ -105,6 +110,9 @@
                     <h4 class="modal-title">Upload File</h4>
                 </div>
                 <div class="modal-body">
+                    <div class="alert file-size-alert-warning" role="alert">
+                        <p class="warning-content">The total <b>maximum</b> file size that can be uploaded from your local (computer) system is below <b>2 GB</b>. </p>
+                    </div>
                     <p>Upload files by browsing your local system</p>
                     <input id="file" type="file" style="display:none" multiple="multiple"
                            onchange="upload_files(this.files)">

@@ -10,6 +10,8 @@ from bson import ObjectId
 from os.path import join
 from pymongo import ReturnDocument
 import common.ena_utils.FileTransferUtils as tx
+from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_project
+
 from common.utils import html_tags_utils as htags
 
 from django.conf import settings
@@ -20,12 +22,12 @@ import requests
 import json
 from bson import ObjectId
 from common.utils.helpers import notify_annotation_status
+import pandas as pd
 
 l = Logger() 
 pass_word = get_env('WEBIN_USER_PASSWORD')
 user_token = get_env('WEBIN_USER').split("@")[0]
 ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
-
 
 def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
     request = ThreadLocal.get_current_request()
@@ -140,7 +142,7 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
     '''    
 
     #schedule annotation submission in SubmisisonCollection
-    table_data = htags.generate_table_records(profile_id=profile_id, da_object=SequenceAnnotation(profile_id=profile_id))
+    table_data = htags.generate_table_records(profile_id=profile_id, da_object=SequenceAnnotation(profile_id=profile_id), additional_columns=generate_additional_columns(profile_id))
     result = Submission().make_seq_annotation_submission_uploading(sub_id, [str(annotation_rec["_id"])])
     if result["status"] == "error":
         return {"success": "Annotation has been saved but not scheduled to submit as the submission is already in progress. Please submit it later", "table_data": table_data, "component": "seqannotation"}
@@ -350,7 +352,7 @@ def poll_asyn_seq_annotation_submission_receipt():
                     elif accessions["status"] == "ok":
                         msg = "Last Sequence Annotation Submitted:  - Seq Annotation Access: " + ','.join(str(x["accession"]) for x in accessions["accession"])   # + " - Biosample ID: " + accessions["biosample_accession"]
 
-                        table_data = htags.generate_table_records(profile_id=submission["profile_id"], da_object=SequenceAnnotation(profile_id=submission["profile_id"]))
+                        table_data = htags.generate_table_records(profile_id=submission["profile_id"], da_object=SequenceAnnotation(profile_id=submission["profile_id"]), additional_columns=generate_additional_columns(submission["profile_id"]))
                         #ghlper.notify_annotation_status(data={"profile_id": submission["profile_id"], "table_data": table_data, "component": "seqannotation"}, msg=msg, action="refresh_table", )
                         notify_annotation_status(data={"profile_id": submission["profile_id"], "table_data": table_data, "component": "seqannotation"}, msg=msg, action="info",
                                         html_id="annotation_info")
@@ -451,4 +453,15 @@ def submit_seq_annotation(profile_id, target_ids,  target_id):
 
     return dict(status='error', message="System error. Sequence annotation submission has not been scheduled! Please contact system administrator.")        
 
-    
+
+def generate_additional_columns(profile_id):
+    result = []
+    submissions = Submission().get_records_by_field("profile_id", profile_id)
+    if submissions and len(submissions) > 0:
+        project_accessions = submissions[0].get("accessions",[]).get("project",[])
+        if project_accessions:
+            assembly_accessions = submissions[0].get("accessions",[]).get("seq_annotation",[])
+            if assembly_accessions:
+                assession_map = query_ena_file_processing_status_by_project(project_accessions[0].get("accession"), "SEQUENCE_ANNOTATION")
+                result = [{ "_id": ObjectId(accession_obj["alias"]), "ena_file_processing_status":assession_map.get(accession_obj["accession"], "") } for accession_obj in assembly_accessions if accession_obj.get("accession","") ]        
+    return pd.DataFrame.from_dict(result)

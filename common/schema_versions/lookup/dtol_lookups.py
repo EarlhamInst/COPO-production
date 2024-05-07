@@ -1626,7 +1626,47 @@ DTOL_RULES = {
         {
             "strict_regex": "^\d+$",
             "human_readable": "integer"
-        }
+        },
+    'TISSUE_VOUCHER_ID_FOR_BIOBANKING':
+        {
+            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
+            "biocollection_qualifier_type": "specimen_voucher",
+            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
+            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
+        },
+    'PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
+        {
+            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
+            "biocollection_qualifier_type": "specimen_voucher",
+            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
+            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
+        },
+    'DNA_VOUCHER_ID_FOR_BIOBANKING':
+        {
+            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
+            "biocollection_qualifier_type": "bio_material",
+            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
+            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
+        },
+    'PROXY_VOUCHER_ID':
+        {
+            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
+            "biocollection_qualifier_type": "specimen_voucher",
+            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
+            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
+        },
+    'VOUCHER_ID':
+        {
+            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
+            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
+            "biocollection_qualifier_type": "specimen_voucher",
+            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
+        }        
 }
 
 DTOL_UNITS = {

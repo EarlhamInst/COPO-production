@@ -17,7 +17,7 @@ class Logger():
         self.log_type = log_type
         self.logfile_path = logfile_path
 
-    def log(self, msg, level=Loglvl.INFO, type=Logtype.CONSOLE):
+    def log(self, msg, level=Loglvl.INFO, type=Logtype.FILE):
         return self._log_to_file(msg, level)
 
     def debug(self, msg):
