@@ -204,17 +204,16 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
     columns.insert(0, detail_dict)
     columns.append(dict(data="record_id", visible=False))
     columns.append(dict(data="DT_RowId", visible=False))
-    columns.extend([dict(data=x, title=fields[x]["name"], defaultContent='') for x in label  ])
-    columns.extend([dict(data=x, title=x.upper().replace("_", " "), defaultContent='') for x in default_label ])  
+    columns.extend([dict(data=x, title=fields[x]["name"], defaultContent='', className="ena-accession" if x.lower().endswith("accession") else "") for x in label  ])
+    columns.extend([dict(data=x, title=x.upper().replace("_", " "), defaultContent='', className="ena-accession" if x.lower().endswith("accession") else "") for x in default_label ])  
 
     label.extend(default_label)
-
 
     submission = Submission().get_all_records_columns(filter_by={"profile_id": profile_id}, projection={"_id": 1, "name": 1, "accessions": 1})
     if not submission:
         return dict(dataSet=data_set,
-                columns=columns,
-                )
+                columns=columns
+        )
         
     project_accession = submission[0].get("accessions",dict()).get("project",[])
     study_accession = ""
