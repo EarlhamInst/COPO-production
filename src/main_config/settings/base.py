@@ -29,6 +29,7 @@ LOGIN_URL = '/accounts/auth/'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if str(resolve_env.get_env('DEBUG')).lower() == 'true' else False
 
+
 # ALLOWED_HOSTS = [ gethostname(), gethostbyname(gethostname()), ]
 ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', '.copo-project.org', '.copo-new.cyverseuk.org',
                  '.demo.copo-project.org', 'localhost', '.copodev.cyverseuk.org']
@@ -46,8 +47,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://copo-new.cyverseuk.org",
     "http://copo-new.cyverseuk.org"
 ]
-DEBUG_PROPAGATE_EXCEPTIONS = True
 
+DEBUG_PROPAGATE_EXCEPTIONS = False # Set to False to see the error page in production
 
 # Django's base applications definition
 DJANGO_APPS = [
