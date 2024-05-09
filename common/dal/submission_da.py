@@ -1,6 +1,6 @@
 
 from common.dal.mongo_util import cursor_to_list, cursor_to_list_str
-from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
+from common.schema_versions.lookup.dtol_lookups import NON_SAMPLE_ACCESSION_TYPES, TOL_PROFILE_TYPES
 from common.utils import helpers
 from common.utils.logger import Logger
 from .sample_da import Sample
@@ -9,7 +9,6 @@ from .copo_base_da import DAComponent
 import pymongo.errors as pymongo_errors
 from bson import ObjectId, json_util
 from django.conf import settings
-from common.schema_versions.lookup.dtol_lookups import STANDALONE_ACCESSION_TYPES, TOL_PROFILE_TYPES 
 from common.schemas.utils.cg_core.cg_schema_generator import CgCoreSchemas
 
 lg =  Logger()
@@ -861,29 +860,95 @@ class Submission(DAComponent):
                                                         {"$set": {"tagged_seq_status": "sending", "date_modified": current_time}})
         return out
 
-    def get_standalone_project_accessions(self, sort_by='_id', sort_direction=-1, projection=dict(), filter_by=dict()):
+    def get_non_sample_accessions(self, element_dict):
         from .profile_da import Profile
-        filter_by["repository"] = "ena"
-        filter_by["accessions"] = {"$exists": True, "$ne": {}}
-        projection = {"_id": 1, "accessions": 1, "profile_id": 1}
+        from .da_utils import filter_non_sample_accession_dict_lst
 
-        records = cursor_to_list_str(self.get_collection_handle().find(
-            filter_by, projection).sort([[sort_by, sort_direction]]), use_underscore_in_id=False)
+        # Get elements from the dictionary
+        draw = element_dict['draw']
+        start = element_dict['start']
+        length = element_dict['length']
+        sort_by = element_dict['sort_by']
+        dir = element_dict['dir']
+        search = element_dict['search']
+        profile_id = element_dict['profile_id']
+        filter_accessions = element_dict['filter_accessions']
+        
+        filter = dict()
+
+        if profile_id:
+            filter['profile_id'] = profile_id
+
+        filter["accessions"] = {"$exists": True, "$ne": {}}
+        projection = {"_id": 1, "accessions": 1, "profile_id": 1}
+        
+        total_count = 0
+        sort_clause = [[sort_by, dir]]
+        handler = self.get_collection_handle()
+
+        records = cursor_to_list_str(handler.find(
+            filter, projection).sort(sort_clause).skip(int(start)).limit(int(length)), use_underscore_in_id=False)
+        
+        total_count = handler.count_documents(filter)
+
+        # Declare labels for 'sample' accession
+        sample_accession_labels = ['sample_accession','sample_alias']
+        labels = ['accession', 'alias', 'profile_title']
 
         out = list()
-        for i in records:
-            # Get profile title
-            profile_title = Profile().get_name(i.get("profile_id", ""))  # Get profile title
-            # update list of dictionaries with profile title
-            i.update({'profile_title': profile_title})
+        
+        if records:
+            for i in records:
+                # Get profile title
+                try:
+                    profile_title = Profile().get_name(i.get("profile_id", ""))
+                except AttributeError as e:
+                    profile_title = ""
+                
+                # Reorder the list of accessions types
+                reordered_accessions_dict = {k: i.get("accessions", "").get(k, "") for k in
+                                            NON_SAMPLE_ACCESSION_TYPES if i.get("accessions", "").get(k, "")}
 
-            # Reorder the list of accessions types
-            reordered_accessions_dict = {k: i.get("accessions", "").get(k, "") for k in
-                                         STANDALONE_ACCESSION_TYPES if i.get("accessions", "").get(k, "")}
-            i.update({'accessions': reordered_accessions_dict})
-            out.append(i)
+                for key, value in reordered_accessions_dict.items():
+                    for accession in value:
+                        row_data = dict()
+                        row_data['record_id'] = i.get('id','')
+                        row_data['DT_RowId'] = 'row_' + i.get('id','')
+                        row_data['profile_id'] = i.get('profile_id','')
+                        row_data['accession_type'] = key
+                        
+                        # Filter value dictionary to get 'accession' and 'alias' key-value pair
+                        if key == 'sample':
+                            # Account for 'sample' accession which has accession and alias in a different format 
+                            value_dict = {k.split('_')[1]: v for k, v in accession.items() if k in sample_accession_labels}
+                            
+                            # Rename 'sample_accession' to 'accession' and 'sample_alias' to 'alias'
+                            value_dict = {k.replace('sample_', ''): v for k, v in value_dict.items()}
+                        else:
+                            value_dict = {k: v for k, v in accession.items() if k in labels}
+                        
+                        for k, v in value_dict.items():
+                            row_data.update({k: v})
+                        
+                        # Update list of dictionaries with profile title
+                        row_data.update({'profile_title': profile_title})
+                        out.append(row_data)
+                
+        if filter_accessions or search:
+            # Filter based on accession type   
+            if filter_accessions:
+                out = [x for x in out if x.get("accession_type") in filter_accessions]
 
-        return out
+            # Filter based on search query
+            if search:
+                out = filter_non_sample_accession_dict_lst(out, search)
+
+        result = dict()
+        result["recordsTotal"] = total_count
+        result["recordsFiltered"] = total_count
+        result["draw"] = draw
+        result["data"] = out
+        return result
 
     def make_assembly_submission_uploading(self, sub_id, assembly_ids):
         sub_handle = self.get_collection_handle()

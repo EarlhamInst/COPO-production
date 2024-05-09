@@ -2985,12 +2985,17 @@ function generate_component_control(component) {
       .append(sidebarPanels.find('.tab-content'));
 
     // Add 'profile types' legend to profile web page only
-    if (component.component == 'profile')
+    if (component.component == 'profile') {
       sideBar.append(sidebarPanels.find('.profiles-legend'));
+    }
 
-    // Add 'accessions types' filter to accessions dashboard web page only
-    if (component.component == 'accessions_dashboard')
+    // Add 'accessions types' filter to accessions dashboard and accessions web page only
+    if (
+      component.component == 'accessions_dashboard' ||
+      component.component == 'accessions'
+    ) {
       sideBar.append(sidebarPanels.find('.accessions-legend'));
+    }
   }
 
   //create buttons

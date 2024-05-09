@@ -23,6 +23,15 @@ th {
     z-index: 2;
 }
 
+.cell-no-content,
+.empty_color {
+    background-color: #fff3f3 !important;
+}
+
+.na_color {
+    background-color: #eee;
+}
+
 /*Filter projecttypes usign checkboxes*/
 .alert {
     --bs-alert-bg: transparent;

@@ -46,7 +46,7 @@ def convertStringToTitleCase(str):
     # Convert given a string to title case/sentence case
     return str.title() \
         .replace("_", " ") \
-        .replace("Id", "ID") \
+        .replace("Id", "Identifier") \
         .replace("accession", " Accession") \
         .replace("Sra", "SRA") \
         .replace("Seq", "Sequence")
