@@ -274,17 +274,17 @@ def get_standard_mapping(standard_list, template):
         standards_data = json.load(f)
         standards_data = standards_data[0]
 
-        output_dict = dict()
         output_list = list()
 
         for d in template:
-            outer_dict = dict()
+            output_dict = dict()
             lst_dict = dict()
             inner_dict = dict()
             
             copo_id = d.get('copo_id', str())       
             
             for key, value in d.items():
+                outer_dict = dict()
                 tol_column_dict = dict()
                 tol_column_dict[key] = dict()
 
@@ -296,6 +296,10 @@ def get_standard_mapping(standard_list, template):
                     else:
                         inner_dict[standard] = {'key': key, 'value': value} if standard == "tol" else {'key': str(), 'value': value}
                     
+                    # Set value to an empty string if key is unknown in the 'inner_dict'
+                    if inner_dict[standard]['key'] == '':
+                        inner_dict[standard]['value'] = str()
+
                     # Merge dictionaries
                     tol_column_dict[key] |= inner_dict
 

@@ -24,9 +24,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ASSOCIATED_PROJECT_ACCESSIONS": {
             "dwc": {
                 "field": "",
@@ -50,9 +48,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ASSOCIATED_TRADITIONAL_KNOWLEDGE_CONTACT": {
             "dwc": {
                 "field": "",
@@ -76,9 +72,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID": {
             "dwc": {
                 "field": "",
@@ -103,9 +97,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE": {
             "dwc": {
                 "field": "",
@@ -129,9 +121,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "BARCODE_HUB": {
             "dwc": {
                 "field": "",
@@ -156,9 +146,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "BARCODE_PLATE_PRESERVATIVE": {
             "dwc": {
                 "field": "",
@@ -182,9 +170,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "BARCODING_STATUS": {
             "dwc": {
                 "field": "",
@@ -208,9 +194,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "BIOBANKED_TISSUE_PRESERVATIVE": {
             "dwc": {
                 "field": "",
@@ -234,9 +218,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "CHLA": {
             "dwc": {
                 "field": "",
@@ -260,9 +242,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "COLLECTED_BY": {
             "dwc": {
                 "field": "recordedBy",
@@ -287,9 +267,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "COLLECTION_LOCATION": {
             "dwc": {
                 "field": "higherGeography",
@@ -313,9 +291,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "COLLECTOR_AFFILIATION": {
             "dwc": {
                 "field": "institutionCode",
@@ -340,9 +316,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "COLLECTOR_ORCID_ID": {
             "dwc": {
                 "field": "recordedByID",
@@ -368,9 +342,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "COLLECTOR_SAMPLE_ID": {
             "dwc": {
                 "field": "materialSampleID",
@@ -394,9 +366,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "COMMON_NAME": {
             "dwc": {
                 "field": "vernacularName",
@@ -420,9 +390,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "CULTURE_OR_STRAIN_ID": {
             "dwc": {
                 "field": "occurrenceID",
@@ -447,9 +415,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "DATE_OF_COLLECTION": {
             "dwc": {
                 "field": "eventDate",
@@ -475,9 +441,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "DATE_OF_PRESERVATION": {
             "dwc": {
                 "field": "",
@@ -501,9 +465,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "DECIMAL_LATITUDE": {
             "dwc": {
                 "field": "decimalLatitude",
@@ -530,9 +492,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "DECIMAL_LONGITUDE": {
             "dwc": {
                 "field": "decimalLongitude",
@@ -559,9 +519,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "DEPTH": {
             "dwc": {
                 "field": "verbatimDepth",
@@ -588,9 +546,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "DESCRIPTION_OF_COLLECTION_METHOD": {
             "dwc": {
                 "field": "",
@@ -615,9 +571,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "DIFFICULT_OR_HIGH_PRIORITY_SAMPLE": {
             "dwc": {
                 "field": "",
@@ -641,9 +595,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "DISSOLVED_OXYGEN": {
             "dwc": {
                 "field": "",
@@ -668,9 +620,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "DNA_REMOVED_FOR_BIOBANKING": {
             "dwc": {
                 "field": "",
@@ -694,9 +644,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "DNA_VOUCHER_ID_FOR_BIOBANKING": {
             "dwc": {
                 "field": "",
@@ -721,9 +669,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ELEVATION": {
             "dwc": {
                 "field": "verbatimElevation",
@@ -750,9 +696,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ETHICS_PERMITS_DEF": {
             "dwc": {
                 "field": "license",
@@ -776,9 +720,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ETHICS_PERMITS_FILENAME": {
             "dwc": {
                 "field": "",
@@ -802,9 +744,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ETHICS_PERMITS_REQUIRED": {
             "dwc": {
                 "field": "",
@@ -828,9 +768,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "FAMILY": {
             "dwc": {
                 "field": "family",
@@ -854,9 +792,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "GAL": {
             "dwc": {
                 "field": "",
@@ -881,9 +817,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "GAL_SAMPLE_ID": {
             "dwc": {
                 "field": "",
@@ -908,9 +842,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "GENUS": {
             "dwc": {
                 "field": "genus",
@@ -934,9 +866,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "GRID_REFERENCE": {
             "dwc": {
                 "field": "georeferenceRemarks",
@@ -960,9 +890,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "HABITAT": {
             "dwc": {
                 "field": "habitat",
@@ -987,9 +915,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "HAZARD_GROUP": {
             "dwc": {
                 "field": "",
@@ -1013,9 +939,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "IDENTIFIED_BY": {
             "dwc": {
                 "field": "identifiedBy",
@@ -1040,9 +964,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "IDENTIFIED_HOW": {
             "dwc": {
                 "field": "",
@@ -1066,9 +988,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "IDENTIFIER_AFFILIATION": {
             "dwc": {
                 "field": "",
@@ -1093,9 +1013,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "INDIGENOUS_RIGHTS_DEF": {
             "dwc": {
                 "field": "",
@@ -1119,9 +1037,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "INFRASPECIFIC_EPITHET": {
             "dwc": {
                 "field": "infraspecificEpithet",
@@ -1145,9 +1061,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "LATITUDE_END": {
             "dwc": {
                 "field": "",
@@ -1174,9 +1088,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "LATITUDE_START": {
             "dwc": {
                 "field": "",
@@ -1203,9 +1115,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "LIFESTAGE": {
             "dwc": {
                 "field": "lifeStage",
@@ -1230,9 +1140,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "LIGHT_INTENSITY": {
             "dwc": {
                 "field": "",
@@ -1256,9 +1164,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "LONGITUDE_END": {
             "dwc": {
                 "field": "",
@@ -1285,9 +1191,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "LONGITUDE_START": {
             "dwc": {
                 "field": "",
@@ -1314,9 +1218,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "MIXED_SAMPLE_RISK": {
             "dwc": {
                 "field": "",
@@ -1340,9 +1242,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "NAGOYA_PERMITS_DEF": {
             "dwc": {
                 "field": "",
@@ -1366,9 +1266,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "NAGOYA_PERMITS_FILENAME": {
             "dwc": {
                 "field": "",
@@ -1392,9 +1290,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "NAGOYA_PERMITS_REQUIRED": {
             "dwc": {
                 "field": "",
@@ -1418,9 +1314,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ORDER_OR_GROUP": {
             "dwc": {
                 "field": "order",
@@ -1444,9 +1338,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ORGANISM_PART": {
             "dwc": {
                 "field": "organismScope",
@@ -1471,9 +1363,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ORIGINAL_COLLECTION_DATE": {
             "dwc": {
                 "field": "eventDate",
@@ -1499,9 +1389,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ORIGINAL_DECIMAL_LATITUDE": {
             "dwc": {
                 "field": "",
@@ -1528,9 +1416,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ORIGINAL_DECIMAL_LONGITUDE": {
             "dwc": {
                 "field": "",
@@ -1557,9 +1443,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "ORIGINAL_GEOGRAPHIC_LOCATION": {
             "dwc": {
                 "field": "",
@@ -1584,9 +1468,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "OTHER_INFORMATION": {
             "dwc": {
                 "field": "",
@@ -1610,9 +1492,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "PH": {
             "dwc": {
                 "field": "phylum",
@@ -1636,9 +1516,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "PLATE_ID_FOR_BARCODING": {
             "dwc": {
                 "field": "",
@@ -1662,9 +1540,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "PRESERVATION_APPROACH": {
             "dwc": {
                 "field": "preparations",
@@ -1688,9 +1564,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "PRESERVATIVE_SOLUTION": {
             "dwc": {
                 "field": "",
@@ -1714,9 +1588,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "PRESERVED_BY": {
             "dwc": {
                 "field": "",
@@ -1740,9 +1612,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "PRESERVER_AFFILIATION": {
             "dwc": {
                 "field": "",
@@ -1766,9 +1636,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "PRIMARY_BIOGENOME_PROJECT": {
             "dwc": {
                 "field": "",
@@ -1792,9 +1660,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING": {
             "dwc": {
                 "field": "",
@@ -1819,9 +1685,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "PROXY_VOUCHER_ID": {
             "dwc": {
                 "field": "",
@@ -1846,9 +1710,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "PROXY_VOUCHER_LINK": {
             "dwc": {
                 "field": "",
@@ -1873,9 +1735,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "PURPOSE_OF_SPECIMEN": {
             "dwc": {
                 "field": "",
@@ -1899,9 +1759,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "RACK_OR_PLATE_ID": {
             "dwc": {
                 "field": "",
@@ -1925,9 +1783,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "REGULATORY_COMPLIANCE": {
             "dwc": {
                 "field": "",
@@ -1951,9 +1807,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "RELATIONSHIP": {
             "dwc": {
                 "field": "relationshipRemarks",
@@ -1978,9 +1832,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SALINITY": {
             "dwc": {
                 "field": "",
@@ -2005,9 +1857,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SAMPLE_COORDINATOR": {
             "dwc": {
                 "field": "",
@@ -2032,9 +1882,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SAMPLE_COORDINATOR_AFFILIATION": {
             "dwc": {
                 "field": "institutionCode",
@@ -2059,9 +1907,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SAMPLE_COORDINATOR_ORCID_ID": {
             "dwc": {
                 "field": "",
@@ -2087,9 +1933,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SAMPLE_FORMAT": {
             "dwc": {
                 "field": "",
@@ -2113,9 +1957,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SAMPLING_PERMITS_DEF": {
             "dwc": {
                 "field": "",
@@ -2139,9 +1981,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SAMPLING_PERMITS_FILENAME": {
             "dwc": {
                 "field": "",
@@ -2165,9 +2005,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SAMPLING_PERMITS_REQUIRED": {
             "dwc": {
                 "field": "",
@@ -2191,9 +2029,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SCIENTIFIC_NAME": {
             "dwc": {
                 "field": "scientificName",
@@ -2218,9 +2054,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SERIES": {
             "dwc": {
                 "field": "fieldNumber",
@@ -2244,9 +2078,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SEX": {
             "dwc": {
                 "field": "sex",
@@ -2271,9 +2103,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SIZE_OF_TISSUE_IN_TUBE": {
             "dwc": {
                 "field": "sampleSizeValue",
@@ -2297,9 +2127,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SPECIES_RARITY": {
             "dwc": {
                 "field": "",
@@ -2323,9 +2151,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SPECIMEN_ID": {
             "dwc": {
                 "field": "",
@@ -2350,9 +2176,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SPECIMEN_IDENTITY_RISK": {
             "dwc": {
                 "field": "",
@@ -2376,9 +2200,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "SYMBIONT": {
             "dwc": {
                 "field": "",
@@ -2402,9 +2224,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "TAXON_ID": {
             "dwc": {
                 "field": "taxonID",
@@ -2429,9 +2249,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "TAXON_REMARKS": {
             "dwc": {
                 "field": "taxonRemarks",
@@ -2455,9 +2273,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "TEMPERATURE": {
             "dwc": {
                 "field": "",
@@ -2482,9 +2298,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION": {
             "dwc": {
                 "field": "",
@@ -2508,9 +2322,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "TIME_OF_COLLECTION": {
             "dwc": {
                 "field": "eventTime",
@@ -2535,9 +2347,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "TISSUE_FOR_BARCODING": {
             "dwc": {
                 "field": "",
@@ -2561,9 +2371,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "TISSUE_FOR_BIOBANKING": {
             "dwc": {
                 "field": "",
@@ -2587,9 +2395,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "TISSUE_REMOVED_FOR_BARCODING": {
             "dwc": {
                 "field": "",
@@ -2613,9 +2419,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "TISSUE_REMOVED_FOR_BIOBANKING": {
             "dwc": {
                 "field": "",
@@ -2639,9 +2443,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "TISSUE_VOUCHER_ID_FOR_BIOBANKING": {
             "dwc": {
                 "field": "",
@@ -2666,9 +2468,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "TUBE_OR_WELL_ID": {
             "dwc": {
                 "field": "",
@@ -2692,9 +2492,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "TUBE_OR_WELL_ID_FOR_BARCODING": {
             "dwc": {
                 "field": "",
@@ -2718,9 +2516,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "VOUCHER_ID": {
             "dwc": {
                 "field": "",
@@ -2745,9 +2541,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "VOUCHER_INSTITUTION": {
             "dwc": {
                 "field": "",
@@ -2772,9 +2566,7 @@
                 "type": "",
                 "uri": ""
             }
-        }
-    },
-    {
+        },
         "VOUCHER_LINK": {
             "dwc": {
                 "field": "",

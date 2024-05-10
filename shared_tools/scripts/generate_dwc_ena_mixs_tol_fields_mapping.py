@@ -4045,9 +4045,9 @@ DWC_MAPPING = create_tol_dwc_mapping()
 
 # Generate 'dwc_ena_mixs_tol_fields_mapping.json' file
 output =list()
+tol_field_dict = dict()
 
 for tol_field in tol_fields_lst:
-    tol_field_dict = dict()
     # European Nucleotide Archive (ENA)
     ena = dict()
   
@@ -4132,11 +4132,11 @@ for tol_field in tol_fields_lst:
     else:
         ena["description"] = ""  
 
-
     # Combine the three dictionaries into one and map it to the TOL field
     tol_field_dict[tol_field] = {"dwc": dwc,"ena": ena,"mixs":mixs,"tol":tol}
-        
-    output.append(tol_field_dict)
+    
+# Avoid duplication by appending outside the for loop        
+output.append(tol_field_dict)
 
 #print(f'\ndwc_ena_mixs_tol_fields_mapping:\n {json.dumps(output, indent=4, sort_keys=False,default=str)}\n')
 
