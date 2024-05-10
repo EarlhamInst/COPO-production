@@ -60,7 +60,7 @@ def get_mapping(request):
     standard = request.GET.get('standard', default_value)
     standard_list = d_utils.convertStringToList(standard)
 
-    if return_type == "csv" and standard_list != ["tol"]:
+    if return_type == "csv":
         return HttpResponse(content="Not Implemented")
     
     standard_data = get_standard_data(standard_list=standard_list)
@@ -75,7 +75,7 @@ def get_mapping_for_manifest_type(request, manifest_type):
     standard = request.GET.get('standard', default_value)
     standard_list = d_utils.convertStringToList(standard)
 
-    if return_type == "csv" and standard_list != ["tol"]:
+    if return_type == "csv":
         return HttpResponse(content="Not Implemented")
 
     standard_data = get_standard_data(standard_list=standard_list, manifest_type=manifest_type.lower(), queryByManifestType=True)
