@@ -457,15 +457,66 @@ class Sample(DAComponent):
     def get_number_of_samples(self):
         return self.get_collection_handle().count_documents({})
 
-    def get_tol_project_accessions(self, sort_by='_id', sort_direction=-1, projection=dict(), filter_by=dict()):
-        filter_by["biosampleAccession"] = {"$exists": True, "$ne": ""}
-        filter_by["sample_type"] = {"$in": TOL_PROFILE_TYPES}
+    def get_sample_accessions(self, element_dict):
+        # Get elements from the dictionary
+        draw = element_dict['draw']
+        start = element_dict['start']
+        length = element_dict['length']
+        sort_by = element_dict['sort_by']
+        dir = element_dict['dir']
+        search = element_dict['search']
+        profile_id = element_dict['profile_id']
+        filter_accessions = element_dict['filter_accessions']
+
+        filter=dict()
+
+        # Filter based on accession type
+        sample_types = filter_accessions if filter_accessions else TOL_PROFILE_TYPES
+
+        if profile_id:
+            filter['profile_id'] = profile_id
+
+        # filter out based on search
+        if search:
+            filter["$text"] = {"$search": search}
+
+        filter["biosampleAccession"] = {"$exists": True, "$ne": ""}
+        filter["sample_type"] = {"$in": sample_types}
 
         projection = {"biosampleAccession": 1, "sraAccession": 1,
                       "submissionAccession": 1, "SCIENTIFIC_NAME": 1,
                       "SPECIMEN_ID": 1, "TAXON_ID": 1, "tol_project": 1, "manifest_id": 1}
+        
+        total_count = 0
+        sort_clause = [[sort_by, dir]]
+        handler = self.get_collection_handle()
 
-        return cursor_to_list_str(self.get_collection_handle().find(filter_by, projection).sort([[sort_by, sort_direction]]))
+        records = cursor_to_list_str(handler.find(filter, projection).sort(sort_clause).skip(int(start)).limit(int(length)))
+        total_count = handler.count_documents(filter)
+
+        # Declare labels
+        labels = ['biosampleAccession', 'sraAccession', 'submissionAccession', 'manifest_id', 'SCIENTIFIC_NAME', 'SPECIMEN_ID', 'TAXON_ID']
+
+        out = list()
+
+        if records:
+            # Records exist
+            for i in records:
+                row_data = dict()
+                row_data['record_id'] = i.get('_id','')
+                row_data['DT_RowId'] = 'row_' + i.get('_id','')
+                row_data['accession_type'] = i.get('tol_project','')
+
+                row_data.update({key: i.get(key,'') for key in i.keys() if key in labels})
+                out.append(row_data)            
+
+        result = dict()
+        result["recordsTotal"] = total_count
+        result["recordsFiltered"] = total_count
+        result["draw"] = draw
+        result["data"] = out
+
+        return result
 
     def get_dtol_type(self, id):
         return self.get_collection_handle().find_one(

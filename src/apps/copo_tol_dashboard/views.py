@@ -1,28 +1,27 @@
 from bson import json_util
+from bson import json_util, ObjectId
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
-from django.shortcuts import render
 from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES, DTOL_ENUMS, \
     PARTNER_MAP_LOCATION_COORDINATES, GAL_MAP_LOCATION_COORDINATES, REQUIRED_MEMBER_GROUPS
+from common.schemas.utils import data_utils
 from common.utils.helpers import get_group_membership_asString
-import json
-from bson import json_util, ObjectId
+from common.utils.logger import Logger
+from common.utils import helpers
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse
+from django.shortcuts import render
 from django.shortcuts import render
 from geopy.geocoders import Nominatim
 from itertools import groupby
 from operator import itemgetter
-# from web.apps.web_copo.models import ViewLock
-from django.core.exceptions import PermissionDenied
+from src.apps.copo_core.models import SequencingCentre
 import ast
 import json
+import json
 import re
-from common.utils.logger import Logger
-from common.utils import helpers
-from common.schemas.utils import data_utils
-
 
 def convert_string_to_titlecase(txt):
     txt = txt.upper()  # Convert string word to uppercase
@@ -101,6 +100,7 @@ def gal_and_partners(request):
 
     for key, value in PARTNER_MAP_LOCATION_COORDINATES.items():
         if key in partner_enums:
+            isSequencingCentre = True if SequencingCentre.objects.filter(label=key) else False
             partner_coordinates = PARTNER_MAP_LOCATION_COORDINATES.get(key, "")
             name = convert_string_to_titlecase(key)
             location_details = get_location_details(partner_coordinates.get(
@@ -111,7 +111,7 @@ def gal_and_partners(request):
             # {**x, **y} # merges dictionary x and dictionary y
             partner_locations_lst.append(
                 {**{"name": name}, **partner_coordinates, **location_details, **{"samples_count": samples_count},
-                 **{"style": style}})
+                 **{"isSequencingCentre": isSequencingCentre}, **{"style": style}})
 
     # Field name: "GAL"
     gal_map_marker_colour = "#3B7DDD"
@@ -132,7 +132,9 @@ def gal_and_partners(request):
     gal_locations_lst = []
 
     for key, value in GAL_MAP_LOCATION_COORDINATES.items():
-        if key.upper() in gal_lst_uppercase:
+        key = key.upper()
+        if key in gal_lst_uppercase:
+            isSequencingCentre = True if SequencingCentre.objects.filter(label=key) else False
             gal_coordinates = GAL_MAP_LOCATION_COORDINATES.get(key, "")
             name = convert_string_to_titlecase(key)
             location_details = get_location_details(gal_coordinates.get(
@@ -143,7 +145,7 @@ def gal_and_partners(request):
             # {**x, **y} # merges dictionary x and dictionary y
             gal_locations_lst.append(
                 {**{"name": name}, **gal_coordinates, **location_details, **{"samples_count": samples_count},
-                 **{"style": style}})
+                 **{"isSequencingCentre": isSequencingCentre}, **{"style": style}})
 
     out = {'gal_lst': gal_lst, 'gal_locations_lst': gal_locations_lst, 'partner_lst': partner_lst,
            'partner_locations_lst': partner_locations_lst}

@@ -1,12 +1,14 @@
 from bson import json_util
-# from dal.broker_da import BrokerVisuals
 from common.dal.profile_da import Profile
+from common.dal.sample_da import Sample
+from common.dal.submission_da import Submission
+from common.schema_versions.lookup.dtol_lookups import NON_SAMPLE_ACCESSION_TYPES
+from common.utils.helpers import get_group_membership_asString
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
+from src.apps.copo_core.models import ViewLock
 from src.apps.copo_core.views import web_page_access_checker
-from common.schema_versions.lookup.dtol_lookups import STANDALONE_ACCESSION_TYPES
-from common.utils.helpers import get_group_membership_asString
 import common.schemas.utils.data_utils as d_utils
 import json
 
@@ -14,13 +16,12 @@ import json
 @web_page_access_checker
 @login_required
 def copo_accessions(request, profile_id):
-    request.session["profile_id"] = profile_id
+    request.session['profile_id'] = profile_id
     profile = Profile().get_record(profile_id)
     groups = get_group_membership_asString()
 
     return render(request, 'copo/accessions/copo_accessions.html',
                   {'profile_id': profile_id, 'profile': profile, 'groups': groups, 'showAllCOPOAccessions': False})
-
 
 def copo_accessions_dashboard(request):
     # Determine if users are in the appropriate membership group to view the web page
@@ -29,57 +30,105 @@ def copo_accessions_dashboard(request):
     return render(request, 'copo/accessions/copo_accessions.html',
                   {'profile_id': '999', 'groups': groups, 'showAllCOPOAccessions': True})
 
+def get_accession_records_column_names(request):
+    isOtherAccessionsTabActive = d_utils.convertStringToBoolean(request.GET.get('isOtherAccessionsTabActive', str()))
+    
+    columns = list()
+    columns.append(dict(data='record_id', visible=False))
+    columns.append(dict(data='DT_RowId', visible=False))
+    columns.append(dict(data='accession_type', title='Accession Type', visible=True))
 
-"""
-def copo_visualize_accessions_dashboard(request):
-    context = dict()
+    if isOtherAccessionsTabActive:
+        # Add profile_id column
+        columns.append(dict(data='profile_id', visible=False))
 
-    task = request.POST.get("task", str())
+        # Set column names
+        labels = ['accession', 'alias', 'profile_title']
+        
+        for x in labels:
+            class_name = 'ena-accession' if x.lower().endswith("accession") else ''
+            columns.append(dict(data=x, title=d_utils.convertStringToTitleCase(x), visible=True,  className=class_name))
+    else:
+        # Set column names
+        labels = ['biosampleAccession', 'sraAccession', 'submissionAccession', 'manifest_id', 'SCIENTIFIC_NAME', 'SPECIMEN_ID', 'TAXON_ID']
+        
+        for x in labels:
+            class_name = 'ena-accession' if x.lower().endswith("accession") else 'copo-api' if x.lower() == 'manifest_id' else ''
+            columns.append(dict(data=x, title=d_utils.convertStringToTitleCase(x),className=class_name))
 
-    # profile_id = request.session.get("profile_id", str())
+    return HttpResponse(json_util.dumps(columns))
 
-    context["quick_tour_flag"] = request.session.get("quick_tour_flag", False)
-    request.session["quick_tour_flag"] = context["quick_tour_flag"]  
+def generate_accession_records(request):
+    isUserProfileActive = d_utils.convertStringToBoolean(request.POST.get('isUserProfileActive',str()))
+    isOtherAccessionsTabActive = d_utils.convertStringToBoolean(request.POST.get('isOtherAccessionsTabActive', str()))
+    filter_accessions = json.loads(request.POST.get('filter_accessions', list()))
 
-    broker_visuals = BrokerVisuals(context=context,
-                                #    profile_id=profile_id,
-                                   request_dict=request.POST.dict(),
-                                   component=request.POST.get("component", str()),
-                                   quick_tour_flag=request.POST.get("quick_tour_flag", False))
+    # Convert items in list to lowercase
+    filter_accessions = [x.lower() for x in filter_accessions] if filter_accessions else list()
 
-    task_dict = dict(table_data=broker_visuals.do_table_data)
+    profile_id = request.session.get('profile_id', str()) if isUserProfileActive else str()
+    start = request.POST.get('start', '0')
+    length = request.POST.get('length', '10')
+    draw = request.POST.get('draw', '1')
+    sort_by = request.POST.get('order[0][column]', '')
+    direction = request.POST.get('order[0][dir]', '')
+    search = request.POST.get('search', '')
+    dir = -1
 
-    if task in task_dict:
-        context = task_dict[task]()
+    if direction == 'asc':
+        dir = 1
 
-    out = encode(context, unpicklable=False)
-    return HttpResponse(out, content_type='application/json')
-"""
+    # Create a dictionary to store the elements
+    element_dict = dict()
+    element_dict['draw'] = draw
+    element_dict['start'] = start
+    element_dict['length'] = length
+    element_dict['sort_by'] = sort_by
+    element_dict['dir'] = dir
+    element_dict['search'] = search
+    element_dict['profile_id'] = profile_id
+    element_dict['filter_accessions'] = filter_accessions
+
+    records = None
+
+    if isOtherAccessionsTabActive:
+        if isUserProfileActive and profile_id:
+            records = Submission().get_non_sample_accessions(element_dict)
+        else:
+            records = Submission().get_non_sample_accessions(element_dict)          
+    else:
+        if isUserProfileActive and profile_id:
+            records = Sample().get_sample_accessions(element_dict)
+        else:
+            records = Sample().get_sample_accessions(element_dict)
+
+    return HttpResponse(json_util.dumps(records))
 
 
 def get_filter_accession_titles(request):
     # Get the text and value for the filter accession checkboxes
     accession_titles = list()
-    isSampleProfileTypeStandalone = d_utils.convertStringToBoolean(
-        request.POST.get("isSampleProfileTypeStandalone", str()))
+    isOtherAccessionsTabActive = d_utils.convertStringToBoolean(
+        request.POST.get('isOtherAccessionsTabActive', str()))
+    
     # Parses string array to actual list
-    accession_types = json.loads(request.POST.get("accession_types", []))
+    accession_types = json.loads(request.POST.get('accession_types', list()))
 
-    if isSampleProfileTypeStandalone:
-        # Stand-alone projects
-        # Reorder the list of accessions types accorsing to the order of the accession types in STANDALONE_ACCESSION_TYPES list
+    if isOtherAccessionsTabActive:
+        # Reorder the list of accessions types accorsing to the order of 
+        # the accession types in NON_SAMPLE_ACCESSION_TYPES list
         accession_titles = [{'title': d_utils.convertStringToTitleCase(
-            item), 'value': item} for item in STANDALONE_ACCESSION_TYPES if item in accession_types]
+            item), 'value': item} for item in NON_SAMPLE_ACCESSION_TYPES if item in accession_types]
     else:
         # Other project types
         profile_types = list()
 
         for i in accession_types:
-            profile_type = Profile().get_collection_handle().find_one({"type": {"$regex": i.upper(), "$options": "i"}},
-                                                                      {"_id": 0, "type": 1})
+            profile_type = Profile().get_collection_handle().find_one({'type': {'$regex': i.upper(), '$options': 'i'}},
+                                                                      {'_id': 0, 'type': 1})
             if profile_type:
                 profile_types.append(
-                    {'title':  profile_type.get("type", ""), 'value': i.upper()})
+                    {'title':  profile_type.get('type', ''), 'value': i.upper()})
 
         accession_titles = profile_types
 

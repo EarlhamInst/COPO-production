@@ -186,4 +186,16 @@ def is_number(s):
     except ValueError:
         return False
 
+def filter_non_sample_accession_dict_lst(lst, search_value):
+    '''
+    filter non sample accession dict from list 
+    based on search value
+    :param lst:
+    :param search_value:
+    :return:
+    '''
+    search_value = search_value.lower()
+    result = list(filter(lambda item: search_value in item.get("accession_type", str()).lower() or search_value in item.get("accession", str()).lower() or search_value in item.get("alias", str()).lower() or search_value in item.get("profile_title", str()).lower(), lst))
+
+    return result
 

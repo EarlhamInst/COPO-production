@@ -1627,7 +1627,7 @@ DTOL_RULES = {
             "strict_regex": "^\d+$",
             "human_readable": "integer"
         },
-    'TISSUE_VOUCHER_ID_FOR_BIOBANKING':
+    'tmp_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
         {
             "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
             "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
@@ -1635,7 +1635,7 @@ DTOL_RULES = {
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
             "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
         },
-    'PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
+    'tmp_PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
         {
             "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
             "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
@@ -1643,7 +1643,7 @@ DTOL_RULES = {
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
             "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
         },
-    'DNA_VOUCHER_ID_FOR_BIOBANKING':
+    'tmp_DNA_VOUCHER_ID_FOR_BIOBANKING':
         {
             "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
             "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
@@ -1651,7 +1651,7 @@ DTOL_RULES = {
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
             "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
         },
-    'PROXY_VOUCHER_ID':
+    'tmp_PROXY_VOUCHER_ID':
         {
             "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
             "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
@@ -1659,7 +1659,7 @@ DTOL_RULES = {
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
             "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
         },
-    'VOUCHER_ID':
+    'tmp_VOUCHER_ID':
         {
             "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
@@ -1843,6 +1843,14 @@ BLANK_VALS = ['NOT_APPLICABLE', 'NOT_COLLECTED', 'NOT_PROVIDED']
 
 DATE_FIELDS = ["DATE_OF_PRESERVATION"]
 
+NA_VALS = ['#N/A', '#N/A N/A', '#NA', '-1.#IND', '-1.#QNAN', '-NaN', '-nan', '1.#IND', '1.#QNAN', '<NA>', 'N/A', 'NULL',
+           'NaN', 'n/a', 'nan', 'NaT', 'null', 'NIL', 'nil', 'NA', 'na', 'NAN', 'Nan', 'NA']
+
+NIH_API_KEY = helpers.get_env("NIH_API_KEY")
+
+# 'sample' is excluded from the list
+NON_SAMPLE_ACCESSION_TYPES = ["project", "assembly", "seq_annotation", "experiment", "run"]
+
 PERMIT_FILENAME_COLUMN_NAMES = ["SAMPLING_PERMITS_FILENAME", "ETHICS_PERMITS_FILENAME",
                                 "NAGOYA_PERMITS_FILENAME"]
 
@@ -1851,15 +1859,6 @@ PERMIT_REQUIRED_COLUMN_NAMES = ["SAMPLING_PERMITS_REQUIRED", "ETHICS_PERMITS_REQ
 
 PERMIT_COLUMN_NAMES_PREFIX = [
     "SAMPLING_PERMITS", "ETHICS_PERMITS", "NAGOYA_PERMITS"]
-
-NA_VALS = ['#N/A', '#N/A N/A', '#NA', '-1.#IND', '-1.#QNAN', '-NaN', '-nan', '1.#IND', '1.#QNAN', '<NA>', 'N/A', 'NULL',
-           'NaN', 'n/a', 'nan', 'NaT', 'null', 'NIL', 'nil', 'NA', 'na', 'NAN', 'Nan', 'NA']
-
-NIH_API_KEY = helpers.get_env("NIH_API_KEY")
-
-STANDARDS = ["dwc", "ena", "mixs", "tol"]
-
-STANDARDS_MAPPING_FILE_PATH = "/copo/common/schema_versions/isa_mappings/dwc_ena_mixs_tol_fields_mapping.json"
 
 REQUIRED_MEMBER_GROUPS = ['bge_checkers','dtol_users', 'dtol_sample_managers', 'dtolenv_users', 'dtolenv_sample_managers',
                           'erga_users', 'erga_sample_managers']
@@ -1874,8 +1873,9 @@ SLASHES_LIST = ["/", "\\"]
 SPECIES_LIST_FIELDS = ["SYMBIONT", "TAXON_ID", "ORDER_OR_GROUP", "FAMILY", "GENUS", "SCIENTIFIC_NAME",
                        "INFRASPECIFIC_EPITHET", "CULTURE_OR_STRAIN", "COMMON_NAME", "TAXON_REMARKS"]
 
-STANDALONE_ACCESSION_TYPES = ["project", "sample",
-                              "assembly", "seq_annotation", "experiment", "run"]
+STANDARDS = ["dwc", "ena", "mixs", "tol"]
+
+STANDARDS_MAPPING_FILE_PATH = "/copo/common/schema_versions/isa_mappings/dwc_ena_mixs_tol_fields_mapping.json"
 
 SYMBIONT_FIELDS = ["ORDER_OR_GROUP", "FAMILY", "GENUS", "TAXON_ID", "SCIENTIFIC_NAME", "TAXON_REMARKS",
                    "INFRASPECIFIC_EPITHET", "CULTURE_OR_STRAIN_ID", "COMMON_NAME", "LIFESTAGE", "SEX", "SYMBIONT",
