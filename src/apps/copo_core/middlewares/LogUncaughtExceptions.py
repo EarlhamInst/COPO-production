@@ -19,8 +19,8 @@ class LogUncaughtExceptions:
         except Exception as e:
             Logger().log(e, level=Loglvl.ERROR)
             Logger().log(traceback.format_exc(), level=Loglvl.ERROR)
-            raise e
-            #return HttpResponse(content=e, status=503)
+            #raise e
+            return HttpResponse(content="Errors occured", status=503)
         #finally:
             #logging.info("Processed " + request.build_absolute_uri())
 

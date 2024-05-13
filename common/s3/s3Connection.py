@@ -35,6 +35,7 @@ class S3Connection():
         Logger().debug(msg=response['Buckets'])
         return response["Buckets"]
 
+    '''
     def list_objects(self, bucket):
         try:
             response = self.s3_client.list_objects(Bucket=bucket)
@@ -47,6 +48,36 @@ class S3Connection():
             # empty buckets have no 'Contents' fields
             return list()
         return contents
+    '''
+
+    def list_objects(self, bucket):
+        return self._get_all_s3_objects(Bucket=bucket)
+
+    def _get_all_s3_objects(self, **base_kwargs):
+        continuation_token = None
+        result = []
+        while True:
+            list_kwargs = dict(MaxKeys=1000, **base_kwargs)
+            if continuation_token:
+                list_kwargs['ContinuationToken'] = continuation_token
+
+            try:    
+                response = self.s3_client.list_objects_v2(**list_kwargs)
+            except Exception as e:
+                Logger().exception(e)
+                return False
+            try:
+                contents = response["Contents"]
+                result.extend(contents)
+            except KeyError as e:
+                # empty buckets have no 'Contents' fields
+                return list()
+            if not response.get('IsTruncated'):  # At the end of the list?
+                return result
+            continuation_token = response.get('NextContinuationToken')
+
+
+
 
     def get_object(self, bucket, key, loc):
         Logger().log("transfering file to: " + loc)
