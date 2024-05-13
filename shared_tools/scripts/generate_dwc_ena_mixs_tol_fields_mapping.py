@@ -585,6 +585,9 @@ MIXS_FIELD_NAMES_MAPPING = {
     'SIZE_OF_TISSUE_IN_TUBE': {
         'mixs': 'size_frac'
     },
+    'SPECIMEN_ID': {
+        'mixs':'source_mat_id'
+    },
     'SEX': {
         'mixs':'urobiom_sex'
     },
@@ -3924,6 +3927,9 @@ DWC_FIELD_NAMES_MAPPING = {
     },
     'SIZE_OF_TISSUE_IN_TUBE':{
         'dwc': 'sampleSizeValue'
+    },
+    'SPECIMEN_ID': {
+        'dwc':'materialSampleID'
     },
     'TIME_OF_COLLECTION': {
         'dwc': 'eventTime'
