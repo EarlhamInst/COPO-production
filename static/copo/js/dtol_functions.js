@@ -23,8 +23,7 @@ var dt_options = {
         if (
           filter == 'pending' ||
           filter == 'rejected' ||
-          filter == 'bge_pending' ||
-          filter == 'associated_project_pending'
+          filter == 'bge_pending'
         ) {
           return "<input type='checkbox' class='form-check-input checkbox'/>";
         } else {

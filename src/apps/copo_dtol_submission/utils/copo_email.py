@@ -152,8 +152,13 @@ class Email:
             profile = Profile().get_record(p_id)
             sequencing_centres = profile.get("sequencing_centre", [])
             for sc in sequencing_centres:
-                centre = SequencingCentre.objects.get(name=sc)
+                # Try catch block to handle the case where the sequencing centre object does not exist
+                try:
+                    centre = SequencingCentre.objects.get(is_approval_required=True, name=sc)
+                except SequencingCentre.DoesNotExist:
+                   continue
                 users += centre.users.all()
+                
         email_addresses = list()
         sub = ""
         if len(users) > 0:
@@ -180,8 +185,13 @@ class Email:
         if profile:    
             sequencing_centres = profile.get("sequencing_centre", [])
             for sc in sequencing_centres:
-                centre = SequencingCentre.objects.get(name=sc)
+                # Try catch block to handle the case where the sequencing centre object does not exist
+                try:
+                    centre = SequencingCentre.objects.get(is_approval_required=True, name=sc)
+                except SequencingCentre.DoesNotExist:
+                   continue
                 users += centre.users.all()
+
             checker_users = User.objects.filter(groups__name='bge_checkers')        
             users = list(set(users) & set(checker_users))
             email_addresses = list()
@@ -210,7 +220,11 @@ class Email:
         if profile:    
             associated_profile_types = profile.get("associated_type", [])
             for apt in associated_profile_types:
-                apt_obj = AssociatedProfileType.objects.get(name=apt.get("value", ""))
+                # Try catch block to handle the case where the associated project type object does not exist
+                try:
+                    apt_obj = AssociatedProfileType.objects.get(is_approval_required=True, name=apt.get("value", ""))
+                except SequencingCentre.DoesNotExist:
+                   continue
                 users += apt_obj.users.all()
                  
             users = list(set(users))

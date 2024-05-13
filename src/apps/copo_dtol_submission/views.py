@@ -86,12 +86,15 @@ def get_samples_for_profile(request):
         current_user = get_current_user()
         profile = Profile().get_record(profile_id)
         is_associated_project_type_checker = False
+        is_sequencing_centre_checker = False
 
         # Sometimes profile is None
         if isinstance(profile, dict):
             associated_profiles = profile.get("associated_type",[])
-            is_associated_project_type_checker = any(AssociatedProfileType.objects.filter(users=current_user, name=x.get("value","")) for x in associated_profiles)
-        
+            sequencing_centres = profile.get('sequencing_centre',[])
+            is_associated_project_type_checker = any(AssociatedProfileType.objects.filter(is_approval_required=True, users=current_user, name=x.get("value","")) for x in associated_profiles)
+            is_sequencing_centre_checker = any(SequencingCentre.objects.filter(is_approval_required=True, users=current_user, name=sc) for sc in sequencing_centres)
+            
         if direction == "desc":
             dir = -1
             
@@ -117,9 +120,13 @@ def get_samples_for_profile(request):
                  # notify_frontend(msg="Creating Sample: " + "sprog", action="info",
                  #                     html_id="dtol_sample_info")
                  if filter == 'pending':
-                    # filter samples based on associated project pending group
+                    # Filter samples based on associated project pending being required
                     if not is_associated_project_type_checker:
                        samples = [sample for sample in samples['data'] if sample["status"] != "associated_project_pending"]
+
+                    # Filter samples based on sequencing centre being required
+                    if not is_sequencing_centre_checker:
+                       samples = [sample for sample in samples['data'] if sample["status"] != "pending"]
 
         return HttpResponse(json_util.dumps(samples))
     else:
@@ -147,29 +154,26 @@ def add_sample_to_dtol_submission(request):
     profile_id = request.GET.get("profile_id")
     profile = Profile().get_record(profile_id)
     associated_profiles = profile.get("associated_type",[])
+    sequencing_centres = profile.get("sequencing_centre", [])
     group = get_group_membership_asString()
     is_bge_checker =  "bge_checkers" in group
     current_user = get_current_user()
-    is_associated_project_type_checker = any(AssociatedProfileType.objects.filter(users=current_user, name=x.get("value","")) for x in associated_profiles)
- 
+    is_associated_project_type_checker = any(AssociatedProfileType.objects.filter(is_approval_required=True, users=current_user, name=x.get("value","")) for x in associated_profiles)
+
     # check we have required params
     if sample_ids and profile:
         # check for submission object, and create if absent
         sub = Submission().get_dtol_submission_for_profile(profile_id)
         type_sub = profile["type"]
         #is_bge_profile = "BGE" in [ x.get("value","") for x in profile.get("associated_type",[]) ]
-        sequence_centres = profile.get("sequencing_centre", [])
-        sequence_centre_objects = SequencingCentre.objects.all()
 
         # Check if approval is required for the assigned sequencing centre in an ERGA profile
         is_sequencing_centre_approval_required = "erga" in type_sub.lower() and \
-        any(sc_obj.is_approval_required for sc in sequence_centres for sc_obj in sequence_centre_objects if sc_obj.name == sc)
-    
-        #is_sanger_profile = "erga" in type_sub.lower() and settings.SANGER_SEQUENCING_CENTRE in sequence_centres
+        any(SequencingCentre.objects.filter(is_approval_required=True, name=sc) for sc in sequencing_centres)
+        #is_sanger_profile = "erga" in type_sub.lower() and settings.SANGER_SEQUENCING_CENTRE in sequencing_centres
         
-        associated_profile_types_objects = AssociatedProfileType.objects.all()
-        is_associated_project_type_approval_required = "erga" in type_sub.lower() and \
-            any(apt_obj.is_approval_required for apt in associated_profiles for apt_obj in associated_profile_types_objects if apt_obj.name == apt.get("value",""))
+        is_associated_project_type_approval_required =  "erga" in type_sub.lower() and \
+            any(AssociatedProfileType.objects.filter(is_approval_required=True, name=x.get("value","")) for x in associated_profiles)
 
         if not sub:
             if type_sub == "Aquatic Symbiosis Genomics (ASG)":
