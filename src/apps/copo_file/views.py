@@ -6,7 +6,6 @@ import jsonpickle
 from django.http import HttpResponse
 from .utils.CopoFiles import generate_files_record
 from common.utils import helpers
-from src.apps.copo_core.views import web_page_access_checker
 import json
 
 
@@ -65,11 +64,21 @@ def upload_ecs_files(request, profile_id):
     s3 = S3Connection()
     if not s3.check_for_s3_bucket(bucket):
         s3.make_s3_bucket(bucket)
+    KB = 1024
+    MB = KB * KB
 
     for f in files:
+        i  = 0
         file = files[f]
-        for chunk in file.chunks():
-            s3.upload_file(chunk, bucket, file.name.replace(" ", "_"))
+        key = file.name.replace(" ", "_")
+        response = s3.s3_client.create_multipart_upload(Bucket=bucket, Key=key)
+
+        parts = []
+        for chunk in file.chunks(chunk_size=50*MB):
+            i += 1
+            part = s3.s3_client.upload_part(Body=chunk, Bucket=bucket, Key=key, PartNumber=i, UploadId=response["UploadId"])
+            parts.append({"PartNumber":i, "ETag":part["ETag"]})
+        s3.s3_client.complete_multipart_upload(Bucket=bucket, Key=key, UploadId=response["UploadId"], MultipartUpload={"Parts":parts})
 
     context = dict()
     context["table_data"] = generate_files_record(user_id=request.user.id)

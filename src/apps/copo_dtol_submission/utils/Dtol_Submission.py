@@ -1418,15 +1418,14 @@ def handle_common_ENA_error(error_to_parse, source_id):
     else:
         return False
 
-    curl_cmd = 'curl -m 300 -u ' + user_token + ':' + pass_word \
-               + ' ' + ena_report \
-               + accession
+    curl_cmd = 'curl -m 300 -u "' + user_token + ':' + pass_word \
+               + '" ' + ena_report + "/" + accession
     try:
         receipt = subprocess.check_output(curl_cmd, shell=True)
         l.log("ENA RECEIPT REGISTERED SAMPLE for sample " +
               accession + " " + str(receipt))
     except Exception as e:
-        l.log("General Error " + str(e))
+        l.log("General Error " + str(e).replace(pass_word, "xxxxxxx"))
         return False
 
     try:

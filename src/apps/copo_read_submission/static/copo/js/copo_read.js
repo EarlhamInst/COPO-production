@@ -322,6 +322,12 @@ $(document).ready(function () {
           .addClass('highlight_error_file_processing_status');
       }         
     }
+
+    $(".ena-accession").each(function(i, obj) {
+       if ($(obj).prop("tagName") != 'TH' && $(obj).text() != '') {
+          $(obj).html("<a href='https://www.ebi.ac.uk/ena/browser/view/" + $(obj).text() + "' target='_blank'>"+ $(obj).text()+"</a>");
+       }
+    });
   });
 });
 

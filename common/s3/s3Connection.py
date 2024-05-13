@@ -20,7 +20,7 @@ class S3Connection():
 
         self.expiration = 60 * 60 * 24
         self.path = '/'
-        boto3.set_stream_logger(name='', level=logging.DEBUG, format_string=None)
+        boto3.set_stream_logger(name='', level=logging.WARNING, format_string=None)
         self.s3_client = boto3.client('s3', endpoint_url=self.ecs_endpoint, verify=False,  
                                       config=Config(signature_version='s3v4', connect_timeout=120, read_timeout=240,
                                                     retries={"max_attempts": 10}, s3={'addressing_style': "path"}),
@@ -35,6 +35,7 @@ class S3Connection():
         Logger().debug(msg=response['Buckets'])
         return response["Buckets"]
 
+    '''
     def list_objects(self, bucket):
         try:
             response = self.s3_client.list_objects(Bucket=bucket)
@@ -47,13 +48,41 @@ class S3Connection():
             # empty buckets have no 'Contents' fields
             return list()
         return contents
+    '''
+
+    def list_objects(self, bucket):
+        return self._get_all_s3_objects(Bucket=bucket)
+
+    def _get_all_s3_objects(self, **base_kwargs):
+        continuation_token = None
+        result = []
+        while True:
+            list_kwargs = dict(MaxKeys=1000, **base_kwargs)
+            if continuation_token:
+                list_kwargs['ContinuationToken'] = continuation_token
+
+            try:    
+                response = self.s3_client.list_objects_v2(**list_kwargs)
+            except Exception as e:
+                Logger().exception(e)
+                return False
+            try:
+                contents = response["Contents"]
+                result.extend(contents)
+            except KeyError as e:
+                # empty buckets have no 'Contents' fields
+                return list()
+            if not response.get('IsTruncated'):  # At the end of the list?
+                return result
+            continuation_token = response.get('NextContinuationToken')
+
+
+
 
     def get_object(self, bucket, key, loc):
         Logger().log("transfering file to: " + loc)
         KB = 1024
         MB = KB * KB
-        GB = KB * MB
-
         config = TransferConfig(multipart_threshold=100 * MB, multipart_chunksize=50 * MB, io_chunksize=1 * MB,
                                 max_concurrency=3, use_threads=True )
         #self.s3_client.download_file(bucket, key, loc, Config=config)
@@ -186,6 +215,5 @@ class S3Connection():
         for key in target_ids:
             self.s3_client.delete_object(Bucket=bucket_name, Key=key)
         return dict(status='success', message="File(s) have been deleted!")
-
-    def upload_file(self, chunk, bucket=str(), filename=str()):
-        self.s3_client.upload_fileobj(BytesIO(chunk), bucket, filename)
+ 
+        

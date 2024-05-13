@@ -158,6 +158,24 @@ def generate_copo_form(component=str(), target_id=str(), component_dict=dict(), 
 
     form_schema = list()
 
+    schema = da_object.get_component_schema(**kwargs)
+
+
+    # Check if a user is in ASG group, DTOL group, ERGA group or DTOL_ENV group,
+    is_user_in_any_manifest_group = False
+    if component == "profile":
+        # Check if a user is in ASG group, DTOL group, ERGA group or DTOL_ENV group,
+        request = ThreadLocal.get_current_request()
+        is_user_in_any_manifest_group = request.user.groups.filter(
+            name__in=['dtol_users', 'erga_users', 'dtolenv_users']).exists()
+
+        """
+        is_standalone_profile = False
+        for f in schema:
+            if "type" in f["id"] and 'Stand-alone' in f["option_values"]:
+                is_standalone_profile = True
+        """
+
     # get schema fields
     for f in da_object.get_component_schema(**kwargs):
         if f.get("show_in_form", True):
@@ -179,33 +197,35 @@ def generate_copo_form(component=str(), target_id=str(), component_dict=dict(), 
             if component == "sample" and not filter_sample_type(form_value, f):
                 continue
 
-            if component == "profile":
-                # Check if a user is in ASG group, DTOL group, ERGA group or DTOL_ENV group,
-                request = ThreadLocal.get_current_request()
-                is_user_in_any_manifest_group = request.user.groups.filter(
-                    name__in=['dtol_users', 'erga_users', 'dtolenv_users']).exists()
-
+            if component == "profile" :
+                
                 # iff this is a sequencing centre field and the user is in manifest group
                 # display all sequencing centres in the dropdown menu on the form
-                if "sequencing_centre" in f["id"] and is_user_in_any_manifest_group:
-                    sc = SequencingCentre().get_sequencing_centres()
-                    for each in sc:
-                        option_value = {
-                            "value": each.name, "label": each.label
-                        }
-                        f["option_values"].append(option_value)
+                if "sequencing_centre" in f["id"]:
+                    if is_user_in_any_manifest_group :
+                        sc = SequencingCentre().get_sequencing_centres()
+                        for each in sc:
+                            option_value = {
+                                "value": each.name, "label": each.label
+                            }
+                            f["option_values"].append(option_value)
+                        form_schema.append(f)
 
                 # If a user has not been added to any of the manifest groups, display only the 'Stand-alone'
                 # project type in the dropdown menu on the form
-                if not is_user_in_any_manifest_group and "type" in f["id"] and 'Stand-alone' in f["option_values"]:
-                    # "Stand-alone" is the first project type in the list
-                    f["option_values"] = [f["option_values"][0]]
 
                 # Do not display the 'associated type' field if user is not in a manifest group
-                if not is_user_in_any_manifest_group and "associated_type" in f["id"]:
-                    break
+                elif "associated_type" in f["id"]:
+                    if is_user_in_any_manifest_group:
+                        form_schema.append(f)
 
-            form_schema.append(f)
+                elif  "profile.type" in f["id"]:
+                    if not is_user_in_any_manifest_group  and 'Stand-alone' in f["option_values"]:
+                        f["option_values"] = ['Stand-alone']
+                    form_schema.append(f)
+
+                else:
+                    form_schema.append(f)
 
     if form_value:
         form_value["_id"] = str(target_id)
@@ -518,7 +538,7 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
 
         for x in schema:
             x["id"] = x["id"].split(".")[-1]
-            columns.append(dict(data=x["id"], title=x["label"]))
+            columns.append(dict(data=x["id"], title=x["label"], className="ena-accession" if x["id"].lower().endswith("accession") else "" ))
             if x["id"] not in df_columns:
                 df[x["id"]] = str()
             df[x["id"]] = df[x["id"]].fillna('')
@@ -531,7 +551,7 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
 
     for name in additional_columns.columns:
         if name != '_id':
-          columns.append(dict(data=name, title=name.upper().replace("_", " ")))
+          columns.append(dict(data=name, title=name.upper().replace("_", " "), className="ena-accession" if name.lower().endswith("accession") else "" ))
 
     return_dict = dict(dataSet=data_set,
                        columns=columns

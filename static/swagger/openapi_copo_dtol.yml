@@ -3,7 +3,7 @@ info:
   title: COPO API
   description: |
     The following are Swagger Application Programming Interface (API) methods for audits, 
-    manifests, samples, profiles and statistics. 
+    manifests, samples, profiles, statistics and Tree of Life (ToL) fields mapping.
 
     Please view our [API methods' documentation](https://copo-docs.readthedocs.io/en/latest/retrieval/copo-api.html) for guidance.
 
@@ -79,8 +79,9 @@ paths:
       tags:
         - Audit
       summary: Get update audit for sample records by manifest ID
-      description: >
-        Get a list of sample update records in COPO by manifest ID. </br></br>
+      description: |
+        Get a list of sample update records in COPO by manifest ID.
+
         If manifest_id is not provided, COPO will return a list of all sample updates.
       parameters:
         - name: manifest_id
@@ -103,8 +104,9 @@ paths:
       tags:
         - Audit
       summary: Get update audit for sample records by copo_id
-      description: >
-        Get a list of sample update records in COPO by copo ID. </br></br>
+      description: |
+        Get a list of sample update records in COPO by copo ID.
+
         If copo_id is not provided, COPO will return a list of all sample updates.
       parameters:
         - name: copo_id
@@ -128,8 +130,9 @@ paths:
       tags:
         - Audit
       summary: Get update audit for samples by 'update_type'
-      description: >
-        Get sample update audit records based on the type of person who performed the audit. </br></br>
+      description: |
+        Get sample update audit records based on the type of person who performed the audit.
+
         If no 'sample_type' is provided, COPO will return a list of sample updates for all sample types.
       parameters:
         - name: sample_type
@@ -163,8 +166,9 @@ paths:
       tags:
         - Audit
       summary: Get update audit for samples by 'RACK_OR_PLATE_ID', 'SPECIMEN_ID', 'TUBE_OR_WELL_ID', 'biosampleAccession', 'public_name' or 'sraAccession' field
-      description: >
-        Get sample update audit records by 'RACK_OR_PLATE_ID' field, 'SPECIMEN_ID' field, 'TUBE_OR_WELL_ID' field, 'biosampleAccession' field, 'public_name' field or 'sraAccession' field. </br></br>
+      description: |
+        Get sample update audit records by 'RACK_OR_PLATE_ID' field, 'SPECIMEN_ID' field, 'TUBE_OR_WELL_ID' field, 'biosampleAccession' field, 'public_name' field or 'sraAccession' field.
+
         COPO will return a list of sample updates if updates were done a sample that matches the desired field with the value provided.
       parameters:
         - name: field
@@ -339,6 +343,7 @@ paths:
           schema:
             type: string
             minimum: 1
+        - $ref: '#/components/parameters/standard'
         - name: return_type
           in: query
           description: Export data into selected format
@@ -376,11 +381,7 @@ paths:
           schema:
             type: string
             format: date-time
-        - in: query
-          name: return_type
-          schema:
-            type: string
-          description: Export data into selected format
+        - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
           description: A JSON array of sample manifest uuid objects
@@ -430,7 +431,7 @@ paths:
         '400':
           description: \'from\' must be earlier than \'to\ and project must be in the list of supported projects'
 
-  /manifest/{manifest_id}/sample_statuses:
+  /manifest/{manifest_id}/sample_status:
     get:
       tags:
         - Manifest
@@ -456,7 +457,7 @@ paths:
         '400':
           description: invalid manifest_id
 
-  /manifest/validate/:
+  /manifest/validate:
     post:
       tags:
         - Manifest
@@ -480,7 +481,7 @@ paths:
         '200':
           description: id of queued validation report to be queried
 
-  /manifest/validate/report/:
+  /manifest/validate/report:
     post:
       tags:
         - Manifest
@@ -502,7 +503,7 @@ paths:
         '200':
           description: status and/or validation errors for given manifest validation
 
-  /manifest/validations/:
+  /manifest/validations:
     post:
       tags:
         - Manifest
@@ -547,8 +548,21 @@ paths:
       tags:
         - Sample
       summary: Get sample records in a project by associated project type(s)
-      description: >
+      description: |
         Get a list of all the samples of a project in COPO by associated project type
+        Available associated projects - **ASG**, **BGE**, **DTOL**, **DTOL_ENV**, **ERGA**, **ERGA_PILOT**, **ERGA_SATELLITES**, **POP_GENOMICS**
+
+        To query multiple associated projects, separate them with a comma.
+
+        - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
+        - **BGE** refers to Darwin Tree of Life (DTOL)
+        - **DTOL** refers to Darwin Tree of Life (DTOL)
+        - **DTOL_ENV** refers to Darwin Tree of Life (DTOL)
+        - **ERGA** refers to European Reference Genome Atlas (ERGA)
+        - **ERGA_PILOT** refers to uropean Reference Genome Atlas - Pilot (ERGA_PILOT)
+        - **ERGA_SATELLITES** refers to European Reference Genome Atlas - Satellites (ERGA_SATELLITES)
+        - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
+      example: ASG,BGE,DTOL,DTOL_ENV,ERGA,ERGA_PILOT,ERGA_SATELLITES,POP_GENOMICS
       parameters:
         - name: values
           in: path
@@ -557,6 +571,7 @@ paths:
           schema:
             type: string
             minimum: 1
+        - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
@@ -576,11 +591,14 @@ paths:
       tags:
         - Sample
       summary: Get project fields by manifest version
-      description: >
-        Get a list of fields of a project for a given manifest version.</br></br>
-        If project type is provided and no manifest version is provided, COPO will return a list of fields for the given project type according to the latest manifest version for that project.</br></br>
-        If no project type is provided and manifest version is provided, COPO will return a list of fields for the given project type that matches the given manifest version.</br></br>
-        If no project type and no manifest version are provided, COPO will return a list of fields for all projects according to the latest manifest version for that project.
+      description: |
+        Get a list of fields of a project for a given manifest version.
+
+        - If project type is provided and no manifest version is provided, COPO will return a list of fields for the given project type according to the latest manifest version for that project.
+
+        - If no project type is provided and manifest version is provided, COPO will return a list of fields for the given project type that matches the given manifest version.
+
+        - If no project type and no manifest version are provided, COPO will return a list of fields for all projects according to the latest manifest version for that project.
       parameters:
         - name: project
           in: query
@@ -590,6 +608,7 @@ paths:
           in: query
           schema:
             $ref: '#/components/schemas/ManifestVersions'
+        - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
@@ -628,6 +647,7 @@ paths:
           schema:
             type: string
             format: date-time
+        - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
@@ -650,10 +670,19 @@ paths:
         - name: project
           in: path
           required: true
-          description: Available projects - ASG, DTOL, ERGA
+          description: |
+            Available projects - **ASG**, **DTOL**, **ERGA**
+
+            To query multiple projects, separate them with a comma.
+
+            - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
+            - **DTOL** refers to Darwin Tree of Life (DTOL)
+            - **ERGA** refers to European Reference Genome Atlas (ERGA)
+          example: ASG,DTOL,ERGA
           schema:
             type: string
             minimum: 1
+        - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
@@ -683,6 +712,7 @@ paths:
           schema:
             type: string
             minimum: 1
+        - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
@@ -694,21 +724,22 @@ paths:
         '400':
           description: InvalidId found in request
 
-  /sample/biosample_id/{biosample_ids}:
+  /sample/biosampleAccession/{biosampleAccessions}:
     get:
       tags:
         - Sample
       summary: Get sample records by biosampleAccession
       description: >
-        Get full sample information for the samples returned from the given {biosample_ids}
+        Get full sample information for the samples returned from the given {biosampleAccessions}
       parameters:
-        - name: biosample_ids
+        - name: biosampleAccessions
           in: path
           required: true
           description: Biosample accessions created by European Nucleotide Archive (ENA), separated by commas
           schema:
             type: string
             minimum: 1
+        - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
@@ -741,6 +772,7 @@ paths:
           schema:
             type: string
             minimum: 1
+        - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
@@ -784,6 +816,7 @@ paths:
             type: string
             minimum: 1
             maximum: 1
+        - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
@@ -807,6 +840,7 @@ paths:
           description: Format - a comma separated list of biostudy accessions
           schema:
             type: string
+        - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
@@ -817,7 +851,7 @@ paths:
                 $ref: '#/components/schemas/SampleAccessionList'
 
   # Section: Profile
-  /profile/make_profile/:
+  /profile/make_profile:
     post:
       tags:
         - Profile
@@ -857,7 +891,7 @@ paths:
         '200':
           description: representation of the created profile
 
-  /profile/get_for_user/:
+  /profile/get_for_user:
     post:
       tags:
         - Profile
@@ -871,7 +905,7 @@ paths:
           description: representation of the created profile
 
   # Section: Statistics
-  /stats/number_of_users/:
+  /stats/number_of_users:
     get:
       tags:
         - Statistics
@@ -918,7 +952,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/StatsNumber'
 
-  /stats/tol_projects/:
+  /stats/tol_projects:
     get:
       tags:
         - Statistics
@@ -931,7 +965,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TOLProjectList'
 
-  /stats/associated_tol_projects/:
+  /stats/associated_tol_projects:
     get:
       tags:
         - Statistics
@@ -949,8 +983,83 @@ paths:
         '500':
           description: No samples exist for given project(s)
 
+  # Section: TOL Mapping
+  /mapping:
+    get:
+      tags:
+        - Tree of Life (ToL) Mapping
+      summary: >
+        Get a mapping of ToL manifest fields brokered through COPO 
+        by DWC standard, MIxS standard or ENA standard
+      description: >
+        If no standard is provided, COPO will return a list of mapping of Tree of Life (ToL) fields to Darwin Core (DWC) standard, 
+        Minimum Information about any (X) Sequence (MIxS) standard and European Nucleotide Archive (ENA) standard.
+      parameters:
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
+      responses:
+        '200': # status code
+          description: A JSON array of mapping
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TOLProjectList'
+        '400':
+          description: Invalid mapping type found in request
+
+        '500':
+          description: No mapping exist for the given mapping type
+
+  /mapping/manifest_type/{manifest_type}:
+    get:
+      tags:
+        - Tree of Life (ToL) Mapping
+      summary: >
+        Get a mapping of ToL fields by manifest type - ASG, DTOL, DTOL_ENV or ERGA
+        to DWC fields, MIxS fields and ENA fields
+      description: >
+        COPO will return a list of mapping for one of the manifests project types - Aquatic Symbiosis Genomics (ASG), 
+        Darwin Tree of Life (DTOL), Darwin Tree of Life Environmental Samples (DTOL_ENV) or European Reference Genome Atlas (ERGA)
+        to Darwin Core (DWC) fields, Minimum Information about any (X) Sequence (MIxS) fields and European Nucleotide Archive (ENA) fields
+      parameters:
+        - in: path
+          name: manifest_type
+          required: true
+          schema:
+            $ref: '#/components/schemas/ManifestTypes'
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
+      responses:
+        '200': # status code
+          description: A JSON array of mapping
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TOLProjectList'
+        '400':
+          description: Invalid mapping type found in request
+
+        '500':
+          description: No mapping exist for the given mapping type
+
 components:
   parameters:
+    standard:
+      name: standard
+      in: query
+      description: |
+        Available standards - **dwc**, **ena**, **mixs**, **tol**
+
+        To query multiple standards, separate them with a comma.
+
+        - **dwc** refers to Darwin Core (DWC)
+        - **ena** refers to European Nucleotide Archive (ENA)
+        - **mixs** refers to Minimum Information about any (X) Sequence (MIxS)
+        - **tol** refers to Tree of Life (ToL)
+      example: dwc,ena,mixs,tol
+      schema:
+        type: string
+
     return_type:
       name: return_type
       in: query

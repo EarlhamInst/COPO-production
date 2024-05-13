@@ -219,7 +219,7 @@ function upload_files(files) {
         xhr.upload.onprogress = function (evt) {
           var percentVal = Math.round((evt.loaded / evt.total) * 100);
           percent.html('<b>' + percentVal + '%</b>');
-          console.log('progress', percentVal);
+          //console.log('progress', percentVal);
         };
         xhr.upload.onload = function () {
           percent.html('');
@@ -228,12 +228,18 @@ function upload_files(files) {
         return xhr;
       },
     })
-    .fail(function (data) {
+    .fail(function (jqXHR, status, error) {
       $('#upload_local_files_button').fadeIn();
       $('#ss_upload_spinner').fadeOut('fast');
+      //console.log(jqXHR) 
+      var message = "Cannot upload files, please check your file size"
+      if (jqXHR.status != "0"){
+        message = jqXHR.status + " " + error
+      }
+
       BootstrapDialog.show({
         title: 'Error',
-        message: 'Error ' + data.status + ': ' + data.responseText,
+        message: message,
         type: BootstrapDialog.TYPE_DANGER,
       });
     })

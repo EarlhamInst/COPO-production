@@ -82,8 +82,15 @@ def web_page_access_checker(func):
             # Access web page if no profile ID exists in the request or session
             if not profile_id:
                 return func(request, *args, **kwargs)
-                
-        user_id = Profile().get_record(ObjectId(profile_id))['user_id']
+
+        profile =  Profile().get_record(ObjectId(profile_id))
+
+        # Show web page if profile does not exist but 'profile_id' exists from session
+        if not profile:
+           return func(request, *args, **kwargs)
+        else:
+            user_id = Profile().get_record(ObjectId(profile_id))['user_id']
+
         profile_type = Profile().get_type(profile_id).lower()
 
         shared_profiles = list(

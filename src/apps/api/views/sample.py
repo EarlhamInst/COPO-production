@@ -12,6 +12,7 @@ import json
 import jsonpath_rw_ext as jp
 from bson.errors import InvalidId
 from src.apps.api.utils import get_return_template, extract_to_template, finish_request
+from src.apps.api.views.mapping import get_standard_data
 from common.dal.copo_da import APIValidationReport
 from common.dal.sample_da import Sample, Source
 from common.dal.submission_da import Submission
@@ -246,20 +247,20 @@ def get_samples_in_manifest(request, manifest_id):
     return finish_request(out)
 
 
-def get_sample_statuses_for_manifest(request, manifest_id):
-    sample_list = Sample().get_statuses_by_manifest_id(manifest_id)
+def get_sample_status_for_manifest(request, manifest_id):
+    sample_list = Sample().get_status_by_manifest_id(manifest_id)
     out = filter_for_API(sample_list, add_all_fields=False)
     return finish_request(out)
 
 
-def get_by_biosample_ids(request, biosample_ids):
+def get_by_biosampleAccessions(request, biosampleAccessions):
     # get sample associated with given biosample_id. This will return nothing if ENA submission has not yet occured
-    ids = biosample_ids.split(",")
+    accessions = biosampleAccessions.split(",")
     # strip white space
-    ids = list(map(lambda x: x.strip(), ids))
+    accessions = list(map(lambda x: x.strip(), accessions))
     # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
-    ids[:] = [x for x in ids if x]
-    sample = Sample().get_by_biosample_ids(ids)
+    accessions[:] = [x for x in biosampleAccessions if x]
+    sample = Sample().get_by_biosampleAccessions(accessions)
     out = list()
     if sample:
         out = filter_for_API(sample)
@@ -274,7 +275,7 @@ def get_num_dtol_samples(request):
 
 def get_project_samples(request, project):
     projectlist = project.split(",")
-    projectlist = list(map(lambda x: x.strip(), projectlist))
+    projectlist = list(map(lambda x: x.strip().lower(), projectlist))
     # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
     projectlist[:] = [x for x in projectlist if x]
     samples = Sample().get_project_samples(projectlist)
@@ -305,6 +306,7 @@ def get_updatable_fields_by_project(request, project):
     return finish_request(out)
 
 def get_fields_by_manifest_version(request):
+    standard = request.GET.get('standard', ["tol"])
     project_type = request.GET.get('project', str())
     manifest_version = request.GET.get('manifest_version', str())
     s = json_to_pytype(WIZARD_FILES["sample_details"], compatibility_mode=False)
@@ -334,6 +336,10 @@ def get_fields_by_manifest_version(request):
             # Filter list for field names that only begin with an uppercase letter
             fields = list(filter(lambda x: x[0].isupper() == True, fields))
 
+            # Get fields based on standard
+            if standard in lookup.STANDARDS:
+                fields = get_standard_data(standard=standard, manifest_type=project_type.lower(), queryByManifestType=True)
+
             data['number_of_fields'] = len(fields)
             data['fields'] = fields
         else:
@@ -353,6 +359,10 @@ def get_fields_by_manifest_version(request):
         
         # Filter list for field names that only begin with an uppercase letter
         fields = list(filter(lambda x: x[0].isupper() == True, fields))
+
+        # Get fields based on standard
+        if standard in lookup.STANDARDS:
+            fields = get_standard_data(standard=standard, manifest_type=type.lower(), queryByManifestType=True)
 
         data['project_type'] = project_type
         data['manifest_version'] = version
@@ -394,6 +404,10 @@ def get_fields_by_manifest_version(request):
             
             # Filter list for field names that only begin with an uppercase letter
             fields = list(filter(lambda x: x[0].isupper() == True, fields))
+
+                        # Get fields based on standard
+            if standard in lookup.STANDARDS:
+                fields = get_standard_data(standard=standard, manifest_type=type.lower(), queryByManifestType=True)
 
             data['project_type'] = type.upper()
             data['manifest_version'] = version

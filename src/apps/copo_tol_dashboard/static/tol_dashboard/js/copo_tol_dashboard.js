@@ -246,6 +246,7 @@ $(document).ready(function () {
           city: x.city,
           state: x.state,
           country: x.country,
+          isSequencingCentre: x.isSequencingCentre,
           samples_count: x.samples_count,
         })
       );
@@ -330,14 +331,27 @@ function show_map_marker_popup_details(item) {
   let dialogDiv = $('<div id="map_marker_detailsID"/>');
 
   // Only include item details if they are not empty
-  if (item.name !== '')
+  if (item.name !== '') {
     $('<p><b>Name:</b> ' + item.name + ' </p>').appendTo(dialogDiv);
-  if (item.city !== '')
+  }
+
+  if (item.city !== '') {
     $('<p><b>City:</b> ' + item.city + ' </p>').appendTo(dialogDiv);
-  if (item.state !== '')
+  }
+
+  if (item.state !== '') {
     $('<p><b>State:</b> ' + item.state + ' </p>').appendTo(dialogDiv);
-  if (item.country !== '')
+  }
+
+  if (item.country !== '') {
     $('<p><b>Country:</b> ' + item.country + ' </p>').appendTo(dialogDiv);
+  }
+
+  if (item.isSequencingCentre) {
+    $(
+      '<p><b>Sequencing centre?:</b> ' + item.isSequencingCentre + ' </p>'
+    ).appendTo(dialogDiv);
+  }
 
   $(
     '<p><b>Number of samples produced:</b> ' + item.samples_count + ' </p>'

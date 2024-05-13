@@ -120,8 +120,13 @@
     "platform": "ILLUMINA"
   },
   {
-    "value": "NextSeq 500",
-    "label": "NextSeq 500",
+    "value": "Illumina NextSeq 500",
+    "label": "Illumina NextSeq 500",
+    "platform": "ILLUMINA"
+  },
+  {
+    "value": "Illumina NextSeq 550",
+    "label": "Illumina NextSeq 550",
     "platform": "ILLUMINA"
   },
   {

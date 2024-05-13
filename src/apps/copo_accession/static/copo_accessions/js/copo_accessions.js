@@ -1,22 +1,172 @@
+let accessions_table;
+let table_id = 'accessions_table';
+
+// Store 'showAllCOPOAccessions' value
+let showAllCOPOAccessions =
+  $('#showAllCOPOAccessions').val() === 'True' ? true : false;
+
+let isOtherAccessionsTabActive;
+let isUserProfileActive;
+
+if (showAllCOPOAccessions) {
+  // Store data for accessions dashboard
+  isOtherAccessionsTabActive = false;
+  isUserProfileActive = false;
+} else {
+  // Store data for accessions web page for a given profile
+  isUserProfileActive = true;
+}
+
+// URL for accessions dashboard where the view for it does not require user to be logged in
+let copoVisualiseAccessionsURL = '/copo/copo_visualize_accessions/';
+let copoVisualiseURL = '/copo/copo_visualize/';
+let url = showAllCOPOAccessions ? copoVisualiseAccessionsURL : copoVisualiseURL;
+
+let dt_options = {
+  bDestroy: true,
+  buttons: [
+    {
+      extend: 'csv',
+      text: 'Export CSV',
+      title: null,
+      filename: `copo_${table_id}_data`,
+    },
+  ],
+  dom: 'Bfr<"row"><"row info-rw" i>tlp',
+  lengthChange: true,
+  lengthMenu: [10, 25, 50, 75, 100, 500, 1000, 2000, 3000, 4000, 5000],
+  ordering: true,
+  processing: true,
+  responsive: true,
+  rowId: '_id',
+  search: {
+    regex: true,
+    return: true,
+  },
+  searchHighlight: true,
+  serverSide: true,
+  scrollX: true,
+  scrollY: 500,
+  select: false,
+  initComplete: function () {
+    let api = this.api();
+    // Add filter checkbox under  the info panel to the right side of the web page
+    // Get accession types from the 'accession_type' column in the data table
+    let accession_types = api.column(2).data().unique().sort().toArray();
+    get_filter_accession_titles(accession_types);
+  },
+  createdRow: function (row, data, index) {
+    // Add the record ID and accession type to each row
+    let recordID = index;
+
+    try {
+      recordID = data.record_id;
+      accessionType = data.accession_type;
+
+      if (isOtherAccessionsTabActive) {
+        profile_id = data.profile_id;
+      }
+    } catch (error) {
+      console.log(`Error: ${error.message}`);
+    }
+
+    $(row).addClass(table_id + recordID);
+    $(row).addClass(`${table_id}_row`);
+    $(row).attr('id', recordID);
+    $(row).attr('accession_type', accessionType);
+
+    if (isOtherAccessionsTabActive) {
+      // Set the profile ID as an attribute of the last cell in the row
+      $(row).find('td:last-child').attr('data-profile_id', profile_id);
+    }
+  },
+  fnRowCallback: function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+    $(nRow)
+      .children()
+      .each(function (index, td) {
+        if (index > 0) {
+          if (td.innerText === 'NA') {
+            $(td).addClass('na_color');
+          } else if (td.innerText === '') {
+            $(td).addClass('empty_color');
+          }
+        }
+      });
+  },
+  fnDrawCallback: function () {
+    // Show accessions legend if it was hidden and if the table has data
+    if (accessions_table.data().any()) {
+      $('.accessions-legend').show();
+      $('.accessions-checkboxes').show(); // Show the filter accessions legend
+    }
+
+    // Add hyperlink to all columns that have accessions
+    $('.ena-accession').each(function (i, obj) {
+      if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
+        $(obj).html(
+          "<a class='no-underline' href='https://www.ebi.ac.uk/ena/browser/view/" +
+            $(obj).text() +
+            "' target='_blank'>" +
+            $(obj).text() +
+            '</a>'
+        );
+      }
+    });
+    // Add hyperlink associated with COPO API
+    $('.copo-api').each(function (i, obj) {
+      if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
+        $(obj).html(
+          "<a class='no-underline' href='/api/manifest/" +
+            $(obj).text() +
+            "' target='_blank'>" +
+            $(obj).text() +
+            '</a>'
+        );
+      }
+    });
+  },
+  ajax: {
+    url: '/copo/copo_accessions/generate_accession_records',
+    method: 'POST',
+    headers: { 'X-CSRFToken': $.cookie('csrftoken') },
+    data: function (d) {
+      let checkedValues = getValues($('.filter-accessions:checked:visible'));
+      let filter_accessions = JSON.stringify(checkedValues);
+
+      return {
+        isUserProfileActive: isUserProfileActive,
+        isOtherAccessionsTabActive: isOtherAccessionsTabActive,
+        filter_accessions: filter_accessions,
+        draw: d.draw,
+        order: d.order,
+        length: d.length,
+        start: d.start,
+        search: d.search.value,
+      };
+    },
+    dataSrc: 'data',
+  },
+};
+
 $(document).ready(function () {
   const acceptRejectSampleURL = '/copo/dtol_submission/accept_reject_sample';
   const accessionsDashboardURL = '/copo/copo_accessions/dashboard';
   const tolInspectURL = '/copo/tol_dashboard/tol_inspect';
   const tolInspectByGALURL = '/copo/tol_dashboard/tol_inspect/gal';
 
-  // Store 'showAllCOPOAccessions' value
-  $('#showAllCOPOAccessions').val() == 'True'
-    ? $(document).data('showAllCOPOAccessions', true)
-    : $(document).data('showAllCOPOAccessions', false);
+  const sample_manager_groups = [
+    'dtol_sample_managers',
+    'dtolenv_sample_managers',
+    'erga_sample_managers',
+  ];
 
-  if ($(document).data('showAllCOPOAccessions')) {
-    // Stored data for accessions dashboard
-    $(document).data('isSampleProfileTypeStandalone', false);
-    $(document).data('isUserProfileActive', false);
-  } else {
-    // Stored data for accessions web page for a given profile
-    $(document).data('isUserProfileActive', true);
-  }
+  const user_and_sample_manager_groups = [
+    'dtol_users',
+    'dtol_sample_managers',
+    'dtolenv_sample_managers',
+    'erga_users',
+    'erga_sample_managers',
+  ];
 
   $(document).on('click', '.accept_reject_samples', function () {
     document.location = acceptRejectSampleURL;
@@ -36,44 +186,27 @@ $(document).ready(function () {
 
   $(document).on('click', '.toggle-view', toggle_accessions_view);
 
-  $(document).on('change', '.filter-accessions', filterDataByAccessionType);
+  $(document).on('change', '.filter-accessions', filterRecordsByAccessionType);
 
-  //trigger refresh of table
-  $('body').on('refreshtable', function (event) {
-    render_accessions_table(globalDataBuffer);
-  });
-
-  if (
-    groups.includes('dtol_sample_managers') ||
-    groups.includes('erga_sample_managers') ||
-    groups.includes('dtolenv_sample_managers')
-  ) {
+  if (groups.some((x) => sample_manager_groups.indexOf(x) !== -1)) {
     $('.accept_reject_samples').show(); // Show 'accept/reject samples' button
   }
 
-  if (
-    groups.includes('dtol_users') ||
-    groups.includes('dtol_sample_managers') ||
-    groups.includes('erga_users') ||
-    groups.includes('erga_sample_managers') ||
-    groups.includes('dtolenv_sample_managers')
-  ) {
+  if (groups.some((x) => user_and_sample_manager_groups.indexOf(x) !== -1)) {
     $('.tol_inspect').show(); // Show 'tol_inspect' button
     $('.tol_inspect_gal').show(); // Show 'tol_inspect_gal' button
   }
 
-  // Hide buttons if user does not belon to a group
+  // Hide buttons if user does not belong to a group
   if (groups.length === 0) {
     $('.tol_inspect').hide(); // Hide 'tol_inspect' button
     $('.tol_inspect_gal').hide(); // Hide 'tol_inspect_gal' button
   }
-  // Not accessions dashboard: Instantiate based on profile type
-  if (!$(document).data('showAllCOPOAccessions')) {
-    let profile_type = $('#profile_type').val();
 
-    profile_type.includes('Stand-alone')
-      ? $(document).data('isSampleProfileTypeStandalone', true)
-      : $(document).data('isSampleProfileTypeStandalone', false);
+  // Hide the accessions' button
+  // from the Accessions dashboard web page
+  if (showAllCOPOAccessions) {
+    $('.copo_accessions').hide();
   }
 
   // Load records
@@ -85,7 +218,7 @@ $(document).ready(function () {
 
 //______________Handlers___________________________________
 
-// Filter accessions table by accession type
+// Get a list of values from a jQuery object
 const getValues = function ($el) {
   let items = [];
   $el.each(function () {
@@ -95,40 +228,16 @@ const getValues = function ($el) {
   return items;
 };
 
-const filterDataByAccessionType = function () {
-  const componentMeta = get_component_meta($('#nav_component_name').val());
-  let tableID = `#${componentMeta.tableID}`;
-  let table = $(tableID).DataTable();
+function filterRecordsByAccessionType() {
+  // Get the checked accession types
+  let checkedAccessions = getValues($('.filter-accessions:checked:visible'));
 
-  $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-    let checkedAccessions = getValues($('.filter-accessions:checked:visible'));
-    let uncheckedboxes = $('.filter-accessions:not(:checked):visible');
-    let uncheckedAccessions = getValues(uncheckedboxes);
+  // Separate each accession by a pipe symbol
+  let accession_types = checkedAccessions.join('|');
 
-    if (settings.nTable.id === componentMeta.tableID) {
-      let row_accession_type = table
-        .row(dataIndex) // get the row to evaluate
-        .nodes() // extract the HTML - node() does not support to$
-        .to$() // get rows as jQuery object
-        .attr('accession_type'); //get the value of 'accession_type' attribute
-
-      if (uncheckedboxes.length === $('.filter-accessions').length) {
-        // If length of all unchecked accession types is equal to the number of accession checkboxes
-        // in the filter accession type div then, show all table rows
-        return true;
-      } else if (checkedAccessions.length > 0) {
-        // Show each row based on the accession type that is checked
-        return checkedAccessions.includes(row_accession_type);
-      } else {
-        // Reset display
-        // Show each row based on the accession type that is unchecked
-        return uncheckedAccessions.includes(row_accession_type);
-      }
-    }
-  });
-  table.draw(); // Redraw the table
-  $.fn.dataTable.ext.search.pop();
-};
+  // Get records based on the checked accession type(s)
+  accessions_table.column(2).search(accession_types, true, false).draw();
+}
 
 function get_filter_accession_titles(accession_types) {
   $.ajax({
@@ -137,9 +246,7 @@ function get_filter_accession_titles(accession_types) {
     headers: { 'X-CSRFToken': $.cookie('csrftoken') },
     dataType: 'json',
     data: {
-      isSampleProfileTypeStandalone: $(document).data(
-        'isSampleProfileTypeStandalone'
-      ),
+      isOtherAccessionsTabActive: isOtherAccessionsTabActive,
       accession_types: JSON.stringify(accession_types),
     },
     success: function (data) {
@@ -162,9 +269,7 @@ function set_filter_checkboxes(accession_titles) {
   if (accessions_checkboxes.length) accessions_checkboxes.empty();
 
   $.each(accession_titles, function (index, item) {
-    let label = $(document).data('isSampleProfileTypeStandalone')
-      ? item.title
-      : item.value;
+    let label = isOtherAccessionsTabActive ? item.title : item.value;
 
     let $filterCheckBoxItem = '<div class="form-check">';
     $filterCheckBoxItem +=
@@ -188,31 +293,28 @@ function set_filter_checkboxes(accession_titles) {
     $filterCheckBoxItem += '</div>';
     $filterCheckBoxItem += '<br/>';
 
-    // Check "Projects" checkbox by default in Stand-alone project accession filter checkboxes
-    if (
-      $(document).data('isSampleProfileTypeStandalone') &&
-      item.value === 'project'
-    ) {
-      $filterCheckBoxItem = $filterCheckBoxItem.replace(
-        'type="checkbox"',
-        'type="checkbox" checked'
-      );
-    }
-    // Check all checkboxes by default in "Other Projects'" project accessions
-    if (!$(document).data('isSampleProfileTypeStandalone')) {
-      $filterCheckBoxItem = $filterCheckBoxItem.replace(
-        'type="checkbox"',
-        'type="checkbox" checked'
-      );
-    }
+    // Click the first accession type shown in the 'filter accessions types' legend
+    // Usually, "Project" accession type filter checkbox will be
+    // checked in the 'Other Accessions' tab
+    // if (isOtherAccessionsTabActive && index === 0) {
+    //   $filterCheckBoxItem = $filterCheckBoxItem.replace(
+    //     'type="checkbox"',
+    //     'type="checkbox" checked'
+    //   );
+    // }
+
+    // Check all checkboxes by default in the 'Sample Accessions' tab
+    // if (!isOtherAccessionsTabActive) {
+    //   $filterCheckBoxItem = $filterCheckBoxItem.replace(
+    //     'type="checkbox"',
+    //     'type="checkbox" checked'
+    //   );
+    // }
 
     // Populate the accessions checkboxes div with the accession types checkboxes
     $('.accessions-legend')
       .find('.accessions-checkboxes')
       .append($filterCheckBoxItem);
-    if ($(document).data('isSampleProfileTypeStandalone')) {
-      $('.filter-accessions:checkbox:first').click();
-    }
   });
 }
 
@@ -243,199 +345,9 @@ function place_accessions_task_buttons(componentMeta) {
   refresh_tool_tips();
 }
 
-function render_accessions_table(data) {
+function customise_accessions_table(table) {
   const componentMeta = get_component_meta($('#nav_component_name').val());
   const tableID = `#${componentMeta.tableID}`;
-  let table = null;
-  let dataSet = data.table_data.dataSet;
-  let cols = data.table_data.columns;
-
-  // if table instance already exists then, clear, destroy and empty the table
-  if ($.fn.dataTable.isDataTable(tableID)) {
-    $(tableID).DataTable().clear().destroy();
-    $(tableID + ' tbody').empty();
-    $(tableID + ' thead').empty();
-
-    // Set toggle button on accessions dashboard only
-    if ($(document).data('showAllCOPOAccessions')) set_toggle_button();
-
-    // table = $(tableID).DataTable();
-  }
-
-  let order = $(document).data('isSampleProfileTypeStandalone')
-    ? [[4, 'asc']]
-    : [[3, 'asc']];
-
-  let columnDefinition = $(document).data('isSampleProfileTypeStandalone')
-    ? [
-        {
-          targets: '_all', // all fields
-          createdCell: function (td, cellData, rowData, row, col) {
-            if (cellData === '') {
-              $(td).addClass('cell-no-content');
-            }
-            if (typeof cellData == 'undefined') {
-              $(td).addClass('cell-no-content');
-              $(td).text('');
-            }
-          },
-        },
-        {
-          targets: '_all', // all fields
-          defaultContent: '',
-        },
-        {
-          targets: [4], // 'accession' column
-          render: function (data, type, full, meta) {
-            // Set ENA website browser link based on the website host
-            let ebi_url =
-              !window.location.host.startsWith('demo') &&
-              window.location.host.includes('copo-project')
-                ? `https://www.ebi.ac.uk/ena/browser/view/${data}`
-                : `https://wwwdev.ebi.ac.uk/ena/browser/view/${data}`;
-            return (
-              '<a class="no-underline" href="' +
-              ebi_url +
-              '"  target="_blank">' +
-              data +
-              '</a>'
-            );
-          },
-        },
-      ]
-    : [
-        {
-          targets: '_all', // all fields
-          defaultContent: '',
-        },
-        {
-          targets: '_all', // all fields
-          createdCell: function (td, cellData, rowData, row, col) {
-            if (cellData === '') {
-              $(td).addClass('cell-no-content');
-            }
-            if (typeof cellData == 'undefined') {
-              $(td).addClass('cell-no-content');
-              $(td).text('');
-            }
-          },
-        },
-        {
-          targets: [3, 4], // 'biosampleAccession' column & 'sraAccession' column respectively
-          render: function (data, type, full, meta) {
-            // Set ENA website browser link based on the website host
-            let ebi_url =
-              !window.location.host.startsWith('demo') &&
-              window.location.host.includes('copo-project')
-                ? `https://www.ebi.ac.uk/ena/browser/view/${data}`
-                : `https://wwwdev.ebi.ac.uk/ena/browser/view/${data}`;
-            return (
-              '<a class="no-underline" href="' +
-              ebi_url +
-              '"  target="_blank">' +
-              data +
-              '</a>'
-            );
-          },
-        },
-        {
-          targets: [6], // 'manifest_id' column
-          render: function (data, type, full, meta) {
-            let get_samples_by_manifestID_url = `/api/manifest/${data}`;
-            return (
-              '<a class="no-underline" href="' +
-              get_samples_by_manifestID_url +
-              '"  target="_blank">' +
-              data +
-              '</a>'
-            );
-          },
-        },
-      ];
-
-  // if (table) {
-  //     //clear old, set new data
-  //     table.rows().deselect();
-  //     table
-  //         .clear()
-  //         .draw();
-  //     table
-  //         .rows
-  //         .add(dataSet);
-  //     table
-  //         .columns
-  //         .adjust()
-  //         .draw();
-  //     table
-  //         .search('')
-  //         .columns()
-  //         .search('')
-  //         .draw();
-  // } else {
-  table = $(tableID).DataTable({
-    data: dataSet,
-    select: false,
-    searchHighlight: true,
-    ordering: true,
-    lengthChange: true,
-    lengthMenu: [10, 25, 50, 75, 100, 500, 1000, 2000, 3000, 4000, 5000],
-    scrollX: true,
-    responsive: true,
-    scrollY: 500,
-    bDestroy: true,
-    buttons: [
-      {
-        extend: 'csv',
-        text: 'Export CSV',
-        title: null,
-        filename: 'copo_' + String(componentMeta.tableID) + '_data',
-      },
-    ],
-    language: {},
-    order: order,
-    fnDrawCallback: function () {
-      refresh_tool_tips();
-      const event = jQuery.Event('posttablerefresh'); // individual compnents can trap and handle this event as they so wish
-      $('body').trigger(event);
-    },
-    columns: cols,
-    columnDefs: columnDefinition,
-    createdRow: function (row, data, index) {
-      // Add the record ID and accesstion type to each row
-      let recordID = index;
-
-      try {
-        recordID = data.record_id;
-        accessionType = data.accession_type;
-
-        if ($(document).data('isSampleProfileTypeStandalone')) {
-          profile_id = data.profile_id;
-        }
-      } catch (error) {
-        console.log(`Error: ${error.message}`);
-      }
-
-      $(row).addClass(componentMeta.tableID + recordID);
-      $(row).addClass('accessions_row');
-      $(row).attr('id', recordID);
-      $(row).attr('accession_type', accessionType);
-
-      if ($(document).data('isSampleProfileTypeStandalone')) {
-        // Set the profile ID as an attribute of the last cell in the row
-        $(row).find('td:last-child').attr('data-profile_id', profile_id);
-      }
-
-      //individual compnents can trap and handle this event as they so wish
-      let event = jQuery.Event(
-        'postcreatedrow',
-        (row = row),
-        (data = data),
-        (index = index)
-      );
-      $('body').trigger(event);
-    },
-    dom: 'Bfr<"row"><"row info-rw" i>tlp',
-  });
 
   // Add buttons to the table
   table
@@ -445,39 +357,9 @@ function render_accessions_table(data) {
       $(this).removeClass('btn btn-default').addClass('tiny ui basic button');
     });
 
-  // Show task buttons for accessions dashboard only
-  if ($(document).data('showAllCOPOAccessions'))
-    place_accessions_task_buttons(componentMeta);
-  // }
-
-  // Get accession types
-  let accession_types = [];
-
-  table
-    .column(2)
-    .data()
-    .unique()
-    .sort()
-    .each(function (value, key) {
-      accession_types.push(value);
-    });
-
-  // Add filter checkbox to under info panel to right side of screen on accessions dashboard only
-  if ($(document).data('showAllCOPOAccessions'))
-    get_filter_accession_titles(accession_types);
-
-  // Filter the rows that are not associated with the current checked "Standalone" accession type
-  if ($(document).data('isSampleProfileTypeStandalone')) {
-    // Click first accession type shown in the 'filter accessions'' legend
-    $('.filter-accessions:checkbox:first:visible').click();
-    filterDataByAccessionType();
-  }
-
-  // Show accessions legend if it was hidden and if table has data
-  if (table.data().any()) {
-    $('.accessions-legend').show();
-    $('.accessions-checkboxes').show(); // Show the filter accessions' legend
-  }
+  // Show task buttons on accessions dashboard and
+  // on the accessions web page for a given profile
+  place_accessions_task_buttons(componentMeta);
 
   let table_wrapper = $(tableID + '_wrapper');
 
@@ -504,110 +386,75 @@ function render_accessions_table(data) {
 
   // Add padding between table and show records filter
   table_wrapper.find('.dataTables_length').css('padding-top', '20px');
-} //End of func
+}
 
 function load_accessions_records() {
-  const componentMeta = get_component_meta($('#nav_component_name').val());
-  const component_table_loder = $('#component_table_loader');
-  const csrftoken = $.cookie('csrftoken');
-
-  let post_data = {};
-  let tableLoader = null; //loader
   let accessions_checkboxes = $('.accessions-checkboxes');
 
-  post_data['isUserProfileActive'] = $(document).data('isUserProfileActive');
-  post_data['isSampleProfileTypeStandalone'] = $(document).data(
-    'isSampleProfileTypeStandalone'
-  );
-  post_data['task'] = 'table_data';
-  post_data['quick_tour_flag'] = false;
-  post_data['component'] = componentMeta.component;
+  let order = isOtherAccessionsTabActive ? [[4, 'desc']] : [[3, 'desc']];
 
-  if (component_table_loder.length) {
-    tableLoader = $('<div class="copo-i-loader"></div>');
-    component_table_loder.append(tableLoader);
-  }
-
-  // URL for accessions dashboard where the view for it does not require user to be logged in
-  let url = '/copo/copo_visualize_accessions/';
+  let columnDefinition = [
+    {
+      targets: '_all', // all fields
+      createdCell: function (td, cellData, rowData, row, col) {
+        if (typeof cellData == 'undefined') {
+          $(td).addClass('cell-no-content');
+          $(td).text('');
+        }
+      },
+    },
+    {
+      targets: '_all', // all fields
+      defaultContent: '',
+    },
+  ];
 
   $.ajax({
-    url: $(document).data('showAllCOPOAccessions') ? url : copoVisualsURL,
-    type: 'POST',
-    headers: {
-      'X-CSRFToken': csrftoken,
+    url: '/copo/copo_accessions/get_accession_records_column_names',
+    data: {
+      isUserProfileActive: isUserProfileActive,
+      isOtherAccessionsTabActive: isOtherAccessionsTabActive,
     },
-    data: post_data,
+    method: 'GET',
     dataType: 'json',
-    success: function (data) {
-      if (
-        data.hasOwnProperty('table_data') &&
-        data.table_data.dataSet.length == 0
-      ) {
-        if (
-          $(document).data('showAllCOPOAccessions') &&
-          $(document).data('isSampleProfileTypeStandalone')
-        ) {
-          // Show empty table
-          render_accessions_table(data);
+  })
+    .fail(function (data) {
+      console.log('Error: ' + data);
+    })
+    .done(function (data) {
+      if (data.length) {
+        // if table instance already exists then, clear, destroy and empty the table
+        if ($.fn.DataTable.isDataTable(`#${table_id}`)) {
+          $(`#${table_id}`).DataTable().clear().destroy();
+          $(`#${table_id}`).empty();
 
-          // Hide accessions legend if table is empty
-          if (!$(`#${componentMeta.tableID}`).DataTable().data().any()) {
-            // if (accessions_checkboxes.find('.form-check').length)
-            accessions_checkboxes.empty();
-            $('.accessions-legend').hide(); // Hide the filter accessions' legend
-          }
-        } else if (
-          $(document).data('showAllCOPOAccessions') &&
-          !$(document).data('isSampleProfileTypeStandalone')
-        ) {
-          // Show empty table
-          render_accessions_table(data);
-
-          // Hide accessions legend if table is empty
-          if (!$(`#${componentMeta.tableID}`).DataTable().data().any()) {
-            // if (accessions_checkboxes.find('.form-check').length)
-            accessions_checkboxes.empty();
-            $('.accessions-legend').hide(); // Hide the filter accessions' legend
-          }
-        } else {
-          // Show empty component message for Tree of Life accessions
-          set_empty_component_message(data.table_data.dataSet.length); //display empty component message when there's no record
-          // if (accessions_checkboxes.find('.form-check').length)
-          accessions_checkboxes.empty();
-          $('.accessions-legend').hide(); // Hide the filter accessions' legend
+          // Set toggle button on accessions dashboard and
+          // on the accessions web page for a given profile
+          set_toggle_button();
         }
+        dt_options['columns'] = data;
+        dt_options['columnDefs'] = columnDefinition;
+        dt_options['order'] = order;
 
-        if (!$(document).data('showAllCOPOAccessions'))
-          $('.copo_accessions').show(); // Show the accessions' button on accessions web page for a given profile
-        if (tableLoader) tableLoader.remove(); //remove loader
-        return false;
+        accessions_table = $(`#${table_id}`)
+          .DataTable(dt_options)
+          .columns.adjust()
+          .draw();
+
+        // Add buttons and other things to the table
+        customise_accessions_table(accessions_table);
       } else {
-        render_accessions_table(data);
-        if (tableLoader) tableLoader.remove(); //remove loader
+        // Hide accessions legend if table is empty
+        accessions_checkboxes.empty();
 
-        // Remove items
-        if ($(document).data('showAllCOPOAccessions')) {
-          // On accessions dashboard
-          $('.copo_accessions').hide();
-          $('.copo-page-icons').hide();
-        } else {
-          // On accessions web page for a given profile
-          $('.copo_accessions').show();
-          $('.copo-page-icons').show();
-          $('.accessions-legend').hide();
-          $('.toggle-view').hide();
-        }
+        // Hide the 'filter accession types' legend
+        $('.accessions-legend').hide();
       }
-    },
-    error: function (error) {
-      console.log('Error: ' + error);
-      alert("Couldn't retrieve " + componentMeta.component + ' data!');
-    },
-  });
+    });
 }
 
 function toggle_accessions_view() {
+  let accessions_checkboxes = $('.accessions-checkboxes');
   $(this).find('.btn').toggleClass('active');
 
   if ($(this).find('.btn-success').length > 0) {
@@ -616,14 +463,14 @@ function toggle_accessions_view() {
 
   $(this).find('.btn').toggleClass('btn-default');
 
-  if ($(this).find('.active').text().includes('Stand-alone')) {
-    $(document).data('isSampleProfileTypeStandalone', true);
-    load_accessions_records();
+  if ($(this).find('.active').text().includes('Other')) {
+    isOtherAccessionsTabActive = true;
   } else {
-    $(document).data('isSampleProfileTypeStandalone', false);
-    load_accessions_records();
+    isOtherAccessionsTabActive = false;
   }
-} // End of func
+  accessions_checkboxes.empty();
+  load_accessions_records();
+}
 
 function set_toggle_button() {
   $('.toggle-view').find('.btn').toggleClass('active');
