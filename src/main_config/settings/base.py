@@ -48,7 +48,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://copo-new.cyverseuk.org"
 ]
 
-DEBUG_PROPAGATE_EXCEPTIONS = False # Set to False to see the error page in production
+DEBUG_PROPAGATE_EXCEPTIONS = True  #  if it is false, there is no more error log
 
 # Django's base applications definition
 DJANGO_APPS = [
