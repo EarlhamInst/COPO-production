@@ -275,7 +275,7 @@ def get_num_dtol_samples(request):
 
 def get_project_samples(request, project):
     projectlist = project.split(",")
-    projectlist = list(map(lambda x: x.strip(), projectlist))
+    projectlist = list(map(lambda x: x.strip().lower(), projectlist))
     # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
     projectlist[:] = [x for x in projectlist if x]
     samples = Sample().get_project_samples(projectlist)
