@@ -8,7 +8,6 @@ import common.lookup.lookup as lkup
 from src.apps.copo_read_submission.utils import ena_read
 from src.apps.copo_assembly_submission.utils import EnaAssembly
 from src.apps.copo_seq_annotation_submission.utils import EnaAnnotation
-from src.apps.copo_accession.utils import Accession as accession
 from src.apps.copo_file.utils import CopoFiles as copo_file
 from common.utils import html_tags_utils as htags
 from common.utils.copo_lookup_service import COPOLookup
@@ -546,8 +545,6 @@ class BrokerVisuals:
 
     def do_table_data(self):
         table_data_dict = dict(
-            accessions=(accession.generate_accessions_record, dict(profile_id=self.profile_id, isUserProfileActive=self.request_dict.get("isUserProfileActive", str()), isSampleProfileTypeStandalone=self.request_dict.get("isSampleProfileTypeStandalone", str()))),
-            accessions_dashboard=(accession.generate_accessions_record, dict(profile_id=self.profile_id, isUserProfileActive=self.request_dict.get("isUserProfileActive", str()), isSampleProfileTypeStandalone=self.request_dict.get("isSampleProfileTypeStandalone", str()))),
             #annotation=(htags.generate_copo_table_data, dict(profile_id=self.profile_id, component=self.component)),
             #publication=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
             #person=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
