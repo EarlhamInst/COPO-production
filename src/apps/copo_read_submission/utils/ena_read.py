@@ -295,7 +295,7 @@ class _GET_ENA_FILE_PROCESSING_STATUS(threading.Thread):
         super(_GET_ENA_FILE_PROCESSING_STATUS, self).__init__() 
 
     def run(self):
-        sent_2_frontend_every = 100
+        sent_2_frontend_every = 4000
         data = []
         i = 0
         for run_accession in self.run_accession_number:
