@@ -3,7 +3,7 @@ __author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
 from django.urls import path, re_path
 # from web.apps.web_copo import ajax_handlers
 # from .annotate_views import search_all, post_annotations, handle_upload
-from .views import audit, person, general, stats, profile
+from .views import audit, person, general, stats, profile, mapping
 from .views import sample as s
 from .views.sample import APIValidateManifest, APIGetManifestValidationReport, APIGetUserValidations
 from django.views.decorators.csrf import csrf_exempt
@@ -30,11 +30,11 @@ dtol_api_patterns = [
             audit.get_sample_updates_by_copo_id, name='get_sample_updates_by_copo_id'),
 
     # dates must be ISO 8601 formatted
-    re_path(r'^manifest/validations/', APIGetUserValidations.as_view(),
-            name='/manifest/validate/report/'),
-    re_path(r'^manifest/validate/report/', APIGetManifestValidationReport.as_view(),
-            name='/manifest/validate/report/'),
-    re_path(r'^manifest/validate/', APIValidateManifest.as_view(),
+    re_path(r'^manifest/validations', APIGetUserValidations.as_view(),
+            name='/manifest/validate/report'),
+    re_path(r'^manifest/validate/report', APIGetManifestValidationReport.as_view(),
+            name='/manifest/validate/report'),
+    re_path(r'^manifest/validate', APIValidateManifest.as_view(),
             name='manifest/validate'),
 
     re_path(r'^manifest/sequencing_centre', s.get_manifests_by_sequencing_centre,
@@ -45,17 +45,17 @@ dtol_api_patterns = [
             s.get_project_manifests_between_dates, name='get_project_manifests_between_dates'),
     re_path(r'^manifest/(?P<d_from>[A-Z0-9a-f- .:+]+)/(?P<d_to>[A-Z0-9a-f- .:+]+)',
             s.get_all_manifest_between_dates, name='get_all_manifests_between_dates'),
-    re_path(r'^manifest/(?P<manifest_id>[A-Z0-9a-f-]+)/sample_statuses', s.get_sample_statuses_for_manifest,
-            name='get_sample_statuses_for_manifest'),
+    re_path(r'^manifest/(?P<manifest_id>[A-Z0-9a-f-]+)/sample_status', s.get_sample_status_for_manifest,
+            name='get_sample_status_for_manifest'),
     re_path(r'^manifest/(?P<manifest_id>[A-Z0-9a-f-]+)',
             s.get_samples_in_manifest, name='get_for_manifest'),
     re_path(r'^manifest/', s.get_manifests, name='get_manifests'),
 
     re_path(r'^sample/get/(?P<id>[A-Za-z0-9]+)', s.get, name='sample/get'),
-    re_path(r'^sample/biosample_id/(?P<biosample_ids>[A-Z0-9, ]+)', s.get_by_biosample_ids,
-            name='get_by_biosample_ids'),
+    re_path(r'^sample/biosampleAccession/(?P<biosampleAccessions>[A-Z0-9, ]+)', s.get_by_biosampleAccessions,
+            name='get_by_biosampleAccessions'),
     re_path(r'^sample/copo_id/(?P<copo_ids>[A-Za-z0-9, ]+)',
-            s.get_by_copo_ids, name='get_by_biosample_ids'),
+            s.get_by_copo_ids, name='get_by_copo_ids'),
     re_path(r'^sample/sample_field/(?P<dtol_field>[A-Za-z0-9-_]+)/(?P<value>[A-Za-z0-9-_ ,.@]+)', s.get_by_field,
             name='get_by_dtol_field'),
     re_path(r'^sample/sequencing_centre', s.get_samples_by_sequencing_centre,
@@ -93,9 +93,9 @@ dtol_api_patterns = [
     re_path(r'^audit/sample/(?P<field>[A-Za-z0-9-_]+)/(?P<field_value>[A-Za-z0-9-_ ,.@]+)', audit.get_sample_updates_by_sample_field_and_value,
             name='get_sample_updates_by_sample_field_and_value'),
 
-    re_path(r'^profile/make_profile/', profile.APICreateProfile.as_view(),
+    re_path(r'^profile/make_profile', profile.APICreateProfile.as_view(),
             name='make_profile'),
-    re_path(r'^profile/get_for_user/', profile.APIGetProfilesForUser.as_view(),
+    re_path(r'^profile/get_for_user', profile.APIGetProfilesForUser.as_view(),
             name='get_for_user')
 ]
 
@@ -122,6 +122,12 @@ stats_api_patterns = [
             stats.get_associated_tol_projects, name='get_associated_tol_projects'),
 ]
 
+mapping_api_patterns = [
+    re_path(r'^mapping/manifest_type/(?P<manifest_type>[a-zA-Z-_, ]+)', mapping.get_mapping_for_manifest_type,
+            name='get_mapping_for_manifest_type'),
+    re_path(r'^mapping', mapping.get_mapping, name='get_mapping'),
+]
+
 manifest_patterns = [
     path('get_latest_manifest_versions/', manifest_view.get_latest_manifest_versions,
          name="get_latest_manifest_versions"),
@@ -144,4 +150,4 @@ manifest_patterns = [
 ]
 
 urlpatterns = generic_api_patterns + dtol_api_patterns + \
-    stats_api_patterns + manifest_patterns
+    stats_api_patterns + mapping_api_patterns + manifest_patterns

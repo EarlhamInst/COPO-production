@@ -1,182 +1,22 @@
-# FS - 18/8/2020
-# this module contains lookups and mappings pertaining to DTOL functionality
-# such as validation enumerations and mappings between different field names
-from common.utils import helpers
+'''
+To generate the 'generate_manifest_type_fields.json' file:
+    Run the command below in the 'shared_tools/scripts' directory.
+    The command will generate the 'generate_manifest_type_fields.json' file  
+    and save it to the '/copo/common/schema_versions/isa_mappings/' directory.
 
+    $  python generate_manifest_type_fields.py
+'''
+from openpyxl.utils.cell import get_column_letter, column_index_from_string
+from operator import itemgetter
+from itertools import groupby
+import json
+import pandas as pd
+import warnings
 
-def get_collection_location_1(str):
-    return str.split('|')[0].strip()
+# Ignore the warning: UserWarning: Unknown extension is not supported and will be removed warn(msg)
+warnings.simplefilter("ignore")
 
-
-def get_collection_location_2(str):
-    return "|".join(str.split('|')[1:])
-
-
-def get_default_data_function(str):
-    return str.lower().replace("_", " ").strip()
-
-
-def exec_function(func=get_default_data_function, str=str()):
-    return func(str)
-
-
-DTOL_ENA_MAPPINGS = {
-    'ASSOCIATED_BIOGENOME_PROJECTS': {
-        'ena': 'associated biogenome projects'
-    },
-    'BARCODE_HUB': {
-        'ena': 'barcoding center'
-    },
-    'COLLECTED_BY': {
-        'ena': 'collected_by'
-    },
-    'COLLECTION_LOCATION_1': {
-        'info': "split COLLECTION_LOCATION on first '|' and put left hand side here (should be country)",
-        'ena': 'geographic location (country and/or sea)',
-        'ena_data_function': get_collection_location_1
-    },
-    'COLLECTION_LOCATION_2': {
-        'info': "split COLLECTION_LOCATION on first '|' and put right hand side here (should be a list of '|' separated locations)",
-        'ena': 'geographic location (region and locality)',
-        'ena_data_function': get_collection_location_2
-    },
-    'COLLECTOR_AFFILIATION': {
-        'ena': 'collecting institution'
-    },
-    'COLLECTOR_ORCID_ID': {
-        'ena': 'collector ORCID ID'
-    },
-    'CULTURE_OR_STRAIN_ID': {
-        'ena': 'culture_or_strain_id'
-    },
-    'DATE_OF_COLLECTION': {
-        'ena': 'collection date'
-    },
-    'DECIMAL_LATITUDE': {
-        'ena': 'geographic location (latitude)'
-    },
-    'DECIMAL_LONGITUDE': {
-        'ena': 'geographic location (longitude)'
-    },
-    'DEPTH': {
-        'ena': 'geographic location (depth)'
-    },
-    'DESCRIPTION_OF_COLLECTION_METHOD': {
-        'ena': 'sample collection device or method'
-    },
-    'DNA_VOUCHER_ID_FOR_BIOBANKING': {
-        'ena': 'bio_material'
-    },
-    'ELEVATION': {
-        'ena': 'geographic location (elevation)'
-    },
-    'GAL': {
-        'ena': 'GAL'
-    },
-    'GAL_SAMPLE_ID': {
-        'ena': 'GAL_sample_id'
-    },
-    'HABITAT': {
-        'ena': 'habitat'
-    },
-    'IDENTIFIED_BY': {
-        'ena': 'identified_by'
-    },
-    'IDENTIFIER_AFFILIATION': {
-        'ena': 'identifier_affiliation'
-    },
-    'LATITUDE_END': {
-        'ena': 'Latitude End'
-    },
-    'LATITUDE_START': {
-        'ena': 'Longitude End'
-    },
-    'LIFESTAGE': {
-        'ena': 'lifestage'
-    },
-    'LONGITUDE_END': {
-        'ena': 'Longitude End'
-    },
-    'LONGITUDE_START': {
-        'ena': 'Longitude Start'
-    },
-    'ORGANISM_PART': {
-        'ena': 'organism part'
-    },
-    'ORIGINAL_COLLECTION_DATE': {
-        'ena': 'original collection date'
-    },
-    'ORIGINAL_DECIMAL_LATITUDE': {
-        'ena': 'original geographic location (latitude)'
-    },
-    'ORIGINAL_DECIMAL_LONGITUDE': {
-        'ena': 'original geographic location (longitude)'
-    },
-    'ORIGINAL_GEOGRAPHIC_LOCATION': {
-        'ena': 'original geographic location'
-    },
-    'PARTNER': {
-        'ena': 'GAL'
-    },
-    'PARTNER_SAMPLE_ID': {
-        'ena': 'GAL_sample_id'
-    },
-    'PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
-        'ena': 'proxy biomaterial'
-    },
-    'PROXY_VOUCHER_ID': {
-        'ena': 'proxy voucher'
-    },
-    'PROXY_VOUCHER_LINK': {
-        'ena': 'proxy voucher url'
-    },
-    'RELATIONSHIP': {
-        'ena': 'relationship'
-    },
-    'SAMPLE_COORDINATOR': {
-        'ena': 'sample coordinator'
-    },
-    'SAMPLE_COORDINATOR_AFFILIATION': {
-        'ena': 'sample coordinator affiliation'
-    },
-    'SAMPLE_COORDINATOR_ORCID_ID': {
-        'ena': 'sample coordinator ORCID ID'
-    },
-    'SEX': {
-        'ena': 'sex'
-    },
-    'SPECIMEN_ID': {
-        'ena': 'specimen_id'
-    },
-    #'TIME_OF_COLLECTION': {
-    #    'ena': 'time of collection'
-    #},
-    'TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
-        'ena': 'bio_material'
-    },
-    'VOUCHER_ID': {
-        'ena': 'specimen_voucher'
-    },
-    'VOUCHER_INSTITUTION': {
-        'ena': 'voucher institution url'
-    },
-    'VOUCHER_LINK': {
-        'ena': 'specimen voucher url'
-    },
-    'public_name': {
-        'ena': 'tolid'
-    },
-    'sampleDerivedFrom': {
-        'ena': 'sample derived from'
-    },
-    'sampleSameAs': {
-        'ena': 'sample same as'
-    },
-    'sampleSymbiontOf': {
-        'ena': 'sample symbiont of'
-    }
-}
-
+# Helpers
 DTOL_ENUMS = {
     'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE':
         [
@@ -980,6 +820,19 @@ DTOL_ENUMS = {
             ]
 }
 
+DTOL_UNITS = {
+    'DECIMAL_LATITUDE': {'ena_unit': 'DD'},
+    'DECIMAL_LONGITUDE': {'ena_unit': 'DD'},
+    'DEPTH': {'ena_unit': 'm'},
+    'ELEVATION': {'ena_unit': 'm'},
+    'LATITUDE_END': {'ena_unit': 'DD'},
+    'LATITUDE_START': {'ena_unit': 'DD'},
+    'LONGITUDE_END': {'ena_unit': 'DD'},
+    'LONGITUDE_START': {'ena_unit': 'DD'},
+    'ORIGINAL_DECIMAL_LATITUDE': {'ena_unit': 'DD'},
+    'ORIGINAL_DECIMAL_LONGITUDE': {'ena_unit': 'DD'}
+}
+
 DTOL_EXPORT_TO_STS_FIELDS = {
     'asg': [
         'SERIES',
@@ -1154,7 +1007,7 @@ DTOL_EXPORT_TO_STS_FIELDS = {
         'tol_project',
         'updated_by'
     ],
-    'dtol_env': [],
+    'env': [],
     'erga': [
         'TUBE_OR_WELL_ID',
         'SPECIMEN_ID',
@@ -1274,159 +1127,6 @@ DTOL_EXPORT_TO_STS_FIELDS = {
         'tol_project',
         'updated_by'
     ]}
-
-# allow updates to fields in the list by hand of the user pre-approval
-DTOL_NO_COMPLIANCE_FIELDS = {
-    "asg": [
-        'BARCODE_HUB',
-        'BARCODE_PLATE_PRESERVATIVE',
-        'BOLD_ACCESSION_NUMBER',
-        'COLLECTOR_SAMPLE_ID',
-        'CULTURE_OR_STRAIN_ID',
-        'DATE_OF_PRESERVATION',
-        'DEPTH',
-        'DIFFICULT_OR_HIGH_PRIORITY_SAMPLE',
-        'ELEVATION',
-        'HAZARD_GROUP',
-        'IDENTIFIED_BY',
-        'IDENTIFIED_HOW',
-        'IDENTIFIER_AFFILIATION',
-        'INFRASPECIFIC_EPITHET',
-        'LIFESTAGE',
-        'PARTNER_SAMPLE_ID',
-        'PLATE_ID_FOR_BARCODING',
-        'PRESERVED_BY',
-        'PRESERVER_AFFILIATION',
-        'PURPOSE_OF_SPECIMEN',
-        'RELATIONSHIP',
-        'SEX',
-        'SIZE_OF_TISSUE_IN_TUBE',
-        'SPECIMEN_ID_RISK',
-        'TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION',
-        'TIME_OF_COLLECTION',
-        'TISSUE_FOR_BARCODING',
-        'TISSUE_REMOVED_FOR_BARCODING',
-        'TUBE_OR_WELL_ID_FOR_BARCODING',
-        'VOUCHER_ID'
-    ],
-    "dtol": [
-        'BARCODE_HUB',
-        'BARCODE_PLATE_PRESERVATIVE',
-        'BOLD_ACCESSION_NUMBER',
-        'COLLECTOR_SAMPLE_ID',
-        'CULTURE_OR_STRAIN_ID',
-        'DATE_OF_PRESERVATION',
-        'DEPTH',
-        'DIFFICULT_OR_HIGH_PRIORITY_SAMPLE',
-        'ELEVATION',
-        'GAL_SAMPLE_ID',
-        'HAZARD_GROUP',
-        'IDENTIFIED_BY',
-        'IDENTIFIED_HOW',
-        'IDENTIFIER_AFFILIATION',
-        'INFRASPECIFIC_EPITHET',
-        'LIFESTAGE',
-        'PLATE_ID_FOR_BARCODING',
-        'PRESERVED_BY',
-        'PRESERVER_AFFILIATION',
-        'PURPOSE_OF_SPECIMEN',
-        'RELATIONSHIP',
-        'SEX',
-        'SIZE_OF_TISSUE_IN_TUBE',
-        'SPECIMEN_IDENTITY_RISK',
-        'TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION',
-        'TIME_OF_COLLECTION',
-        'TISSUE_FOR_BARCODING',
-        'TISSUE_REMOVED_FOR_BARCODING',
-        'TUBE_OR_WELL_ID_FOR_BARCODING',
-        'VOUCHER_ID'
-    ],
-    "erga": [
-        'ASSOCIATED_TRADITIONAL_KNOWLEDGE_CONTACT',
-        'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID',
-        'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE',
-        'BARCODE_HUB',
-        'BARCODING_STATUS',
-        'BARCODE_PLATE_PRESERVATIVE',
-        'BIOBANKED_TISSUE_PRESERVATIVE',
-        'COLLECTED_BY',
-        'COLLECTION_LOCATION',
-        'COLLECTOR_AFFILIATION',
-        'COLLECTOR_SAMPLE_ID',
-        'COMMON_NAME',
-        'CULTURE_OR_STRAIN_ID',
-        'DATE_OF_COLLECTION',
-        'DATE_OF_PRESERVATION',
-        'DECIMAL_LATITUDE',
-        'DECIMAL_LONGITUDE',
-        'DEPTH',
-        'DESCRIPTION_OF_COLLECTION_METHOD',
-        'DIFFICULT_OR_HIGH_PRIORITY_SAMPLE',
-        'DNA_REMOVED_FOR_BIOBANKING',
-        'DNA_VOUCHER_ID_FOR_BIOBANKING',
-        'ELEVATION',
-        'ETHICS_PERMITS_DEF',
-        'ETHICS_PERMITS_FILENAME',
-        'ETHICS_PERMITS_REQUIRED',
-        'FAMILY',
-        'GAL',
-        'GAL_SAMPLE_ID',
-        'GENUS',
-        'GRID_REFERENCE',
-        'HABITAT',
-        'HAZARD_GROUP',
-        'IDENTIFIED_BY',
-        'IDENTIFIED_HOW',
-        'IDENTIFIER_AFFILIATION',
-        'IDENTIFIER_AFFILIATION',
-        'INDIGENOUS_RIGHTS_APPLICABLE',
-        'INDIGENOUS_RIGHTS_DEF',
-        'INDIGENOUS_RIGHTS_DEF',
-        'INFRASPECIFIC_EPITHET',
-        'LIFESTAGE',
-        'NAGOYA_PERMITS_DEF',
-        'NAGOYA_PERMITS_FILENAME',
-        'NAGOYA_PERMITS_REQUIRED',
-        'ORDER_OR_GROUP',
-        'ORGANISM_PART',
-        'ORIGINAL_COLLECTION_DATE',
-        'ORIGINAL_GEOGRAPHIC_LOCATION',
-        'OTHER_INFORMATION',
-        'PRESERVATION_APPROACH',
-        'PRESERVATIVE_SOLUTION',
-        'PRESERVED_BY',
-        'PRESERVER_AFFILIATION',
-        'PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING',
-        'PROXY_VOUCHER_ID',
-        'PROXY_VOUCHER_LINK',
-        'PURPOSE_OF_SPECIMEN',
-        'REGULATORY_COMPLIANCE',
-        'RELATIONSHIP',
-        'SAMPLE_COORDINATOR',
-        'SAMPLE_COORDINATOR_AFFILIATION',
-        'SAMPLE_COORDINATOR_ORCID_ID',
-        'SAMPLING_PERMITS_FILENAME',
-        'SAMPLING_PERMITS_REQUIRED',
-        'SCIENTIFIC_NAME',
-        'SEX',
-        'SIZE_OF_TISSUE_IN_TUBE',
-        'SPECIMEN_IDENTITY_RISK',
-        'TAXON_ID',
-        'TAXON_REMARKS',
-        'TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION',
-        'TIME_OF_COLLECTION',
-        'TISSUE_FOR_BARCODING',
-        'TISSUE_FOR_BIOBANKING',
-        'TISSUE_REMOVED_FOR_BARCODING',
-        'TISSUE_REMOVED_FOR_BIOBANKING',
-        'TISSUE_REMOVED_FROM_BARCODING',
-        'TISSUE_VOUCHER_ID_FOR_BIOBANKING',
-        'TUBE_OR_WELL_ID_FOR_BARCODING',
-        'VOUCHER_ID',
-        'VOUCHER_INSTITUTION',
-        'VOUCHER_LINK'
-    ]
-}
 
 DTOL_RULES = {
     'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID':
@@ -1626,267 +1326,373 @@ DTOL_RULES = {
         {
             "strict_regex": "^\d+$",
             "human_readable": "integer"
-        },
-    'tmp_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
-        {
-            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
-            "biocollection_qualifier_type": "specimen_voucher",
-            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
-        },
-    'tmp_PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
-        {
-            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
-            "biocollection_qualifier_type": "specimen_voucher",
-            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
-        },
-    'tmp_DNA_VOUCHER_ID_FOR_BIOBANKING':
-        {
-            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
-            "biocollection_qualifier_type": "bio_material",
-            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
-        },
-    'tmp_PROXY_VOUCHER_ID':
-        {
-            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
-            "biocollection_qualifier_type": "specimen_voucher",
-            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
-        },
-    'tmp_VOUCHER_ID':
-        {
-            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
-            "biocollection_qualifier_type": "specimen_voucher",
-            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
-        }        
-}
-
-DTOL_UNITS = {
-    'DECIMAL_LATITUDE': {'ena_unit': 'DD'},
-    'DECIMAL_LONGITUDE': {'ena_unit': 'DD'},
-    'DEPTH': {'ena_unit': 'm'},
-    'ELEVATION': {'ena_unit': 'm'},
-    'LATITUDE_END': {'ena_unit': 'DD'},
-    'LATITUDE_START': {'ena_unit': 'DD'},
-    'LONGITUDE_END': {'ena_unit': 'DD'},
-    'LONGITUDE_START': {'ena_unit': 'DD'},
-    'ORIGINAL_DECIMAL_LATITUDE': {'ena_unit': 'DD'},
-    'ORIGINAL_DECIMAL_LONGITUDE': {'ena_unit': 'DD'}
-}
-
-GAL_MAP_LOCATION_COORDINATES = {
-    "CENTRO NACIONAL DE ANÁLISIS GENÓMICO": {"latitude": 41.29322842500072, "longitude": 2.112447951213345},
-    "DNA SEQUENCING AND GENOMICS LABORATORY": {"latitude": 52.604080415603875, "longitude": 1.322325116120334},
-    "HELSINKI GENOMICS CORE FACILITY": {"latitude": 60.17217434637327, "longitude": 24.76174956537578},
-    "DRESDEN-CONCEPT": {"latitude": 50.953555072066706, "longitude": 13.765873443664715},
-    "EARLHAM INSTITUTE": {"latitude": 52.62318280716785, "longitude": 1.2555952213587074},
-    "FUNCTIONAL GENOMIC CENTER ZURICH": {"latitude": 47.29317744028429, "longitude": 8.630075015560141},
-    "GENOSCOPE": {"latitude": 48.57242945075802, "longitude": 2.440779473998219},
-    "GIGA-GENOMICS CORE FACILITY UNIVERSITY OF LIEGE": {"latitude": 50.49505310219335,
-                                                        "longitude": 5.469583675188101},
-    "HANSEN LAB, DENMARK": {"latitude": 55.85342233870096, "longitude": 12.580689191025195},
-    "INDUSTRY PARTNER": {"latitude": 53.415313884089315, "longitude": 14.621839848348806},
-    "LAUSANNE GENOMIC TECHNOLOGIES FACILITY": {"latitude": 46.43785938836717, "longitude": 6.720611497418699},
-    "LEIBNIZ INSTITUTE FOR THE ANALYSIS OF BIODIVERSITY CHANGE, MUSEUM KOENIG, BONN": {"latitude": 50.662300290436946,
-                                                                                       "longitude": 7.1815164845562895},
-    "MARINE BIOLOGICAL ASSOCIATION": {"latitude": 50.24306793085285, "longitude": -4.077733915519119},
-    "NGS BERN": {"latitude": 46.79965448973021, "longitude": 7.576577902102794},
-    "NGS COMPETENCE CENTER TÜBINGEN": {"latitude": 48.48522057082666, "longitude": 9.090980002697727},
-    "NATURAL HISTORY MUSEUM": {"latitude": 51.4486310061879, "longitude": -0.06127617046297753},
-    "NEUROMICS SUPPORT FACILITY, UANTWERP, VIB": {"latitude": 51.11917170838246, "longitude": 4.416086561730746},
-    "NORWEGIAN SEQUENCING CENTRE": {"latitude": 63.43527653315388, "longitude": 10.605382103292664},
-    "ROYAL BOTANIC GARDEN EDINBURGH": {"latitude": 55.96501818957333, "longitude": -3.209092180629166},
-    "ROYAL BOTANIC GARDENS KEW": {"latitude": 51.478500987462645, "longitude": -0.2952321886064486},
-    "SANGER INSTITUTE": {"latitude": 52.078851760344094, "longitude": 0.1833635227184019},
-    "SCILIFELAB": {"latitude": 59.35025588644969, "longitude": 18.02342940480995},
-    "SVARDAL LAB, ANTWERP": {"latitude": 51.204388155984645, "longitude": 4.383337520422855},
-    "UNIVERSITY OF BARI": {"latitude": 41.09506928572348, "longitude": 16.88037847340563},
-    "UNIVERSITY OF FLORENCE": {"latitude": 43.7443574368754, "longitude": 11.222120017904818},
-    "UNIVERSITY OF OXFORD": {"latitude": 51.75111553102938, "longitude": -1.242828944684545},
-    "WEST GERMAN GENOME CENTRE": {"latitude": 51.51577076977291, "longitude": -0.058774328461889375},
-}
-
-PARTNER_MAP_LOCATION_COORDINATES = {
-    "DALHOUSIE UNIVERSITY": {"latitude": 44.6356351, "longitude": -63.5977486},
-    "GEOMAR HELMHOLTZ CENTRE": {"latitude": 54.31473535017579, "longitude": 10.202507477880662},
-    "NOVA SOUTHEASTERN UNIVERSITY": {"latitude": 25.9036859889384, "longitude": -80.08505409832087},
-    "PORTLAND STATE UNIVERSITY": {"latitude": 45.06625034918671, "longitude": -122.26178879087954},
-    "QUEEN MARY UNIVERSITY OF LONDON": {"latitude": 51.52408461103592, "longitude": -0.040097483705069534},
-    "SENCKENBERG RESEARCH INSTITUTE": {"latitude": 50.980247934669954, "longitude": 11.319421517872232},
-    "THE SAINSBURY LABORATORY": {"latitude": 52.62229597053812, "longitude": 1.2228178153758562},
-    "UNIVERSITY OF BRITISH COLUMBIA": {"latitude": 49.10593106507127, "longitude": -123.55137019649796},
-    "UNIVERSITY OF CALIFORNIA": {"latitude": 32.59728946736694, "longitude": -117.16274620316563},
-    "UNIVERSITY OF DERBY": {"latitude": 52.937887605383885, "longitude": -1.4956414943590064},
-    "UNIVERSITY OF ORGEON": {"latitude": 44.19293642050486, "longitude": -122.7208166347002},
-    "UNIVERSITY OF RHODE ISLAND": {"latitude": 41.30562478960331, "longitude": -71.55357021967731},
-    "UNIVERSITY OF VIENNA (CEPHALOPOD)": {"latitude": 48.213401869226296, "longitude": 16.364048156381596},
-    "UNIVERSITY OF VIENNA (MOLLUSC)": {"latitude": 48.21189890585992, "longitude": 16.364341481491362},
-}
-
-# Default values for columns that are mandatory in ERGA manifests but are
-# optional for 'POP_GENOMICS' associated tol project type for ERGA manifests
-POP_GENOMICS_OPTIONAL_COLUMNS_DEFAULT_VALUES_MAPPING = {
-    'BARCODE_PLATE_PRESERVATIVE': 'NOT_APPLICABLE',
-    'BARCODING_STATUS': 'DNA_BARCODING_TO_BE_PERFORMED_GAL',
-    'BIOBANKED_TISSUE_PRESERVATIVE': 'NOT_APPLICABLE',
-    'COLLECTOR_ORCID_ID': 'NOT_PROVIDED',
-    'DATE_OF_PRESERVATION': 'NOT_COLLECTED',
-    'DESCRIPTION_OF_COLLECTION_METHOD': 'NOT_COLLECTED',
-    'DIFFICULT_OR_HIGH_PRIORITY_SAMPLE': 'NOT_COLLECTED',
-    'DNA_REMOVED_FOR_BIOBANKING': 'N',
-    'DNA_VOUCHER_ID_FOR_BIOBANKING': 'NOT_APPLICABLE',
-    'GAL': 'INDUSTRY PARTNER',
-    'GAL_SAMPLE_ID': '',  # Default value is value of 'COLLECTOR_SAMPLE_ID' column
-    'IDENTIFIED_BY': 'NOT_COLLECTED',
-    'IDENTIFIED_HOW': 'NOT_COLLECTED',
-    'IDENTIFIER_AFFILIATION': 'NOT_COLLECTED',
-    'LATITUDE_START': 'NOT_COLLECTED',
-    'LATITUDE_END': 'NOT_COLLECTED',
-    'LONGITUDE_START': 'NOT_COLLECTED',
-    'LONGITUDE_END': 'NOT_COLLECTED',
-    'LIFESTAGE': 'NOT_COLLECTED',
-    'PRESERVATION_APPROACH': 'NOT_COLLECTED',
-    'PRESERVED_BY': 'NOT_COLLECTED',
-    'PRESERVER_AFFILIATION': 'NOT_COLLECTED',
-    'SIZE_OF_TISSUE_IN_TUBE': 'NOT_COLLECTED',
-    'SYMBIONT': 'TARGET',
-    'TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION': 'NOT_COLLECTED',
-    'TISSUE_FOR_BARCODING': 'NOT_APPLICABLE',
-    'TISSUE_FOR_BIOBANKING': 'NOT_APPLICABLE',
-    'TISSUE_REMOVED_FOR_BARCODING': 'N',
-    'TISSUE_REMOVED_FOR_BIOBANKING': 'N',
-    'TISSUE_VOUCHER_ID_FOR_BIOBANKING': 'NOT_APPLICABLE',
-    'TUBE_OR_WELL_ID_FOR_BARCODING': 'NOT_APPLICABLE',
-    'VOUCHER_ID': 'NOT_PROVIDED'
-}
-
-SPECIMEN_PREFIX = {
-    'GAL': {
-        'dtol': {
-            'EARLHAM INSTITUTE': 'EI_',
-            'MARINE BIOLOGICAL ASSOCIATION': 'MBA',
-            'NATURAL HISTORY MUSEUM': 'NHMUK',
-            'ROYAL BOTANIC GARDEN EDINBURGH': 'EDTOL',
-            'ROYAL BOTANIC GARDENS KEW': 'KDTOL',
-            'SANGER INSTITUTE': 'SAN',
-            'UNIVERSITY OF OXFORD': 'Ox'
-        },
-        'erga': {
-            'default': 'ERGA_'
-        },
-        'dtol_env': {
-            'EARLHAM INSTITUTE': 'EI_',
-            'MARINE BIOLOGICAL ASSOCIATION': 'MBA',
-            'NATURAL HISTORY MUSEUM': 'NHMUK',
-            'ROYAL BOTANIC GARDEN EDINBURGH': 'EDTOL',
-            'ROYAL BOTANIC GARDENS KEW': 'KDTOL',
-            'SANGER INSTITUTE': 'SAN',
-            'UNIVERSITY OF OXFORD': 'Ox'
         }
-    },
-    'PARTNER': {
-        'DALHOUSIE UNIVERSITY': 'DU',
-        'GEOMAR HELMHOLTZ CENTRE': 'GHC',
-        'NOVA SOUTHEASTERN UNIVERSITY': 'NSU',
-        'PORTLAND STATE UNIVERSITY': 'PORT',
-        'QUEEN MARY UNIVERSITY OF LONDON': 'QMOUL',
-        'SENCKENBERG RESEARCH INSTITUTE': 'SENCK',
-        'THE SAINSBURY LABORATORY': 'SL',
-        'UNIVERSITY OF BRITISH COLUMBIA': 'UOBC',
-        'UNIVERSITY OF CALIFORNIA': 'UCALI',
-        'UNIVERSITY OF DERBY': 'UDUK',
-        'UNIVERSITY OF OREGON': 'UOREG',
-        'UNIVERSITY OF RHODE ISLAND': 'URI',
-        'UNIVERSITY OF VIENNA (CEPHALOPOD)': 'VIEC',
-        'UNIVERSITY OF VIENNA (MOLLUSC)': 'VIEM'
-    }
 }
 
-SPECIMEN_SUFFIX = {
-    "GAL": {
-        "dtol": {
-            'EARLHAM INSTITUTE': '\d{5}',
-            'MARINE BIOLOGICAL ASSOCIATION': '-\d{6}-\d{3}[A-Z]',
-            'NATURAL HISTORY MUSEUM': '\d{9}',
-            'ROYAL BOTANIC GARDEN EDINBURGH': '\d{5}',
-            'ROYAL BOTANIC GARDENS KEW': '\d{5}',
-            'SANGER INSTITUTE': '\d{7}',
-            'UNIVERSITY OF OXFORD': '\d{6}'
-        },
-        "dtol_env": {
-            'EARLHAM INSTITUTE': '\d{5}',
-            'MARINE BIOLOGICAL ASSOCIATION': '-\d{5}-\d{3}[A-Z]',
-            'NATURAL HISTORY MUSEUM': '\d{9}',
-            'ROYAL BOTANIC GARDEN EDINBURGH': '\d{5}',
-            'ROYAL BOTANIC GARDENS KEW': '\d{5}',
-            'SANGER INSTITUTE': '\d{7}',
-            'UNIVERSITY OF OXFORD': '\d{6}'
-        },
-        "erga": {
-            "default": "([A-Z]{1,10}_\d{3}(\d|X)_\d{2,3})"
-        }
-    }
+# Mapping
+asg_fields_mapping= {
+    'SERIES': {'required' : True, 'type': 'integer'},
+    'RACK_OR_PLATE_ID': {'required' : True},
+    'TUBE_OR_WELL_ID': {'required' : True},
+    'SPECIMEN_ID': {'required' : True},
+    'ORDER_OR_GROUP': {'required' : True},
+    'FAMILY': {'required' : True},
+    'GENUS': {'required' : True},
+    'TAXON_ID': {'required' : True, 'type': 'integer'},
+    'SCIENTIFIC_NAME': {'required' : True},
+    'TAXON_REMARKS': {'required' : False},
+    'INFRASPECIFIC_EPITHET': {'required' : False},
+    'CULTURE_OR_STRAIN_ID': {'required' : False},
+    'COMMON_NAME': {'required' : False},
+    'LIFESTAGE': {'required' : True},
+    'SEX': {'required' : True},
+    'ORGANISM_PART': {'required' : True},
+    'SYMBIONT': {'required' : True},
+    'RELATIONSHIP': {'required' : False},
+    'PARTNER': {'required' : True},
+    'PARTNER_SAMPLE_ID': {'required' : True},
+    'COLLECTOR_SAMPLE_ID': {'required' : True},
+    'COLLECTED_BY': {'required' : True},
+    'COLLECTOR_AFFILIATION': {'required' : True},
+    'DATE_OF_COLLECTION': {'required' : True, 'type': 'date'},
+    'TIME_OF_COLLECTION': {'required' : False},
+    'COLLECTION_LOCATION': {'required' : True},
+    'DECIMAL_LATITUDE': {'required' : True},
+    'DECIMAL_LONGITUDE': {'required' : True},
+    'GRID_REFERENCE': {'required' : False},
+    'HABITAT': {'required' : True},
+    'DEPTH': {'required' : False},
+    'ELEVATION': {'required' : False},
+    'ORIGINAL_COLLECTION_DATE': {'required' : False, 'type': 'date'},
+    'ORIGINAL_GEOGRAPHIC_LOCATION': {'required' : False},
+    'ORIGINAL_DECIMAL_LATITUDE': {'required' : False},
+    'ORIGINAL_DECIMAL_LONGITUDE': {'required' : False},
+    'DESCRIPTION_OF_COLLECTION_METHOD': {'required' : True},
+    'DIFFICULT_OR_HIGH_PRIORITY_SAMPLE': {'required' : True},
+    'IDENTIFIED_BY': {'required' : True},
+    'IDENTIFIER_AFFILIATION': {'required' : True},
+    'IDENTIFIED_HOW': {'required' : True},
+    'SPECIMEN_IDENTITY_RISK': {'required' : True},
+    'MIXED_SAMPLE_RISK': {'required' : True},
+    'PRESERVED_BY': {'required' : True},
+    'PRESERVER_AFFILIATION': {'required' : True},
+    'PRESERVATION_APPROACH': {'required' : True},
+    'PRESERVATIVE_SOLUTION': {'required' : False},
+    'TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION': {'required' : True},
+    'DATE_OF_PRESERVATION': {'required' : True, 'type': 'date'},
+    'SIZE_OF_TISSUE_IN_TUBE': {'required' : True},
+    'BARCODE_HUB': {'required' : True},
+    'TISSUE_REMOVED_FOR_BARCODING': {'required' : True},
+    'PLATE_ID_FOR_BARCODING': {'required' : True},
+    'TUBE_OR_WELL_ID_FOR_BARCODING': {'required' : True},
+    'TISSUE_FOR_BARCODING': {'required' : True},
+    'BARCODE_PLATE_PRESERVATIVE': {'required' : True},
+    'BARCODING_STATUS': {'required' : True},
+    'BOLD_ACCESSION_NUMBER': {'required' : False},
+    'VOUCHER_ID': {'required' : True},
+    'PROXY_VOUCHER_ID': {'required' : False},
+    'VOUCHER_LINK': {'required' : False},
+    'PROXY_VOUCHER_LINK': {'required' : False},
+    'VOUCHER_INSTITUTION': {'required' : False},
+    'PURPOSE_OF_SPECIMEN': {'required' : True},
+    'SAMPLE_FORMAT': {'required' : False},
+    'HAZARD_GROUP': {'required' : True},
+    'REGULATORY_COMPLIANCE': {'required' : True},
+    'OTHER_INFORMATION': {'required' : False}
 }
 
-##################
-API_KEY = helpers.get_env("PUBLIC_NAME_SERVICE_API_KEY")
+dtol_fields_mapping=  {
+    'SERIES': {'required' : True, 'type': 'integer'},
+    'RACK_OR_PLATE_ID': {'required' : True},
+    'TUBE_OR_WELL_ID': {'required' : True},
+    'SPECIMEN_ID': {'required' : True},
+    'ORDER_OR_GROUP': {'required' : True},
+    'FAMILY': {'required' : True},
+    'GENUS': {'required' : True},
+    'TAXON_ID': {'required' : True, 'type': 'integer'},
+    'SCIENTIFIC_NAME': {'required' : True},
+    'TAXON_REMARKS': {'required' : False},
+    'INFRASPECIFIC_EPITHET': {'required' : False},
+    'CULTURE_OR_STRAIN_ID': {'required' : False},
+    'COMMON_NAME': {'required' : False},
+    'LIFESTAGE': {'required' : True},
+    'SEX': {'required' : True},
+    'ORGANISM_PART': {'required' : True},
+    'SYMBIONT': {'required' : True},
+    'RELATIONSHIP': {'required' : False},
+    'GAL': {'required' : True},
+    'GAL_SAMPLE_ID': {'required' : True},
+    'COLLECTOR_SAMPLE_ID': {'required' : True},
+    'COLLECTED_BY': {'required' : True},
+    'COLLECTOR_AFFILIATION': {'required' : True},
+    'DATE_OF_COLLECTION': {'required' : True, 'type': 'date'},
+    'TIME_OF_COLLECTION': {'required' : False},
+    'COLLECTION_LOCATION': {'required' : True},
+    'DECIMAL_LATITUDE': {'required' : True},
+    'DECIMAL_LONGITUDE': {'required' : True},
+    'GRID_REFERENCE': {'required' : False},
+    'HABITAT': {'required' : True},
+    'DEPTH': {'required' : False},
+    'ELEVATION': {'required' : False},
+    'ORIGINAL_COLLECTION_DATE': {'required' : False},
+    'ORIGINAL_GEOGRAPHIC_LOCATION': {'required' : False},
+    'ORIGINAL_DECIMAL_LATITUDE': {'required' : False},
+    'ORIGINAL_DECIMAL_LONGITUDE': {'required' : False},
+    'DESCRIPTION_OF_COLLECTION_METHOD': {'required' : True},
+    'DIFFICULT_OR_HIGH_PRIORITY_SAMPLE': {'required' : True},
+    'IDENTIFIED_BY': {'required' : True},
+    'IDENTIFIER_AFFILIATION': {'required' : True},
+    'IDENTIFIED_HOW': {'required' : True},
+    'SPECIMEN_IDENTITY_RISK': {'required' : True},
+    'MIXED_SAMPLE_RISK': {'required' : True},
+    'PRESERVED_BY': {'required' : True},
+    'PRESERVER_AFFILIATION': {'required' : True},
+    'PRESERVATION_APPROACH': {'required' : True},
+    'PRESERVATIVE_SOLUTION': {'required' : False},
+    'TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION': {'required' : True},
+    'DATE_OF_PRESERVATION': {'required' : True, 'type': 'date'},
+    'SIZE_OF_TISSUE_IN_TUBE': {'required' : True},
+    'BARCODE_HUB': {'required' : True},
+    'TISSUE_REMOVED_FOR_BARCODING': {'required' : True},
+    'PLATE_ID_FOR_BARCODING': {'required' : True},
+    'TUBE_OR_WELL_ID_FOR_BARCODING': {'required' : True},
+    'TISSUE_FOR_BARCODING': {'required' : True},
+    'BARCODE_PLATE_PRESERVATIVE': {'required' : True},
+    'BARCODING_STATUS': {'required' : True},
+    'BOLD_ACCESSION_NUMBER': {'required' : False},
+    'VOUCHER_ID': {'required' : True},
+    'PROXY_VOUCHER_ID': {'required' : False},
+    'VOUCHER_LINK': {'required' : False},
+    'PROXY_VOUCHER_LINK': {'required' : False},
+    'VOUCHER_INSTITUTION': {'required' : False},
+    'PURPOSE_OF_SPECIMEN': {'required' : True},
+    'SAMPLE_FORMAT': {'required' : True},
+    'HAZARD_GROUP': {'required' : True},
+    'REGULATORY_COMPLIANCE': {'required' : True},
+    'OTHER_INFORMATION': {'required' : False}
+}
 
-BLANK_VALS = ['NOT_APPLICABLE', 'NOT_COLLECTED', 'NOT_PROVIDED']
+erga_fields_mapping= {
+    'TUBE_OR_WELL_ID': {'required': True},
+    'SPECIMEN_ID': {'required': True},
+    'PURPOSE_OF_SPECIMEN': {'required': True},
+    'SAMPLE_COORDINATOR': {'required': True},
+    'SAMPLE_COORDINATOR_AFFILIATION': {'required': True},
+    'SAMPLE_COORDINATOR_ORCID_ID': {'required': True},
+    'ORDER_OR_GROUP': {'required': True},
+    'FAMILY': {'required': True},
+    'GENUS': {'required': True},
+    'TAXON_ID': {'required': True, 'type': 'integer'},
+    'SCIENTIFIC_NAME': {'description': ""},
+    'TAXON_REMARKS': {'required': False},
+    'INFRASPECIFIC_EPITHET': {'required': False},
+    'CULTURE_OR_STRAIN_ID': {'required': False},
+    'COMMON_NAME': {'required': False},
+    'LIFESTAGE': {'required': True},
+    'SEX': {'required': True},
+    'ORGANISM_PART': {'required': True},
+    'SYMBIONT': {'required': False},
+    'RELATIONSHIP': {'required': False},
+    'GAL': {'required': True},
+    'GAL_SAMPLE_ID': {'required': True},
+    'COLLECTOR_SAMPLE_ID': {'required': True},
+    'COLLECTED_BY': {'required': True},
+    'COLLECTOR_AFFILIATION': {'required': True},
+    'COLLECTOR_ORCID_ID': {'required': True},
+    'DATE_OF_COLLECTION': {'required': True, 'type': 'date'},
+    'TIME_OF_COLLECTION': {'required': False},
+    'COLLECTION_LOCATION': {'required': True},
+    'DECIMAL_LATITUDE': {'required': True},
+    'DECIMAL_LONGITUDE': {'required': True},
+    'LATITUDE_START': {'required': False},
+    'LONGITUDE_START': {'required': False},
+    'LATITUDE_END': {'required': False},
+    'LONGITUDE_END': {'required': False},
+    'HABITAT': {'required': True},
+    'DEPTH': {'required': False},
+    'ELEVATION': {'required': False},
+    'ORIGINAL_COLLECTION_DATE': {'required': False, 'type': 'date'},
+    'ORIGINAL_GEOGRAPHIC_LOCATION': {'required': False},
+    'ORIGINAL_DECIMAL_LATITUDE': {'required': False},
+    'ORIGINAL_DECIMAL_LONGITUDE': {'required': False},
+    'DESCRIPTION_OF_COLLECTION_METHOD': {'required': True},
+    'DIFFICULT_OR_HIGH_PRIORITY_SAMPLE': {'required': True},
+    'IDENTIFIED_BY': {'required': True},
+    'IDENTIFIER_AFFILIATION': {'required': True},
+    'IDENTIFIED_HOW': {'required': True},
+    'SPECIMEN_IDENTITY_RISK': {'required': True},
+    'MIXED_SAMPLE_RISK': {'required': True},
+    'PRESERVED_BY': {'required': True},
+    'PRESERVER_AFFILIATION': {'required': True},
+    'PRESERVATION_APPROACH': {'required': True},
+    'PRESERVATIVE_SOLUTION': {'required': True},
+    'TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION': {'required': True},
+    'DATE_OF_PRESERVATION': {'required': True},
+    'SIZE_OF_TISSUE_IN_TUBE': {'required': True},
+    'TISSUE_REMOVED_FOR_BARCODING': {'required': True},
+    'TUBE_OR_WELL_ID_FOR_BARCODING': {'required': True},
+    'TISSUE_FOR_BARCODING': {'required': True},
+    'BARCODE_PLATE_PRESERVATIVE': {'required': True},
+    'BARCODING_STATUS': {'required': True},
+    'TISSUE_REMOVED_FOR_BIOBANKING': {'required': True},
+    'TISSUE_VOUCHER_ID_FOR_BIOBANKING': {'required': True},
+    'PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING': {'required': False},
+    'TISSUE_FOR_BIOBANKING': {'required': True},
+    'BIOBANKED_TISSUE_PRESERVATIVE': {'required': True},
+    'DNA_REMOVED_FOR_BIOBANKING': {'required': True},
+    'DNA_VOUCHER_ID_FOR_BIOBANKING': {'required': True},
+    'VOUCHER_ID': {'required': True},
+    'PROXY_VOUCHER_ID': {'required': False},
+    'VOUCHER_LINK': {'required': False},
+    'PROXY_VOUCHER_LINK': {'required': False},
+    'VOUCHER_INSTITUTION': {'required': False},
+    'REGULATORY_COMPLIANCE': {'required': False},
+    'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE': {'required': True},
+    'INDIGENOUS_RIGHTS_DEF': {'required': False},
+    'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID': {'required': False},
+    'ASSOCIATED_TRADITIONAL_KNOWLEDGE_CONTACT': {'required': False},
+    'ETHICS_PERMITS_REQUIRED': {'required': True},
+    'ETHICS_PERMITS_DEF': {'required': True},
+    'ETHICS_PERMITS_FILENAME': {'required': True},
+    'SAMPLING_PERMITS_REQUIRED': {'required': True},
+    'SAMPLING_PERMITS_DEF': {'required': True},
+    'SAMPLING_PERMITS_FILENAME': {'required': True},
+    'NAGOYA_PERMITS_REQUIRED': {'required': True},
+    'NAGOYA_PERMITS_DEF': {'required': True},
+    'NAGOYA_PERMITS_FILENAME': {'required': True},
+    'HAZARD_GROUP': {'required': True, 'type': 'integer'},
+    'PRIMARY_BIOGENOME_PROJECT': {'required': False},
+    'ASSOCIATED_PROJECT_ACCESSIONS': {'required': False},
+    'OTHER_INFORMATION': {'required': False}
+}
 
-DATE_FIELDS = ["DATE_OF_PRESERVATION"]
+# Blocks
+asg_manifest_blocks = [
+    {'start_letter': 'A', 'end_letter':'D', "column_colour": "green", "block": "1","block_description":"Sample submission information including specimen identifier and tube/well identifiers"},
+    {'start_letter': 'E', 'end_letter':'M', "column_colour": "yellow", "block": "2","block_description":"Taxonomic information including species name, family and common name"},
+    {'start_letter': 'N', 'end_letter':'R', "column_colour": "purple", "block": "3","block_description":"Biological information of the sample including lifestage, sex, and organism part"},
+    {'start_letter': 'S', 'end_letter':'T', "column_colour": "grey", "block": "4","block_description":"Details of the submitting GAL and the associated organisational codes"},
+    {'start_letter': 'U', 'end_letter':'AL', "column_colour": "blue", "block": "5","block_description":"Data on the collector, collection event, and collection localities"},
+    {'start_letter': 'AM', 'end_letter':'AQ', "column_colour": "limegreen", "block": "6","block_description":"Information on taxonomic identification, taxonomic uncertainty and risks"},
+    {'start_letter': 'AR', 'end_letter':'AX', "column_colour": "brown", "block": "7","block_description":"Details of the tissue preservation event"},
+    {'start_letter': 'AY', 'end_letter':'BF', "column_colour": "teal", "block": "8","block_description":"Information on DNA barcoding"},
+    {'start_letter': 'BG', 'end_letter':'BK', "column_colour": "red", "block": "9","block_description":"Information on vouchering and biobanking"},
+    {'start_letter': 'BL', 'end_letter':'BP', "column_colour": "skyblue", "block": "10","block_description":"IAdditional information fields including free text field for other important sample notes"},
+    ]
 
-NA_VALS = ['#N/A', '#N/A N/A', '#NA', '-1.#IND', '-1.#QNAN', '-NaN', '-nan', '1.#IND', '1.#QNAN', '<NA>', 'N/A', 'NULL',
-           'NaN', 'n/a', 'nan', 'NaT', 'null', 'NIL', 'nil', 'NA', 'na', 'NAN', 'Nan', 'NA']
+dtol_manifest_blocks = [
+    {'start_letter': 'A', 'end_letter':'D', "column_colour": "green", "block": "1","block_description":"Sample submission information including specimen identifier and tube/well identifiers"},
+    {'start_letter': 'E', 'end_letter':'M', "column_colour": "yellow", "block": "2","block_description":"Taxonomic information including species name, family and common name"},
+    {'start_letter': 'N', 'end_letter':'R', "column_colour": "purple", "block": "3","block_description":"Biological information of the sample including lifestage, sex, and organism part"},
+    {'start_letter': 'S', 'end_letter':'T', "column_colour": "grey", "block": "4","block_description":"Details of the submitting GAL and the associated organisational codes"},
+    {'start_letter': 'U', 'end_letter':'AL', "column_colour": "blue", "block": "5","block_description":"Data on the collector, collection event, and collection localities"},
+    {'start_letter': 'AM', 'end_letter':'AQ', "column_colour": "limegreen", "block": "6","block_description":"Information on taxonomic identification, taxonomic uncertainty and risks"},
+    {'start_letter': 'AR', 'end_letter':'AX', "column_colour": "brown", "block": "7","block_description":"Details of the tissue preservation event"},
+    {'start_letter': 'AY', 'end_letter':'BF', "column_colour": "teal", "block": "8","block_description":"Information on DNA barcoding"},
+    {'start_letter': 'BG', 'end_letter':'BK', "column_colour": "red", "block": "9","block_description":"Information on vouchering and biobanking"},
+    {'start_letter': 'BL', 'end_letter':'BP', "column_colour": "skyblue", "block": "10","block_description":"IAdditional information fields including free text field for other important sample notes"},
+    ]
 
-NIH_API_KEY = helpers.get_env("NIH_API_KEY")
+erga_manifest_blocks = [
+    {'start_letter': 'A', 'end_letter':'F', "column_colour": "green", "block": "1","block_description":"Sample submission information including specimen identifier and tube/well identifiers,as well as information on the sample coordinator"},
+    {'start_letter': 'G', 'end_letter':'O', "column_colour": "yellow", "block": "2","block_description":"Taxonomic information including species name, family and common name"},
+    {'start_letter': 'P', 'end_letter':'T', "column_colour": "purple", "block": "3","block_description":"Biological information of the sample including lifestage, sex, and organism part"},
+    {'start_letter': 'U', 'end_letter':'V', "column_colour": "grey", "block": "4","block_description":"Details of the submitting GAL and the associated organisational codes"},
+    {'start_letter': 'W', 'end_letter':'AR', "column_colour": "blue", "block": "5","block_description":"Data on the collector, collection event, and collection localities"},
+    {'start_letter': 'AS', 'end_letter':'AW', "column_colour": "limegreen", "block": "6","block_description":"Information on taxonomic identification, taxonomic uncertainty and risks"},
+    {'start_letter': 'AX', 'end_letter':'BD', "column_colour": "brown", "block": "7","block_description":"Details of the tissue preservation event"},
+    {'start_letter': 'BE', 'end_letter':'BI', "column_colour": "teal", "block": "8","block_description":"Information on DNA barcoding"},
+    {'start_letter': 'BJ', 'end_letter':'BU', "column_colour": "red", "block": "9","block_description":"Information on Biobanking and Vouchering"},
+    {'start_letter': 'BV', 'end_letter':'CI', "column_colour": "orange", "block": "10","block_description":"Information on regulatory compliances, Indigenous rights, traditional knowledge and permits"},
+    {'start_letter': 'CJ', 'end_letter':'CM', "column_colour": "green", "block": "11","block_description":"Additional information including a free text field to house other important sample notes"}
+    ]
 
-# 'sample' is excluded from the list
-NON_SAMPLE_ACCESSION_TYPES = ["project", "assembly", "seq_annotation", "experiment", "run"]
+def generate_manifest_json(manifest_type, manifest_file_path):
+    output = list()
+    
+    columns = pd.read_excel(manifest_file_path).columns.tolist()
 
-PERMIT_FILENAME_COLUMN_NAMES = ["SAMPLING_PERMITS_FILENAME", "ETHICS_PERMITS_FILENAME",
-                                "NAGOYA_PERMITS_FILENAME"]
+    column_letters = list()
+    column_blocks = list()
 
-PERMIT_REQUIRED_COLUMN_NAMES = ["SAMPLING_PERMITS_REQUIRED", "ETHICS_PERMITS_REQUIRED",
-                                "NAGOYA_PERMITS_REQUIRED"]
+    if manifest_type == "erga":
+        manifest_blocks = erga_manifest_blocks
+        manifest_mapping= erga_fields_mapping
+    elif manifest_type == "asg":
+        manifest_blocks = asg_manifest_blocks
+        manifest_mapping= asg_fields_mapping
+    elif manifest_type == "dtol":
+        manifest_blocks = dtol_manifest_blocks
+        manifest_mapping= dtol_fields_mapping
 
-PERMIT_COLUMN_NAMES_PREFIX = [
-    "SAMPLING_PERMITS", "ETHICS_PERMITS", "NAGOYA_PERMITS"]
+    for i in range(len(columns)):
+        column_letter = get_column_letter(i + 1)
+        column_letters.append({columns[i]: column_letter})
+        column_block = [colour_range["block"] for colour_range in manifest_blocks if column_index_from_string(colour_range["start_letter"]) <= column_index_from_string(column_letter) <= column_index_from_string(colour_range["end_letter"])]
+        
+        column_blocks.append({'field': columns[i], 'block': column_block[0]})
 
-REQUIRED_MEMBER_GROUPS = ['bge_checkers','dtol_users', 'dtol_sample_managers', 'dtolenv_users', 'dtolenv_sample_managers',
-                          'erga_users', 'erga_sample_managers']
+    column_blocks_grouped = [{key: [g['field'] for g in group]} for key, group in groupby(column_blocks, lambda x: x['block'])]
+    
+    for d in manifest_blocks:
+        fields_lst = list()
+        output_dict = dict()
+        output_dict["block"] = d["block"]
+        output_dict["block_description"] = d["block_description"]
+        output_dict["block_colour"] = d["column_colour"]
+        
+        columns = [v for d in column_blocks_grouped for k, v in d.items() if k == output_dict["block"]]
 
-# A list of web pages that can be accessed by both COPO users and sample managers
-SAMPLE_MANAGERS_ACCESSIBLE_WEB_PAGES = ['copo_samples']
+        for column_name in columns[0]:
+            fields_dict = dict()
 
-SANGER_TOL_PROFILE_TYPES = ["asg", "dtol", "dtol_env", "erga"]
+            fields_dict["name"] = column_name.strip()
+            fields_dict["label"] = column_name.strip().replace("_", " ").replace("ID", "Identifier").replace("GAL","Genome Acquisition Lab").title().replace(" Or ", " or ")
+        
+            try:
+                fields_dict["column"] = [value for d in column_letters for key, value in d.items() if key == column_name ][0]
+            except IndexError:
+                fields_dict["column"] = ""
+            
+            fields_dict["type"] = manifest_mapping.get(column_name,str()).get("type",str()) if column_name in manifest_mapping and manifest_mapping.get(column_name,str()).get("type",str()) else "string"
+            fields_dict["required"] = manifest_mapping.get(column_name,str()).get("required",str()) if column_name in manifest_mapping and manifest_mapping.get(column_name,str()).get("required",str()) else False
 
-SLASHES_LIST = ["/", "\\"]
+            if column_name in DTOL_RULES:
+                for key, value in DTOL_RULES[column_name].items():
+                    if key.endswith("regex"):
+                        fields_dict["regex"] = value            
 
-SPECIES_LIST_FIELDS = ["SYMBIONT", "TAXON_ID", "ORDER_OR_GROUP", "FAMILY", "GENUS", "SCIENTIFIC_NAME",
-                       "INFRASPECIFIC_EPITHET", "CULTURE_OR_STRAIN", "COMMON_NAME", "TAXON_REMARKS"]
+            if column_name in DTOL_ENUMS:
+                if manifest_type.upper() in DTOL_ENUMS[column_name]:
+                    fields_dict["enum"] = DTOL_ENUMS[column_name][manifest_type.upper()]
+                else:
+                    fields_dict["enum"] = DTOL_ENUMS[column_name]
 
-STANDARDS = ["dwc", "ena", "mixs", "tol"]
+            if column_name in DTOL_UNITS:
+                fields_dict["unit"] = DTOL_UNITS[column_name]["ena_unit"]
+            
+            fields_lst.append(fields_dict)
 
-STANDARDS_MAPPING_FILE_PATH = "/copo/common/schema_versions/isa_mappings/dwc_ena_mixs_tol_fields_mapping.json"
+            output_dict["fields"] = fields_lst
+        
+        output.append(output_dict)
+            
+    # Uncomment for the following code to write the json to a file
+    #'''
+    file_name = f"{manifest_type}_manifest_fields.json"
+    file_directory = "/copo/common/schema_versions/isa_mappings/"
+    file_path = file_directory + file_name
 
-SYMBIONT_FIELDS = ["ORDER_OR_GROUP", "FAMILY", "GENUS", "TAXON_ID", "SCIENTIFIC_NAME", "TAXON_REMARKS",
-                   "INFRASPECIFIC_EPITHET", "CULTURE_OR_STRAIN_ID", "COMMON_NAME", "LIFESTAGE", "SEX", "SYMBIONT",
-                   "species_list", "characteristics", "profile_id", "manifest_id", "sample_type", "biosampleAccession",
-                   "sraAccession", "submissionAccession", "status", "tol_project", "manifest_version", "public_name",
-                   "factorValues"]
+    with open(file_path, 'w+') as f:
+        print(json.dumps(output, indent=4, sort_keys=False,default=str), file=f)
+        f.close()
+    #'''
 
-SYMBIONT_VALS = ["TARGET", "SYMBIONT"]
 
-TOL_PROFILE_TYPES = ["asg", "dtol", "dtol_env", "erga"]
+    return output
 
-TOL_PROFILE_TYPES_FULL =["Aquatic Symbiosis Genomics (ASG)", "Darwin Tree of Life (DTOL)",
-                         "European Reference Genome Atlas (ERGA)",
-                         "Darwin Tree of Life Environmental Samples (DTOL_ENV)"]
+# Generate a json file for each manifest type
+generate_manifest_json("asg", "/copo/media/assets/manifests/ASG_MANIFEST_TEMPLATE_v2.5.xlsx")
+generate_manifest_json("dtol", "/copo/media/assets/manifests/DTOL_MANIFEST_TEMPLATE_v2.5.xlsx")
+generate_manifest_json("erga", "/copo/media/assets/manifests/ERGA_MANIFEST_TEMPLATE_v2.5.xlsx")
+

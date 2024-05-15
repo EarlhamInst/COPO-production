@@ -36,12 +36,25 @@ def pretty_print(data, path=None):
         with open(path, 'w+') as file:
             file.write(s)
 
+def convertListToString(lst):
+    # Convert list to string
+    return ','.join(lst)
 
 def convertStringToBoolean(string):
     # Convert string boolean to boolean
     return str(string).lower() in ("yes", "true", "t", "1")
 
+def convertStringToList(string):
+    # Split the string into a list
+    lst = string.split(',')
+    lst = list(map(lambda x: x.strip().lower(), lst))
 
+    # Remove any empty elements in the list e.g.
+    # where 2 or more commas have been typed in error
+    lst[:] = [x for x in lst if x]
+
+    return lst
+    
 def convertStringToTitleCase(str):
     # Convert given a string to title case/sentence case
     return str.title() \

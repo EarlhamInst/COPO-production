@@ -1,6 +1,7 @@
 __author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
 
 from common.lookup.lookup import API_RETURN_TEMPLATES
+from common.schema_versions.lookup.dtol_lookups import STANDARDS, STANDARDS_MAPPING_FILE_PATH
 from django.http import HttpResponse
 from django_tools.middlewares import ThreadLocal
 
@@ -21,7 +22,6 @@ def get_return_template(type):
         data = json.load(data_file)
     return data
 
-
 def extract_to_template(object=None, template=None):
     """
     Method to examine fields in object and extract those which match the field names in template along with their values
@@ -35,7 +35,6 @@ def extract_to_template(object=None, template=None):
                 template[t] = object[t]
 
     return template
-
 
 def generate_rocrate_person_object(df, personlist, person_field_name, prefix, person_map):
     # items = []
@@ -270,6 +269,52 @@ def generate_rocrate_response(samples):
         # result_list.append(rocrate_json)
     return rocrate_json
 
+def get_standard_mapping(standard_list, template):    
+    with open(STANDARDS_MAPPING_FILE_PATH) as f:
+        standards_data = json.load(f)
+        standards_data = standards_data[0]
+
+        output_list = list()
+
+        for d in template:
+            output_dict = dict()
+            lst_dict = dict()
+            inner_dict = dict()
+            
+            copo_id = d.get('copo_id', str())       
+            
+            for key, value in d.items():
+                outer_dict = dict()
+                tol_column_dict = dict()
+                tol_column_dict[key] = dict()
+
+                for standard in standard_list:
+                    inner_dict = dict()
+
+                    if key in standards_data.keys():
+                        inner_dict[standard] = {'key': key, 'value': value} if standard == "tol" else {'key':  standards_data.get(key, str()).get(standard, str()).get('field', str()), 'value': value}
+                    else:
+                        inner_dict[standard] = {'key': key, 'value': value} if standard == "tol" else {'key': str(), 'value': value}
+                    
+                    # Set value to an empty string if key is unknown in the 'inner_dict'
+                    if inner_dict[standard]['key'] == '':
+                        inner_dict[standard]['value'] = str()
+
+                    # Merge dictionaries
+                    tol_column_dict[key] |= inner_dict
+
+                    # Merge dictionaries that reference the same TOL column name
+                    lst_dict |= tol_column_dict
+
+            outer_dict[copo_id] = lst_dict
+            
+            # Merge dictionaries that reference the same 'copo_id'
+            output_dict |= outer_dict
+
+            output_list.append(output_dict)
+
+    return output_list #standard_json
+
 def finish_request(template=None, error=None, num_found=None, return_http_response=True):
     """
     Method to tidy up data before returning API caller
@@ -280,6 +325,16 @@ def finish_request(template=None, error=None, num_found=None, return_http_respon
     request = ThreadLocal.get_current_request()
     return_type = request.GET.get('return_type', "json").lower()
 
+    standard = request.GET.get('standard', "tol")
+
+    # Split the 'standard' string into a list
+    standard_list = standard.split(',')
+    standard_list = list(map(lambda x: x.strip().lower(), standard_list))
+
+    # Remove any empty elements in the list e.g.
+    # where 2 or more commas have been typed in error
+    standard_list[:] = [x for x in standard_list if x]
+
     '''
     if is_csv == 'True' or is_csv == 'true' or is_csv == '1' or is_csv == 1 :
         is_csv = True
@@ -287,6 +342,12 @@ def finish_request(template=None, error=None, num_found=None, return_http_respon
         is_csv = False
     '''
     wrapper = get_return_template('WRAPPER')
+
+    # Set template with standard data if standard is one of the 
+    # standards - dwc, ena or mixs identified in the STANDARDS list
+    if any(x in standard_list for x in STANDARDS) and standard_list != ["tol"] and return_http_response:
+        template = get_standard_mapping(standard_list, template)
+
     if error is None:
         if num_found == None:
             if template == None:
@@ -304,15 +365,20 @@ def finish_request(template=None, error=None, num_found=None, return_http_respon
         wrapper['status']['error_detail'] = error
         wrapper['number_found'] = None
         wrapper['data'] = None
+
     output = jsonb.dumps(wrapper)
+    
     if return_http_response:
-        if return_type == "csv":
-            # Create the HttpResponse object with the appropriate CSV header.
+        if return_type == "csv" and standard_list == ["tol"]:
+            # Create the HttpResponse object with the appropriate CSV header
+            # only if the standard is TOL
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=export.csv'
             df = pd.DataFrame(template)
             df.to_csv(response, index=False)
             return response
+        elif return_type == "csv" and standard_list != ["tol"]:
+            return HttpResponse(content="Not Implemented")
         elif return_type == "rocrate":
             df = pd.DataFrame(template)
             manifest_ids = df['manifest_id'].unique() if 'manifest_id' in df.columns else []

@@ -11,7 +11,7 @@ from src.apps.api.utils import finish_request
 def filter_audits_for_API(audits):
     time_fields = ['time_updated']
     email_fields = ['updated_by']
-    audit_log_types = ['update_log', 'removal_log', 'truncated_log']
+    audit_log_types = ['update_log', 'removal_log', 'truncated_log']   
     out = list()
 
     for audit in audits:

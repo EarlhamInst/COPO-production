@@ -22,7 +22,7 @@ class Command(BaseCommand):
         sample_list = options['samples'].split(",")
         print(sample_list)
         # retrieve sample from db
-        samplesinddb = Sample().get_by_biosample_ids(sample_list)
+        samplesinddb = Sample().get_by_biosampleAccessions(sample_list)
         for sam in samplesinddb:
             # create source
             specimen_obj_fields = {"SPECIMEN_ID": sam["SPECIMEN_ID"],
