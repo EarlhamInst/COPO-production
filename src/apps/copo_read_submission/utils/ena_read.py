@@ -4,10 +4,11 @@ from common.dal.copo_da import DataFile, EnaFileTransfer, EnaChecklist
 from common.dal.submission_da import Submission
 from common.dal.sample_da import Sample, Source
 from .da import SubmissionQueue
-from common.utils.helpers import get_datetime, get_not_deleted_flag, get_env
+from common.utils.helpers import get_datetime, get_not_deleted_flag, get_env, notify_read_status
 from common.dal.mongo_util import cursor_to_list
 from bson import ObjectId
 import requests
+import threading
 
 l = Logger()
 pass_word = get_env('WEBIN_USER_PASSWORD')
@@ -177,6 +178,8 @@ def delete_ena_records(profile_id, target_ids=list(), target_id=None):
 
 def generate_read_record(profile_id=str(), checklist_id=str()):
     checklist = EnaChecklist().execute_query({"primary_id" : checklist_id})
+    run_accession_number = []
+
     if not checklist:
         return dict(dataSet=[],
                     columns=[],
@@ -204,8 +207,8 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
     columns.insert(0, detail_dict)
     columns.append(dict(data="record_id", visible=False))
     columns.append(dict(data="DT_RowId", visible=False))
-    columns.extend([dict(data=x, title=fields[x]["name"], defaultContent='', className="ena-accession" if x.lower().endswith("accession") else "") for x in label  ])
-    columns.extend([dict(data=x, title=x.upper().replace("_", " "), defaultContent='', className="ena-accession" if x.lower().endswith("accession") else "") for x in default_label ])  
+    columns.extend([dict(data=x, title=fields[x]["name"], defaultContent='', className="ena-accession" if x.lower().endswith("accession") else x  if x == "ena_file_processing_status" else ""    ) for x in label  ])
+    columns.extend([dict(data=x, title=x.upper().replace("_", " "), defaultContent='', className="ena-accession" if x.lower().endswith("accession") else  x if x == "ena_file_processing_status" else "" ) for x in default_label ])  
 
     label.extend(default_label)
 
@@ -267,14 +270,42 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
                         row_data.update({key : read_values.get(key, str()) for key in read_label})
 
                 row_data["ena_file_processing_status"] = ""
+                
                 if row_data["run_accession"]:
-                    row_data["ena_file_processing_status"] = _query_ena_file_processing_status(row_data["run_accession"])
-
+                    run_accession_number.append(row_data["run_accession"])
+                    
+                    #row_data["ena_file_processing_status"] = _query_ena_file_processing_status(row_data["run_accession"])
+                
                 data_set.append(row_data)
 
+    if run_accession_number:
+        thread = _GET_ENA_FILE_PROCESSING_STATUS(profile_id=profile_id, run_accession_number=run_accession_number)  
+        thread.start()
 
     return_dict = dict(dataSet=data_set,
                     columns=columns,
                     )
 
     return return_dict
+
+class _GET_ENA_FILE_PROCESSING_STATUS(threading.Thread):
+    def __init__(self, profile_id, run_accession_number):
+        self.profile_id = profile_id
+        self.run_accession_number = run_accession_number
+        super(_GET_ENA_FILE_PROCESSING_STATUS, self).__init__() 
+
+    def run(self):
+        sent_2_frontend_every = 100
+        data = []
+        i = 0
+        for run_accession in self.run_accession_number:
+            i += 1
+            file_processing_status = _query_ena_file_processing_status(run_accession)
+            if file_processing_status:
+               data.append({"run_accession":run_accession, "msg":file_processing_status})
+            if i == sent_2_frontend_every:  
+               notify_read_status(data={"profile_id": self.profile_id, "file_processing_status":data},  msg="", action="file_processing_status" )
+               i = 0
+               data=[]
+        if i>0:
+            notify_read_status(data={"profile_id": self.profile_id, "file_processing_status":data},  msg="", action="file_processing_status" )

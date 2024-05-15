@@ -117,7 +117,8 @@ def process_pending_file_transfers():
 
             if tx_status == 1:
                 # check if is on ECS
-                chk = check_file_in_ecs(tx)
+                #chk = check_file_in_ecs(tx)
+                chk = True # for now, as all files should be in ECS before they get here
                 if not chk:
                     # not much we can do here...this should not happen, just update last checked
                     log.error(tx["local_path"] + " not in ecs ")
