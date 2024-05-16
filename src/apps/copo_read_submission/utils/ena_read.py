@@ -198,9 +198,11 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
 
     read_label =  [ x for x in fields.keys() if fields[x]["type"] != "TEXT_AREA_FIELD" and fields[x].get("read_field", False) ] 
 
-    data_set = []
+    #data_set = []
     columns = []
     label_set = set()
+    data_map = dict()
+    run_accession_number_map = dict()
 
     detail_dict = dict(className1='summary-details-control detail-hover-message', orderable=False, data=None,
                         title='', defaultContent='', width="5%")   # remove the details 
@@ -214,7 +216,7 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
 
     submission = Submission().get_all_records_columns(filter_by={"profile_id": profile_id}, projection={"_id": 1, "name": 1, "accessions": 1})
     if not submission:
-        return dict(dataSet=data_set,
+        return dict(dataSet=[],
                 columns=columns
         )
         
@@ -272,40 +274,51 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
                 row_data["ena_file_processing_status"] = ""
                 
                 if row_data["run_accession"]:
-                    run_accession_number.append(row_data["run_accession"])
+                    run_accession_number_map[row_data["run_accession"]] = row_data["record_id"]
                     
                     #row_data["ena_file_processing_status"] = _query_ena_file_processing_status(row_data["run_accession"])
                 
-                data_set.append(row_data)
+                #data_set.append(row_data)
+                data_map[row_data["record_id"]] = row_data
 
-    if run_accession_number:
-        thread = _GET_ENA_FILE_PROCESSING_STATUS(profile_id=profile_id, run_accession_number=run_accession_number)  
-        thread.start()
-
-    return_dict = dict(dataSet=data_set,
+    return_dict = dict(dataSet=list(data_map.values()),
                     columns=columns,
                     )
+
+    if run_accession_number_map:
+        thread = _GET_ENA_FILE_PROCESSING_STATUS(profile_id=profile_id, run_accession_number_map=run_accession_number_map, data_map=data_map)  
+        thread.start()
 
     return return_dict
 
 class _GET_ENA_FILE_PROCESSING_STATUS(threading.Thread):
-    def __init__(self, profile_id, run_accession_number):
+    def __init__(self, profile_id, run_accession_number_map, data_map=dict(), columns=dict()):
         self.profile_id = profile_id
-        self.run_accession_number = run_accession_number
+        self.run_accession_number_map = run_accession_number_map
+        self.data_map = data_map
         super(_GET_ENA_FILE_PROCESSING_STATUS, self).__init__() 
 
     def run(self):
         sent_2_frontend_every = 4000
-        data = []
+        #data = []
         i = 0
-        for run_accession in self.run_accession_number:
+        #data = self.return_dict["dataSet"]
+
+        for run_accession in self.run_accession_number_map.keys():
             i += 1
             file_processing_status = _query_ena_file_processing_status(run_accession)
             if file_processing_status:
-               data.append({"run_accession":run_accession, "msg":file_processing_status})
-            if i == sent_2_frontend_every:  
-               notify_read_status(data={"profile_id": self.profile_id, "file_processing_status":data},  msg="", action="file_processing_status" )
+               #data.append({"run_accession":run_accession, "msg":file_processing_status})
+               row = self.data_map.get(self.run_accession_number_map.get(run_accession), dict())
+               row["ena_file_processing_status"] = file_processing_status
+
+            if i == sent_2_frontend_every:                 
+               #notify_read_status(data={"profile_id": self.profile_id, "file_processing_status":data},  msg="", action="file_processing_status" )
+               notify_read_status(data={"profile_id": self.profile_id, "table_data" : list(self.data_map.values())},
+                        msg="freshing table for file processing status", action="file_processing_status", html_id="sample_info")
                i = 0
-               data=[]
+               #data=[]
         if i>0:
-            notify_read_status(data={"profile_id": self.profile_id, "file_processing_status":data},  msg="", action="file_processing_status" )
+            #notify_read_status(data={"profile_id": self.profile_id, "file_processing_status":data},  msg="", action="file_processing_status" )
+            notify_read_status(data={"profile_id": self.profile_id, "table_data" : list(self.data_map.values())},
+                        msg="freshing table for file processing status", action="file_processing_status", html_id="sample_info")

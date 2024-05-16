@@ -152,6 +152,17 @@ $(document).ready(function () {
       args_dict['sample_checklist_id'] = get_checklist_id();
       load_records(componentMeta, args_dict, columnDefs); // call to load component records
     } else if (d.action === 'file_processing_status') {
+        $(element).html(d.message);
+        table = $('#read_table').DataTable();
+            //clear old, set new data
+        table.rows().deselect();
+        table.clear().draw();
+        table.rows.add(d.data["table_data"]).draw();
+        table.columns.adjust().draw();
+        table.search('').columns().search('').draw();
+
+
+        /*
         table = $('#read_table').DataTable();
         table.columns.adjust().draw();
          for (var i = 0; i < d.data["file_processing_status"].length; i++) {
@@ -169,6 +180,7 @@ $(document).ready(function () {
           }  
 
           }
+          */
 
     }
   };
