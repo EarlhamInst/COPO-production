@@ -160,6 +160,7 @@ $(document).ready(function () {
         table.rows.add(d.data["table_data"]).draw();
         table.columns.adjust().draw();
         table.search('').columns().search('').draw();
+        $(element).html(d.message + " ... Done");
 
 
         /*
