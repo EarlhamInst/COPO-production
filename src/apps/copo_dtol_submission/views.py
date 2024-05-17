@@ -120,7 +120,7 @@ def get_samples_for_profile(request):
                  # notify_frontend(msg="Creating Sample: " + "sprog", action="info",
                  #                     html_id="dtol_sample_info")
                  if filter == 'pending':
-                    if is_associated_project_type_checker and is_sequencing_centre_checker:
+                    if type != "erga" or (is_associated_project_type_checker and is_sequencing_centre_checker):
                         pass
                     elif is_associated_project_type_checker:
                         samples["data"] = [sample for sample in samples['data'] if sample["status"] == "associated_project_pending"]                   
@@ -230,40 +230,42 @@ def add_sample_to_dtol_submission(request):
             #             sub["dtol_samples"].append(sample_id)
             #             # Sample().get_all_records_columns()
 
-
-            match sample["status"]:
-                case "bge_pending":
-                    if is_bge_checker:
-                        if is_sequencing_centre_approval_required:
-                            pending_sample_ids.append(sample_id)
+            if "erga" in type_sub.lower():
+                match sample["status"]:
+                    case "bge_pending":
+                        if is_bge_checker:
+                            if is_sequencing_centre_approval_required:
+                                pending_sample_ids.append(sample_id)
+                            else:
+                                if is_associated_project_type_approval_required:
+                                    associated_project_sample_ids.append(sample_id)
+                                else:
+                                    processing_sample_ids.append(sample_id)
                         else:
+                            lg.error(f"User {current_user} is not a BGE checker")
+                    case "pending":
+                        if is_sequencing_centre_checker:
                             if is_associated_project_type_approval_required:
-                                associated_project_sample_ids.append(sample_id)
+                                if is_associated_project_type_checker:              
+                                    processing_sample_ids.append(sample_id)
+                                else:
+                                    associated_project_sample_ids.append(sample_id)
                             else:
                                 processing_sample_ids.append(sample_id)
-                    else:
-                       lg.error(f"User {current_user} is not a BGE checker")
-                case "pending":
-                    if is_sequencing_centre_checker:
-                        if is_associated_project_type_approval_required:
-                            if is_associated_project_type_checker:              
-                                processing_sample_ids.append(sample_id)
-                            else:
-                                associated_project_sample_ids.append(sample_id)
                         else:
+                            lg.error(f"User {current_user} is not a sequencing centre checker")
+                    case "associated_project_pending":
+                        if is_associated_project_type_checker:              
                             processing_sample_ids.append(sample_id)
-                    elif is_sample_manager:
-                        processing_sample_ids.append(sample_id)
-                    else:
-                        lg.error(f"User {current_user} is not a sequencing centre checker")
-                case "associated_project_pending":
-                    if is_associated_project_type_checker:              
-                        processing_sample_ids.append(sample_id)
-                    else:
-                        lg.error(f"User {current_user} is not an associated project type checker")
-                case _:
-                    lg.error(f"Sample {sample_id} has an invalid status {sample['status']} for the current profile type {type_sub} and user {current_user}")
-                    
+                        else:
+                            lg.error(f"User {current_user} is not an associated project type checker")
+                    case _:
+                        lg.error(f"Sample {sample_id} has an invalid status {sample['status']} for the current profile type {type_sub} and user {current_user}")
+                        
+            elif is_sample_manager:
+                processing_sample_ids.append(sample_id)
+            else:
+                lg.error(f"Sample {sample_id} has an invalid status {sample['status']} for the current profile type {type_sub} and user {current_user}")
 
         # Processing samples
         if processing_sample_ids:
