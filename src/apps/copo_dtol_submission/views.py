@@ -92,8 +92,8 @@ def get_samples_for_profile(request):
         if isinstance(profile, dict):
             associated_profiles = profile.get("associated_type",[])
             sequencing_centres = profile.get('sequencing_centre',[])
-            is_associated_project_type_checker = any(AssociatedProfileType.objects.filter(is_approval_required=True, users=current_user, name=x.get("value","")) for x in associated_profiles)
-            is_sequencing_centre_checker = any(SequencingCentre.objects.filter(is_approval_required=True, users=current_user, name=sc) for sc in sequencing_centres)
+            is_associated_project_type_checker = any(AssociatedProfileType.objects.filter(is_approval_required=True, users=current_user, name__in = [x.get("value","") for x in associated_profiles]))
+            is_sequencing_centre_checker = any(SequencingCentre.objects.filter(is_approval_required=True, users=current_user, name__in = sequencing_centres))
             
         if direction == "desc":
             dir = -1
@@ -120,6 +120,15 @@ def get_samples_for_profile(request):
                  # notify_frontend(msg="Creating Sample: " + "sprog", action="info",
                  #                     html_id="dtol_sample_info")
                  if filter == 'pending':
+                    if is_associated_project_type_checker and is_sequencing_centre_checker:
+                        pass
+                    elif is_associated_project_type_checker:
+                        samples["data"] = [sample for sample in samples['data'] if sample["status"] == "associated_project_pending"]                   
+                    elif is_sequencing_centre_checker:
+                        samples["data"] = [sample for sample in samples['data'] if sample["status"] == "pending"]
+                    else:                    
+                        samples["data"] = []
+                    """
                     # Filter samples based on associated project pending being required
                     if not is_associated_project_type_checker:
                        samples = [sample for sample in samples['data'] if sample["status"] != "associated_project_pending"]
@@ -127,7 +136,7 @@ def get_samples_for_profile(request):
                     # Filter samples based on sequencing centre being required
                     if not is_sequencing_centre_checker:
                        samples = [sample for sample in samples['data'] if sample["status"] != "pending"]
-
+                    """
         return HttpResponse(json_util.dumps(samples))
     else:
         return HttpResponse(json_util.dumps({"locked": True}))
@@ -156,9 +165,13 @@ def add_sample_to_dtol_submission(request):
     associated_profiles = profile.get("associated_type",[])
     sequencing_centres = profile.get("sequencing_centre", [])
     group = get_group_membership_asString()
-    is_bge_checker =  "bge_checkers" in group
+    #is_bge_checker =  "bge_checkers" in group
     current_user = get_current_user()
-    is_associated_project_type_checker = any(AssociatedProfileType.objects.filter(is_approval_required=True, users=current_user, name=x.get("value","")) for x in associated_profiles)
+    is_associated_project_type_checker = associated_profiles and any(AssociatedProfileType.objects.filter(is_approval_required=True, users=current_user, name__in = [x.get("value","") for x in associated_profiles]))
+    is_sequencing_centre_checker = sequencing_centres and any(SequencingCentre.objects.filter(is_approval_required=True, users=current_user, name__in = sequencing_centres))   
+    is_bge_checker =  "bge_checkers" in group and sequencing_centres and  any(SequencingCentre.objects.filter(users=current_user, name__in = sequencing_centres))
+    is_sample_manager = True #assume user is a sample manager as it has been checked in the decorator
+
 
     # check we have required params
     if sample_ids and profile:
@@ -168,12 +181,12 @@ def add_sample_to_dtol_submission(request):
         #is_bge_profile = "BGE" in [ x.get("value","") for x in profile.get("associated_type",[]) ]
 
         # Check if approval is required for the assigned sequencing centre in an ERGA profile
-        is_sequencing_centre_approval_required = "erga" in type_sub.lower() and \
-        any(SequencingCentre.objects.filter(is_approval_required=True, name=sc) for sc in sequencing_centres)
+        is_sequencing_centre_approval_required = "erga" in type_sub.lower() and sequencing_centres and \
+        any(SequencingCentre.objects.filter(is_approval_required=True, name__in = sequencing_centres))
         #is_sanger_profile = "erga" in type_sub.lower() and settings.SANGER_SEQUENCING_CENTRE in sequencing_centres
         
-        is_associated_project_type_approval_required =  "erga" in type_sub.lower() and \
-            any(AssociatedProfileType.objects.filter(is_approval_required=True, name=x.get("value","")) for x in associated_profiles)
+        is_associated_project_type_approval_required =  "erga" in type_sub.lower() and associated_profiles and \
+            any(AssociatedProfileType.objects.filter(is_approval_required=True, name__in = [x.get("value","") for x in associated_profiles]))
 
         if not sub:
             if type_sub == "Aquatic Symbiosis Genomics (ASG)":
@@ -188,11 +201,11 @@ def add_sample_to_dtol_submission(request):
         sub["dtol_status"] = "pending"
         sub["target_id"] = sub.pop("_id")
 
-        sample_oids = list(map(lambda id: ObjectId(id), sample_ids))
+        sample_oids = [ObjectId(id) for id in sample_ids]
         samples = Sample().get_all_records_columns(filter_by=dict(_id={"$in": sample_oids}), projection=dict(status=1))
         processing_sample_ids = []
         pending_sample_ids = []
-        bge_pending_sample_ids = []
+        #bge_pending_sample_ids = []
         associated_project_sample_ids = []
 
         for sample in samples:
@@ -231,13 +244,18 @@ def add_sample_to_dtol_submission(request):
                     else:
                        lg.error(f"User {current_user} is not a BGE checker")
                 case "pending":
-                    if is_associated_project_type_approval_required:
-                        if is_associated_project_type_checker:              
-                            processing_sample_ids.append(sample_id)
+                    if is_sequencing_centre_checker:
+                        if is_associated_project_type_approval_required:
+                            if is_associated_project_type_checker:              
+                                processing_sample_ids.append(sample_id)
+                            else:
+                                associated_project_sample_ids.append(sample_id)
                         else:
-                            associated_project_sample_ids.append(sample_id)
-                    else:
+                            processing_sample_ids.append(sample_id)
+                    elif is_sample_manager:
                         processing_sample_ids.append(sample_id)
+                    else:
+                        lg.error(f"User {current_user} is not a sequencing centre checker")
                 case "associated_project_pending":
                     if is_associated_project_type_checker:              
                         processing_sample_ids.append(sample_id)
@@ -262,13 +280,14 @@ def add_sample_to_dtol_submission(request):
             #send email to Sangar to notify them of new samples
             Email().notify_manifest_pending_for_sequencing_centre(data=uri + 'copo/dtol_submission/accept_reject_sample/', profile_id=profile_id,  title=profile["title"], description=profile["description"] )
         
+        """
         # BGE pending samples
         if bge_pending_sample_ids:
             Sample().mark_pending(sample_ids=bge_pending_sample_ids, is_erga=True)
             uri = request.build_absolute_uri('/')
             #send email to BGE to notify them of new samples
             Email().notify_manifest_pending_for_bge_checker(data=uri + 'copo/dtol_submission/accept_reject_sample/', profile_id=profile_id,  title=profile["title"], description=profile["description"] )
-        
+        """
         # Associated project type samples
         if associated_project_sample_ids:
             Sample().mark_pending(sample_ids=associated_project_sample_ids, is_associated_project_check_required=True)

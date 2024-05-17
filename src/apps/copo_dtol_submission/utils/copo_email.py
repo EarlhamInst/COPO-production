@@ -151,6 +151,12 @@ class Email:
         if p_id:
             profile = Profile().get_record(p_id)
             sequencing_centres = profile.get("sequencing_centre", [])
+
+            centres = SequencingCentre.objects.filter(name__in=sequencing_centres, is_approval_required=True)
+            for sc in centres:
+                users += sc.users.all()
+
+            """
             for sc in sequencing_centres:
                 # Try catch block to handle the case where the sequencing centre object does not exist
                 try:
@@ -158,7 +164,8 @@ class Email:
                 except SequencingCentre.DoesNotExist:
                    continue
                 users += centre.users.all()
-                
+            """ 
+   
         email_addresses = list()
         sub = ""
         if len(users) > 0:
@@ -176,6 +183,7 @@ class Email:
         else:
             logger.log("No users found for sequencing centre")
 
+    """
     def notify_manifest_pending_for_bge_checker(self, data, **kwargs):        
         # get email addresses of users in sequencing centre
         p_id = kwargs.get("profile_id", "")
@@ -184,13 +192,9 @@ class Email:
 
         if profile:    
             sequencing_centres = profile.get("sequencing_centre", [])
-            for sc in sequencing_centres:
-                # Try catch block to handle the case where the sequencing centre object does not exist
-                try:
-                    centre = SequencingCentre.objects.get(is_approval_required=True, name=sc)
-                except SequencingCentre.DoesNotExist:
-                   continue
-                users += centre.users.all()
+            centres = SequencingCentre.objects.filter(name__in=sequencing_centres)
+            for sc in centres:
+                users += sc.users.all()
 
             checker_users = User.objects.filter(groups__name='bge_checkers')        
             users = list(set(users) & set(checker_users))
@@ -210,7 +214,7 @@ class Email:
                 CopoEmail().send(to=email_addresses, sub=sub, content=msg, html=True)
                 return
         logger.log("No users found for bge_checkers")
-    
+    """
     def notify_manifest_pending_for_associated_project_type_checker(self, data, **kwargs):        
         # get email addresses of users in sequencing centre
         p_id = kwargs.get("profile_id", "")
@@ -219,6 +223,12 @@ class Email:
 
         if profile:    
             associated_profile_types = profile.get("associated_type", [])
+            apts = [apt.get("value", "") for apt in associated_profile_types]
+            apt_objs = AssociatedProfileType.objects.filter(name__in=apts, is_approval_required=True)
+            for apt_obj in apt_objs:
+                users += apt_obj.users.all()
+
+            """
             for apt in associated_profile_types:
                 # Try catch block to handle the case where the associated project type object does not exist
                 try:
@@ -226,7 +236,7 @@ class Email:
                 except SequencingCentre.DoesNotExist:
                    continue
                 users += apt_obj.users.all()
-                 
+            """     
             users = list(set(users))
             email_addresses = list()
             sub = ""
