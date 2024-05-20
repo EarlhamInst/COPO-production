@@ -254,12 +254,13 @@ def get_sample_status_for_manifest(request, manifest_id):
 
 
 def get_by_biosampleAccessions(request, biosampleAccessions):
-    # get sample associated with given biosample_id. This will return nothing if ENA submission has not yet occured
+    # Get sample associated with given biosampleAccession
+    # This will return nothing if ENA submission has not yet occurred
     accessions = biosampleAccessions.split(",")
     # strip white space
     accessions = list(map(lambda x: x.strip(), accessions))
     # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
-    accessions[:] = [x for x in biosampleAccessions if x]
+    accessions[:] = [x for x in accessions if x]
     sample = Sample().get_by_biosampleAccessions(accessions)
     out = list()
     if sample:
