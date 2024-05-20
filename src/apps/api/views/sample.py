@@ -420,9 +420,9 @@ def get_fields_by_manifest_version(request):
     return  HttpResponse(status=status, content=json.dumps(out, indent=2))
 
 def get_project_samples_by_associated_project_type(request, values):
-    associated_profile_types_List = values.split("&")
-    associated_profile_types_List = list(map(lambda x: x.strip(), associated_profile_types_List))
-    # remove any empty elements in the list (e.g. where 2 or more ampersands (i.e. &) have been typed in error
+    associated_profile_types_List = values.split(",")
+    associated_profile_types_List = list(map(lambda x: x.strip().upper(), associated_profile_types_List))
+    # remove any empty elements in the list (e.g. where 2 or more commas (i.e. ,) have been typed in error
     associated_profile_types_List[:] = [x for x in associated_profile_types_List if x]
     samples = Sample().get_project_samples_by_associated_project_type(associated_profile_types_List)
     out = list()
