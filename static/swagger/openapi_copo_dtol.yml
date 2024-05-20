@@ -549,7 +549,7 @@ paths:
         - Sample
       summary: Get sample records in a project by associated project type(s)
       description: |
-        Get a list of all the samples of a project in COPO by associated project type
+        Get a list of all samples of a project in COPO by associated project type
         Available associated projects - **ASG**, **BGE**, **DTOL**, **DTOL_ENV**, **ERGA**, **ERGA_PILOT**, **ERGA_SATELLITES**, **POP_GENOMICS**
 
         To query multiple associated projects, separate them with a comma.
@@ -562,12 +562,13 @@ paths:
         - **ERGA_PILOT** refers to uropean Reference Genome Atlas - Pilot (ERGA_PILOT)
         - **ERGA_SATELLITES** refers to European Reference Genome Atlas - Satellites (ERGA_SATELLITES)
         - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
-      example: ASG,BGE,DTOL,DTOL_ENV,ERGA,ERGA_PILOT,ERGA_SATELLITES,POP_GENOMICS
+
+        For example, to query all associated Tree of Life (ToL) projects, input: ASG,BGE,DTOL,DTOL_ENV,ERGA,ERGA_PILOT,ERGA_SATELLITES,POP_GENOMICS
       parameters:
         - name: values
           in: path
           required: true
-          description: ampersand (&) separated list of supported associated project types
+          description: comma (,) separated list of supported associated project types
           schema:
             type: string
             minimum: 1
@@ -678,7 +679,8 @@ paths:
             - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
             - **DTOL** refers to Darwin Tree of Life (DTOL)
             - **ERGA** refers to European Reference Genome Atlas (ERGA)
-          example: ASG,DTOL,ERGA
+
+            For example, to query all projects, input: ASG,DTOL,ERGA
           schema:
             type: string
             minimum: 1
@@ -1054,9 +1056,10 @@ components:
 
         - **dwc** refers to Darwin Core (DWC)
         - **ena** refers to European Nucleotide Archive (ENA)
-        - **mixs** refers to Minimum Information about any (X) Sequence (MIxS)
+        - **mixs** refers to Minimum Information about any (x) Sequence (MIxS)
         - **tol** refers to Tree of Life (ToL)
-      example: dwc,ena,mixs,tol
+
+        For example, to query all standards, input: dwc,ena,mixs,tol
       schema:
         type: string
 
