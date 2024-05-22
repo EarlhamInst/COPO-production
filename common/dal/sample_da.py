@@ -855,8 +855,15 @@ class Sample(DAComponent):
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": status}})
 
     def get_by_manifest_id(self, manifest_id):
+        samples_filter = dict()
+        if 'MANIFEST-ID-VIRTUAL' in manifest_id:
+            # Get samples based on a virtual manifest ID
+            samples_filter['manifest_id_virtual'] = manifest_id
+        else:
+            # Get samples based on the usual manifest ID
+            samples_filter['manifest_id'] = manifest_id
         samples = cursor_to_list(
-            self.get_collection_handle().find({"manifest_id": manifest_id}))
+            self.get_collection_handle().find(samples_filter))
         if samples:
             profile = cursor_to_list(handle_dict["profile"].find({"_id": ObjectId(samples[0]["profile_id"])},{"title":1}))
             profile_title = ""
@@ -921,7 +928,15 @@ class Sample(DAComponent):
              {"$project": {"profile_id": 1}}]))
 
     def get_status_by_manifest_id(self, manifest_id):
-        return cursor_to_list(self.get_collection_handle().find({"manifest_id": manifest_id},
+        status_filter = dict()
+        if 'MANIFEST-ID-VIRTUAL' in manifest_id:
+            # Get status based on a virtual manifest ID
+            status_filter['manifest_id_virtual'] = manifest_id
+        else:
+            # Get status based on the usual manifest ID
+            status_filter['manifest_id'] = manifest_id
+              
+        return cursor_to_list(self.get_collection_handle().find(status_filter,
                                                                 {"status": 1, "copo_id": 1, "manifest_id": 1,
                                                                  "time_created": 1, "time_updated": 1}))
 
