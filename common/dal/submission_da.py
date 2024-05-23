@@ -871,13 +871,16 @@ class Submission(DAComponent):
         sort_by = element_dict['sort_by']
         dir = element_dict['dir']
         search = element_dict['search']
+        showAllCOPOAccessions = element_dict['showAllCOPOAccessions']
+        isUserProfileActive = element_dict['isUserProfileActive']
         profile_id = element_dict['profile_id']
         filter_accessions = element_dict['filter_accessions']
         
         filter = dict()
 
-        if profile_id:
-            filter['profile_id'] = profile_id
+        if not showAllCOPOAccessions:
+            if isUserProfileActive and profile_id:
+                filter['profile_id'] = profile_id
 
         filter["accessions"] = {"$exists": True, "$ne": {}}
         projection = {"_id": 1, "accessions": 1, "profile_id": 1}
@@ -887,9 +890,7 @@ class Submission(DAComponent):
         handler = self.get_collection_handle()
 
         records = cursor_to_list_str(handler.find(
-            filter, projection).sort(sort_clause).skip(int(start)).limit(int(length)), use_underscore_in_id=False)
-        
-        total_count = handler.count_documents(filter)
+            filter, projection).sort(sort_clause), use_underscore_in_id=False)
 
         # Declare labels for 'sample' accession
         sample_accession_labels = ['sample_accession','sample_alias']
@@ -942,6 +943,11 @@ class Submission(DAComponent):
             # Filter based on search query
             if search:
                 out = filter_non_sample_accession_dict_lst(out, search)
+
+        # Slice 'out' which is a list of dictionaries 
+        # based on the values for start and length
+        total_count = len(out)
+        out = out[int(start):int(start) + int(length)]
 
         result = dict()
         result["recordsTotal"] = total_count

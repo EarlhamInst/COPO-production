@@ -1843,6 +1843,8 @@ BLANK_VALS = ['NOT_APPLICABLE', 'NOT_COLLECTED', 'NOT_PROVIDED']
 
 DATE_FIELDS = ["DATE_OF_PRESERVATION"]
 
+EXCLUDED_SAMPLE_TYPES = ['biosample']
+
 NA_VALS = ['#N/A', '#N/A N/A', '#NA', '-1.#IND', '-1.#QNAN', '-NaN', '-nan', '1.#IND', '1.#QNAN', '<NA>', 'N/A', 'NULL',
            'NaN', 'n/a', 'nan', 'NaT', 'null', 'NIL', 'nil', 'NA', 'na', 'NAN', 'Nan', 'NA']
 
@@ -1872,6 +1874,8 @@ SLASHES_LIST = ["/", "\\"]
 
 SPECIES_LIST_FIELDS = ["SYMBIONT", "TAXON_ID", "ORDER_OR_GROUP", "FAMILY", "GENUS", "SCIENTIFIC_NAME",
                        "INFRASPECIFIC_EPITHET", "CULTURE_OR_STRAIN", "COMMON_NAME", "TAXON_REMARKS"]
+
+STANDALONE_PROJECT_SAMPLE_TYPE = ["isasample"]
 
 STANDARDS = ["dwc", "ena", "mixs", "tol"]
 
