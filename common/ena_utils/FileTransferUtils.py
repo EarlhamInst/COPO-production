@@ -287,7 +287,7 @@ class ToENA(threading.Thread):
         complete = True
         if os.path.exists(self.tx["local_path"]):
             Logger().log("deleting file after check")
-            os.remove(self.tx["local_path"])
+            #os.remove(self.tx["local_path"])  #don't remove file as need resubmission
         for t in transfers:
             if not t["transfer_status"] == 0:
                 complete = False
