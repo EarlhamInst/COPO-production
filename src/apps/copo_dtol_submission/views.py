@@ -122,7 +122,7 @@ def get_samples_for_profile(request):
                  if filter == 'pending':
                     if type != "erga" or (is_associated_project_type_checker and is_sequencing_centre_checker):
                         pass
-                    elif is_associated_project_type_checker:
+                    elif is_associated_project_type_checker and is_sequencing_centre_checker:
                         samples["data"] = [sample for sample in samples['data'] if sample["status"] == "associated_project_pending"]                   
                     elif is_sequencing_centre_checker:
                         samples["data"] = [sample for sample in samples['data'] if sample["status"] == "pending"]
