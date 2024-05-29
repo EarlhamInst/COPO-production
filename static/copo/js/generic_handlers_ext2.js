@@ -613,7 +613,7 @@ function do_render_server_side_table(componentMeta) {
     });
 } //end of func
 
-function do_render_component_table(data, componentMeta) {
+function do_render_component_table(data, componentMeta, columnDefs = null) {
   var tableID = componentMeta.tableID;
   var dataSet = data.table_data.dataSet;
   var cols = data.table_data.columns;
@@ -623,6 +623,21 @@ function do_render_component_table(data, componentMeta) {
   if (dataSet.length === 0) {
     return false;
   }
+
+  local_columnDefs = [
+    {
+      targets: '_all',
+      createdCell: function (td, cellData, rowData, row, col) {
+        if (cellData == '') {
+          $(td).addClass('cell-no-content');
+        }
+      },
+    },
+  ]
+  if (columnDefs) {
+    local_columnDefs = local_columnDefs.push(columnDefs);
+  } 
+
 
   //set data
   var table = null;
@@ -693,16 +708,7 @@ function do_render_component_table(data, componentMeta) {
         var event = jQuery.Event('posttablerefresh'); //individual compnents can trap and handle this event as they so wish
         $('body').trigger(event);
       },
-      columnDefs: [
-        {
-          targets: '_all',
-          createdCell: function (td, cellData, rowData, row, col) {
-            if (cellData == '') {
-              $(td).addClass('cell-no-content');
-            }
-          },
-        },
-      ],
+      columnDefs: columnDefs,
       createdRow: function (row, data, index) {
         //add class to row for ease of selection later
         var recordId = index;
@@ -818,7 +824,7 @@ function do_render_component_table(data, componentMeta) {
     });
 } //end of func
 
-function load_records(componentMeta, args_dict) {
+function load_records(componentMeta, args_dict, columnDefs = null) {
   var csrftoken = $.cookie('csrftoken');
 
   //loader
@@ -847,7 +853,7 @@ function load_records(componentMeta, args_dict) {
       alert("Couldn't retrieve " + componentMeta.component + ' data!');
     },
   }).done(function (data) {
-    do_render_component_table(data, componentMeta);
+    do_render_component_table(data, componentMeta, columnDefs);
 
     //remove loader
     if (tableLoader) {

@@ -6,6 +6,8 @@ function get_checklist_id() {
   }
 }
 
+var columnDefs = []
+
 var dialog = new BootstrapDialog({
   title: 'Upload Read Manifest',
   message: "<div><input type='file' id='fileid' style='display:none' /></div>",
@@ -66,19 +68,24 @@ $(document).ready(function () {
   };
   s3socket.onmessage = function (e) {
     d = JSON.parse(e.data);
-    element = element = $('#' + d.html_id);
-    if ($('.modal-dialog').is(':visible')) {
-      elem = $('.modal-dialog').find('#' + d.html_id);
-      if (elem) {
-        element = elem;
+    var element = "";
+
+    if (d.html_id != "") {
+      element = element = $('#' + d.html_id);
+      if ($('.modal-dialog').is(':visible')) {
+        elem = $('.modal-dialog').find('#' + d.html_id);
+        if (elem) {
+          element = elem;
+        }
+      }
+
+      if (!d && !$(element).is(':hidden')) {
+        $(element).fadeOut('50');
+      } else if (d && d.message && $(element).is(':hidden')) {
+        $(element).fadeIn('50');
       }
     }
 
-    if (!d && !$(element).is(':hidden')) {
-      $(element).fadeOut('50');
-    } else if (d && d.message && $(element).is(':hidden')) {
-      $(element).fadeIn('50');
-    }
     //$("#" + d.html_id).html(d.message)
     if (d.action === 'info') {
       // show something on the info div
@@ -143,7 +150,39 @@ $(document).ready(function () {
       $(element).html(d.message);
       var args_dict = {};
       args_dict['sample_checklist_id'] = get_checklist_id();
-      load_records(componentMeta, args_dict); // call to load component records
+      load_records(componentMeta, args_dict, columnDefs); // call to load component records
+    } else if (d.action === 'file_processing_status') {
+        $(element).html(d.message);
+        table = $('#read_table').DataTable();
+            //clear old, set new data
+        table.rows().deselect();
+        table.clear().draw();
+        table.rows.add(d.data["table_data"]).draw();
+        table.columns.adjust().draw();
+        table.search('').columns().search('').draw();
+        $(element).html(d.message + " ... Done");
+
+
+        /*
+        table = $('#read_table').DataTable();
+        table.columns.adjust().draw();
+         for (var i = 0; i < d.data["file_processing_status"].length; i++) {
+          	
+          let rows = table.rows((idx, data) => data.run_accession === d.data["file_processing_status"][i]["run_accession"]);
+          if (rows.count() > 0) {
+            rows.every(function (rowIdx, tableLoop, rowLoop) {
+              var row = this.data();
+              row["ena_file_processing_status"] = d.data["file_processing_status"][i]["msg"];
+              if (d.data["file_processing_status"][i]["msg"] != "" && !d.data["file_processing_status"][i]["msg"].includes("File archived")) {
+                $(table.row(this.index()).node()).addClass("highlight_error_file_processing_status")
+              }
+              this.data(row).draw();
+            });
+          }  
+
+          }
+          */
+
     }
   };
   window.addEventListener('beforeunload', function (event) {
@@ -166,7 +205,7 @@ $(document).ready(function () {
     'href',
     $('#blank_manifest_url_' + get_checklist_id()).val()
   );
-  load_records(componentMeta, args_dict); // call to load component records
+  load_records(componentMeta, args_dict, columnDefs); // call to load component records
 
   //register_resolvers_event(); //register event for publication resolvers
 
@@ -233,7 +272,7 @@ $(document).ready(function () {
     );
     args_dict['sample_checklist_id'] = this.value;
     args_dict[''];
-    load_records(componentMeta, args_dict); // call to load component records
+    load_records(componentMeta, args_dict, columnDefs); // call to load component records
   });
 
   // Set colour of 'help_add_button' button and 'new-samples-spreadsheet-template'

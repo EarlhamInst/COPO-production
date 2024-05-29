@@ -128,8 +128,7 @@ class EnaReads:
                 # reset sample status to pending & remove bundle / bundle samples
                 Submission(profile_id=self.profile_id).reset_read_submisison_bundle(self.submission_id)
         except Exception as exc:
-            if settings.DEBUG:
-                Logger().exception(exc)
+            Logger().exception(exc)
             message = "Submission processing failed due to exception! Retry again"
             ghlper.logging_info(message, self.submission_id)
             # reset sample status to pending & remove bundle / bundle samples

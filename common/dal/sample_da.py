@@ -4,7 +4,7 @@ from pymongo import ReturnDocument
 from django.conf import settings
 from django_tools.middlewares import ThreadLocal
 from common.dal.mongo_util import cursor_to_list, cursor_to_list_str, cursor_to_list_no_ids
-from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES, SANGER_TOL_PROFILE_TYPES, PERMIT_FILENAME_COLUMN_NAMES
+from common.schema_versions.lookup.dtol_lookups import EXCLUDED_SAMPLE_TYPES, TOL_PROFILE_TYPES, SANGER_TOL_PROFILE_TYPES, PERMIT_FILENAME_COLUMN_NAMES
 from pymongo.collection import ReturnDocument
 from common.utils import helpers
 from bson.objectid import ObjectId
@@ -457,6 +457,9 @@ class Sample(DAComponent):
     def get_number_of_samples(self):
         return self.get_collection_handle().count_documents({})
 
+    def get_distinct_sample_types(self):
+        return self.get_collection_handle().distinct("sample_type")
+
     def get_sample_accessions(self, element_dict):
         # Get elements from the dictionary
         draw = element_dict['draw']
@@ -465,18 +468,30 @@ class Sample(DAComponent):
         sort_by = element_dict['sort_by']
         dir = element_dict['dir']
         search = element_dict['search']
+        showAllCOPOAccessions = element_dict['showAllCOPOAccessions']
+        isUserProfileActive = element_dict['isUserProfileActive']
         profile_id = element_dict['profile_id']
         filter_accessions = element_dict['filter_accessions']
 
-        filter=dict()
+        filter = dict()
+
+        handler = self.get_collection_handle()
 
         # Filter based on accession type
-        sample_types = filter_accessions if filter_accessions else TOL_PROFILE_TYPES
+        # Get Stand-alone project sample types and TOL project sample types
+        # Get distinct sample types
+        all_sample_types = self.get_distinct_sample_types()
 
-        if profile_id:
-            filter['profile_id'] = profile_id
+        # Remove excluded sample types
+        all_sample_types = [sample_type for sample_type in all_sample_types if sample_type not in EXCLUDED_SAMPLE_TYPES]
 
-        # filter out based on search
+        sample_types = filter_accessions if filter_accessions else all_sample_types
+
+        if not showAllCOPOAccessions:
+            if isUserProfileActive and profile_id:
+                filter['profile_id'] = profile_id
+
+        # Filter based on search
         if search:
             filter["$text"] = {"$search": search}
 
@@ -485,12 +500,11 @@ class Sample(DAComponent):
 
         projection = {"biosampleAccession": 1, "sraAccession": 1,
                       "submissionAccession": 1, "SCIENTIFIC_NAME": 1,
-                      "SPECIMEN_ID": 1, "TAXON_ID": 1, "tol_project": 1, "manifest_id": 1}
+                      "SPECIMEN_ID": 1, "TAXON_ID": 1, "sample_type": 1, "tol_project": 1, "manifest_id": 1}
         
         total_count = 0
         sort_clause = [[sort_by, dir]]
-        handler = self.get_collection_handle()
-
+        
         records = cursor_to_list_str(handler.find(filter, projection).sort(sort_clause).skip(int(start)).limit(int(length)))
         total_count = handler.count_documents(filter)
 
@@ -505,7 +519,7 @@ class Sample(DAComponent):
                 row_data = dict()
                 row_data['record_id'] = i.get('_id','')
                 row_data['DT_RowId'] = 'row_' + i.get('_id','')
-                row_data['accession_type'] = i.get('tol_project','')
+                row_data['accession_type'] = 'STANDALONE' if i.get('sample_type','') == 'isasample' else i.get('tol_project','')
 
                 row_data.update({key: i.get(key,'') for key in i.keys() if key in labels})
                 out.append(row_data)            
@@ -515,7 +529,6 @@ class Sample(DAComponent):
         result["recordsFiltered"] = total_count
         result["draw"] = draw
         result["data"] = out
-
         return result
 
     def get_dtol_type(self, id):
@@ -857,8 +870,15 @@ class Sample(DAComponent):
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": status}})
 
     def get_by_manifest_id(self, manifest_id):
+        samples_filter = dict()
+        if 'MANIFEST-ID-VIRTUAL' in manifest_id:
+            # Get samples based on a virtual manifest ID
+            samples_filter['manifest_id_virtual'] = manifest_id
+        else:
+            # Get samples based on the usual manifest ID
+            samples_filter['manifest_id'] = manifest_id
         samples = cursor_to_list(
-            self.get_collection_handle().find({"manifest_id": manifest_id}))
+            self.get_collection_handle().find(samples_filter))
         if samples:
             profile = cursor_to_list(handle_dict["profile"].find({"_id": ObjectId(samples[0]["profile_id"])},{"title":1}))
             profile_title = ""
@@ -923,7 +943,15 @@ class Sample(DAComponent):
              {"$project": {"profile_id": 1}}]))
 
     def get_status_by_manifest_id(self, manifest_id):
-        return cursor_to_list(self.get_collection_handle().find({"manifest_id": manifest_id},
+        status_filter = dict()
+        if 'MANIFEST-ID-VIRTUAL' in manifest_id:
+            # Get status based on a virtual manifest ID
+            status_filter['manifest_id_virtual'] = manifest_id
+        else:
+            # Get status based on the usual manifest ID
+            status_filter['manifest_id'] = manifest_id
+              
+        return cursor_to_list(self.get_collection_handle().find(status_filter,
                                                                 {"status": 1, "copo_id": 1, "manifest_id": 1,
                                                                  "time_created": 1, "time_updated": 1}))
 

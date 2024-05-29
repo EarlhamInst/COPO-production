@@ -85,6 +85,25 @@ print("Pending ERGA Samples: " + json.dumps(x))
 x = sample_collection.count_documents({"tol_project":"ERGA", "status":"rejected"})
 print("Rejected ERGA Samples: " + json.dumps(x))
 
+print('\n________________________________________\n')
+
+# Get distinct items from records
+# Get number of distinct SCIENTIFIC_NAME or species based on sample collection
+x = sample_collection.distinct("SCIENTIFIC_NAME", {"tol_project": "ASG"})
+x = len(x)
+print("Number of distinct SCIENTIFIC_NAME or species for ASG samples", json.dumps(x))
+
+#______________________________________
+
+x = sample_collection.distinct("SCIENTIFIC_NAME", {"tol_project": "DTOL"})
+x = len(x)
+print("Number of distinct SCIENTIFIC_NAME or species for DTOL samples", json.dumps(x))
+
+#______________________________________
+
+x = sample_collection.distinct("SCIENTIFIC_NAME", {"tol_project": "ERGA"})
+x = len(x)
+print("Number of distinct SCIENTIFIC_NAME or species for ERGA samples", json.dumps(x))
 
 print('\n________________________________________\n')
 

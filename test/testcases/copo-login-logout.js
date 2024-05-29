@@ -77,9 +77,9 @@ const get_browser_id  = async () => {
         const targetPage = page;
         await puppeteer.Locator.race([
             targetPage.locator('::-p-aria(Email or 16-digit ORCID iD)'),
-            targetPage.locator('#username'),
-            targetPage.locator('::-p-xpath(//*[@id=\\"username\\"])'),
-            targetPage.locator(':scope >>> #username')
+            targetPage.locator('#username-input'),
+            targetPage.locator('::-p-xpath(//*[@id=\\"username-input\\"])'),
+            targetPage.locator(':scope >>> #username-input')
         ])
             .setTimeout(timeout)
             .click({
@@ -93,9 +93,9 @@ const get_browser_id  = async () => {
         const targetPage = page;
         await puppeteer.Locator.race([
             targetPage.locator('::-p-aria(Email or 16-digit ORCID iD)'),
-            targetPage.locator('#username'),
-            targetPage.locator('::-p-xpath(//*[@id=\\"username\\"])'),
-            targetPage.locator(':scope >>> #username')
+            targetPage.locator('#username-input'),
+            targetPage.locator('::-p-xpath(//*[@id=\\"username-input\\"])'),
+            targetPage.locator(':scope >>> #username-input')
         ])
             .setTimeout(timeout)
             .fill(process.env.COPO_WEB_USER);

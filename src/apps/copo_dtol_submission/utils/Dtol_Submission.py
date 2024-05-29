@@ -1067,7 +1067,7 @@ def submit_biosample_v2(subfix, sampleobj, collection_id, sample_ids, type="samp
                 tree = ET.fromstring(receipt)
                 return handle_submit_receipt(sampleobj, collection_id, tree, type)
         else:
-            l.log("General Error " + response.status_code)
+            l.log("General Error " + str(response.status_code))
             message = 'API call error ' + \
                 "Submitting project xml to ENA via cURL. cURL command is: " + cmd
             notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",

@@ -133,6 +133,9 @@ def save_ena_records(request):
     project_release_date = None
     submission_external_sample_accession=[]
 
+    organism_map = dict()
+    source_map = dict()
+
     for line in range(1, len(sample_data)):
         is_external_sample = False
         # for each row in the manifest
@@ -180,28 +183,34 @@ def save_ena_records(request):
                     sample = dict()
 
                 source = dict()
-                curl_cmd = "curl " + \
-                        "https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/" + s["Organism"].replace(" ", "%20")
-                receipt = subprocess.check_output(curl_cmd, shell=True)
-                # ToDo - exit if species not found
-                print(receipt)
+                taxinfo = organism_map.get(s["Organism"], None)
+                source_id = source_map.get(s["Organism"], None)
+                if not taxinfo:
+                    curl_cmd = "curl " + \
+                            "https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/" + s["Organism"].replace(" ", "%20")
+                    receipt = subprocess.check_output(curl_cmd, shell=True)
+                    # ToDo - exit if species not found
+                    print(receipt)
+                    taxinfo = json.loads(receipt.decode("utf-8"))
+                    organism_map[s["Organism"]] = taxinfo
 
-                taxinfo = json.loads(receipt.decode("utf-8"))
+                    # create source from organism
+                    termAccession = "http://purl.obolibrary.org/obo/NCBITaxon_" + str(taxinfo[0]["taxId"])
+                    source["organism"] = \
+                        {"annotationValue": s["Organism"], "termSource": "NCBITAXON", "termAccession":
+                            termAccession}
+                    # source["profile_id"] = request.session["profile_id"]
+                    source["date_modified"] = dt
+                    source["deleted"] = "0"
+                    source["name"] = s["Sample"]
+                    source["profile_id"] = profile_id                
+                    source_id = str(
+                        Source().get_collection_handle().find_one_and_update({"organism.termAccession": termAccession, "profile_id": profile_id},
+                                                                            {"$set": source, "$setOnInsert": insert_record},
+                                                                            upsert=True, return_document=ReturnDocument.AFTER)["_id"])
+                    source_map[s["Organism"]] = source_id
+                    
 
-                # create source from organism
-                termAccession = "http://purl.obolibrary.org/obo/NCBITaxon_" + str(taxinfo[0]["taxId"])
-                source["organism"] = \
-                    {"annotationValue": s["Organism"], "termSource": "NCBITAXON", "termAccession":
-                        termAccession}
-                # source["profile_id"] = request.session["profile_id"]
-                source["date_modified"] = dt
-                source["deleted"] = "0"
-                source["name"] = s["Sample"]
-                source["profile_id"] = profile_id                
-                source_id = str(
-                    Source().get_collection_handle().find_one_and_update({"organism.termAccession": termAccession, "profile_id": profile_id},
-                                                                        {"$set": source, "$setOnInsert": insert_record},
-                                                                        upsert=True, return_document=ReturnDocument.AFTER)["_id"])
                 sample["derivesFrom"] = source_id
                 sample["name"] = s["Sample"]
                 # create associated sample
