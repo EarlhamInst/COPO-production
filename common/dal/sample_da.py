@@ -667,7 +667,7 @@ class Sample(DAComponent):
     def get_by_project_and_field(self, project, field, value):
         return cursor_to_list(self.get_collection_handle().find({field: {"$in": value}, "tol_project": project}))
 
-    def get_dtol_from_profile_id(self, profile_id, filter, draw, start, length, sort_by, dir, search, profile_type):
+    def get_dtol_from_profile_id(self, profile_id, filter, draw, start, length, sort_by, dir, search, profile_type,is_associated_project_type_checker=False, is_sequencing_centre_checker=False):
 
         sc = self.get_component_schema()
         if sort_by == "0":
@@ -695,7 +695,17 @@ class Sample(DAComponent):
             # $nin will return where status neq to values in array, or status is absent altogether
             find_condition["status"] = {
                 "$nin": ["barcode_only", "rejected", "accepted", "processing", "conflicting", "private", "sending", "bge_pending"]}
-
+            
+            if profile_type == "erga":
+                status_lst = list()
+                if is_associated_project_type_checker:
+                    status_lst.append("associated_project_pending")
+                
+                if is_sequencing_centre_checker:
+                    status_lst.append("pending")
+            
+                find_condition["status"] = {"$in": status_lst}
+                
         elif filter == "conflicting_barcode":
             find_condition["status"] = "conflicting"
 

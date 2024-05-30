@@ -68,7 +68,7 @@ def update_pending_samples_table(request):
     result = {"data": profiles}
     return HttpResponse(json_util.dumps(result))
 
-
+@web_page_access_checker
 @login_required
 def get_samples_for_profile(request):
     url = request.build_absolute_uri()
@@ -92,6 +92,8 @@ def get_samples_for_profile(request):
         if isinstance(profile, dict):
             associated_profiles = profile.get("associated_type",[])
             sequencing_centres = profile.get('sequencing_centre',[])
+        
+            is_sequencing_centre_sample_manager = any(SequencingCentre.objects.filter( users=current_user, name__in = sequencing_centres))
             is_associated_project_type_checker = any(AssociatedProfileType.objects.filter(is_approval_required=True, users=current_user, name__in = [x.get("value","") for x in associated_profiles]))
             is_sequencing_centre_checker = any(SequencingCentre.objects.filter(is_approval_required=True, users=current_user, name__in = sequencing_centres))
             
@@ -115,28 +117,31 @@ def get_samples_for_profile(request):
                   case "Darwin Tree of Life Environmental Samples (DTOL_ENV)":
                       type = "dtol_env"
               if type:
-                 samples = Sample().get_dtol_from_profile_id(
-                        profile_id, filter, draw, start, length, sort_by, dir, search, type)
+                 if type == "erga" and not is_sequencing_centre_sample_manager:
+                    samples["data"] = []
+                 else:
+                     samples = Sample().get_dtol_from_profile_id(
+                        profile_id, filter, draw, start, length, sort_by, dir, search, type, is_associated_project_type_checker, is_sequencing_centre_checker)
                  # notify_frontend(msg="Creating Sample: " + "sprog", action="info",
                  #                     html_id="dtol_sample_info")
-                 if filter == 'pending':
-                    if type != "erga" or (is_associated_project_type_checker and is_sequencing_centre_checker):
-                        pass
-                    elif is_associated_project_type_checker and is_sequencing_centre_checker:
-                        samples["data"] = [sample for sample in samples['data'] if sample["status"] == "associated_project_pending"]                   
-                    elif is_sequencing_centre_checker:
-                        samples["data"] = [sample for sample in samples['data'] if sample["status"] == "pending"]
-                    else:                    
-                        samples["data"] = []
-                    """
-                    # Filter samples based on associated project pending being required
-                    if not is_associated_project_type_checker:
-                       samples = [sample for sample in samples['data'] if sample["status"] != "associated_project_pending"]
+                #  if filter == 'pending':
+                #     if type != "erga" or (is_associated_project_type_checker and is_sequencing_centre_checker):
+                #         pass
+                #     elif is_associated_project_type_checker and is_sequencing_centre_checker:
+                #         samples["data"] = [sample for sample in samples['data'] if sample["status"] == "associated_project_pending"]                   
+                #     elif is_sequencing_centre_checker:
+                #         samples["data"] = [sample for sample in samples['data'] if sample["status"] == "pending"]
+                #     else:                    
+                #         samples["data"] = []
+                    # """
+                    # # Filter samples based on associated project pending being required
+                    # if not is_associated_project_type_checker:
+                    #    samples = [sample for sample in samples['data'] if sample["status"] != "associated_project_pending"]
 
-                    # Filter samples based on sequencing centre being required
-                    if not is_sequencing_centre_checker:
-                       samples = [sample for sample in samples['data'] if sample["status"] != "pending"]
-                    """
+                    # # Filter samples based on sequencing centre being required
+                    # if not is_sequencing_centre_checker:
+                    #    samples = [sample for sample in samples['data'] if sample["status"] != "pending"]
+                    # """
         return HttpResponse(json_util.dumps(samples))
     else:
         return HttpResponse(json_util.dumps({"locked": True}))
