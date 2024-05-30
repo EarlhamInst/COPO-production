@@ -1,5 +1,11 @@
 let contactCOPODialogCount = 1;
 
+function get_profile_type() {
+     return $('#profile_type').find(':selected').val();
+}
+
+
+
 $(document).ready(function () {
   //****************************** Event handlers block *************************//
   const component = 'profile';
@@ -27,7 +33,8 @@ $(document).ready(function () {
 
   // Add new profile button
   $(document).on('click', '.new-component-template', function () {
-    initiate_form_call(component);
+    var args_dict = { profile_type: get_profile_type() };
+    initiate_form_call(component, args_dict);
   });
 
   $(document).on('click', '#accept_reject_shortcut', function () {
@@ -205,7 +212,8 @@ $(document).ready(function () {
 
   $(document).on('click', '#editProfileBtn', function (e) {
     let profile_id = $(e.currentTarget).closest('.ellipsisDiv').attr('id');
-    editProfileRecord(profile_id);
+    let profile_type = $(e.currentTarget).closest('.copo-records-panel').attr('profile_type');
+    editProfileRecord(profile_id, profile_type);
   });
 
   $(document).on('click', '#deleteProfileBtn', function (e) {
@@ -365,7 +373,7 @@ function appendRecordComponents(grids) {
   });
 }
 
-function editProfileRecord(profileRecordID) {
+function editProfileRecord(profileRecordID, profileType) {
   const component = 'profile';
   let csrftoken = $.cookie('csrftoken');
 
@@ -379,6 +387,7 @@ function editProfileRecord(profileRecordID) {
       task: 'form',
       component: component,
       target_id: profileRecordID,
+      profile_type: profileType,
     },
     success: function (data) {
       json2HtmlForm(data);
@@ -634,9 +643,9 @@ function append_component_buttons(record_id, profile_type) {
 
     if (
       !item.hasOwnProperty('profile_component') ||
-      (profile_type === 'stand-alone' &&
+      (profile_type === 'genomics' &&
         !item.profile_component.includes('stand-alone')) ||
-      (profile_type !== 'stand-alone' &&
+      (profile_type !== 'genomics' &&
         item.profile_component.includes('stand-alone'))
     ) {
       return false;
@@ -702,6 +711,10 @@ function filter_action_menu() {
       //if($(el).attr("shared_profile_type")) $(el).removeAttr("shared_profile_type")
     }
 
+    $(el).find("a[profile_component]").hide();
+    $(el).find("a[profile_component="+ t + "]").show();
+
+    /*
     if (t.includes('ERGA')) {
       $(el).find("a[profile_component ='stand-alone']").hide();
       $(el).find("a[profile_component ='dtol']").hide();
@@ -712,6 +725,7 @@ function filter_action_menu() {
       $(el).find("a[profile_component ='erga']").hide();
       $(el).find("a[profile_component ='dtol']").hide();
     }
+    */
     if (s == undefined || s != 'PRIVATE') {
       $(el).find("a[data-action_type ='release_study']").hide();
     }
@@ -760,7 +774,16 @@ function set_profile_grid_heading(grids) {
           if ($(el).attr('shared_profile_type') === '')
             $(el).removeAttr('shared_profile_type'); // Remove 'shared_profile_type' attribute
 
-          if (profile_type.includes('DTOL_ENV')) {
+          acronym = profile_type.toUpperCase();
+          colour = '#fb7d0d'
+          $(el)
+              .find('.panel-heading')
+              .find('.row-title span')
+              .append('<small>('+  acronym  +')</small>');
+            $(el).find('.panel-heading').css('background-color', colour);
+       
+          /*
+          if (profile_type.includes('DTOLENV')) {
             acronym = 'DTOL-ENV';
             colour = '#fb7d0d';
             $(el)
@@ -801,6 +824,7 @@ function set_profile_grid_heading(grids) {
               .append('<small>(Standalone)</small>');
             $(el).find('.panel-heading').css('background-color', colour);
           }
+          */
         } else {
           acronym = 'Shared';
           colour = '#f26202';
@@ -995,16 +1019,18 @@ function initialise_loaded_records(
       .removeClass('grid-panel-body-selected');
   });
 
+  /*
   $('#editProfileBtn').click(function (e) {
     let profile_id = $(e.currentTarget).closest('.ellipsisDiv').attr('id');
-    editProfileRecord(profile_id);
+    let profile_type = $(e.currentTarget).closest('.copo-records-panel').attr('profile_type');
+    editProfileRecord(profile_id, profile_type);
   });
 
   $('#deleteProfileBtn').click(function (e) {
     let profile_id = $(e.currentTarget).closest('.ellipsisDiv').attr('id');
     deleteProfileRecord(profile_id);
   });
-
+  */
   $('#profileOptionsPopoverCloseBtn').click(function () {
     $('#ellipsisID[data-toggle="popover"]').popover('hide');
   });
@@ -1093,6 +1119,7 @@ function contact_COPO_popup_dialog() {
   }
 } //end of contact_COPO_popup_dialog  **************
 
+/*
 function filter_associatedProfileTypeList_based_on_selectedProfileType(
   profileTypeID
 ) {
@@ -1153,7 +1180,8 @@ function remove_selectedProfileType_from_associatedProfileTypeList(
     .getElementById(profileTypeID)
     .addEventListener('change', function () {
       // Perform the following only if selected 'Profile Type' is not "Stand-alone"
-      if (this.value == 'European Reference Genome Atlas (ERGA)') {
+      //if (this.value == 'European Reference Genome Atlas (ERGA)') {
+      if (this.value == 'erga') {
         $('.row:nth-child(4) > .col-sm-12').show(); // Show 'Associated Profile Type(s)' field
         $('.row:nth-child(5) > .col-sm-12').show(); // Show 'Sequencing Centre(s)' field
         $('.row:nth-child(5) > .col-sm-12')
@@ -1173,7 +1201,7 @@ function remove_selectedProfileType_from_associatedProfileTypeList(
           // Exclude the selected profile from the associated profile type dropdown menu options
           multi_select_options.select2({
             templateResult: function (option) {
-              let option_value = get_acronym(option.text);
+              let option_value = option.text //get_acronym(option.text);
 
               if (option_value === selected_type) {
                 return null;
@@ -1181,7 +1209,7 @@ function remove_selectedProfileType_from_associatedProfileTypeList(
               // Exclude erga associated types from the associated profile type dropdown menu options
               // if "ERGA" is not selected as the profile type
               let erga_associated_types = ['BGE', 'POP_GENOMICS', 'ERGA_PILOT'];
-              if (!selected_type.includes('ERGA')) {
+              if (!selected_type.includes('erga')) {
                 if (
                   erga_associated_types.some((erga_a_type) =>
                     option.text.includes(erga_a_type)
@@ -1206,7 +1234,7 @@ function remove_selectedProfileType_from_associatedProfileTypeList(
       }
     });
 }
-
+*/
 function showMoreProfileInfoPopover(grids) {
   grids.each(function () {
     let showMoreProfileInfoBtn = $(this)

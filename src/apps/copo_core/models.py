@@ -177,3 +177,148 @@ class SequencingCentre(models.Model):
 
     def get_sequencing_centres(self):
         return SequencingCentre.objects.all()
+
+
+
+
+class ActionButton(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=100)
+    icon = models.CharField(max_length=100)
+    action = models.CharField(max_length=100)
+    action_type = models.CharField(max_length=100)
+    action_url = models.CharField(max_length=100)
+    action_data = models.CharField(max_length=100)
+    action_target = models.CharField(max_length=100)
+    action_icon = models.CharField(max_length=100)
+    action_icon_class = models.CharField(max_length=100)
+    action_colour = models.CharField(max_length=100)
+    action_class = models.CharField(max_length=100)
+    action_text = models.CharField(max_length=100)
+    action_tooltip = models.CharField(max_length=100)
+    action_tooltip_class = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name + " : " + self.description
+
+    def create_action_button(self, name, description, icon, action, action_type, action_url, action_data, action_target, action_icon, action_icon_class, action_colour, action_class, action_text, action_tooltip, action_tooltip_class):
+        self.name = name
+        self.description = description
+        self.icon = icon
+        self.action = action
+        self.action_type = action_type
+        self.action_url = action_url
+        self.action_data = action_data
+        self.action_target = action_target
+        self.action_icon = action_icon
+        self.action_icon_class = action_icon_class
+        self.action_colour = action_colour
+        self.action_class = action_class
+        self.action_text = action_text
+        self.action_tooltip = action_tooltip
+        self.action_tooltip_class = action_tooltip_class
+        self.save()
+        return self
+ 
+class SidebarPanel(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=100)
+    icon = models.CharField(max_length=100)
+    action = models.CharField(max_length=100)
+    action_type = models.CharField(max_length=100)
+    action_url = models.CharField(max_length=100)
+    action_data = models.CharField(max_length=100)
+    action_target = models.CharField(max_length=100)
+    action_icon = models.CharField(max_length=100)
+    action_icon_class = models.CharField(max_length=100)
+    action_colour = models.CharField(max_length=100)
+    action_class = models.CharField(max_length=100)
+    action_text = models.CharField(max_length=100)
+    action_tooltip = models.CharField(max_length=100)
+    action_tooltip_class = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name + " : " + self.description
+
+    def create_sidebar_panel(self, name, description, icon, action, action_type, action_url, action_data, action_target, action_icon, action_icon_class, action_colour, action_class, action_text, action_tooltip, action_tooltip_class):
+        self.name = name
+        self.description = description
+        self.icon = icon
+        self.action = action
+        self.action_type = action_type
+        self.action_url = action_url
+        self.action_data = action_data
+        self.action_target = action_target
+        self.action_icon = action_icon
+        self.action_icon_class = action_icon_class
+        self.action_colour = action_colour
+        self.action_class = action_class
+        self.action_text = action_text
+        self.action_tooltip = action_tooltip
+        self.action_tooltip_class = action_tooltip_class
+        self.save()
+        return self
+
+    def remove_all_sidebar_panels(self):
+        SidebarPanel.objects.all().delete()
+        return True
+
+    def get_sidebar_panels(self):
+        return SidebarPanel.objects.all()
+
+class Component(models.Model):
+    action_buttons = models.ManyToManyField(ActionButton, blank=True)
+    sidebar_panels = models.ManyToManyField(SidebarPanel, blank=True)
+    name = models.CharField(max_length=100, unique=True)
+    title = models.CharField(max_length=100, blank=True, null=True)
+    description = models.CharField(max_length=100)
+    widget_icon = models.CharField(max_length=100)
+    widget_colour = models.CharField(max_length=200)
+    widget_icon_class = models.CharField(max_length=100)
+    table_id = models.CharField(max_length=100)
+
+
+    def __str__(self):
+        return self.name + " : " + self.description
+
+    def create_component(self, name, description, widget):
+        self.name = name
+        self.description = description
+        self.widget = widget
+        self.save()
+        return self
+
+    def remove_all_components(self):
+        Component.objects.all().delete()
+        return True
+
+    def get_components(self):
+        return Component.objects.all()
+    
+
+class ProfileType(models.Model):
+    components = models.ManyToManyField(Component, blank=True)
+    type = models.CharField(max_length=20, unique=True)
+    description = models.CharField(max_length=100)
+    widget_colour = models.CharField(max_length=200, blank=True, null=True)
+    is_dtol_profile = models.BooleanField(default=False)
+    is_permission_required = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.type + " : " + self.description
+
+    def create_profile_type(self, type, description):
+        self.type = type
+        self.description = description
+        self.save()
+        return self
+
+    def remove_all_profile_types(self):
+        ProfileType.objects.all().delete()
+        return True
+    
+    def get_profile_types(self):
+        return ProfileType.objects.all()
+            
+
+

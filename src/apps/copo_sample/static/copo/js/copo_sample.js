@@ -99,8 +99,8 @@ $(document).ready(function () {
 
   //var groups = $("#groups").val().split(",")
   if (
-    ['DTOL', 'ASG'].some((el) =>
-      document.getElementById('profile_type').value.includes(el)
+    ['dtol', 'asg'].some((el) =>
+      document.getElementById('profile_type').value == el
     ) &&
     groups.includes('dtol_users')
   ) {
@@ -119,7 +119,7 @@ $(document).ready(function () {
   }
 
   if (
-    document.getElementById('profile_type').value.includes('ERGA') &&
+    document.getElementById('profile_type').value == 'erga' &&
     groups.includes('erga_users')
   ) {
     $('.new-samples-spreadsheet-template-erga').show();

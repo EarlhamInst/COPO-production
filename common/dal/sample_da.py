@@ -302,11 +302,11 @@ class Sample(DAComponent):
             system_fields["profile_id"] = self.profile_id
 
         # Get profile type
-        manifest_type = Profile().get_type(self.profile_id)
-        manifest_type = manifest_type.lower()
-        current_schema_version = ""
-        profile_type = ""
+        profile_type = Profile().get_type(self.profile_id).lower()
 
+        current_schema_version = ""
+        """
+        profile_type = ""
         # Get manifest version based on profile type
         if "asg" in manifest_type:
             profile_type = "asg"
@@ -316,6 +316,7 @@ class Sample(DAComponent):
             profile_type = "dtol"
         elif "erga" in manifest_type:
             profile_type = "erga"
+        """
 
         current_schema_version = settings.MANIFEST_VERSION.get(
             profile_type.upper(), "")

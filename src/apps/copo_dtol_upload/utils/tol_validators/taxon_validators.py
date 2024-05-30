@@ -30,9 +30,11 @@ class DtolEnumerationValidator(Validator):
         self.taxonomy_dict = {}
 
     def validate(self):
-        p_type = Profile().get_type(profile_id=self.profile_id)
-        if "DTOL_ENV" in p_type:
-            p_type = "DTOL_ENV"
+        p_type = Profile().get_type(profile_id=self.profile_id).upper()
+        '''
+        if "DTOLENV" in p_type:
+            p_type = "DTOLENV"
+        '''
         Entrez.api_key = lookup.NIH_API_KEY
         # build dictionary of species in this manifest  max 200 IDs per query
         taxon_id_set = set([x for x in self.data['TAXON_ID'].tolist() if x])
@@ -70,8 +72,8 @@ class DtolEnumerationValidator(Validator):
                 for element in records:
                     self.taxonomy_dict[element['TaxId']] = element
 
-        # if DTOL_ENV we only check the rank is species
-        if p_type == "DTOL_ENV":
+        # if DTOLENV we only check the rank is species
+        if p_type == "DTOLENV":
             for index, row in self.data[['TAXON_ID']].iterrows():
                 taxon_id = row['TAXON_ID'].strip()
                 if not taxon_id:

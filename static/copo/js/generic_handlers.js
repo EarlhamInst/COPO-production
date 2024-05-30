@@ -2769,6 +2769,7 @@ function get_profile_components() {
     {
       component: 'profile',
       title: 'Work Profiles',
+      subtitle: '#component_subtitle',
       buttons: ['quick-tour-template', 'new-component-template'],
       sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-profiles-legend'],
       tableID: 'copo_profiles_table',
@@ -2897,12 +2898,12 @@ function do_page_controls(componentName) {
     if (comp.component == componentName) {
       profile_type = $('#profile_type').val();
       if (profile_type != undefined) {
-        if (profile_type.toLowerCase() == 'stand-alone') {
+        if (profile_type.toLowerCase() == 'genomics') {
           if (comp.profile_component == 'stand-alone') {
             component = comp;
             return false;
           }
-        } else if (profile_type.toLowerCase() != 'stand-alone') {
+        } else if (profile_type.toLowerCase() != 'genomics') {
           if (comp.profile_component != 'stand-alone') {
             component = comp;
             return false;

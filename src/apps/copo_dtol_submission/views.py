@@ -6,7 +6,7 @@ from common.dal.profile_da import Profile
 from common.dal.submission_da import Submission
 from bson import json_util
 from common.utils.helpers import get_group_membership_asString, notify_frontend
-from src.apps.copo_core.models import ViewLock
+from src.apps.copo_core.models import ViewLock, ProfileType
 from src.apps.copo_core.views import web_page_access_checker
 from common.utils.helpers import  get_group_membership_asString, get_current_user
 import json
@@ -70,7 +70,7 @@ def update_pending_samples_table(request):
 
 
 @login_required
-def get_samples_for_profile(request):
+def get_dtol_samples_for_profile(request):
     url = request.build_absolute_uri()
     if not ViewLock().isViewLockedCreate(url=url):
         profile_id = request.GET["profile_id"]
@@ -86,9 +86,10 @@ def get_samples_for_profile(request):
             dir = -1
         samples = []
         if profile_id and profile_id != 'None':
-            profile_type = Profile().get_type(profile_id)
+            profile_type = Profile().get_type(profile_id).lower()
             if profile_type:
-                type = ""
+                type = profile_type
+                """
                 match profile_type:
                     case "Aquatic Symbiosis Genomics (ASG)":
                         type = "asg"
@@ -96,9 +97,10 @@ def get_samples_for_profile(request):
                         type = "erga"
                     case "Darwin Tree of Life (DTOL)":
                         type = "dtol"
-                    case "Darwin Tree of Life Environmental Samples (DTOL_ENV)":
-                        type = "dtol_env"
-                if type:
+                    case "Darwin Tree of Life Environmental Samples (DTOLENV)":
+                        type = "dtolenv"
+                """       
+                if ProfileType.objects.get(type=profile_type).is_dtol_profile:   #if it is dtol_type
                     samples = Sample().get_dtol_from_profile_id(
                         profile_id, filter, draw, start, length, sort_by, dir, search, type)
                 # notify_frontend(msg="Creating Sample: " + "sprog", action="info",
@@ -142,6 +144,9 @@ def add_sample_to_dtol_submission(request):
         is_sanger_profile = "erga" in type_sub.lower() and settings.SANGER_SEQUENCING_CENTRE in sequence_centres
 
         if not sub:
+            sub = Submission(profile_id).save_record(
+                                dict(), **{"type": type_sub.lower()})
+            """
             if type_sub == "Aquatic Symbiosis Genomics (ASG)":
                 sub = Submission(profile_id).save_record(
                     dict(), **{"type": "asg"})
@@ -151,6 +156,7 @@ def add_sample_to_dtol_submission(request):
             else:
                 sub = Submission(profile_id).save_record(
                     dict(), **{"type": "dtol"})
+            """        
         sub["dtol_status"] = "pending"
         sub["target_id"] = sub.pop("_id")
 

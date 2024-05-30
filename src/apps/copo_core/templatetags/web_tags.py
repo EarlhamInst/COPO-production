@@ -64,17 +64,17 @@ def check_group(user, group_name):
 @register.filter(is_safe=True, name="get_blank_manifest_url")
 def get_blank_manifest_url(value):
     manifest_version = settings.MANIFEST_VERSION
-    version = manifest_version.get(value, "")
+    version = manifest_version.get(value.upper(), "")
     version = "_v" + version if version else ""
-    return settings.MANIFEST_DOWNLOAD_URL.format(value, version)
+    return settings.MANIFEST_DOWNLOAD_URL.format(value.upper(), version)
 
 
 @register.filter(is_safe=True, name="get_sop_url")
 def get_sop_url(value):
     manifest_version = settings.MANIFEST_VERSION
-    version = manifest_version.get(value, "")
+    version = manifest_version.get(value.upper(), "")
     version = "_v" + version if version else ""
-    return settings.SOP_DOWNLOAD_URL.format(value, version)
+    return settings.SOP_DOWNLOAD_URL.format(value.upper(), version)
 
 @register.filter(is_safe=True, name="get_short_profile_type")
 def get_short_profile_type(value):

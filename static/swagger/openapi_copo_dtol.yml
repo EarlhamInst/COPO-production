@@ -403,7 +403,7 @@ paths:
         - name: project
           in: path
           required: true
-          description: a comma separate list of supported EBP projects in lower case (dtol|asg|dtol_env|erga)
+          description: a comma separate list of supported EBP projects in lower case (dtol|asg|dtolenv|erga)
           schema:
             type: string
         - name: from
@@ -550,20 +550,20 @@ paths:
       summary: Get sample records in a project by associated project type(s)
       description: |
         Get a list of all samples of a project in COPO by associated project type
-        Available associated projects - **ASG**, **BGE**, **DTOL**, **DTOL_ENV**, **ERGA**, **ERGA_PILOT**, **ERGA_SATELLITES**, **POP_GENOMICS**
+        Available associated projects - **ASG**, **BGE**, **DTOL**, **dtolenv**, **ERGA**, **ERGA_PILOT**, **ERGA_SATELLITES**, **POP_GENOMICS**
 
         To query multiple associated projects, separate them with a comma.
 
         - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
         - **BGE** refers to Darwin Tree of Life (DTOL)
         - **DTOL** refers to Darwin Tree of Life (DTOL)
-        - **DTOL_ENV** refers to Darwin Tree of Life (DTOL)
+        - **dtolenv** refers to Darwin Tree of Life (DTOL)
         - **ERGA** refers to European Reference Genome Atlas (ERGA)
         - **ERGA_PILOT** refers to uropean Reference Genome Atlas - Pilot (ERGA_PILOT)
         - **ERGA_SATELLITES** refers to European Reference Genome Atlas - Satellites (ERGA_SATELLITES)
         - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
 
-        For example, to query all associated Tree of Life (ToL) projects, input: ASG,BGE,DTOL,DTOL_ENV,ERGA,ERGA_PILOT,ERGA_SATELLITES,POP_GENOMICS
+        For example, to query all associated Tree of Life (ToL) projects, input: ASG,BGE,DTOL,dtolenv,ERGA,ERGA_PILOT,ERGA_SATELLITES,POP_GENOMICS
       parameters:
         - name: values
           in: path
@@ -884,7 +884,7 @@ paths:
                     [
                       'Stand-alone',
                       'Darwin Tree of Life (DTOL)',
-                      'Darwin Tree of Life Environmental Samples (DTOL_ENV)',
+                      'Darwin Tree of Life Environmental Samples (dtolenv)',
                       'Aquatic Symbiosis Genomics (ASG)',
                       'European Reference Genome Atlas (ERGA)',
                     ]
@@ -1017,11 +1017,11 @@ paths:
       tags:
         - Tree of Life (ToL) Mapping
       summary: >
-        Get a mapping of ToL fields by manifest type - ASG, DTOL, DTOL_ENV or ERGA
+        Get a mapping of ToL fields by manifest type - ASG, DTOL, DTOLENV or ERGA
         to DWC fields, MIxS fields and ENA fields
       description: >
         COPO will return a list of mapping for one of the manifests project types - Aquatic Symbiosis Genomics (ASG), 
-        Darwin Tree of Life (DTOL), Darwin Tree of Life Environmental Samples (DTOL_ENV) or European Reference Genome Atlas (ERGA)
+        Darwin Tree of Life (DTOL), Darwin Tree of Life Environmental Samples (DTOLENV) or European Reference Genome Atlas (ERGA)
         to Darwin Core (DWC) fields, Minimum Information about any (X) Sequence (MIxS) fields and European Nucleotide Archive (ENA) fields
       parameters:
         - in: path
@@ -1113,7 +1113,7 @@ components:
 
     ManifestTypes:
       type: string
-      enum: [ASG, DTOL, DTOL_ENV, ERGA]
+      enum: [ASG, DTOL, DTOLENV, ERGA]
       description: Projects or manifest types brokered through COPO
 
     ManifestList:
@@ -1336,7 +1336,7 @@ components:
 
     SampleTypes:
       type: string
-      enum: [asg, dtol, dtol_env, erga]
+      enum: [asg, dtol, dtolenv, erga]
       description: Sample types brokered through COPO
 
     Sample_long:

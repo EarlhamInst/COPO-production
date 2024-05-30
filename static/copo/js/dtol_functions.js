@@ -53,7 +53,7 @@ var dt_options = {
     return: true,
   },
   ajax: {
-    url: '/copo/dtol_submission/get_samples_for_profile/',
+    url: '/copo/dtol_submission/get_dtol_samples_for_profile/',
     data: function (d) {
       return {
         profile_id: $('#profile_id').val(),

@@ -120,10 +120,14 @@ def web_page_access_checker(func):
                 # Check if current web page viewer is a sample manager
                 # with permission to view the web page
                 if any(x in current_view for x in SAMPLE_MANAGERS_ACCESSIBLE_WEB_PAGES):
+                    if f'{profile_type}_sample_managers' in member_groups:
+                        request.session['profile_id'] = profile_id
+                        return func(request, *args, **kwargs)
+                    """
                     if 'asg' in profile_type and 'dtol_sample_managers' in member_groups:
                         request.session['profile_id'] = profile_id
                         return func(request, *args, **kwargs)
-                    elif 'dtol_env' in profile_type and 'dtolenv_sample_managers' in member_groups:
+                    elif 'dtolenv' in profile_type and 'dtolenv_sample_managers' in member_groups:
                         request.session['profile_id'] = profile_id
                         return func(request, *args, **kwargs)
                     elif 'dtol' in profile_type and 'dtol_sample_managers' in member_groups:
@@ -132,6 +136,7 @@ def web_page_access_checker(func):
                     elif 'erga' in profile_type and 'erga_sample_managers' in member_groups:
                         request.session['profile_id'] = profile_id
                         return func(request, *args, **kwargs)
+                    """    
                 else:
                     return handler403(request)
             else:

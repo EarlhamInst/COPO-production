@@ -242,11 +242,16 @@ class BrokerDA:
         component_dict = self.param_dict.get("component_dict", dict())
         message_dict = self.param_dict.get("message_dict", dict())
 
-        kwargs = dict()
+        kwargs = self.request_dict
         kwargs["referenced_field"] = self.param_dict.get("referenced_field", str())
         kwargs["referenced_type"] = self.param_dict.get("referenced_type", str())
+        kwargs.pop("compnent_dict", None)
+        kwargs.pop("message_dict", None)
+        kwargs.pop("target_id", None)
+        kwargs.pop("component", None)
+        kwargs.pop("profile_id", None)
 
-        self.context["form"] = htags.generate_copo_form(self.component, target_id, component_dict, message_dict,
+        self.context["form"] = htags.generate_copo_form(self.da_object, target_id, component_dict, message_dict,
                                                         self.profile_id, **kwargs)
         self.context["form"]["visualize"] = self.param_dict.get("visualize")
         return self.context
@@ -309,7 +314,7 @@ class BrokerDA:
         kwargs["referenced_type"] = self.param_dict.get("referenced_type", str())
         kwargs["action_type"] = self.param_dict.get("action_type", str())
 
-        form_value = htags.generate_copo_form(self.component, target_id, component_dict, message_dict,
+        form_value = htags.generate_copo_form(self.da_object, target_id, component_dict, message_dict,
                                               self.profile_id, **kwargs)
 
         self.context["component_record"] = form_value["form_value"]

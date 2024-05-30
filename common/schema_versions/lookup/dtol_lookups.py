@@ -521,7 +521,7 @@ DTOL_ENUMS = {
             'SANGER INSTITUTE',
             'UNIVERSITY OF OXFORD'
         ],
-        'DTOL_ENV': [
+        'DTOLENV': [
             'EARLHAM INSTITUTE',
             'MARINE BIOLOGICAL ASSOCIATION',
             'NATURAL HISTORY MUSEUM',
@@ -1154,7 +1154,7 @@ DTOL_EXPORT_TO_STS_FIELDS = {
         'tol_project',
         'updated_by'
     ],
-    'dtol_env': [],
+    'DTOLENV': [],
     'erga': [
         'TUBE_OR_WELL_ID',
         'SPECIMEN_ID',
@@ -1782,7 +1782,7 @@ SPECIMEN_PREFIX = {
         'erga': {
             'default': 'ERGA_'
         },
-        'dtol_env': {
+        'dtolenv': {
             'EARLHAM INSTITUTE': 'EI_',
             'MARINE BIOLOGICAL ASSOCIATION': 'MBA',
             'NATURAL HISTORY MUSEUM': 'NHMUK',
@@ -1821,7 +1821,7 @@ SPECIMEN_SUFFIX = {
             'SANGER INSTITUTE': '\d{7}',
             'UNIVERSITY OF OXFORD': '\d{6}'
         },
-        "dtol_env": {
+        "DTOLENV": {
             'EARLHAM INSTITUTE': '\d{5}',
             'MARINE BIOLOGICAL ASSOCIATION': '-\d{5}-\d{3}[A-Z]',
             'NATURAL HISTORY MUSEUM': '\d{9}',
@@ -1866,7 +1866,7 @@ REQUIRED_MEMBER_GROUPS = ['bge_checkers','dtol_users', 'dtol_sample_managers', '
 # A list of web pages that can be accessed by both COPO users and sample managers
 SAMPLE_MANAGERS_ACCESSIBLE_WEB_PAGES = ['copo_samples']
 
-SANGER_TOL_PROFILE_TYPES = ["asg", "dtol", "dtol_env", "erga"]
+SANGER_TOL_PROFILE_TYPES = ["asg", "dtol", "dtolenv", "erga"]
 
 SLASHES_LIST = ["/", "\\"]
 
@@ -1885,8 +1885,11 @@ SYMBIONT_FIELDS = ["ORDER_OR_GROUP", "FAMILY", "GENUS", "TAXON_ID", "SCIENTIFIC_
 
 SYMBIONT_VALS = ["TARGET", "SYMBIONT"]
 
-TOL_PROFILE_TYPES = ["asg", "dtol", "dtol_env", "erga"]
+TOL_PROFILE_TYPES = ["asg", "dtol", "dtolenv", "erga"]
 
+"""
 TOL_PROFILE_TYPES_FULL =["Aquatic Symbiosis Genomics (ASG)", "Darwin Tree of Life (DTOL)",
                          "European Reference Genome Atlas (ERGA)",
-                         "Darwin Tree of Life Environmental Samples (DTOL_ENV)"]
+                         "Darwin Tree of Life Environmental Samples (DTOLENV)"]
+"""
+TOL_PROFILE_TYPES_FULL = ["asg", "dtol", "dtolenv", "erga"]

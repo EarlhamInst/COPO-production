@@ -317,13 +317,16 @@ class ProcessValidationQueue:
         group = ""
         profile = Profile().get_record(self.profile_id)
         if profile:
+            group = f"{profile.get('type','').lower()}_sample_managers"
+        """    
+        if profile:
             if "asg" in profile.get("type","").lower() or "dtol" in profile.get("type","").lower():
                 group = "dtol_sample_managers"
             elif "erga" in profile.get("type","").lower():
                 group = "erga_sample_managers"
-            elif "dtol_env" in profile.get("type","").lower():
+            elif "dtolenv" in profile.get("type","").lower():
                 group = "dtolenv_sample_managers"
-            
+        """    
         user = User.objects.get(pk=self.user_id)       
         if user and group:
             is_manager = user.groups.filter(name=group).exists()

@@ -52,6 +52,11 @@
                id="files_url"/>
         <input type="hidden" value="{% url 'copo_barcoding_submission:copo_taggedseq' profile_id='999' %}" name="taggedseq_url"
         id="taggedseq_url"/>    
+        <input
+        type="hidden"
+        id="component_subtitle"
+        value="<select id='profile_type' name='profile_type'>{% for profile_type in profile_types %}<option value='{{ profile_type.name }}' title='{{profile_type.description}}' >{{ profile_type.description }}</option>{% endfor %}</select> "
+      />        
     </div>
 
     <style>

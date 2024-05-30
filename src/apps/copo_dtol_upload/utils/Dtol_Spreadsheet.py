@@ -136,15 +136,17 @@ class DtolSpreadsheet:
         # if not then we are looking at creating samples having previously validated
 
         # get type of manifest
-        t = Profile().get_type(self.profile_id)
+        self.type = Profile().get_type(self.profile_id).upper()
+        """
         if "ASG" in t:
             self.type = "ASG"
         elif "ERGA" in t:
             self.type = "ERGA"
-        elif "DTOL_ENV" in t:
-            self.type = "DTOL_ENV"
+        elif "DTOLENV" in t:
+            self.type = "DTOLENV"
         else:
             self.type = "DTOL"
+        """    
         self.current_schema_version = settings.MANIFEST_VERSION.get(
             self.type, "")
         # get associated profile type(s) of manifest
