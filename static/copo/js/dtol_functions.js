@@ -710,6 +710,8 @@ function row_select(ev) {
     $('#spinner').show();
 
     sample_table.ajax.reload(function () {
+      sample_table.draw();
+
       if (sample_table.data().length == 0) {
         var header = $('<h4/>', {
           html: 'No Samples Found',
@@ -962,10 +964,10 @@ function update_pending_samples_table() {
         dt_options['scrollX'] = true;
         dt_options['scrollY'] = 1000;
         dt_options['fixedHeader'] = true;
-        sample_table = $('#profile_samples')
-          .DataTable(dt_options)
-          .columns.adjust()
-          .draw();
+        sample_table = $('#profile_samples').DataTable(dt_options);
+        // .columns
+        // .adjust()
+        // .draw();
       }
     });
 
@@ -1010,11 +1012,13 @@ function update_pending_samples_table() {
     initComplete: function () {
       $(document).removeData('selected_row');
       var api = this.api();
+
       if (api.row(0) != undefined) {
         this.find('tbody').find('tr:first').click();
-      } else {
-        $('.hot_tab.active').click();
       }
+      // else {
+      //   $('.hot_tab.active').click();
+      // }
     },
   });
 
