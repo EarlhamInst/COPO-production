@@ -208,19 +208,31 @@ class DtolEnumerationValidator(Validator):
                             self.flag = False
                 # edge case, TAXON doesn't have GENUS or FAMILY
                 ranks_available = [x.get('Rank') for x in self.taxonomy_dict[taxon_id]['LineageEx']]
-                if 'genus' not in ranks_available:
-                    if row['GENUS'].strip():
-                        self.errors.append(msg["validation_msg_invalid_taxonomy"] % (
-                            row['GENUS'], "GENUS", str(index + 2), "*missing value in NCBI*"))
+                
+                if 'genus' in ranks_available:
+                    pass
+                else:
+                    # if empty fill in with NOT_APPLICABLE
+                    if not row['GENUS'].strip():
+                        self.data.at[index, "GENUS"] = "NOT_APPLICABLE"
+                        self.warnings.append(msg["validation_warning_field_for_missing_genus_or_family"] % (
+                                "GENUS", str(index + 2), "GENUS"))
+                    elif row['GENUS'].strip() != "NOT_APPLICABLE":
+                        self.errors.append(msg["validation_msg_invalid_taxonomy_for_genus_or_family"] % (
+                            row['GENUS'], "GENUS", str(index + 2)))
                         self.flag = False
-                if 'family' not in ranks_available:
+
+                if 'family' in ranks_available:
+                    pass
+                else:
                     # if empty fill in with NOT_APPLICABLE
                     if not row['FAMILY'].strip():
                         self.data.at[index, "FAMILY"] = "NOT_APPLICABLE"
+                        self.warnings.append(msg["validation_warning_field_for_missing_genus_or_family"] % (
+                                "FAMILY", str(index + 2), "FAMILY"))
                     elif row['FAMILY'].strip() != "NOT_APPLICABLE":
-                        self.errors.append(msg["validation_msg_invalid_taxonomy"] % (
-                            row['FAMILY'], "FAMILY", str(index + 2),
-                            "*missing value in NCBI*, please default to NOT_APPLICABLE"))
+                        self.errors.append(msg["validation_msg_invalid_taxonomy_for_genus_or_family"] % (
+                            row['FAMILY'], "FAMILY", str(index + 2)))
                         self.flag = False
             else:
                 self.errors.append(

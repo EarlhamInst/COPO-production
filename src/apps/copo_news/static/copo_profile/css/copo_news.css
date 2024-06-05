@@ -1,0 +1,138 @@
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;    
+}
+
+.news-item {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 1px 3px 0 #d4d4d5, 0 0 0 1px #d4d4d5;
+    padding: 0 12px 16px 12px;
+    border-top-right-radius: 3px;
+    border-top-left-radius: 3px;
+    height: 400px;
+}
+
+.news-title {
+    font-size: 1.5em;
+    margin-bottom: 8px;
+    color: white !important;
+}
+
+.news-title-heading {
+    padding: 10px 15px;
+    border-bottom: 1px solid transparent;
+    border-top-right-radius: 3px;
+    border-top-left-radius: 3px;
+    margin-right: -12px;
+    margin-left: -12px;
+}
+
+.news-title-heading-background-default {
+    background-color: #009c95;
+}
+
+.news-content {
+    font-size: 1em;
+    padding-top: 10px;
+    padding-bottom: 20px;
+    text-align: justify;
+    text-justify: inter-word;
+    color: black;
+    height: 200px;
+    overflow: scroll;
+    text-overflow: ellipsis;
+}
+
+.news-author {
+    font-size: 12px;
+    color: #7b809a;
+    padding-top: 5px;
+}
+
+.news-category {
+    font-size: 12px
+}
+.news-category > b{
+    font-weight: bold;
+}
+
+.news-date {
+    padding-top: 5px;
+    font-size: 12px
+}
+
+.news-link {
+    padding-top: 10px;
+}
+
+.item-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.pagination {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+}
+
+.pagination li {
+    margin: 0 5px;
+    list-style: none;
+}
+
+.pagination a {
+    text-decoration: none;
+    color: #007bff;
+}
+
+.pagination .current {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.categories {
+    margin-bottom: 20px;
+}
+
+.categories a {
+    margin-right: 10px;
+    text-decoration: none;
+    color: #007bff;
+}
+
+.divider {
+    background-color: #8A8C8E;
+    width: 2.5rem;
+    height: 0.125rem;
+    margin-top: 1rem;
+}
+
+.font-weight-bold {
+    font-weight: 600 !important;
+}
+
+.mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.mt-1 {
+    margin-top: 0.25rem !important;
+}
+
+.text-secondary {
+    color: #7b809a !important;
+}
+
+.text-sm {
+    font-size: 12px !important;
+}
+
+.boldText {
+    font-weight: bold;
+}

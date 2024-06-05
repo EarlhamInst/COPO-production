@@ -16,6 +16,13 @@ from django.contrib.auth.models import Group
 
 
 class UserDetails(models.Model):
+    # This allows the model to be pluralised
+    # as 'UserDetails' instead of 'UserDetailss'
+    # in the Django admin interface
+    # since Django classes should be singular
+    class Meta:
+        verbose_name_plural = 'UserDetails'
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     orcid_id = models.TextField(max_length=40, blank=True)
     repo_manager = ArrayField(
@@ -177,3 +184,4 @@ class SequencingCentre(models.Model):
 
     def get_sequencing_centres(self):
         return SequencingCentre.objects.all()
+
