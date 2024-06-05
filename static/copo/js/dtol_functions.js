@@ -4,6 +4,7 @@ var dt_options = {
   scrollY: 400,
   scrollX: true,
   bSortClasses: false,
+  deferLoading: 0,  
   lengthMenu: [10, 25, 50, 75, 100, 500, 1000, 2000],
   select: {
     style: 'os',
@@ -964,10 +965,10 @@ function update_pending_samples_table() {
         dt_options['scrollX'] = true;
         dt_options['scrollY'] = 1000;
         dt_options['fixedHeader'] = true;
-        sample_table = $('#profile_samples').DataTable(dt_options);
-        // .columns
-        // .adjust()
-        // .draw();
+        sample_table = $('#profile_samples')
+          .DataTable(dt_options)
+          //.columns.adjust()
+          //.draw();
       }
     });
 
