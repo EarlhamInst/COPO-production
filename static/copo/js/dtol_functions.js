@@ -92,6 +92,25 @@ $(document).ready(function () {
   searchable_fields = [''];
   // populate profiles panel on left
 
+  $(document).on('click', '#toggleProfilePanelBtn', function () {
+    let toggleProfilePanelBtn = $('#toggleProfilePanelBtn');
+    let profile_panel = $('#profile_panel');
+    let sample_panel = $('#sample_panel');
+
+    profile_panel.toggleClass('hide-panel');
+
+    // Alter button text based on the visibility of the profile panel
+    if ($('#profile_panel').hasClass('hide-panel')) {
+      toggleProfilePanelBtn.text('Show profile panel');
+      sample_panel.toggleClass('panel-col-8');
+      sample_panel.toggleClass('panel-col-12');
+    } else {
+      toggleProfilePanelBtn.text('Hide profile panel');
+      sample_panel.toggleClass('panel-col-8');
+      sample_panel.toggleClass('panel-col-12');
+    }
+  });
+
   $(document).on('click', '.select-all', function () {
     // Note: Sample table rows within the 'Accepted Samples' tab do not have checkboxes
     // displayed to be checked therefore, they have to be programmatically clicked

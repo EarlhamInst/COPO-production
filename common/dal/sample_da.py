@@ -60,7 +60,9 @@ class Source(DAComponent):
             self.get_collection_handle().find({"SPECIMEN_ID": {'$regex': value, '$options': 'i'}}))
 
     def get_by_field(self, field, value):
-        return cursor_to_list(self.get_collection_handle().find({field: value}))
+        if isinstance(value, list):
+            value = "|".join(value)
+        return cursor_to_list(self.get_collection_handle().find({field: {'$regex': value, '$options': 'i'}}))
 
     def add_fields(self, fieldsdict, oid):
         return self.get_collection_handle().update_one(
@@ -957,7 +959,9 @@ class Sample(DAComponent):
         return cursor_to_list(self.get_collection_handle().find({"biosampleAccession": {"$in": biosampleAccessions}}))
 
     def get_by_field(self, dtol_field, value):
-        return cursor_to_list(self.get_collection_handle().find({dtol_field: {"$in": value}}))
+        if isinstance(value, list):
+            value = "|".join(value)
+        return cursor_to_list(self.get_collection_handle().find({dtol_field: {'$regex': value, '$options': 'i'}}))
 
     def get_specimen_biosample(self, value):
         return cursor_to_list(
