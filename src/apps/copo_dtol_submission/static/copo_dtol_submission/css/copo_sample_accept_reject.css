@@ -20,6 +20,43 @@ td {
     margin-bottom: 20px;
 }
 
+.hide-panel {
+    display: none;
+}
+
+.panel-col-8 {
+    /* Uses these CSS classes from Bootstrap: col-lg-8 col-md-8 col-sm-8*/
+    position: relative;
+    min-height: 1px;
+    padding-right: 12px;
+    padding-left: 12px;
+    float: left;
+    width: 66.6666%;
+}
+
+.panel-col-12 {
+    /* Uses these CSS classes from Bootstrap: col-lg-12 col-md-12 col-sm-12*/
+    position: relative;
+    min-height: 1px;
+    padding-right: 12px;
+    padding-left: 12px;
+    float: left;
+    width: 100%;
+}
+
+.panel-col-4 {
+    /* Uses these CSS classes from Bootstrap: col-lg-4 col-md-4 col-sm-4*/
+    width: 33.3333%;
+    float: left;
+    position: relative;
+    min-height: 1px;
+    padding-right: 12px;
+    padding-left: 12px;
+}
+
+.padding-top-20 {
+    padding-top: 20px;
+}
 /*
 .selected {
     background-color: #e1e1e1 !important; 
@@ -235,7 +272,6 @@ i.e. the second child element in the status log */
 
 .hr_margin_top {
     margin-top: 80px;
-
 }
 
 /* spinner CSS */
