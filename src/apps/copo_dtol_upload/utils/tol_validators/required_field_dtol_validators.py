@@ -95,15 +95,16 @@ class OrphanedSymbiontValidator(Validator):
     def validate(self):
         # check that if sample is a symbiont, there is a target with matching RACK_OR_PLATE_ID and TUBE_OR_WELL_ID
         syms = self.data.loc[(self.data["SYMBIONT"] == "SYMBIONT")]
-        tid = syms["TUBE_OR_WELL_ID"]
-        for el in list(tid):
-            target = self.data.loc[(self.data["SYMBIONT"] == "TARGET") & (
-                self.data["TUBE_OR_WELL_ID"] == el)]
-            if len(target) == 0:
-                self.errors.append(
-                    msg["validation_msg_orphaned_symbiont"] % el)
-                self.flag = False
-        return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
+        if not syms.empty:
+            tid = syms["TUBE_OR_WELL_ID"]
+            for el in list(tid):
+                target = self.data.loc[(self.data["SYMBIONT"] == "TARGET") & (
+                    self.data["TUBE_OR_WELL_ID"] == el)]
+                if len(target) == 0:
+                    self.errors.append(
+                        msg["validation_msg_orphaned_symbiont"] % el)
+                    self.flag = False
+            return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
 
 class RackPlateUniquenessValidator(Validator):
