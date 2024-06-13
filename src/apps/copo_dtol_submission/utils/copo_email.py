@@ -23,7 +23,7 @@ class Email:
         sample_accepted_msg_content += "<br><li>If you have not done it yet, please complete the two Material Transfer Agreement (MTAs) documents. After completing your part of the documents, please send them to Thomas Marcussen [<a href='mailto:thomarc@ibv.uio.no'>thomarc@ibv.uio.no</a>] and Rita Monteiro [<a href='mailto:r.monteiro@leibniz-lib.de'>r.monteiro@leibniz-lib.de</a>]."
         sample_accepted_msg_content += "<ul>"
         sample_accepted_msg_content += "<br><li>MTA1 - Material Transfer Agreement for PROVISION OF MATERIAL, with no change in ownership (between Sample Provider and Sequencing Centre): <a href='https://eu.twk.pm/jsmsel4ird'>https://eu.twk.pm/jsmsel4ird</a></li>"
-        sample_accepted_msg_content += "<br><li>MTA2 - Material Transfer Agreement for RECEIPT OF MATERIAL, with change in ownership (between Sample Provider and LIB Biobank): <a href='https://eu.twk.pm/kq8aosg2n6'>https://eu.twk.pm/kq8aosg2n6</a></li>"
+        sample_accepted_msg_content += "<br><li>MTA2 - Material Transfer Agreement for RECEIPT OF MATERIAL, with change in ownership (between Sample Provider and LIB Biobank): <a href='https://eu.twk.pm/h3nyix8dk9'>https://eu.twk.pm/h3nyix8dk9</a></li>"
         sample_accepted_msg_content += "</ul>"
         sample_accepted_msg_content += "</li>"
         sample_accepted_msg_content += "<br><li>Please proceed to sample shipping with {}. The contact person is in cc.</li>"
