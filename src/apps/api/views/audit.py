@@ -71,8 +71,7 @@ def get_sample_updates_by_sample_field_and_value(request,field, field_value):
 
     return finish_request(out)
 
-def get_sample_updates_by_manifest_id(request):
-    manifest_id = request.GET.get('manifest_id', str())
+def get_sample_updates_by_manifest_id(request, manifest_id):
     # Split the string into a list
     manifest_id_list = manifest_id.split(',')
     manifest_id_list = list(map(lambda x: x.strip(), manifest_id_list))
@@ -80,6 +79,9 @@ def get_sample_updates_by_manifest_id(request):
     # Remove any empty elements in the list (e.g.
     # where 2 or more commas have been typed in error
     manifest_id_list[:] = [x for x in manifest_id_list if x]
+
+    # Remove duplicates
+    manifest_id_list = list(set(manifest_id_list))
 
     # Check if the 'manifest_id' provided is valid
     if manifest_id_list and not all(d_utils.is_valid_uuid(x) for x in manifest_id_list):

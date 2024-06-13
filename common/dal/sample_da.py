@@ -4,7 +4,7 @@ from pymongo import ReturnDocument
 from django.conf import settings
 from django_tools.middlewares import ThreadLocal
 from common.dal.mongo_util import cursor_to_list, cursor_to_list_str, cursor_to_list_no_ids
-from common.schema_versions.lookup.dtol_lookups import EXCLUDED_SAMPLE_TYPES, TOL_PROFILE_TYPES, SANGER_TOL_PROFILE_TYPES, PERMIT_FILENAME_COLUMN_NAMES
+from common.schema_versions.lookup.dtol_lookups import EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY, EXCLUDED_SAMPLE_TYPES, TOL_PROFILE_TYPES, SANGER_TOL_PROFILE_TYPES, PERMIT_FILENAME_COLUMN_NAMES
 from pymongo.collection import ReturnDocument
 from common.utils import helpers
 from bson.objectid import ObjectId
@@ -61,7 +61,12 @@ class Source(DAComponent):
 
     def get_by_field(self, field, value):
         if isinstance(value, list):
-            value = "|".join(value)
+            if field in EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY:
+                # Query for multiple values in a list
+                return cursor_to_list(self.get_collection_handle().find({field: {'$in': value}}))
+            else:
+                # Query for multiple values as a regex string
+                value = "|".join(map(str, value))
         return cursor_to_list(self.get_collection_handle().find({field: {'$regex': value, '$options': 'i'}}))
 
     def add_fields(self, fieldsdict, oid):
@@ -960,7 +965,12 @@ class Sample(DAComponent):
 
     def get_by_field(self, dtol_field, value):
         if isinstance(value, list):
-            value = "|".join(value)
+            if dtol_field in EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY:
+                # Query for multiple values in a list
+                return cursor_to_list(self.get_collection_handle().find({dtol_field: {'$in': value}}))
+            else:
+                # Query for multiple values as a regex string
+                value = "|".join(map(str, value))
         return cursor_to_list(self.get_collection_handle().find({dtol_field: {'$regex': value, '$options': 'i'}}))
 
     def get_specimen_biosample(self, value):
