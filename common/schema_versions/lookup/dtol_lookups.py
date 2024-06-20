@@ -1491,7 +1491,7 @@ DTOL_RULES = {
         },
     'ETHICS_PERMITS_FILENAME':
         {
-            "optional_regex": "^.+\.pdf$",
+            "optional_regex": "(^.+\.pdf$)|(^.+\.PDF$)",
             "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
         },
     'LATITUDE_END':
@@ -1544,7 +1544,7 @@ DTOL_RULES = {
         },
     'NAGOYA_PERMITS_FILENAME':
         {
-            "optional_regex": "^.+\.pdf$",
+            "optional_regex": "(^.+\.pdf$)|(^.+\.PDF$)",
             "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
         },
     'ORIGINAL_COLLECTION_DATE':
@@ -1600,7 +1600,7 @@ DTOL_RULES = {
         },
     'SAMPLING_PERMITS_FILENAME':
         {
-            "optional_regex": "^.+\.pdf$",
+            "optional_regex": "(^.+\.pdf$)|(^.+\.PDF$)",
             "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
         },
     'SAMPLING_WATER_BODY_DEPTH':
