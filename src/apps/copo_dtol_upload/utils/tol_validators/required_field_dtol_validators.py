@@ -104,7 +104,7 @@ class OrphanedSymbiontValidator(Validator):
                     self.errors.append(
                         msg["validation_msg_orphaned_symbiont"] % el)
                     self.flag = False
-            return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
+        return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
 
 class RackPlateUniquenessValidator(Validator):
