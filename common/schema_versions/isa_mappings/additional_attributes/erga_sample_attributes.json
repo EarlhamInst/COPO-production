@@ -12,6 +12,7 @@
     "id": "copo.sample.TUBE_OR_WELL_ID",
     "label": "Tube or Well Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -44,6 +45,7 @@
     "id": "copo.sample.SPECIMEN_ID",
     "label": "Specimen Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -76,6 +78,7 @@
     "id": "copo.sample.PURPOSE_OF_SPECIMEN",
     "label": "Purpose of Specimen",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -115,6 +118,7 @@
     "id": "copo.sample.SAMPLE_COORDINATOR",
     "label": "Sample Coordinator (ERGA Ambassador)",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -146,6 +150,7 @@
     "id": "copo.sample.SAMPLE_COORDINATOR_AFFILIATION",
     "label": "Sample Coordinator (ERGA Ambassador) Affiliation",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -177,6 +182,7 @@
     "id": "copo.sample.SAMPLE_COORDINATOR_ORCID_ID",
     "label": "Sample Coordinator (ERGA Ambassador) ORCID Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -208,6 +214,7 @@
     "id": "copo.sample.ORDER_OR_GROUP",
     "label": "Order or Group",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -240,6 +247,7 @@
     "id": "copo.sample.FAMILY",
     "label": "Family",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -272,6 +280,7 @@
     "id": "copo.sample.GENUS",
     "label": "Genus",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -304,6 +313,7 @@
     "id": "copo.sample.TAXON_ID",
     "label": "Taxon Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -336,6 +346,7 @@
     "id": "copo.sample.SCIENTIFIC_NAME",
     "label": "Scientific Name",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -368,6 +379,7 @@
     "id": "copo.sample.TAXON_REMARKS",
     "label": "Taxon Remarks",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -400,6 +412,7 @@
     "id": "copo.sample.INFRASPECIFIC_EPITHET",
     "label": "Infraspecific Epithet",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -432,6 +445,7 @@
     "id": "copo.sample.CULTURE_OR_STRAIN_ID",
     "label": "Culture or Strain Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -464,6 +478,7 @@
     "id": "copo.sample.COMMON_NAME",
     "label": "Common Name",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -495,6 +510,7 @@
     "id": "copo.sample.LIFESTAGE",
     "label": "Lifestage",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -543,6 +559,7 @@
     "id": "copo.sample.SEX",
     "label": "Sex",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -584,6 +601,7 @@
     "id": "copo.sample.ORGANISM_PART",
     "label": "Organism Part",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -649,6 +667,7 @@
     "id": "copo.sample.RELATIONSHIP",
     "label": "Relationship",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -681,6 +700,7 @@
     "id": "copo.sample.GAL",
     "label": "GAL (Genome Acquisition Laboratory)",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -737,6 +757,7 @@
     "id": "copo.sample.GAL_SAMPLE_ID",
     "label": "GAL (Genome Acquisition Laboratory) Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -769,6 +790,7 @@
     "id": "copo.sample.COLLECTOR_SAMPLE_ID",
     "label": "Collector Sample Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -801,6 +823,7 @@
     "id": "copo.sample.COLLECTED_BY",
     "label": "Collected By",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -832,6 +855,7 @@
     "id": "copo.sample.COLLECTOR_AFFILIATION",
     "label": "Collector Affiliation",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -864,6 +888,7 @@
     "id": "copo.sample.COLLECTOR_ORCID_ID",
     "label": "Collector Orcid Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -896,6 +921,7 @@
     "id": "copo.sample.DATE_OF_COLLECTION",
     "label": "Date of Collection",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -927,6 +953,7 @@
     "id": "copo.sample.TIME_OF_COLLECTION",
     "label": "Time of Collection",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -959,6 +986,7 @@
     "id": "copo.sample.COLLECTION_LOCATION",
     "label": "Collection Location",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -994,6 +1022,7 @@
     "id": "copo.sample.DECIMAL_LATITUDE",
     "label": "decimalLatitude",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1026,6 +1055,7 @@
     "id": "copo.sample.DECIMAL_LONGITUDE",
     "label": "Longitude",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1058,6 +1088,7 @@
     "id": "copo.sample.LATITUDE_START",
     "label": "latitudeStart",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2"
@@ -1089,6 +1120,7 @@
     "id": "copo.sample.LONGITUDE_START",
     "label": "Longitude Start",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2"
@@ -1120,6 +1152,7 @@
     "id": "copo.sample.LATITUDE_END",
     "label": "latitudeEnd",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2"
@@ -1151,6 +1184,7 @@
     "id": "copo.sample.LONGITUDE_END",
     "label": "Longitude End",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2"
@@ -1182,6 +1216,7 @@
     "id": "copo.sample.HABITAT",
     "label": "Habitat Remarks",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1214,6 +1249,7 @@
     "id": "copo.sample.DEPTH",
     "label": "Depth (in metres)",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1246,6 +1282,7 @@
     "id": "copo.sample.ELEVATION",
     "label": "Elevation (in metres)",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1278,6 +1315,7 @@
     "id": "copo.sample.ORIGINAL_COLLECTION_DATE",
     "label": "Original Collection Date",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1309,6 +1347,7 @@
     "id": "copo.sample.ORIGINAL_GEOGRAPHIC_LOCATION",
     "label": "Original Geographic Location",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1340,6 +1379,7 @@
     "id": "copo.sample.ORIGINAL_DECIMAL_LATITUDE",
     "label": "Original Decimal Latitude",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1372,6 +1412,7 @@
     "id": "copo.sample.ORIGINAL_DECIMAL_LONGITUDE",
     "label": "originalDecimalLongitude",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1404,6 +1445,7 @@
     "id": "copo.sample.DESCRIPTION_OF_COLLECTION_METHOD",
     "label": "Description of Collection Method",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1436,6 +1478,7 @@
     "id": "copo.sample.DIFFICULT_OR_HIGH_PRIORITY_SAMPLE",
     "label": "Difficult or high priority sample",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1476,6 +1519,7 @@
     "id": "copo.sample.IDENTIFIED_BY",
     "label": "Identified By",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1507,6 +1551,7 @@
     "id": "copo.sample.IDENTIFIER_AFFILIATION",
     "label": "Identifier Affiliation",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1538,6 +1583,7 @@
     "id": "copo.sample.IDENTIFIED_HOW",
     "label": "Species Determination Method",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1570,6 +1616,7 @@
     "id": "copo.sample.SPECIMEN_IDENTITY_RISK",
     "label": "Specimen Identity Risk",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1606,6 +1653,7 @@
     "id": "copo.sample.MIXED_SAMPLE_RISK",
     "label": "Mixed Sample Risk",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1642,6 +1690,7 @@
     "id": "copo.sample.PRESERVED_BY",
     "label": "Preserved By",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1674,6 +1723,7 @@
     "id": "copo.sample.PRESERVER_AFFILIATION",
     "label": "Preserver Affiliation",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1706,6 +1756,7 @@
     "id": "copo.sample.PRESERVATION_APPROACH",
     "label": "Preservation Approach",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1738,6 +1789,7 @@
     "id": "copo.sample.PRESERVATIVE_SOLUTION",
     "label": "Preservative Solution",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1770,6 +1822,7 @@
     "id": "copo.sample.TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION",
     "label": "Time Elapsed from Collection to Preservation (in hours)",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1802,6 +1855,7 @@
     "id": "copo.sample.DATE_OF_PRESERVATION",
     "label": "Date of Preservation",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1834,6 +1888,7 @@
     "id": "copo.sample.SIZE_OF_TISSUE_IN_TUBE",
     "label": "Size of Tissue in Tube",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1875,6 +1930,7 @@
     "id": "copo.sample.TISSUE_REMOVED_FOR_BARCODING",
     "label": "Tissue Removed for Barcoding",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1910,6 +1966,7 @@
     "id": "copo.sample.TUBE_OR_WELL_ID_FOR_BARCODING",
     "label": "Tube or Well Identifier for Barcoding",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -1941,6 +1998,7 @@
     "id": "copo.sample.TISSUE_FOR_BARCODING",
     "label": "Tissue for Barcoding",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2048,6 +2106,7 @@
     "id": "copo.sample.BARCODE_PLATE_PRESERVATIVE",
     "label": "Barcode Plate Preservative",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2079,6 +2138,7 @@
     "id": "copo.sample.BARCODING_STATUS",
     "label": "Barcoding Status",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2117,6 +2177,7 @@
     "id": "copo.sample.TISSUE_REMOVED_FOR_BIOBANKING",
     "label": "Tissue Removed for Biobanking",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2152,6 +2213,7 @@
     "id": "copo.sample.TISSUE_VOUCHER_ID_FOR_BIOBANKING",
     "label": "Tissue Voucher Identifier for Biobanking",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2183,6 +2245,7 @@
     "id": "copo.sample.PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING",
     "label": "Proxy Tissue Voucher Identifier for Biobanking",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2"
@@ -2213,6 +2276,7 @@
     "id": "copo.sample.TISSUE_FOR_BIOBANKING",
     "label": "Tissue for Biobanking",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2320,6 +2384,7 @@
     "id": "copo.sample.BIOBANKED_TISSUE_PRESERVATIVE",
     "label": "Biobanked Tissue Preservative",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2"
@@ -2350,6 +2415,7 @@
     "id": "copo.sample.DNA_REMOVED_FOR_BIOBANKING",
     "label": "DNA Removed for Biobanking",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2385,6 +2451,7 @@
     "id": "copo.sample.DNA_VOUCHER_ID_FOR_BIOBANKING",
     "label": "DNA Voucher Identifier for Biobanking",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2416,6 +2483,7 @@
     "id": "copo.sample.VOUCHER_ID",
     "label": "Voucher Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2447,6 +2515,7 @@
     "id": "copo.sample.PROXY_VOUCHER_ID",
     "label": "Proxy Voucher Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2479,6 +2548,7 @@
     "id": "copo.sample.VOUCHER_LINK",
     "label": "Voucher Link",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2511,6 +2581,7 @@
     "id": "copo.sample.PROXY_VOUCHER_LINK",
     "label": "Proxy Voucher Link",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2543,6 +2614,7 @@
     "id": "copo.sample.VOUCHER_INSTITUTION",
     "label": "Voucher Institution",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2575,6 +2647,7 @@
     "id": "copo.sample.REGULATORY_COMPLIANCE",
     "label": "Regulatory Compliance",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2612,6 +2685,7 @@
     "id": "copo.sample.ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE",
     "label": "Associated Traditional Knowledge or Biocultural Rights Applicable",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2643,6 +2717,7 @@
     "id": "copo.sample.INDIGENOUS_RIGHTS_DEF",
     "label": "Indigenous Rights Definition",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2674,6 +2749,7 @@
     "id": "copo.sample.ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID",
     "label": "Associated Traditional Knowledge or Biocultural Project Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2709,6 +2785,7 @@
     "id": "copo.sample.ASSOCIATED_TRADITIONAL_KNOWLEDGE_CONTACT",
     "label": "Associated Traditional Knowledge Contact",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2740,6 +2817,7 @@
     "id": "copo.sample.ETHICS_PERMITS_REQUIRED",
     "label": "Ethics Permits Required",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2775,6 +2853,7 @@
     "id": "copo.sample.ETHICS_PERMITS_DEF",
     "label": "Ethics Permits Definition",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2806,6 +2885,7 @@
     "id": "copo.sample.ETHICS_PERMITS_FILENAME",
     "label": "Ethics Permits File name",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3"
     ],
@@ -2835,6 +2915,7 @@
     "id": "copo.sample.SAMPLING_PERMITS_REQUIRED",
     "label": "Sampling Permits Required",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2870,6 +2951,7 @@
     "id": "copo.sample.SAMPLING_PERMITS_DEF",
     "label": "Sampling Permits Definition",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2901,6 +2983,7 @@
     "id": "copo.sample.SAMPLING_PERMITS_FILENAME",
     "label": "Sampling Permits File name",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3"
     ],
@@ -2930,6 +3013,7 @@
     "id": "copo.sample.NAGOYA_PERMITS_REQUIRED",
     "label": "Nagoya Permits Required",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2965,6 +3049,7 @@
     "id": "copo.sample.NAGOYA_PERMITS_DEF",
     "label": "Nagoya Permits Definition",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -2996,6 +3081,7 @@
     "id": "copo.sample.NAGOYA_PERMITS_FILENAME",
     "label": "Nagoya Permits File name",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3"
     ],
@@ -3025,6 +3111,7 @@
     "id": "copo.sample.HAZARD_GROUP",
     "label": "Hazard Group",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3063,6 +3150,7 @@
     "id": "copo.sample.PRIMARY_BIOGENOME_PROJECT",
     "label": "Primary Biogenome Project",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2"
@@ -3129,6 +3217,7 @@
     "id": "copo.sample.OTHER_INFORMATION",
     "label": "Other Information",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3161,6 +3250,7 @@
     "id": "copo.sample.associated_tol_project",
     "label": "Associated TOL (Tree of Life) Project",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3192,6 +3282,7 @@
     "id": "copo.sample.biosampleAccession",
     "label": "Biosample Accession",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3222,6 +3313,7 @@
     "id": "copo.sample.characteristics",
     "label": "Characteristics",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3254,6 +3346,7 @@
     "id": "copo.sample.factorValues",
     "label": "Factors",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3285,6 +3378,7 @@
     "id": "copo.sample.manifest_id",
     "label": "Manifest Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3316,6 +3410,7 @@
     "id": "copo.sample.manifest_version",
     "label": "Manifest Version",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3346,6 +3441,7 @@
     "id": "copo.sample.profile_id",
     "label": "Profile Identifier",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3374,6 +3470,7 @@
     "id": "copo.sample.public_name",
     "label": "Public Name",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3405,6 +3502,7 @@
     "id": "copo.sample.rack_tube",
     "label": "Rack Tube",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3436,6 +3534,7 @@
     "id": "copo.sample.sample_type",
     "label": "Sample Type",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3471,6 +3570,7 @@
     "id": "copo.sample.species_list",
     "label": "Species List",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3503,6 +3603,7 @@
     "id": "copo.sample.sraAccession",
     "label": "SRA Accession",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3534,6 +3635,7 @@
     "id": "copo.sample.status",
     "label": "Status",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3565,6 +3667,7 @@
     "id": "copo.sample.submissionAccession",
     "label": "Submission Accession",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
@@ -3596,6 +3699,7 @@
     "id": "copo.sample.tol_project",
     "label": "TOL (Tree of Life) Project",
     "manifest_version": [
+      "2.5.1",
       "2.5",
       "2.4.3",
       "2.4.2",
