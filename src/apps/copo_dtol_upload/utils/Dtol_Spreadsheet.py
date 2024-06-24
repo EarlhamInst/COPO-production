@@ -30,6 +30,7 @@ from common.schema_versions.lookup import dtol_lookups as lookup
 # from common.schema_versions import required_field_dtol_validators as required_validators
 from common.utils.logger import Logger
 from PIL import Image
+import numpy as np
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -195,6 +196,14 @@ class DtolSpreadsheet:
                 for column in self.allowed_empty:
                     self.data[column] = self.data[column].fillna("")
                 '''
+                length = len(self.data.index)
+                if length > 1000:
+                    notify_frontend(data={"profile_id": self.profile_id}, msg=f"No. of lines in the file: {length+1}, Cannot process more than 1000 samples in a single manifest file.",
+                                action="error",
+                                html_id="sample_info")
+                    return False
+                self.data.replace(r'^s*$', np.nan, regex=True, inplace=True)                
+                self.data = self.data.dropna(how='all')
                 self.data = self.data.apply(lambda x: x.astype(str))
                 self.data = self.data.apply(lambda x: x.str.strip())
                 self.data.columns = self.data.columns.str.replace(" ", "")

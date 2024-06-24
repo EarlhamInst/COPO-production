@@ -137,8 +137,8 @@
       "option_values": {
         "callback": {
           "parameter": {},
-          "function": "get_all_sequencing_centres",
-          "provider": "src.apps.copo_profile.utils.profile_utils"
+          "function": "get_all_sequencing_centres_for_options",
+          "provider": "src.apps.copo_core.utils"
          }
       }
     },
@@ -293,7 +293,29 @@
       "show_in_table": true,
       "control": "textarea",
       "regex": "^[A-Z][A-Z0-9]{2,11}(,[A-Z][A-Z0-9]{2,11})*$"
-    }        
+    },
+    {
+      "help_tip": "Please input a test field",
+      "required": "true",
+      "default_value": "",
+      "control_meta": {},
+      "versions": [
+        "test"
+      ],
+      "specifications": [
+        "test"
+      ],      
+      "ref": "",
+      "deprecated": false,
+      "hidden": "false",
+      "label": "TEST",
+      "show_in_form": true,
+      "id": "copo.profile.test",
+      "type": "string",
+      "show_in_table": true,
+      "control": "text",
+      "regex": "^[A-Z][A-Z0-9]{2,11}(,[A-Z][A-Z0-9]{2,11})*$"
+    }
   ],
   "description": "Attributes for COPO Profile schema.",
   "title": "Profile mappings"

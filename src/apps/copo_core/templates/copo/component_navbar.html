@@ -1,21 +1,10 @@
-<div hidden>
-    <!-- hidden attributes  -->
-    <!--input type="hidden" id="view_copo_profile_url" value="{# url 'copo_profile:view_copo_profile' profile_id=profile_id #}"/-->
+<!--div hidden>
 
-    <!--input type="hidden" value="  url 'copo:copo_publications' profile_id=profile_id  " name="publication_url"
-           id="publication_url"/-->
-    <!--input type="hidden" value="  url 'copo:copo_data' profile_id=profile_id  " name="datafile_url"
-           id="datafile_url"/-->
     <input type="hidden" value="{% url 'copo_sample:copo_samples' profile_id=profile_id %}" name="sample_url"
            id="sample_url"/>
     <input type="hidden" value="{% url 'copo_accession:copo_accessions' profile_id=profile_id %}" name="accessions_url"
            id="accessions_url"/>
-    <!--input type="hidden" value="{# url 'copo:copo_submissions' profile_id=profile_id #}" name="submission_url"
-           id="submission_url"/-->
-    <!--input type="hidden" value="  url 'copo:copo_people' profile_id=profile_id  " name="person_url" id="person_url"/-->
 
-    <!--input type="hidden" value="  url 'copo:copo_repository' profile_id=profile_id  " name="repository_url"
-           id="repository_url"/-->
     <input type="hidden" value="{% url 'copo:groups' %}" name="group_url"
            id="group_url"/>
     <input type="hidden" value="{% url 'copo_seq_annotation_submission:copo_seq_annotation' profile_id=profile_id %}" name="seqannotation_url"
@@ -28,7 +17,7 @@
            id="files_url"/>
     <input type="hidden" value="{% url 'copo_barcoding_submission:copo_taggedseq' profile_id=profile_id %}" name="taggedseq_url"
            id="taggedseq_url"/>              
-</div>
+</div-->
 
 <div class="row" style="margin-bottom:40px;">
     <div class="col-sm-7 col-md-7 col-lg-9 copo-page-headers"></div>

@@ -23,6 +23,7 @@ from common.utils.logger import Logger
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Q
+from io import BytesIO
 
 class ProcessValidationQueue:
 
@@ -75,7 +76,9 @@ class ProcessValidationQueue:
             if not qm["report_id"] == "":
                 APIValidationReport().setRunning(qm["report_id"])
 
-            self.sample_data = pickle.loads(qm["manifest_data"])
+            #self.sample_data = pickle.loads(qm["manifest_data"])
+            bytesstring = BytesIO(qm["manifest_data"])
+            self.data = pandas.read_pickle(bytesstring)
             self.profile_id = qm["profile_id"]
             self.file_name = qm["file_name"]
             self.user_id = qm["user_id"]
@@ -90,25 +93,26 @@ class ProcessValidationQueue:
             else:
                 self.type = "DTOL"
             self.current_schema_version = settings.MANIFEST_VERSION.get(self.type, "")
-
+            """
             try:
                 self.data = pandas.read_excel(self.sample_data, keep_default_na=False, na_values=lookup.NA_VALS)
+                #self.data = self.data.dropna(how='all')
             except:
                 notify_frontend(data={"profile_id": self.profile_id}, msg="Failed to load manifest", action="info",
                                 html_id="sample_info")
                 return False
-
+            """
             notify_frontend(data={"profile_id": self.profile_id}, msg="Loading", action="info",
                             max_ellipsis_length=3, html_id="sample_info")
 
             try:
-                self.data = self.data.loc[:, ~self.data.columns.str.contains('^Unnamed')]
+                #self.data = self.data.loc[:, ~self.data.columns.str.contains('^Unnamed')]
                 '''
                 for column in self.allowed_empty:
                     self.data[column] = self.data[column].fillna("")
                 '''
-                self.data = self.data.apply(lambda x: x.astype(str))
-                self.data = self.data.apply(lambda x: x.str.strip())
+                #self.data = self.data.apply(lambda x: x.astype(str))
+                #self.data = self.data.apply(lambda x: x.str.strip())
                 
                 # Remove special characters from column names
                 self.data.columns = [col.strip().replace(" ", "").replace(":", "").replace(".", "").replace("(", "").replace(")", "").replace(
@@ -124,6 +128,7 @@ class ProcessValidationQueue:
                     Logger().error(msg)
                     return False
             except Exception as e:
+                Logger().exception(e)
                 # if error notify via web socket
                 notify_frontend(data={"profile_id": self.profile_id}, msg="Unable to load file. " + str(e),
                                 action="info",
@@ -170,7 +175,7 @@ class ProcessValidationQueue:
                     ValidationQueue().set_taxon_validation_complete(qm["_id"])
 
             except HTTPError as e:
-
+                Logger().exception(e)
                 error_message = str(e).replace("<", "").replace(">", "")
                 msg = "Service Error - The NCBI Taxonomy service may be down, please try again later."
                 notify_frontend(data={"profile_id": self.profile_id},
@@ -180,6 +185,7 @@ class ProcessValidationQueue:
                 ValidationQueue().set_taxon_validation_error(qm["_id"], err=msg)
                 return False
             except Exception as e:
+                Logger().exception(e)
                 error_message = str(e).replace("<", "").replace(">", "")
                 msg = "Server Error - " + error_message
                 notify_frontend(data={"profile_id": self.profile_id}, msg=msg,
@@ -251,6 +257,7 @@ class ProcessValidationQueue:
                     return False
 
             except Exception as e:
+                Logger().exception(e)
                 error_message = str(e).replace("<", "").replace(">", "")
                 msg = "Server Error - " + error_message,
                 notify_frontend(data={"profile_id": self.profile_id}, msg=msg,

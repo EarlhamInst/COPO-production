@@ -3,6 +3,7 @@ from common.dal.mongo_util import cursor_to_list_str2
 from common.dal.profile_da import Profile, ProfileInfo
 from common.dal.submission_da import Submission
 from src.apps.copo_core.models import SequencingCentre, ProfileType
+from src.apps.copo_core.utils import get_all_profile_types_for_options_for_user
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
@@ -135,7 +136,7 @@ def copo_profile_index(request):
         context['profiles_total'] = profiles_length
         context['profiles_visible_length'] = len(profile_page)
         #context['profile_types'] = ProfileType.objects.all()
-        context['profile_types'] = [{"name":"erga","description":"Long ENGA"},{"name":"asg","description":"Long ASG"},{"name":"genomics","description":"Stand-Alone"}]
+        context['profile_types'] = get_all_profile_types_for_options_for_user(request.user)
         return render(request, 'copo/profile/copo_profile_index.html', context)
     else:
         # Set up the profile grids that are loaded when a user scrolls down the web page
@@ -143,7 +144,7 @@ def copo_profile_index(request):
 
         for profile in profile_page:
             content += render_to_string('copo/profile/copo_profile_record.html',
-                                        {'profile': profile,"profile_types":[{"name":"erga","description":"Long ENGA"},{"name":"asg","description":"Long ASG"},{"name":"genomics","description":"Stand-Alone"}]},
+                                        {'profile': profile,"profile_types":get_all_profile_types_for_options_for_user(request.user)},
                                         request=request)
         return JsonResponse({
             "content": content,

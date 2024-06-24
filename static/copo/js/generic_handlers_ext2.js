@@ -38,33 +38,45 @@ function set_empty_component_message(dataRows, table_id = '*') {
 
 function place_task_buttons(componentMeta) {
   //place custom buttons on table
-
-  if (!componentMeta.recordActions.length) {
-    return;
-  }
-
-  var table = $('#' + componentMeta.tableID).DataTable();
+  var is_custom_buttons_needed = false;
 
   var customButtons = $('<span/>', {
     style: 'padding-left: 15px;',
     class: 'copo-table-cbuttons',
   });
 
-  $(table.buttons().container()).append(customButtons);
+  if (componentMeta.recordActions.length) {
+    componentMeta.recordActions.forEach(function (item) {
+      button_str = record_action_button_def[item].template
+      var actionBTN = $(button_str);
+      /*
+      var actionBTN = $('.record-action-templates')
+        .find('.' + item)
+        .clone();
+      */
+      actionBTN.removeClass(item);
+      actionBTN.attr('data-table', componentMeta.tableID);
+      customButtons.append(actionBTN);
+    });
+    is_custom_buttons_needed = true;
+  }
 
-  componentMeta.recordActions.forEach(function (item) {
-    var actionBTN = $('.record-action-templates')
-      .find('.' + item)
-      .clone();
-    actionBTN.removeClass(item);
-    actionBTN.attr('data-table', componentMeta.tableID);
+
+
+ $('.components_custom_templates').find('.record-action-custom-template').each(function () {
+    var actionBTN = $(this).clone();
+    actionBTN.removeClass('record-action-custom-template');
     customButtons.append(actionBTN);
-  });
+    is_custom_buttons_needed = true;
+ }) ;
 
+ if (is_custom_buttons_needed) {
+  var table = $('#' + componentMeta.tableID).DataTable();
+  $(table.buttons().container()).append(customButtons);
   refresh_tool_tips();
-
   //table action buttons
   do_table_buttons_events();
+ }
 }
 
 function do_crud_action_feedback(meta) {

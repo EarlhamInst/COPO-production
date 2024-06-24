@@ -41,6 +41,14 @@
 {% endblock page_tile %}
 
 {% block content %}
+
+    <div class="components_custom_templates" style="display: none;">
+        <div class="btn-group btn-toggle toggle-view record-action-custom-template">
+            <button class="btn btn-xs btn-success active">Sample Accessions</button>
+            <button class="btn btn-xs btn-default">Other Accessions</button>
+        </div>
+    </div>    
+
     <script> let groups = {{ groups|safe }}</script>
     <input type="hidden" id="groups" value="{{ groups|safe }}"/>
 
@@ -88,6 +96,14 @@
 {% block help_section %}
 
 {% endblock %}
+
+{% block sidebar_custom_section %}
+    <!-- accessions legend -->
+    <div class="accessions-legend">
+                <h4 class="accessions-legend-title">Filter Accession Types</h4>
+                <div class="accessions-checkboxes"></div>
+    </div>
+{% endblock sidebar_custom_section %}
 
 {% block js_block %}
     <script src="{% static 'copo_accessions/js/copo_accessions.js' %}"></script>

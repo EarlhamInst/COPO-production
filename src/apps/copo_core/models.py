@@ -12,7 +12,7 @@ from django.conf import settings
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from asgiref.sync import sync_to_async
-from django.contrib.auth.models import Group
+from django.utils.translation import gettext_lazy as _
 
 
 class UserDetails(models.Model):
@@ -180,46 +180,70 @@ class SequencingCentre(models.Model):
 
 
 
+class TitleButton(models.Model):
+    class Meta:
+        ordering = ['name']
 
-class ActionButton(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.CharField(max_length=100)
-    icon = models.CharField(max_length=100)
-    action = models.CharField(max_length=100)
-    action_type = models.CharField(max_length=100)
-    action_url = models.CharField(max_length=100)
-    action_data = models.CharField(max_length=100)
-    action_target = models.CharField(max_length=100)
-    action_icon = models.CharField(max_length=100)
-    action_icon_class = models.CharField(max_length=100)
-    action_colour = models.CharField(max_length=100)
-    action_class = models.CharField(max_length=100)
-    action_text = models.CharField(max_length=100)
-    action_tooltip = models.CharField(max_length=100)
-    action_tooltip_class = models.CharField(max_length=100)
+    name = models.CharField(max_length=50, unique=True)
+    template = models.CharField(max_length=500)
+    additional_attr = models.CharField(max_length=500, blank=True, null=True, help_text="Additional attributes for the button,format: key1:value1,key2:value2,key3:value3")
 
     def __str__(self):
-        return self.name + " : " + self.description
-
-    def create_action_button(self, name, description, icon, action, action_type, action_url, action_data, action_target, action_icon, action_icon_class, action_colour, action_class, action_text, action_tooltip, action_tooltip_class):
+        return self.name
+    
+    def create_title_button(self, name, template, additional_attr):
         self.name = name
-        self.description = description
-        self.icon = icon
-        self.action = action
-        self.action_type = action_type
-        self.action_url = action_url
-        self.action_data = action_data
-        self.action_target = action_target
-        self.action_icon = action_icon
-        self.action_icon_class = action_icon_class
-        self.action_colour = action_colour
-        self.action_class = action_class
-        self.action_text = action_text
-        self.action_tooltip = action_tooltip
-        self.action_tooltip_class = action_tooltip_class
+        self.template = template
+        self.additional_attr = additional_attr
         self.save()
         return self
- 
+    
+    def remove_all_title_buttons(self):
+        TitleButton.objects.all().delete()
+        return True
+    
+    def get_title_buttons(self):
+        return TitleButton.objects.all()    
+
+class RecordActionButton(models.Model):
+    class action_types(models.TextChoices):
+        SINGLE = 'single', _("Single")
+        MULTIPLE = 'multi', _("Multiple")
+        def __str__(self):
+            return self.value
+
+    name = models.CharField(max_length=100, unique=True)
+    icon_colour = models.CharField(max_length=100, blank=True, null=True, help_text="Colour of the icon")
+    title = models.CharField(max_length=100,  blank=True, null=True)
+    label = models.CharField(max_length=100,  blank=True, null=True)
+    type = models.CharField(max_length=100, choices=action_types.choices, default=action_types.SINGLE, blank=True, null=True )
+    error_message = models.CharField(max_length=100, blank=True, null=True)
+    icon_class = models.CharField(max_length=100, help_text="Font Awesome icon class", blank=True, null=True)
+    action = models.CharField(max_length=100, help_text="Name of javascript function to be performed on click", blank=True, null=True)
+
+    def __str__(self):
+        return self.name + " : " + self.title + " : " + self.type
+
+    def create_record_action_button(self, name, title, label, type, error_message, icon_class, action, icon_colour):
+        self.name = name
+        self.title = title
+        self.label = label
+        self.type = type
+        self.error_message = error_message
+        self.icon_class = icon_class
+        self.action = action
+        self.icon_colour = icon_colour
+        self.save()
+        return self
+
+    def remove_all_record_action_buttons(self):
+        RecordActionButton.objects.all().delete()
+        return True
+
+    def get_record_action_button(self):
+        return RecordActionButton.objects.all()
+
+''' 
 class SidebarPanel(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.CharField(max_length=100)
@@ -265,29 +289,38 @@ class SidebarPanel(models.Model):
 
     def get_sidebar_panels(self):
         return SidebarPanel.objects.all()
-
+'''
 class Component(models.Model):
-    action_buttons = models.ManyToManyField(ActionButton, blank=True)
-    sidebar_panels = models.ManyToManyField(SidebarPanel, blank=True)
+    class Meta:
+        ordering = ['title']
+
+    title_buttons = models.ManyToManyField(TitleButton, blank=True)
+    recordaction_buttons = models.ManyToManyField(RecordActionButton, blank=True)
     name = models.CharField(max_length=100, unique=True)
-    title = models.CharField(max_length=100, blank=True, null=True)
-    description = models.CharField(max_length=100)
-    widget_icon = models.CharField(max_length=100)
-    widget_colour = models.CharField(max_length=200)
-    widget_icon_class = models.CharField(max_length=100)
+    title = models.CharField(max_length=100)
+    subtitle = models.CharField(max_length=100, blank=True, null=True)
+    widget_icon = models.CharField(max_length=100, blank=True, null=True)
+    widget_colour = models.CharField(max_length=200,blank=True, null=True)
+    widget_icon_class = models.CharField(max_length=100, blank=True, null=True)
     table_id = models.CharField(max_length=100)
+    reverse_url = models.CharField(max_length=100,blank=True, null=True)
 
 
     def __str__(self):
-        return self.name + " : " + self.description
+        return self.name + " : " + self.title
 
-    def create_component(self, name, description, widget):
+    def create_component(self, name, title, subtitle, widget_icon, widget_colour, widget_icon_class, table_id, reverse_url):
         self.name = name
-        self.description = description
-        self.widget = widget
+        self.title = title
+        self.subtitle = subtitle
+        self.widget_icon = widget_icon
+        self.widget_colour = widget_colour
+        self.widget_icon_class = widget_icon_class
+        self.table_id = table_id
+        self.reverse_url = reverse_url
         self.save()
         return self
-
+    
     def remove_all_components(self):
         Component.objects.all().delete()
         return True
@@ -297,6 +330,9 @@ class Component(models.Model):
     
 
 class ProfileType(models.Model):
+    class Meta:
+        ordering = ['description']
+        
     components = models.ManyToManyField(Component, blank=True)
     type = models.CharField(max_length=20, unique=True)
     description = models.CharField(max_length=100)
@@ -307,9 +343,12 @@ class ProfileType(models.Model):
     def __str__(self):
         return self.type + " : " + self.description
 
-    def create_profile_type(self, type, description):
+    def create_profile_type(self, type, description, widget_colour, is_dtol_profile, is_permission_required):
         self.type = type
         self.description = description
+        self.widget_colour = widget_colour
+        self.is_dtol_profile = is_dtol_profile
+        self.is_permission_required = is_permission_required
         self.save()
         return self
 
@@ -320,5 +359,3 @@ class ProfileType(models.Model):
     def get_profile_types(self):
         return ProfileType.objects.all()
             
-
-

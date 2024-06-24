@@ -2593,20 +2593,24 @@ function get_panel(panelType) {
 }
 
 //Set COPO frontpage properties in this dictionary
-function get_component_meta(component) {
+function get_component_meta(componentName) {
   var componentMeta = null;
-  var components = get_profile_components();
+  //var components = get_profile_components();
 
+  componentMeta = component_def[componentName]
+  /*
   components.forEach(function (comp) {
     if (comp.component == component) {
       componentMeta = comp;
       return false;
     }
   });
+  */
 
   return componentMeta;
 }
 
+/*
 function get_profile_components() {
   return [
     {
@@ -2847,7 +2851,7 @@ function get_profile_components() {
       visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
     },
     {
-      component: 'seqannotation',
+      component: 'seqnanotation',
       title: 'Sequence Annotations',
       iconClass: 'fa fa-tag',
       semanticIcon: 'tag',
@@ -2888,13 +2892,14 @@ function get_profile_components() {
     },
   ];
 }
+*/
 
 //builds component-page navbar
 function do_page_controls(componentName) {
   var component = null;
-  var components = get_profile_components();
-
-  components.forEach(function (comp) {
+  profile_type = $('#profile_type').val();
+  /*
+  var components = get_profile_components(profile_type);
     if (comp.component == componentName) {
       profile_type = $('#profile_type').val();
       if (profile_type != undefined) {
@@ -2919,14 +2924,21 @@ function do_page_controls(componentName) {
   if (component == null) {
     return false;
   }
-
-  generate_component_control(component);
+  */
+  generate_component_control(componentName, profile_type);
 } //end of func
 
-function generate_component_control(component) {
+function generate_component_control(componentName, profile_type) {
+  
+  var component = get_component_meta(componentName);
   var pageHeaders = $('.copo-page-headers'); //page header/icons
   var pageIcons = $('.copo-page-icons'); //profile component icons
   var sideBar = $('.copo-sidebar'); //sidebar panels
+
+  var profile_id = '';
+  if ($('#profile_id').length) {
+    profile_id = $('#profile_id').val();
+  }
 
   //add profile title
   if ($('#profile_title').length) {
@@ -2973,18 +2985,21 @@ function generate_component_control(component) {
       sidebarPanels
         .find('.tab-content')
         .append(sidebarPanels2.find('.tab-content').find('.' + item));
+      /*
       sidebarPanels
         .find('.profiles-legend')
         .append(sidebarPanels2.find('.profiles-legend').find('.' + item));
       sidebarPanels
         .find('.accessions-legend')
         .append(sidebarPanels2.find('.accessions-legend').find('.' + item));
+      */  
     });
 
     sideBar
-      .append(sidebarPanels.find('.nav-tabs'))
-      .append(sidebarPanels.find('.tab-content'));
+      .prepend(sidebarPanels.find('.tab-content'))
+      .prepend(sidebarPanels.find('.nav-tabs'));
 
+    /*
     // Add 'profile types' legend to profile web page only
     if (component.component == 'profile') {
       sideBar.append(sidebarPanels.find('.profiles-legend'));
@@ -2997,6 +3012,7 @@ function generate_component_control(component) {
     ) {
       sideBar.append(sidebarPanels.find('.accessions-legend'));
     }
+    */
   }
 
   //create buttons
@@ -3005,11 +3021,23 @@ function generate_component_control(component) {
   //component.buttons.forEach(function (item) {
   if (component.buttons) {
     component.buttons.forEach(function (item) {
-      button = $('.' + item.split('|')[0]).clone();
-      if (item.indexOf('|') > -1) {
-        arg = item.split('|')[1];
-        if (arg.indexOf(':') > -1) {
-          button.attr(arg.split(':')[0], $(arg.split(':')[1]).val());
+      //button = $('.' + item.split('|')[0]).clone();
+      button_str = title_button_def[item.split('|')[0]].template
+      additional_attr = title_button_def[item.split('|')[0]].additional_attr
+      button = $(button_str);
+       
+      if (additional_attr != undefined) {
+        attrs = additional_attr.split(',');
+        for (var i = 0; i < attrs.length; ++i) {
+          if (attrs[i].indexOf(':') > -1) {
+            key = attrs[i].split(':')[0];
+            value = attrs[i].split(':')[1];
+            if (value.indexOf('#') > -1 || value.indexOf('.') > -1) {
+              button.attr(key, $(value).val());
+            } else {
+              button.attr(key, value);
+            }
+          }
         }
       }
       buttonsSpan
@@ -3020,7 +3048,7 @@ function generate_component_control(component) {
   //});
 
   //...and profile component buttons
-  if (component.hasOwnProperty('profile_component')) {
+  if (profile_type != undefined)  {
     var pcomponentHTML = $('.pcomponents-icons-templates')
       .clone()
       .removeClass('pcomponents-icons-templates');
@@ -3032,28 +3060,31 @@ function generate_component_control(component) {
 
     pageIcons.append(pcomponentHTML);
 
-    var components = get_profile_components();
+    var components = get_profile_components(profile_type);
 
     for (var i = 0; i < components.length; ++i) {
       var comp = components[i];
-      if (comp.hasOwnProperty('profile_component')) {
+      //if (comp.hasOwnProperty('profile_component')) {
         if (comp.component == component.component) {
           continue;
         }
+        /*
         if (
           component.profile_component.toString() !=
           comp.profile_component.toString()
         ) {
           continue;
         }
+        */
 
         var newAnchor = pcomponentAnchor.clone();
         pcomponentHTML.append(newAnchor);
 
         newAnchor.attr('title', 'Navigate to ' + comp.title);
-        newAnchor.attr('href', $('#' + comp.component + '_url').val());
+        newAnchor.attr('href',  comp.url.replace('999', profile_id));
+        //newAnchor.attr('href', $('#' + comp.component + '_url').val());
         newAnchor.find('i').addClass(comp.color).addClass(comp.semanticIcon);
-      }
+      //}
     }
   }
 

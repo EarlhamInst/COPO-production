@@ -155,7 +155,8 @@ class Profile(DAComponent):
             ).items():
                 auto_fields[self.get_qualified_field(k)] = v
 
-        rec = super(Profile, self).save_record(auto_fields, **kwargs)
+        schema = self.get_component_schema(profile_type = auto_fields.get("copo.profile.type", ""))
+        rec = super(Profile, self).save_record(auto_fields, schema=schema, **kwargs)
 
         # trigger after save actions
         if not kwargs.get("target_id", str()):
