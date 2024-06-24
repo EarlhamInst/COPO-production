@@ -59,7 +59,7 @@ class PermitColumnsValidator(Validator):
             if len(permit_filename_lst) == 1:
                 if permit_filename_lst[0] == "N|NOT_APPLICABLE":
                     pass
-                elif permit_filename_lst[0].startswith("Y|") and permit_filename_lst[0].endswith(".pdf"):
+                elif permit_filename_lst[0].startswith("Y|") and (permit_filename_lst[0].endswith(".pdf") or permit_filename_lst[0].endswith(".PDF")):
                     pass
                 else:
                     self.errors.append(msg["validation_msg_multiple_permit_filenames_with_same_specimen_id"] % (

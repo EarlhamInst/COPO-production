@@ -1034,6 +1034,14 @@ function update_pending_samples_table() {
       } else {
         $('.hot_tab.active').click();
       }
+      // Allow the full title of the profile to be
+      // displayed on mouseover/hover i.e. on
+      // to the first column of the profile table
+      api.rows().every(function () {
+        let data = this.data();
+        let row = this.node();
+        $(row).find('td').first().attr('title', data.title);
+      });
     },
   });
 

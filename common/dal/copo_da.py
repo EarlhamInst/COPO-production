@@ -69,14 +69,15 @@ class Audit(DAComponent):
 
             audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
             
-            for x in element['update_log']:
+            for x in element.get('update_log', list()):
                 # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
                 x |= audit_addtl_out
 
                 lst.append(x)
 
-            data['update_log'] = lst
-            out.append(data)
+            if lst:
+                data['update_log'] = lst
+                out.append(data)
             
         return out
     
@@ -115,7 +116,7 @@ class Audit(DAComponent):
 
             audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
             
-            for x in element['update_log']:
+            for x in element.get('update_log', list()):
                 # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
                 x |= audit_addtl_out
 
@@ -125,8 +126,9 @@ class Audit(DAComponent):
                 else:
                     lst.append(x)
 
-            data['update_log'] = lst
-            out.append(data)
+            if lst:
+                data['update_log'] = lst
+                out.append(data)
 
         return out    
 
@@ -151,14 +153,15 @@ class Audit(DAComponent):
 
             audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
             
-            for x in element['update_log']:
+            for x in element.get('update_log', list()):
                 if x['field'] == updatable_field:
                     # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
                     x |= audit_addtl_out
                     lst.append(x)
 
-            data['update_log'] = lst
-            out.append(data)
+            if lst:
+                data['update_log'] = lst
+                out.append(data)
 
         return out
 
@@ -183,15 +186,16 @@ class Audit(DAComponent):
 
             audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
             
-            for x in element['update_log']:
+            for x in element.get('update_log', list()):
                 if x['update_type'] == update_type:
                     # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
                     x |= audit_addtl_out
 
                     lst.append(x)
 
-            data['update_log'] = lst
-            out.append(data)
+            if lst:
+                data['update_log'] = lst
+                out.append(data)
 
         return out
 
@@ -216,14 +220,15 @@ class Audit(DAComponent):
 
             audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
             
-            for x in element['update_log']:
+            for x in element.get('update_log', list()):
                 # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
                 x |= audit_addtl_out
 
                 lst.append(x)
 
-            data['update_log'] = lst
-            out.append(data)
+            if lst:
+                data['update_log'] = lst
+                out.append(data)
 
         return out
 
