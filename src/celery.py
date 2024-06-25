@@ -101,6 +101,11 @@ app.conf.beat_schedule = {
 
 }
 
+app.conf.task_routes = {
+'src.apps.copo_read_submission.tasks.process_pending_file_transfers': {'queue': 'file_transfers'},
+}
+
+
 @app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
