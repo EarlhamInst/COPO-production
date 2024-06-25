@@ -91,6 +91,9 @@ MESSAGES = {
                                     "<a href='mailto:ena-bge@ebi.ac.uk'>ena-bge@ebi.ac.uk</a> for assistance.",
     'validation_msg_invalid_taxonomy': 'Invalid data: <strong>%s</strong> in column <strong>%s</strong> at row '
                                        '<strong>%s</strong>. Expected value is <strong>%s</strong>',
+    'validation_msg_invalid_taxonomy_for_genus_or_family': 'Invalid data: <strong>%s</strong> in column <strong>%s</strong> at row '
+                                       '<strong>%s</strong>. Expected value is missing in NCBI, please default to <strong>NOT_APPLICABLE</strong>, '
+                                       "if uncertain of the valid value",
     'validation_msg_isupdate': '<strong>UPDATE</strong>: <strong>%s</strong> has already been uploaded. COPO will '
                                'perform an update.',
     'validation_msg_missing_data': 'Missing data detected in column <strong>%s</strong> at row <strong>%s</strong>. '
@@ -155,6 +158,8 @@ MESSAGES = {
                                                       "before clicking 'Finish'.",
     'validation_warning_field': 'Missing <strong>%s</strong>: row <strong>%s</strong> - <strong>%s</strong> for '
                                 '<strong>%s</strong> will be filled with <strong>%s</strong>',
+    'validation_warning_field_for_missing_genus_or_family': 'Missing <strong>%s</strong>: row <strong>%s</strong> - <strong>%s</strong> for '
+                                'the empty value provided. COPO will substitute with <strong>NOT_APPLICABLE</strong> because the value is missing in NCBI.',
     'validation_warning_synonym': 'Synonym warning: <strong>%s</strong> at row <strong>%s</strong> is a synonym of '
                                   '<strong>%s</strong>. COPO will substitute the official scientific name.'
 }

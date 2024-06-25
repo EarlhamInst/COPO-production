@@ -4,6 +4,7 @@ var dt_options = {
   scrollY: 400,
   scrollX: true,
   bSortClasses: false,
+  deferLoading: 0,  
   lengthMenu: [10, 25, 50, 75, 100, 500, 1000, 2000],
   select: {
     style: 'os',
@@ -91,6 +92,25 @@ $(document).ready(function () {
   excluded_fields = ['profile_id', 'biosample_id', '_id'];
   searchable_fields = [''];
   // populate profiles panel on left
+
+  $(document).on('click', '#toggleProfilePanelBtn', function () {
+    let toggleProfilePanelBtn = $('#toggleProfilePanelBtn');
+    let profile_panel = $('#profile_panel');
+    let sample_panel = $('#sample_panel');
+
+    profile_panel.toggleClass('hide-panel');
+
+    // Alter button text based on the visibility of the profile panel
+    if ($('#profile_panel').hasClass('hide-panel')) {
+      toggleProfilePanelBtn.text('Show profile panel');
+      sample_panel.toggleClass('panel-col-8');
+      sample_panel.toggleClass('panel-col-12');
+    } else {
+      toggleProfilePanelBtn.text('Hide profile panel');
+      sample_panel.toggleClass('panel-col-8');
+      sample_panel.toggleClass('panel-col-12');
+    }
+  });
 
   $(document).on('click', '.select-all', function () {
     // Note: Sample table rows within the 'Accepted Samples' tab do not have checkboxes
@@ -710,6 +730,8 @@ function row_select(ev) {
     $('#spinner').show();
 
     sample_table.ajax.reload(function () {
+      sample_table.draw();
+
       if (sample_table.data().length == 0) {
         var header = $('<h4/>', {
           html: 'No Samples Found',
@@ -964,8 +986,8 @@ function update_pending_samples_table() {
         dt_options['fixedHeader'] = true;
         sample_table = $('#profile_samples')
           .DataTable(dt_options)
-          .columns.adjust()
-          .draw();
+          //.columns.adjust()
+          //.draw();
       }
     });
 
@@ -1010,11 +1032,18 @@ function update_pending_samples_table() {
     initComplete: function () {
       $(document).removeData('selected_row');
       var api = this.api();
+
       if (api.row(0) != undefined) {
         this.find('tbody').find('tr:first').click();
-      } else {
-        $('.hot_tab.active').click();
       }
+      // Allow the full title of the profile to be
+      // displayed on mouseover/hover i.e. on
+      // to the first column of the profile table
+      api.rows().every(function () {
+        let data = this.data();
+        let row = this.node();
+        $(row).find('td').first().attr('title', data.title);
+      });
     },
   });
 

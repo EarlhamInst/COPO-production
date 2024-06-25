@@ -62,6 +62,10 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
 ]
 
+# Maximum number of files/images that can be uploaded at once
+# This is used in the file 'Upload Spreadsheet' dialog
+DATA_UPLOAD_MAX_NUMBER_FILES = 1000
+
 # user-defined applications definition
 PROJECT_APPS = [
     'channels',
