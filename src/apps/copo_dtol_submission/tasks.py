@@ -21,11 +21,13 @@ def process_bioimage_submission(self):
     dtol_bioimage.process_bioimage_pending_submission()
     return True
 
+"""
 @app.task(bind=True,   base=CopoBaseClassForTask)
 def find_incorrectly_rejected_samples(self):
     Logger().debug("Running find_incorrectly_rejected_samples")
     Sample().find_incorrectly_rejected_samples()
     return True
+"""
 
 @app.task(bind=True,   base=CopoBaseClassForTask)
 def poll_missing_tolids(self):
