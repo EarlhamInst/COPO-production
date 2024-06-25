@@ -100,7 +100,7 @@ def get_samples_for_profile(request):
         if direction == "desc":
             dir = -1
             
-        samples = []
+        samples = {}
         if profile_id and profile_id != 'None':
            profile_type = Profile().get_type(profile_id)
             
