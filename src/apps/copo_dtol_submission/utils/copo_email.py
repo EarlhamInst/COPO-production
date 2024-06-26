@@ -3,7 +3,7 @@ from common.dal.copo_da import CopoGroup
 from common.utils.copo_email import CopoEmail
 from common.utils.logger import Logger
 from django.conf import settings
-from src.apps.copo_core.models import SequencingCentre
+from src.apps.copo_core.models import AssociatedProfileType, SequencingCentre
 from src.apps.copo_core.models import User
 
 import common.schemas.utils.data_utils as d_utils
@@ -38,7 +38,8 @@ class Email:
             "sample_accepted" : sample_accepted_msg_content,
             "sample_rejected" : "<h4>Following samples are rejected by ENA</h4><h5>{} - {}</h5><ul>{}</ul>",
             "pending_samples" : "<h4>Samples Available for Approval</h4><p>The following sample(s) has/have been approved by the Biodiversity Genomics Europe (BGE) checkers. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
-            "bge_pending_samples" : "<h4>Samples Available for Approval</h4><p>The previous rejected sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>"
+            "bge_pending_samples" : "<h4>Samples Available for Approval</h4><p>The previous rejected sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
+            "associated_project_samples" : "<h4>Samples Available for Approval</h4><p>The following sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>"
         }
 
     def notify_sample_accepted_after_approval(self, **kwargs):
@@ -150,9 +151,21 @@ class Email:
         if p_id:
             profile = Profile().get_record(p_id)
             sequencing_centres = profile.get("sequencing_centre", [])
+
+            centres = SequencingCentre.objects.filter(name__in=sequencing_centres, is_approval_required=True)
+            for sc in centres:
+                users += sc.users.all()
+
+            """
             for sc in sequencing_centres:
-                centre = SequencingCentre.objects.get(name=sc)
+                # Try catch block to handle the case where the sequencing centre object does not exist
+                try:
+                    centre = SequencingCentre.objects.get(is_approval_required=True, name=sc)
+                except SequencingCentre.DoesNotExist:
+                   continue
                 users += centre.users.all()
+            """ 
+   
         email_addresses = list()
         sub = ""
         if len(users) > 0:
@@ -170,6 +183,7 @@ class Email:
         else:
             logger.log("No users found for sequencing centre")
 
+    """
     def notify_manifest_pending_for_bge_checker(self, data, **kwargs):        
         # get email addresses of users in sequencing centre
         p_id = kwargs.get("profile_id", "")
@@ -178,9 +192,10 @@ class Email:
 
         if profile:    
             sequencing_centres = profile.get("sequencing_centre", [])
-            for sc in sequencing_centres:
-                centre = SequencingCentre.objects.get(name=sc)
-                users += centre.users.all()
+            centres = SequencingCentre.objects.filter(name__in=sequencing_centres)
+            for sc in centres:
+                users += sc.users.all()
+
             checker_users = User.objects.filter(groups__name='bge_checkers')        
             users = list(set(users) & set(checker_users))
             email_addresses = list()
@@ -199,3 +214,44 @@ class Email:
                 CopoEmail().send(to=email_addresses, sub=sub, content=msg, html=True)
                 return
         logger.log("No users found for bge_checkers")
+    """
+    def notify_manifest_pending_for_associated_project_type_checker(self, data, **kwargs):        
+        # get email addresses of users in sequencing centre
+        p_id = kwargs.get("profile_id", "")
+        profile = Profile().get_record(p_id) if p_id else None
+        users = list()
+
+        if profile:    
+            associated_profile_types = profile.get("associated_type", [])
+            apts = [apt.get("value", "") for apt in associated_profile_types]
+            apt_objs = AssociatedProfileType.objects.filter(name__in=apts, is_approval_required=True)
+            for apt_obj in apt_objs:
+                users += apt_obj.users.all()
+
+            """
+            for apt in associated_profile_types:
+                # Try catch block to handle the case where the associated project type object does not exist
+                try:
+                    apt_obj = AssociatedProfileType.objects.get(is_approval_required=True, name=apt.get("value", ""))
+                except SequencingCentre.DoesNotExist:
+                   continue
+                users += apt_obj.users.all()
+            """     
+            users = list(set(users))
+            email_addresses = list()
+            sub = ""
+            if len(users) > 0:
+                for u in users:
+                    email_addresses.append(u.email)
+                    
+                email_addresses = list(set(email_addresses)) # Remove duplicates
+
+                demo_notification = ""
+                if "demo" in data:
+                    demo_notification = "DEMO SERVER NOTIFICATION: "
+                msg = self.messages["associated_project_samples"].format(kwargs["title"], demo_notification + kwargs["description"], data, data)
+                sub = demo_notification + " Manifest - " + kwargs["title"]
+                CopoEmail().send(to=email_addresses, sub=sub, content=msg, html=True)
+                return
+        logger.log("No users found for associated_project_type_checker")
+    

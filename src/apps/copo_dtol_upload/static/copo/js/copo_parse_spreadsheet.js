@@ -343,6 +343,19 @@ $(document).ready(function () {
     });
   });
 
+  // Get element IDs for the close buttons in the 'Upload Spreadsheet' modal
+  let sample_spreadsheet_close_btn1 = document.getElementById(
+    'sample_spreadsheet_close_btn1'
+  );
+
+  let sample_spreadsheet_close_btn2 = document.getElementById(
+    'sample_spreadsheet_close_btn2'
+  );
+
+  // Add event listeners to the close buttons
+  sample_spreadsheet_close_btn1.addEventListener('click', confirmCloseDialog);
+  sample_spreadsheet_close_btn2.addEventListener('click', confirmCloseDialog);
+
   var profileId = $('#profile_id').val();
   var wsprotocol = 'ws://';
   var socket;
@@ -912,4 +925,42 @@ function download(filename, text) {
   } else {
     pom.click();
   }
+}
+
+function confirmCloseDialog(el) {
+  el.preventDefault();
+  BootstrapDialog.show({
+    title: 'Confirm Close',
+    message:
+      'Are you sure that you would like to close the modal? ' +
+      'Any upload progress will be lost.',
+    cssClass: 'copo-modal1',
+    closable: false,
+    animate: true,
+    closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
+    closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
+    type: BootstrapDialog.TYPE_WARNING,
+    buttons: [
+      {
+        id: 'cancelCloseBtnID',
+        label: 'No, cancel',
+        cssClass: 'tiny ui basic button',
+        action: function (dialogRef) {
+          dialogRef.close();
+        },
+      },
+      {
+        id: 'yesCloseBtnID',
+        label: 'Yes, close modal',
+        cssClass: 'tiny ui basic button',
+        action: function (dialogRef) {
+          // Close 'Confirm Close' modal
+          dialogRef.close();
+
+          // Close 'Upload Spreadsheet' modal
+          $('#sample_spreadsheet_modal').modal('hide');
+        },
+      },
+    ],
+  });
 }

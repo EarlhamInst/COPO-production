@@ -4,6 +4,7 @@ var dt_options = {
   scrollY: 400,
   scrollX: true,
   bSortClasses: false,
+  deferLoading: 0,  
   lengthMenu: [10, 25, 50, 75, 100, 500, 1000, 2000],
   select: {
     style: 'os',
@@ -729,6 +730,8 @@ function row_select(ev) {
     $('#spinner').show();
 
     sample_table.ajax.reload(function () {
+      sample_table.draw();
+
       if (sample_table.data().length == 0) {
         var header = $('<h4/>', {
           html: 'No Samples Found',
@@ -983,8 +986,8 @@ function update_pending_samples_table() {
         dt_options['fixedHeader'] = true;
         sample_table = $('#profile_samples')
           .DataTable(dt_options)
-          .columns.adjust()
-          .draw();
+          //.columns.adjust()
+          //.draw();
       }
     });
 
@@ -1029,10 +1032,9 @@ function update_pending_samples_table() {
     initComplete: function () {
       $(document).removeData('selected_row');
       var api = this.api();
+
       if (api.row(0) != undefined) {
         this.find('tbody').find('tr:first').click();
-      } else {
-        $('.hot_tab.active').click();
       }
       // Allow the full title of the profile to be
       // displayed on mouseover/hover i.e. on

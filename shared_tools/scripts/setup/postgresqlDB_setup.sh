@@ -22,6 +22,7 @@ python manage.py setup_schemas
 python manage.py createcachetable
 python manage.py social_accounts
 python manage.py setup_sequencing_centres
+python manage.py setup_associated_profile_types
 python manage.py createsuperuser # Used to create an admin for the Django admin interface
 
 # Setup allauth social accounts...

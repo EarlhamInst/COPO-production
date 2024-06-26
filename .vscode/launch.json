@@ -59,9 +59,21 @@
             "request": "launch",
             "module": "celery",
             "console": "integratedTerminal",
-            "args": ["-A", "src", "worker", "-l", "debug", "-P", "gevent", "--concurrency" , "100", "-Q", "celery",  "-E"],
+            "args": ["-A", "src", "worker", "-l", "debug", "-P", "gevent", "--concurrency" , "10", "-Q", "celery",  "-E", "--hostname=celery@%h"],
             "justMyCode": true
         },
+        {
+            "name": "Python: Celery Workers file_transfers",
+            "type": "python",
+            "env" : {
+                "GEVENT_SUPPORT": "true"
+            },
+            "request": "launch",
+            "module": "celery",
+            "console": "integratedTerminal",
+            "args": ["-A", "src", "worker", "-l", "debug", "-P", "gevent", "--concurrency" , "10", "-Q", "file_transfers",  "-E", "--hostname=file_transfers@%h"],
+            "justMyCode": true
+        },        
         {
             "name": "Python: Celery Beat",
             "type": "python",

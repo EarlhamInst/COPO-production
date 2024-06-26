@@ -166,15 +166,17 @@ class SequencingCentre(models.Model):
         max_length=800,
         blank=True,
         null=True)
+    is_approval_required = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
 
-    def create_sequencing_centre(self, name, description, label, contact_details=str() ):
+    def create_sequencing_centre(self, name, description, label, contact_details=str(), is_approval_required=False):
         self.name = name
         self.description = description
         self.label = label
         self.contact_details = contact_details
+        self.is_approval_required = is_approval_required
         self.save()
         return self
 
@@ -183,5 +185,26 @@ class SequencingCentre(models.Model):
         return True
 
     def get_sequencing_centres(self):
-        return SequencingCentre.objects.all()
+    
+class AssociatedProfileType(models.Model):
+    users = models.ManyToManyField(User)
+    name = models.CharField(max_length=100)
+    label = models.CharField(max_length=100)
+    is_approval_required = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.name
+
+    def create_associated_profile_type(self, name, label, is_approval_required=False ):
+        self.name = name
+        self.label = label
+        self.is_approval_required = is_approval_required
+        self.save()
+        return self
+
+    def remove_all_associated_profile_types(self):
+        AssociatedProfileType.objects.all().delete()
+        return True
+
+    def get_associated_profile_types(self):
+        return AssociatedProfileType.objects.all()
