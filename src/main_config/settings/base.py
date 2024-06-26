@@ -283,3 +283,4 @@ TEMPLATES = [
 ROOT_URLCONF = 'src.main_config.urls'
 
 UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads')
+LOCAL_UPLOAD_PATH = os.path.join(BASE_DIR, 'local_uploads')
