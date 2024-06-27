@@ -98,7 +98,7 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
         sub_id = sub["_id"]   
 
     for f_name in files:
-        file_location = join(settings.UPLOAD_PATH, request.user.username, "seq_annotation", f_name)
+        file_location = join(settings.LOCAL_UPLOAD_PATH, request.user.username, "seq_annotation", f_name)
         df = DataFile().get_collection_handle().find_one({"file_location": file_location, "deleted": {"$ne": get_deleted_flag()}})
         if df and df.get("s3_etag","") == s3_file_etags[f_name]:
             file_ids.append(str(df["_id"]))
