@@ -115,6 +115,7 @@ services:
       - web-data:/copo/media
       - logs-data:/copo/logs
       - b2drop-permits:/copo/b2drop/permits
+      - /holding:/copo/local_uploads
     environment:
       - ENVIRONMENT_TYPE=demo
       - ASPERA_PLUGIN_DIRECTORY=aspera_linux_plugin
@@ -201,7 +202,7 @@ services:
       - copo-frontend-network
     volumes:
       - static-data:/www/static
-      - web-data:/copo/media
+      - web-data:/www/media
     secrets:
       - copo-project.crt
       - copo-project.key
