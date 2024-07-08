@@ -761,7 +761,7 @@ class DtolSpreadsheet:
 
 
 
-            if recorded_sample["biosampleAccession"] and is_updated:
+            if (recorded_sample["biosampleAccession"] or recorded_sample["status"] == "rejected") and is_updated:
                 is_private = "erga" in self.type.lower() and s["ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID"]
                 is_erga = "erga" in self.type.lower()
                 Sample().mark_pending(sample_ids = [str(recorded_sample["_id"])], is_erga=is_erga, is_private=is_private)
