@@ -460,7 +460,7 @@ def transfer_to_ena(webin_user, pass_word, remote_path, file_paths=list(), **kwa
     #os.chdir(resource_path)
 
     local_paths = ' '.join(file_paths)
-    aspera_cmd = f'ascp -d -QT -l700M -L- {local_paths} {webin_user}:{remote_path}'
+    aspera_cmd = f'ascp -d -Q -l100M -L- {local_paths} {webin_user}:{remote_path}'
     lg.log(aspera_cmd, level=Loglvl.DEBUG, type=Logtype.FILE)
 
     try:
