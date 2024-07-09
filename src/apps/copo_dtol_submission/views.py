@@ -210,7 +210,7 @@ def add_sample_to_dtol_submission(request):
         samples = Sample().get_all_records_columns(filter_by=dict(_id={"$in": sample_oids}), projection=dict(status=1))
         processing_sample_ids = []
         pending_sample_ids = []
-        #bge_pending_sample_ids = []
+        bge_pending_sample_ids = []
         associated_project_sample_ids = []
 
         for sample in samples:
@@ -264,6 +264,8 @@ def add_sample_to_dtol_submission(request):
                             processing_sample_ids.append(sample_id)
                         else:
                             lg.error(f"User {current_user} is not an associated project type checker")
+                    case "rejected":
+                        bge_pending_sample_ids.append(sample_id)
                     case _:
                         lg.error(f"Sample {sample_id} has an invalid status {sample['status']} for the current profile type {type_sub} and user {current_user}")
                         
@@ -286,15 +288,14 @@ def add_sample_to_dtol_submission(request):
             uri = request.build_absolute_uri('/')
             #send email to Sangar to notify them of new samples
             Email().notify_manifest_pending_for_sequencing_centre(data=uri + 'copo/dtol_submission/accept_reject_sample/', profile_id=profile_id,  title=profile["title"], description=profile["description"] )
-        
-        """
+
         # BGE pending samples
         if bge_pending_sample_ids:
             Sample().mark_pending(sample_ids=bge_pending_sample_ids, is_erga=True)
             uri = request.build_absolute_uri('/')
             #send email to BGE to notify them of new samples
             Email().notify_manifest_pending_for_bge_checker(data=uri + 'copo/dtol_submission/accept_reject_sample/', profile_id=profile_id,  title=profile["title"], description=profile["description"] )
-        """
+
         # Associated project type samples
         if associated_project_sample_ids:
             Sample().mark_pending(sample_ids=associated_project_sample_ids, is_associated_project_check_required=True)

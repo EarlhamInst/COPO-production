@@ -161,8 +161,9 @@ class RackPlateUniquenessValidator(Validator):
                                                "") + "/" + x["TUBE_OR_WELL_ID"], dup))
 
                 # check if rack_tube present we are in the same profile
-                existingsam = Sample().get_by_field(
-                    "rack_tube", err)  # [str(rack_tube[0])])
+                #existingsam = Sample().get_by_field(
+                #    "rack_tube", err)  # [str(rack_tube[0])])
+                existingsam = Sample().get_all_records_columns(filter_by={"rack_tube": {"$in": err}}, projection={"profile_id":1, "rack_tube":1, "biosampleAccession":1})
                 for exsam in existingsam:
                     if exsam["profile_id"] == self.profile_id:
                         self.kwargs["isupdate"] = True

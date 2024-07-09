@@ -1627,45 +1627,45 @@ DTOL_RULES = {
             "strict_regex": "^\d+$",
             "human_readable": "integer"
         },
-    'tmp_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
+    'TISSUE_VOUCHER_ID_FOR_BIOBANKING':
         {
-            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
+            "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
             "biocollection_qualifier_type": "specimen_voucher",
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
+            "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         },
-    'tmp_PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
+    'PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
         {
-            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
+            "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
             "biocollection_qualifier_type": "specimen_voucher",
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
+            "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         },
-    'tmp_DNA_VOUCHER_ID_FOR_BIOBANKING':
+    'DNA_VOUCHER_ID_FOR_BIOBANKING':
         {
-            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
+            "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
             "biocollection_qualifier_type": "bio_material",
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
+            "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         },
-    'tmp_PROXY_VOUCHER_ID':
+    'PROXY_VOUCHER_ID':
         {
-            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
+            "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
             "biocollection_qualifier_type": "specimen_voucher",
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
+            "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         },
-    'tmp_VOUCHER_ID':
+    'VOUCHER_ID':
         {
-            "strict_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "biocollection_regex": "((^([^\|:])+):(([^\|:])+):[^\|:]+$)|(((^([^\|:])+):(([^\|:])+):[^\|:]+)(\|(([^\|:])+):(([^\|:])+):([^\|:])+)+$)",
+            "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
             "biocollection_qualifier_type": "specimen_voucher",
-            "human_readable": "the ID should be in the format of institute code:collection code:id and separated by \"|\" and the ID should be registered already."
+            "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         }        
 }
 

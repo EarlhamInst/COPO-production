@@ -183,7 +183,7 @@ class Email:
         else:
             logger.log("No users found for sequencing centre")
 
-    """
+  
     def notify_manifest_pending_for_bge_checker(self, data, **kwargs):        
         # get email addresses of users in sequencing centre
         p_id = kwargs.get("profile_id", "")
@@ -214,7 +214,7 @@ class Email:
                 CopoEmail().send(to=email_addresses, sub=sub, content=msg, html=True)
                 return
         logger.log("No users found for bge_checkers")
-    """
+ 
     def notify_manifest_pending_for_associated_project_type_checker(self, data, **kwargs):        
         # get email addresses of users in sequencing centre
         p_id = kwargs.get("profile_id", "")

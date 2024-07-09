@@ -405,8 +405,7 @@ class DtolEnumerationValidator(Validator):
                         ids = c_value.strip().split("|")
                         for id in ids:
                             #check the id against the ENA API
-                            code = id.split(":")
-                            if not check_biocollection(code[0], code[1], biocollection_qualifier_type):
+                            if not check_biocollection(id, biocollection_qualifier_type):
                                 self.errors.append(msg["validation_msg_invalid_data"] % (
                                 c, header, str(cellcount + 1), regex_human_readable))
                                 self.flag = False
