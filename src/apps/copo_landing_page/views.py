@@ -7,16 +7,24 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 import json
 from src.apps.copo_core.models import UserDetails, banner_view
+from src.apps.copo_news.views import news_list
 
 l = Logger()
 
 
 def index(request):
     banner = banner_view.objects.all()
+    result_dict = news_list(request)
+
     if len(banner) > 0:
         context = {'user': request.user, "banner": banner[0]}
     else:
         context = {'user': request.user}
+
+    context['newsList'] = result_dict['newsList']
+    context['newsItemsTotalCount'] = result_dict['newsItemsTotalCount']
+    context['allCategories'] = result_dict['allCategories']
+   
     return render(request, 'index_new.html', context)
 
 

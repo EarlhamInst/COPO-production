@@ -1,0 +1,56 @@
+{% load static %}
+<div class="news-container mt-90">
+    {% if newsList|length > 0 %}
+        <!-- News List section -->
+        <div class="news {% if newsList|length == 1 %}news1{% elif newsList|length == 2 %}news2{% else %}news_more{% endif %}">
+            {% for news in newsList %}
+                <div class="news-item">
+                    <div class="news-image" style="background-image: url({{ news.news_image.url }})"></div>
+                    <div class="news-content">
+                        <div class="news-inside">
+                            <div class="news-row">
+                                <div class="news-category fl-left">{{ news.category }}</div>
+                                <div class="news-date fl-right"> {{ news.created_date|date:"D, j M Y H:i" }}</div>
+                            </div>
+                            <br>
+                            <h3 class="news-title">{{ news.title|truncatechars:50 }}</h3>
+                            <div class="news-excerpt">
+                                {% autoescape off %}
+                                    {{ news.content|truncatechars:400 }}
+                                {% endautoescape %}
+                            </div>
+                            <div class="centre mt-10 mb-10">
+                                <a id="readMoreBtnID" class="btn-accent news-button btn-big" href="{% url 'news:news_item' news.id %}">
+                                    Read more
+                                    <i class="fa fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div> 
+    {% else %}
+        <div class="news">
+            <div class="news-item">
+                <div class="news-image news-image-default"></div>
+                <div class="news-content">
+                    <div class="news-inside">
+                        <h3 class="news-title">No news available</h3>
+                        <p class="news-excerpt">
+                            There are no news articles available at this time. Please check back later.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- View more button section -->
+ {% if newsItemsTotalCount > 3 %}
+    <div class="centre mt-10">
+        <a id="viewMoreNewsBtnID" class="btn-accent news-button btn-big" href="/news" target="_parent">View more news
+        </a>
+    </div>
+{% endif %}

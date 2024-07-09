@@ -5,7 +5,7 @@
     <div class="container-fluid" style="display:block">
         <div class="navbar-header">
             <a class="navbar-brand"
-               href="{% if user.is_authenticated %} {% url 'copo_profile_index:index' %} {% else %}{% url 'copo_profile_index:index' %}{% endif %}">
+               href="{% if user.is_authenticated %} {% url 'copo_profile_index:index' %} {% else %}/{% endif %}">
                 <img style="height: 45px; margin-left: 12px; margin-top: -8px; padding: 2px;"
                      src="{% static 'assets/img/COPO-logo-full-CMYK-black.png' %}"
                      alt="COPO logo">
@@ -13,24 +13,25 @@
         </div>
         <div class="collapse navbar-collapse" id="frontpage-navbar">
             <ul class="nav navbar-nav navbar-right">
-                <li role="presentation"><a href="/">Home</a></li>
+                <li role="presentation"><a href="/" target="_parent">Home</a></li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                        aria-expanded="false">Analytics <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li role="presentation"><a href="/copo/tol_dashboard/stats">Statistics</a></li>
-                        <li role="presentation"><a href="/copo/tol_dashboard/tol">Tree of Life Dashboard</a></li>
-                        <li role="presentation"><a href="/copo/copo_accessions/dashboard">Accessions Dashboard</a></li>
+                        <li role="presentation"><a href="/copo/tol_dashboard/stats" target="_parent">Statistics</a></li>
+                        <li role="presentation"><a href="/copo/tol_dashboard/tol" target="_parent">Tree of Life Dashboard</a></li>
+                        <li role="presentation"><a href="/copo/copo_accessions/dashboard" target="_parent">Accessions Dashboard</a></li>
                     </ul>
                 </li>
-                <li role="presentation"><a href="/news">News</a></li>
-                <li role="presentation"><a href="/about">About</a></li>
+                <li role="presentation"><a href="/news" target="_parent">News</a></li>
+                <li role="presentation"><a href="/about" target="_parent">About</a></li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                        aria-expanded="false">Help <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li role="presentation"><a href="/ebp">Earth Biogenome Project Resources</a></li>
-                        <li role="presentation"><a href="/#contact-sec">Contact Us</a></li>
+                        <li role="presentation"><a href="https://copo-docs.readthedocs.io/en/latest/" target="_blank">COPO's Documentation</a></li>
+                        <li role="presentation"><a href="/ebp" target="_parent">Earth Biogenome Project Resources</a></li>
+                        <li role="presentation"><a href="/contact" target="_parent">Contact Us</a></li>
                     </ul>
                 </li>
             </ul>

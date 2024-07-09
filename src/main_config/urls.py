@@ -41,7 +41,7 @@ urlpatterns = [
     path('about/terms_of_use/', TemplateView.as_view(template_name="terms_of_use.html"),
          name='terms_of_use'),
     path('people/', TemplateView.as_view(template_name="people.html"), name='people'),
-    path('dtol/', TemplateView.as_view(template_name="dtol.html"), name='dtol'),
+    path('contact/', TemplateView.as_view(template_name="contact.html"), name='contact'),
     path('news/',  include('src.apps.copo_news.urls', namespace='copo_news')),
     path('ebp/', TemplateView.as_view(template_name="ebp_resources.html"), name="ebp"),
     path('tinymce/', include('tinymce.urls')),

@@ -185,6 +185,7 @@ class SequencingCentre(models.Model):
         return True
 
     def get_sequencing_centres(self):
+        return SequencingCentre.objects.all()
     
 class AssociatedProfileType(models.Model):
     users = models.ManyToManyField(User)

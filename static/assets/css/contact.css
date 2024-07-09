@@ -1,0 +1,20 @@
+/* Contact page CSS */
+.contact-div {
+    margin-top: 80px;
+    margin-left: 40px;
+}
+
+#contact-sec {
+    padding-top: 5px !important;
+    color: white;
+    margin-top: -40px;
+}
+
+.padding-top-10 {
+    padding-top: 10px;
+}
+
+#message {
+    height: 271px;
+    width: 1083px;
+}

@@ -310,6 +310,7 @@ p {
     padding: 20px !important
 }
 
+/* Contact section CSS */
 #contact-sec {
     padding-top: 5px !important;
     color: white;
@@ -321,6 +322,38 @@ p {
     padding: 10px;
     font-weight: bold;
     box-shadow: 0 0 0 1px #fff inset !important;
+}
+
+#email_form #name,
+#email_form #email {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-top: 6px;
+    margin-bottom: 16px;
+    resize: vertical;
+}
+
+#email_form #message {
+    height: 200px;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-top: 6px;
+    margin-bottom: 16px;
+    resize: vertical;
+}
+
+.white-text {
+    color: white !important;
+}
+
+.black-text {
+    color: black!important;
 }
 
 .warning_banner {

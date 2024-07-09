@@ -1,0 +1,102 @@
+{% extends 'copo/base2.html' %}
+
+{% load static %}
+{% load web_tags %}
+
+{% block title %}News{% endblock %}
+
+{% block stylesheet_block %}
+    <link rel="stylesheet" href="{% static 'copo_news/css/copo_news.css' %}">
+{% endblock %}
+
+{% block carouselblock %}
+{% endblock carouselblock %}
+
+{% block header_section %}
+{% endblock header_section %}
+
+{% block content %}
+    <br><br><br><br>
+    <div class="news-item-details-container">
+        <div class="news-item-details-header">
+            <h1 class="news-title news-item-details-title">{{ news.title }}</h1>
+            <img class="news-image news-item-details-image" alt="{{ news.title }}" src="{{ news.news_image.url }}">
+            <article class="news-content news-item-details-content">
+                {% autoescape off %}
+                {{ news.content }}
+                {% endautoescape %}
+            </article>
+        
+            {% if relatedNews|length > 0 %}
+            <hr class="news-hr">
+            <div class="related-news">
+                <h2>Related News</h2>
+                <ul class="related-news-ul">
+                    {% for relatedNewsItem in relatedNews %}
+                        <li class="related-news-item">
+                            <a href="{% url 'news:news_item' relatedNewsItem.id %}">{{ relatedNewsItem.title|truncatechars:110 }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        <div class="news-footer">
+            <div class ="news-meta">
+                <div class="col-md-8 fl-left"> 
+                    <ul class="news-meta-col8">
+                        <li class="author-div">
+                            <span class="bold-text">Author:</span> {{ news.author }}
+                        </li>
+                        <br>
+                        <li class="date-created-div" date="{{ news.created_date}}">
+                            <span class="bold-text">Date created:</span> {{ news.created_date|date:"D j M Y, H:i T" }}
+                        </li>
+                        <br>
+                        <li class="date-created-div" date="{{ news.updated_date}}">
+                            <span class="bold-text">Date updated:</span> {{ news.updated_date|date:"D j M Y, H:i T" }}
+                        </li>
+                    </ul>
+                </div>
+                <div class="fl-right">
+                    <button class="category-circle" style="background-color: {{ news.category.colour }}"></button>&emsp;
+                    <p class="news-category">{{ news.category }}</p>
+                </div>
+            </div>
+
+            {% if previousNews or nextNews %}
+                <nav class="navigation news-navigation" aria-label="news">
+                    <h2 class="news-navigation-title">News navigation</h2>
+                    <div class="nav-links">
+                        {% if previousNews %}
+                            <div class="nav-previous">
+                                <a href="{% url 'news:news_item' previousNews.id %}"
+                                    rel="prev">
+                                    <i id="leftIcon" class="fa fa-arrow-left"></i>
+                                    <span>{{ previousNews.title|truncatechars:110 }}</span>
+                                </a>
+                            </div>
+                        {% endif %}
+                        {% if nextNews %}
+                        <div class="nav-next">
+                            <a href="{% url 'news:news_item' nextNews.id %}"
+                                rel="next"><span>{{ nextNews.title|truncatechars:110 }}</span>
+                                <i id="rightIcon" class="fa fa-arrow-right"></i>
+                            </a>
+                            
+                        </div>
+                        {% endif %}
+                    </div>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block help_section %}
+    <!-- sidebar -->
+{% endblock %}
+
+{% block js_block %}
+    <script src="{% static 'copo_news/js/copo_news.js' %}"></script>
+{% endblock %}

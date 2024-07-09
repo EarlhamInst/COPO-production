@@ -259,8 +259,8 @@
 <nav id="copo-global-nav" class="navbar navbar-default navbar-fixed-top">
     <div class="container-fluid" style="display:block">
         <div class="navbar-header">
-            <a class="navbar-brand" href="{% url 'copo_profile_index:index' %}">
-                <img class="icon-margin-top" style="height: 45px; margin-left: 0; margin-top: -8px;"
+            <a class="navbar-brand" href="{% if user.is_authenticated %} {% url 'copo_profile_index:index' %} {% else %}/{% endif %}">
+                <img class="icon-margin-top" style="height: 45px; margin-left: 12px; margin-top: -8px;"
                      src="{% static 'assets/img/COPO-logo-full-CMYK-black.png' %}"/>
             </a>
             <button type='button' class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -317,15 +317,22 @@
                     </span>
                 </a>
             </li>
+            <li class="dropdown" style="margin-left: 15px;" title="News">
+                <a href="/news" target="_parent">
+                    <span data-copo-tour-id="news_button">
+                        <i class="fa fa-newspaper" aria-hidden="true"></i>
+                    </span>
+                </a>
+            </li>
             <li class="dropdown" style="margin-left: 15px;" title="Contact COPO">
-                <a href="/#contact-sec" target="_blank">
+                <a href="/contact" target="_parent">
                     <span data-copo-tour-id="contact_button">
                             <i class="fa fa-envelope" aria-hidden="true"></i>
                     </span>
                 </a>
             </li>
             <li class="dropdown" style="margin-left: 15px;" title="About COPO">
-                <a href="/about" target="_blank">
+                <a href="/about" target="_parent">
                     <span data-copo-tour-id="about_button">
                         <i class="fa fa-info-circle" style="font-size: 17px;" aria-hidden="true"></i>
                     </span>
@@ -349,7 +356,7 @@
 
                         {% if request.user.is_staff %}
                             <li>
-                                <a href="{# url 'copo:copo_repositories' #}" role="menuitem" tabindex="-1">
+                                <a href="{# url 'copo:copo_repositories' #}" role="menuitem" tabindex="-1" target="_parent">
                                     <div class="custom-nav-items">
                                         <i class="fa fa-database" aria-hidden="true"></i>
                                         <span class="icon_text">Administer Repositories</span>
@@ -359,7 +366,7 @@
                         {% endif %}
 
                         <li>
-                            <a href="{% url 'copo:groups' %}" role="menuitem" tabindex="-1">
+                            <a href="{% url 'copo:groups' %}" role="menuitem" tabindex="-1" target="_parent">
                                 <div class="custom-nav-items">
                                     <i class="fa fa-users" aria-hidden="true"></i>
                                     <span class="icon_text">View Groups</span>
@@ -368,7 +375,7 @@
                         </li>
 
                         <li>
-                            <a href="{% url 'copo:view_user_info' %}" role="menuitem" tabindex="-1">
+                            <a href="{% url 'copo:view_user_info' %}" role="menuitem" tabindex="-1" target="_parent">
                                 <div class="custom-nav-items">
                                     <i class="fa fa-eye" aria-hidden="true"></i>
                                     <span class="icon_text">User Info</span>
@@ -376,7 +383,7 @@
                             </a>
                         </li>
                         <li role="presentation"><a role="menuitem" tabindex="-1"
-                                                   href="{%  url 'copo_login:logout' %}">
+                                                   href="{%  url 'copo_login:logout' %}" target="_parent">
                                                    
                             <div class="custom-nav-items">
                                 <i class="fa fa-sign-out-alt" aria-hidden="true"></i>
@@ -386,7 +393,7 @@
                         </li>
                     {% else %}
                         <li>
-                            <a href="{%  url 'copo_login:login' %}" role="menuitem" tabindex="-1">
+                            <a href="{%  url 'copo_login:login' %}" role="menuitem" tabindex="-1" target="_parent">
                                 <div class="custom-nav-items">
                                     <i class="fa fa-sign-in-alt" aria-hidden="true"></i>
                                     <span class="icon_text">Login</span>
