@@ -14,6 +14,11 @@ class Command(BaseCommand):
         News().remove_all_news_articles()
 
         self.stdout.write(self.style.SUCCESS('Removed existing news items and categories'))
+        
+        # Create 'news_images' directory if it does not exist
+        self.stdout.write('Creating \'news images\' directory...')
+        News().create_news_images_directory()
+
         self.stdout.write('Adding news items and categories...')
 
         # Add news categories
@@ -170,19 +175,23 @@ class Command(BaseCommand):
         # Create a mapping between the news image title and the news item image from the news_items list
         # This is to ensure that the image path is saved in the database according to the news item model ID
         image_title_to_news_item_mapping = {news_item['title']: news_item['news_image'] for news_item in news_items}
+        
+        try: 
+            for news_item in news_items:
+                news_image_path = news_item.get('news_image','')
+                
+                if not os.path.exists(news_image_path):
+                    self.stdout.write(self.style.ERROR('Error: Image file does not exist'))
+                    continue  # Skip this news item
 
-        for news_item in news_items:
-            news_image_path = news_item.get('news_image','')
-            
-            if not os.path.exists(news_image_path):
-                self.stdout.write(self.style.ERROR('Error: Image file does not exist'))
-                continue  # Skip this news item
-
-            with open(news_image_path, 'rb') as image_file:
-                django_file = File(image_file)
-                news_item_instance = News(**news_item)
-                news_item_instance.news_image.save(os.path.basename(news_image_path), django_file, save=True)
-                news_item_instance.save()
+                with open(news_image_path, 'rb') as image_file:
+                    django_file = File(image_file)
+                    news_item_instance = News(**news_item)
+                    news_item_instance.news_image.save(os.path.basename(news_image_path), django_file, save=True)
+                    news_item_instance.save()
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error: {str(e)}'))
+            return
 
         # Update image path for all news items so that the 
         # image path is saved in the  database according to 
