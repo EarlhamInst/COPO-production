@@ -473,6 +473,50 @@
     },
     {
       "help_tip": "",
+      "unique": false,
+      "default_value": "",
+      "show_as_attribute": true,
+      "control_meta": {},
+      "versions": [
+        "authors"
+      ],
+      "unique_items": [],
+      "deprecated": false,
+      "hidden": "false",
+      "id": "copo.assembly.authors",
+      "label": "AUTHORS",
+      "show_in_form": false,
+      "ref": "",
+      "type": "string",
+      "required": "false",
+      "show_in_table": false,
+      "control": "text",
+      "ena_assembly_submisison": true
+    },
+    {
+      "help_tip": "",
+      "unique": false,
+      "default_value": "",
+      "show_as_attribute": true,
+      "control_meta": {},
+      "versions": [
+        "ADDRESS"
+      ],
+      "unique_items": [],
+      "deprecated": false,
+      "hidden": "false",
+      "id": "copo.assembly.address",
+      "label": "ADDRESS",
+      "show_in_form": false,
+      "ref": "",
+      "type": "string",
+      "required": "false",
+      "show_in_table": false,
+      "control": "text",
+      "ena_assembly_submisison": true
+    },    
+    {
+      "help_tip": "",
       "unique": true,
       "default_value": "",
       "show_as_attribute": true,

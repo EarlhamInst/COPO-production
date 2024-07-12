@@ -1,5 +1,5 @@
 from django import forms
-
+from django.core.exceptions import ValidationError
 
 class AssemblyForm(forms.Form):
 
@@ -68,6 +68,12 @@ class AssemblyForm(forms.Form):
     description = forms.CharField(label="DESCRIPTION", required=False,
                                   widget=forms.Textarea(attrs={'placeholder': 'Free text description of the genome '
                                                                               'assembly'}))
+    authors = forms.CharField(label="AUTHORS", required=False,
+                                    widget=forms.Textarea(attrs={'placeholder': 'Comma separated list of authors'})) 
+    
+    address = forms.CharField(label="ADDRESS", required=False,
+                                    widget=forms.TextInput(attrs={'placeholder': 'The address of the authors'})) 
+
     run_ref = forms.CharField(label="RUN_REF", required=False, widget=forms.TextInput(
         attrs={'placeholder': 'Comma separated list of run accession(s)'}))
     
@@ -80,3 +86,13 @@ class AssemblyForm(forms.Form):
     #    #attrs={'accept': '.fasta.gz, .fas.gz, .fsa.gz, fna.gz, .fa.gz, .fasta.bz2, .fas.bz2, .fsa.bz2, .fna.bz2, .fa.bz2'}
     #     ))
     id = forms.CharField(label="ID", required=False, widget=forms.HiddenInput)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        address =  cleaned_data.get("address")
+        authors = cleaned_data.get("authors")
+
+        if authors and not address:
+            raise ValidationError({"address": "Please provide address for the authors"})
+        if address and not authors:
+            raise ValidationError({"authors": "Please provide authors"})
