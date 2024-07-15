@@ -267,7 +267,9 @@ $(document).ready(function () {
                 $('#sample_spreadsheet_modal').modal('hide'); // Close 'Upload Spreadsheet' modal
               })
               .fail(function (data) {
-                $(".bootstrap-dialog-message").html('font color="red">Sytem error. Please try it again later. If the problem persists, please contact COPO with the screenshot</font>');
+                $('.bootstrap-dialog-message').html(
+                  'font color="red">System error. Please try it again later. If the problem persists, please contact COPO with the screenshot</font>'
+                );
                 console.log(data);
               });
           },
@@ -336,7 +338,9 @@ $(document).ready(function () {
                 $('#sample_spreadsheet_modal').modal('hide'); // Close 'Upload Spreadsheet' modal
               })
               .fail(function (data) {
-                $(".bootstrap-dialog-message").html('<font color="red">Sytem error. Please try it again later. If the problem persists, please contact COPO with the screenshot</font>');
+                $('.bootstrap-dialog-message').html(
+                  '<font color="red">Sytem error. Please try it again later. If the problem persists, please contact COPO with the screenshot</font>'
+                );
                 console.log(data);
               });
           },
@@ -346,17 +350,20 @@ $(document).ready(function () {
   });
 
   // Get element IDs for the close buttons in the 'Upload Spreadsheet' modal
-  let sample_spreadsheet_close_btn1 = document.getElementById(
-    'sample_spreadsheet_close_btn1'
-  );
+  // only if the modal is present in the DOM
+  if ($('#sample_spreadsheet_modal').length) {
+    let sample_spreadsheet_close_btn1 = document.getElementById(
+      'sample_spreadsheet_close_btn1'
+    );
 
-  let sample_spreadsheet_close_btn2 = document.getElementById(
-    'sample_spreadsheet_close_btn2'
-  );
+    let sample_spreadsheet_close_btn2 = document.getElementById(
+      'sample_spreadsheet_close_btn2'
+    );
 
-  // Add event listeners to the close buttons
-  sample_spreadsheet_close_btn1.addEventListener('click', confirmCloseDialog);
-  sample_spreadsheet_close_btn2.addEventListener('click', confirmCloseDialog);
+    // Add event listeners to the close buttons
+    sample_spreadsheet_close_btn1.addEventListener('click', confirmCloseDialog);
+    sample_spreadsheet_close_btn2.addEventListener('click', confirmCloseDialog);
+  }
 
   var profileId = $('#profile_id').val();
   var wsprotocol = 'ws://';
@@ -618,7 +625,7 @@ $(document).ready(function () {
           //$("#finish_button").fadeIn()
 
           if (!failed) {
-            $('#sample_info').fadeOut('50')
+            $('#sample_info').fadeOut('50');
             if (!finishBtnStatus) {
               $('#finish_button').show();
             }
@@ -626,22 +633,20 @@ $(document).ready(function () {
             if (!confirmBtnStatus) {
               $('#confirm_button').show();
             }
-          }
-          else {
+          } else {
             if (!$('#sample_info').is(':visible')) {
               $('#sample_info').fadeIn('50');
             }
-  
+
             $('#sample_info')
               .removeClass(
                 'sample-alert-info sample-alert-success sample-alert-warning'
               )
-              .addClass('sample-alert-error')
-            $('#sample_info').html("Sample image upload problem. Please check the Sample Images tab for details.");
-
+              .addClass('sample-alert-error');
+            $('#sample_info').html(
+              'Sample image upload problem. Please check the Sample Images tab for details.'
+            );
           }
-
-
         } else if (d.action === 'make_permits_table') {
           // make table of permits matched to
           // specimen_ids
@@ -692,20 +697,20 @@ $(document).ready(function () {
           $('#permits_table').DataTable();
           $('#permits_table_nav_tab').click();
           if (d.data.hasOwnProperty('fail_flag') && d.data.fail_flag == true) {
-        
             if (!$('#sample_info').is(':visible')) {
               $('#sample_info').fadeIn('50');
             }
-  
+
             $('#sample_info')
               .removeClass(
                 'sample-alert-info sample-alert-success sample-alert-warning'
               )
-              .addClass('sample-alert-error')
-            $('#sample_info').html("Sample permit files upload problem. Please check the Sample Permits tab for details.");
-          
+              .addClass('sample-alert-error');
+            $('#sample_info').html(
+              'Sample permit files upload problem. Please check the Sample Permits tab for details.'
+            );
           } else {
-            $('#sample_info').fadeOut('50')
+            $('#sample_info').fadeOut('50');
             if (isNew) {
               $('#finish_button').fadeIn();
             } else {
