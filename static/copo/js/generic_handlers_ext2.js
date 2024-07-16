@@ -127,11 +127,11 @@ function do_table_buttons_events() {
       var btntype = elem.attr('data-btntype'); //type of button: single, multi, all
       var title = elem.find('.action-label').html();
       var message = elem.attr('data-error-message');
-      
+
       if (!title) {
-          title = 'Record action';
+        title = 'Record action';
       }
-      
+
       if (!message) {
         message = 'No records selected for ' + title + ' action';
       }
@@ -186,11 +186,11 @@ function do_table_buttons_events_server_side(component) {
       var btntype = elem.attr('data-btntype'); //type of button: single, multi, all
       var title = elem.find('.action-label').html();
       var message = elem.attr('data-error-message');
-      
+
       if (!title) {
-          title = 'Record action';
+        title = 'Record action';
       }
-      
+
       if (!message) {
         message = 'No records selected for ' + title + ' action';
       }
@@ -517,12 +517,20 @@ function do_render_server_side_table(componentMeta) {
     });
   }
 
-  $('#' + tableID + '_wrapper')
+  let table_wrapper = $('#' + tableID + '_wrapper');
+
+  table_wrapper.find('.dt-buttons').css({ float: 'right' });
+
+  table_wrapper
     .find('.dataTables_filter')
+    .find('label')
+    .css({ padding: '10px 0' })
     .find('input')
     .removeClass('input-sm')
     .attr('placeholder', 'Search ' + componentMeta.title)
     .attr('size', 30);
+
+  $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
 
   //handle event for table details
   $('#' + tableID + ' tbody')
@@ -633,11 +641,11 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
         }
       },
     },
-  ]
+  ];
+  
   if (columnDefs) {
     local_columnDefs = local_columnDefs.push(columnDefs);
-  } 
-
+  }
 
   //set data
   var table = null;
@@ -742,12 +750,20 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
     table.columns.adjust().draw();
   }
 
-  $('#' + tableID + '_wrapper')
+  let table_wrapper = $('#' + tableID + '_wrapper');
+
+  table_wrapper.find('.dt-buttons').css({ float: 'right' });
+
+  table_wrapper
     .find('.dataTables_filter')
+    .find('label')
+    .css({ padding: '10px 0' })
     .find('input')
     .removeClass('input-sm')
     .attr('placeholder', 'Search ' + componentMeta.title)
     .attr('size', 30);
+
+  $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
 
   //handle event for table details
   $('#' + tableID + ' tbody')
