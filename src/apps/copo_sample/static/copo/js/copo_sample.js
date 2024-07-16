@@ -1129,11 +1129,19 @@ $(document).ready(function () {
               dom: 'lfit<"row">rp',
             });
 
-            $('#' + tableID + '_wrapper')
+            let table_wrapper = $('#' + tableID + '_wrapper');
+
+            table_wrapper.find('.dt-buttons').addClass('pull-right');
+
+            table_wrapper
               .find('.dataTables_filter')
+              .find('label')
+              .css({ padding: '10px 0' })
               .find('input')
               .removeClass('input-sm')
               .attr('placeholder', 'Search sample source');
+
+            $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
 
             //handle event for table details
             $('#' + tableID + ' tbody')
