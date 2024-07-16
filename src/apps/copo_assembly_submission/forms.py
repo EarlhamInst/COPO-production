@@ -51,8 +51,10 @@ class AssemblyForm(forms.Form):
                                                                                                       'assembly name,'
                                                                                                       ' user-provided'}))
     assembly_type = forms.ChoiceField(label="ASSEMBLY_TYPE", choices=[('clone', 'clone'), ('isolate', 'isolate')])
+    submission_type = forms.ChoiceField(label="SUBMISSIKON_TYPE", choices=[('genome', 'genome'), ('transcriptome', 'transcriptome')])
+
     coverage = forms.FloatField(label="COVERAGE", widget=forms.TextInput(attrs={'placeholder': 'The estimated depth of '
-                                                                                               'sequencing coverage'}))
+                                                                                               'sequencing coverage'}),required=False)
     program = forms.CharField(label="PROGRAM", widget=forms.TextInput(attrs={'placeholder': 'The assembly program'}))
     platform = forms.CharField(label="PLATFORM", widget=forms.TextInput(attrs={'placeholder': 'The sequencing '
                                                                                               'platform, '
@@ -91,8 +93,17 @@ class AssemblyForm(forms.Form):
         cleaned_data = super().clean()
         address =  cleaned_data.get("address")
         authors = cleaned_data.get("authors")
+        submission_type = cleaned_data.get("submission_type")
+        error = {}
 
         if authors and not address:
-            raise ValidationError({"address": "Please provide address for the authors"})
+            error.update({"address": "Please provide 'address' for the 'authors'"})
         if address and not authors:
-            raise ValidationError({"authors": "Please provide authors"})
+            error.update({"authors": "Please provide 'authors'"})
+
+        if submission_type == "genome":
+            if not cleaned_data.get("coverage"):
+                error.update({"coverage": "Please input 'coverage' for 'genome assembly'"})
+             
+        if error:
+            raise ValidationError(error)

@@ -100,6 +100,28 @@
       "show_as_attribute": true,
       "control_meta": {},
       "versions": [
+        "submission_type"
+      ],
+      "unique_items": [],
+      "deprecated": false,
+      "hidden": "false",
+      "id": "copo.assembly.submission_type",
+      "label": "SUBMISSION_TYPE",
+      "show_in_form": true,
+      "ref": "",
+      "type": "string",
+      "required": "true",
+      "show_in_table": true,
+      "control": "text",
+      "ena_assembly_submisison": false
+    },
+    {
+      "help_tip": "",
+      "unique": false,
+      "default_value": "",
+      "show_as_attribute": true,
+      "control_meta": {},
+      "versions": [
         "coverage"
       ],
       "unique_items": [],
