@@ -1,5 +1,7 @@
-from django import forms
+from django import forms  
 from django.core.exceptions import ValidationError
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Fieldset, Submit
 
 class AssemblyForm(forms.Form):
 
@@ -40,33 +42,21 @@ class AssemblyForm(forms.Form):
             self.fields[field].initial = None
             self.fields[field].widget.attrs['readonly'] = True  
             self.fields[field].choices = files_choices
-
+ 
 
     # fields from ENA assembly documentation
     study = forms.CharField(label="STUDY",
                             widget=forms.TextInput(attrs={'placeholder': 'Study accession'}))
     sample = forms.ChoiceField(label="SAMPLE")
     sample_text = forms.CharField(label="SAMPLE", widget=forms.TextInput(attrs={'placeholder': 'Sample accession'}), required=False)
-    assemblyname = forms.CharField(label="ASSEMBLYNAME", widget=forms.TextInput(attrs={'placeholder': 'Unique '
-                                                                                                      'assembly name,'
-                                                                                                      ' user-provided'}))
-    assembly_type = forms.ChoiceField(label="ASSEMBLY_TYPE", choices=[('clone', 'clone'), ('isolate', 'isolate')])
     submission_type = forms.ChoiceField(label="SUBMISSIKON_TYPE", choices=[('genome', 'genome'), ('transcriptome', 'transcriptome')])
-
-    coverage = forms.FloatField(label="COVERAGE", widget=forms.TextInput(attrs={'placeholder': 'The estimated depth of '
-                                                                                               'sequencing coverage'}),required=False)
+    assemblyname = forms.CharField(label="ASSEMBLYNAME", widget=forms.TextInput(attrs={'placeholder': 'Unique assembly name, user-provided'}))
+    assembly_type = forms.ChoiceField(label="ASSEMBLY_TYPE", choices=[('clone', 'clone'), ('isolate', 'isolate')])
     program = forms.CharField(label="PROGRAM", widget=forms.TextInput(attrs={'placeholder': 'The assembly program'}))
     platform = forms.CharField(label="PLATFORM", widget=forms.TextInput(attrs={'placeholder': 'The sequencing '
                                                                                               'platform, '
                                                                                               'or comma-separated '
                                                                                               'list of platforms'}))
-    mingaplength = forms.IntegerField(label="MINGAPLENGTH", required=False,
-                                      widget=forms.TextInput(
-                                          attrs={'placeholder': 'Minimum length of consecutive Ns to '
-                                                                'be considered a gap'}))
-    moleculetype = forms.ChoiceField(label="MOLECULETYPE", required=False,
-                                     choices=[('genomic DNA', 'genomic DNA'), ('genomic RNA', 'genomic RNA'),
-                                              ("viral cRNA", "viral cRNA")])
     description = forms.CharField(label="DESCRIPTION", required=False,
                                   widget=forms.Textarea(attrs={'placeholder': 'Free text description of the genome '
                                                                               'assembly'}))
@@ -76,6 +66,15 @@ class AssemblyForm(forms.Form):
     address = forms.CharField(label="ADDRESS", required=False,
                                     widget=forms.TextInput(attrs={'placeholder': 'The address of the authors'})) 
 
+    coverage = forms.FloatField(label="COVERAGE", widget=forms.TextInput(attrs={'placeholder': 'The estimated depth of '
+                                                                                               'sequencing coverage'}),required=False, help_text='it is for genome assembly only')
+    mingaplength = forms.IntegerField(label="MINGAPLENGTH", required=False,help_text='it is for genome assembly only',
+                                      widget=forms.TextInput(
+                                          attrs={'placeholder': 'Minimum length of consecutive Ns to '
+                                                                'be considered a gap'}))
+    moleculetype = forms.ChoiceField(label="MOLECULETYPE", required=False, help_text= 'it is for genome assembly only' ,
+                                     choices=[('','-'), ('genomic DNA', 'genomic DNA'), ('genomic RNA', 'genomic RNA'),
+                                              ("viral cRNA", "viral cRNA")])
     run_ref = forms.CharField(label="RUN_REF", required=False, widget=forms.TextInput(
         attrs={'placeholder': 'Comma separated list of run accession(s)'}))
     
@@ -103,7 +102,13 @@ class AssemblyForm(forms.Form):
 
         if submission_type == "genome":
             if not cleaned_data.get("coverage"):
-                error.update({"coverage": "Please input 'coverage' for 'genome assembly'"})
-             
+                error.update({"coverage": "Please input 'coverage' for 'genome' assembly"})
+        
+        elif submission_type == "transcriptome":
+            for field in ["mingaplength", "moleculetype", "coverage"]:
+                if cleaned_data.get(field, ""):
+                    error.update({field: f"No {field} for 'transcriptome' assembly"})
+ 
+
         if error:
             raise ValidationError(error)

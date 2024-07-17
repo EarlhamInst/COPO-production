@@ -270,7 +270,7 @@ def process_assembly_pending_submission():
             if "dev" in ena_service:
                 test = " -test "
             #cli_path = "tools/reposit/ena_cli/webin-cli.jar"
-            submission_type = assembly.get["submission_type", "genome"]
+            submission_type = assembly.get("submission_type", "genome")
             webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
             Logger().debug(msg=webin_cmd)
             #print(webin_cmd)
