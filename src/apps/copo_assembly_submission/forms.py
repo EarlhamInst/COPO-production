@@ -49,7 +49,7 @@ class AssemblyForm(forms.Form):
                             widget=forms.TextInput(attrs={'placeholder': 'Study accession'}))
     sample = forms.ChoiceField(label="SAMPLE")
     sample_text = forms.CharField(label="SAMPLE", widget=forms.TextInput(attrs={'placeholder': 'Sample accession'}), required=False)
-    submission_type = forms.ChoiceField(label="SUBMISSIKON_TYPE", choices=[('genome', 'genome'), ('transcriptome', 'transcriptome')])
+    submission_type = forms.ChoiceField(label="SUBMISSION_TYPE", choices=[('genome', 'genome'), ('transcriptome', 'transcriptome')])
     assemblyname = forms.CharField(label="ASSEMBLYNAME", widget=forms.TextInput(attrs={'placeholder': 'Unique assembly name, user-provided'}))
     assembly_type = forms.ChoiceField(label="ASSEMBLY_TYPE", choices=[('clone', 'clone'), ('isolate', 'isolate')])
     program = forms.CharField(label="PROGRAM", widget=forms.TextInput(attrs={'placeholder': 'The assembly program'}))
@@ -96,15 +96,18 @@ class AssemblyForm(forms.Form):
         error = {}
 
         if authors and not address:
-            error.update({"address": "Please provide 'address' for the 'authors'"})
+            error.update({"address": "Please provide 'address' for the 'authors'."})
         if address and not authors:
             error.update({"authors": "Please provide 'authors'"})
 
         if submission_type == "genome":
             if not cleaned_data.get("coverage"):
-                error.update({"coverage": "Please input 'coverage' for 'genome' assembly"})
+                error.update({"coverage": "Please input 'coverage' for 'genome' assembly."})
         
         elif submission_type == "transcriptome":
+            if cleaned_data.get("assembly_type") == 'clone':
+                error.update({"assembly_type": "Please select 'isolate' for 'transcriptome' assembly."})
+
             for field in ["mingaplength", "moleculetype", "coverage"]:
                 if cleaned_data.get(field, ""):
                     error.update({field: f"No {field} for 'transcriptome' assembly"})
