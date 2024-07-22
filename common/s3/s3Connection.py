@@ -83,7 +83,7 @@ class S3Connection():
         Logger().log("transfering file to: " + loc)
         KB = 1024
         MB = KB * KB
-        config = TransferConfig(multipart_threshold=100 * MB, multipart_chunksize=50 * MB, io_chunksize=1 * MB,
+        config = TransferConfig(multipart_threshold=100 * MB, multipart_chunksize=64 * MB, io_chunksize=1 * MB,
                                 max_concurrency=3, use_threads=True )
         #self.s3_client.download_file(bucket, key, loc, Config=config)
         with open(loc, 'wb') as data:

@@ -29,7 +29,7 @@ BIOIMAGE_SENT = {"asg_specimen" : f"{BIOIMAGE_PATH}/ASG",
                  "copo_specimen" : f"{BIOIMAGE_PATH}/COPO"}
 
 ASPERA_PATH = get_env("ASPERA_PATH")  #"/root/.aspera/cli"
-BIOIMAGE_ASPERA_CMD = f"{ASPERA_PATH}/bin/ascp -P33001 -l700M --move-after-transfer  {BIOIMAGE_ARCHIVE} -i {ASPERA_PATH}/etc/asperaweb_id_dsa.openssh -d {' '.join(BIOIMAGE_SENT.values())} {BIOIMAGE_SERVER}:{BIOIMAGE_UPLOAD_PATH}"
+BIOIMAGE_ASPERA_CMD = f"{ASPERA_PATH}/bin/ascp -P33001 -l100M --move-after-transfer  {BIOIMAGE_ARCHIVE} -i {ASPERA_PATH}/etc/asperaweb_id_dsa.openssh -d {' '.join(BIOIMAGE_SENT.values())} {BIOIMAGE_SERVER}:{BIOIMAGE_UPLOAD_PATH}"
 
 
 def housekeeping_bioimage_archive():

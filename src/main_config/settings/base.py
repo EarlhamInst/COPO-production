@@ -62,6 +62,10 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
 ]
 
+# Maximum number of files/images that can be uploaded at once
+# This is used in the file 'Upload Spreadsheet' dialog
+DATA_UPLOAD_MAX_NUMBER_FILES = 1000
+
 # user-defined applications definition
 PROJECT_APPS = [
     'channels',
@@ -279,3 +283,4 @@ TEMPLATES = [
 ROOT_URLCONF = 'src.main_config.urls'
 
 UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads')
+LOCAL_UPLOAD_PATH = os.path.join(BASE_DIR, 'local_uploads')

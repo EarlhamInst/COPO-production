@@ -103,6 +103,8 @@ class Submission(DAComponent):
         # called by celery to get samples the supeprvisor has set to be sent to ENA
         # those not yet sent should be in pending state. Occasionally there will be
         # stuck submissions in sending state, so get both types
+        current_time = helpers.get_datetime()
+
         sub = self.get_collection_handle().find(
             {"type": {"$in": TOL_PROFILE_TYPES},
                 "dtol_status": {"$in": ["sending", "pending"]}},
@@ -114,7 +116,6 @@ class Submission(DAComponent):
         for s in sub:
             # calculate whether a submission is an old one
             recorded_time = s.get("date_modified", helpers.get_datetime())
-            current_time = helpers.get_datetime()
             time_difference = current_time - recorded_time
             if s.get("dtol_status", "") == "sending" and time_difference.total_seconds() > (REFRESH_THRESHOLD):
                 # submission retry time has elapsed so re-add to list

@@ -75,6 +75,10 @@ class FileSuffixValidator(Validator):
                 continue
             no_of_file = 0
             for f in file_names.split(","):
+                if os.path.dirname(f.strip()) != "":
+                    error_str = f + ": There should be no folder name for the file."
+                    self.errors.append(error_str)
+                    self.flag = False
                 no_of_file += 1 
                 # unpacking the tuple
                 file_name, file_extension = os.path.splitext(f.strip())

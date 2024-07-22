@@ -111,6 +111,7 @@ services:
       - web-data:/copo/media
       - logs-data:/copo/logs
       - b2drop-permits:/copo/b2drop/permits
+      - /holding:/copo/local_uploads
     environment:
       - ENVIRONMENT_TYPE=prod
       - ASPERA_PLUGIN_DIRECTORY=aspera_linux_plugin
@@ -170,7 +171,7 @@ services:
           - "node.labels.offline-service==true"
       resources:
         limits:
-          cpus: '3'
+          cpus: '5'
           memory: 10GB
         reservations:
           cpus: '1'
@@ -223,7 +224,7 @@ services:
           cpus: "1.5"
           memory: 10GB
         reservations:
-          cpus: "1"
+          cpus: "0.5"
           memory: 1GB
 
   backup:
@@ -265,7 +266,7 @@ services:
           cpus: "3"
           memory: 10GB
         reservations:
-          cpus: "1"
+          cpus: "0.5"
           memory: 1GB
   sample_audit:
     image: copo/copo-sample-audit:v0.0.17
@@ -350,7 +351,7 @@ services:
           cpus: "3"
           memory: 2GB
         reservations:
-          cpus: "3"
+          cpus: "0.5"
           memory: 1GB
 
   mongo:

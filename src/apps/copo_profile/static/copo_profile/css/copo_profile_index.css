@@ -1,7 +1,13 @@
 /*Component buttons*/
 /*Set the width of the buttons in the Components tab to the same width*/
+/* Left align the text in the buttons */
 .ui.menu .ui.dropdown.item .comp .ui.button {
     width: 190px !important;
+    text-align: left;
+}
+
+.pcomponent-icon {
+    padding-right: 5px;
 }
 
 /*end component buttons*/
@@ -16,6 +22,7 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2; /* number of lines to show */
+    line-clamp: 2; 
     line-height: 1.5em; /* fallback */
     max-height: 3em; /*1.5em x 2 = 3em*/ /* fallback */
 }
@@ -26,6 +33,7 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1; /* number of lines to show */
+    line-clamp: 1;
     line-height: 1.5em; /* fallback */
     max-height: 1.5em; /*1.5em x 1 = 1.5em*/ /* fallback */
 }

@@ -80,7 +80,8 @@ class Command(BaseCommand):
         SequencingCentre().create_sequencing_centre(name="SANGER",
                                                              description="SANGER INSTITUTE",
                                                              label="SANGER INSTITUTE",
-                                                             contact_details='[{"contact_name":"Wiesia Johnson", "contact_email":"wj3@sanger.ac.uk"}]')
+                                                             contact_details='[{"contact_name":"Wiesia Johnson", "contact_email":"wj3@sanger.ac.uk"}]',
+                                                             is_approval_required=True)
 
 
         SequencingCentre().create_sequencing_centre(name="SCILIFE",

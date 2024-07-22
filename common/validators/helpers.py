@@ -30,17 +30,17 @@ def validate_date(date_text):
     except AssertionError:
         raise AssertionError("Incorrect date entered: date is in the future")
 
-def check_biocollection(institute_code, collection_code, qualifier_type):
-    url = f"https://www.ebi.ac.uk/ena/sah/api/institution/{institute_code}/collection/{collection_code}?qualifier_type={qualifier_type}"
+def check_biocollection(voucher_id, qualifier_type):
+    url = f"https://www.ebi.ac.uk/ena/sah/api/validate"
 
     try:
-        response = requests.get(url)
+        response = requests.get(url,params={"value":voucher_id, "qualifier_type":qualifier_type})
         if response.status_code == requests.codes.ok:
             is_success = response.json().get('success')
             if is_success:
                 return True
             else:
-                l.debug( f"{institute_code}:{collection_code} for {qualifier_type} not registered" )
+                l.debug( f"{voucher_id} for {qualifier_type} not registered" )
         else:
             l.error(str(response.status_code) + ":" + response.text)
     except Exception as e:

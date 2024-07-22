@@ -410,12 +410,20 @@ $(document).ready(function () {
         });
     }
 
-    $('#' + tableID + '_wrapper')
+    let table_wrapper = $('#' + tableID + '_wrapper');
+
+    table_wrapper.find('.dt-buttons').addClass('pull-right');
+
+    table_wrapper
       .find('.dataTables_filter')
+      .find('label')
+      .css({ padding: '10px 0' })
       .find('input')
       .removeClass('input-sm')
       .attr('placeholder', 'Search submissions')
       .attr('size', 20);
+
+    $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
 
     //get visible records
     var visibleRows = table.rows({ page: 'current' }).ids().toArray();
@@ -1493,12 +1501,20 @@ $(document).ready(function () {
 
         refresh_tool_tips();
 
-        $('#' + tableID + '_wrapper')
+        let table_wrapper = $('#' + tableID + '_wrapper');
+
+        table_wrapper.find('.dt-buttons').addClass('pull-right');
+
+        table_wrapper
           .find('.dataTables_filter')
+          .find('label')
+          .css({ padding: '10px 0' })
           .find('input')
           .removeClass('input-sm')
           .attr('placeholder', 'Search accessions')
           .attr('size', 25);
+
+        $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
       },
       error: function () {
         viewPort.html('');
@@ -1635,12 +1651,20 @@ $(document).ready(function () {
 
         refresh_tool_tips();
 
-        $('#' + tableID + '_wrapper')
+        let table_wrapper = $(tableID + '_wrapper');
+
+        table_wrapper.find('.dt-buttons').addClass('pull-right');
+
+        table_wrapper
           .find('.dataTables_filter')
+          .find('label')
+          .css({ padding: '10px 0' })
           .find('input')
           .removeClass('input-sm')
           .attr('placeholder', 'Search files in submission')
           .attr('size', 25);
+
+        $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
 
         //handle event for table details
         $('#' + tableID + ' tbody')
@@ -1934,12 +1958,20 @@ function submit_submission_record(submission_id) {
                             ]
                         });
 
-                        $('#' + tableID + '_wrapper')
-                            .find(".dataTables_filter")
-                            .find("input")
-                            .removeClass("input-sm")
-                            .attr("placeholder", "Search metadata")
-                            .attr("size", 15);
+                        let table_wrapper = $(tableID + '_wrapper');
+
+                        table_wrapper.find('.dt-buttons').addClass('pull-right');
+
+                        table_wrapper
+                          .find(".dataTables_filter")
+                          .find('label')
+                          .css({ padding: '10px 0' })
+                          .find("input")
+                          .removeClass("input-sm")
+                          .attr("placeholder", "Search metadata")
+                          .attr("size", 15);
+
+                        $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
                     } else {
                         let feedback = get_alert_control();
                         feedback

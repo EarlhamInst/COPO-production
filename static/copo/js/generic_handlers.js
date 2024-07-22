@@ -2949,9 +2949,9 @@ function generate_component_control(component) {
       component.title +
       ' ' +
       (component.subtitle
-        ? "<span style='color: #8c8c8c; font-size: 18px;'>(" +
+        ? "<span style='color: #8c8c8c; font-size: 18px;'>" +
           $(component.subtitle).val() +
-          ')</span>'
+          '</span>'
         : ''),
   });
 

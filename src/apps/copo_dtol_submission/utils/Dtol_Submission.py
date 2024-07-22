@@ -14,7 +14,7 @@ import common.schemas.utils.data_utils as d_utils
 from common.dal.sample_da import Sample, Source
 from common.dal.profile_da import Profile
 from common.dal.submission_da import Submission
-from common.utils.helpers import notify_frontend, get_env
+from common.utils.helpers import notify_frontend, get_env, get_datetime
 from common.schema_versions.lookup.dtol_lookups import DTOL_ENA_MAPPINGS, DTOL_UNITS, PERMIT_COLUMN_NAMES_PREFIX, PERMIT_FILENAME_COLUMN_NAMES
 from common.lookup.lookup import SRA_SETTINGS, SRA_SUBMISSION_TEMPLATE, SRA_SAMPLE_TEMPLATE, SRA_PROJECT_TEMPLATE, DTOL_SAMPLE_COLLECTION_LOCATION_STATEMENT
 from .helpers import query_public_name_service
@@ -59,6 +59,8 @@ def process_pending_dtol_samples():
     sub_id_list = Submission().get_pending_dtol_samples()
     tolidflag = True
     specimenID_map = dict()  # Map of specimen IDs
+    current_time = get_datetime()
+    _REFRESH_THRESHOLD = 3600 
 
     # send each to ENA for Biosample ids
     for submission in sub_id_list:
@@ -102,9 +104,14 @@ def process_pending_dtol_samples():
                 continue
 
             if sam["status"] == "sending":
-                log_message(f"{s_id} is being processed by another celery task",
-                            Loglvl.INFO, profile_id=profile_id)
-                continue
+                recorded_time = sam.get("time_updated", get_datetime())
+                time_difference = current_time - recorded_time
+                if time_difference.total_seconds() <= (_REFRESH_THRESHOLD):
+                    log_message(f"{s_id} is being processed by another celery task",
+                                Loglvl.INFO, profile_id=profile_id)
+                    continue
+                else:
+                    Sample().update_field(oid=s_id)
             else:
                 Sample().update_field("status", "sending", s_id)
 
@@ -544,6 +551,7 @@ def process_pending_dtol_samples():
             if len(s_ids) == 0:
                 notify_frontend(data={"profile_id": profile_id}, msg="Nothing more to submit", action="info",
                                 html_id="dtol_sample_info")
+                
                 # if all samples were moved to rejected
                 continue
 

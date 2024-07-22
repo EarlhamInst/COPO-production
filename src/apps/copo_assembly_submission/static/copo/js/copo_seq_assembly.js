@@ -299,3 +299,21 @@ $(document).ready(function () {
    });
   });
 }); //end document ready
+
+
+
+function change_assembly_type() { 
+  if ($('#id_submission_type').val() == 'transcriptome') {
+        $("#div_id_coverage *").attr("disabled", "disabled").off('click');
+        $("#div_id_moleculetype *").attr("disabled", "disabled").off('click');
+        $("#div_id_mingaplength *").attr("disabled", "disabled").off('click');
+        $("#id_coverage").val("");
+        $("#id_mingaplength").val("");
+        $("#id_moleculetype").val("");
+  }
+  else {
+    $("#div_id_moleculetype *").removeAttr("disabled").on('click');
+    $("#div_id_mingaplength *").removeAttr("disabled").on('click');
+    $("#div_id_coverage *").removeAttr("disabled").on('click');  
+  }
+}

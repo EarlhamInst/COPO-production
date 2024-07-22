@@ -41,9 +41,9 @@ class Email:
                     users += centre.users.all()
             '''        
             if type in ["ERGA"]:
-                for sc in sequencing_centres:
-                    centre = SequencingCentre.objects.get(name=sc)
-                    users += centre.users.all()
+                centres = SequencingCentre.objects.filter(name__in=sequencing_centres)
+                for sc in centres:
+                    users += sc.users.all()
                     #logger.debug(users)
                 checker_users = User.objects.filter(groups__name='bge_checkers')
                 users = list(set(users) & set(checker_users))
