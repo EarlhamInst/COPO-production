@@ -171,12 +171,11 @@ def validate_assembly(form, profile_id, assembly_id):
 
 
 
-def _submit_assembly(file_path, profile_id):
+def _submit_assembly(file_path, profile_id, submission_type):
     test = ""
     if "dev" in ena_service:
         test = " -test "
-    webin_cmd = "java -Xmx6144m -jar webin-cli.jar -username " + user_token + " -password '" + pass_word + "'" + test + " -context genome -manifest " + str(
-        file_path) + " -submit -ascp"
+    webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token}  -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
     Logger().debug(msg=webin_cmd)
     # print(webin_cmd)
     # try/except as it turns out this can fail even if validate is successfull
@@ -271,8 +270,8 @@ def process_assembly_pending_submission():
             if "dev" in ena_service:
                 test = " -test "
             #cli_path = "tools/reposit/ena_cli/webin-cli.jar"
-            webin_cmd = "java -Xmx6144m -jar webin-cli.jar -username " + user_token + " -password '" + pass_word + "'" + test + " -context genome -manifest " + str(
-                manifest_path) + " -validate -ascp"
+            submission_type = assembly.get("submission_type", "genome")
+            webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
             Logger().debug(msg=webin_cmd)
             #print(webin_cmd)
             try:
@@ -295,7 +294,7 @@ def process_assembly_pending_submission():
             #todo decide if keeping or deleting these files
             #report is being stored in webin-cli.report and manifest.txt.report so we can get errors there
             if not "ERROR" in output:
-                output = _submit_assembly(str(manifest_path), sub["profile_id"])
+                output = _submit_assembly(file_path=str(manifest_path), profile_id=sub["profile_id"], submission_type=submission_type)
                 if "ERROR" in output:
                     #handle possibility submission is not successfull
                     #this may happen for instance if the same assembly has already been submitted, which would not get caught

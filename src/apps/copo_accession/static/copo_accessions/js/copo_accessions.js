@@ -382,7 +382,7 @@ function customise_accessions_table(table) {
   table_wrapper
     .find('.dataTables_filter')
     .find('label')
-    .css({ padding: '20px 0 20px 0', 'margin-top': '10px' })
+    .css({ padding: '10px 0' })
     .find('input')
     .removeClass('input-sm')
     .attr('placeholder', 'Search ' + componentMeta.title)

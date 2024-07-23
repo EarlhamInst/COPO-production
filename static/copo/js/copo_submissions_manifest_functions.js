@@ -20,188 +20,195 @@ function load_manifest_submission_list() {
 }
 
 function do_display_manifest_submissions(data) {
-    var dtd = data.table_data.dataSet;
-    var tableID = "manifest_table";
-    set_empty_component_message(dtd.length, "#" + tableID); //display empty submission message.
+  var dtd = data.table_data.dataSet;
+  var tableID = 'manifest_table';
+  set_empty_component_message(dtd.length, '#' + tableID); //display empty submission message.
 
-    if (dtd.length == 0) {
-        return false;
-    }
+  if (dtd.length == 0) {
+    return false;
+  }
 
-    var dataSet = get_manifest_table_dataset(dtd);
+  var dataSet = get_manifest_table_dataset(dtd);
 
+  //set data
+  var table = null;
 
-    //set data
-    var table = null;
+  if ($.fn.dataTable.isDataTable('#' + tableID)) {
+    //if table instance already exists, then do refresh
+    table = $('#' + tableID).DataTable();
+  }
 
-    if ($.fn.dataTable.isDataTable('#' + tableID)) {
-        //if table instance already exists, then do refresh
-        table = $('#' + tableID).DataTable();
-    }
+  if (table) {
+    //clear old, set new data
+    table.clear().draw();
+    table.rows.add(dataSet);
+    table.columns.adjust().draw();
+    table.search('').columns().search('').draw();
+  } else {
+    table = $('#' + tableID).DataTable({
+      data: dataSet,
 
-    if (table) {
-        //clear old, set new data
-        table
-            .clear()
-            .draw();
-        table
-            .rows
-            .add(dataSet);
-        table
-            .columns
-            .adjust()
-            .draw();
-        table
-            .search('')
-            .columns()
-            .search('')
-            .draw();
-    } else {
+      searchHighlight: true,
+      ordering: true,
+      lengthChange: false,
+      buttons: [],
+      select: false,
+      language: {
+        emptyTable: 'No submission data available.',
+      },
+      order: [[1, 'desc']],
+      columns: [
+        {
+          data: null,
+          orderable: false,
 
+          render: function (rowdata) {
+            var renderHTML = get_card_panel();
+            var disabled_items = [];
 
-        table = $('#' + tableID).DataTable({
+            renderHTML
+              .removeClass('component-type-panel')
+              .addClass('submission-panel')
+              .attr({ 'data-id': rowdata.record_id });
 
-            data: dataSet,
+            //set attributes
+            var bundle_name = rowdata.bundle_name;
+            if (!bundle_name) {
+              bundle_name = 'No associated bundle';
+            }
 
-            searchHighlight: true,
-            ordering: true,
-            lengthChange: false,
-            buttons: [],
-            select: false,
-            language: {
-                "emptyTable": "No submission data available.",
-            },
-            order: [
-                [1, "desc"]
-            ],
-            columns: [
-                {
-                    "data": null,
-                    "orderable": false,
+            //renderHTML.find(".panel-header-1").html(bundle_name);
 
-                    "render": function (rowdata) {
-                        var renderHTML = get_card_panel();
-                        var disabled_items = [];
+            var attrHTML = renderHTML
+              .find('.attr-placeholder')
+              .first()
+              .clone()
+              .css('display', 'block');
+            attrHTML.find('.attr-key').html('Repository:');
 
-
-                        renderHTML
-                            .removeClass("component-type-panel")
-                            .addClass("submission-panel")
-                            .attr({"data-id": rowdata.record_id});
-
-
-                        //set attributes
-                        var bundle_name = rowdata.bundle_name;
-                        if (!bundle_name) {
-                            bundle_name = 'No associated bundle';
-                        }
-
-                        //renderHTML.find(".panel-header-1").html(bundle_name);
-
-                        var attrHTML = renderHTML.find(".attr-placeholder").first().clone().css("display", "block");
-                        attrHTML.find(".attr-key").html("Repository:");
-
-                        var target_repository = '';
-                        if (rowdata.repository_type) {
-                            target_repository = " (" + rowdata.repository_type + ")";
-                        } /*else {
+            var target_repository = '';
+            if (rowdata.repository_type) {
+              target_repository = ' (' + rowdata.repository_type + ')';
+            } /*else {
                             disabled_items.push('view_repo_details');
                             target_repository = 'N/A <i data-html="A destination repository is yet to be assigned. Please select <strong>submit</strong> from the tasks menu to assign a repository and submit the record." class="info circle white icon copo-tooltip"></i>';
                         } */
 
-                        attrHTML.find(".attr-value").html(target_repository);
-                        renderHTML.find(".attr-placeholder").parent().append(attrHTML);
+            attrHTML.find('.attr-value').html(target_repository);
+            renderHTML.find('.attr-placeholder').parent().append(attrHTML);
 
-                        var attrHTML = renderHTML.find(".attr-placeholder").first().clone().css("display", "block");
-                        attrHTML.find(".attr-key").html("Last modified:");
+            var attrHTML = renderHTML
+              .find('.attr-placeholder')
+              .first()
+              .clone()
+              .css('display', 'block');
+            attrHTML.find('.attr-key').html('Last modified:');
 
-                        renderHTML.find(".attr-placeholder").parent().append(attrHTML);
+            renderHTML.find('.attr-placeholder').parent().append(attrHTML);
 
-                        //define status
-                        var defined_status_codes = ["completed", "pending", "error", "processing"];
-                        var submission_status = rowdata.complete.toString().toLowerCase();
+            //define status
+            var defined_status_codes = [
+              'completed',
+              'pending',
+              'error',
+              'processing',
+            ];
+            var submission_status = rowdata.complete.toString().toLowerCase();
 
-                        if (submission_status == "true") {
-                            submission_status = "completed";
-                        } else if (!defined_status_codes.includes(submission_status)) {
-                            submission_status = "pending";
-                        }
+            if (submission_status == 'true') {
+              submission_status = 'completed';
+            } else if (!defined_status_codes.includes(submission_status)) {
+              submission_status = 'pending';
+            }
 
-                        var submissionStatus = renderHTML.find(".bundle-status");
+            var submissionStatus = renderHTML.find('.bundle-status');
 
-                        if (submission_status == 'completed') {
-                            submissionStatus.addClass("stop circle outline green");
-                            submissionStatus.prop('title', 'Completed submission');
-                            disabled_items.push('submit');
-                            disabled_items.push('delete_submission');
-                        } else if (submission_status == 'pending') {
-                            submissionStatus.addClass("stop circle outline grey");
-                            submissionStatus.prop('title', 'Pending submission');
-                        } else if (submission_status == 'error') {
-                            submissionStatus.addClass("stop circle outline red");
-                            submissionStatus.prop('title', 'Error in submission');
-                        } else if (submission_status == 'processing') {
-                            submissionStatus.addClass("stop circle outline orange");
-                            submissionStatus.prop('title', 'Processing submission');
-                            disabled_items.push('submit');
-                            disabled_items.push('delete_submission');
-                        }
+            if (submission_status == 'completed') {
+              submissionStatus.addClass('stop circle outline green');
+              submissionStatus.prop('title', 'Completed submission');
+              disabled_items.push('submit');
+              disabled_items.push('delete_submission');
+            } else if (submission_status == 'pending') {
+              submissionStatus.addClass('stop circle outline grey');
+              submissionStatus.prop('title', 'Pending submission');
+            } else if (submission_status == 'error') {
+              submissionStatus.addClass('stop circle outline red');
+              submissionStatus.prop('title', 'Error in submission');
+            } else if (submission_status == 'processing') {
+              submissionStatus.addClass('stop circle outline orange');
+              submissionStatus.prop('title', 'Processing submission');
+              disabled_items.push('submit');
+              disabled_items.push('delete_submission');
+            }
 
-                        //define menu
-                        var componentMenu = renderHTML.find(".component-menu");
-                        componentMenu.html('');
-                        componentMenu.append('<div data-task="submit" id="submit_' + rowdata["record_id"] + '" class="submissionmenu submit_button_clicked item">Submit</div>');
-                        componentMenu.append('<div class="divider"></div>');
-                        componentMenu.append('<div data-task="view_datafiles" class="item submissionmenu">View Datafiles</div>');
-                        componentMenu.append('<div data-task="view_accessions" class="item submissionmenu">View Accessions</div>');
-                        //componentMenu.append('<div data-task="view_repo_details" class="item submissionmenu">View Repo Details</div>');
-                        componentMenu.append('<div data-task="view_in_remote" class="item submissionmenu">View in Remote</div>');
-                        componentMenu.append('<div class="divider"></div>');
-                        componentMenu.append('<div data-task="lift_embargo" class="item submissionmenu">Lift Embargo</div>');
-                        componentMenu.append('<div class="divider"></div>');
-                        componentMenu.append('<div data-task="delete_submission" class="item submissionmenu">Delete Submission</div>');
+            //define menu
+            var componentMenu = renderHTML.find('.component-menu');
+            componentMenu.html('');
+            componentMenu.append(
+              '<div data-task="submit" id="submit_' +
+                rowdata['record_id'] +
+                '" class="submissionmenu submit_button_clicked item">Submit</div>'
+            );
+            componentMenu.append('<div class="divider"></div>');
+            componentMenu.append(
+              '<div data-task="view_datafiles" class="item submissionmenu">View Datafiles</div>'
+            );
+            componentMenu.append(
+              '<div data-task="view_accessions" class="item submissionmenu">View Accessions</div>'
+            );
+            //componentMenu.append('<div data-task="view_repo_details" class="item submissionmenu">View Repo Details</div>');
+            componentMenu.append(
+              '<div data-task="view_in_remote" class="item submissionmenu">View in Remote</div>'
+            );
+            componentMenu.append('<div class="divider"></div>');
+            componentMenu.append(
+              '<div data-task="lift_embargo" class="item submissionmenu">Lift Embargo</div>'
+            );
+            componentMenu.append('<div class="divider"></div>');
+            componentMenu.append(
+              '<div data-task="delete_submission" class="item submissionmenu">Delete Submission</div>'
+            );
 
-                        //process disabled item list
-                        componentMenu.find(".submissionmenu").each(function (indx, menuitem) {
-                            if (disabled_items.indexOf($(menuitem).attr("data-task")) > -1) {
-                                $(menuitem).addClass("disabled");
-                            }
-                        });
+            //process disabled item list
+            componentMenu
+              .find('.submissionmenu')
+              .each(function (indx, menuitem) {
+                if (
+                  disabled_items.indexOf($(menuitem).attr('data-task')) > -1
+                ) {
+                  $(menuitem).addClass('disabled');
+                }
+              });
 
+            return $('<div/>').append(renderHTML).html();
+          },
+        },
 
-                        return $('<div/>').append(renderHTML).html();
-                    }
+        {
+          data: 'record_id',
+          visible: false,
+        },
+      ],
+      columnDefs: [],
+      fnDrawCallback: function () {
+        refresh_tool_tips();
+      },
+      createdRow: function (row, data, index) {},
+      dom: 'Bfr<"row"><"row info-rw" i>tlp',
+    });
 
-
-                },
-
-                {
-                    "data": "record_id",
-                    "visible": false
-                },
-            ],
-            "columnDefs": [],
-            fnDrawCallback: function () {
-                refresh_tool_tips();
-            },
-            createdRow: function (row, data, index) {
-            },
-            dom: 'Bfr<"row"><"row info-rw" i>tlp',
-
-        });
-
-        table
-            .buttons()
-            .nodes()
-            .each(function (value) {
-                $(this)
-                    .removeClass("btn btn-default")
-                    .addClass('tiny ui basic button');
-            });
-    }
-    /*
+    table
+      .buttons()
+      .nodes()
+      .each(function (value) {
+        $(this).removeClass('btn btn-default').addClass('tiny ui basic button');
+      });
+  }
+  /*
     $('#' + tableID + '_wrapper')
         .find(".dataTables_filter")
+        .find('label')
+        .css({ padding: '10px 0' })
         .find("input")
         .removeClass("input-sm")
         .attr("placeholder", "Search submissions")
@@ -214,8 +221,8 @@ function do_display_manifest_submissions(data) {
         submission_ids.push(visibleRows[i].split("row_").slice(-1)[0])
     }
 */
-    // update status for submission records
-    //get_submission_information(submission_ids);
+  // update status for submission records
+  //get_submission_information(submission_ids);
 }
 
 

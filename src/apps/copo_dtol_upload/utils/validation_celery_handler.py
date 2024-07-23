@@ -360,7 +360,7 @@ class ProcessValidationQueue:
  #                           if field in lookup.PERMIT_REQUIRED_COLUMN_NAMES:
  #                               s[field] == "Y"
  #                               permits_required = True
-                            updates[rack_tube][field]["old_value"] = exsam[field]
+                            updates[rack_tube][field]["old_value"] = exsam.get(field,"")  #to cater for the case where the field not exist in the old maniest
                             updates[rack_tube][field]["new_value"] = s[field]
                     else:
                         msg = validation_msg["validation_msg_error_updating_compliance_field"] % (field, profile.get("type",""))

@@ -4,7 +4,7 @@ var dt_options = {
   scrollY: 400,
   scrollX: true,
   bSortClasses: false,
-  deferLoading: 0,  
+  deferLoading: 0,
   lengthMenu: [10, 25, 50, 75, 100, 500, 1000, 2000],
   select: {
     style: 'os',
@@ -21,12 +21,24 @@ var dt_options = {
       className: 'tickbox',
       render: function (data, type, row) {
         var filter = $('#sample_filter').find('.active').find('a').attr('href');
+        let current_group = get_group_id();
+        let which_profiles = $('.profile-filter:visible')
+          .find('.active')
+          .find('a')
+          .attr('href');
+
         if (
           filter == 'pending' ||
           filter == 'rejected' ||
           filter == 'bge_pending'
         ) {
-          return "<input type='checkbox' class='form-check-input checkbox'/>";
+          // Do not display the checkboxes if the active 'ERGA' profile tab is
+          // 'Profiles for My Sequencing Centre'
+          if (current_group === 'erga' && which_profiles != 'my_profiles') {
+            return '';
+          } else {
+            return "<input type='checkbox' class='form-check-input checkbox'/>";
+          }
         } else {
           return '';
         }
@@ -752,8 +764,22 @@ function row_select(ev) {
         delete_selected_btn.prop('disabled', false).show();
         select_none_btn.prop('disabled', false).show();
         select_all_btn.prop('disabled', false).show();
-        accept_reject_btn.find('button').prop('disabled', true);
-        accept_reject_btn.show();
+
+        // Enable and show the 'Accept/Reject' button if the profile has samples
+        // and the active 'ERGA' profile tab is 'Profiles for My Sequencing Centre'
+        let current_group = get_group_id();
+        let which_profiles = $('.profile-filter:visible')
+          .find('.active')
+          .find('a')
+          .attr('href');
+
+        if (current_group === 'erga' && which_profiles != 'my_profiles') {
+          accept_reject_btn.find('button').prop('disabled', true);
+          accept_reject_btn.hide();
+        } else {
+          accept_reject_btn.find('button').prop('disabled', false);
+          accept_reject_btn.show();
+        }
       }
     });
 
@@ -984,10 +1010,9 @@ function update_pending_samples_table() {
         dt_options['scrollX'] = true;
         dt_options['scrollY'] = 1000;
         dt_options['fixedHeader'] = true;
-        sample_table = $('#profile_samples')
-          .DataTable(dt_options)
-          //.columns.adjust()
-          //.draw();
+        sample_table = $('#profile_samples').DataTable(dt_options);
+        //.columns.adjust()
+        //.draw();
       }
     });
 

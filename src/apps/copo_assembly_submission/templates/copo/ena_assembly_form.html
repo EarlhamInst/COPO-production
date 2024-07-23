@@ -80,3 +80,12 @@
 
     </div>
 
+    <script>
+        $(document).ready(function () {
+            change_assembly_type()
+
+            $(document).on('change', '#id_submission_type', function () {
+                change_assembly_type()
+            });
+        })
+    </script>    
