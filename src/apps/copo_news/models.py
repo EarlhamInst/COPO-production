@@ -1,6 +1,7 @@
 from common.utils.logger import Logger
 
 from datetime import datetime
+from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.db import models
@@ -11,6 +12,7 @@ from tinymce.models import HTMLField
 from .storage import OverwriteStorage
 import os
 import random
+import subprocess
 import uuid
 
 lg = Logger()
@@ -119,7 +121,7 @@ class News(models.Model):
         default_image_file = os.path.join(news_images_directory, 'news_image_default.jpg')
 
         if not os.path.exists(news_images_directory):
-            os.mkdir(news_images_directory)
+            os.makedirs(news_images_directory, exist_ok=True)
 
         # Check if the default news image file exists in the 'media/news_images' folder
         # if it does not exist, copy the default image file into the directory
@@ -144,7 +146,27 @@ class News(models.Model):
                 os.rmdir(media_directory)
         except Exception as e:
             lg.exception(f'Error deleting directory content: {media_directory}', str(e))
-            
+
+    def set_news_images_directory_permissions(self):
+        news_images_directory = os.path.join('media', 'news_images')
+
+        try:
+            if os.path.exists(news_images_directory):
+                # for user in superusers:
+                #     print(f"Changing directory permissions for '{news_images_directory}' to {user.username}")
+                    # os.chown(news_images_directory, user.uid, user.gid)
+                # Convert this command to Python code: sudo chown -R www-data:www-data /path/to/your/django/project/media
+                try:
+                    subprocess.run(['sudo', 'chown', '-R', 'www-data:www-data', news_images_directory], check=True)
+                except subprocess.CalledProcessError as e:
+                    print(f'Error: {e}')
+    
+                os.chmod(news_images_directory, 0o775)
+            else:
+                self.create_news_images_directory()
+        except Exception as e:
+            lg.exception(f'Error changing directory permissions: {news_images_directory} {str(e)}')
+
     # Get related news items within the same category, excluding the current news item
     def get_related_news(self):
         # Show 6 related news items each time
@@ -198,23 +220,24 @@ class News(models.Model):
 
         for news in news_objects:
             if news.pk and not os.path.exists(news.news_image.url):
+                news_item_directory_path = os.path.join('media', 'news_images', str(news.pk))
                 news.news_image.field.upload_to = f'news_images/{news.pk}/'
                 original_image_path = image_title_to_news_item_mapping.get(news.title, '')
 
                 if news.news_image and not news.news_image.name.startswith(f'news_images/{news.pk}/'):
                     # Check if the image file path exists in the 'media/news_images' folder according to the news item model ID
-                    if not os.path.isfile(os.path.join('media', 'news_images', str(news.pk), os.path.basename(news.news_image.name))):
+                    if not os.path.isfile(os.path.join(news_item_directory_path, os.path.basename(news.news_image.name))):
                         # Check if the directory exists, if it does not exist, create the directory
-                        if not os.path.exists(os.path.join('media', 'news_images', str(news.pk))):
-                            os.mkdir(os.path.join('media', 'news_images', str(news.pk)))
+                        if not os.path.exists(news_item_directory_path):
+                            os.mkdir(news_item_directory_path)
                         
                         # If the directory exists, check if the incoming image already exists in it, 
                         # if it does not exist, remove all other files (if any exists) then copy 
                         # the incoming image into the directory
-                        if os.listdir(os.path.join('media', 'news_images', str(news.pk))):
-                            for file in os.listdir(os.path.join('media', 'news_images', str(news.pk))):
+                        if os.listdir(news_item_directory_path):
+                            for file in os.listdir(news_item_directory_path):
                                 if file != os.path.basename(news.news_image.name):
-                                    os.remove(os.path.join('media', 'news_images', str(news.pk), file))
+                                    os.remove(os.path.join(news_item_directory_path, file))
 
                         # Copy the image into the new directory
                         if os.path.basename(original_image_path) == os.path.basename(news.news_image.name):
