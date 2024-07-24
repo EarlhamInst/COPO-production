@@ -28,7 +28,9 @@ from common.s3.s3Connection import S3Connection as s3
 from common.lookup.lookup import REPO_NAME_LOOKUP
 from .models import banner_view
 from common.schemas.utils import data_utils
-from common.utils.helpers import get_env, get_group_membership_asString
+from common.utils.helpers import get_group_membership_asString
+from src.apps.copo_core.models import ProfileType
+
 LOGGER = settings.LOGGER
 
 da_dict = dict(
@@ -92,6 +94,7 @@ def web_page_access_checker(func):
             user_id = Profile().get_record(ObjectId(profile_id))['user_id']
 
         profile_type = Profile().get_type(profile_id).lower()
+        profile_type_def = ProfileType.objects.get(type=profile_type)
 
         shared_profiles = list(
             Profile().get_shared_for_user(id_only=True))
@@ -101,6 +104,12 @@ def web_page_access_checker(func):
         rightful_page_viewerID = User.objects.get(pk=user_id).id
         current_page_viewerID = request.user.id
 
+        if profile_type_def.is_permission_required:
+            if not member_groups or not f"{profile_type}_users" in member_groups or not 'data_managers' in member_groups:
+                # Deny web page access if the current web page viewer is not a member of the group
+                # associated with the profile (ID) associated with the current web page
+                return handler403(request)
+            
         if not (current_page_viewerID == rightful_page_viewerID):
             if any(str(x['_id']) == profile_id for x in shared_profiles):
                 # Grant web page access if the profile (ID) associated with the current web page
@@ -116,22 +125,12 @@ def web_page_access_checker(func):
 
                 return func(request, *args, **kwargs)
                 
-            elif any(x.endswith('sample_managers') for x in member_groups):
+            elif f'{profile_type}_sample_managers' in member_groups:
                 # Check if current web page viewer is a sample manager
                 # with permission to view the web page
                 if any(x in current_view for x in SAMPLE_MANAGERS_ACCESSIBLE_WEB_PAGES):
-                    if 'asg' in profile_type and 'dtol_sample_managers' in member_groups:
-                        request.session['profile_id'] = profile_id
-                        return func(request, *args, **kwargs)
-                    elif 'dtol_env' in profile_type and 'dtolenv_sample_managers' in member_groups:
-                        request.session['profile_id'] = profile_id
-                        return func(request, *args, **kwargs)
-                    elif 'dtol' in profile_type and 'dtol_sample_managers' in member_groups:
-                        request.session['profile_id'] = profile_id
-                        return func(request, *args, **kwargs)
-                    elif 'erga' in profile_type and 'erga_sample_managers' in member_groups:
-                        request.session['profile_id'] = profile_id
-                        return func(request, *args, **kwargs)
+                    request.session['profile_id'] = profile_id
+                    return func(request, *args, **kwargs)
                 else:
                     return handler403(request)
             else:
@@ -501,16 +500,16 @@ def view_groups(request):
 
     group_list = cursor_to_list(CopoGroup().get_by_owner(request.user.id))
 
+    '''
     # Get a list of uppercase manifest types
     manifest_types_lst = list(map(str.upper, TOL_PROFILE_TYPES))
 
     # Separate uppercase profile types by commas
     manifest_types_str = ' or '.join([', '.join(
         manifest_types_lst[:-1]), manifest_types_lst[-1]] if len(manifest_types_lst) > 2 else manifest_types_lst)
-
+    '''
     return render(request, 'copo/copo_group.html',
-                  {'request': request, 'profile_list': profile_list,'profile_tab_title': profile_tab_title, 'group_list': group_list, 'manifest_types': manifest_types_str})
-
+                  {'request': request, 'profile_list': profile_list,'profile_tab_title': profile_tab_title, 'group_list': group_list})
 
 """
 # @login_required()

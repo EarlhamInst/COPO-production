@@ -30,15 +30,15 @@
         <input type="hidden" id="showAllCOPOAccessions" value="{{ showAllCOPOAccessions }}" />
 
         {% if showAllCOPOAccessions is True %}
-        <input type="hidden" id="nav_component_name" value="accessions_dashboard" />
-        {% else %}
-        <input type="hidden" id="nav_component_name" value="accessions" />
-        <input type="hidden" id="profile_id" value="{{ profile_id }}" />
-        <input type="hidden" id="profile_type" value="{{ profile.type | get_short_profile_type }}" />
-        <input type="hidden" id="profile_title" value="{{ profile.title }}" />
-        <input type="hidden" value="{# url 'copo:copo_submissions' profile_id=profile_id #}" name="submission_url"
-            id="submission_url" />
-        {% endif %}
+            <input type="hidden" id="nav_component_name" value="accessions_dashboard"/>
+        {% else %} 
+            <input type="hidden" id="nav_component_name" value="accessions"/>
+            <input type="hidden" id="profile_id" value="{{ profile_id }}"/>
+            <input type="hidden" id="profile_type" value="{{ profile.type  }}"/>
+            <input type="hidden" id="profile_title" value="{{ profile.title }}"/>
+            <input type="hidden" value="{# url 'copo:copo_submissions' profile_id=profile_id #}" name="submission_url"
+                id="submission_url"/>
+        {% endif %} 
     </div>
 {% endblock browse_header_block %}
 
@@ -47,8 +47,16 @@
 {% endblock page_tile %}
 
 {% block content %}
-    <script> let groups = {{ groups| safe }}</script>
-    <input type="hidden" id="groups" value="{{ groups|safe }}" />
+
+    <div class="components_custom_templates" style="display: none;">
+        <div class="btn-group btn-toggle toggle-view record-action-custom-template">
+            <button class="btn btn-xs btn-success active">Sample Accessions</button>
+            <button class="btn btn-xs btn-default">Other Accessions</button>
+        </div>
+    </div>    
+
+    <script> let groups = {{ groups|safe }}</script>
+    <input type="hidden" id="groups" value="{{ groups|safe }}"/>
 
     <!-- accessions table section -->
     <div style="margin-top: 15px;">
@@ -92,6 +100,14 @@
 
 {% block help_section %}
 {% endblock %}
+
+{% block sidebar_custom_section %}
+    <!-- accessions legend -->
+    <div class="accessions-legend">
+                <h4 class="accessions-legend-title">Filter Accession Types</h4>
+                <div class="accessions-checkboxes"></div>
+    </div>
+{% endblock sidebar_custom_section %}
 
 {% block js_block %}
     <script src="{% static 'copo_accessions/js/copo_accessions.js' %}"></script>

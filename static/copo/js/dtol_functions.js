@@ -66,7 +66,7 @@ var dt_options = {
     return: true,
   },
   ajax: {
-    url: '/copo/dtol_submission/get_samples_for_profile/',
+    url: '/copo/dtol_submission/get_dtol_samples_for_profile/',
     data: function (d) {
       return {
         profile_id: $('#profile_id').val(),
@@ -1010,9 +1010,10 @@ function update_pending_samples_table() {
         dt_options['scrollX'] = true;
         dt_options['scrollY'] = 1000;
         dt_options['fixedHeader'] = true;
-        sample_table = $('#profile_samples').DataTable(dt_options);
-        //.columns.adjust()
-        //.draw();
+        sample_table = $('#profile_samples')
+          .DataTable(dt_options)
+          //.columns.adjust()
+          //.draw();
       }
     });
 

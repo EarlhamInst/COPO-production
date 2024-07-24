@@ -1,7 +1,7 @@
 from django.urls import path, re_path
 from . import views
 
-app_name = 'copo_profile'
+app_name = 'copo_accession'
 
 urlpatterns = [
     #path('copo_visualize_accessions_dashboard', views.copo_visualize_accessions_dashboard, name="copo_visualize_accessions_dashboard"),

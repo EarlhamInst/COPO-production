@@ -68,10 +68,10 @@ class PermitColumnsValidator(Validator):
                     self.flag = False
 
     def validate(self):
-        p_type = Profile().get_type(profile_id=self.profile_id)
+        p_type = Profile().get_type(profile_id=self.profile_id).upper
 
         # Only ERGA manifests have permit files
-        if "ERGA" in p_type:
+        if "ERGA" == p_type:
             permit_filename_column_names = lookup.PERMIT_FILENAME_COLUMN_NAMES
             permit_required_column_names = lookup.PERMIT_REQUIRED_COLUMN_NAMES
             permit_column_names = lookup.PERMIT_COLUMN_NAMES_PREFIX
@@ -110,15 +110,17 @@ class DtolEnumerationValidator(Validator):
         manifest_specimen_taxon_pairs = {}
         regex_human_readable = ""
         flag_symbiont = False
-        p_type = Profile().get_type(profile_id=self.profile_id)
+        p_type = Profile().get_type(profile_id=self.profile_id).upper()
+        """
         if "ERGA" in p_type:
             p_type = "ERGA"
-        elif "DTOL_ENV" in p_type:
-            p_type = "DTOL_ENV"
+        elif "DTOLENV" in p_type:
+            p_type = "DTOLENV"
         elif "DTOL" in p_type:
             p_type = "DTOL"
         elif "ASG" in p_type:
             p_type = "ASG"
+        """    
         barcoding_fields = ["PLATE_ID_FOR_BARCODING", "TUBE_OR_WELL_ID_FOR_BARCODING",
                             "TISSUE_FOR_BARCODING", "BARCODE_PLATE_PRESERVATIVE"]
         # erga manifest doesn't have plate_id_for_barcoding
@@ -182,7 +184,7 @@ class DtolEnumerationValidator(Validator):
                     if allowed_vals:
                         # extra handling of barcode hubs for ASG
                         # todo move this in lookups and re-structure, this is in interest of time
-                        if header == "BARCODE_HUB" and "ASG" in p_type:
+                        if header == "BARCODE_HUB" and "ASG" == p_type:
                             allowed_vals = lookup.DTOL_ENUMS.get(
                                 "PARTNER", "") + ["NOT_PROVIDED"]
                         if header == "COLLECTION_LOCATION" or header == "ORIGINAL_FIELD_COLLECTION_LOCATION":
@@ -204,8 +206,7 @@ class DtolEnumerationValidator(Validator):
                                     self.flag = False
                         elif c_value.strip() not in allowed_vals:
                             # extra handling for empty SYMBIONT in "ASG", DTOL and ERGA manifests, which means TARGET
-                            if not c_value.strip() and header == "SYMBIONT" and any(
-                                    x in p_type for x in ["ASG","DTOL", "ERGA"]):
+                            if not c_value.strip() and header == "SYMBIONT" and p_type in ["ASG","DTOL", "ERGA"]:
                                 self.data.at[cellcount - 1,
                                              "SYMBIONT"] = "TARGET"
 
@@ -275,8 +276,8 @@ class DtolEnumerationValidator(Validator):
                                 self.flag = False
                     # check SPECIMEN_ID has the right prefix
                     elif header == "SPECIMEN_ID":
-                        # both DTOL and DTOL_ENV
-                        if "DTOL" in p_type:
+                        # both DTOL and DTOLENV
+                        if p_type in ["DTOL", "DTOLENV"]:
                             current_gal = self.data.at[cellcount - 1, "GAL"]
                             specimen_regex = re.compile(
                                 lookup.SPECIMEN_PREFIX["GAL"][p_type.lower()].get(current_gal,
@@ -293,7 +294,7 @@ class DtolEnumerationValidator(Validator):
                                         current_gal, "XXX")
                                 ))
                                 self.flag = False
-                        elif "ERGA" in p_type:
+                        elif "ERGA" == p_type:
                             specimen_regex = re.compile(lookup.SPECIMEN_PREFIX["GAL"][p_type.lower()].get("default",
                                                                                                           "") +
                                                         lookup.SPECIMEN_SUFFIX["GAL"][p_type.lower()].get("default",
@@ -308,7 +309,7 @@ class DtolEnumerationValidator(Validator):
                                         "default", "XXX")
                                 ))
                                 self.flag = False
-                        elif "ASG" in p_type:
+                        elif "ASG" == p_type:
                             current_partner = self.data.at[cellcount - 1, "PARTNER"]
                             specimen_regex = re.compile(
                                 lookup.SPECIMEN_PREFIX["PARTNER"].get(current_partner, "") + '\d{7}')

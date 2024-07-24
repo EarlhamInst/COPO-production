@@ -130,22 +130,36 @@ def get_control_options(f, profile_id=None):
         if f.get("option_values", dict()).get("callback", dict()).get("function", str()):
             call_back_function = f.get("option_values", dict()).get(
                 "callback", dict()).get("function", str())
-            option_values = getattr(d_utils, call_back_function)()
+            parameter = f.get("option_values", dict()).get(
+                "callback", dict()).get("parameter", dict())
+            provider = f.get("option_values", dict()).get(
+                "callback", dict()).get("provider", str())
+            if provider:
+                obj = _get_class(provider)
+                option_values = getattr(obj, call_back_function)(**parameter)
         else:
             # e.g., multi-search has this format
             option_values = f["option_values"]
-
     return option_values
+
+def _get_class( kls ):
+    parts = kls.split('.')
+    #module = ".".join(parts[:-1])
+    m = __import__( kls )
+    for comp in parts[1:]:
+        m = getattr(m, comp)            
+    return m
 
 
 # @register.filter("generate_copo_form")
-def generate_copo_form(component=str(), target_id=str(), component_dict=dict(), message_dict=dict(), profile_id=None,
+def generate_copo_form(da_object=DAComponent(), target_id=str(), component_dict=dict(), message_dict=dict(), profile_id=None,
                        **kwargs):
     # message_dict templates are defined in the lookup dictionary: "MESSAGES_LKUPS"
 
     label_dict = get_labels()
 
-    da_object = DAComponent(component=component, profile_id=profile_id)
+    #da_object = DAComponent(component=component, profile_id=profile_id)
+    component = da_object.component
 
     #if component in da_dict:
     #    da_object = da_dict[component](profile_id)
@@ -160,24 +174,25 @@ def generate_copo_form(component=str(), target_id=str(), component_dict=dict(), 
 
     schema = da_object.get_component_schema(**kwargs)
 
-
-    # Check if a user is in ASG group, DTOL group, ERGA group or DTOL_ENV group,
+    """
+    # Check if a user is in ASG group, DTOL group, ERGA group or DTOLENV group,
     is_user_in_any_manifest_group = False
     if component == "profile":
-        # Check if a user is in ASG group, DTOL group, ERGA group or DTOL_ENV group,
+        # Check if a user is in ASG group, DTOL group, ERGA group or DTOLENV group,
         request = ThreadLocal.get_current_request()
         is_user_in_any_manifest_group = request.user.groups.filter(
             name__in=['dtol_users', 'erga_users', 'dtolenv_users']).exists()
 
-        """
+        '''
         is_standalone_profile = False
         for f in schema:
             if "type" in f["id"] and 'Stand-alone' in f["option_values"]:
                 is_standalone_profile = True
-        """
+        '''
+    """
 
     # get schema fields
-    for f in da_object.get_component_schema(**kwargs):
+    for f in schema:
         if f.get("show_in_form", True):
 
             # if required, resolve data source for select-type controls,
@@ -192,11 +207,13 @@ def generate_copo_form(component=str(), target_id=str(), component_dict=dict(), 
             if "unique" in f and not f.get("unique_items", list()):
                 f["unique_items"] = generate_unique_items(component=component, profile_id=profile_id,
                                                           elem_id=f["id"].split(".")[-1], record_id=target_id, **kwargs)
-
             # filter based on sample type
             if component == "sample" and not filter_sample_type(form_value, f):
                 continue
+            
+            form_schema.append(f)
 
+            '''
             if component == "profile" :
                 
                 # iff this is a sequencing centre field and the user is in manifest group
@@ -220,13 +237,13 @@ def generate_copo_form(component=str(), target_id=str(), component_dict=dict(), 
                         form_schema.append(f)
 
                 elif  "profile.type" in f["id"]:
-                    if not is_user_in_any_manifest_group  and 'Stand-alone' in f["option_values"]:
-                        f["option_values"] = ['Stand-alone']
+                    if not is_user_in_any_manifest_group  and 'genomics' in f["option_values"]:
+                        f["option_values"] = ['genomics']
                     form_schema.append(f)
 
                 else:
                     form_schema.append(f)
-
+            '''
     if form_value:
         form_value["_id"] = str(target_id)
     else:
@@ -462,7 +479,6 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
     # function generates component records for building an UI table - please note that for effective tabular display,
     # all array and object-type fields (e.g., characteristics) are deferred to sub-table display.
     # please define such in the schema as "show_in_table": false and "show_as_attribute": true
-    type = Profile().get_type(profile_id=profile_id)
     columns = list()
     data_set = list()
     schema = list()
@@ -470,24 +486,25 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
     # instantiate data access object
 
     if da_object.component == "sample":
-
+        profile_type = Profile().get_type(profile_id=profile_id).lower()
+        '''
         profile_type = type.lower()
         if "asg" in profile_type:
             profile_type = "asg"
 
-        elif "dtol_env" in profile_type:
-            profile_type = "dotl_env"
+        elif "dtolenv" in profile_type:
+            profile_type = "dotlenv"
 
         elif "dtol" in profile_type:
             profile_type = "dtol"
 
         elif "erga" in profile_type:
             profile_type = "erga"
-
+        '''
         current_schema_version = settings.MANIFEST_VERSION.get(
             profile_type.upper(), '') if profile_type else ''
 
-        get_dtol_fields = type in TOL_PROFILE_TYPES_FULL
+        get_dtol_fields = profile_type in TOL_PROFILE_TYPES_FULL
         # get and filter schema elements based on displayable columns and profile type
         if get_dtol_fields:
             schema = list()

@@ -18,6 +18,7 @@ from common.schemas.utils import data_utils
 from common.utils import helpers
 from src.apps.copo_barcoding_submission.utils.EnaTaggedSequence import EnaTaggedSequence
 from src.apps.copo_read_submission.utils.ena_read_submission import EnaReads
+from .models import ProfileType
 
 class BrokerDA:
     def __init__(self, **kwargs):
@@ -89,16 +90,18 @@ class BrokerDA:
 
             #update ENA project 
             if isinstance(self.da_object, Profile):
-                submissions = Submission().get_all_records_columns(filter_by={"profile_id": kwargs["target_id"]}, projection={"accessions":1})
-                if submissions:
-                    project_accession = submissions[0].get("accessions",[]).get("project",[])
-                    if project_accession:
-                        result = EnaReads(submission_id=str(submissions[0]["_id"])).register_project()
-                        if result.get("status", False):
-                            report_metadata["message"] += " Profile has been updated to ENA. "
-                        else:
-                            report_metadata["message"] += " However, profile ENA submission failed! " + result.get("message", str())
-                            status = "warning"
+                type = self.auto_fields.get("copo.profile.type", "")
+                if ProfileType.objects.get(type=type).is_dtol_profile:
+                    submissions = Submission().get_all_records_columns(filter_by={"profile_id": kwargs["target_id"]}, projection={"accessions":1})
+                    if submissions:
+                        project_accession = submissions[0].get("accessions",[]).get("project",[])
+                        if project_accession:
+                            result = EnaReads(submission_id=str(submissions[0]["_id"])).register_project()
+                            if result.get("status", False):
+                                report_metadata["message"] += " Profile has been updated to ENA. "
+                            else:
+                                report_metadata["message"] += " However, profile ENA submission failed! " + result.get("message", str())
+                                status = "warning"
 
         else:
             # save record
@@ -242,11 +245,16 @@ class BrokerDA:
         component_dict = self.param_dict.get("component_dict", dict())
         message_dict = self.param_dict.get("message_dict", dict())
 
-        kwargs = dict()
+        kwargs = self.request_dict
         kwargs["referenced_field"] = self.param_dict.get("referenced_field", str())
         kwargs["referenced_type"] = self.param_dict.get("referenced_type", str())
+        kwargs.pop("compnent_dict", None)
+        kwargs.pop("message_dict", None)
+        kwargs.pop("target_id", None)
+        kwargs.pop("component", None)
+        kwargs.pop("profile_id", None)
 
-        self.context["form"] = htags.generate_copo_form(self.component, target_id, component_dict, message_dict,
+        self.context["form"] = htags.generate_copo_form(self.da_object, target_id, component_dict, message_dict,
                                                         self.profile_id, **kwargs)
         self.context["form"]["visualize"] = self.param_dict.get("visualize")
         return self.context
@@ -309,7 +317,7 @@ class BrokerDA:
         kwargs["referenced_type"] = self.param_dict.get("referenced_type", str())
         kwargs["action_type"] = self.param_dict.get("action_type", str())
 
-        form_value = htags.generate_copo_form(self.component, target_id, component_dict, message_dict,
+        form_value = htags.generate_copo_form(self.da_object, target_id, component_dict, message_dict,
                                               self.profile_id, **kwargs)
 
         self.context["component_record"] = form_value["form_value"]

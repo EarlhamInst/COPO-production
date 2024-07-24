@@ -30,6 +30,7 @@ from common.utils.logger import Logger
 import pickle
 from src.apps.copo_dtol_upload.utils.Dtol_Spreadsheet import DtolSpreadsheet
 from src.apps.copo_dtol_upload.utils.da import ValidationQueue
+from io import BytesIO
 
 def get(request, id):
     """
@@ -574,12 +575,14 @@ class APIValidateManifest(APIView):
             return HttpResponse(status=400, content=msg)
 
         if dtol.loadManifest(m_format=fmt):
-            srlz_dtol = pickle.dumps(dtol.file)
+            bytesstring = BytesIO()
+            dtol.data.to_pickle(bytesstring)
+             
             if "profile_id" in request.POST:
                 p_id = request.POST["profile_id"]
             else:
                 p_id = request.session["profile_id"]
-            r = {"$set": {"manifest_data": srlz_dtol, "profile_id": p_id, "schema_validation_status": "pending",
+            r = {"$set": {"manifest_data": bytesstring.getvalue(), "profile_id": p_id, "schema_validation_status": "pending",
                         "taxon_validation_status": "pending", "err_msg": [],
                         "time_added": datetime.utcnow(),
                         "file_name": name,

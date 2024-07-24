@@ -1,3 +1,4 @@
+{% spaceless %}
 {% load static %}
 {% load web_tags %}
 <div class="grid">
@@ -86,25 +87,13 @@
                         <!-- Row: Profile menu-->
                         <div class="{% if profile.study_status or profile.associated_type or profile.sequencing_centre|is_list_empty %}menu-row{% else %}menu-no-addtl-info-row{% endif %}">
                             <span class="ui compact menu expanding_menu" id="expanding_menu">
-                                <div class="ui up pointing dropdown link item" tabindex="0">
+                                <!--div class="ui up pointing dropdown link item" tabindex="0">
                                     Actions
                                     <i class="dropdown icon"></i>
                                     <div class="menu" tabindex="-1">
-                                        <a class="item action" profile_component="all" anchor_type="seq_annotation" data-action_type="seq_annotation">Submit
-                                            Annotation</a>
-                                        <a class="item action" profile_component="all" anchor_type="assembly" data-action_type="assembly">Submit Assembly</a>
-                                        <a class="item action" profile_component="erga" anchor_type="taggedseq" data-action_type="taggedseq">Submit Barcoding
-                                            Manifest</a>
-                                        <a class="item action" profile_component="dtol" anchor_type="taggedseq" data-action_type="taggedseq">Submit Barcoding
-                                            Manifest</a>
-                                        <a class="item action" profile_component="dtol" anchor_type="sample" data-action_type="sample">Submit DTOL/ASG manifest</a>
-                                        <a class="item action" profile_component="erga" anchor_type="sample" data-action_type="sample">Submit ERGA Manifest</a>                            
-                                        <a class="item action" profile_component="all" anchor_type="reads" data-action_type="read">Submit Reads</a>
-                                        <a class="item action" profile_component="all" anchor_type="files" data-action_type="files">Upload Files</a>
-                                        <a class="item action" profile_component="all" anchor_type="sample" data-action_type="accessions">View Accessions</a>
                                         <a class="item action ui divider" profile_component="all" anchor_type="all" data-action_type="release_study" style="margin: 1em 0;">Release Study</a>
                                     </div>
-                                </div>
+                                </div-->
                                 <div class="ui up pointing dropdown link item" tabindex="0">
                                     Components
                                     <i class="dropdown icon"></i>
@@ -118,3 +107,4 @@
         </div>
     </div>
 </div>
+{% endspaceless %}

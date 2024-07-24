@@ -2,7 +2,8 @@ from common.dal.mongo_util import cursor_to_list_str2
 # from dal.broker_da import BrokerDA, BrokerVisuals
 from common.dal.profile_da import Profile, ProfileInfo
 from common.dal.submission_da import Submission
-from src.apps.copo_core.models import SequencingCentre
+from src.apps.copo_core.models import SequencingCentre, ProfileType
+from src.apps.copo_core.utils import get_all_profile_types_for_options_for_user
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
@@ -88,11 +89,21 @@ def copo_profile_index(request):
     # Validate user shared profiles if any exists
     for index, item in enumerate(profile_page):
         if (shared_profiles_mapping.get(ObjectId(item.get("id", "")), "")):
+            """
             is_parenthesis_in_word = re.search(
                 r'\((.*?)\)', item.get("type", ""))
             type = is_parenthesis_in_word.group(
                 1) if is_parenthesis_in_word else ""
-
+            """
+            profile_type = item.get("type", "")  
+            if ProfileType.objects.get(type=profile_type).is_permission_required:
+                if f'{profile_type}_users' not in member_groups:
+                    # Obtain a list of the profile IDs for the shared profiles that users have been added to but
+                    # they do not belong to that profile group type
+                    excluded_shared_profileIDs.append(item.get("id", ""))
+            item['shared_type'] = profile_type
+            del item['type']
+            """
             if (item.get("type", "") == 'Stand-alone'):
                 # Remove 'type' key so that "Shared with me" profile grid
                 # label is displayed on the profile grid
@@ -107,7 +118,7 @@ def copo_profile_index(request):
                 # Obtain a list of the profile IDs for the shared profiles that users have been added to but
                 # they do not belong to that profile group type
                 excluded_shared_profileIDs.append(item.get("id", ""))
-
+            """
     # Exclude a shared profile if a user does not belong to the shared profile group type
     if excluded_shared_profileIDs:
         profile_page = [profile for profile in profile_page if profile.get(
@@ -124,6 +135,8 @@ def copo_profile_index(request):
         context['profiles'] = profile_page
         context['profiles_total'] = profiles_length
         context['profiles_visible_length'] = len(profile_page)
+        #context['profile_types'] = ProfileType.objects.all()
+        context['profile_types'] = get_all_profile_types_for_options_for_user(request.user)
         return render(request, 'copo/profile/copo_profile_index.html', context)
     else:
         # Set up the profile grids that are loaded when a user scrolls down the web page
@@ -131,7 +144,7 @@ def copo_profile_index(request):
 
         for profile in profile_page:
             content += render_to_string('copo/profile/copo_profile_record.html',
-                                        {'profile': profile},
+                                        {'profile': profile,"profile_types":get_all_profile_types_for_options_for_user(request.user)},
                                         request=request)
         return JsonResponse({
             "content": content,

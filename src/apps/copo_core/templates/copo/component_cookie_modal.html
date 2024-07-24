@@ -68,10 +68,21 @@
             <div id="emailModalBody" class="modal-body">
                 <div style="margin-bottom: 10px;"><b>An email address is required for your user account</b></div>
                 <input id="emaddres" type="text" class="form-control" placeholder="Enter email address">
-                <p style="margin-top:20px" for="gdpr_check">Please check the following box if you consent to your identifiable information being stored in COPO. The information will be submitted to public repositories and will be a part of the public record. See our <a style="text-decoration: underline;" href="/about/privacy_notice">Privacy Notice</a> for more details.</p>
+                <br/>
+
+                <p style="margin-bottom: 10px; padding-bottom: 15px;">
+                    If you would like to make manifest submissions to an ASG, ERGA or DToL manifest group 
+                </p>
+                
+                <p style="margin-top:10px">Please contact <a style="text-decoration: underline;" href="mailto:{{copo_email}}"> {{copo_email}}</a> in order to be added to the profile type group. We will grant you the permission to select the desired group, create a profile for the group and subsequently upload a manifest to the group.</p>
+
+                <p style="margin-top:30px" for="gdpr_check">Please check the following box if you consent to your identifiable information being stored in COPO. The information will be submitted to public repositories and will be a part of the public record. See our <a style="text-decoration: underline;" href="/about/privacy_notice">Privacy Notice</a> for more details.</p>
+
+                <br/>
                 <input class="form-check-input" type="checkbox" value="" id="gdpr_check">
                 <label class="form-check-label" for="gdpr_check">&ensp; I Agree</label>
             </div>
+
             <div class="modal-footer">
                 <button id="submit" type="button" class="btn btn-custom3" data-dismiss="modal">Submit</button>
             </div>

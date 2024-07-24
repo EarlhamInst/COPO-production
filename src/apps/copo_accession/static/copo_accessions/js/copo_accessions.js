@@ -375,7 +375,7 @@ function customise_accessions_table(table) {
 
   // Show task buttons on accessions dashboard and
   // on the accessions web page for a given profile
-  place_accessions_task_buttons(componentMeta);
+  place_task_buttons(componentMeta);
 
   let table_wrapper = $(tableID + '_wrapper');
 

@@ -93,17 +93,21 @@ var controlsMapping = {
   'semantic-ui-search': 'do_semantic_search_ui',
 };
 
-function initiate_form_call(component) {
+function initiate_form_call(component, args_dict) {
   const errorMsg = "Couldn't build " + component + ' form!';
+
+  var post_data = {};
+  if (args_dict != null) {
+    post_data = args_dict;
+  }
+  post_data['task'] = 'form';
+  post_data['component'] = component;
 
   $.ajax({
     url: copoFormsURL,
     type: 'POST',
     headers: { 'X-CSRFToken': csrftoken },
-    data: {
-      task: 'form',
-      component: component,
-    },
+    data: post_data,
     success: function (data) {
       json2HtmlForm(data);
       componentData = data;
@@ -190,6 +194,7 @@ function json2HtmlForm(data) {
         }
       });
 
+      /*
       // Add Profile form
       if (dialog_title.includes('Add Profile')) {
         // If a user is not added to a manifest group, display a message for the user to contact
@@ -204,7 +209,9 @@ function json2HtmlForm(data) {
           );
         }
       }
+      */
 
+      /*
       // Edit Profile form
       if (dialog_title.includes('Edit Profile')) {
         if (groups.length === 0) {
@@ -227,6 +234,7 @@ function json2HtmlForm(data) {
           );
         }
       }
+      */
 
       //custom validators
       custom_validate(htmlForm.find('form'));
@@ -238,6 +246,14 @@ function json2HtmlForm(data) {
         .find('form')
         .validator()
         .on('submit', function (e) {
+          if (!e.isDefaultPrevented()) {
+            e.preventDefault();
+            save_form(data.form, dialogRef);
+          } else {
+            return false;
+          }
+
+          /*
           // Allow users to edit 'Stand-alone' profile types on the first edit
           if (
             e.isDefaultPrevented() &&
@@ -253,11 +269,13 @@ function json2HtmlForm(data) {
           } else {
             return false;
           }
+          */
+
         });
 
       const event = jQuery.Event('postformload'); //individual compnents can trap and handle this event as they so wish
       $('body').trigger(event);
-
+      /*
       if (!groups.includes('dtol_users')) {
         $('select option[value *= "(DTOL)"]').hide();
         $('select option[value *= "(ASG)"]').hide();
@@ -266,8 +284,9 @@ function json2HtmlForm(data) {
         $('select option[value *= "(ERGA)"]').hide();
       }
       if (!groups.includes('dtolenv_users')) {
-        $('select option[value *= "(DTOL_ENV)"]').hide();
+        $('select option[value *= "(DTOLENV)"]').hide();
       }
+      */
     },
     buttons: [
       {
@@ -316,6 +335,7 @@ function json2HtmlForm(data) {
 
   // If user is in a manifest group, hide 'Associated Profile Type' field on "Add Profile" dialog launch
   // because "Stand-alone" is the default value for 'Profile Type'
+  /*
   if (dialog_title.includes('Add Profile') && groups.length >= 1) {
     $dialogContent.find('.row:nth-child(4) > .col-sm-12').hide(); // Hide 'Associated Profile Type' field
     $dialogContent.find('.row:nth-child(5) > .col-sm-12').hide(); // Hide 'Sequencing Centre' field
@@ -324,7 +344,7 @@ function json2HtmlForm(data) {
       .find('select')
       .removeAttr('required');
   }
-
+  
   // If user is in a manifest group, hide 'Associated profile type(s)' field on "Edit Profile" dialog launch
   // if "Stand-alone" is the value shown for 'Profile Type'
 
@@ -336,7 +356,7 @@ function json2HtmlForm(data) {
     $dialogContent.find('.row:nth-child(4) > .col-sm-12').hide(); // Hide 'Associated Profile Type' field
     $dialogContent.find('.row:nth-child(5) > .col-sm-12').hide(); // Hide 'Sequencing Centre' field
   }
-
+  
   // Hide the'Sequencing Centre' field on "Edit Profile" dialog launch
   // if the the profile type is not 'ERGA'
 
@@ -350,6 +370,7 @@ function json2HtmlForm(data) {
       .find('select')
       .removeAttr('required');
   }
+  */
 
   dialog.realize();
   dialog.setMessage($dialogContent);
@@ -931,12 +952,11 @@ var dispatchFormControl = {
     var ctrlsDiv = $('<div/>', {
       class: 'ctrlDIV',
     });
-
     //build select
     var selectCtrl = $('<select/>', {
       class: 'form-control input-copo copo-select-control',
       id: formElem.id,
-      name: formElem.id,
+      name: formElem.id
     });
 
     if (formElem.option_values) {
@@ -962,7 +982,6 @@ var dispatchFormControl = {
         }
       }
     }
-
     ctrlsDiv.append(selectCtrl);
 
     return get_form_ctrl(ctrlsDiv.clone(), formElem, elemValue);
