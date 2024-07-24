@@ -156,12 +156,17 @@ class News(models.Model):
                 #     print(f"Changing directory permissions for '{news_images_directory}' to {user.username}")
                     # os.chown(news_images_directory, user.uid, user.gid)
                 # Convert this command to Python code: sudo chown -R www-data:www-data /path/to/your/django/project/media
+                # try:
+                #     subprocess.run(['chown', '-R', 'root:www-data', news_images_directory], check=True)
+                # except subprocess.CalledProcessError as e:
+                #     print(f'Error: {e}')
+
+                # Check permissions for the directory by running the command:  ls -ld media/news_images
                 try:
-                    subprocess.run(['sudo', 'chown', '-R', 'www-data:www-data', news_images_directory], check=True)
+                    subprocess.run(['chmod', '-R', '775', news_images_directory], check=True)
                 except subprocess.CalledProcessError as e:
                     print(f'Error: {e}')
-    
-                os.chmod(news_images_directory, 0o775)
+                # os.chmod(news_images_directory, 0o775)
             else:
                 self.create_news_images_directory()
         except Exception as e:
