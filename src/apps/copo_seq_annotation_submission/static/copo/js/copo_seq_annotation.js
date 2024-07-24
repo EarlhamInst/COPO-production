@@ -334,7 +334,13 @@ $(document).ready(function () {
                   })
                   .done(function (data) {
                     var $el = $('.modal-dialog').find('#id_run');
-                    run = $el.find(':selected').val();
+                    //run = $el.find(':selected').val();
+
+                    let run = [];
+                    $el.find(':selected').each(function () {
+                      run.push($(this).val());
+                    });
+
                     $el.empty();
                     $.each(data['run_accessions'], function (index, value) {
                       $el.append(
@@ -442,23 +448,31 @@ $(document).ready(function () {
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
-             file_processing_status = table.cell(rowIdx, i).data()
-             if (file_processing_status == "" || file_processing_status.includes('File archived'))
-                return false;
-             else
-                return true;
+            file_processing_status = table.cell(rowIdx, i).data();
+            if (
+              file_processing_status == '' ||
+              file_processing_status.includes('File archived')
+            )
+              return false;
+            else return true;
           });
         table
           .rows(error)
           .nodes()
           .to$()
           .addClass('highlight_error_file_processing_status');
-      }     
+      }
     }
-        $(".ena-accession").each(function(i, obj) {
-       if ($(obj).prop("tagName") != 'TH' && $(obj).text() != "" ) {
-          $(obj).html("<a href='https://www.ebi.ac.uk/ena/browser/view/" + $(obj).text() + "' target='_blank'>"+ $(obj).text()+"</a>");
-       }
+    $('.ena-accession').each(function (i, obj) {
+      if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
+        $(obj).html(
+          "<a href='https://www.ebi.ac.uk/ena/browser/view/" +
+            $(obj).text() +
+            "' target='_blank'>" +
+            $(obj).text() +
+            '</a>'
+        );
+      }
     });
   });
 });
