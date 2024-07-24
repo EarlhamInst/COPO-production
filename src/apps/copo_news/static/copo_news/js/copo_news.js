@@ -11,7 +11,6 @@ $(document).ready(function () {
   });
 
   $('body').bind('beforeunload', function () {
-    console.log('Window loaded' + window.location.href);
     if (window.location.href.includes('news')) {
       setNewsNavTabActive();
     }
