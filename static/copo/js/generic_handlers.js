@@ -52,6 +52,10 @@ $(document).ready(function () {
   setup_collapsible_event();
 
   setup_copo_general_lookup_event();
+
+  var event = jQuery.Event('document_ready'); //individual compnents can trap and handle this event as they so wish
+  $(document).trigger(event);
+  
 });
 
 function setup_collapsible_event() {
@@ -164,6 +168,9 @@ function select2_data_view_event() {
       },
     });
   });
+
+
+
 }
 
 function select2_mouse_event() {

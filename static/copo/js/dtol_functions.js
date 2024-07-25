@@ -83,7 +83,7 @@ var dt_options = {
 };
 var sample_table;
 
-$(document).ready(function () {
+$(document).on("document_ready", function() {
   // functions defined here are called from both copo_sample_accept_reject and copo_samples, all provide DTOL
   // functionality
   $(document).data('accepted_warning', false);

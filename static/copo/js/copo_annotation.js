@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).on("document_ready", function() {
   var uid = document.location.href;
   uid = uid.split('/');
   uid = uid[uid.length - 1];

@@ -153,7 +153,7 @@ let dt_options = {
   },
 };
 
-$(document).ready(function () {
+$(document).on("document_ready", function() {
   const acceptRejectSampleURL = '/copo/dtol_submission/accept_reject_sample';
   const accessionsDashboardURL = '/copo/copo_accessions/dashboard';
   const tolInspectURL = '/copo/tol_dashboard/tol_inspect';

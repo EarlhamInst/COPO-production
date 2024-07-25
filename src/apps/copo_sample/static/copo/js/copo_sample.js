@@ -2,7 +2,7 @@ var wizardMessages;
 var sampleDescriptionToken = '';
 var sampleTableInstance = null;
 
-$(document).ready(function () {
+$(document).on("document_ready", function() {
   //****************************** Event Handlers Block *************************//
 
   // test begins
