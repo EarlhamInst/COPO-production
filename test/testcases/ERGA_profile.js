@@ -34,6 +34,31 @@ let browser = null;
         await Promise.all(promises);
     }
     {
+      const targetPage = page;
+      await puppeteer.Locator.race([
+          targetPage.locator('#profile_type'),
+          targetPage.locator('::-p-xpath(//*[@id=\\"profile_type\\"])'),
+          targetPage.locator(':scope >>> #profile_type')
+      ])
+          .setTimeout(timeout)
+          .click({
+            offset: {
+              x: 445.46875,
+              y: 12.875,
+            },
+          });
+  }
+  {
+      const targetPage = page;
+      await puppeteer.Locator.race([
+          targetPage.locator('#profile_type'),
+          targetPage.locator('::-p-xpath(//*[@id=\\"profile_type\\"])'),
+          targetPage.locator(':scope >>> #profile_type')
+      ])
+          .setTimeout(timeout)
+          .fill('erga');
+  }
+    {
         const targetPage = page;
         await puppeteer.Locator.race([
             targetPage.locator('::-p-aria() >>>> ::-p-aria([role=\\"generic\\"])'),
@@ -87,6 +112,7 @@ let browser = null;
             .setTimeout(timeout)
             .fill('It is ERGA profile');
     }
+    /*
     {
         const targetPage = page;
         await puppeteer.Locator.race([
@@ -103,6 +129,7 @@ let browser = null;
               },
             });
     }
+
     {
         const targetPage = page;
         await puppeteer.Locator.race([
@@ -114,6 +141,7 @@ let browser = null;
             .setTimeout(timeout)
             .fill('European Reference Genome Atlas (ERGA)');
     }
+    */
     {
         const targetPage = page;
         await puppeteer.Locator.race([
