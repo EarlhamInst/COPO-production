@@ -19,7 +19,7 @@ $(document).ready(function () {
 
   // Show info popup dialog when info icon is clicked
   $(document).on('click', '#info', function () {
-    let manifest_type = $(document).data('manifest_type');
+    let manifest_type = $(document).data('manifest_type').toLowerCase();
 
     const asg_sop_link = 'https://github.com/darwintreeoflife/metadata';
     const dtol_sop_link = 'https://github.com/darwintreeoflife/metadata';
@@ -34,9 +34,7 @@ $(document).ready(function () {
         ? dtol_sop_link
         : manifest_type === 'erga'
         ? erga_sop_link
-        : manifest_type === 'dtolenv' ||
-          manifest_type === 'dtol_env' ||
-          manifest_type === 'env'
+        : manifest_type === 'dtolenv' 
         ? dtolenv_sop_link
         : '';
 
@@ -661,7 +659,7 @@ function get_current_manifest_version() {
       $('#current_dtolenv_version').html(data.current_dtolenv_manifest_version);
       $('a#dtolenv_prefilled_template_option').prop(
         'title',
-        `Launch DTOLENV_MANIFEST_v${data.current_DTOLENV_manifest_version} wizard`
+        `Launch DTOLENV_MANIFEST_v${data.current_dtolenv_manifest_version} wizard`
       );
 
       // dtol
@@ -697,15 +695,19 @@ function get_manifest_filename(manifest_type) {
     case 'dtolenv':
       filename = `${filename_part}${current_dtolenv_version.text()}.xlsx`;
       break;
-    case 'dtol_env':
+/*
+    case 'dtolenv':
       filename = `${filename_part}${current_dtolenv_version.text()}.xlsx`;
       break;
+*/      
     case 'dtol':
       filename = `${filename_part}${current_dtol_version.text()}.xlsx`;
       break;
+/*      
     case 'env':
       filename = `${filename_part}${current_dtolenv_version.text()}.xlsx`;
       break;
+*/      
     case 'erga':
       filename = `${filename_part}${$('#current_erga_version').text()}.xlsx`;
       break;

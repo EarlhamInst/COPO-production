@@ -30,6 +30,7 @@ from common.schema_versions.lookup import dtol_lookups as lookup
 # from common.schema_versions import required_field_dtol_validators as required_validators
 from common.utils.logger import Logger
 from PIL import Image
+import numpy as np
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -136,15 +137,17 @@ class DtolSpreadsheet:
         # if not then we are looking at creating samples having previously validated
 
         # get type of manifest
-        t = Profile().get_type(self.profile_id)
+        self.type = Profile().get_type(self.profile_id).upper()
+        """
         if "ASG" in t:
             self.type = "ASG"
         elif "ERGA" in t:
             self.type = "ERGA"
-        elif "DTOL_ENV" in t:
-            self.type = "DTOL_ENV"
+        elif "DTOLENV" in t:
+            self.type = "DTOLENV"
         else:
             self.type = "DTOL"
+        """    
         self.current_schema_version = settings.MANIFEST_VERSION.get(
             self.type, "")
         # get associated profile type(s) of manifest
@@ -193,6 +196,15 @@ class DtolSpreadsheet:
                 for column in self.allowed_empty:
                     self.data[column] = self.data[column].fillna("")
                 '''
+                length = len(self.data.index)
+                if length > 1000:
+                    notify_frontend(data={"profile_id": self.profile_id}, msg=f"No. of lines in the file: {length+1}, Cannot process more than 1000 samples in a single manifest file.",
+                                action="error",
+                                html_id="sample_info")
+                    return False
+                self.data.replace(r'^s*$', np.nan, regex=True, inplace=True)                
+                self.data = self.data.dropna(how='all')
+                self.data.replace(np.nan, '', regex=True, inplace=True)                
                 self.data = self.data.apply(lambda x: x.astype(str))
                 self.data = self.data.apply(lambda x: x.str.strip())
                 self.data.columns = self.data.columns.str.replace(" ", "")
@@ -662,12 +674,11 @@ class DtolSpreadsheet:
         profile = Profile().get_record(profile_id)
 
         update_fields = {}
-        now = get_datetime()
         #update manifest created / updated datetime
         if profile.get("first_manifest_date_created", ''):
-            update_fields = {"last_manifest_date_modified": now}
+            update_fields = {"last_manifest_date_modified": get_datetime()}
         else:
-            update_fields = {"first_manifest_date_created": now}
+            update_fields = {"first_manifest_date_created": get_datetime()}
 
         Profile().save_record({}, **update_fields, target_id=profile_id)
 

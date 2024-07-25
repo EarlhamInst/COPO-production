@@ -191,7 +191,8 @@ class SubmissionHelper:
         file_path = os.path.join(submission_location, "datafiles.csv")
         df_attributes_df.to_csv(path_or_buf=file_path, index=False)
         
-        if self.profile["type"] != "Stand-alone":
+
+        if self.profile["type"] != "genomics":
             return []
 
         samples_id_object_list = [ObjectId(sample_id) for sample_id in samples_id]

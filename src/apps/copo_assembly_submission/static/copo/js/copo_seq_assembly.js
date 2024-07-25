@@ -276,7 +276,13 @@ $(document).ready(function () {
                   .done(function (data) {
                     // Find the 'RUN_REF' dropdown menu
                     var $el = $('.modal-dialog').find('#id_run_ref');
-                    run_ref = $el.find(':selected').val();
+
+                    // Create an array of the selected run accessions
+                    let run_ref = [];
+                    $el.find(':selected').each(function () {
+                      run_ref.push($(this).val());
+                    });
+
                     $el.empty();
                     $.each(data['run_accessions'], function (index, value) {
                       $el.append(

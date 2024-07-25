@@ -277,6 +277,11 @@ $(document).ready(function () {
 
   // Set colour of 'help_add_button' button and 'new-samples-spreadsheet-template'
   // button based on profile type
+  var profile_type = document.getElementById('profile_type').value.toLowerCase();
+  var colour = profile_type_def[profile_type]["widget_colour"];
+  $('#help_add_button').css("color",'white').css("background-color",colour);
+  $('.new-reads-spreadsheet-template').css("color",'white').css("background-color",colour);
+  /*
   if (document.getElementById('profile_type').value.includes('ASG')) {
     $('#help_add_button').addClass('violet');
     $('.new-reads-spreadsheet-template').addClass('violet');
@@ -296,7 +301,7 @@ $(document).ready(function () {
     // $('#help_add_button').addClass('green');
     // $('.new-reads-spreadsheet-template').addClass('green');
   }
-
+*/
   //details button hover
   /*
     $(document).on("mouseover", ".detail-hover-message", function (event) {

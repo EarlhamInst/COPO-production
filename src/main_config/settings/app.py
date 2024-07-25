@@ -30,7 +30,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.template.context_processors.static',
                 'django.contrib.auth.context_processors.auth',
-                'src.apps.copo_core.copo_user_status_messages.latest_message'
+                'src.apps.copo_core.copo_user_status_messages.latest_message',
+                'src.apps.copo_core.copo.copo_context_processors.copo_context'
             ],
             'debug':  base.DEBUG,
         },

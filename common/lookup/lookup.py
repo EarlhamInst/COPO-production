@@ -774,6 +774,7 @@ ISA_SCHEMAS = {
 
 # •••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••#
 # templates for composing reusable UI buttons - This is getting deprecated!!! Moved to components_templates.html
+"""
 BUTTON_TEMPLATES = {
     "title": "Button templates",
     "description": "Provides templates for composing reusable buttons. 'btnType' can either be: "
@@ -923,6 +924,7 @@ BUTTON_TEMPLATES = {
         }   
     }
 }
+"""
 REPO_NAME_LOOKUP = {
     'ena-ant': 'Sequence Annotation',
     'ena-asm': 'Sequence Assembly',
@@ -936,7 +938,9 @@ primer fields template
 Here we are referencing json configs which are found in web/apps/web_copo/wizards/datafile/
 adding here will make the schema importable as primer fields in a new experimatal template
 '''
+"""
 TEMPLATES_TO_APPEAR_IN_EDITOR = ["dc_stages", "miappe", "dcterms"]
+"""
 
 DTOL_SAMPLE_COLLECTION_LOCATION_STATEMENT = {
     "__SPAIN__" : "The biological material collected in Spain, and used to generate digital sequences, was retrieved from \

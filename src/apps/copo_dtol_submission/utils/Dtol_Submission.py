@@ -332,7 +332,7 @@ def process_pending_dtol_samples():
                 log_message("Submitting specimen level sample to ENA for " + sam["SPECIMEN_ID"], Loglvl.INFO,
                             profile_id=profile_id)
                 accessions = submit_biosample_v2(str(sour['_id']), Source(), submission['_id'], {}, type="source",
-                                                    async_send=False)
+                                                    async_send=False, profile_id=profile_id)
                 # l.log("submission status is " + str(accessions.get("status", "")), type=Logtype.FILE)
                 if not accessions or accessions.get("status", "") == "error":
                     # Check for type/instance of accessions because it can be a boolean
@@ -562,7 +562,7 @@ def process_pending_dtol_samples():
                 # store accessions, remove sample id from bundle and on last removal, set status of submission
                 l.log("submitting modify bundle xml to ENA")
                 accessions = submit_biosample_v2(file_subfix + "-01", Sample(), submission['_id'], s_ids,
-                                                 async_send=True)
+                                                 async_send=True, profile_id=profile_id)
 
             # for add
             build_bundle_sample_xml(file_subfix + "-02")
@@ -571,7 +571,7 @@ def process_pending_dtol_samples():
                 # store accessions, remove sample id from bundle and on last removal, set status of submission
                 l.log("submitting bundle xml to ENA")
                 accessions = submit_biosample_v2(file_subfix + "-02", Sample(), submission['_id'], s_ids,
-                                                 async_send=True)
+                                                 async_send=True,  profile_id=profile_id)
 
 
 def query_awaiting_tolids():
@@ -1026,7 +1026,7 @@ def build_validate_xml(sample_id):
                encoding='unicode')
 
 
-def submit_biosample_v2(subfix, sampleobj, collection_id, sample_ids, type="sample", async_send=False):
+def submit_biosample_v2(subfix, sampleobj, collection_id, sample_ids, type="sample", async_send=False,  profile_id=None):
     submissionfile = "submission_" + str(subfix) + ".xml"
     samplefile = "bundle_" + str(subfix) + ".xml"
 

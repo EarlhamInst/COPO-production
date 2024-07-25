@@ -52,6 +52,12 @@
                id="files_url"/>
         <input type="hidden" value="{% url 'copo_barcoding_submission:copo_taggedseq' profile_id='999' %}" name="taggedseq_url"
         id="taggedseq_url"/>    
+        <input
+        type="hidden"
+        id="component_subtitle"
+        value="<select id='profile_type' name='profile_type'>{% for profile_type in profile_types %}<option value='{{ profile_type.value }}' title='{{profile_type.label}}' >{{ profile_type.label }}</option>{% endfor %}</select> "
+      />   
+        <input type="hidden" id="copo_email" value="{{copo_email}}"/>     
     </div>
 
     <style>
@@ -210,13 +216,21 @@
 
 {% endblock %}
 
-{% block profiles_legend_section %}
+{% block sidebar_custom_section %}
     <!-- profiles legend -->
-{% endblock profiles_legend_section %}
+    <div class="profiles-legend">
+        <h4 class="profiles-legend-title">Profile Types Legend</h4>
+        <ul class="profiles-legend-group">
+        </ul>
+    </div>
+{% endblock sidebar_custom_section %}
 
 {% block js_block %}
     <script src="{% static 'copo/js/generic_handlers_ext2.js' %}"></script>
     <script src="{% static 'copo/js/generic_handlers.js' %}"></script>
     <script src="{% static 'copo/js/copo_form_handlers.js' %}"></script>
-    <script src="{% static 'copo_profile/js/copo_profile_index.js' %}"></script>
+    <script src="{% static 'copo_profile/js/copo_profile_index.js' %}"></script>dd
+    {% include 'copo/profile/custom_profile_js.html' %}
 {% endblock %}
+
+ 

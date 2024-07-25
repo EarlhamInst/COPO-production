@@ -859,7 +859,7 @@ $(document).ready(function () {
 
 $(document).on(
   'click',
-  '.new-samples-spreadsheet-template, .new-samples-spreadsheet-template-erga',
+  '.new-samples-spreadsheet-template',
   function (event) {
     $('#sample_spreadsheet_modal').modal('show');
 
@@ -882,42 +882,46 @@ $(document).on(
 
 $(document).on(
   'click',
-  '.new-samples-spreadsheet-template-erga',
+  '.new-samples-spreadsheet-template',
   function (event) {
-    BootstrapDialog.show({
-      title: 'Accept Code of Conduct',
-      message:
-        "By uploading a manifest to Collaborative OPen Omics (COPO), you confirm that you are an European Reference Genome Atlas (ERGA) member and thus adhere to ERGA's " +
-        'code of conduct.' +
-        '\n\nYou further confirm that you read, understood and followed the ' +
-        "<a href='https://bit.ly/3zHun36'>ERGA Sample " +
-        'Code of Practice</a>.',
-      cssClass: 'copo-modal1',
-      closable: true,
-      animate: true,
-      closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
-      closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
-      type: BootstrapDialog.TYPE_INFO,
-      buttons: [
-        {
-          label: 'Cancel',
-          cssClass: 'tiny ui basic' + ' button',
-          id: 'code_cancel',
-          action: function (dialogRef) {
-            $('#sample_spreadsheet_modal').modal('hide');
-            dialogRef.close();
+    profile_type = $('#profile_type').val();
+    if (profile_type.toLowerCase() == 'erga') {
+
+      BootstrapDialog.show({
+        title: 'Accept Code of Conduct',
+        message:
+          "By uploading a manifest to Collaborative OPen Omics (COPO), you confirm that you are an European Reference Genome Atlas (ERGA) member and thus adhere to ERGA's " +
+          'code of conduct.' +
+          '\n\nYou further confirm that you read, understood and followed the ' +
+          "<a href='https://bit.ly/3zHun36'>ERGA Sample " +
+          'Code of Practice</a>.',
+        cssClass: 'copo-modal1',
+        closable: true,
+        animate: true,
+        closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
+        closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
+        type: BootstrapDialog.TYPE_INFO,
+        buttons: [
+          {
+            label: 'Cancel',
+            cssClass: 'tiny ui basic' + ' button',
+            id: 'code_cancel',
+            action: function (dialogRef) {
+              $('#sample_spreadsheet_modal').modal('hide');
+              dialogRef.close();
+            },
           },
-        },
-        {
-          label: 'Okay',
-          id: 'code_okay',
-          cssClass: 'tiny ui basic button',
-          action: function (dialogRef) {
-            dialogRef.close();
+          {
+            label: 'Okay',
+            id: 'code_okay',
+            cssClass: 'tiny ui basic button',
+            action: function (dialogRef) {
+              dialogRef.close();
+            },
           },
-        },
-      ],
-    });
+        ],
+      });
+    }
   }
 );
 

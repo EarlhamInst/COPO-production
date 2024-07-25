@@ -92,7 +92,6 @@ MANIFEST_VERSION = {
     "ASG":  "2.5",
     "DTOL": "2.5",
     "DTOLENV": "2.4",
-    "DTOL_ENV": "2.4",
     "DTOL_EI": "2.4",
     "ERGA": "2.5",
     "DTOL_BARCODE": "",
