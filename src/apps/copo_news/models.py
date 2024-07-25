@@ -5,9 +5,11 @@ from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.db import models
-from django.db.models.signals import post_delete, pre_save
+from django.db.models.signals import post_delete, pre_save, post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from pathlib import Path
+from shutil import rmtree
 from tinymce.models import HTMLField
 from .storage import OverwriteStorage
 import os
@@ -23,7 +25,24 @@ def default_news_image():
 def news_image_upload_path(instance, filename):
     # Return a temporary directory path by default
     return f'temp/{filename}'
-          
+
+def delete_news_images_directory_content():
+    media_directory = os.path.join('media', 'news_images')
+    
+    try:
+        for path in Path(media_directory).iterdir():
+            if path.is_file():
+                # Remove the file
+                path.unlink()
+            elif path.is_dir():
+                # Remove the directory
+                rmtree(path)
+
+        # Remove the 'news_images' directory now that it is empty
+        os.rmdir(media_directory)
+    except Exception as e:
+        lg.exception(f'Error deleting directory content: {media_directory}:  {str(e)}')
+
 class NewsCategory(models.Model):
     class Meta:
         verbose_name_plural = 'News Categories'
@@ -102,11 +121,10 @@ class News(models.Model):
     news_image = models.ImageField(upload_to=news_image_upload_path, storage=OverwriteStorage(), blank=False, null=False, default=default_news_image)
     created_date = models.DateTimeField(default=timezone.now, editable=False)
     updated_date = models.DateTimeField(auto_now=True)
-    is_news_article_active = models.BooleanField(default=False)
+    is_news_article_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.title
-    
     
     def save(self, *args, **kwargs):
         if not self.id:
@@ -132,41 +150,17 @@ class News(models.Model):
                     default_storage.save('news_images/news_image_default.jpg', django_file)
             except Exception as e:
                 lg.exception(str(e))
-    
-    def delete_news_images_directory_content(self):
-        media_directory = os.path.join('media', 'news_images', str(self.id))
-        
-        try:
-            if os.path.exists(media_directory):
-                # Remove the contents from the directory since it may not be empty
-                if os.listdir(media_directory):
-                    for file in os.listdir(media_directory):
-                        os.remove(os.path.join(media_directory, file))
-                # Remove the directory now that it is empty
-                os.rmdir(media_directory)
-        except Exception as e:
-            lg.exception(f'Error deleting directory content: {media_directory}', str(e))
 
     def set_news_images_directory_permissions(self):
         news_images_directory = os.path.join('media', 'news_images')
 
         try:
             if os.path.exists(news_images_directory):
-                # for user in superusers:
-                #     print(f"Changing directory permissions for '{news_images_directory}' to {user.username}")
-                    # os.chown(news_images_directory, user.uid, user.gid)
-                # Convert this command to Python code: sudo chown -R www-data:www-data /path/to/your/django/project/media
                 # try:
-                #     subprocess.run(['chown', '-R', 'root:www-data', news_images_directory], check=True)
+                #     subprocess.run(['chmod', '-R', '775', news_images_directory], check=True)
                 # except subprocess.CalledProcessError as e:
                 #     print(f'Error: {e}')
-
-                # Check permissions for the directory by running the command:  ls -ld media/news_images
-                try:
-                    subprocess.run(['chmod', '-R', '775', news_images_directory], check=True)
-                except subprocess.CalledProcessError as e:
-                    print(f'Error: {e}')
-                # os.chmod(news_images_directory, 0o775)
+                os.chmod(news_images_directory, 0o775)
             else:
                 self.create_news_images_directory()
         except Exception as e:
@@ -215,45 +209,6 @@ class News(models.Model):
             lg.exception(f'News article with title, "{title}", does not exist. ', str(e))
             return None
         
-    # Update image path for all news items objects after they have been created
-    def update_image_path_for_all_objects(self, image_title_to_news_item_mapping={}):
-        news_objects = News.objects.all()
-
-        if not image_title_to_news_item_mapping:
-            lg.error('image_title_to_news_item_mapping is empty')
-            return
-
-        for news in news_objects:
-            if news.pk and not os.path.exists(news.news_image.url):
-                news_item_directory_path = os.path.join('media', 'news_images', str(news.pk))
-                news.news_image.field.upload_to = f'news_images/{news.pk}/'
-                original_image_path = image_title_to_news_item_mapping.get(news.title, '')
-
-                if news.news_image and not news.news_image.name.startswith(f'news_images/{news.pk}/'):
-                    # Check if the image file path exists in the 'media/news_images' folder according to the news item model ID
-                    if not os.path.isfile(os.path.join(news_item_directory_path, os.path.basename(news.news_image.name))):
-                        # Check if the directory exists, if it does not exist, create the directory
-                        if not os.path.exists(news_item_directory_path):
-                            os.mkdir(news_item_directory_path)
-                        
-                        # If the directory exists, check if the incoming image already exists in it, 
-                        # if it does not exist, remove all other files (if any exists) then copy 
-                        # the incoming image into the directory
-                        if os.listdir(news_item_directory_path):
-                            for file in os.listdir(news_item_directory_path):
-                                if file != os.path.basename(news.news_image.name):
-                                    os.remove(os.path.join(news_item_directory_path, file))
-
-                        # Copy the image into the new directory
-                        if os.path.basename(original_image_path) == os.path.basename(news.news_image.name):
-                            with open(original_image_path, 'rb') as image_file:
-                                django_file = File(image_file)
-                                default_storage.save(os.path.join('news_images', str(news.pk), os.path.basename(news.news_image.name)), django_file)
-                                
-                    news.news_image.name = os.path.join('news_images', str(news.pk), os.path.basename(news.news_image.name))
-
-                news.save()
-
     def update_news_article_by_title(self, old_title, new_title, new_content, new_category, new_author, new_associated_website_link):
         try:
             # Get news article by title
@@ -311,22 +266,71 @@ class News(models.Model):
             return False
 
     def remove_all_news_articles(self):
-        # Delete all directories in the  'media' folder
-        for news in News.objects.all():
-            news.delete_news_images_directory_content()
-
+        # Delete all directories in the 'media/news_images' folder
         News.objects.all().delete()
+        delete_news_images_directory_content()
         return True
     
+    def remove_unwanted_news_images(self):
+        news_objects = News.objects.all()
+        
+        # If the directory exists, check if the incoming image already exists in it, 
+        # if it does not exist, remove all other files (if any exists) then copy 
+        # the incoming image into the directory
+        try: 
+            for news in news_objects:
+                news_images_directory = os.path.join('media', 'news_images', str(news.pk))
+                if os.path.exists(news_images_directory):
+                    if os.listdir(os.path.join(news_images_directory)):
+                        for file in os.listdir(os.path.join(news_images_directory)):
+                            if file != os.path.basename(news.news_image.name):
+                                os.remove(os.path.join(news_images_directory, file))
+                else:
+                    lg.error(f'News images directory does not exist for news article with ID: {news.pk}')
+        except Exception as e:
+            lg.exception(f'Error deleting unwanted news images: {str(e)}')
 
-@receiver(pre_save, sender=News)
-def update_image_path(sender, instance, **kwargs):
-    if instance.pk:
-        instance.news_image.field.upload_to = f'news_images/{instance.pk}/'
-        if instance.news_image and not instance.news_image.name.startswith(f'news_images/{instance.pk}/'):
-            instance.news_image.name = os.path.basename(instance.news_image.name) # os.path.join(f'news_images/{instance.pk}/', os.path.basename(instance.news_image.name))
+# This function is called before saving the news item object.
+# It updates the image path for the news item object after it has been created and
+# ensures that the correct image path is set for the news item object based on the correct model ID.
+@receiver(post_save, sender=News)
+def update_image_path(sender, instance, created, **kwargs):
+    if created:
+        new_path = f'news_images/{instance.pk}/'
+
+        # Check if the image file path exists in the 'media/news_images' folder according to the news item model ID
+        if not os.path.isfile(os.path.join('media', new_path, os.path.basename(instance.news_image.name))):
+            # Check if the directory exists, if it does not exist, create the directory
+            if not os.path.exists(os.path.join('media', new_path)):
+                os.makedirs(os.path.join('media', new_path),exist_ok=True)
+            
+            # If the directory exists, check if the incoming image already exists in it, 
+            # if it does not exist, remove all other files (if any exists) then copy 
+            # the incoming image into the directory
+            if os.listdir(os.path.join('media', new_path)):
+                for file in os.listdir(os.path.join('media', new_path)):
+                    if file != os.path.basename(instance.news_image.name):
+                        os.remove(os.path.join('media', new_path, file))
+            
+            # Copy the image into the new directory
+            with open(instance.news_image.path, 'rb') as image_file:
+                django_file = File(image_file)
+                default_storage.save(os.path.join(new_path, os.path.basename(instance.news_image.name)), django_file)
+
+        instance.news_image.field.upload_to = new_path
+
+        if instance.news_image and not instance.news_image.name.startswith(new_path):
+            instance.news_image.name = os.path.join(new_path, os.path.basename(instance.news_image.name))
+            instance.save()
 
 @receiver(post_delete, sender=News)
-def delete_news_media_directory(sender, instance, **kwargs):
-    instance.delete_news_images_directory_content()
+def delete_associated_news_images_media_directory(sender, instance, **kwargs):
+    news_images_directory = os.path.join('media', 'news_images', str(instance.pk))
+
+    try:
+        if os.path.exists(news_images_directory):
+            rmtree(news_images_directory)
+    except Exception as e:
+        lg.exception(f'Error deleting directory: {news_images_directory} {str(e)}')
+    
 

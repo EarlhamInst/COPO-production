@@ -49,7 +49,7 @@ class Command(BaseCommand):
             # self.stdout.write('Setting folder permissions...')
             # News().set_news_images_directory_permissions()
             return
-
+    
     def handle(self, *args, **options):
         try:
             lg.debug("Starting the handle method")
@@ -250,10 +250,6 @@ class Command(BaseCommand):
                 # },
         ]
 
-            # Create a mapping between the news image title and the news item image from the news_items list
-            # This is to ensure that the image path is saved in the database according to the news item model ID
-            image_title_to_news_item_mapping = {news_item['title']: news_item['news_image'] for news_item in news_items}
-            
             try: 
                 for news_item in news_items:
                     news_image_path = news_item.get('news_image','')
@@ -275,15 +271,7 @@ class Command(BaseCommand):
                             self.stdout.write(f"Saving image file {news_image_path} to model instance...")
                             lg.debug(f"Saving image file {news_image_path} to model instance")
 
-                            # news_item_instance = News(**news_item)
-
-                            news_item_instance = News(
-                                title=news_item['title'],
-                                content=news_item['content'],
-                                category=news_item['category'],
-                                author=news_item['author'],
-                                is_news_article_active=news_item['is_news_article_active']
-                            )
+                            news_item_instance = News(**news_item)
                             news_item_instance.news_image.save(os.path.basename(news_image_path), django_file, save=True)
                             
                             self.stdout.write(f"Saving news item instance...")
@@ -301,10 +289,11 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f'Error: {str(e)}'))
                 return
 
-            # Update image path for all news items so that the 
-            # image path is saved in the  database according to 
-            # the news item model ID
-            News().update_image_path_for_all_objects(image_title_to_news_item_mapping)
+            # Remove unwanted images that were uploaded to 
+            # the 'media/news/images' folder. There should be only one image 
+            # per news item according to the 'news_item' list of dictionaries above
+            # but some news items ended up having more than one image
+            News().remove_unwanted_news_images()
                 
             self.stdout.write(self.style.SUCCESS('News items and categories have been added'))
             lg.debug("News items and categories have been added")
@@ -312,7 +301,8 @@ class Command(BaseCommand):
             # Display added records
             category_records = NewsCategory.objects.all()
             news_records = News.objects.all()
-        
+            news_records_count =News.objects.count()
+
             for i in category_records:
                 self.stdout.write(f'News category: {i.name}')
 
@@ -320,7 +310,9 @@ class Command(BaseCommand):
 
             for x in news_records:
                 self.stdout.write(f'News item: {x.title}; Image URL: {x.news_image.url}')
+            
+            self.stdout.write(f'\nTotal news items added: {news_records_count}')
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error: {str(e)}'))
-            lg.error(f"Error occurred: {e}", exc_info=True)
+            lg.error(f"Error occurred: {e}")
             return
