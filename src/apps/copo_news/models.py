@@ -9,13 +9,12 @@ from django.db.models.signals import post_delete, pre_save, post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from pathlib import Path
-from shutil import rmtree
 from tinymce.models import HTMLField
 from .storage import OverwriteStorage
 import os
 import random
-import subprocess
 import uuid
+import shutil
 
 lg = Logger()
 
@@ -30,16 +29,11 @@ def delete_news_images_directory_content():
     media_directory = os.path.join('media', 'news_images')
     
     try:
-        for path in Path(media_directory).iterdir():
-            if path.is_file():
-                # Remove the file
-                path.unlink()
-            elif path.is_dir():
-                # Remove the directory
-                rmtree(path)
-
-        # Remove the 'news_images' directory now that it is empty
-        os.rmdir(media_directory)
+        if os.path.exists(media_directory):
+            shutil.rmtree(media_directory)
+            lg.info(f'Successfully deleted directory: {media_directory}')
+        else:
+            lg.info(f'Directory does not exist: {media_directory}')
     except Exception as e:
         lg.exception(f'Error deleting directory content: {media_directory}:  {str(e)}')
 
