@@ -146,8 +146,6 @@ let browser = null;
       const targetPage = page;
       await puppeteer.Locator.race([
           targetPage.locator('::-p-aria(Select sequencing centre)'),
-          targetPage.locator('#\\33 fc15c39-1723-4e9a-8e08-bb9fe95e6311 div:nth-of-type(5) input'),
-          targetPage.locator('::-p-xpath(//*[@id=\\"3fc15c39-1723-4e9a-8e08-bb9fe95e6311\\"]/div/div/div[2]/div/div/div/div[3]/div/div/form/div[5]/div/div/div/span/span[1]/span/ul/li/input)')
       ])
           .setTimeout(timeout)
           .click({
