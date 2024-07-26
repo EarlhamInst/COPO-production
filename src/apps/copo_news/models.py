@@ -290,39 +290,6 @@ class News(models.Model):
         except Exception as e:
             lg.exception(f'Error deleting unwanted news images: {str(e)}')
 
-# This function is called before saving the news item object.
-# It updates the image path for the news item object after it has been created and
-# ensures that the correct image path is set for the news item object based on the correct model ID.
-@receiver(post_save, sender=News)
-def update_image_path(sender, instance, created, **kwargs):
-    if created:
-        new_path = f'news_images/{instance.pk}/'
-
-        # Check if the image file path exists in the 'media/news_images' folder according to the news item model ID
-        if not os.path.isfile(os.path.join('media', new_path, os.path.basename(instance.news_image.name))):
-            # Check if the directory exists, if it does not exist, create the directory
-            if not os.path.exists(os.path.join('media', new_path)):
-                os.makedirs(os.path.join('media', new_path),exist_ok=True)
-            
-            # If the directory exists, check if the incoming image already exists in it, 
-            # if it does not exist, remove all other files (if any exists) then copy 
-            # the incoming image into the directory
-            if os.listdir(os.path.join('media', new_path)):
-                for file in os.listdir(os.path.join('media', new_path)):
-                    if file != os.path.basename(instance.news_image.name):
-                        os.remove(os.path.join('media', new_path, file))
-            
-            # Copy the image into the new directory
-            with open(instance.news_image.path, 'rb') as image_file:
-                django_file = File(image_file)
-                default_storage.save(os.path.join(new_path, os.path.basename(instance.news_image.name)), django_file)
-
-        instance.news_image.field.upload_to = new_path
-
-        if instance.news_image and not instance.news_image.name.startswith(new_path):
-            instance.news_image.name = os.path.join(new_path, os.path.basename(instance.news_image.name))
-            instance.save()
-
 @receiver(post_delete, sender=News)
 def delete_associated_news_images_media_directory(sender, instance, **kwargs):
     news_images_directory = os.path.join('media', 'news_images', str(instance.pk))

@@ -1,26 +1,12 @@
 from common.utils.logger import Logger
+from django.conf import settings
 from django.core.files import File
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from src.apps.copo_news.models import News, NewsCategory
 import os
+import shutil
 
-'''
-◉ To solve the permission issues and the ability for Django to write images to 
-  the 'news_images' directory in the 'media' folder, ensure that the 'news_images'
-  directory has the correct permissions and ownership
-   
-  $ sudo chmod -R 775 /media/news_images                 # Change permissions to allow write access
-  $ sudo chown -R www-data:www-data /media/news_images      # Change ownership to the user who runs the Django management command 
-                                                           (typically your user or www-data)
-
-   NB: where 'www-data' is your user as well as group 
-        '/media/news_images' and its subdirectories are where the images are stored
-
-......................................................
-
-◉  Check the permissions of the 'news_images' directory in the 'media' directory:
-   $ ls -ld /media/news_images
-'''
 
 lg = Logger()
 
@@ -29,48 +15,23 @@ class Command(BaseCommand):
     # Show this when the user types help
     help = 'Add news categories and news articles to the database, which will be used to display news on the News page'
 
-    def check_user_directory_permissions(self):
-        # Check write permission
-        news_images_directory = 'media/news_images'
-                                       
-        test_file_path = os.path.join(news_images_directory, 'test_write_permission.txt')
-
-        try:
-            with open(test_file_path, 'w') as test_file:
-                test_file.write('This is a test file to check write permissions.')
-
-            # Remove the test file after checking write permissions
-            os.remove(test_file_path)
-            self.stdout.write(self.style.SUCCESS(f'Write permission to {news_images_directory} verified successfully'))
-        except IOError:
-            self.stdout.write(self.style.ERROR(f'Write permission to {news_images_directory} is not available'))
-            lg.error(f"Write permission to {news_images_directory} is not available", exc_info=True)
-            # Set the correct permissions for the 'news_images' directory
-            # self.stdout.write('Setting folder permissions...')
-            # News().set_news_images_directory_permissions()
-            return
-    
     def handle(self, *args, **options):
         try:
-            lg.debug("Starting the handle method")
+            lg.debug('Starting the handle method')
 
             # Clear existing data
             NewsCategory().remove_all_news_categories()
             News().remove_all_news_articles()
 
             self.stdout.write(self.style.SUCCESS('Removed existing news items and categories\n'))
+            lg.debug('Removed existing news items and categories')
             
             # Ensure 'news_images' directory exists
-            self.stdout.write('Checking if \'news images\' directory...\n')
+            self.stdout.write('Checking if \'news_images\' directory exists...\n')
             News().create_news_images_directory()
 
-            lg.debug("Created news_images directory")
-
-            # Check user permissions
-            lg.debug("Checking user permissions")
-            self.check_user_directory_permissions()
-
-            self.stdout.write('Adding news items and categories...')
+            self.stdout.write('Adding news categories...')
+            lg.debug(f'Adding news categories...')
 
             # Add news categories
             categories = [
@@ -83,6 +44,9 @@ class Command(BaseCommand):
             for category in categories:
                 NewsCategory.objects.create(**category)
 
+            self.stdout.write('Adding news items...')
+            lg.debug(f'Adding news items...')
+
             # Add news items
             news_items = [
                 {
@@ -91,24 +55,21 @@ class Command(BaseCommand):
                             '<p>Please accept our apologies for any inconvenience that the disruption may have caused.</p>',
                     'category': NewsCategory.objects.get(name='Maintenance'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/maintenance.png',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/maintenance.png'
                 },
                 {
                     'title': 'Manifest version v2.5 Release',
                     'content': 'Equally, the projects - Aquatic Symbiosis Genomics (ASG), European Reference Genome Atlas (ERGA) and Darwin Tree of Life (DToL), which are brokered through COPO, have been updated to the latest manifest version 2.5.',
                     'category': NewsCategory.objects.get(name='Feature'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/release_image.png',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/release_image.png'
                 },
                 {
                     'title': 'Continued Website Development and User Support',
                     'content': 'The Collaborative OPen Omics (COPO) project is currently being funded by the following: <ul><li>Biotechnology and Biological Sciences Research Council (BBSRC), part of UK Research and Innovation, through the Cellular Genomics (CELLGEN) Grant BBS/E/ER/230001A</li><li>Data Infrastructure and Algorithms Group Grant EI-G-Data</li> <li>Decoding Biodiversity (DECODE): Development of Novel Experimental and Bioinformatic Tools for Genomic Diversity and Analysis Grant BBS/E/ER/230002A</li><li>EI - Darwin Tree of Life Grant GP182</li></ul>',
                     'category': NewsCategory.objects.get(name='General'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/continued_development_image.jpg',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/continued_development_image.jpg'
                 },
                 {
                     'title': 'Customisation of Locus Tags for Data Submission',
@@ -116,8 +77,7 @@ class Command(BaseCommand):
                             '<p>The customisation of locus tags in COPO is possible when you create a <a href="https://copo-docs.readthedocs.io/en/latest/help/glossary.html#term-COPO-profile" target="_blank">work profile</a>.</p>',
                     'category': NewsCategory.objects.get(name='Feature'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/countryside.jpg',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/countryside.jpg'
                 },
                 {
                     'title': 'Comprehensive Documentation for COPO Now Available',
@@ -126,8 +86,7 @@ class Command(BaseCommand):
                             '<p>Explore the <a href="https://copo-docs.readthedocs.io/en/latest" target="_blank">documentation</a> today and discover how COPO can streamline your metadata, data files and sharing processes.</p>',
                     'category': NewsCategory.objects.get(name='General'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/copo_docs_logo.png',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/copo_docs_logo.png'
                 },
                 {
                     'title': 'Celebrating a Decade of Innovation: COPO Marks its 10-Year Anniversary',
@@ -135,8 +94,7 @@ class Command(BaseCommand):
                             '<p>To commemorate this milestone, COPO might host events TBD, reflecting on its achievements and discussing future directions.</p> <p>Join us in celebrating ten years of scientific innovation and collaboration!</p>',
                     'category': NewsCategory.objects.get(name='General'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/anniversary_10th.png',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/anniversary_10th.png'
                 },
                 {
                     'title': 'COPO Enhances User Support with New Frequently Asked Questions Section',
@@ -144,40 +102,35 @@ class Command(BaseCommand):
                             '<p>This new resource addresses common queries and provides detailed answers on topics ranging from account setup to data submission protocols. By offering clear and concise information, COPO aims to streamline the user experience, ensuring that researchers can efficiently utilise the platform\'s full range of features.</p>',
                     'category': NewsCategory.objects.get(name='General'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/faq.png',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/faq.png'
                 },
                 {
                     'title': 'COPO Revolutionises Research with Innovative Publications',
                     'content': 'The Collaborative OPen Omics (COPO) project continues to lead the way in research dissemination by publishing groundbreaking papers that enhance the scientific community\'s understanding of various biological processes. These publications not only offer new insights but also set a new standard for research excellence, ensuring that the latest scientific discoveries are shared promptly and widely.',
                     'category': NewsCategory.objects.get(name='General'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/publications.jpg',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/publications.jpg'
                 },
                 {
                     'title': 'COPO Streamlines Files Submission with User-Friendly Process',
                     'content': 'Simplifying the complexities of data submission, COPO introduces an intuitive files submission process designed to save researchers time and effort. This new system ensures that all data is uploaded accurately and efficiently, providing a seamless experience that allows scientists to focus more on their research and less on administrative tasks.',
                     'category': NewsCategory.objects.get(name='General'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/redadmiral.jpg',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/redadmiral.jpg'
                 },
                 {
                     'title': 'COPO Successfully Brokers Major Projects such as ASG, DToL, ERGA and Genomics',
                     'content': 'Demonstrating its pivotal role in the scientific community, the Collaborative OPen Omics (COPO) platform has brokered significant projects such as Aquatic Symbiosis Genomics (ASG), Darwin Tree of Life (DToL), European Reference Genome Atlas (ERGA) and various genomics metadata. These projects, supported by COPO\'s robust infrastructure and expertise, promise to drive forward crucial research and collaboration efforts, pushing the boundaries of life science and biodiversity.',
                     'category': NewsCategory.objects.get(name='General'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/copo_logo_new.png',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/copo_logo_new.png'
                 },
                 {
                     'title': 'COPO Achieves Milestone with Nearly 60,000 Samples Brokered',
                     'content': 'As of 3rd July, 2024, the Collaborative OPen Omics (COPO) project has successfully brokered a remarkable 59,521 samples, underscoring its role as a key player in the research community. This milestone reflects COPO\'s commitment to facilitating extensive scientific studies and collaborations, enabling researchers worldwide to access and share invaluable data for groundbreaking discoveries.',
                     'category': NewsCategory.objects.get(name='General'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/copo_logo_new.png',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/copo_logo_new.png'
                 },
                 {
                     'title': 'COPO Welcomes New Project Group Leader',
@@ -186,8 +139,7 @@ class Command(BaseCommand):
                             '<p>Stay tuned for more updates on the innovative projects and initiatives under her leadership.</p>',
                     'category': NewsCategory.objects.get(name='General'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/irene.jpg',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/irene.jpg'
                 },
                 {
                     'title': 'Track Your ENA File Processing Status with COPO',
@@ -196,8 +148,7 @@ class Command(BaseCommand):
                             '<p>See our <a href="https://copo-docs.readthedocs.io/en/latest/submissions/files.html#checking-ena-file-upload-status" target="_blank">documentation</a> for more information on how to track the data file processing status.</p>',
                     'category': NewsCategory.objects.get(name='Feature'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/file.png',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/file.png'
                 },
                 {
                     'title': 'COPO Enhances Tree of Life Projects with Expanded Capabilities',
@@ -206,8 +157,7 @@ class Command(BaseCommand):
                             '<p> See our <a href="https://copo-docs.readthedocs.io/en/latest/profile/tol/tol-profile-walkthrough.html" target="_blank">guidelines</a> about how to create a Tree of Life profile in order to submit your desired research object through COPO.</p>',
                     'category': NewsCategory.objects.get(name='Feature'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/copo_logo_new.png',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/copo_logo_new.png'
                 },
                 {
                     'title': 'Access Submission Accession Numbers Easily with COPO',
@@ -215,8 +165,7 @@ class Command(BaseCommand):
                             'These accession numbers are critical for referencing in scholarly articles and ensuring reproducibility in research, enhancing the integrity and visibility of your work.',
                     'category': NewsCategory.objects.get(name='Feature'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/accessions_component.png',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/accessions_component.png'
                 },
                 {
                     'title': 'Introducing the New COPO Website: Refactored, Redesigned and Revamped',
@@ -224,8 +173,7 @@ class Command(BaseCommand):
                             '<p>Explore the new features and discover how COPO continues to support the scientific community with cutting-edge tools and resources.</p>',
                     'category': NewsCategory.objects.get(name='Feature'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/new.png',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/new.png'
                 },
                 {
                     'title': 'COPO Integrates RO-Crate for Streamlined Research Data Management',
@@ -237,8 +185,7 @@ class Command(BaseCommand):
                             '<p>With this enhancement, COPO continues to advance its mission of facilitating open and  Findable, Accessible, Interoperable, Reusable (FAIR) data practices, fostering greater collaboration and innovation in the research community.',
                     'category': NewsCategory.objects.get(name='Feature'),
                     'author': 'COPO Project Team',
-                    'news_image': '/copo/static/assets/img/copo_and_rocrate_logos.png',
-                    'is_news_article_active': True
+                    'news_image': '/copo/static/assets/img/copo_and_rocrate_logos.png'
                 },
                 #{
                 #     'title': '',
@@ -250,53 +197,51 @@ class Command(BaseCommand):
                 # },
         ]
 
-            try: 
-                for news_item in news_items:
-                    news_image_path = news_item.get('news_image','')
+            for news_item in news_items:
+                news_image_source_path = news_item.pop('news_image','')
+                media_root = settings.MEDIA_ROOT
 
-                    lg.debug(f"Processing {news_image_path}")
+                lg.debug(f'Creating news object')
+                # self.stdout.write(f'Creating news object')
+                news_item = News.objects.create(**news_item)
+                
+                # Define the destination directory based on the news item ID
+                # 'pk' is the primary key of the news item
+                lg.debug(f'Defining and creating the destination directory based on the news item ID')
+                # self.stdout.write(f'Defining and creating the destination directory based on the news item ID')
 
-                    if not os.path.exists(news_image_path):
-                        self.stdout.write(self.style.ERROR(f'Error: Image file does not exist: {news_image_path}' ))
-                        lg.error(f"Image file {news_image_path} does not exist")
-                        continue  # Skip this news item
+                destination_directory = os.path.join(media_root, 'news_images', str(news_item.pk))
+                os.makedirs(destination_directory, exist_ok=True)
 
-                    self.stdout.write(f'Opening image path: {news_image_path}\n')
-                    lg.debug(f"Opening {news_image_path}")
+                # Define the full destination path for the image
+                lg.debug(f' Defining the full destination path for the image')
+                # self.stdout.write(f'Defining the full destination path for the image')
 
-                    try: 
-                        with open(news_image_path, 'rb') as image_file:
-                            django_file = File(image_file)
+                new_image_file_name = os.path.basename(news_image_source_path)
+                destination_path = os.path.join(destination_directory, new_image_file_name)
+                
+                # self.stdout.write(f'Copying image to new location: {destination_path}')
+                lg.debug(f'Copying image to new location: {destination_path}')
 
-                            self.stdout.write(f"Saving image file {news_image_path} to model instance...")
-                            lg.debug(f"Saving image file {news_image_path} to model instance")
+                # Copy image file to destination directory
+                shutil.copy2(news_image_source_path, destination_path)
 
-                            news_item_instance = News(**news_item)
-                            news_item_instance.news_image.save(os.path.basename(news_image_path), django_file, save=True)
-                            
-                            self.stdout.write(f"Saving news item instance...")
-                            news_item_instance.save()
+                # self.stdout.write(f'Updating news item with the relative path to the image')
+                lg.debug(f'Updating news item with the relative path to the image')
+                news_item.news_image = os.path.relpath(destination_path, media_root)
 
-                            lg.debug(f"Saved news item instance {news_item_instance}")
-                    except FileNotFoundError:
-                        self.stdout.write(self.style.ERROR(f'File not found: {news_image_path}' ))
-                    except PermissionError:
-                        self.stdout.write(self.style.ERROR(f'Permission denied: {news_image_path}' ))
-                    except Exception as e:
-                        self.stdout.write(self.style.ERROR(f'An error occurred: {e}'))
-                lg.debug("Finished processing news items")
-            except Exception as e:
-                self.stdout.write(self.style.ERROR(f'Error: {str(e)}'))
-                return
-
+                # self.stdout.write(f'Saving news item')
+                lg.debug(f'Saving news item')
+                news_item.save()
+            
             # Remove unwanted images that were uploaded to 
             # the 'media/news/images' folder. There should be only one image 
             # per news item according to the 'news_item' list of dictionaries above
             # but some news items ended up having more than one image
             News().remove_unwanted_news_images()
                 
-            self.stdout.write(self.style.SUCCESS('News items and categories have been added'))
-            lg.debug("News items and categories have been added")
+            self.stdout.write(self.style.SUCCESS('\nAdded news items and categories\n'))
+            lg.debug('Added news items and categories')
 
             # Display added records
             category_records = NewsCategory.objects.all()
@@ -314,5 +259,5 @@ class Command(BaseCommand):
             self.stdout.write(f'\nTotal news items added: {news_records_count}')
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error: {str(e)}'))
-            lg.error(f"Error occurred: {e}")
+            lg.error(f'Error occurred: {e}')
             return
