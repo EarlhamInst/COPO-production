@@ -63,7 +63,7 @@
     },
     {
       "help_tip": "What are the other profile type(s) that the profile type (above) is associated with?",
-      "required": "false",
+      "required": "true",
       "default_value": "",
       "control_meta": {},
       "versions": [
