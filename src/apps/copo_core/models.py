@@ -185,14 +185,18 @@ class AssociatedProfileType(models.Model):
     name = models.CharField(max_length=100)
     label = models.CharField(max_length=100)
     is_approval_required = models.BooleanField(default=False)
+    is_acceptance_email_notification_required = models.BooleanField(default=False)
+    acceptance_email_body = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
 
-    def create_associated_profile_type(self, name, label, is_approval_required=False ):
+    def create_associated_profile_type(self, name, label, is_approval_required=False, is_acceptance_email_notification_required=False, acceptance_email_body=""):
         self.name = name
         self.label = label
         self.is_approval_required = is_approval_required
+        self.is_acceptance_email_notification_required = is_acceptance_email_notification_required
+        self.acceptance_email_body = acceptance_email_body
         self.save()
         return self
 
