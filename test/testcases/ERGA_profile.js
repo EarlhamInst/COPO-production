@@ -43,8 +43,8 @@ let browser = null;
           .setTimeout(timeout)
           .click({
             offset: {
-              x: 445.46875,
-              y: 12.875,
+              x: 375.4765625,
+              y: 11.3671875,
             },
           });
   }
@@ -143,21 +143,20 @@ let browser = null;
     }
     */
     {
-        const targetPage = page;
-        await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(Select sequencing centre)'),
-            targetPage.locator('#\\35 66aa805-68f8-4cb3-b5ee-af540b6ed92b div:nth-of-type(5) input'),
-            targetPage.locator('::-p-xpath(//*[@id=\\"566aa805-68f8-4cb3-b5ee-af540b6ed92b\\"]/div/div/div[2]/div/div/div/div[3]/div/div/form/div[5]/div/div/div/span/span[1]/span/ul/li/input)'),
-            targetPage.locator(':scope >>> #\\35 66aa805-68f8-4cb3-b5ee-af540b6ed92b div:nth-of-type(5) input')
-        ])
-            .setTimeout(timeout)
-            .click({
-              offset: {
-                x: 91,
-                y: 11.546875,
-              },
-            });
-    }
+      const targetPage = page;
+      await puppeteer.Locator.race([
+          targetPage.locator('::-p-aria(Select sequencing centre)'),
+          targetPage.locator('#\\33 fc15c39-1723-4e9a-8e08-bb9fe95e6311 div:nth-of-type(5) input'),
+          targetPage.locator('::-p-xpath(//*[@id=\\"3fc15c39-1723-4e9a-8e08-bb9fe95e6311\\"]/div/div/div[2]/div/div/div/div[3]/div/div/form/div[5]/div/div/div/span/span[1]/span/ul/li/input)')
+      ])
+          .setTimeout(timeout)
+          .click({
+            offset: {
+              x: 78,
+              y: 8.046875,
+            },
+          });
+  }
     {
         const targetPage = page;
         await puppeteer.Locator.race([
