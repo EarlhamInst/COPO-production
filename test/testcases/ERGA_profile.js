@@ -34,6 +34,31 @@ let browser = null;
         await Promise.all(promises);
     }
     {
+      const targetPage = page;
+      await puppeteer.Locator.race([
+          targetPage.locator('#profile_type'),
+          targetPage.locator('::-p-xpath(//*[@id=\\"profile_type\\"])'),
+          targetPage.locator(':scope >>> #profile_type')
+      ])
+          .setTimeout(timeout)
+          .click({
+            offset: {
+              x: 375.4765625,
+              y: 11.3671875,
+            },
+          });
+  }
+  {
+      const targetPage = page;
+      await puppeteer.Locator.race([
+          targetPage.locator('#profile_type'),
+          targetPage.locator('::-p-xpath(//*[@id=\\"profile_type\\"])'),
+          targetPage.locator(':scope >>> #profile_type')
+      ])
+          .setTimeout(timeout)
+          .fill('erga');
+  }
+    {
         const targetPage = page;
         await puppeteer.Locator.race([
             targetPage.locator('::-p-aria() >>>> ::-p-aria([role=\\"generic\\"])'),
@@ -87,6 +112,7 @@ let browser = null;
             .setTimeout(timeout)
             .fill('It is ERGA profile');
     }
+    /*
     {
         const targetPage = page;
         await puppeteer.Locator.race([
@@ -103,6 +129,7 @@ let browser = null;
               },
             });
     }
+
     {
         const targetPage = page;
         await puppeteer.Locator.race([
@@ -114,22 +141,20 @@ let browser = null;
             .setTimeout(timeout)
             .fill('European Reference Genome Atlas (ERGA)');
     }
+    */
     {
-        const targetPage = page;
-        await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(Select sequencing centre)'),
-            targetPage.locator('#\\35 66aa805-68f8-4cb3-b5ee-af540b6ed92b div:nth-of-type(5) input'),
-            targetPage.locator('::-p-xpath(//*[@id=\\"566aa805-68f8-4cb3-b5ee-af540b6ed92b\\"]/div/div/div[2]/div/div/div/div[3]/div/div/form/div[5]/div/div/div/span/span[1]/span/ul/li/input)'),
-            targetPage.locator(':scope >>> #\\35 66aa805-68f8-4cb3-b5ee-af540b6ed92b div:nth-of-type(5) input')
-        ])
-            .setTimeout(timeout)
-            .click({
-              offset: {
-                x: 91,
-                y: 11.546875,
-              },
-            });
-    }
+      const targetPage = page;
+      await puppeteer.Locator.race([
+          targetPage.locator('::-p-aria(Select sequencing centre)'),
+      ])
+          .setTimeout(timeout)
+          .click({
+            offset: {
+              x: 78,
+              y: 8.046875,
+            },
+          });
+  }
     {
         const targetPage = page;
         await puppeteer.Locator.race([
