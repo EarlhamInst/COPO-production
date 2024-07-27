@@ -1,7 +1,7 @@
 from common.utils.logger import Logger
 
 from datetime import datetime
-from django.contrib.auth.models import User
+
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.db import models
@@ -290,8 +290,6 @@ def delete_associated_news_images_media_directory(sender, instance, **kwargs):
 
     try:
         if os.path.exists(news_images_directory):
-            rmtree(news_images_directory)
+            shutil.rmtree(news_images_directory)
     except Exception as e:
         lg.exception(f'Error deleting directory: {news_images_directory} {str(e)}')
-    
-
