@@ -56,23 +56,7 @@ def news_list(request):
         return render(request, 'copo/news_list.html', output) #redirect('/#news-section')
     else:
         output['newsList'] =  news_items[:news_items_count]
-        return output #news_items_display_slice, news_items_total_count
-
-# def load_more_news(request):
-#     offset = int(request.GET.get('offset', 0))
-#     limit = 6 # Show 6 news items each time
-#     news_items = News.objects.filter(is_news_article_active=True).order_by('-created_date')[offset:offset + limit]
-    
-#     # Create a list of dictionaries to store the news items
-#     data = list(news_items.values())
-
-#     # Get the category name in the list of dictionaries based on the category_id
-#     output = []
-#     for news_item in data:
-#        news_item['category'] = NewsCategory.objects.get(id=news_item['category_id']).name
-#        output.append(news_item)
-
-#     return JsonResponse(output, safe=False)
+        return output
 
 def news_item(request, id):
     context = dict()
@@ -84,8 +68,8 @@ def news_item(request, id):
 
         context['news'] = news_items
         context['relatedNews'] = related_news_items
-        context['previousNews'] = previous_news
-        context['nextNews'] = next_news
+        context['previousNews'] = next_news # The order is reversed here for UI purposes
+        context['nextNews'] = previous_news # The order is reversed here for UI purposes
 
         return render(request, 'copo/news_item.html', context)
     except Http404:
