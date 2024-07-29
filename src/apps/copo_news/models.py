@@ -31,9 +31,9 @@ def delete_news_images_directory_content():
     try:
         if os.path.exists(media_directory):
             shutil.rmtree(media_directory)
-            lg.info(f'Successfully deleted directory: {media_directory}')
+            lg.log(f'Successfully deleted directory: {media_directory}')
         else:
-            lg.info(f'Directory does not exist: {media_directory}')
+            lg.log(f'Directory does not exist: {media_directory}')
     except Exception as e:
         lg.exception(f'Error deleting directory content: {media_directory}:  {str(e)}')
 
@@ -112,7 +112,7 @@ class News(models.Model):
     author = models.CharField(max_length=200, blank=False, default='COPO Project Team')
     
     # Image will be uploaded to 'media/news_images' directory
-    news_image = models.ImageField(upload_to=news_image_upload_path, storage=OverwriteStorage(), blank=False, null=False, default=default_news_image)
+    news_image = models.ImageField(upload_to=news_image_upload_path, storage=OverwriteStorage(), blank=True, null=True)
     created_date = models.DateTimeField(default=timezone.now, editable=False)
     updated_date = models.DateTimeField(auto_now=True)
     is_news_article_active = models.BooleanField(default=True)
@@ -125,25 +125,6 @@ class News(models.Model):
             self.created_at = timezone.now()
         self.updated_at = timezone.now()
         super(News, self).save(*args, **kwargs)
-    
-    # Create the 'news_images' directory in the 
-    # 'media' directory if it doesn't exist
-    def create_news_images_directory(self):
-        news_images_directory = os.path.join('media', 'news_images')
-        default_image_file = os.path.join(news_images_directory, 'news_image_default.jpg')
-
-        if not os.path.exists(news_images_directory):
-            os.makedirs(news_images_directory, exist_ok=True)
-
-        # Check if the default news image file exists in the 'media/news_images' folder
-        # if it does not exist, copy the default image file into the directory
-        if not os.path.exists(default_image_file):
-            try: 
-                with open('/copo/static/assets/img/news_image_default.jpg', 'rb') as image_file:
-                    django_file = File(image_file)
-                    default_storage.save('news_images/news_image_default.jpg', django_file)
-            except Exception as e:
-                lg.exception(str(e))
 
     def set_news_images_directory_permissions(self):
         news_images_directory = os.path.join('media', 'news_images')

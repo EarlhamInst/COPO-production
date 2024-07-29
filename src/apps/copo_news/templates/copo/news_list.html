@@ -28,7 +28,12 @@
             <div class="news {% if newsList|length == 1 %}news1{% elif newsList|length == 2 %}news2{% else %}news_more{% endif %}">
                 {% for news in newsList %}
                     <div class="news-item">
-                        <div class="news-image" style="background-image: url({{ news.news_image.url }})"></div>
+                        {% if news.news_image %}
+                            <div class="news-image" style="background-image: url({{ news.news_image.url }})"></div>
+                        {% else %}
+                            <div class="news-image news-image-default"></div>
+                        {% endif %}
+                        
                         <div class="news-content">
                             <div class="news-inside">
                                 <div class="news-row">
