@@ -4,12 +4,15 @@
 *.pyc
 __pycache__
 db.sqlite3
-media
-!media/assets/manifests/ERGA*
-!media/assets/manifests/DTOL*
-!media/assets/manifests/ASG*
-!media/assets/manifests/BARCODING*
 
+# media folder #
+media/assets/manifests/ERC*
+media/assets/manifests/ERT*
+media/assets/manifests/read*
+media/ena_read_files/
+media/sample_images/
+media/sample_permits/
+media/uploads/
 
 # Backup files #
 *.bak
