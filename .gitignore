@@ -154,3 +154,6 @@ webin-cli.jar
 .DS_Store
 static/.DS_Store
 static/assets/.DS_Store
+
+#ignore logs folder
+logs/*
