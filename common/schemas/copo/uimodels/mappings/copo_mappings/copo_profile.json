@@ -7,6 +7,7 @@
   "properties": [
     {
       "help_tip": "Enter the title of the profile. This will appear in submissions of research objects, associated with this profile, to remote repositories.",
+      "is_unique": true,
       "required": "true",
       "default_value": "",
       "control_meta": {},
@@ -43,8 +44,8 @@
     },
     {
       "help_tip": "Is this a standalone profile or part of a larger project?",
-      "required": "false",
-      "default_value": "Stand-alone",
+      "required": "true",
+      "default_value": "genomics",
       "control_meta": {},
       "versions": [
         "type"
@@ -57,14 +58,8 @@
       "id": "copo.profile.type",
       "type": "string",
       "show_in_table": true,
-      "control": "select",
-      "option_values": [
-        "Stand-alone",
-        "Darwin Tree of Life (DTOL)",
-        "Darwin Tree of Life Environmental Samples (DTOL_ENV)",
-        "Aquatic Symbiosis Genomics (ASG)",
-        "European Reference Genome Atlas (ERGA)"
-      ]
+      "control": "text",
+      "readonly": "true"
     },
     {
       "help_tip": "What are the other profile type(s) that the profile type (above) is associated with?",
@@ -73,6 +68,9 @@
       "control_meta": {},
       "versions": [
         "associated_type"
+      ],
+      "specifications": [
+        "erga"
       ],
       "ref": "",
       "deprecated": false,
@@ -102,12 +100,8 @@
           "label": "Darwin Tree of Life (DTOL)"
         },
         {
-          "value": "DTOL_ENV",
-          "label": "Darwin Tree of Life Environmental Samples (DTOL_ENV)"
-        },
-        {
-          "value": "ERGA",
-          "label": "European Reference Genome Atlas (ERGA)"
+          "value": "DTOLENV",
+          "label": "Darwin Tree of Life Environmental Samples (DTOLENV)"
         },
         {
           "value": "ERGA_PILOT",
@@ -131,6 +125,9 @@
       "versions": [
         "sequencing_centre"
       ],
+      "specifications": [
+        "erga"
+      ],      
       "ref": "",
       "deprecated": false,
       "hidden": "false",
@@ -141,11 +138,17 @@
       "type": "array",
       "show_in_table": true,
       "control": "copo-multi-select2",
-      "option_values": []
+      "option_values": {
+        "callback": {
+          "parameter": {},
+          "function": "get_all_sequencing_centres_for_options",
+          "provider": "src.apps.copo_core.utils"
+         }
+      }
     },
     {
       "help_tip": "",
-      "required": "true",
+      "required": "false",
       "default_value": "",
       "control_meta": {},
       "versions": [
@@ -163,7 +166,7 @@
     },
     {
       "help_tip": "",
-      "required": "true",
+      "required": "false",
       "default_value": "",
       "control_meta": {},
       "versions": [
@@ -181,7 +184,7 @@
     },
     {
       "help_tip": "",
-      "required": "true",
+      "required": "false",
       "default_value": "",
       "control_meta": {},
       "versions": [
@@ -199,7 +202,7 @@
     },
     {
       "help_tip": "",
-      "required": "true",
+      "required": "false",
       "default_value": "",
       "control_meta": {},
       "versions": [
@@ -217,7 +220,7 @@
     },
     {
       "help_tip": "",
-      "required": "true",
+      "required": "false",
       "default_value": "",
       "control_meta": {},
       "versions": [
@@ -245,7 +248,7 @@
       "deprecated": false,
       "hidden": "true",
       "label": "First Manifest Created",
-      "show_in_form": false,
+      "placeholder": false,
       "id": "copo.profile.first_manifest_date_created",
       "type": "string",
       "show_in_table": false,
@@ -277,6 +280,13 @@
       "versions": [
         "ena_locus_tag"
       ],
+      "specifications": [
+        "asg",
+        "erga",
+        "dtol",
+        "dtolenv",
+        "genomics"
+      ],      
       "ref": "",
       "deprecated": false,
       "hidden": "false",
@@ -285,8 +295,31 @@
       "id": "copo.profile.ena_locus_tags",
       "type": "string",
       "show_in_table": true,
-      "control": "textarea"
-    }        
+      "control": "textarea",
+      "regex": "^[A-Z][A-Z0-9]{2,11}(,[A-Z][A-Z0-9]{2,11})*$"
+    },
+    {
+      "help_tip": "Please input a test field",
+      "required": "true",
+      "default_value": "",
+      "control_meta": {},
+      "versions": [
+        "test"
+      ],
+      "specifications": [
+        "test"
+      ],      
+      "ref": "",
+      "deprecated": false,
+      "hidden": "false",
+      "label": "TEST",
+      "show_in_form": true,
+      "id": "copo.profile.test",
+      "type": "string",
+      "show_in_table": true,
+      "control": "text",
+      "regex": "^[A-Z][A-Z0-9]{2,11}(,[A-Z][A-Z0-9]{2,11})*$"
+    }
   ],
   "description": "Attributes for COPO Profile schema.",
   "title": "Profile mappings"

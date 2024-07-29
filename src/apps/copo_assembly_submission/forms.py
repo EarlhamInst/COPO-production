@@ -5,7 +5,7 @@ from crispy_forms.layout import Layout, Fieldset, Submit
 
 class AssemblyForm(forms.Form):
 
-    def __init__(self, *args, sample_accession=None, study_accession=None, assembly=None, ecs_files=None, **kwargs):
+    def __init__(self, *args, sample_accession=None, study_accession=None, assembly=None, run_accession=None, ecs_files=None, **kwargs):
         super(AssemblyForm, self).__init__(initial=assembly, *args, **kwargs)
 
         self.fields['study'].widget.attrs['readonly'] = True
@@ -42,8 +42,13 @@ class AssemblyForm(forms.Form):
             self.fields[field].initial = None
             self.fields[field].widget.attrs['readonly'] = True  
             self.fields[field].choices = files_choices
+        
+        if run_accession:
+            tuplelist = []
+            for x in run_accession:
+                tuplelist.append((x, x))
+            self.fields['run_ref'].choices = tuplelist
  
-
     # fields from ENA assembly documentation
     study = forms.CharField(label="STUDY",
                             widget=forms.TextInput(attrs={'placeholder': 'Study accession'}))
@@ -75,8 +80,7 @@ class AssemblyForm(forms.Form):
     moleculetype = forms.ChoiceField(label="MOLECULETYPE", required=False, help_text= 'it is for genome assembly only' ,
                                      choices=[('','-'), ('genomic DNA', 'genomic DNA'), ('genomic RNA', 'genomic RNA'),
                                               ("viral cRNA", "viral cRNA")])
-    run_ref = forms.CharField(label="RUN_REF", required=False, widget=forms.TextInput(
-        attrs={'placeholder': 'Comma separated list of run accession(s)'}))
+    run_ref = forms.MultipleChoiceField(label="RUN_REF", required=False)
     
     fasta = forms.ChoiceField(label="FASTA", required=False )
     flatfile = forms.ChoiceField(label="FLATFILE", required=False )

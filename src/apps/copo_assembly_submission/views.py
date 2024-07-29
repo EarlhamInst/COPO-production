@@ -24,6 +24,7 @@ def ena_assembly(request, profile_id, assembly_id=None):
 
     study_accession = ""
     sample_accession = []
+    run_accession = []
 
     existing_sub = Submission().get_records_by_field("profile_id", profile_id)
     existing_accessions = ""
@@ -38,11 +39,18 @@ def ena_assembly(request, profile_id, assembly_id=None):
                 study_accession = study[0].get("accession", "")
         else:
             study_accession = ""
+
         samples = existing_accessions.get("sample", "")
+        runs = existing_accessions.get("run", "")
+
         if samples:
             for sample in samples:
                 if sample.get("sample_accession", ""):
                     sample_accession.append(sample.get("sample_accession", ""))
+        if runs:
+            for run in runs:
+                if run.get("accession", ""):
+                    run_accession.append(run.get("accession", ""))
 
     ecs_files = []
     s3obj = S3Connection()
@@ -55,7 +63,7 @@ def ena_assembly(request, profile_id, assembly_id=None):
 
     if request.method == 'POST' or request.method == 'PUT':
         form = AssemblyForm(request.POST, request.FILES,
-                            sample_accession=sample_accession, assembly=assembly, ecs_files=ecs_files)
+                            sample_accession=sample_accession, assembly=assembly, run_accession=run_accession, ecs_files=ecs_files)
         if form.is_valid():
             notify_assembly_status(data={"profile_id": profile_id},
                                    msg="Intitialising Assembly Submission",
@@ -107,7 +115,7 @@ def ena_assembly(request, profile_id, assembly_id=None):
         #
         # pass the accessions as "study_accession" and "sample_ccession" to the form so that they are
         # set authomatically and cannot be changed by the user
-        form = AssemblyForm(study_accession=study_accession, sample_accession=sample_accession, assembly=assembly, ecs_files=ecs_files
+        form = AssemblyForm(study_accession=study_accession, sample_accession=sample_accession, assembly=assembly,  run_accession=run_accession, ecs_files=ecs_files
                             # initial={"assemblyname": "jdklsad", "coverage": 1, "program": "jiwjd", "platform": "kkfjoep", "mingaplength": 10,
                             #         "description": "jfksjkdlfs"}
                             )

@@ -25,10 +25,11 @@
 <div hidden id="hidden_attrs">
   <!-- hidden attributes  -->
   <input type="hidden" id="profile_title" value="{{ profile.title }}" />
+  <input type="hidden" id="profile_id" value="{{ profile_id }}" />
   <input
     type="hidden"
     id="profile_type"
-    value="{{ profile.type | get_short_profile_type }}"
+    value="{{ profile.type }}"
   />
   <input type="hidden" id="nav_component_name" value="read" />
   <input

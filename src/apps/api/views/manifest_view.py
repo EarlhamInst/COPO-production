@@ -108,7 +108,7 @@ def get_manifest_filename(manifest_type):
     type = ""
     if "ASG" in manifest_type:
         type = "ASG"
-    elif "DTOLENV" in manifest_type or "DTOL_ENV" in manifest_type or "ENV" in manifest_type:
+    elif "DTOLENV" in manifest_type or "DTOLENV" in manifest_type or "ENV" in manifest_type:
         type = "DTOLENV"
     elif "DTOL" in manifest_type:
         type = "DTOL"

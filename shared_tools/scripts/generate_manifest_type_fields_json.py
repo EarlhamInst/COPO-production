@@ -361,7 +361,7 @@ DTOL_ENUMS = {
             'SANGER INSTITUTE',
             'UNIVERSITY OF OXFORD'
         ],
-        'DTOL_ENV': [
+        'DTOLENV': [
             'EARLHAM INSTITUTE',
             'MARINE BIOLOGICAL ASSOCIATION',
             'NATURAL HISTORY MUSEUM',

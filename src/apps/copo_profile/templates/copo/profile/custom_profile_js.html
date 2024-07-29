@@ -1,0 +1,51 @@
+<script>
+$(document).ready(function () {
+    
+    $('#releasestudy' ).each(function( element )   {
+        let profileStatus = $(element).closest('.copo-records-panel').attr('study_status');
+        alert(profileStatus);
+        if (profileStatus == undefined) {
+            $(element).attr('aria-disabled', true).attr("role","link").css("pointer-events", "none").css("color", "grey")
+        }
+    });
+
+    $(document).on('click', '#releasestudy', function (e) {
+        let profile_id = $(e.currentTarget).closest('.ellipsisDiv').attr('id');
+        //let profile_type = $(e.currentTarget).closest('.copo-records-panel').attr('profile_type');
+        release_study(profile_id);
+    });
+});
+
+function release_study(profile_id) {
+    element = $('#study_status_' + profile_id);
+    if (element.length == 0) {
+        alert('Unable to process the request.');
+        return;
+    } 
+    if (element.text() == 'PUBLIC') {
+        alert('Study is already released.');
+        return;
+    }
+
+    result = confirm('Are you sure to release the study?');
+    if (result) {
+        url = '/copo/copo_profile/' + profile_id + '/release_study';
+        $.ajax({
+        url: url,
+        })
+        .done(function (data) {
+            $('#study_status_' + profile_id).html('PUBLIC');
+            $('#study_release_date_' + profile_id).html(data['study_release_date']);
+            el.hide();
+            /*
+                    el.attr('aria-disabled', true).attr("role","link").css("pointer-events", "none").css("color", "grey")
+                    alert("Study released successfully")
+                    */
+        })
+        .fail(function (data) {
+            alert(data.responseText);
+        });
+    }    
+}
+
+</script>

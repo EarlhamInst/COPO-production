@@ -47,12 +47,16 @@ class Email:
                     #logger.debug(users)
                 checker_users = User.objects.filter(groups__name='bge_checkers')
                 users = list(set(users) & set(checker_users))
+            else :
+                users = User.objects.filter(groups__name=f'{type.lower()}_sample_notifiers')    
+            """    
             elif type in ["DTOL", "ASG"]:
                 users = User.objects.filter(groups__name='dtol_sample_notifiers')
-            elif type in ["DTOL_ENV"]:
+            elif type in ["DTOTENV"]:
                 users = User.objects.filter(groups__name='dtolenv_sample_notifiers')
             else:
-                users = []     
+                users = []
+            """
 
         email_addresses = list()
         sub = ""

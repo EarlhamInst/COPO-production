@@ -1103,6 +1103,8 @@ class EnaReads:
             # get description
             library_description = files_pair[0].library_description if 'library_description' in datafile_columns else ''
 
+            library_name = files_pair[0].library_name if 'library_name' in datafile_columns else ''
+
             submission_file_names = list()
             file_paths = list()
             submitted_files_id = list()
@@ -1152,6 +1154,7 @@ class EnaReads:
 
             # descriptor
             experiment_library_descriptor_node = etree.SubElement(experiment_design_node, 'LIBRARY_DESCRIPTOR')
+            etree.SubElement(experiment_library_descriptor_node, 'LIBRARY_NAME').text = library_name
             etree.SubElement(experiment_library_descriptor_node, 'LIBRARY_STRATEGY').text = library_strategy
             etree.SubElement(experiment_library_descriptor_node, 'LIBRARY_SOURCE').text = library_source
             etree.SubElement(experiment_library_descriptor_node, 'LIBRARY_SELECTION').text = library_selection

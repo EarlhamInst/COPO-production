@@ -1,12 +1,8 @@
-$(document).ready(function () {
+$(document).on("document_ready", function() {
 
     $(document).on('click', '#erga', update_pending_samples_table)
     $(document).on('click', '#non_erga', update_pending_samples_table)
     $(document).on('change', '#group_id', update_profile_table)
-
-    
-
-
 });
 
 

@@ -172,7 +172,7 @@ $(document).ready(function () {
           var event = jQuery.Event('refreshtable');
           $('body').trigger(event);
         }
-        console.log(data);
+        //console.log(data);
       });
   }
 
@@ -222,9 +222,112 @@ $(document).ready(function () {
 
   //******************************Functions Block******************************//
 
-  function handle_add_n_edit(url) {
+  function handle_add_n_edit(url, task) {
     dialog.realize();
-    dialog.setMessage($('<div></div>').load(url));
+
+    dialog.getButton('submit_assembly_button').disable();
+
+    dialog.setMessage(
+      $('<div>Please wait...</div>').load(
+        url,
+        function (response, status, xhr) {
+          if (status == 'error') {
+            var msg = 'Sorry but there was an error: ';
+            dialog.setMessage(
+              $('<div>' + msg + xhr.status + ' ' + xhr.statusText + '</div>')
+            );
+          } else {
+            dialog.getButton('submit_assembly_button').enable();
+
+            // Add event listener to 'SAMPLE' dropdown menu
+            $('.modal-dialog')
+              .find('#id_sample')
+              .off('change')
+              .on('change', function (event) {
+                console.log('changed');
+                event.preventDefault();
+
+                value = $('.modal-dialog')
+                  .find('#id_sample')
+                  .find(':selected')
+                  .val();
+
+                if (value == undefined || value === '') {
+                  // Find the 'RUN_REF' dropdown menu and empty it
+                  var $el = $('.modal-dialog').find('#id_run_ref');
+                  $el.empty(); // Remove old options
+                  return;
+                }
+
+                jQuery
+                  .ajax({
+                    url: '/copo/copo_read/' + value + '/get_read_accessions',
+                    type: 'GET', // For jQuery < 1.9
+                    headers: {
+                      'X-CSRFToken': csrftoken,
+                    },
+                  })
+                  .fail(function (data) {
+                    BootstrapDialog.show({
+                      title: 'Error',
+                      message: 'Error ' + data.responseText,
+                    });
+                  })
+                  .done(function (data) {
+                    // Find the 'RUN_REF' dropdown menu
+                    var $el = $('.modal-dialog').find('#id_run_ref');
+
+                    // Create an array of the selected run accessions
+                    let run_ref = [];
+                    $el.find(':selected').each(function () {
+                      run_ref.push($(this).val());
+                    });
+
+                    $el.empty();
+                    $.each(data['run_accessions'], function (index, value) {
+                      $el.append(
+                        $('<option></option>')
+                          .attr('value', value)
+                          .attr(
+                            'selected',
+                            run_ref != undefined && run_ref.includes(value)
+                          )
+                          .text(value)
+                      );
+                      // If edit form is open, select all options in the
+                      // 'RUN_REF' dropdown menu
+                      if (task == 'edit') {
+                        $el
+                          .find('option[value="' + value + '"]')
+                          .prop('selected', true);
+                      }
+                    });
+                  });
+              });
+
+            // Get the selected sample from the 'SAMPLE' dropdown menu
+            selected_sample = $('.modal-dialog')
+              .find('#id_sample')
+              .find(':selected')
+              .val();
+            if (selected_sample == '') {
+              // Find the 'RUN_REF' dropdown menu
+              var $el = $('.modal-dialog').find('#id_run_ref');
+              $el.empty(); // remove old options
+            } else {
+              var event = jQuery.Event('change');
+              // Trigger the 'SAMPLE' dropdown menu
+              $('.modal-dialog')
+                .find('#id_sample')
+                .val(selected_sample)
+                .trigger(event);
+              console.log('triggered');
+            }
+          }
+        }
+      )
+    );
+
     dialog.open();
     dialog.setClosable(false);
   }
@@ -242,11 +345,17 @@ $(document).ready(function () {
 
     //add task
     if (task == 'add') {
+      // Set Bootstrap dialog title
+      dialog.setTitle(`Add  ${toTitleCase(component)}`);
+
       url = '/copo/copo_assembly/' + uid;
-      handle_add_n_edit(url);
+      handle_add_n_edit(url, task);
     } else if (task == 'edit') {
+      // Set Bootstrap dialog title
+      dialog.setTitle(`Edit ${toTitleCase(component)}`);
+
       url = '/copo/copo_assembly/' + uid + '/' + records[0].record_id;
-      handle_add_n_edit(url);
+      handle_add_n_edit(url, task);
     } else {
       form_generic_task(component, task, records);
     }
@@ -278,42 +387,53 @@ $(document).ready(function () {
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
-            file_processing_status = table.cell(rowIdx, i).data()
-            if (file_processing_status == "" || file_processing_status.includes('File archived'))
-               return false;
-            else
-               return true;
+            file_processing_status = table.cell(rowIdx, i).data();
+            if (
+              file_processing_status == '' ||
+              file_processing_status.includes('File archived')
+            )
+              return false;
+            else return true;
           });
         table
           .rows(error)
           .nodes()
           .to$()
           .addClass('highlight_error_file_processing_status');
-      }      
+      }
     }
 
-    $(".ena-accession").each(function(i, obj) {
-      if ($(obj).prop("tagName") != 'TH' && $(obj).text() != ''){
-         $(obj).html("<a href='https://www.ebi.ac.uk/ena/browser/view/" + $(obj).text() + "' target='_blank'>"+ $(obj).text()+"</a>");
+    $('.ena-accession').each(function (i, obj) {
+      if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
+        $(obj).html(
+          "<a href='https://www.ebi.ac.uk/ena/browser/view/" +
+            $(obj).text() +
+            "' target='_blank'>" +
+            $(obj).text() +
+            '</a>'
+        );
       }
-   });
+    });
   });
 }); //end document ready
 
-
-
-function change_assembly_type() { 
+function change_assembly_type() {
   if ($('#id_submission_type').val() == 'transcriptome') {
-        $("#div_id_coverage *").attr("disabled", "disabled").off('click');
-        $("#div_id_moleculetype *").attr("disabled", "disabled").off('click');
-        $("#div_id_mingaplength *").attr("disabled", "disabled").off('click');
-        $("#id_coverage").val("");
-        $("#id_mingaplength").val("");
-        $("#id_moleculetype").val("");
+    $('#div_id_coverage *').attr('disabled', 'disabled').off('click');
+    $('#div_id_moleculetype *').attr('disabled', 'disabled').off('click');
+    $('#div_id_mingaplength *').attr('disabled', 'disabled').off('click');
+    $('#id_coverage').val('');
+    $('#id_mingaplength').val('');
+    $('#id_moleculetype').val('');
+  } else {
+    $('#div_id_moleculetype *').removeAttr('disabled').on('click');
+    $('#div_id_mingaplength *').removeAttr('disabled').on('click');
+    $('#div_id_coverage *').removeAttr('disabled').on('click');
   }
-  else {
-    $("#div_id_moleculetype *").removeAttr("disabled").on('click');
-    $("#div_id_mingaplength *").removeAttr("disabled").on('click');
-    $("#div_id_coverage *").removeAttr("disabled").on('click');  
-  }
+}
+
+function toTitleCase(str) {
+  return str.replace(/(?:^|\s)\w/g, function (match) {
+    return match.toUpperCase();
+  });
 }

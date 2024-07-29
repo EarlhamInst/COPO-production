@@ -5,7 +5,7 @@ from common.dal.mongo_util import cursor_to_list, cursor_to_list_str
 from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from common.utils import helpers
 from bson.objectid import ObjectId
-from .copo_base_da import DAComponent, handle_dict
+from .copo_base_da import DAComponent, handle_dict, DataSchemas
 import re
 
 class ProfileInfo:
@@ -13,10 +13,12 @@ class ProfileInfo:
         self.profile_id = profile_id
 
     def get_counts(self):
+        status = dict()
         """
         Method to return current numbers of Publication, Person, Data,
         Sample, Accessions and Submission objects in the given profile
         :return: Dictionary containing the data
+        """
         """
         num_dict = dict(num_pub="publication",
                         num_person="person",
@@ -31,7 +33,7 @@ class ProfileInfo:
                         num_read="sample"
                         )
 
-        status = dict()
+
         profile_type = Profile().get_type(self.profile_id)
         for k, v in num_dict.items():
 
@@ -50,13 +52,13 @@ class ProfileInfo:
                 else:
                     status[k] = handle_dict.get(v).count_documents(
                         {'profile_id': self.profile_id})
-
+        """
         return status
 
     def source_count(self):
         return handle_dict["source"].count_documents(
             {'profile_id': self.profile_id, 'deleted': helpers.get_not_deleted_flag()})
-    
+      
 
 class Profile(DAComponent):
     def __init__(self, profile_id=None):
@@ -75,7 +77,7 @@ class Profile(DAComponent):
             {"_id": ObjectId(profile_id)})
 
         if p:
-            return p.get("type", "")
+            return p.get("type", "").upper()
         else:
             return False
 
@@ -153,7 +155,8 @@ class Profile(DAComponent):
             ).items():
                 auto_fields[self.get_qualified_field(k)] = v
 
-        rec = super(Profile, self).save_record(auto_fields, **kwargs)
+        schema = self.get_component_schema(profile_type = auto_fields.get("copo.profile.type", ""))
+        rec = super(Profile, self).save_record(auto_fields, schema=schema, **kwargs)
 
         # trigger after save actions
         if not kwargs.get("target_id", str()):
@@ -185,6 +188,8 @@ class Profile(DAComponent):
         profile_ids_from_sample = Sample().get_collection_handle().distinct("profile_id", {"$text": {"$search": search_filter} })
         profile_oids_from_sample = [ObjectId(id) for id in profile_ids_from_sample ]
         profile_condition = {"$or" : [{"_id": {"$in" : profile_oids_from_sample }}, {"title": { "$regex" : search_filter, "$options": "i"}}]}
+        profile_condition["type"] = group_filter
+        """
         if group_filter == "dtol":
             profile_condition["type"] = {"$in": ["Darwin Tree of Life (DTOL)", "Aquatic Symbiosis Genomics (ASG)"]}
             #return self.get_dtol_profiles("all_profiles", search_filter, profile_oids_from_sample)
@@ -192,9 +197,9 @@ class Profile(DAComponent):
             profile_condition["type"] = {"$in": ["European Reference Genome Atlas (ERGA)"]}
             #return self.get_erga_profiles(filter, search_filter, profile_oids_from_sample)
         elif group_filter == "dtolenv":
-            profile_condition["type"] = {"$in": ["Darwin Tree of Life Environmental Samples (DTOL_ENV)"]}
+            profile_condition["type"] = {"$in": ["Darwin Tree of Life Environmental Samples (DTOLENV)"]}
             #return self.get_dtolenv_profiles("all_profiles", search_filter, profile_oids_from_sample)
-
+        """
         if filter == "my_profiles" and group_filter=="erga": 
             seq_centres = helpers.get_users_seq_centres()
             seq_centres = [str(x.name) for x in seq_centres]
@@ -239,13 +244,13 @@ class Profile(DAComponent):
     def get_dtolenv_profiles(self, filter="all_profiles", search_filter=None, profile_ids_from_sample=[]):
         if filter == "all_profiles":
             p = self.get_collection_handle().find(
-                {"type": {"$in": ["Darwin Tree of Life Environmental Samples (DTOL_ENV)"]}}).sort("date_modified",
+                {"type": {"$in": ["Darwin Tree of Life Environmental Samples (DTOLENV)"]}}).sort("date_modified",
                                                                                                   pymongo.DESCENDING)
         elif filter == 'my_profiles':
             seq_centres = helpers.get_users_seq_centres()
             seq_centres = [str(x.name) for x in seq_centres]
             p = self.get_collection_handle().find(
-                {"type": {"$in": ["Darwin Tree of Life Environmental Samples (DTOL_ENV)"]},
+                {"type": {"$in": ["Darwin Tree of Life Environmental Samples (DTOLENV)"]},
                  "sequencing_centre": {"$in": seq_centres}}).sort(
                 "date_created",
                 pymongo.DESCENDING)
@@ -317,19 +322,51 @@ class Profile(DAComponent):
         local_result = dict(status="success", message="")
 
         profile_id = kwargs.get("target_id","")
-
         is_error_found = False
-        profile_with_same_titles = self.get_by_title(auto_fields["copo.profile.title"])
-        if profile_with_same_titles:
-            if not profile_id or  ObjectId(profile_id) != profile_with_same_titles[0].get("_id",""):
-                #status = "error"
-                local_result["message"] = "Record already exist with title, " + auto_fields["copo.profile.title"]
+        profile_type = auto_fields.get("copo.profile.type", "")
+
+        if profile_id:
+            profile = self.get_record(profile_id)
+            if not profile:
+                local_result["message"] = "Record not found"
                 is_error_found = True
-        if not is_error_found and profile_id:
-            targetprofiletype = self.get_record(kwargs["target_id"]).get("type", "")
-            if targetprofiletype != auto_fields["copo.profile.type"]:
+            elif profile and profile.get("type", "") != profile_type:
                 local_result["message"] = "It is not possible to modify the profile type"
                 is_error_found = True
+        if is_error_found:
+            local_result["status"] = "error"
+            return super(Profile, self).validate_record(auto_fields, validation_result=local_result, **kwargs)
+
+        schema = self.get_component_schema(profile_type=profile_type)
+        for f in schema:
+            field = f.get("id", "").split(".")[-1]
+            label = f.get("label", field)
+            field_value = auto_fields.get(f.get("id", ""), "")
+
+            if f.get("required", "false") == "true":
+                if not field_value:
+                    local_result["message"] = "Missing required field: " + label + " " + field
+                    is_error_found = True
+                    break
+            if f.get("is_unique", False):
+                result = self.get_collection_handle().find({field: field_value},{"_id":1})
+                if result:
+                    profile_with_same_titles = cursor_to_list(result)
+                    if profile_with_same_titles:
+                        if not profile_id or  ObjectId(profile_id) != profile_with_same_titles[0].get("_id",""):
+                            #status = "error"
+                            local_result["message"] = f"Record already exist with {field}: {field_value}"
+
+                            is_error_found = True
+                            break
+            if f.get("type", "string") == "string":
+                regex = f.get("regex", str())
+                if regex and field_value and not re.match(regex, field_value):
+                    local_result["message"] = f"{label} : Invalid value. It should be in the format {regex}"   
+                    is_error_found = True
+                    break
+         
+        '''
         locus_tags = auto_fields["copo.profile.ena_locus_tags"]
         if not is_error_found and locus_tags:
             regex = "^[A-Z][A-Z0-9]{2,11}(,[A-Z][A-Z0-9]{2,11})*$"
@@ -339,8 +376,24 @@ class Profile(DAComponent):
             elif not profile_id:
                 local_result["status"] = "warning"
                 local_result["message"] = "ENA locus tag will be submitted to ENA with the READ submission"
-
+        '''
         if is_error_found:
             local_result["status"] = "error"
- 
         return super(Profile, self).validate_record(auto_fields, validation_result=local_result, **kwargs)
+
+
+    def get_component_schema(self,  **kwargs):
+            result = list()
+            profile_type = kwargs.get("profile_type", "")
+            schema = super(Profile, self).get_component_schema()
+            for f in schema:
+                # Filter schema based on manfest type and manifest version
+                f_specifications = f.get("specifications", "")
+
+                if f.get("id", "") == "copo.profile.type":
+                    f["default_value"] = profile_type
+                if not f_specifications:
+                    result.append(f)
+                elif profile_type in f_specifications:
+                    result.append(f)
+            return result

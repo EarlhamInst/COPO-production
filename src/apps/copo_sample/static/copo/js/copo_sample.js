@@ -2,7 +2,7 @@ var wizardMessages;
 var sampleDescriptionToken = '';
 var sampleTableInstance = null;
 
-$(document).ready(function () {
+$(document).on("document_ready", function() {
   //****************************** Event Handlers Block *************************//
 
   // test begins
@@ -98,9 +98,15 @@ $(document).ready(function () {
     */
 
   //var groups = $("#groups").val().split(",")
+
+  var profile_type = $('#profile_type').val().toLowerCase();
+  var colour = profile_type_def[profile_type]["widget_colour"];
+  $('#help_add_button').css("color",'white').css("background-color",colour);
+  $('.new-samples-spreadsheet-template').css("color",'white').css("background-color",colour);
+   /*
   if (
-    ['DTOL', 'ASG'].some((el) =>
-      document.getElementById('profile_type').value.includes(el)
+    ['dtol', 'asg'].some((el) =>
+      document.getElementById('profile_type').value == el
     ) &&
     groups.includes('dtol_users')
   ) {
@@ -119,7 +125,7 @@ $(document).ready(function () {
   }
 
   if (
-    document.getElementById('profile_type').value.includes('ERGA') &&
+    document.getElementById('profile_type').value == 'erga' &&
     groups.includes('erga_users')
   ) {
     $('.new-samples-spreadsheet-template-erga').show();
@@ -131,6 +137,7 @@ $(document).ready(function () {
     $('#help_add_button').addClass('pink'); // Set colour of help_add_button
     $('.new-samples-spreadsheet-template-erga').addClass('pink');
   }
+  */
   if (
     groups.includes('dtol_sample_managers') ||
     groups.includes('erga_sample_managers') ||
@@ -1292,8 +1299,8 @@ $(document).ready(function () {
             return;
           }
 
-          const profile_type = $('#profile_type').val();
-          const manifest_type = get_acronym(profile_type).toUpperCase();
+          //const profile_type = $('#profile_type').val();
+          const manifest_type = profile_type.toUpperCase();
           const zip = new JSZip();
           const zipFilename = `${manifest_type}_MANIFEST_PERMITS.zip`;
 
@@ -1668,7 +1675,8 @@ $(document).ready(function () {
 
     return $('<div>').append(attributesPanel).append(loaderObject);
   }
-
+  
+  /*
   function get_acronym(txt) {
     // Retrieve the parentheses and the enclosed string from the
     // selected profile type
@@ -1693,6 +1701,7 @@ $(document).ready(function () {
 
     return profile_type_acronym;
   }
+  */
   /*
     function generate_dtol_stage(stage) {
         $('#custom-renderer_' + stage.ref).find(".stage-content").html('');
@@ -2372,8 +2381,8 @@ $(document).ready(function () {
     return dialog;
   }
 
-  let profile_type = $('#profile_type').val();
-  if (!profile_type.includes('Stand-alone')) {
-    $('#edit_button').hide();
-  }
+  //let profile_type = $('#profile_type').val();
+  //if (!profile_type.includes('Stand-alone')) {
+  //  $('#edit_button').hide();
+  //}
 }); //end document ready

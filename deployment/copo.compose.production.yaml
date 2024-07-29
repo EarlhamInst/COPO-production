@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   web:
-    image: copo/copo-new-web:v2.0.28
+    image: copo/copo-new-web:v2.0.34
     entrypoint:
       - bash
       - -c
@@ -101,7 +101,7 @@ services:
       retries: 3
       start_period: 30s    
   celery_job:
-    image: copo/copo-new-web:v2.0.28
+    image: copo/copo-new-web:v2.0.34
     entrypoint:
       - bash
       - -c
@@ -269,7 +269,7 @@ services:
           cpus: "0.5"
           memory: 1GB
   sample_audit:
-    image: copo/copo-sample-audit:v0.0.17
+    image: copo/copo-sample-audit:v0.0.19
     networks:
       - copo-backend-network
     secrets:

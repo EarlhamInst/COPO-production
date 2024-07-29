@@ -14,7 +14,7 @@ profile_collection = mydb["Profiles"]
 sample_collection = mydb["SampleCollection"]
 source_collection = mydb["SourceCollection"]
 
-
+"""
 x = profile_collection.count_documents({"type":"European Reference Genome Atlas (ERGA)"})
 print("Number of ERGA profiles: " + json.dumps(x))
 
@@ -23,7 +23,13 @@ print("Number of DTOL profiles: " + json.dumps(x))
 
 x = profile_collection.count_documents({"type":"Aquatic Symbiosis Genomics (ASG)"})
 print("Number of ASG profiles: " + json.dumps(x))
+"""
 
+for x in ["erga", "dtol", "asg"]:
+    x = profile_collection.count_documents({"type": x})
+    print("Number of " + x.upper() + " profiles: " + json.dumps(x))
+
+ 
 x = profile_collection.count_documents({})
 print("Number of Profiles: " + json.dumps(x))
 

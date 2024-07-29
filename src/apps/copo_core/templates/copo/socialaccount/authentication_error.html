@@ -47,7 +47,7 @@
                  style="margin:40px 0 40px 0"
                  alt="Gordon Freeman and His Crowbar"/>
             <br>
-            <a class="btn btn-default" style="width:200px;" href="mailto:ei.copo@earlham.ac.uk?subject=ORCID%20Authentication%20Error&body=Error%20message:%20{{ auth_error.exception | urlencode }}">Contact COPO</a>
+            <a class="btn btn-default" style="width:200px;" href="mailto:{{copo_email}}?subject=ORCID%20Authentication%20Error&body=Error%20message:%20{{ auth_error.exception | urlencode }}">Contact COPO</a>
         </div>
     </div>
 {% endblock %}

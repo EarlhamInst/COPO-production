@@ -3,16 +3,15 @@ from django import forms
 
 class AssemblyForm(forms.Form):
 
-    def __init__(self, *args, sample_accession=None, study_accession=None, **kwargs):
+    def __init__(self, *args, sample_accession=None, study_accession=None, run_accession=None, **kwargs):
         super(AssemblyForm, self).__init__(*args, **kwargs)
         if study_accession:
             self.fields['study'].initial = study_accession
             self.fields['study'].widget.attrs['readonly'] = True
+            
+        self.fields['sample'].choices = [("","None")]
         if sample_accession:
-            tuplelist = []
-            for x in sample_accession:
-                tuplelist.append((x, x))
-            self.fields['sample'].choices = tuplelist
+            self.fields['sample'].choices.extend([(x,x) for x in sample_accession])
             self.fields['sample_text'].widget.attrs['hidden'] = ''
             self.fields['sample_text'].label = ''
         else:
@@ -24,6 +23,10 @@ class AssemblyForm(forms.Form):
             # self.fields['sample'].hidden = True
             # self.fields['sample'].label = ''
             # self.fields['sample'].required = False
+
+        if run_accession:
+            self.fields['run_ref'].widget.attrs['readonly'] = True
+            self.fields['run_ref'].choices = [(x,x) for x in run_accession]
 
     # fields from ENA assembly documentation
     study = forms.CharField(label="STUDY",
@@ -51,8 +54,7 @@ class AssemblyForm(forms.Form):
     description = forms.CharField(label="DESCRIPTION", required=False,
                                   widget=forms.Textarea(attrs={'placeholder': 'Free text description of the genome '
                                                                               'assembly'}))
-    run_ref = forms.CharField(label="RUN_REF", required=False, widget=forms.TextInput(
-        attrs={'placeholder': 'Comma separated list of run accession(s)'}))
+    run_ref = forms.MultipleChoiceField(label="RUN_REF", required=False)
     fasta = forms.FileField(label="FASTA", required=False, widget=forms.FileInput(
         #attrs={'accept': '.fasta.gz, .fas.gz, .fsa.gz, fna.gz, .fa.gz, .fasta.bz2, .fas.bz2, .fsa.bz2, .fna.bz2, .fa.bz2'}
          ))

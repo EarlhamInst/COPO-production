@@ -10,6 +10,7 @@ import json
 from common.utils.logger import Logger 
 from common.dal.sample_da import Sample
 l = Logger()
+from io import BytesIO
 
 @login_required
 # Create your views here.
@@ -32,12 +33,16 @@ def sample_spreadsheet(request, report_id=""):
         return HttpResponse(status=400, content=msg)
 
     if dtol.loadManifest(m_format=fmt):
-        srlz_dtol = pickle.dumps(dtol.file)
+        bytesstring = BytesIO()
+        dtol.data.to_pickle(bytesstring)
+        #srlz_dtol = pickle.dumps(dtol.file)
+        
+        
         if "profile_id" in request.POST:
             p_id = request.POST["profile_id"]
         else:
             p_id = request.session["profile_id"]
-        r = {"$set": {"manifest_data": srlz_dtol, "profile_id": p_id, "schema_validation_status": "pending",
+        r = {"$set": {"manifest_data": bytesstring.getvalue(), "profile_id": p_id, "schema_validation_status": "pending",
                       "taxon_validation_status": "pending", "err_msg": [],
                       "time_added": datetime.utcnow(),
                       "file_name": name,
