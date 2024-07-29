@@ -268,7 +268,7 @@ $(document).ready(function () {
               })
               .fail(function (data) {
                 $('.bootstrap-dialog-message').html(
-                  'font color="red">System error. Please try it again later. If the problem persists, please contact COPO with the screenshot</font>'
+                  '<font color="red">System error. Please try it again later. If the problem persists, please contact COPO with the screenshot</font>'
                 );
                 console.log(data);
               });
