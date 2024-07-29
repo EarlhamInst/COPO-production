@@ -31,9 +31,9 @@ def delete_news_images_directory_content():
     try:
         if os.path.exists(media_directory):
             shutil.rmtree(media_directory)
-            lg.info(f'Successfully deleted directory: {media_directory}')
+            lg.log(f'Successfully deleted directory: {media_directory}')
         else:
-            lg.info(f'Directory does not exist: {media_directory}')
+            lg.log(f'Directory does not exist: {media_directory}')
     except Exception as e:
         lg.exception(f'Error deleting directory content: {media_directory}:  {str(e)}')
 
@@ -112,7 +112,7 @@ class News(models.Model):
     author = models.CharField(max_length=200, blank=False, default='COPO Project Team')
     
     # Image will be uploaded to 'media/news_images' directory
-    news_image = models.ImageField(upload_to=news_image_upload_path, storage=OverwriteStorage(), blank=False, null=False, default=default_news_image)
+    news_image = models.ImageField(upload_to=news_image_upload_path, storage=OverwriteStorage(), blank=True, null=True)
     created_date = models.DateTimeField(default=timezone.now, editable=False)
     updated_date = models.DateTimeField(auto_now=True)
     is_news_article_active = models.BooleanField(default=True)

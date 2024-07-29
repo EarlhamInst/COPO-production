@@ -46,12 +46,12 @@ class Command(BaseCommand):
             lg.debug('Removed existing news items and categories')
             
             # Check if the default news image exists in the 'media/news_images' directory
-            self.stdout.write('Checking for default news image...')
-            lg.debug('Checking for default news image...')
+            # self.stdout.write('Checking for default news image...')
+            # lg.debug('Checking for default news image...')
 
-            self.check_for_default_news_image()
-            self.stdout.write('Default news image check complete\n')
-            lg.debug('Default news image check complete')
+            # self.check_for_default_news_image()
+            # self.stdout.write('Default news image check complete\n')
+            # lg.debug('Default news image check complete')
 
             self.stdout.write('Adding news categories...')
             lg.debug(f'Adding news categories...')

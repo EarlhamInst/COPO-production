@@ -270,7 +270,7 @@
 }
 
 .news-image-default:before {
-    background-image: url('/media/news_images/news_image_default.jpg');
+    background-image: url('static/assets/img/news_image_default.jpg');
 }
 
 /* News: Related news */

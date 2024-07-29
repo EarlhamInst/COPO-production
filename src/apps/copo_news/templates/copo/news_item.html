@@ -20,7 +20,12 @@
     <div class="news-item-details-container">
         <div class="news-item-details-header">
             <h1 class="news-title news-item-details-title">{{ news.title }}</h1>
-            <img class="news-image news-item-details-image" alt="{{ news.title }}" src="{{ news.news_image.url }}">
+            {% if news.news_image %}
+                <img class="news-image news-item-details-image" alt="{{ news.title }}" src="{{ news.news_image.url }}">
+            {% else %}
+                <div class="news-image news-image-default"></div>
+            {% endif %}
+
             <article class="news-content news-item-details-content">
                 {% autoescape off %}
                 {{ news.content }}
