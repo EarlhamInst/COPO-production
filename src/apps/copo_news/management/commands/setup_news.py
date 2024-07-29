@@ -14,6 +14,25 @@ lg = Logger()
 class Command(BaseCommand):
     # Show this when the user types help
     help = 'Add news categories and news articles to the database, which will be used to display news on the News page'
+    
+    def check_for_default_news_image(self):
+        # Ensure 'news_images' directory exists in the 'media' directory
+        media_root = settings.MEDIA_ROOT
+        news_images_directory = os.path.join(media_root, 'news_images')
+        os.makedirs(news_images_directory, exist_ok=True)
+
+        # Copy default news image from static folder to 'news_images' directory
+        default_news_image_source_path = os.path.join(settings.STATIC_ROOT, 'assets/img/news_image_default.jpg')
+        default_news_image_destination_path = os.path.join(news_images_directory, 'news_image_default.jpg')
+
+        if not os.path.exists(default_news_image_destination_path):
+            self.stdout.write('Copying default news image to media directory...\n')
+            lg.debug('Copying default news image to media directory...')
+
+            shutil.copy2(default_news_image_source_path, default_news_image_destination_path)
+        else:
+            self.stdout.write('Default news image already exists in media directory\n')
+            lg.debug('Default news image already exists in media directory')
 
     def handle(self, *args, **options):
         try:
@@ -26,9 +45,13 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('Removed existing news items and categories\n'))
             lg.debug('Removed existing news items and categories')
             
-            # Ensure 'news_images' directory exists
-            self.stdout.write('Checking if \'news_images\' directory exists...\n')
-            News().create_news_images_directory()
+            # Check if the default news image exists in the 'media/news_images' directory
+            self.stdout.write('Checking for default news image...')
+            lg.debug('Checking for default news image...')
+
+            self.check_for_default_news_image()
+            self.stdout.write('Default news image check complete\n')
+            lg.debug('Default news image check complete')
 
             self.stdout.write('Adding news categories...')
             lg.debug(f'Adding news categories...')
