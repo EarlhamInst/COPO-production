@@ -19,7 +19,7 @@ import shutil
 lg = Logger()
 
 def default_news_image():
-    return os.path.join('news_images', 'news_image_default.jpg')
+    return os.path.join('news_images', 'news_image_default.png')
 
 def news_image_upload_path(instance, filename):
     # Return a temporary directory path by default
@@ -130,7 +130,7 @@ class News(models.Model):
     # 'media' directory if it doesn't exist
     def create_news_images_directory(self):
         news_images_directory = os.path.join('media', 'news_images')
-        default_image_file = os.path.join(news_images_directory, 'news_image_default.jpg')
+        default_image_file = os.path.join(news_images_directory, 'news_image_default.png')
 
         if not os.path.exists(news_images_directory):
             os.makedirs(news_images_directory, exist_ok=True)
@@ -139,9 +139,9 @@ class News(models.Model):
         # if it does not exist, copy the default image file into the directory
         if not os.path.exists(default_image_file):
             try: 
-                with open('/copo/static/assets/img/news_image_default.jpg', 'rb') as image_file:
+                with open('/copo/static/assets/img/news_image_default.png', 'rb') as image_file:
                     django_file = File(image_file)
-                    default_storage.save('news_images/news_image_default.jpg', django_file)
+                    default_storage.save('news_images/news_image_default.png', django_file)
             except Exception as e:
                 lg.exception(str(e))
 
