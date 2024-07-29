@@ -145,30 +145,32 @@ let browser = null;
     {
       const targetPage = page;
       await puppeteer.Locator.race([
-          targetPage.locator('::-p-aria(Select sequencing centre)'),
+          targetPage.locator('::-p-aria(Select sequencing centre)')
       ])
           .setTimeout(timeout)
           .click({
             offset: {
-              x: 78,
-              y: 8.046875,
+              x: 53,
+              y: 9.546875,
             },
           });
   }
-    {
-        const targetPage = page;
-        await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(' + process.argv[2].toUpperCase() + '[role=\\"treeitem\\"])'),
-            targetPage.locator('::-p-xpath(//*[contains(@id, \\"-' + process.argv[1].toUpperCase() + '\\")])'),
-        ])
-            .setTimeout(timeout)
-            .click({
-              offset: {
-                x: 95,
-                y: 18.546875,
-              },
-            });
-    }
+  {
+      const targetPage = page;
+      await puppeteer.Locator.race([
+          targetPage.locator('::-p-aria(EARLHAM INSTITUTE[role=\\"treeitem\\"])'),
+          targetPage.locator('li.select2-results__option--highlighted'),
+          targetPage.locator('::-p-xpath(//*[@id=\\"select2-copoprofilesequencing_centre-results\\"]/li[text=\\"EARLHAM INSTITUTE\\"])'),
+          targetPage.locator(':scope >>> li.select2-results__option--highlighted')
+      ])
+          .setTimeout(timeout)
+          .click({
+            offset: {
+              x: 123.5,
+              y: 11.421875,
+            },
+          });
+  }
     {
         const targetPage = page;
         const promises = [];
