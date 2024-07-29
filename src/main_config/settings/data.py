@@ -93,7 +93,7 @@ MANIFEST_VERSION = {
     "DTOL": "2.5",
     "DTOLENV": "2.4",
     "DTOL_EI": "2.4",
-    "ERGA": "2.5",
+    "ERGA": "2.5.1",
     "DTOL_BARCODE": "",
 }
                                       
