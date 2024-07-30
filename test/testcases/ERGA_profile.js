@@ -158,10 +158,8 @@ let browser = null;
   {
       const targetPage = page;
       await puppeteer.Locator.race([
-          targetPage.locator('::-p-aria(EARLHAM INSTITUTE[role=\\"treeitem\\"])'),
-          targetPage.locator('li.select2-results__option--highlighted'),
-          targetPage.locator('::-p-xpath(//*[@id=\\"select2-copoprofilesequencing_centre-results\\"]/li[text=\\"EARLHAM INSTITUTE\\"])'),
-          targetPage.locator(':scope >>> li.select2-results__option--highlighted')
+          targetPage.locator('::-p-aria(' + process.argv[2].toUpperCase() + '[role=\\"treeitem\\"])'),
+          targetPage.locator('::-p-xpath(//*[@id=\\"select2-copoprofilesequencing_centre-results\\"]/li[text()=\\"' + process.argv[2].toUpperCase() + '\\"])'),
       ])
           .setTimeout(timeout)
           .click({
