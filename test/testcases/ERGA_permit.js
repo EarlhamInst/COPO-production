@@ -71,10 +71,9 @@ let browser = null;
     {
         const targetPage = page;
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria() >>>> ::-p-aria([role=\\"generic\\"])'),
-            targetPage.locator('div.global-page-title button.pink > i'),
-            targetPage.locator('::-p-xpath(/html/body/div[5]/div/div[1]/div[2]/div[2]/div[1]/span[2]/button[4]/i)'),
-            targetPage.locator(':scope >>> div.global-page-title button.pink > i')
+          targetPage.locator('button.new-samples-spreadsheet-template > i'),
+          targetPage.locator('::-p-xpath(/button[@class=\\"new-samples-spreadsheet-template\\"])'),
+          targetPage.locator(':scope >>> button.new-samples-spreadsheet-template > i')
         ])
             .setTimeout(timeout)
             .click({
