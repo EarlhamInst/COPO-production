@@ -1,7 +1,9 @@
 $(document).ready(function () {
-  // Load more news items
-  // loadMoreNews();
+  // Set news navigation tab as active
   setNewsNavTabActive();
+
+  // Fix misplaced read more button
+  fixMisplacedReadMoreButton();
 
   // Set footer to bottom of page
   fixFooterToBottomOfWebPage();
@@ -13,6 +15,7 @@ $(document).ready(function () {
   $('body').bind('beforeunload', function () {
     if (window.location.href.includes('news')) {
       setNewsNavTabActive();
+      fixMisplacedReadMoreButton();
     }
   });
 
@@ -135,6 +138,57 @@ function setNewsNavTabActive() {
     if (activePage === linkPage) {
       $(this).parent().addClass('active');
       $(this).parent().append('<span class="sr-only">(current)</span>');
+    }
+  });
+}
+
+function fixMisplacedReadMoreButton() {
+  $('.news-excerpt p a').each(function () {
+    let href = $(this).attr('href').trim();
+
+    // Remove all the classes - 'centre', 'mt-10', 'mb-10' and 'mb-10"'
+    // from the anchor tag
+
+    $(this)
+      .removeAttr('centre')
+      .removeAttr('mt-10')
+      .removeAttr('mb-10')
+      .removeAttr('mb-10"');
+
+    if (href) {
+      // Remove trailing spaces from the 'href' attribute and incorrect characters
+      if (href.includes('</div>')) {
+        href = href.replace('</div>', '').trim();
+      }
+
+      if (href.includes('<div class=')) {
+        href = href.replace('<div class=', '').trim();
+      }
+
+      $(this).attr('href', href);
+    }
+
+    // Remove the anchor tag from the paragraph tag if the 'readMoreBtnID' ID attribute is applied
+    // Check if the anchor tag has the 'readMoreBtnID' attribute
+    let isReadMoreBtnIDApplied = $(this).attr('id') === 'readMoreBtnID';
+
+    if (isReadMoreBtnIDApplied) {
+      //  Create 'readMoreBtnID' button div
+      let $readMoreBtnDiv = $('<div/>', { class: 'centre mt-10 mb-10' });
+
+      // Add the anchor tag to the 'readMoreBtn' div
+      let $anchorTagClone = $(this).clone();
+      $readMoreBtnDiv.append($anchorTagClone);
+
+      // Find the closest '.news-excerpt' and append the 'readMoreBtn' div after it
+      $(this)
+        .closest('.news-content')
+        .find('.news-inside')
+        .find('.news-excerpt')
+        .after($readMoreBtnDiv);
+
+      // Remove the anchor tag from the paragraph tag
+      $(this).detach();
     }
   });
 }
