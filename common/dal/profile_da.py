@@ -7,6 +7,9 @@ from common.utils import helpers
 from bson.objectid import ObjectId
 from .copo_base_da import DAComponent, handle_dict, DataSchemas
 import re
+from common.utils.logger import Logger
+
+logger = Logger()
 
 class ProfileInfo:
     def __init__(self, profile_id=None):
@@ -157,6 +160,8 @@ class Profile(DAComponent):
 
         schema = self.get_component_schema(profile_type = auto_fields.get("copo.profile.type", ""))
         rec = super(Profile, self).save_record(auto_fields, schema=schema, **kwargs)
+
+        logger.debug(f"Profile record saved: {rec}")
 
         # trigger after save actions
         if not kwargs.get("target_id", str()):
