@@ -105,7 +105,7 @@ def web_page_access_checker(func):
         current_page_viewerID = request.user.id
 
         if profile_type_def.is_permission_required:
-            if not member_groups or not f"{profile_type}_users" in member_groups or not 'data_managers' in member_groups:
+            if not member_groups or (not f"{profile_type}_users" in member_groups and not 'data_managers' in member_groups):
                 # Deny web page access if the current web page viewer is not a member of the group
                 # associated with the profile (ID) associated with the current web page
                 return handler403(request)
