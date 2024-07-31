@@ -177,7 +177,7 @@ class Command(BaseCommand):
                     'title': 'COPO Enhances Tree of Life Projects with Expanded Capabilities',
                     'content': '<p>Tree of Life (ToL) projects brokered through COPO can now process reads, sequencing annotations and assemblies more efficiently than ever.</p>' 
                             '<p>This advancement supports comprehensive analysis and accelerates research timelines, providing researchers with robust tools to delve deeper into life science and biodiversity research.</p>'
-                            '<p> See our <a href="https://copo-docs.readthedocs.io/en/latest/profile/tol/tol-profile-walkthrough.html" target="_blank">guidelines</a> about how to create a Tree of Life profile in order to submit your desired research object through COPO.</p>',
+                            '<p>See our <a href="https://copo-docs.readthedocs.io/en/latest/profile/tol/tol-profile-walkthrough.html" target="_blank">guidelines</a> about how to create a Tree of Life profile in order to submit your desired research object through COPO.</p>',
                     'category': NewsCategory.objects.get(name='Feature'),
                     'author': 'COPO Project Team',
                     'news_image': '/copo/static/assets/img/copo_logo_new.png'

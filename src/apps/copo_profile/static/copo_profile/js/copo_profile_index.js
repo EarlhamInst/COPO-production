@@ -1,10 +1,8 @@
 let contactCOPODialogCount = 1;
 
 function get_profile_type() {
-     return $('#profile_type').find(':selected').val();
+  return $('#profile_type').find(':selected').val();
 }
-
-
 
 $(document).ready(function () {
   //****************************** Event handlers block *************************//
@@ -62,7 +60,7 @@ $(document).ready(function () {
     return false;
   }
 
-  initialise_popover()
+  initialise_popover();
 
   // Profile records exist
   // Initialise the popover 'View profile options' for each profile record
@@ -82,7 +80,7 @@ $(document).ready(function () {
       // Set content of the popover
       const $content = $('<div></div>');
       const $editButton = $(
-        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil-square-o"></i>&nbsp;Edit</button>'
+        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil"></i>&nbsp;Edit</button>'
       );
       const $deleteButton = $(
         '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
@@ -221,7 +219,9 @@ $(document).ready(function () {
 
   $(document).on('click', '#editProfileBtn', function (e) {
     let profile_id = $(e.currentTarget).closest('.ellipsisDiv').attr('id');
-    let profile_type = $(e.currentTarget).closest('.copo-records-panel').attr('profile_type');
+    let profile_type = $(e.currentTarget)
+      .closest('.copo-records-panel')
+      .attr('profile_type');
     editProfileRecord(profile_id, profile_type);
   });
 
@@ -352,10 +352,9 @@ $(document).ready(function () {
 
 //****************************** Functions block ******************************//
 function initialise_popover() {
-
   // Profile records exist
   // Initialise the popover 'View profile options' for each profile record
- 
+
   let popover = $('#ellipsisID[data-toggle="popover"]')
     .popover({
       sanitize: false,
@@ -367,11 +366,11 @@ function initialise_popover() {
     })
     .on('show.bs.popover', function (e) {
       $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
- 
+
       // Set content of the popover
       const $content = $('<div></div>');
       const $editButton = $(
-        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil-square-o"></i>&nbsp;Edit</button>'
+        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil"></i>&nbsp;Edit</button>'
       );
       const $deleteButton = $(
         '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
@@ -381,20 +380,29 @@ function initialise_popover() {
       $content.append($editButton);
       $content.append($deleteButton);
 
-      component_def["profile"]["recordActions"].forEach((item) => { 
-        var action = record_action_button_def[item]
-        const $button = $('<button id="'+ item  + '" class="btn btn-sm btn-primary" title="' + action["title"] + '"><i class="' + action["icon_class"] +' "></i>' +  action["label"] +'</button>');
+      component_def['profile']['recordActions'].forEach((item) => {
+        var action = record_action_button_def[item];
+        const $button = $(
+          '<button id="' +
+            item +
+            '" class="btn btn-sm btn-primary" title="' +
+            action['title'] +
+            '"><i class="' +
+            action['icon_class'] +
+            ' "></i>&nbsp;' +
+            action['label'] +
+            '</button>'
+        );
         $button.css('margin-top', '10px');
-        $content.append($button)
+        $content.append($button);
       });
 
       // Apply the content to the popover
       popover.attr('data-content', $content.html());
-    })
-    //.on('shown.bs.popover', function (e) {
-    //  $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
-    //});
-
+    });
+  //.on('shown.bs.popover', function (e) {
+  //  $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
+  //});
 }
 
 function appendRecordComponents(grids) {
@@ -512,7 +520,7 @@ function deleteProfileRecord(profileRecordID) {
               }, 1000);
             })
             .fail(function (data_response) {
-              email = $("#email").val();
+              email = $('#email').val();
               const message =
                 "Profile couldn't be removed. Only profiles that have no datafiles or" +
                 ' samples associated can be deleted.';
@@ -524,7 +532,11 @@ function deleteProfileRecord(profileRecordID) {
                 '</div>';
               $content += '<p style="margin-top:10px">Please contact ';
               $content +=
-                '<a style="text-decoration: underline;" href="mailto:'+email+'">' + email + '</a> ';
+                '<a style="text-decoration: underline;" href="mailto:' +
+                email +
+                '">' +
+                email +
+                '</a> ';
               $content += 'if you would like this profile to be deleted.</p>';
               $content += '</div>';
 
@@ -706,12 +718,10 @@ function append_component_buttons(record_id, profile_type) {
       return false;
     }
     */
-  
 
-    let component_link = "#";
+    let component_link = '#';
     if (item.url != undefined)
-        component_link = item.url.replace('999', record_id);
- 
+      component_link = item.url.replace('999', record_id);
 
     // Create button html
     let pcomponent_count_div = $('<div></div>');
@@ -763,8 +773,10 @@ function filter_action_menu() {
       //if($(el).attr("shared_profile_type")) $(el).removeAttr("shared_profile_type")
     }
 
-    $(el).find("a[profile_component]").hide();
-    $(el).find("a[profile_component="+ t + "]").show();
+    $(el).find('a[profile_component]').hide();
+    $(el)
+      .find('a[profile_component=' + t + ']')
+      .show();
 
     /*
     if (t.includes('ERGA')) {
@@ -827,13 +839,14 @@ function set_profile_grid_heading(grids) {
             $(el).removeAttr('shared_profile_type'); // Remove 'shared_profile_type' attribute
 
           acronym = profile_type.toUpperCase();
-          colour = profile_type_def[profile_type.toLowerCase()]["widget_colour"]  //'#fb7d0d'
+          colour =
+            profile_type_def[profile_type.toLowerCase()]['widget_colour']; //'#fb7d0d'
           $(el)
-              .find('.panel-heading')
-              .find('.row-title span')
-              .append('<small>('+  acronym  +')</small>');
-            $(el).find('.panel-heading').css('background-color', colour);
-       
+            .find('.panel-heading')
+            .find('.row-title span')
+            .append('<small>(' + acronym + ')</small>');
+          $(el).find('.panel-heading').css('background-color', colour);
+
           /*
           if (profile_type.includes('DTOLENV')) {
             acronym = 'DTOL-ENV';
@@ -1091,9 +1104,8 @@ function initialise_loaded_records(
     $('#showMoreProfileInfoBtn[rel="popover"]').popover('hide');
   });
 
-
   // Initialise the popover 'View profile options' for each profile record
-  initialise_popover()
+  initialise_popover();
   /*
   let popover = $('#ellipsisID[data-toggle="popover"]')
     .popover({
@@ -1108,7 +1120,7 @@ function initialise_loaded_records(
       // Set content of the popover
       const $content = $('<div></div>');
       const $editButton = $(
-        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil-square-o"></i>&nbsp;Edit</button>'
+        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil"></i>&nbsp;Edit</button>'
       );
       const $deleteButton = $(
         '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
