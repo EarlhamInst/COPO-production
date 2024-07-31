@@ -1627,7 +1627,7 @@ DTOL_RULES = {
             "strict_regex": "^\d+$",
             "human_readable": "integer"
         },
-    'TISSUE_VOUCHER_ID_FOR_BIOBANKING':
+    'tmp_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
         {
             "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
             "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
@@ -1635,7 +1635,7 @@ DTOL_RULES = {
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
             "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         },
-    'PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
+    'tmp_PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
         {
             "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
             "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
@@ -1643,7 +1643,7 @@ DTOL_RULES = {
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
             "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         },
-    'DNA_VOUCHER_ID_FOR_BIOBANKING':
+    'tmp_DNA_VOUCHER_ID_FOR_BIOBANKING':
         {
             "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
             "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
@@ -1651,7 +1651,7 @@ DTOL_RULES = {
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
             "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         },
-    'PROXY_VOUCHER_ID':
+    'tmp_PROXY_VOUCHER_ID':
         {
             "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
             "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
@@ -1659,7 +1659,7 @@ DTOL_RULES = {
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
             "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         },
-    'VOUCHER_ID':
+    'tmp_VOUCHER_ID':
         {
             "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"

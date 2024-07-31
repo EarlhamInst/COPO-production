@@ -80,8 +80,10 @@ MESSAGES = {
                                                   'since associated profile types are '
                                                   '<strong>Population Genomics (POP_GENOMICS)</strong> '
                                                   'and <strong>Biodiversity Genomics Europe (BGE)</strong>.',
-    'validation_msg_invalid_rank': 'Invalid scientific name or taxon ID: row <strong>%s</strong> - rank of scientific '
+    'tmp_validation_msg_invalid_rank': 'Invalid scientific name or taxon ID: row <strong>%s</strong> - rank of scientific '
                                    'name and taxon id should be species or subspecies.',
+    'validation_msg_invalid_rank': 'Invalid scientific name or taxon ID: row <strong>%s</strong> - rank of scientific '
+                                   'name and taxon id should be species.',
     'validation_msg_invalid_taxon': "TAXON_ID <strong>%s</strong> at row <strong>%s</strong> is invalid. Check "
                                     "SCIENTIFIC_NAME and TAXON_ID match at NCBI <a href='https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi'>here</a> "
                                     "or <a href='https://www.ncbi.nlm.nih.gov/Taxonomy/TaxIdentifier/tax_identifier.cgi'>here</a>. "
