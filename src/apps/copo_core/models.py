@@ -90,10 +90,10 @@ class StatusMessage(models.Model):
         get_latest_by = 'created'
 
 
-class banner_view(models.Model):
-    header_txt = models.TextField(max_length=100, blank=False, default="")
-    body_txt = models.TextField(max_length=2000, blank=False, default="")
-    active = models.BooleanField()
+class Banner(models.Model):
+    header = models.TextField(max_length=78, blank=False, default="")
+    body = models.TextField(max_length=2000, blank=True, default="")
+    active = models.BooleanField(default=False)
 
 
 class ViewLock(models.Model):
