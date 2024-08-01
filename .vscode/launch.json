@@ -8,7 +8,7 @@
         
         {
             "name": "Python: Django",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",    
             "env" : {
@@ -23,7 +23,7 @@
         }, 
         {
             "name": "Python: Django Shell",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",    
             "env" : {
@@ -38,7 +38,7 @@
         },     
         {
             "name": "Python: Django makemigration",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",    
             "env" : {
@@ -52,7 +52,7 @@
         },                
         {
             "name": "Python: Celery Workers",
-            "type": "python",
+            "type": "debugpy",
             "env" : {
                 "GEVENT_SUPPORT": "true"
             },
@@ -64,7 +64,7 @@
         },
         {
             "name": "Python: Celery Workers file_transfers",
-            "type": "python",
+            "type": "debugpy",
             "env" : {
                 "GEVENT_SUPPORT": "true"
             },
@@ -76,7 +76,7 @@
         },        
         {
             "name": "Python: Celery Beat",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "celery",
             "console": "integratedTerminal",
@@ -84,7 +84,7 @@
          },
          {
             "name": "Python: Django Shell",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",      
             "args": [
