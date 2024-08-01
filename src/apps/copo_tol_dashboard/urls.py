@@ -7,7 +7,7 @@ urlpatterns = [
     path('tol_inspect/gal', views.copo_tol_inspect_gal, name="tol_inspect_gal"),
     path('tol_inspect/', views.copo_tol_inspect, name="tol_inspect"),
     path('tol', views.copo_tol_dashboard, name="copo_tol_dashboard"),
-    path('tol/gal_and_partners/', views.gal_and_partners, name='copo_gal_and_partners'),
+    path('tol/gal_and_partners', views.gal_and_partners, name='copo_gal_and_partners'),
     path('get_profiles_for_tol_inspection/',
          views.get_profiles_for_tol_inspection,
          name="get_profiles_for_tol_inspection"),
