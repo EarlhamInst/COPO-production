@@ -136,6 +136,13 @@
             </button>
         </div>
 
+        <!-- Banner -->
+        {% if banner %}
+            <div class="global-warning-banner" title="{{banner.body}}">
+                <h1>{{ banner.header }}</h1>
+            </div>
+        {% endif %}
+
         <ul class="nav navbar-nav navbar-right collapse navbar-collapse">
 
         </ul>

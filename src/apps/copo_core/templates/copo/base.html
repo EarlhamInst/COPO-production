@@ -36,8 +36,6 @@
     <link rel="stylesheet" media="print" onload="this.media='all'"
           href="{% static 'copo/select2-405/css/select2.min.css' %}">
 
-    <link rel="shortcut icon" href="{% static 'copo/img/favicon_black.png' %}"/>
-
     <!-- Font Awesome -->
     <link rel="stylesheet" media="print" onload="this.media='all'"
           href="{% static 'copo/css/fontawesome/fontawesome-6.5.1.min.css' %}">
@@ -94,6 +92,9 @@
           href="{% static 'copo/semantic_ui/components/dropdown.min.css' %}">
     <link rel="stylesheet" media="print" onload="this.media='all'"
           href="{% static 'copo/semantic_ui/components/popup.min.css' %}">
+
+    <!-- Banner css -->
+    <link href="/static/assets/css/base_banner.css" rel="stylesheet" />
 
     <script>
     {% include 'copo/copo_profile_types.html' %}
@@ -236,7 +237,6 @@
             max-height: 55px;
         }
     </style>
-
 </head>
 
 <body>
@@ -261,11 +261,12 @@
 </div>
 
 <nav id="copo-global-nav" class="navbar navbar-default navbar-fixed-top">
-    <div class="container-fluid" style="display:block">
+    <div class="container-fluid {% if banner %}display-flex{% else %}display-block{% endif %}">
         <div class="navbar-header">
             <a class="navbar-brand" href="{% if user.is_authenticated %} {% url 'copo_profile_index:index' %} {% else %}/{% endif %}">
-                <img class="icon-margin-top" style="height: 45px; margin-left: 12px; margin-top: -8px;"
-                     src="{% static 'assets/img/COPO-logo-full-CMYK-black.png' %}"/>
+                <img class="{% if banner %}margin-top-neg-12{% else %}margin-top-neg-8{% endif %}" style="height: 45px; margin-left: 12px;"
+                     src="{% static 'assets/img/COPO-logo-full-CMYK-black.png' %}"
+                     alt="COPO logo">
             </a>
             <button type='button' class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                 <span class="icon-bar"></span>
@@ -274,6 +275,13 @@
                 <span class="sr-only">Toggle Navigation</span>
             </button>
         </div>
+
+        <!-- Banner -->
+        {% if banner %}
+            <div class="global-warning-banner" title="{{banner.body}}">
+                <h1>{{ banner.header }}</h1>
+            </div>
+        {% endif %}
 
         <ul class="nav navbar-nav navbar-right collapse navbar-collapse">
             <li class="dropdown" title="Notifications">

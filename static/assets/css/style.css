@@ -288,12 +288,6 @@ blockquote {
     z-index: 99;
 }
 
-#frontpage-navbar {
-    font-size: 8px;
-    float: right !important;
-    padding-left: 20px;
-}
-
 /*nav {*/
 /*    position: absolute;*/
 /*    width: 100%;*/

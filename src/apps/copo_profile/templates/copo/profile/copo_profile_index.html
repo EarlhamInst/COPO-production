@@ -74,17 +74,7 @@
             </div>
         </div>
     </div>
-    {% if banner and banner.active %}
 
-        <div class="warning_banner">
-
-            <h1>{{ banner.header_txt }}</h1>
-            <p style="color:red">{{ banner.body_txt }}</p>
-        </div>
-
-
-
-    {% endif %}
     <div class="row" style="margin-bottom:70px;">
         <div class="col-sm-5 col-md-5 col-lg-9 copo-page-headers"></div>
         <div class="col-sm-7 col-md-7 col-lg-3 copo-page-icons">
@@ -229,7 +219,7 @@
     <script src="{% static 'copo/js/generic_handlers_ext2.js' %}"></script>
     <script src="{% static 'copo/js/generic_handlers.js' %}"></script>
     <script src="{% static 'copo/js/copo_form_handlers.js' %}"></script>
-    <script src="{% static 'copo_profile/js/copo_profile_index.js' %}"></script>dd
+    <script src="{% static 'copo_profile/js/copo_profile_index.js' %}"></script>
     {% include 'copo/profile/custom_profile_js.html' %}
 {% endblock %}
 

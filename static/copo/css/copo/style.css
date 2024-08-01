@@ -997,11 +997,10 @@ th {
     padding: 5px 0px 0px 0px;
 }
 
-#copo-global-nav{
+#copo-global-nav {
     background-color: rgba(255, 255, 255, 0.95) !important;
     /* background: rgba(38, 38, 38, 0.95); */
     height: 10px !important;
-    min-height: 59px;
 }
 
 #copo-global-nav.navbar-default .navbar-brand {

@@ -47,14 +47,6 @@ body {
 /* .container-fluid nav{
     background-color: white;
 } */
-
-#frontpage-navbar {
-    font-size: 8px;
-    float: right !important;
-    /*Align top navbar to the right of the web page*/
-    padding-left: 20px;
-}
-
 .nav {
     padding-right: 45px;
 }
@@ -377,17 +369,4 @@ p {
 
 .black-text {
     color: black!important;
-}
-
-.warning_banner {
-    background-color: white !important;
-}
-
-.warning_banner h1 {
-    margin: 0 40px 40px 40px;
-    text-decoration: underline;
-}
-
-.warning_banner p {
-    margin-top: 0
 }
