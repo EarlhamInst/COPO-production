@@ -157,6 +157,8 @@ def validate_assembly(form, profile_id, assembly_id):
 
     form["files"] = file_ids
     form["profile_id"] = profile_id
+    # Convert list to comma separated string if "run_ref" is a list
+    form["run_ref"] = ",".join(form.get("run_ref", [])) if isinstance(form.get("run_ref", None), list) else ""
     assembly_rec = Assembly().save_record(auto_fields={},**form, target_id=assembly_id)
     table_data = htags.generate_table_records(profile_id=profile_id, da_object=Assembly(profile_id=profile_id), additional_columns=generate_additional_columns(profile_id))
 
