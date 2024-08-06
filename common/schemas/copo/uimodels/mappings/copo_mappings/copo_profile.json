@@ -82,40 +82,13 @@
       "type": "array",
       "show_in_table": true,
       "control": "copo-multi-select2",
-      "option_values": [
-        {
-          "value": "ASG",
-          "label": "Aquatic Symbiosis Genomics (ASG)"
-        },
-        {
-          "value": "BGE",
-          "label": "Biodiversity Genomics Europe (BGE)"
-        },
-        {
-          "value": "CBP",
-          "label": "Catalan Initiative for the Earth BioGenome Project (CBP)"
-        },
-        {
-          "value": "DTOL",
-          "label": "Darwin Tree of Life (DTOL)"
-        },
-        {
-          "value": "DTOLENV",
-          "label": "Darwin Tree of Life Environmental Samples (DTOLENV)"
-        },
-        {
-          "value": "ERGA_PILOT",
-          "label": "European Reference Genome Atlas - Pilot (ERGA_PILOT)"
-        },
-        {
-          "value": "ERGA_SATELLITES",
-          "label": "European Reference Genome Atlas - Satellites (ERGA_SATELLITES)"
-        },
-        {
-          "value": "POP_GENOMICS",
-          "label": "Population Genomics (POP_GENOMICS)"
-        }
-      ]
+      "option_values": {
+        "callback": {
+          "parameter": {},
+          "function": "get_all_associated_profile_type_for_options",
+          "provider": "src.apps.copo_core.utils"
+         }
+      }
     },
     {
       "help_tip": "Choose the sequencing centre that will handle the samples uploaded to this profile.<br><br><p style='margin-top: 10px'>If no sequencing centres are displayed, please contact <b style='font-weight:bold;'>ei.copo@earlham.ac.uk</b> in order to be added to the sequencing centre group to complete the profile creation.</p>",

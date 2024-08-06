@@ -8,11 +8,10 @@ from common.schema_versions.lookup.dtol_lookups import EXCLUDED_FIELDS_FOR_GET_B
 from pymongo.collection import ReturnDocument
 from common.utils import helpers
 from bson.objectid import ObjectId
-
 from src.apps.copo_core.models import SequencingCentre
 from .copo_base_da import DAComponent, handle_dict
 import shortuuid
- 
+import pandas as pd
 
 lg = settings.LOGGER
 
@@ -337,6 +336,7 @@ class Sample(DAComponent):
             # Filter schema based on manfest type and manifest version
             f_specifications = f.get("specifications", "")
             f_manifest_version = f.get("manifest_version", "")
+            f_type = f.get("type", "")
 
             if f_specifications and profile_type not in f_specifications or f_manifest_version and current_schema_version not in f_manifest_version:
                 continue
@@ -543,8 +543,8 @@ class Sample(DAComponent):
         return self.get_collection_handle().find_one(
             {"$or": [{"biosampleAccession": id}, {"sraAccession": id}, {"biosampleAccession": id}]})
 
-    def get_from_profile_id(self, profile_id):
-        return self.get_collection_handle().find({'profile_id': profile_id})
+    def get_by_profile_id(self, profile_id):
+        return cursor_to_list(self.get_collection_handle().find({'profile_id': profile_id}))
 
     def timestamp_dtol_sample_created(self, sample_id):
         email = ThreadLocal.get_current_user().email
@@ -644,7 +644,7 @@ class Sample(DAComponent):
         )
 
     def add_rejected_status(self, status, oid):
-        return self.update_field(field_values={'error': status["msg"],'status': "rejected"}, oid=oid)
+        return self.update_field(field_values={'error': status["msg"],'status': "rejected", "approval":{}}, oid=oid)
         '''
         return self.get_collection_handle().update_one(
             {
@@ -676,6 +676,7 @@ class Sample(DAComponent):
         return cursor_to_list(self.get_collection_handle().find({field: {"$in": value}, "tol_project": project}))
 
     def get_dtol_from_profile_id(self, profile_id, filter, draw, start, length, sort_by, dir, search, profile_type,is_associated_project_type_checker=False, is_sequencing_centre_checker=False):
+        from common.utils.html_tags_utils import resolve_control_output_apply
 
         sc = self.get_component_schema()
         if sort_by == "0":
@@ -703,16 +704,8 @@ class Sample(DAComponent):
             # $nin will return where status neq to values in array, or status is absent altogether
             find_condition["status"] = {
                 "$nin": ["barcode_only", "rejected", "accepted", "processing", "conflicting", "private", "sending", "bge_pending"]}
-            
-            if profile_type == "erga":
-                status_lst = list()
-                if is_associated_project_type_checker:
-                    status_lst.append("associated_project_pending")
-                
-                if is_sequencing_centre_checker:
-                    status_lst.append("pending")
-            
-                find_condition["status"] = {"$in": status_lst}
+                       
+            find_condition["status"] = {"$in": ["pending"]}
                 
         elif filter == "conflicting_barcode":
             find_condition["status"] = "conflicting"
@@ -742,27 +735,47 @@ class Sample(DAComponent):
         # samples = list(cursor);
         # sc = self.get_component_schema()
         out = list()
-        taxon = dict()
-        for i in samples:
-            if "species_list" in i:
-                sp_lst = i["species_list"]
-                for sp in sp_lst:
-                    # only extract target info...don't extract symnbiont info
-                    if sp["SYMBIONT"] == "TARGET":
-                        for k, v in sp.items():
-                            i[k] = v
-                    else:
-                        pass
-            sam = dict()
-            sam["_id"] = str(i["_id"])
-            for field in sc:
-                if profile_type in field.get("specifications", []) and field.get(
-                        "show_in_table", ""):
-                    name = field.get("id", "").split(".")[-1]
-                    sam[name] = i.get(name, "")
+       
+        if samples:
+            df = pd.DataFrame(samples)
+            df = df.fillna("")
+            schema = [x for x in sc if x.get("show_in_table", True) and  profile_type in x.get("specifications", [])]
 
-            sam["error"] = i.get("error", "")
-            out.append(sam)
+            for x in schema:
+                x["id"] = x["id"].split(".")[-1]
+                if x["id"] in df:
+                    df[x["id"]] = df[x["id"]].apply(
+                        resolve_control_output_apply, args=(x,))
+                else:
+                    df[x["id"]] = ""
+            
+            if not "error" in df:
+                df["error"] = ""
+        
+            df["_id"]=df["_id"].astype(str)
+            out = df.to_dict(orient="records")
+            """
+            for i in samples:
+                if "species_list" in i:
+                    sp_lst = i["species_list"]
+                    for sp in sp_lst:
+                        # only extract target info...don't extract symnbiont info
+                        if sp["SYMBIONT"] == "TARGET":
+                            for k, v in sp.items():
+                                i[k] = v
+                        else:
+                            pass
+                sam = dict()
+                sam["_id"] = str(i["_id"])
+                for field in sc:
+                    if profile_type in field.get("specifications", []) and field.get(
+                            "show_in_table", ""):
+                        name = field.get("id", "").split(".")[-1]
+                        sam[name] = i.get(name, "")
+
+                sam["error"] = i.get("error", "")
+                out.append(sam)
+            """
 
         result = dict()
         result["recordsTotal"] = total_count
@@ -858,7 +871,12 @@ class Sample(DAComponent):
             out.append(sam)
         return out
 
-    def mark_rejected(self, sample_id, reason="Sample rejected by curator."):
+    def mark_rejected(self, sample_id, reason="Sample rejected by curator.", sample_ids=[]):
+        if not sample_ids:
+            sample_ids = list()
+        if sample_id:
+            sample_ids.append(sample_id)
+        return self.update_field(field_values={"status":"rejected", "error":reason, "approval":{}}, oids=sample_ids)  
 
         #return self.get_collection_handle().update_one({"_id": ObjectId(sample_id)},
         #                                               {"$set": {"status": "rejected", "error": reason}})
@@ -875,15 +893,19 @@ class Sample(DAComponent):
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": "processing"}})
 
     def mark_pending(self, sample_ids, is_erga=False, is_associated_project_check_required=False, is_private=False):
-        if is_erga:
-            status = "bge_pending"
-        elif is_associated_project_check_required:
-            status = "associated_project_pending"
-        elif is_private:
-            status = "private"
+        #if is_erga:
+        #    status = "bge_pending"
+        #elif is_associated_project_check_required:
+        #    status = "associated_project_pending"
+        field_values = dict()
+        if is_private:
+            field_values["status"] = "private"
         else:
-            status = "pending"
-        return self.update_field(field="status", value=status, oids=sample_ids)    
+            field_values["status"]  = "pending"
+            if is_erga:
+                field_values["approval"] = {}
+                
+        return self.update_field(field_values=field_values, oids=sample_ids)    
         #sample_obj_ids = [ObjectId(x) for x in sample_ids]
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": status}})
 

@@ -600,8 +600,8 @@ class DtolSpreadsheet:
             s["manifest_id"] = manifest_id
             if "erga" in self.type.lower() and s.get("ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID", str()):
                 s["status"] = "private"
-            elif type == "ERGA":
-                s["status"] = "bge_pending"
+            #elif type == "ERGA":
+            #    s["status"] = "bge_pending"
             else :
                 s["status"] = "pending"
             s["rack_tube"] = s.get("RACK_OR_PLATE_ID", "") + \

@@ -14,6 +14,9 @@ logger = Logger()
 class Email:
     def __init__(self):
         # Message content for 'accepted samples' email notifications
+
+        sample_accepted_msg_content = "Dear {gretting},<br><br>We have now accepted your manifest submission of <b>{title}</b> in Collaborative OPen Omics (COPO).<br><br><br>If you have any questions, please do not hesitate to get in touch.<br><br><br>Best regards,<br>Collaborative OPen Omics (COPO) Project Team"
+        """
         sample_accepted_msg_content = "Dear {},"
         sample_accepted_msg_content += "<br><br>We have now accepted your manifest submission of <b>{}</b> in Collaborative OPen Omics (COPO).<br>"
         sample_accepted_msg_content += "<ul>"
@@ -32,6 +35,7 @@ class Email:
         sample_accepted_msg_content += "<br><br>If you have any questions, please do not hesitate to get in touch."
         sample_accepted_msg_content += "<br><br><br>Best regards,"
         sample_accepted_msg_content += "<br>Collaborative OPen Omics (COPO) Project Team"
+        """
         
         # Messages for email notifications
         self.messages = {
@@ -44,21 +48,17 @@ class Email:
 
     def notify_sample_accepted_after_approval(self, **kwargs):
         profile = kwargs.get('profile', '')
-        profile_owner_userID = profile.get('user_id','')
-        project= d_utils.get_profile_type(profile.get('type',''))
-        sequencing_centres = profile.get('sequencing_centre',[])
-        title = profile.get('title','')
-        
-        if 'ERGA' in project:
-            # Send email if "ERGA" samples have been accepted
-
-            '''
-                Persons who should receive an email are:
-                    1. User who submitted the manifest/samples ('to' email recipient)
-                       i.e. the owner of the profile through which the manifest/sample has been accepted
-                    2. Sequencing centre contact person(s) ('cc' email recipient)
-                    3. Person(s) within the erga_accepted_samples_notifiers Django group ('cc' email recipient)
-            '''
+        accepted_samples_notifiers = set()
+        email_addresses = set()
+        p_id = kwargs.get("profile_id", "")
+        profile = Profile().get_record(p_id) if p_id else None
+        if profile: 
+            profile_owner_userID = profile.get('user_id','')   
+            title = profile.get('title','')
+            associated_profile_types = profile.get("associated_type", [])
+            apts = [apt.get("value", "") for apt in associated_profile_types]
+            apt_objs = AssociatedProfileType.objects.filter(name__in=apts, is_acceptance_email_notification_required=True)
+            sequencing_centres = profile.get('sequencing_centre',[])
 
             centre_contact_details = list()
             centre_labels = list()
@@ -71,16 +71,24 @@ class Email:
                 if settings.ENVIRONMENT_TYPE == "prod" and centre.contact_details and len(centre.contact_details) > 0:
                     # Contact name and email address of the partner for the sequencing centre
                     centre_contact_details.extend(json.loads(centre.contact_details)) 
-            
-            to_email_addresses = list()
-            sub = ""
-            greetings_name = list()
 
             # Join the list of sequencing centre labels with commas then, have 'and' as the last entry
             centre_labels = d_utils.join_list_with_and_as_last_entry(centre_labels) 
+
+
+        
+            # Send email if "ERGA" samples have been accepted
+
+            '''
+                Persons who should receive an email are:
+                    1. User who submitted the manifest/samples ('to' email recipient)
+                       i.e. the owner of the profile through which the manifest/sample has been accepted
+                    2. Sequencing centre contact person(s) ('cc' email recipient)
+                    3. Person(s) within the erga_accepted_samples_notifiers Django group ('cc' email recipient)
+            '''
             
             # Get list of persons who should be notified by default
-            erga_accepted_samples_notifiers = User.objects.filter(groups__name='erga_accepted_samples_notifiers') 
+            #erga_accepted_samples_notifiers = User.objects.filter(groups__name='erga_accepted_samples_notifiers') 
 
             # User who submitted the manifest i.e. the owner of the profile
             user = User.objects.get(pk=profile_owner_userID)
@@ -95,163 +103,78 @@ class Email:
 
             if user:
                 # 'to' email address recipient(s)
-                to_email_addresses.append(user.email)
-                to_email_addresses.extend(shared_profile_users_emails) # Add shared profile user(s) email address(es)
-                to_email_addresses = list(set(to_email_addresses)) # Remove duplicates
-
-                # 'cc' email address recipients
-                cc_email_addresses = centre_contact_emails
-                cc_email_addresses.extend([x.email for x in erga_accepted_samples_notifiers])
-                cc_email_addresses = list(set(cc_email_addresses))  # Remove duplicates
+                to_email_addresses = set([user.email])
+                to_email_addresses.update(shared_profile_users_emails) # Add shared profile user(s) email address(es)
 
                 # Get profile owner name and shared profile user name
                 profile_owner_name = f"{user.first_name} {user.last_name}"
-                greetings_name.append(profile_owner_name)
+                greetings_name = list(profile_owner_name)
                 greetings_name.extend(shared_profile_users_names)
                 greetings_name = d_utils.join_list_with_and_as_last_entry(greetings_name)
-
-                msg = self.messages["sample_accepted"].format(greetings_name, title, centre_labels)
                 sub = f"{title} Sample Manifest accepted in COPO"
-                
-                CopoEmail().send(to=to_email_addresses, sub=sub, content=msg, html=True, is_cc_required=True, cc=cc_email_addresses)
+
+                for apt_obj in apt_objs:
+                    # 'cc' email address recipients
+                    msg = apt_obj.acceptance_email_body.format(gretting=greetings_name, title=title, centre_labels=centre_labels) if  apt_obj.acceptance_email_body else self.messages["sample_accepted"].format(greetings_name, title)
+                    accepted_samples_notifiers = set(apt_obj.users.all())
+                    cc_email_addresses = set(centre_contact_emails)
+                    cc_email_addresses.update([x.email for x in accepted_samples_notifiers])
+                    #msg = apt_obj.acceptance_email_body.format(gretting=greetings_name, title=title, centre_labels=centre_labels)
+                    CopoEmail().send(to=list(to_email_addresses), sub=sub, content=msg, html=True, is_cc_required=True, cc=list(cc_email_addresses))
             else:
                 logger.log('No users found to send email to. Perhaps the user has been deleted.')    
 
+
     def notify_sample_rejected_after_approval(self, **kwargs):
         # get email addresses of users in sequencing centre
-        users = []
+        users = set()
+        email_addresses = set()
         p_id = kwargs.get("profile_id", "")
-        if p_id != "":
-            profile = Profile().get_record(p_id)
-            sequencing_centres = profile.get("sequencing_centre", [])
-            for sc in sequencing_centres:
-                centre = SequencingCentre.objects.get(name=sc)
-                users += centre.users.all()
-        email_addresses = list()
-        sub = ""
+        profile = Profile().get_record(p_id) if p_id else None
+        
         samples = kwargs["rejected_sample"] 
         sample_arr = [f"<li>{key} : {samples[key]}</li>" for key in samples.keys()]
         sample_str = ' '.join(sample_arr)
 
-        if len(users) > 0:
-            for u in users:
-                email_addresses.append(u.email)
+        if profile:    
+            type = profile.get("type", "").upper()
+            if type == "ERGA":
+                associated_profile_types = profile.get("associated_type", [])
+                apts = [apt.get("value", "") for apt in associated_profile_types]
+                apt_objs = AssociatedProfileType.objects.filter(name__in=apts, is_approval_required=True)
+                for apt_obj in apt_objs:
+                    users.update(apt_obj.users.all())
+            else:
+                users = set(User.objects.filter(groups__name=f'{type.lower()}_sample_notifiers'))
 
-            email_addresses = list(set(email_addresses)) # Remove duplicates
-
+        if users:
+            email_addresses.update([u.email for u in users])
             msg = self.messages["sample_rejected"].format(kwargs.get("title"," ") , kwargs.get("description"," "), sample_str)
             sub = settings.ENVIRONMENT_TYPE + " " + kwargs.get("project"," ") + " Manifest - " + kwargs.get("title"," ")
-            CopoEmail().send(to=email_addresses, sub=sub, content=msg, html=True)
+            CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
 
-
-    def notify_manifest_pending_for_sequencing_centre(self, data, **kwargs):        
-        # get email addresses of users in sequencing centre
-        users = []
-        p_id = kwargs.get("profile_id", "")
-        if p_id:
-            profile = Profile().get_record(p_id)
-            sequencing_centres = profile.get("sequencing_centre", [])
-
-            centres = SequencingCentre.objects.filter(name__in=sequencing_centres, is_approval_required=True)
-            for sc in centres:
-                users += sc.users.all()
-
-            """
-            for sc in sequencing_centres:
-                # Try catch block to handle the case where the sequencing centre object does not exist
-                try:
-                    centre = SequencingCentre.objects.get(is_approval_required=True, name=sc)
-                except SequencingCentre.DoesNotExist:
-                   continue
-                users += centre.users.all()
-            """ 
-   
-        email_addresses = list()
-        sub = ""
-        if len(users) > 0:
-            for u in users:
-                email_addresses.append(u.email)
-
-            email_addresses = list(set(email_addresses)) # Remove duplicates
-
-            demo_notification = ""
-            if "demo" in data:
-                demo_notification = "DEMO SERVER NOTIFICATION: "
-            msg = self.messages["pending_samples"].format(kwargs["title"], demo_notification + kwargs["description"], data, data)
-            sub = demo_notification + " Manifest - " + kwargs["title"]
-            CopoEmail().send(to=email_addresses, sub=sub, content=msg, html=True)
-        else:
-            logger.log("No users found for sequencing centre")
-
-  
-    def notify_manifest_pending_for_bge_checker(self, data, **kwargs):        
-        # get email addresses of users in sequencing centre
-        p_id = kwargs.get("profile_id", "")
-        profile = Profile().get_record(p_id) if p_id else None
-        users = list()
-
-        if profile:    
-            sequencing_centres = profile.get("sequencing_centre", [])
-            centres = SequencingCentre.objects.filter(name__in=sequencing_centres)
-            for sc in centres:
-                users += sc.users.all()
-
-            checker_users = User.objects.filter(groups__name='bge_checkers')        
-            users = list(set(users) & set(checker_users))
-            email_addresses = list()
-            sub = ""
-            if len(users) > 0:
-                for u in users:
-                    email_addresses.append(u.email)
-                    
-                email_addresses = list(set(email_addresses)) # Remove duplicates
-
-                demo_notification = ""
-                if "demo" in data:
-                    demo_notification = "DEMO SERVER NOTIFICATION: "
-                msg = self.messages["bge_pending_samples"].format(kwargs["title"], demo_notification + kwargs["description"], data, data)
-                sub = demo_notification + " Manifest - " + kwargs["title"]
-                CopoEmail().send(to=email_addresses, sub=sub, content=msg, html=True)
-                return
-        logger.log("No users found for bge_checkers")
- 
     def notify_manifest_pending_for_associated_project_type_checker(self, data, **kwargs):        
         # get email addresses of users in sequencing centre
         p_id = kwargs.get("profile_id", "")
         profile = Profile().get_record(p_id) if p_id else None
-        users = list()
+        users = set()
 
         if profile:    
             associated_profile_types = profile.get("associated_type", [])
             apts = [apt.get("value", "") for apt in associated_profile_types]
             apt_objs = AssociatedProfileType.objects.filter(name__in=apts, is_approval_required=True)
             for apt_obj in apt_objs:
-                users += apt_obj.users.all()
-
-            """
-            for apt in associated_profile_types:
-                # Try catch block to handle the case where the associated project type object does not exist
-                try:
-                    apt_obj = AssociatedProfileType.objects.get(is_approval_required=True, name=apt.get("value", ""))
-                except SequencingCentre.DoesNotExist:
-                   continue
-                users += apt_obj.users.all()
-            """     
-            users = list(set(users))
-            email_addresses = list()
+                users.update(apt_obj.users.all())
+            email_addresses = set()
             sub = ""
             if len(users) > 0:
-                for u in users:
-                    email_addresses.append(u.email)
-                    
-                email_addresses = list(set(email_addresses)) # Remove duplicates
-
+                email_addresses.update([u.email for u in users])
                 demo_notification = ""
                 if "demo" in data:
                     demo_notification = "DEMO SERVER NOTIFICATION: "
                 msg = self.messages["associated_project_samples"].format(kwargs["title"], demo_notification + kwargs["description"], data, data)
                 sub = demo_notification + " Manifest - " + kwargs["title"]
-                CopoEmail().send(to=email_addresses, sub=sub, content=msg, html=True)
+                CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
                 return
         logger.log("No users found for associated_project_type_checker")
     

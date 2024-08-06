@@ -201,9 +201,8 @@ class Profile(DAComponent):
             #return self.get_dtolenv_profiles("all_profiles", search_filter, profile_oids_from_sample)
         """
         if filter == "my_profiles" and group_filter=="erga": 
-            seq_centres = helpers.get_users_seq_centres()
-            seq_centres = [str(x.name) for x in seq_centres]
-            profile_condition["sequencing_centre"] = {"$in": seq_centres}
+            associated_profile_types = helpers.get_users_associated_profile_checkers()
+            profile_condition["associated_type.value"] = {"$in": [str(x.name) for x in associated_profile_types]}
 
         p = self.get_collection_handle().find(profile_condition).sort(sort_by, pymongo.DESCENDING if dir == -1 else pymongo.ASCENDING)
         return cursor_to_list(p)

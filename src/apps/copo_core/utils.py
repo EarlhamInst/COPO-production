@@ -1,8 +1,13 @@
-from .models import SequencingCentre, ProfileType
+from .models import SequencingCentre, ProfileType, AssociatedProfileType
 
 def get_all_sequencing_centres_for_options():
     scs = SequencingCentre.objects.all()
     return [{"value": s.name, "label": s.label} for s in scs]
+
+def get_all_associated_profile_type_for_options():
+    scs = AssociatedProfileType.objects.all()
+    return [{"value": s.name, "label": s.label} for s in scs]
+
 
 # return all profile types for which the user has permission or user is None
 def get_all_profile_types_for_options_for_user(user=None):

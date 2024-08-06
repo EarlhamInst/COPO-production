@@ -359,7 +359,7 @@ def generate_table_columns(da_object=None):
 
     for x in schema:
         x["id"] = x["id"].split(".")[-1]
-        columns.append(dict(data=x["id"], title=x["label"], orderable=True))
+        columns.append(dict(data=x["id"], title=x["label"], defaultContent='', orderable=True))
 
         # orderable = False
         # if x["id"] in indexed_fields:
@@ -555,7 +555,7 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
 
         for x in schema:
             x["id"] = x["id"].split(".")[-1]
-            columns.append(dict(data=x["id"], title=x["label"], className="ena-accession" if x["id"].lower().endswith("accession") else "" ))
+            columns.append(dict(data=x["id"], title=x["label"], defaultContent='', className="ena-accession" if x["id"].lower().endswith("accession") else "" ))
             if x["id"] not in df_columns:
                 df[x["id"]] = str()
             df[x["id"]] = df[x["id"]].fillna('')
@@ -1392,6 +1392,10 @@ def resolve_control_output_apply(data, args):
         resolved_value = list()
         for d in data:
             resolved_value.append(get_resolver(d, args))
+    elif args.get("type", str()) == "dict" and data:  # resolve object data types
+        resolved_value = list()
+        for key, value in data.items():
+            resolved_value.append(key + " : " + get_resolver(value, args))
     else:  # non-array types
         resolved_value = get_resolver(data, args)
 

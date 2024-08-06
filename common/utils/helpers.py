@@ -173,7 +173,8 @@ def default_jsontype(type):
         d_type = list()
     elif type == "boolean":
         d_type = False
-
+    elif type == "dict":
+        d_type = dict()
     return d_type        
 
 def get_user_id():
@@ -232,4 +233,10 @@ def get_users_seq_centres():
     from src.apps.copo_core.models import SequencingCentre
     user = ThreadLocal.get_current_user()
     seq_centres = SequencingCentre.objects.filter(users=user)
+    return seq_centres
+
+def get_users_associated_profile_checkers():
+    from src.apps.copo_core.models import AssociatedProfileType
+    user = ThreadLocal.get_current_user()
+    seq_centres = AssociatedProfileType.objects.filter(users=user)
     return seq_centres
