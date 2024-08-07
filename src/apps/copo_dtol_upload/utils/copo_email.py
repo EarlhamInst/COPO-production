@@ -20,13 +20,13 @@ class Email:
         profile = Profile().get_record(p_id) if p_id else None
         if profile:
             type = profile.get("type", "").upper()
-            if type == "ERGA":
-                associated_profiles = profile.get("associated_type", [])
-                assoicated_profiles_type_require_approval = AssociatedProfileType.objects.filter(is_approval_required=True,  name__in = [x.get("value","") for x in associated_profiles])
-                for ap in assoicated_profiles_type_require_approval:
-                    users.update(ap.users.all())
-            else :
-                users = set(User.objects.filter(groups__name=f'{type.lower()}_sample_notifiers'))    
+            #if type == "ERGA":
+            associated_profiles = profile.get("associated_type", [])
+            assoicated_profiles_type_require_approval = AssociatedProfileType.objects.filter(is_approval_required=True,  name__in = [x.get("value","") for x in associated_profiles])
+            for ap in assoicated_profiles_type_require_approval:
+                users.update(ap.users.all())
+            #else :
+            #    users = set(User.objects.filter(groups__name=f'{type.lower()}_sample_notifiers'))    
  
         email_addresses = set()
         sub = ""

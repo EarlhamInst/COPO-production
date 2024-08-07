@@ -84,12 +84,71 @@
       "control": "copo-multi-select2",
       "option_values": {
         "callback": {
-          "parameter": {},
+          "parameter": {"profile_type": "erga"},
           "function": "get_all_associated_profile_type_for_options",
           "provider": "src.apps.copo_core.utils"
          }
       }
     },
+    {
+      "help_tip": "What are the other profile type(s) that the profile type (above) is associated with?",
+      "required": "true",
+      "default_value": [{"value":"ASG"}],
+      "control_meta": {},
+      "versions": [
+        "associated_type"
+      ],
+      "specifications": [
+        "asg"
+      ],
+      "ref": "",
+      "deprecated": false,
+      "hidden": false,
+      "label": "Associated Profile Type",
+      "placeholder": "Select associated type(s)",
+      "show_in_form": true,
+      "id": "copo.profile.associated_type",
+      "type": "array",
+      "show_in_table": true,
+      "readonly": "true",
+      "control": "copo-multi-select2",
+      "option_values": {
+        "callback": {
+          "parameter": {"profile_type": "asg"},
+          "function": "get_all_associated_profile_type_for_options",
+          "provider": "src.apps.copo_core.utils"
+         }
+      }    },  
+    {
+      "help_tip": "What are the other profile type(s) that the profile type (above) is associated with?",
+      "required": "true",
+      "default_value": [{"value":"DTOL"}],
+      "control_meta": {},
+      "versions": [
+        "associated_type"
+      ],
+      "specifications": [
+        "dtol"
+      ],
+      "ref": "",
+      "deprecated": false,
+      "hidden": "false",
+      "label": "Associated Profile Type",
+      "placeholder": "Select associated type(s)",
+      "show_in_form": true,
+      "id": "copo.profile.associated_type",
+      "type": "array",
+      "show_in_table": true,
+      "readonly": "true",
+      "control": "copo-multi-select2",
+      "option_values": {
+        "callback": {
+          "parameter": {"profile_type": "dtol"},
+          "function": "get_all_associated_profile_type_for_options",
+          "provider": "src.apps.copo_core.utils"
+         }
+      }    
+    },        
     {
       "help_tip": "Choose the sequencing centre that will handle the samples uploaded to this profile.<br><br><p style='margin-top: 10px'>If no sequencing centres are displayed, please contact <b style='font-weight:bold;'>ei.copo@earlham.ac.uk</b> in order to be added to the sequencing centre group to complete the profile creation.</p>",
       "required": "true",

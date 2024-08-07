@@ -66,16 +66,7 @@ def convertStringToTitleCase(str):
 
 def get_profile_type(profile_type):
     return profile_type.upper()
-    '''
-    if "ASG" in profile_type:
-        return "ASG"
-    elif "ERGA" in profile_type:
-        return "ERGA"
-    elif "DTOLENV" in profile_type:
-        return "DTOLENV"
-    else:
-        return "DTOL"
-    '''
+
     
 def join_list_with_and_as_last_entry(lst):
     # Join the list of sequencing centre labels 

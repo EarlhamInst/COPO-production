@@ -125,32 +125,29 @@ class Email:
                 logger.log('No users found to send email to. Perhaps the user has been deleted.')    
 
 
-    def notify_sample_rejected_after_approval(self, **kwargs):
+    def notify_sample_rejected_after_approval(self, profile=None, rejected_sample=dict()):
         # get email addresses of users in sequencing centre
         users = set()
         email_addresses = set()
-        p_id = kwargs.get("profile_id", "")
-        profile = Profile().get_record(p_id) if p_id else None
-        
-        samples = kwargs["rejected_sample"] 
-        sample_arr = [f"<li>{key} : {samples[key]}</li>" for key in samples.keys()]
+ 
+        sample_arr = [f"<li>{key} : {rejected_sample[key]}</li>" for key in rejected_sample.keys()]
         sample_str = ' '.join(sample_arr)
 
         if profile:    
-            type = profile.get("type", "").upper()
-            if type == "ERGA":
-                associated_profile_types = profile.get("associated_type", [])
-                apts = [apt.get("value", "") for apt in associated_profile_types]
-                apt_objs = AssociatedProfileType.objects.filter(name__in=apts, is_approval_required=True)
-                for apt_obj in apt_objs:
-                    users.update(apt_obj.users.all())
-            else:
-                users = set(User.objects.filter(groups__name=f'{type.lower()}_sample_notifiers'))
+            #type = profile.get("type", "").upper()
+            #if type == "ERGA":
+            associated_profile_types = profile.get("associated_type", [])
+            apts = [apt.get("value", "") for apt in associated_profile_types]
+            apt_objs = AssociatedProfileType.objects.filter(name__in=apts, is_approval_required=True)
+            for apt_obj in apt_objs:
+                users.update(apt_obj.users.all())
+            #else:
+            #    users = set(User.objects.filter(groups__name=f'{type.lower()}_sample_notifiers'))
 
         if users:
             email_addresses.update([u.email for u in users])
-            msg = self.messages["sample_rejected"].format(kwargs.get("title"," ") , kwargs.get("description"," "), sample_str)
-            sub = settings.ENVIRONMENT_TYPE + " " + kwargs.get("project"," ") + " Manifest - " + kwargs.get("title"," ")
+            msg = self.messages["sample_rejected"].format(profile.get("title"," ") , profile.get("description"," "), sample_str)
+            sub = settings.ENVIRONMENT_TYPE + " " + profile.get("type"," ").upper() + " Manifest - " + profile.get("title"," ")
             CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
 
     def notify_manifest_pending_for_associated_project_type_checker(self, data, **kwargs):        

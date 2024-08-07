@@ -4,9 +4,14 @@ def get_all_sequencing_centres_for_options():
     scs = SequencingCentre.objects.all()
     return [{"value": s.name, "label": s.label} for s in scs]
 
-def get_all_associated_profile_type_for_options():
-    scs = AssociatedProfileType.objects.all()
-    return [{"value": s.name, "label": s.label} for s in scs]
+def get_all_associated_profile_type_for_options(profile_type=None):
+    if profile_type:
+        profile_types = ProfileType.objects.filter(type=profile_type)
+        if profile_types:
+            at = profile_types[0].associated_profile_types.all()
+            return [{"value": s.name, "label": s.label} for s in at]
+    else:
+        return []
 
 
 # return all profile types for which the user has permission or user is None

@@ -3613,36 +3613,6 @@
     "versions": [
       "tol_project"
     ]
-  },
-  {
-    "colour": "",
-    "control": "datetime",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "dwc": "",
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "false",
-    "id": "copo.sample.approval",
-    "label": "Approval Date",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_in_form": false,
-    "show_in_table": true,
-    "specifications": [
-      "erga"
-    ],
-    "type": "dict",
-    "versions": [
-      "approval"
-    ]
-  }  
+  }
+  
 ]

@@ -174,22 +174,6 @@ def generate_copo_form(da_object=DAComponent(), target_id=str(), component_dict=
 
     schema = da_object.get_component_schema(**kwargs)
 
-    """
-    # Check if a user is in ASG group, DTOL group, ERGA group or DTOLENV group,
-    is_user_in_any_manifest_group = False
-    if component == "profile":
-        # Check if a user is in ASG group, DTOL group, ERGA group or DTOLENV group,
-        request = ThreadLocal.get_current_request()
-        is_user_in_any_manifest_group = request.user.groups.filter(
-            name__in=['dtol_users', 'erga_users', 'dtolenv_users']).exists()
-
-        '''
-        is_standalone_profile = False
-        for f in schema:
-            if "type" in f["id"] and 'Stand-alone' in f["option_values"]:
-                is_standalone_profile = True
-        '''
-    """
 
     # get schema fields
     for f in schema:
@@ -487,20 +471,7 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
 
     if da_object.component == "sample":
         profile_type = Profile().get_type(profile_id=profile_id).lower()
-        '''
-        profile_type = type.lower()
-        if "asg" in profile_type:
-            profile_type = "asg"
-
-        elif "dtolenv" in profile_type:
-            profile_type = "dotlenv"
-
-        elif "dtol" in profile_type:
-            profile_type = "dtol"
-
-        elif "erga" in profile_type:
-            profile_type = "erga"
-        '''
+ 
         current_schema_version = settings.MANIFEST_VERSION.get(
             profile_type.upper(), '') if profile_type else ''
 
@@ -509,9 +480,9 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
         if get_dtol_fields:
             schema = list()
             for x in da_object.get_schema().get("schema_dict"):
-                if x.get("show_in_table", True) and profile_type in x.get("specifications",
-                                                                            []) and current_schema_version in x.get(
-                        "manifest_version", ""):
+                if x.get("show_in_table", True) and \
+                   (not x.get("specifications",[]) or profile_type in x.get("specifications",[])) \
+                    and (not x.get("manifest_version", "") or current_schema_version in x.get("manifest_version", "")):
                     schema.append(x)
     if not schema:
         for x in da_object.get_schema().get("schema_dict"):

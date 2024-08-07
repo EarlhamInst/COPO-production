@@ -189,72 +189,14 @@ class Profile(DAComponent):
         profile_oids_from_sample = [ObjectId(id) for id in profile_ids_from_sample ]
         profile_condition = {"$or" : [{"_id": {"$in" : profile_oids_from_sample }}, {"title": { "$regex" : search_filter, "$options": "i"}}]}
         profile_condition["type"] = group_filter
-        """
-        if group_filter == "dtol":
-            profile_condition["type"] = {"$in": ["Darwin Tree of Life (DTOL)", "Aquatic Symbiosis Genomics (ASG)"]}
-            #return self.get_dtol_profiles("all_profiles", search_filter, profile_oids_from_sample)
-        elif group_filter == "erga":
-            profile_condition["type"] = {"$in": ["European Reference Genome Atlas (ERGA)"]}
-            #return self.get_erga_profiles(filter, search_filter, profile_oids_from_sample)
-        elif group_filter == "dtolenv":
-            profile_condition["type"] = {"$in": ["Darwin Tree of Life Environmental Samples (DTOLENV)"]}
-            #return self.get_dtolenv_profiles("all_profiles", search_filter, profile_oids_from_sample)
-        """
-        if filter == "my_profiles" and group_filter=="erga": 
+
+        if filter == "my_profiles": 
             associated_profile_types = helpers.get_users_associated_profile_checkers()
             profile_condition["associated_type.value"] = {"$in": [str(x.name) for x in associated_profile_types]}
 
         p = self.get_collection_handle().find(profile_condition).sort(sort_by, pymongo.DESCENDING if dir == -1 else pymongo.ASCENDING)
         return cursor_to_list(p)
 
-    '''
-    def get_dtol_profiles(self, filter="all_profiles", search_filter=None, profile_oids_from_sample=[]):
-
-        if filter == "all_profiles":
-            p = self.get_collection_handle().find(
-                {"type": {"$in": ["Darwin Tree of Life (DTOL)", "Aquatic Symbiosis Genomics (ASG)"]}} ).sort(
-                "date_created",
-                pymongo.DESCENDING)
-        elif filter == 'my_profiles':
-            seq_centres = helpers.get_users_seq_centres()
-            seq_centres = [str(x.name) for x in seq_centres]
-            p = self.get_collection_handle().find(
-                {"type": {"$in": ["Darwin Tree of Life (DTOL)", "Aquatic Symbiosis Genomics (ASG)"]},
-                 "sequencing_centre": {"$in": seq_centres}}).sort(
-                "date_created",
-                pymongo.DESCENDING)
-        return cursor_to_list(p)
-
-    def get_erga_profiles(self, filter="all_profiles", search_filter=None, profile_ids_from_sample=[]):
-
-        if filter == "all_profiles":
-            p = self.get_collection_handle().find(
-                {"type": {"$in": ["European Reference Genome Atlas (ERGA)"]}}).sort("date_created", pymongo.DESCENDING)
-        elif filter == 'my_profiles':
-            seq_centres = helpers.get_users_seq_centres()
-            seq_centres = [str(x.name) for x in seq_centres]
-            p = self.get_collection_handle().find(
-                {"type": {"$in": ["European Reference Genome Atlas (ERGA)"]},
-                 "sequencing_centre": {"$in": seq_centres}}).sort(
-                "date_created",
-                pymongo.DESCENDING)
-        return cursor_to_list(p)
-
-    def get_dtolenv_profiles(self, filter="all_profiles", search_filter=None, profile_ids_from_sample=[]):
-        if filter == "all_profiles":
-            p = self.get_collection_handle().find(
-                {"type": {"$in": ["Darwin Tree of Life Environmental Samples (DTOLENV)"]}}).sort("date_modified",
-                                                                                                  pymongo.DESCENDING)
-        elif filter == 'my_profiles':
-            seq_centres = helpers.get_users_seq_centres()
-            seq_centres = [str(x.name) for x in seq_centres]
-            p = self.get_collection_handle().find(
-                {"type": {"$in": ["Darwin Tree of Life Environmental Samples (DTOLENV)"]},
-                 "sequencing_centre": {"$in": seq_centres}}).sort(
-                "date_created",
-                pymongo.DESCENDING)
-        return cursor_to_list(p)
-    '''
 
     def get_profile_records(self, data, currentUser=True):
         #from common.schemas.utils import data_utils

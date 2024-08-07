@@ -537,10 +537,7 @@ def process_pending_dtol_samples():
             if rejected_sample:
                 profile = Profile().get_record(profile_id)
                 if profile:
-                    Email().notify_sample_rejected_after_approval(project=d_utils.get_profile_type(profile["type"]),
-                                                                  title=profile["title"],
-                                                                  description=profile["description"],
-                                                                  rejected_sample=rejected_sample)
+                    Email().notify_sample_rejected_after_approval(profile = profile, rejected_sample=rejected_sample)
             # if tolid missing for specimen skip
             if not tolidflag:
                 l.log("missing tolid, removing draft xml")
@@ -637,11 +634,7 @@ def query_awaiting_tolids():
         if rejected_sample:
             profile = Profile().get_record(profile_id)
             if profile:
-                Email().notify_sample_rejected_after_approval(project=d_utils.get_profile_type(profile["type"]),
-                                                              title=profile["title"],
-                                                              description=profile["description"],
-                                                              rejected_sample=rejected_sample)
-
+                Email().notify_sample_rejected_after_approval(profile = profile, rejected_sample=rejected_sample)
 
 def populate_source_fields(sampleobj):
     '''populate source in db to copy most of sample fields
@@ -1213,11 +1206,7 @@ def handle_submit_receipt(sampleobj, collection_id, tree, type="sample"):
         if rejected_sample:
             profile = Profile().get_record(profile_id)
             if profile:
-                Email().notify_sample_rejected_after_approval(project=d_utils.get_profile_type(profile["type"]),
-                                                              title=profile["title"],
-                                                              description=profile["description"],
-                                                              rejected_sample=rejected_sample)
-
+                Email().notify_sample_rejected_after_approval(profile = profile, rejected_sample=rejected_sample)
                 # print('error')
         l.log("Success False" + str(msg))
         return status

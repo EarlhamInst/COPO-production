@@ -645,17 +645,6 @@ class Sample(DAComponent):
 
     def add_rejected_status(self, status, oid):
         return self.update_field(field_values={'error': status["msg"],'status': "rejected", "approval":{}}, oid=oid)
-        '''
-        return self.get_collection_handle().update_one(
-            {
-                "_id": ObjectId(oid)
-            },
-            {"$set":
-             {'error': status["msg"],
-              'status': "rejected"}
-             }
-        )
-        '''
 
     def add_rejected_status_for_tolid(self, specimen_id):
         return self.get_collection_handle().update_many(
@@ -685,7 +674,7 @@ class Sample(DAComponent):
             i = 0
             sort_by_column = ""
             for field in sc:
-                if profile_type in field.get("specifications", []) and field.get(
+                if(not field.get("specifications", []) or profile_type in field.get("specifications", [])) and field.get(
                         "show_in_table", ""):
                     i = i + 1
                     if i == int(sort_by):
@@ -739,7 +728,7 @@ class Sample(DAComponent):
         if samples:
             df = pd.DataFrame(samples)
             df = df.fillna("")
-            schema = [x for x in sc if x.get("show_in_table", True) and  profile_type in x.get("specifications", [])]
+            schema = [x for x in sc if x.get("show_in_table", True) and  (not x.get("specifications", []) or profile_type in x.get("specifications", []))]
 
             for x in schema:
                 x["id"] = x["id"].split(".")[-1]
@@ -794,8 +783,8 @@ class Sample(DAComponent):
             group_set = {group_filter}
         for field in sc:
 
-            if  group_set.intersection(set(field.get("specifications", ""))) and field.get("show_in_table",
-                                                                                                       ""):
+            if  (not field.get("specifications", "") or group_set.intersection(set(field.get("specifications", "")))) \
+                    and field.get("show_in_table",""):
                 column = field.get("id", "").split(".")[-1]
                 if column not in columns:
                     columns.append(column)
