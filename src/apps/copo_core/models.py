@@ -357,6 +357,7 @@ class Component(models.Model):
         return Component.objects.all()
     
 
+#db.Profiles.updateMany({"associated_type.value":"BGE"},{"$set":{"associated_type.$":"BGE"}})
 class ProfileType(models.Model):
     class Meta:
         ordering = ['description']

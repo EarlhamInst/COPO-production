@@ -89,7 +89,7 @@ def get_dtol_samples_for_profile(request):
             sequencing_centres = profile.get('sequencing_centre',[])
         
             #is_sequencing_centre_sample_manager = any(SequencingCentre.objects.filter( users=current_user, name__in = sequencing_centres))
-            is_associated_project_type_checker = any(AssociatedProfileType.objects.filter(is_approval_required=True, users=current_user, name__in = [x.get("value","") for x in associated_profiles]))
+            is_associated_project_type_checker = any(AssociatedProfileType.objects.filter(is_approval_required=True, users=current_user, name__in = associated_profiles))
             #is_sequencing_centre_checker = any(SequencingCentre.objects.filter(is_approval_required=True, users=current_user, name__in = sequencing_centres))
             
         if direction == "desc":
@@ -122,7 +122,7 @@ def mark_sample_rejected(request):
     sample_ids = request.GET.get("sample_ids")
     sample_ids = json.loads(sample_ids)
     if sample_ids:
-        Sample().mark_rejected(sample_ids)
+        Sample().mark_rejected(sample_ids=sample_ids)
         return HttpResponse(status=200)
     return HttpResponse(status=400, content="Sample IDs not provided")
 
@@ -139,8 +139,8 @@ def add_sample_to_dtol_submission(request):
     #is_bge_checker =  "bge_checkers" in group
     current_user = get_current_user()
     is_sample_manager = True #assume user is a sample manager as it has been checked in the decorator
-    assoicated_profiles_type_require_approval = AssociatedProfileType.objects.filter(is_approval_required=True,  name__in = [x.get("value","") for x in associated_profiles])
-    assoicated_profiles_type_approval_for = AssociatedProfileType.objects.filter(is_approval_required=True,  users=current_user,  name__in = [x.get("value","") for x in associated_profiles])
+    assoicated_profiles_type_require_approval = AssociatedProfileType.objects.filter(is_approval_required=True,  name__in =  associated_profiles)
+    assoicated_profiles_type_approval_for = AssociatedProfileType.objects.filter(is_approval_required=True,  users=current_user,  name__in = associated_profiles)
 
 
     # check we have required params

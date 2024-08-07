@@ -860,7 +860,7 @@ class Sample(DAComponent):
             out.append(sam)
         return out
 
-    def mark_rejected(self, sample_id, reason="Sample rejected by curator.", sample_ids=[]):
+    def mark_rejected(self, sample_id=None, reason="Sample rejected by curator.", sample_ids=[]):
         if not sample_ids:
             sample_ids = list()
         if sample_id:

@@ -80,7 +80,8 @@ class Profile(DAComponent):
             return p.get("type", "").upper()
         else:
             return False
-
+        
+    """
     def get_associated_type(self, profile_id, value=True, label=True):
         p = self.get_collection_handle().find_one(
             {"_id": ObjectId(profile_id)})
@@ -96,7 +97,7 @@ class Profile(DAComponent):
                 return []
         else:
             return False
-
+    """
     def get_for_user(self, user=None, id_only=False):
         if not user:
             user = helpers.get_current_user().id
@@ -192,7 +193,7 @@ class Profile(DAComponent):
 
         if filter == "my_profiles": 
             associated_profile_types = helpers.get_users_associated_profile_checkers()
-            profile_condition["associated_type.value"] = {"$in": [str(x.name) for x in associated_profile_types]}
+            profile_condition["associated_type"] = {"$in": [str(x.name) for x in associated_profile_types]}
 
         p = self.get_collection_handle().find(profile_condition).sort(sort_by, pymongo.DESCENDING if dir == -1 else pymongo.ASCENDING)
         return cursor_to_list(p)

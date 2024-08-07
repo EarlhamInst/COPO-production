@@ -1349,6 +1349,7 @@ function showMoreProfileInfoPopover(grids) {
       });
   });
 }
+/*
 function get_acronym(txt) {
   // Retrieve the parentheses and the enclosed string from the
   // selected profile type
@@ -1373,3 +1374,4 @@ function get_acronym(txt) {
 
   return select_value;
 }
+*/

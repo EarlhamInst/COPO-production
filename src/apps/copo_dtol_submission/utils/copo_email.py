@@ -55,8 +55,8 @@ class Email:
         if profile: 
             profile_owner_userID = profile.get('user_id','')   
             title = profile.get('title','')
-            associated_profile_types = profile.get("associated_type", [])
-            apts = [apt.get("value", "") for apt in associated_profile_types]
+            apts = profile.get("associated_type", [])
+            #apts = [apt.get("value", "") for apt in associated_profile_types]
             apt_objs = AssociatedProfileType.objects.filter(name__in=apts, is_acceptance_email_notification_required=True)
             sequencing_centres = profile.get('sequencing_centre',[])
 
@@ -136,8 +136,8 @@ class Email:
         if profile:    
             #type = profile.get("type", "").upper()
             #if type == "ERGA":
-            associated_profile_types = profile.get("associated_type", [])
-            apts = [apt.get("value", "") for apt in associated_profile_types]
+            apts = profile.get("associated_type", [])
+            #apts = [apt.get("value", "") for apt in associated_profile_types]
             apt_objs = AssociatedProfileType.objects.filter(name__in=apts, is_approval_required=True)
             for apt_obj in apt_objs:
                 users.update(apt_obj.users.all())
@@ -157,8 +157,8 @@ class Email:
         users = set()
 
         if profile:    
-            associated_profile_types = profile.get("associated_type", [])
-            apts = [apt.get("value", "") for apt in associated_profile_types]
+            apts = profile.get("associated_type", [])
+            #apts = [apt.get("value", "") for apt in associated_profile_types]
             apt_objs = AssociatedProfileType.objects.filter(name__in=apts, is_approval_required=True)
             for apt_obj in apt_objs:
                 users.update(apt_obj.users.all())

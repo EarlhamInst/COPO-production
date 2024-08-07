@@ -137,22 +137,12 @@ class DtolSpreadsheet:
         # if not then we are looking at creating samples having previously validated
 
         # get type of manifest
-        self.type = Profile().get_type(self.profile_id).upper()
-        """
-        if "ASG" in t:
-            self.type = "ASG"
-        elif "ERGA" in t:
-            self.type = "ERGA"
-        elif "DTOLENV" in t:
-            self.type = "DTOLENV"
-        else:
-            self.type = "DTOL"
-        """    
+        profile = Profile().get_record(self.profile_id)
+        self.type = profile.get("type", "").upper()
+        associated_type_lst = profile.get("associated_type", [])
         self.current_schema_version = settings.MANIFEST_VERSION.get(
             self.type, "")
-        # get associated profile type(s) of manifest
-        associated_type_lst = Profile().get_associated_type(
-            self.profile_id, value=True, label=False)
+ 
         # Get associated type(s) as string separated by '|' symbol
         self.associated_type = " | ".join(associated_type_lst)
 
@@ -791,9 +781,8 @@ class DtolSpreadsheet:
             profile_id = request.session["profile_id"]
             # Update the associated tol project for each sample in the manifest
             # get associated profile type(s) of manifest
-            associated_type_lst = Profile().get_associated_type(
-                profile_id, value=True, label=False)
-            
+            profile = Profile().get_record(profile_id)
+            associated_type_lst = profile.get("associated_type", [])
             # Get associated type(s) as string separated by '|' symbol
             # then, update the associated tol project field in the sample
             associated_type = " | ".join(associated_type_lst)

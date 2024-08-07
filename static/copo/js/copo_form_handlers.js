@@ -1631,7 +1631,8 @@ var dispatchFormControl = {
     if (elemValue) {
       if (typeof elemValue === 'string') {
         currentValue = elemValue.split(',');
-      } else if (
+      }
+       /*else if (
         formElem.id.includes('associated_type') &&
         typeof elemValue === 'object'
       ) {
@@ -1639,7 +1640,8 @@ var dispatchFormControl = {
         $.each(obj, function (index, item) {
           currentValue.push(item.value);
         });
-      } else if (typeof elemValue === 'object') {
+      } */
+      else if (typeof elemValue === 'object') {
         currentValue = elemValue;
       }
     }
@@ -2723,7 +2725,8 @@ function resolve_ctrl_values(ctrlsDiv, counter, formElem, elemValue) {
   }
 
   if (elemValue) {
-    if (formElem.type === 'array' && !formElem.id.includes('associated_type')) {
+    //if (formElem.type === 'array' && !formElem.id.includes('associated_type')) {
+    if (formElem.type === 'array') {
       if (elemValue.length > 0) {
         //first element should not be open to deletion
         ctrlsWithValuesDiv.find(':input').each(function () {
@@ -3481,6 +3484,7 @@ function save_form(formJSON, dialogRef) {
     .find(':input')
     .each(function () {
       // Add the acronym and full word of the associated type
+      /*
       if (this.id.includes('associated_type')) {
         options_lst = $(this).data('optionslist');
 
@@ -3497,9 +3501,12 @@ function save_form(formJSON, dialogRef) {
           });
         }
         form_values[this.id] = a_type_lst;
-      } else {
+        
+      } 
+      else {
+      */
         form_values[this.id] = $(this).val();
-      }
+      //}
     });
 
   const auto_fields = JSON.stringify(form_values);

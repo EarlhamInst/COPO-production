@@ -93,7 +93,7 @@
     {
       "help_tip": "What are the other profile type(s) that the profile type (above) is associated with?",
       "required": "true",
-      "default_value": [{"value":"ASG"}],
+      "default_value": ["ASG"],
       "control_meta": {},
       "versions": [
         "associated_type"
@@ -122,7 +122,7 @@
     {
       "help_tip": "What are the other profile type(s) that the profile type (above) is associated with?",
       "required": "true",
-      "default_value": [{"value":"DTOL"}],
+      "default_value": ["DTOL"],
       "control_meta": {},
       "versions": [
         "associated_type"

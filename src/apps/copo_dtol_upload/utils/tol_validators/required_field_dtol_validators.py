@@ -35,20 +35,19 @@ class ColumnValidator(Validator):
 
 class CellMissingDataValidator(Validator):
     def validate(self):
-        p_type = Profile().get_type(profile_id=self.profile_id)
-        associated_p_type_lst = Profile().get_associated_type(
-            self.profile_id, value=True, label=False)
-
+        profile = Profile().get_record(self.profile_id)
+        p_type = profile.get("type", "").upper()
+        associated_p_type_lst = profile.get("associated_type", [])
         for header, cells in self.data.items():
             # here we need to check if there are not missing values in its cells
             if header in self.fields:
-                if header == "SYMBIONT" and any(x in p_type for x in ["ASG","DTOL", "ERGA"]):
+                if header == "SYMBIONT" and p_type in ["ASG","DTOL", "ERGA"]:
                     # 'ASG', 'DTOL' and 'ERGA' manifests should be autofilled with "TARGET" 
                     # if the 'SYMBIONT' field is left blank as of manifest v2.5
                     # This is handled by another validator
                     pass
                 elif header in POP_GENOMICS_OPTIONAL_COLUMNS_DEFAULT_VALUES_MAPPING \
-                        and "ERGA" in p_type  \
+                        and "ERGA" == p_type  \
                         and ( "POP_GENOMICS" in associated_p_type_lst  \
                              and "BGE" in associated_p_type_lst) :
                         # erga manifests that inlude "POP_GENOMICS" as an associated tol project type
@@ -227,11 +226,11 @@ class DecimalLatitudeLongitudeValidator(Validator):
                LONGITUDE_START and LONGITUDE_END must have the value 'NOT_COLLECTED'
         """
 
-        p_type = Profile().get_type(profile_id=self.profile_id)
-        associated_p_type_lst = Profile().get_associated_type(
-            self.profile_id, value=True, label=False)
+        profile = Profile().get_record(self.profile_id)
+        p_type = profile.get("type", "").upper()
+        associated_p_type_lst = profile.get("associated_type", [])
 
-        if "ERGA" in p_type:
+        if "ERGA" == p_type:
             for index, row in self.data.iterrows():
                 decimal_latlong_lst = [
                     row.get("DECIMAL_LATITUDE", ""), row.get("DECIMAL_LONGITUDE", "")]
@@ -312,10 +311,10 @@ class PopGenomicsAssociatedTypeValidator(Validator):
             - Perform validation if this is the case
             - Set default values for the optional fields if they are empty/blank i.e. not filled in by manifest submitter
         """
-        p_name = Profile().get_name(self.profile_id)
-        p_type = Profile().get_type(profile_id=self.profile_id)
-        associated_p_type_lst = Profile().get_associated_type(
-            self.profile_id, value=True, label=False)
+        profile = Profile().get_record(self.profile_id)
+        p_type = profile.get("type", "").upper()
+        associated_p_type_lst = profile.get("associated_type", [])
+        p_name = profile.get("name", "")
 
         # Copy all values from the "PURPOSE_OF_SPECIMEN" column into a new
         # column called, "NEW_PURPOSE_OF_SPECIMEN"
