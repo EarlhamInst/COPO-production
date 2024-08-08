@@ -113,5 +113,5 @@ def get_assoicated_type_label(value):
     # Get the label of the sequencing centre based on the abbreviation
     associated_types = AssociatedProfileType.objects.filter(name=value)
     if associated_types:
-        return f"{associated_types[0].label})"
+        return f"{associated_types[0].label}"
     return value
