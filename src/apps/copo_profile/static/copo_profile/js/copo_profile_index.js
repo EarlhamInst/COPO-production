@@ -222,6 +222,9 @@ $(document).ready(function () {
   $(document).on('click', '#editProfileBtn', function (e) {
     let profile_id = $(e.currentTarget).closest('.ellipsisDiv').attr('id');
     let profile_type = $(e.currentTarget).closest('.copo-records-panel').attr('profile_type');
+    if (profile_type == undefined) {
+      profile_type = $(e.currentTarget).closest('.copo-records-panel').attr('shared_profile_type');
+    }
     editProfileRecord(profile_id, profile_type);
   });
 
