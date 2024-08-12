@@ -2,12 +2,12 @@ from bson import json_util
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
 from common.dal.submission_da import Submission
-from common.schema_versions.lookup.dtol_lookups import EXCLUDED_SAMPLE_TYPES, NON_SAMPLE_ACCESSION_TYPES, STANDALONE_PROJECT_SAMPLE_TYPE, TOL_PROFILE_TYPES
+from common.schema_versions.lookup.dtol_lookups import EXCLUDED_SAMPLE_TYPES, NON_SAMPLE_ACCESSION_TYPES, GENOMICS_PROJECT_SAMPLE_TYPE_DICT, TOL_PROFILE_TYPES
 from common.utils.helpers import get_group_membership_asString
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
-from src.apps.copo_core.models import ViewLock
+from src.apps.copo_core.models import ViewLock, ProfileType
 from src.apps.copo_core.views import web_page_access_checker
 import common.schemas.utils.data_utils as d_utils
 import json
@@ -67,8 +67,8 @@ def generate_accession_records(request):
     # Convert items in the 'filter_accessions' list to lowercase
     filter_accessions = [x.lower() for x in filter_accessions] if filter_accessions else list()
     
-    # Replace 'standalone' with 'isasample' in the 'filter_accessions' list
-    filter_accessions = ['isasample' if 'standalone' in filter_accessions else accession for accession in filter_accessions]
+    # Replace 'genomics' with 'isasample' in the 'filter_accessions' list
+    filter_accessions = ['isasample' if 'genomics' in filter_accessions else accession for accession in filter_accessions]
 
     profile_id = request.session.get('profile_id', str()) if isUserProfileActive else str()
     start = request.POST.get('start', '0')
@@ -104,8 +104,18 @@ def generate_accession_records(request):
 
     return HttpResponse(json_util.dumps(records))
 
-def get_accession_types(isOtherAccessionsTabActive):
-    all_sample_types =  Sample().get_distinct_sample_types()
+def get_accession_types(element_dict):
+    filter = dict()
+    showAllCOPOAccessions = element_dict['showAllCOPOAccessions']
+    isUserProfileActive = element_dict['isUserProfileActive']
+    profile_id = element_dict['profile_id']
+    isOtherAccessionsTabActive = element_dict['isOtherAccessionsTabActive']
+
+    if not showAllCOPOAccessions:
+        if isUserProfileActive and profile_id:
+            filter["profile_id"] = profile_id
+
+    all_sample_types =  Sample().get_distinct_sample_types(filter)
 
     # Remove excluded sample types
     all_sample_types = [sample_type for sample_type in all_sample_types if sample_type not in EXCLUDED_SAMPLE_TYPES]
@@ -113,8 +123,7 @@ def get_accession_types(isOtherAccessionsTabActive):
     project_types = list()
     
     for x in all_sample_types:
-        if x in STANDALONE_PROJECT_SAMPLE_TYPE:
-            x = 'stand-alone'
+        if x in GENOMICS_PROJECT_SAMPLE_TYPE_DICT:
             project_types.append(x)
 
         if x in TOL_PROFILE_TYPES:
@@ -122,10 +131,16 @@ def get_accession_types(isOtherAccessionsTabActive):
 
     # Remove duplicates from the list
     project_types = list(set(project_types))
-    # Sort the list
-    project_types.sort()
 
     accession_types = NON_SAMPLE_ACCESSION_TYPES if isOtherAccessionsTabActive else project_types
+
+    # Check if any item in the 'GENOMICS_PROJECT_SAMPLE_TYPE_DICT' dictionary is in the 'accession_types' list
+    # If yes, replace the item with the value in the 'GENOMICS_PROJECT_SAMPLE_TYPE_DICT' dictionary
+    if any(item in GENOMICS_PROJECT_SAMPLE_TYPE_DICT for item in accession_types):
+        accession_types = [GENOMICS_PROJECT_SAMPLE_TYPE_DICT.get(item, item) for item in accession_types]
+
+    # Sort the list
+    accession_types.sort()
 
     return accession_types
 
@@ -133,10 +148,23 @@ def get_accession_types(isOtherAccessionsTabActive):
 def get_filter_accession_titles(request):
     # Get the text and value for the filter accession checkboxes
     accession_titles = list()
+    showAllCOPOAccessions = d_utils.convertStringToBoolean(
+        request.POST.get('showAllCOPOAccessions', str()))
+    isUserProfileActive = d_utils.convertStringToBoolean(
+        request.POST.get('isUserProfileActive', str()))
     isOtherAccessionsTabActive = d_utils.convertStringToBoolean(
         request.POST.get('isOtherAccessionsTabActive', str()))
+    
+    profile_id = request.session.get('profile_id', str()) if isUserProfileActive else str()
 
-    accession_types = get_accession_types(isOtherAccessionsTabActive)
+    # Create a dictionary to store the elements
+    element_dict = dict()
+    element_dict['showAllCOPOAccessions'] = showAllCOPOAccessions
+    element_dict['isUserProfileActive'] = isUserProfileActive
+    element_dict['profile_id'] = profile_id
+    element_dict['isOtherAccessionsTabActive'] = isOtherAccessionsTabActive
+
+    accession_types = get_accession_types(element_dict)
 
     if isOtherAccessionsTabActive:
         # Reorder the list of accessions types accorsing to the order of 
@@ -149,12 +177,13 @@ def get_filter_accession_titles(request):
         profile_types = list()
 
         for i in accession_types:
-            profile_type = Profile().get_collection_handle().find_one({'type': {'$regex': i.upper(), '$options': 'i'}},
+            profile_type_dict = Profile().get_collection_handle().find_one({'type': {'$regex': i.lower(), '$options': 'i'}},
                                                                       {'_id': 0, 'type': 1})
-            if profile_type:
-                value = i.replace('-','').upper() if i == 'stand-alone' else i.upper()
+            if profile_type_dict:
+                # Get the description i.e the name of the profile based on the profile type
+                profile_type_obj = ProfileType.objects.get(type=profile_type_dict.get('type', str()))
                 profile_types.append(
-                    {'title':  profile_type.get('type', ''), 'value': value})
+                    {'title':  profile_type_obj.description, 'value': i.upper()})
 
         accession_titles = profile_types
 

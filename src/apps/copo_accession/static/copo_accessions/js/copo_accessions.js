@@ -15,6 +15,7 @@ if (showAllCOPOAccessions) {
 } else {
   // Store data for accessions web page for a given profile
   isUserProfileActive = true;
+  isOtherAccessionsTabActive = false;
 }
 
 // URL for accessions dashboard where the view for it does not require user to be logged in
@@ -153,7 +154,7 @@ let dt_options = {
   },
 };
 
-$(document).on("document_ready", function() {
+$(document).on('document_ready', function () {
   const acceptRejectSampleURL = '/copo/dtol_submission/accept_reject_sample';
   const accessionsDashboardURL = '/copo/copo_accessions/dashboard';
   const tolInspectURL = '/copo/tol_dashboard/tol_inspect';
@@ -256,6 +257,8 @@ function get_filter_accession_titles(api) {
     headers: { 'X-CSRFToken': $.cookie('csrftoken') },
     dataType: 'json',
     data: {
+      showAllCOPOAccessions: $('#showAllCOPOAccessions').val(),
+      isUserProfileActive: isUserProfileActive,
       isOtherAccessionsTabActive: isOtherAccessionsTabActive,
     },
     success: function (data) {
