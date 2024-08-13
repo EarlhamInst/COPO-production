@@ -1010,10 +1010,9 @@ function update_pending_samples_table() {
         dt_options['scrollX'] = true;
         dt_options['scrollY'] = 1000;
         dt_options['fixedHeader'] = true;
-        sample_table = $('#profile_samples')
-          .DataTable(dt_options)
-          //.columns.adjust()
-          //.draw();
+        sample_table = $('#profile_samples').DataTable(dt_options);
+        //.columns.adjust()
+        //.draw();
       }
     });
 
@@ -1077,6 +1076,17 @@ function update_pending_samples_table() {
   if (which_profiles != 'my_profiles') {
     $('#profile_titles').css('width', '100%');
   }
+
+  // Adjust the width and padding of the search input
+  let profile_titles_table_wrapper = $('#profile_titles_wrapper');
+
+  profile_titles_table_wrapper
+    .find('.dataTables_filter')
+    .find('label')
+    .css({ padding: '10px 0' })
+    .find('input')
+    .removeClass('input-sm')
+    .attr('placeholder', 'Search profiles');
 }
 
 function handle_accept_reject(el) {
