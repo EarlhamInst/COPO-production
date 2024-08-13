@@ -249,7 +249,7 @@ function filterRecordsByAccessionType() {
 
 function get_filter_accession_titles(api) {
   // Get accession types from the 'accession_type' column in the data table
-  let table_accession_types = api.column(2).data().unique().sort().toArray();
+  // let table_accession_types = api.column(2).data().unique().sort().toArray();
 
   $.ajax({
     url: '/copo/copo_accessions/get_filter_accession_titles',
@@ -267,11 +267,11 @@ function get_filter_accession_titles(api) {
       } else {
         // Filter the accession types that are not in the table
         // if the web page is not the Accessions dashboard web page
-        if ($('#showAllCOPOAccessions').val() === 'False') {
-          data = data.filter((item) =>
-            table_accession_types.includes(item.value)
-          );
-        }
+        // if ($('#showAllCOPOAccessions').val() === 'False') {
+        //   data = data.filter((item) =>
+        //     table_accession_types.includes(item.value)
+        //   );
+        // }
         set_filter_checkboxes(data);
       }
     },
