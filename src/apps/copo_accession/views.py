@@ -188,3 +188,19 @@ def get_filter_accession_titles(request):
         accession_titles = profile_types
 
     return HttpResponse(json_util.dumps(accession_titles))
+
+def are_accession_records_available(request):
+    # Check if accession records are available in the SubmissionCollection of the database
+    showAllCOPOAccessions = d_utils.convertStringToBoolean(request.GET.get('showAllCOPOAccessions', str()))
+    isUserProfileActive = d_utils.convertStringToBoolean(request.GET.get('isUserProfileActive',str()))
+    profile_id = request.session.get('profile_id', str()) if isUserProfileActive else str()
+
+    # Create a dictionary to store the elements
+    element_dict = dict()
+    element_dict['showAllCOPOAccessions'] = showAllCOPOAccessions
+    element_dict['isUserProfileActive'] = isUserProfileActive
+    element_dict['profile_id'] = profile_id
+
+    records_count = Submission().get_accession_records_count(element_dict)
+    return HttpResponse(json_util.dumps(records_count))
+
