@@ -893,6 +893,7 @@ class Sample(DAComponent):
             field_values["status"]  = "pending"
             if is_erga:
                 field_values["approval"] = {}
+        field_values["error"] = ""
                 
         return self.update_field(field_values=field_values, oids=sample_ids)    
         #sample_obj_ids = [ObjectId(x) for x in sample_ids]

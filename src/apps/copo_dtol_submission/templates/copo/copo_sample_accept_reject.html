@@ -26,6 +26,11 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.4.0/css/fixedHeader.dataTables.min.css">
 
     <style>
+
+    .highlight_user_approved_already {
+        background-color: #ffd700 !important;
+    }
+ 
     </style>
 {% endblock %}
 
@@ -43,6 +48,7 @@
         <input type="hidden" id="profile_id" value="None"/>
         <input type="hidden" id="profile_title" value="None"/>
         <input type="hidden" id="dtol_sample_info" value="Idle"/>
+        <input type="hidden" id="assoicated_profiles_type_approval_for" value='{{ assoicated_profiles_type_approval_for|join:", " }}'/>
     </div>
 {% endblock browse_header_block %}
 
@@ -132,18 +138,9 @@
 
             <ul class="nav nav-tabs" id="sample_filter">
 
-                {% if is_bge_checker %}
-                <li class="hot_tab in active">
-                    <a data-toggle="tab" href="bge_pending">Pending BGE Checker Samples</a>
-                </li>
-                <li class="hot_tab in ">
-                    <a data-toggle="tab" href="pending">Pending Samples</a>
-                </li>
-                {% else %}
                 <li class="hot_tab in active">
                     <a data-toggle="tab" href="pending">Pending Samples</a>
                 </li>
-                {% endif %}
 
                 <li class="hot_tab in">
                     <a data-toggle="tab" href="processing">Processing Samples</a>

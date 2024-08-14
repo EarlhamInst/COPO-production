@@ -59,6 +59,45 @@ var dt_options = {
         }
       });
   },
+  drawCallback: function (settings) {
+    filter = $('#sample_filter').find('.active').find('a').attr('href');
+    if (filter != 'pending')
+      return;
+    var api = this.api();
+    var numCols = api.columns().nodes().length;
+    var assoicated_profiles_type_approval_for = $('#assoicated_profiles_type_approval_for').val();
+    const assoicated_profiles_type_approval_for_arr = assoicated_profiles_type_approval_for.split(",");
+    for (var i = numCols-1; i >=0  ; i--) {
+      if ($(api.column(i).header()).text() == 'approval') {
+        var error = api
+          .rows()
+          .eq(0)
+          .filter(function (rowIdx) {
+            approval_dates = api.cell(rowIdx, i).data()
+            if (approval_dates != undefined) {
+              for (k = 0; k < assoicated_profiles_type_approval_for_arr.length; k++) {
+                for (l=0; l<approval_dates.length; l++){
+                  if (approval_dates[l].startsWith(assoicated_profiles_type_approval_for_arr[k].trim() + " "))
+                    return true;
+                }
+              }
+            } 
+            return false
+          });
+          api
+          .rows(error)
+          .nodes()
+          .to$()
+          .addClass('highlight_user_approved_already');
+        break
+      }         
+
+
+    }
+    console.log(api.rows({ page: 'current' }).data());
+
+  },
+
   processing: true,
   serverSide: true,
   // Reload DataTable on input change.
@@ -1080,8 +1119,6 @@ function update_pending_samples_table() {
 }
 
 function handle_accept_reject(el) {
-  $('#spinner').fadeIn(fadeSpeed);
-  $('#accept_reject_button').find('button').prop('disabled', true);
 
   var checked = $('.form-check-input:checked').closest('tr');
 
@@ -1097,11 +1134,21 @@ function handle_accept_reject(el) {
     sample_ids.push($(checked[it]).attr('id'));
   });
 
+  if (sample_ids.length == 0) {
+    alert('Please select samples to ' + action);
+    $('#spinner').fadeOut(fadeSpeed);
+    return;
+  }
+
+  $('#spinner').fadeIn(fadeSpeed);
+  $('#accept_reject_button').find('button').prop('disabled', true);
+
   $(checked).each(function (idx, row) {
     $(row).fadeOut(fadeSpeed);
     $(row).remove();
   });
-
+  var profile_id = $('#profile_id').val();
+  var csrftoken = $.cookie('csrftoken');
   if (action == 'reject') {
     // mark sample object as rejected
     $.ajax({
@@ -1113,13 +1160,14 @@ function handle_accept_reject(el) {
       $('#spinner').fadeOut(fadeSpeed);
     });
   } else if (action == 'accept') {
+    is_skip = false
     if ($(document).data('accepted_warning')) {
-      // create or update dtol submission record
-      var profile_id = $('#profile_id').val();
       $('#sub_spinner').fadeIn(fadeSpeed);
       $.ajax({
         url: '/copo/dtol_submission/add_sample_to_dtol_submission/',
-        method: 'GET',
+        method: 'POST',
+        type: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
         data: {
           sample_ids: JSON.stringify(sample_ids),
           profile_id: profile_id,
@@ -1157,24 +1205,27 @@ function handle_accept_reject(el) {
               dialogRef.close();
               $(document).data('accepted_warning', true);
               // create or update dtol submission record
-              var profile_id = $('#profile_id').val();
-              $('#spinner').fadeIn(fadeSpeed);
+              $('#sub_spinner').fadeIn(fadeSpeed);
               $.ajax({
                 url: '/copo/dtol_submission/add_sample_to_dtol_submission/',
-                method: 'GET',
+                method: 'POST',
+                type: 'POST',
+                headers: { 'X-CSRFToken': csrftoken },
                 data: {
                   sample_ids: JSON.stringify(sample_ids),
                   profile_id: profile_id,
                 },
               }).done(function () {
                 $('#profile_titles').find('.selected').click();
-                // $('#spinner').fadeOut(fadeSpeed);
+                $('#spinner').fadeOut(fadeSpeed);
               });
             },
           },
         ],
+        
       });
     }
+
   }
 }
 

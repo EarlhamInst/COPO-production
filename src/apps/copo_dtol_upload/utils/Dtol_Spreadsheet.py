@@ -1,13 +1,10 @@
 # Created by fshaw at 03/04/2020
 import os
-import re
 import uuid
 import pickle
-import importlib
 from os.path import join, isfile
 from pathlib import Path
 from shutil import rmtree
-from urllib.error import HTTPError
 import jsonpath_rw_ext as jp
 import pandas
 from django.conf import settings
@@ -274,6 +271,7 @@ class DtolSpreadsheet:
         return True
     """
 
+    """
     def validate_taxonomy(self):
         ''' check if provided scientific name, TAXON ID,
         family and order are consistent with each other in known taxonomy'''
@@ -321,7 +319,7 @@ class DtolSpreadsheet:
                             action="error",
                             html_id="sample_info")
             return False
-
+    """
     def check_image_names(self, files):
         # compare list of sample names with specimen ids already uploaded
         samples = self.sample_data
@@ -569,22 +567,14 @@ class DtolSpreadsheet:
                 permit_filename_mapping[permit_filename] = new_permit_filename
 
         sample_data["_id"] = ""
+
         for index, p in sample_data.iterrows():
             s = dict(p)
-            type = ""
             # store manifest version for posterity. If unknown store as 0
-            if "asg" in self.type.lower():
-                type = "ASG"
-            elif "dtolenv" in self.type.lower():
-                type = "DTOLENV"
-            elif "dtol" in self.type.lower():
-                type = "DTOL"
-            elif "erga" in self.type.lower():
-                type = "ERGA"
 
-            s["manifest_version"] = settings.MANIFEST_VERSION.get(type, "0")
+            s["manifest_version"] = settings.MANIFEST_VERSION.get(self.type.upper(), "0")
             s["sample_type"] = self.type.lower()
-            s["tol_project"] = self.type
+            s["tol_project"] = self.type.lower()
             s["associated_tol_project"] = self.associated_type
             s["biosample_accession"] = []
             s["manifest_id"] = manifest_id

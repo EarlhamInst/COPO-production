@@ -103,22 +103,23 @@
       ],
       "ref": "",
       "deprecated": false,
-      "hidden": false,
+      "hidden": true,
       "label": "Associated Profile Type",
       "placeholder": "Select associated type(s)",
       "show_in_form": true,
       "id": "copo.profile.associated_type",
       "type": "array",
-      "show_in_table": true,
+      "show_in_table": false,
       "readonly": "true",
-      "control": "copo-multi-select2",
+      "control": "hidden",
       "option_values": {
         "callback": {
           "parameter": {"profile_type": "asg"},
           "function": "get_all_associated_profile_type_for_options",
           "provider": "src.apps.copo_core.utils"
          }
-      }    },  
+      }    
+    },  
     {
       "help_tip": "What are the other profile type(s) that the profile type (above) is associated with?",
       "required": "true",
@@ -132,15 +133,15 @@
       ],
       "ref": "",
       "deprecated": false,
-      "hidden": "false",
+      "hidden": true,
       "label": "Associated Profile Type",
       "placeholder": "Select associated type(s)",
       "show_in_form": true,
       "id": "copo.profile.associated_type",
       "type": "array",
-      "show_in_table": true,
+      "show_in_table": false,
       "readonly": "true",
-      "control": "copo-multi-select2",
+      "control": "hidden",
       "option_values": {
         "callback": {
           "parameter": {"profile_type": "dtol"},

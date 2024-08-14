@@ -6,7 +6,7 @@ from common.dal.profile_da import Profile
 from common.dal.submission_da import Submission
 from bson import json_util
 from common.utils.helpers import get_group_membership_asString, notify_frontend
-from src.apps.copo_core.models import AssociatedProfileType, SequencingCentre, ViewLock, ProfileType
+from src.apps.copo_core.models import AssociatedProfileType, ViewLock, ProfileType
 from src.apps.copo_core.views import web_page_access_checker
 from common.utils.helpers import  get_group_membership_asString, get_current_user
 import json
@@ -23,16 +23,15 @@ lg = settings.LOGGER
 @login_required
 def copo_sample_accept_reject(request):
     sample_manager_groups = list()
-    is_bge_checker = False
+    assoicated_profiles_type_approval_for = [assoicated_profile_type.name for assoicated_profile_type in AssociatedProfileType.objects.filter(is_approval_required=True, users=get_current_user())]
+ 
     user_groups = get_group_membership_asString()
     for group in user_groups:
         idx = group.rfind("_sample_managers")
         if idx > 0:
             sample_manager_groups.append(group[0:idx])
-        if "bge_checkers" == group:
-            is_bge_checker =  True
             
-    return render(request, 'copo/copo_sample_accept_reject.html', {"sample_manager_groups":sample_manager_groups, "is_bge_checker":is_bge_checker})
+    return render(request, 'copo/copo_sample_accept_reject.html', {"sample_manager_groups":sample_manager_groups, "assoicated_profiles_type_approval_for": assoicated_profiles_type_approval_for})
 
 
 @login_required
@@ -86,7 +85,7 @@ def get_dtol_samples_for_profile(request):
         # Sometimes profile is None
         if isinstance(profile, dict):
             associated_profiles = profile.get("associated_type",[])
-            sequencing_centres = profile.get('sequencing_centre',[])
+            #sequencing_centres = profile.get('sequencing_centre',[])
         
             #is_sequencing_centre_sample_manager = any(SequencingCentre.objects.filter( users=current_user, name__in = sequencing_centres))
             is_associated_project_type_checker = any(AssociatedProfileType.objects.filter(is_approval_required=True, users=current_user, name__in = associated_profiles))
@@ -129,9 +128,9 @@ def mark_sample_rejected(request):
 @web_page_access_checker
 @login_required
 def add_sample_to_dtol_submission(request):
-    sample_ids = request.GET.get("sample_ids")
+    sample_ids = request.POST.get("sample_ids")
     sample_ids = json.loads(sample_ids)
-    profile_id = request.GET.get("profile_id")
+    profile_id = request.POST.get("profile_id")
     profile = Profile().get_record(profile_id)
     associated_profiles = profile.get("associated_type",[])
     sequencing_centres = profile.get("sequencing_centre", [])

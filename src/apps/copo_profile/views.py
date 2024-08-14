@@ -130,6 +130,21 @@ def copo_profile_index(request):
     profile_page_length = len(profile_page)
     profile_page_length += profile_page_length
 
+
+    schema_map = dict()
+    for profile in profile_page:
+        profile_type = profile.get("type", "")
+        if type not in schema_map:
+            schema = Profile().get_component_schema(profile_type = profile_type )
+            schema_map[profile_type] = schema
+        schema = schema_map.get(profile_type, dict())
+
+        for f in schema:
+            f_id = f["id"].split(".")[-1]
+            if f_id in profile and not f.get("show_in_table", False):
+                profile.pop(f_id)
+
+
     if request.headers.get('x-requested-with') != 'XMLHttpRequest':
         # Set up the profile grids that are loaded by default when a user launches the web page
         context['profiles'] = profile_page

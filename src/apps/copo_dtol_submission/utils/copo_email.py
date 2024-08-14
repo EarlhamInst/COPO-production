@@ -57,7 +57,12 @@ class Email:
             title = profile.get('title','')
             apts = profile.get("associated_type", [])
             #apts = [apt.get("value", "") for apt in associated_profile_types]
+
             apt_objs = AssociatedProfileType.objects.filter(name__in=apts, is_acceptance_email_notification_required=True)
+            if not apt_objs:
+                logger.debug(f"No acceptance notificaion email required for the associated profile types {apts}. Skipping email notification.")    
+                return
+            
             sequencing_centres = profile.get('sequencing_centre',[])
 
             centre_contact_details = list()
