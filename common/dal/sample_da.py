@@ -1178,15 +1178,18 @@ class Sample(DAComponent):
         is_update_required = False
 
         record = self.get_collection_handle().find_one({"profile_id": str(profile_id), "status": {"$ne": "accepted"}},{"_id":0, "associated_tol_project":1})
-        existing_associated_tol_project = record.get("associated_tol_project", "")
 
-        if existing_associated_tol_project:
-            if existing_associated_tol_project != new_associated_tol_project:
-                    is_update_required = True
-        else:
-            # If the 'associated_tol_project' field is empty
-            # then, update it with the new value
-            is_update_required = True
+        # If the record exists
+        if record:
+            existing_associated_tol_project = record.get("associated_tol_project", "")
+
+            if existing_associated_tol_project:
+                if existing_associated_tol_project != new_associated_tol_project:
+                        is_update_required = True
+            else:
+                # If the 'associated_tol_project' field is empty
+                # then, update it with the new value
+                is_update_required = True
         return is_update_required
         
     def update_associated_tol_project(self, profile_id, associated_tol_project):
