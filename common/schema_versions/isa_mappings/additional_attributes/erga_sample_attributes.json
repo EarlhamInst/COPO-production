@@ -992,7 +992,7 @@
     "help_tip": "The geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
     "hidden": "false",
     "id": "copo.sample.DECIMAL_LATITUDE",
-    "label": "decimalLatitude",
+    "label": "Decimal Latitude",
     "manifest_version": [
       "2.5",
       "2.4.3",
@@ -1024,7 +1024,7 @@
     "help_tip": "The geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
     "hidden": "false",
     "id": "copo.sample.DECIMAL_LONGITUDE",
-    "label": "Longitude",
+    "label": "Decimal Longitude",
     "manifest_version": [
       "2.5",
       "2.4.3",
@@ -1056,7 +1056,7 @@
     "help_tip": "The geographic latitude start (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
     "hidden": "false",
     "id": "copo.sample.LATITUDE_START",
-    "label": "latitudeStart",
+    "label": "Latitude Start",
     "manifest_version": [
       "2.5",
       "2.4.3",
@@ -1118,7 +1118,7 @@
     "help_tip": "The geographic latitude end (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
     "hidden": "false",
     "id": "copo.sample.LATITUDE_END",
-    "label": "latitudeEnd",
+    "label": "Latitude End",
     "manifest_version": [
       "2.5",
       "2.4.3",
@@ -1180,7 +1180,7 @@
     "help_tip": "Comments or notes about the Location. e.g. Underwater since 2005",
     "hidden": "false",
     "id": "copo.sample.HABITAT",
-    "label": "Habitat Remarks",
+    "label": "Habitat remarks",
     "manifest_version": [
       "2.5",
       "2.4.3",
@@ -1370,7 +1370,7 @@
     "help_tip": "The original geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
     "hidden": "false",
     "id": "copo.sample.ORIGINAL_DECIMAL_LONGITUDE",
-    "label": "originalDecimalLongitude",
+    "label": "Original Decimal Longitude",
     "manifest_version": [
       "2.5",
       "2.4.3",
@@ -3147,472 +3147,5 @@
     "versions": [
       "OTHER_INFORMATION"
     ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "dwc": "",
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "false",
-    "id": "copo.sample.associated_tol_project",
-    "label": "Associated TOL (Tree of Life) Project",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_in_form": false,
-    "show_in_table": true,
-    "specifications": [
-      "erga"
-    ],
-    "type": "string",
-    "versions": [
-      "associated_tol_project"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "dwc": "",
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "false",
-    "id": "copo.sample.biosampleAccession",
-    "label": "Biosample Accession",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_in_form": false,
-    "show_in_table": true,
-    "specifications": [
-      "erga"
-    ],
-    "type": "string",
-    "versions": [
-      "biosampleAccession"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "copo-characteristics",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "excel_col": "",
-    "help_tip": "Characteristics of the sample e.g., height, sex",
-    "hidden": "false",
-    "id": "copo.sample.characteristics",
-    "label": "Characteristics",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_as_attribute": true,
-    "show_in_form": true,
-    "show_in_table": false,
-    "specifications": [
-      "isasample",
-      "biosample"
-    ],
-    "type": "array",
-    "versions": [
-      "characteristics"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "copo-characteristics",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "excel_col": "",
-    "help_tip": "Factors express treatments on the sample, e.g., compound, dose, duration",
-    "hidden": "false",
-    "id": "copo.sample.factorValues",
-    "label": "Factors",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_as_attribute": true,
-    "show_in_form": true,
-    "show_in_table": false,
-    "specifications": [
-      "isasample"
-    ],
-    "type": "array",
-    "versions": [
-      "factorValues"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "na",
-    "deprecated": false,
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "true",
-    "id": "copo.sample.manifest_id",
-    "label": "Manifest Identifier",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_in_form": false,
-    "show_in_table": true,
-    "specifications": [
-      "erga"
-    ],
-    "type": "string",
-    "versions": [
-      "manifest_id"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "dwc": "",
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "true",
-    "id": "copo.sample.manifest_version",
-    "label": "Manifest Version",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_in_form": false,
-    "show_in_table": true,
-    "specifications": [
-      "erga"
-    ],
-    "type": "string",
-    "versions": [
-      "manifest_version"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "true",
-    "id": "copo.sample.profile_id",
-    "label": "Profile Identifier",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "true",
-    "show_in_form": false,
-    "show_in_table": false,
-    "type": "string",
-    "versions": [
-      "profile_id"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "dwc": "",
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "false",
-    "id": "copo.sample.public_name",
-    "label": "Public Name",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_in_form": false,
-    "show_in_table": true,
-    "specifications": [
-      "erga"
-    ],
-    "type": "string",
-    "versions": [
-      "public_name"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "dwc": "http://rs.tdwg.org/dwc/terms/dynamicProperties",
-    "excel_col": "",
-    "help_tip": "rack_tube",
-    "hidden": "true",
-    "id": "copo.sample.rack_tube",
-    "label": "Rack Tube",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_as_attribute": false,
-    "show_in_form": false,
-    "show_in_table": false,
-    "specifications": [
-      "erga"
-    ],
-    "type": "string",
-    "versions": [
-      "rack_tube"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "select",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "true",
-    "id": "copo.sample.sample_type",
-    "label": "Sample Type",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "option_values": {
-      "callback": {
-        "parameter": "",
-        "function": "get_sample_type_options"
-      }
-    },
-    "order": null,
-    "ref": "",
-    "required": "true",
-    "show_as_attribute": true,
-    "show_in_form": false,
-    "show_in_table": false,
-    "type": "string",
-    "versions": [
-      "sample_type"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "dwc": "",
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "false",
-    "id": "copo.sample.species_list",
-    "label": "Species List",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_as_attribute": false,
-    "show_in_form": false,
-    "show_in_table": false,
-    "specifications": [
-      "erga"
-    ],
-    "type": "string",
-    "versions": [
-      "species_list"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "dwc": "",
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "false",
-    "id": "copo.sample.sraAccession",
-    "label": "SRA Accession",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_in_form": false,
-    "show_in_table": true,
-    "specifications": [
-      "erga"
-    ],
-    "type": "string",
-    "versions": [
-      "sraAccession"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "pending",
-    "deprecated": false,
-    "dwc": "",
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "false",
-    "id": "copo.sample.status",
-    "label": "Status",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_in_form": false,
-    "show_in_table": true,
-    "specifications": [
-      "erga"
-    ],
-    "type": "string",
-    "versions": [
-      "status"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "dwc": "",
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "false",
-    "id": "copo.sample.submissionAccession",
-    "label": "Submission Accession",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_in_form": false,
-    "show_in_table": true,
-    "specifications": [
-      "erga"
-    ],
-    "type": "string",
-    "versions": [
-      "submissionAccession"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "dwc": "",
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "false",
-    "id": "copo.sample.tol_project",
-    "label": "TOL (Tree of Life) Project",
-    "manifest_version": [
-      "2.5",
-      "2.4.3",
-      "2.4.2",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_in_form": false,
-    "show_in_table": true,
-    "specifications": [
-      "erga"
-    ],
-    "type": "string",
-    "versions": [
-      "tol_project"
-    ]
   }
-  
 ]

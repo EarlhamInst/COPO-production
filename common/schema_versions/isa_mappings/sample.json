@@ -1,4 +1,6 @@
 {
+  "title": "Sample schema mappings",
+  "description": "Mappings of attribute in the Sample schema to a UI configuration source.",
   "configuration": {
     "type": "json",
     "provider": "isa",
@@ -41,6 +43,79 @@
       "ref": "Name",
       "control": "text",
       "show_as_attribute": true
+    },
+    {
+      "help_tip": "",
+      "required": "false",
+      "default_value": "",
+      "specifications": [
+        "isasample"
+      ],
+      "control_meta": {},
+      "versions": [
+        "description"
+      ],
+      "ref": "",
+      "deprecated": false,
+      "hidden": "true",
+      "label": "Description",
+      "show_in_form": true,
+      "id": "copo.sample.description",
+      "type": "object",
+      "show_in_table": true,
+      "control": "text",
+      "show_as_attribute": false
+    },
+    {
+      "colour": "",
+      "control": "copo-characteristics",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "excel_col": "",
+      "help_tip": "Characteristics of the sample e.g., height, sex",
+      "hidden": "false",
+      "id": "copo.sample.characteristics",
+      "label": "Characteristics",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_as_attribute": true,
+      "show_in_form": true,
+      "show_in_table": false,
+      "specifications": [
+        "isasample",
+        "biosample"
+      ],
+      "type": "array",
+      "versions": [
+        "characteristics"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "copo-characteristics",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "excel_col": "",
+      "help_tip": "Factors express treatments on the sample, e.g., compound, dose, duration",
+      "hidden": "false",
+      "id": "copo.sample.factorValues",
+      "label": "Factors",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_as_attribute": true,
+      "show_in_form": true,
+      "show_in_table": false,
+      "specifications": [
+        "isasample"
+      ],
+      "type": "array",
+      "versions": [
+        "factorValues"
+      ]
     },
     {
       "help_tip": "A taxonomic information associated to the Source Biological material (e.g., species, genus, strain).",
@@ -113,6 +188,320 @@
       "control": "text"
     },
     {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "false",
+      "id": "copo.sample.public_name",
+      "label": "Public Name",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_in_form": false,
+      "show_in_table": true,
+      "type": "string",
+      "versions": [
+        "public_name"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "http://rs.tdwg.org/dwc/terms/dynamicProperties",
+      "excel_col": "",
+      "help_tip": "rack_tube",
+      "hidden": "true",
+      "id": "copo.sample.rack_tube",
+      "label": "Rack Tube",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_as_attribute": false,
+      "show_in_form": false,
+      "show_in_table": false,
+      "type": "string",
+      "versions": [
+        "rack_tube"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "false",
+      "id": "copo.sample.species_list",
+      "label": "Species List",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_as_attribute": false,
+      "show_in_form": false,
+      "show_in_table": false,
+      "type": "string",
+      "versions": [
+        "species_list"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "select",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "true",
+      "id": "copo.sample.sample_type",
+      "label": "Sample Type",
+      "option_values": {
+        "callback": {
+          "parameter": "",
+          "function": "get_sample_type_options"
+        }
+      },
+      "order": null,
+      "ref": "",
+      "required": "true",
+      "show_as_attribute": true,
+      "show_in_form": false,
+      "show_in_table": false,
+      "type": "string",
+      "versions": [
+        "sample_type"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "pending",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "false",
+      "id": "copo.sample.status",
+      "label": "Status",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_in_form": false,
+      "show_in_table": true,
+      "type": "string",
+      "versions": [
+        "status"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "false",
+      "id": "copo.sample.biosampleAccession",
+      "label": "Biosample Accession",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_in_form": false,
+      "show_in_table": true,
+      "type": "string",
+      "versions": [
+        "biosampleAccession"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "false",
+      "id": "copo.sample.sraAccession",
+      "label": "SRA Accession",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_in_form": false,
+      "show_in_table": true,
+      "type": "string",
+      "versions": [
+        "sraAccession"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "false",
+      "id": "copo.sample.submissionAccession",
+      "label": "Submission Accession",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_in_form": false,
+      "show_in_table": true,
+      "type": "string",
+      "versions": [
+        "submissionAccession"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "na",
+      "deprecated": false,
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "true",
+      "id": "copo.sample.manifest_id",
+      "label": "Manifest Identifier",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_in_form": false,
+      "show_in_table": true,
+      "type": "string",
+      "versions": [
+        "manifest_id"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "true",
+      "id": "copo.sample.manifest_version",
+      "label": "Manifest Version",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_in_form": false,
+      "show_in_table": true,
+      "type": "string",
+      "versions": [
+        "manifest_version"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "true",
+      "id": "copo.sample.profile_id",
+      "label": "Profile Identifier",
+      "order": null,
+      "ref": "",
+      "required": "true",
+      "show_in_form": false,
+      "show_in_table": false,
+      "type": "string",
+      "versions": [
+        "profile_id"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "false",
+      "id": "copo.sample.tol_project",
+      "label": "TOL (Tree of Life) Project",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_in_form": false,
+      "show_in_table": true,
+      "type": "string",
+      "versions": [
+        "tol_project"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "false",
+      "id": "copo.sample.associated_tol_project",
+      "label": "Associated TOL (Tree of Life) Project",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_in_form": false,
+      "show_in_table": true,
+      "type": "string",
+      "versions": [
+        "associated_tol_project"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "datetime",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "false",
+      "id": "copo.sample.approval_date",
+      "label": "Approval Date",
+      "order": null,
+      "ref": "",
+      "required": "false",
+      "show_in_form": false,
+      "show_in_table": true,
+      "type": "dict",
+      "versions": [
+        "approval"
+      ]
+    },
+    {
       "help_tip": "",
       "required": "true",
       "default_value": "",
@@ -129,52 +518,6 @@
       "type": "string",
       "show_in_table": false,
       "control": "date-picker"
-    },
-    {
-      "help_tip": "",
-      "required": "false",
-      "default_value": "",
-      "specifications": [
-        "isasample"
-      ],      
-      "control_meta": {},
-      "versions": [
-        "description"
-      ],
-      "ref": "",
-      "deprecated": false,
-      "hidden": "true",
-      "label": "Description",
-      "show_in_form": true,
-      "id": "copo.sample.description",
-      "type": "object",
-      "show_in_table": true,
-      "control": "text",
-      "show_as_attribute": false
-    },
-    {
-      "colour": "",
-      "control": "datetime",
-      "control_meta": {},
-      "default_value": "",
-      "deprecated": false,
-      "dwc": "",
-      "excel_col": "",
-      "help_tip": "",
-      "hidden": "false",
-      "id": "copo.sample.approval",
-      "label": "Approval Date",
-      "order": null,
-      "ref": "",
-      "required": "false",
-      "show_in_form": false,
-      "show_in_table": true,
-      "type": "dict",
-      "versions": [
-        "approval"
-      ]
-    }     
-  ],
-  "description": "Mappings of attribute in the Sample schema to a UI configuration source.",
-  "title": "Sample schema mappings"
+    }
+  ]
 }
