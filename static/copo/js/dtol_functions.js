@@ -61,41 +61,48 @@ var dt_options = {
   },
   drawCallback: function (settings) {
     filter = $('#sample_filter').find('.active').find('a').attr('href');
-    if (filter != 'pending')
-      return;
+    if (filter != 'pending') return;
     var api = this.api();
     var numCols = api.columns().nodes().length;
-    var assoicated_profiles_type_approval_for = $('#assoicated_profiles_type_approval_for').val();
-    const assoicated_profiles_type_approval_for_arr = assoicated_profiles_type_approval_for.split(",");
-    for (var i = numCols-1; i >=0  ; i--) {
+    var associated_profiles_type_approval_for = $(
+      '#associated_profiles_type_approval_for'
+    ).val();
+    const associated_profiles_type_approval_for_arr =
+      associated_profiles_type_approval_for.split(',');
+    for (var i = numCols - 1; i >= 0; i--) {
       if ($(api.column(i).header()).text() == 'approval') {
         var error = api
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
-            approval_dates = api.cell(rowIdx, i).data()
+            approval_dates = api.cell(rowIdx, i).data();
             if (approval_dates != undefined) {
-              for (k = 0; k < assoicated_profiles_type_approval_for_arr.length; k++) {
-                for (l=0; l<approval_dates.length; l++){
-                  if (approval_dates[l].startsWith(assoicated_profiles_type_approval_for_arr[k].trim() + " "))
+              for (
+                k = 0;
+                k < associated_profiles_type_approval_for_arr.length;
+                k++
+              ) {
+                for (l = 0; l < approval_dates.length; l++) {
+                  if (
+                    approval_dates[l].startsWith(
+                      associated_profiles_type_approval_for_arr[k].trim() + ' '
+                    )
+                  )
                     return true;
                 }
               }
-            } 
-            return false
+            }
+            return false;
           });
-          api
+        api
           .rows(error)
           .nodes()
           .to$()
           .addClass('highlight_user_approved_already');
-        break
-      }         
-
-
+        break;
+      }
     }
-    console.log(api.rows({ page: 'current' }).data());
-
+    // console.log(api.rows({ page: 'current' }).data());
   },
 
   processing: true,
@@ -122,7 +129,7 @@ var dt_options = {
 };
 var sample_table;
 
-$(document).on("document_ready", function() {
+$(document).on('document_ready', function () {
   // functions defined here are called from both copo_sample_accept_reject and copo_samples, all provide DTOL
   // functionality
   $(document).data('accepted_warning', false);
@@ -729,6 +736,10 @@ $(document).on("document_ready", function() {
       // Set the scrollbar to the bottom of the status log
       scrollToBottomOfStatusLog();
     }
+
+    if (sample_table != undefined) {
+      sample_table.columns.adjust().draw();
+    }
   });
 });
 
@@ -795,7 +806,6 @@ function row_select(ev) {
         });
         $('#sample_panel').find('.labelling').empty().append(header);
         $('#profile_samples_wrapper').show();
-        sample_table.columns.adjust().draw();
 
         // Enable table buttons when profile has samples in it
         view_images_btn.prop('disabled', false).show();
@@ -821,6 +831,9 @@ function row_select(ev) {
         }
       }
     });
+
+    // Adjust 'profile_samples' columns and redraw without resetting the paging
+    sample_table.columns.adjust().draw(false);
 
     $('#spinner').fadeOut('fast');
   }
@@ -1100,6 +1113,7 @@ function update_pending_samples_table() {
       if (api.row(0) != undefined) {
         this.find('tbody').find('tr:first').click();
       }
+
       // Allow the full title of the profile to be
       // displayed on mouseover/hover i.e. on
       // to the first column of the profile table
@@ -1129,7 +1143,6 @@ function update_pending_samples_table() {
 }
 
 function handle_accept_reject(el) {
-
   var checked = $('.form-check-input:checked').closest('tr');
 
   var button = $(el.currentTarget);
@@ -1170,7 +1183,7 @@ function handle_accept_reject(el) {
       $('#spinner').fadeOut(fadeSpeed);
     });
   } else if (action == 'accept') {
-    is_skip = false
+    is_skip = false;
     if ($(document).data('accepted_warning')) {
       $('#sub_spinner').fadeIn(fadeSpeed);
       $.ajax({
@@ -1232,10 +1245,8 @@ function handle_accept_reject(el) {
             },
           },
         ],
-        
       });
     }
-
   }
 }
 
