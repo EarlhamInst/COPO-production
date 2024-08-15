@@ -23,7 +23,7 @@ lg = settings.LOGGER
 @login_required
 def copo_sample_accept_reject(request):
     sample_manager_groups = list()
-    assoicated_profiles_type_approval_for = [assoicated_profile_type.name for assoicated_profile_type in AssociatedProfileType.objects.filter(is_approval_required=True, users=get_current_user())]
+    associated_profiles_type_approval_for = [assoicated_profile_type.name for assoicated_profile_type in AssociatedProfileType.objects.filter(is_approval_required=True, users=get_current_user())]
  
     user_groups = get_group_membership_asString()
     for group in user_groups:
@@ -31,7 +31,7 @@ def copo_sample_accept_reject(request):
         if idx > 0:
             sample_manager_groups.append(group[0:idx])
             
-    return render(request, 'copo/copo_sample_accept_reject.html', {"sample_manager_groups":sample_manager_groups, "assoicated_profiles_type_approval_for": assoicated_profiles_type_approval_for})
+    return render(request, 'copo/copo_sample_accept_reject.html', {"sample_manager_groups":sample_manager_groups, "associated_profiles_type_approval_for": associated_profiles_type_approval_for})
 
 
 @login_required
@@ -139,7 +139,7 @@ def add_sample_to_dtol_submission(request):
     current_user = get_current_user()
     is_sample_manager = True #assume user is a sample manager as it has been checked in the decorator
     assoicated_profiles_type_require_approval = AssociatedProfileType.objects.filter(is_approval_required=True,  name__in =  associated_profiles)
-    assoicated_profiles_type_approval_for = AssociatedProfileType.objects.filter(is_approval_required=True,  users=current_user,  name__in = associated_profiles)
+    associated_profiles_type_approval_for = AssociatedProfileType.objects.filter(is_approval_required=True,  users=current_user,  name__in = associated_profiles)
 
 
     # check we have required params
@@ -171,7 +171,7 @@ def add_sample_to_dtol_submission(request):
                 case "pending":
                     all_approved = True
                     for associated_profile in assoicated_profiles_type_require_approval:
-                        if associated_profile in assoicated_profiles_type_approval_for:
+                        if associated_profile in associated_profiles_type_approval_for:
                             update_approval[f"approval.{associated_profile.name}"] = now
                             update_approval_for_samples.append(sample["_id"])
                         elif not sample.get("approval",{}).get(associated_profile.name,""):
