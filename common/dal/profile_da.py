@@ -6,6 +6,7 @@ from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from common.utils import helpers
 from bson.objectid import ObjectId
 from .copo_base_da import DAComponent, handle_dict, DataSchemas
+from src.apps.copo_core.models import ProfileType
 import re
 
 class ProfileInfo:
@@ -149,15 +150,34 @@ class Profile(DAComponent):
 
     def save_record(self, auto_fields=dict(), **kwargs):
         from .copo_da import Person
+        from .sample_da import Sample
+        new_record = False
+        profile_type = auto_fields.get("copo.profile.type", "")
+
         if not kwargs.get("target_id", str()):
+            new_record = True
             for k, v in dict(
                     copo_id=helpers.get_copo_id(),
                     user_id=helpers.get_user_id()
             ).items():
                 auto_fields[self.get_qualified_field(k)] = v
 
-        schema = self.get_component_schema(profile_type = auto_fields.get("copo.profile.type", ""))
+        schema = self.get_component_schema(profile_type = profile_type)
         rec = super(Profile, self).save_record(auto_fields, schema=schema, **kwargs)
+
+        # Trigger if record has been updated
+        if not new_record:
+            if ProfileType.objects.get(type=profile_type).is_dtol_profile:
+                associated_type_lst = auto_fields.get("copo.profile.associated_type", [])
+
+                # Get associated type(s) as string separated by '|' symbol
+                associated_type = " | ".join(associated_type_lst)
+
+                # Update the 'associated_tol_project' field for unaccepted sample record(s) (if any exist)
+                is_associated_tol_project_update_required =  Sample().is_associated_tol_project_update_required(profile_id=kwargs["target_id"], new_associated_tol_project=associated_type)
+                
+                if is_associated_tol_project_update_required:
+                    Sample().update_associated_tol_project(profile_id=kwargs["target_id"], associated_tol_project=associated_type)
 
         # trigger after save actions
         if not kwargs.get("target_id", str()):

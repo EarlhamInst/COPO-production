@@ -1172,3 +1172,24 @@ class Sample(DAComponent):
         for id in datafile_ids:
             self.get_collection_handle().update_one({"profile_id": self.profile_id, "read.file_id": {
                 "$regex": id}, "read.$.status": {"$ne": status}}, {"$set": {"read.$.status": status, "modifed_date":  dt}})
+    
+    def is_associated_tol_project_update_required (self, profile_id, new_associated_tol_project):
+        # Determine if the 'associated_tol_project' field should be updated for unaccepted samples
+        is_update_required = False
+
+        record = self.get_collection_handle().find_one({"profile_id": str(profile_id), "status": {"$ne": "accepted"}},{"_id":0, "associated_tol_project":1})
+        existing_associated_tol_project = record.get("associated_tol_project", "")
+
+        if existing_associated_tol_project:
+            if existing_associated_tol_project != new_associated_tol_project:
+                    is_update_required = True
+        else:
+            # If the 'associated_tol_project' field is empty
+            # then, update it with the new value
+            is_update_required = True
+        return is_update_required
+        
+    def update_associated_tol_project(self, profile_id, associated_tol_project):
+        # Update the 'associated_tol_project' field for all samples that have not been accepted based on the 'profile_id'
+        sample_ids = cursor_to_list_no_ids(self.get_collection_handle().find({"profile_id": profile_id, "status": {"$ne": "accepted"}},{"_id": 1}))
+        self.update_field(field ="associated_tol_project", value=associated_tol_project, oids=sample_ids)
