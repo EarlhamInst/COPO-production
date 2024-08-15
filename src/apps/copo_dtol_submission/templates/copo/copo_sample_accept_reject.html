@@ -1,5 +1,4 @@
 {% extends 'copo/base_1col.html' %}
-
 {% load static %}
 {% load web_tags %}
 {% load html_tags %}
@@ -7,192 +6,251 @@
 {% block title %}Accept/Reject Samples{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="https://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
-    <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
-    <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload.css' %}">
-    <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui.css' %}">
-    <!-- CSS adjustments for browsers with JavaScript disabled -->
-    <noscript>
-        <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-noscript.css' %}">
-    </noscript>
-    <noscript>
-        <link rel="stylesheet"
-              href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui-noscript.css' %}">
-    </noscript>
-    <link rel="stylesheet" href="{% static 'copo/css/copo/copo_wizard.css' %}">
-    <link rel="stylesheet" href="{% static 'copo_dtol_submission/css/copo_sample_accept_reject.css' %}">
-    <link rel="stylesheet" href="{% static 'copo/css/copo/sample.css' %}">
-    <link rel="stylesheet" href="{% static 'copo/bootstrap-treeview-1.2.0/dist/bootstrap-treeview.min.css' %}">
-    <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.4.0/css/fixedHeader.dataTables.min.css">
+  <link rel="stylesheet" href="https://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
 
-    <style>
+  <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+  <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload.css' %}">
+  <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui.css' %}">
 
+  <!-- CSS adjustments for browsers with JavaScript disabled -->
+  <noscript> <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-noscript.css' %}"></noscript>
+  <noscript> <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui-noscript.css' %}"></noscript>
+
+  <link rel="stylesheet" href="{% static 'copo/css/copo/copo_wizard.css' %}">
+  <link rel="stylesheet" href="{% static 'copo_dtol_submission/css/copo_sample_accept_reject.css' %}">
+  <link rel="stylesheet" href="{% static 'copo/css/copo/sample.css' %}">
+  <link rel="stylesheet" href="{% static 'copo/bootstrap-treeview-1.2.0/dist/bootstrap-treeview.min.css' %}">
+  <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.4.0/css/fixedHeader.dataTables.min.css">
+
+  <style>
     .highlight_user_approved_already {
-        background-color: #ffd700 !important;
+      background-color: #ffd700 !important;
     }
- 
-    </style>
+  </style>
 {% endblock %}
 
 {% block title_block %} Index {% endblock %}
 
 {% block tagline_block %}
-
 {% endblock %}
 
 {% block browse_header_block %}
-    {% csrf_token %}
-    <div hidden id="hidden_attrs">
-        <!-- hidden attributes  -->
-        <input type="hidden" id="nav_component_name" value="sample"/>
-        <input type="hidden" id="profile_id" value="None"/>
-        <input type="hidden" id="profile_title" value="None"/>
-        <input type="hidden" id="dtol_sample_info" value="Idle"/>
-        <input type="hidden" id="assoicated_profiles_type_approval_for" value='{{ assoicated_profiles_type_approval_for|join:", " }}'/>
-    </div>
+  {% csrf_token %}
+
+  <div hidden id="hidden_attrs">
+    <!-- hidden attributes  -->
+    <input type="hidden" id="nav_component_name" value="sample" />
+    <input type="hidden" id="profile_id" value="None" />
+    <input type="hidden" id="profile_title" value="None" />
+    <input type="hidden" id="dtol_sample_info" value="Idle" />
+    <input
+      type="hidden"
+      id="associated_profiles_type_approval_for"
+      value='{{ associated_profiles_type_approval_for|join:", " }}'
+    />
+  </div>
 {% endblock browse_header_block %}
 
 {% block page_tile %}
-
-{% endblock page_tile %}
+{% endblock page_tile %} 
 
 {% block content %}
-    <div class="row padding-top-20">
-        <div class="col-lg-9 col-sm-9 col-md-9">
-            <h3 class="h3">Choose to Accept or Reject&emsp;&nbsp;<select id='group_id' class="form-control" style="display: inline-block; width: fit-content;" name='group' title="Type of manifest to accept/reject samples for">{% for group in sample_manager_groups %}<option value='{{ group }}' title='{{group}}' >{{ group }}</option>{% endfor %}</select>  </h3>
-            <h3 class="h3"><small>Note: Clicking the 'Accept' button will immediately send sample information to European Nucleotide Archive (ENA) or BioSample</small></h3>
-            <h3 class="h3">
-                <small> Toggle profile panel visibility:&emsp;
-                    <button id="toggleProfilePanelBtn" class="btn btn-primary btn-sm" type="button">Hide profile panel
-                    </button>
-                </small>
-            </h3>
-        </div>
-        <div class="col-lg-3 col-sm-3 col-md-3">
-            <h4 class="h4">Status</h4>
-            <div id="spinner" class="pull-right ui tiny active inline loader status-spinner"></div>
-            <div class="status_log status_log_collapse">
-                <button id="clearStatusLogBtn" type="button" aria-label="Clear" disabled>
-                    &times;
-                </button>
-                <p class="status_content">Idle</p>
-            </div>
-        </div>
+<div class="row padding-top-20">
+  <div class="col-lg-9 col-sm-9 col-md-9">
+    <h3 class="h3">
+      Choose to Accept or Reject&emsp;&nbsp;<select
+        id="group_id"
+        class="form-control"
+        style="display: inline-block; width: fit-content"
+        name="group"
+        title="Type of manifest to accept/reject samples for"
+      >
+        {% for group in sample_manager_groups %}
+        <option value="{{ group }}" title="{{group}}">{{ group }}</option>
+        {% endfor %}
+      </select>
+    </h3>
+    <h3 class="h3">
+      <small
+        >Note: Clicking the 'Accept' button will immediately send sample
+        information to European Nucleotide Archive (ENA) or BioSample</small
+      >
+    </h3>
+    <h3 class="h3">
+      <small>
+        Toggle profile panel visibility:&emsp;
+        <button
+          id="toggleProfilePanelBtn"
+          class="btn btn-primary btn-sm"
+          type="button"
+        >
+          Hide profile panel
+        </button>
+      </small>
+    </h3>
+  </div>
+  <div class="col-lg-3 col-sm-3 col-md-3">
+    <h4 class="h4">Status</h4>
+    <div
+      id="spinner"
+      class="pull-right ui tiny active inline loader status-spinner"
+    ></div>
+    <div class="status_log status_log_collapse">
+      <button id="clearStatusLogBtn" type="button" aria-label="Clear" disabled>
+        &times;
+      </button>
+      <p class="status_content">Idle</p>
     </div>
+  </div>
+</div>
 
-    <hr class="hr_margin_top"/>
+<hr class="hr_margin_top" />
 
-    <div class="row">
-        <div class="panel-col-4" id="profile_panel">
-            <ul hidden class="nav nav-tabs profile-filter" id="erga">
-                <li class="hot_tab_profile in active">
-                    <a data-toggle="tab" href="my_profiles">All profiles</a>
-                </li>
-                <!--li class="hot_tab_profile in">
+<div class="row">
+  <div class="panel-col-4" id="profile_panel">
+    <ul hidden class="nav nav-tabs profile-filter" id="erga">
+      <li class="hot_tab_profile in active">
+        <a data-toggle="tab" href="my_profiles">All profiles</a>
+      </li>
+      <!--li class="hot_tab_profile in">
                     <a data-toggle="tab" href="all_profiles">All profiles</a>
-                </li-->  
-            </ul>
+                </li-->
+    </ul>
 
-            <ul hidden class="nav nav-tabs profile-filter" id="non_erga">
-                <li class="hot_tab_profile in active">
-                    <a data-toggle="tab" href="my_profiles">All profiles</a>
-                </li>
-            </ul>
+    <ul hidden class="nav nav-tabs profile-filter" id="non_erga">
+      <li class="hot_tab_profile in active">
+        <a data-toggle="tab" href="my_profiles">All profiles</a>
+      </li>
+    </ul>
 
-            <table id="profile_titles" class="table table-hover table-condensed">
-                <thead>
-                <!--tr>
+    <table id="profile_titles" class="table table-hover table-condensed">
+      <thead>
+        <!--tr>
                     <th>Profile Title</th>
                     <th>Date Created</th>
                     <th class="show_sample_links">Samples link</th>
                 </tr-->
-                </thead>
-                <tbody></tbody>
-            </table>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="panel-col-8" id="sample_panel">
+    <div
+      class="ui buttons"
+      id="accept_reject_button"
+      style="margin-bottom: 10px"
+    >
+      <button type="button" disabled="true" class="ui negative button">
+        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        Reject
+      </button>
+      <div class="or"></div>
+      <button type="button" disabled="true" class="ui positive button">
+        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Accept
+      </button>
+    </div>
+    <span style="margin-left: 20px" id="edit-buttons">
+      <button
+        class="select-all tiny ui basic button"
+        tabindex="0"
+        aria-controls=""
+        type="button"
+      >
+        <span>Select all visible</span>
+      </button>
+      <button
+        class="select-none tiny ui basic button"
+        tabindex="0"
+        aria-controls=""
+        type="button"
+      >
+        <span>Select None</span>
+      </button>
+      <button
+        class="delete-selected tiny ui red basic button"
+        tabindex="0"
+        aria-controls=""
+        type="button"
+      >
+        <i class="fa fa-trash-can"></i>
+        <span>Delete Selected</span>
+      </button>
+      <button
+        class="download-permits tiny ui orange basic button"
+        tabindex="0"
+        aria-controls=""
+        type="button"
+      >
+        <i class="fa fa-download"></i>
+        <span>Download Permits</span>
+      </button>
+      <button
+        class="view-images tiny ui teal basic button"
+        tabindex="0"
+        aria-controls=""
+        type="button"
+      >
+        <i class="fa fa-eye"></i>
+        <span>View Images</span>
+      </button>
+    </span>
 
-        </div>
-        <div class="panel-col-8" id="sample_panel">
+    <ul class="nav nav-tabs" id="sample_filter">
+      <li class="hot_tab in active">
+        <a data-toggle="tab" href="pending">Pending Samples</a>
+      </li>
 
-            <div class="ui buttons" id="accept_reject_button" style="margin-bottom: 10px">
-                <button type="button" disabled="true" class="ui negative button">
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Reject
-                </button>
-                <div class="or"></div>
-                <button type="button" disabled="true" class="ui positive button">
-                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Accept
-                </button>
-            </div>
-            <span style="margin-left:20px" id="edit-buttons">
-                <button class="select-all tiny ui basic button" tabindex="0" aria-controls="" type="button"><span>Select all visible</span></button>
-                <button class="select-none tiny ui basic button" tabindex="0" aria-controls="" type="button"><span>Select None</span></button>
-                <button class="delete-selected tiny ui red basic button" tabindex="0" aria-controls="" type="button">
-                    <i class="fa fa-trash-can"></i>
-                    <span>Delete Selected</span></button>
-                <button class="download-permits tiny ui orange basic button" tabindex="0" aria-controls="" type="button">
-                    <i class="fa fa-download"></i>
-                    <span>Download Permits</span>
-                </button>
-                <button class="view-images tiny ui teal basic button" tabindex="0" aria-controls="" type="button">
-                    <i class="fa fa-eye"></i>
-                    <span>View Images</span>
-                </button>
-            </span>
-
-
-            <ul class="nav nav-tabs" id="sample_filter">
-
-                <li class="hot_tab in active">
-                    <a data-toggle="tab" href="pending">Pending Samples</a>
-                </li>
-
-                <li class="hot_tab in">
-                    <a data-toggle="tab" href="processing">Processing Samples</a>
-                </li>
-                <li class="hot_tab in">
-                    <a data-toggle="tab" href="accepted">Accepted Samples</a>
-                </li>
-                <li class="hot_tab in">
-                    <a data-toggle="tab" href="rejected">Rejected Samples</a>
-                </li>
-                <!--li class="hot_tab in" >
+      <li class="hot_tab in">
+        <a data-toggle="tab" href="processing">Processing Samples</a>
+      </li>
+      <li class="hot_tab in">
+        <a data-toggle="tab" href="accepted">Accepted Samples</a>
+      </li>
+      <li class="hot_tab in">
+        <a data-toggle="tab" href="rejected">Rejected Samples</a>
+      </li>
+      <!--li class="hot_tab in" >
                     <a data-toggle="tab" href="private">Private Samples</a>
                 </li-->
-            </ul>
+    </ul>
 
+    <!--<div class="table_viewport">-->
+    <h4 class="h4">
+      <small class="labelling"
+        >Click a Profile on the left to see Samples.</small
+      >
+    </h4>
 
-            <!--<div class="table_viewport">-->
-            <h4 class="h4"><small class="labelling">Click a Profile on the left to see Samples.</small></h4>
-
-            <table id="profile_samples" class="table table-hover striped table-bordered display compact nowrap">
-                <thead></thead>
-                <tbody></tbody>
-            </table>
-
-        </div>
-    </div>
+    <table
+      id="profile_samples"
+      class="table table-hover striped table-bordered display compact nowrap"
+    >
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
 
 <!-- sample images modal -->
 {% include 'copo/component_sample_images_modal.html' %}
 <!-- end sample images modal -->
-
 {% endblock %}
 
 {% block help_section %}
-
 {% endblock %}
 
 {% block js_block %}
-    <script src="{% static 'copo/js/generic_handlers.js' %}"></script>
-    <script src="{% static 'copo/js/generic_handlers_ext2.js' %}"></script>
-    <script src="{% static 'copo/js/copo_form_handlers.js' %}"></script>
-    <script src="{% static 'copo/js/dtol_functions.js' %}"></script>
-    <script src="{% static 'copo/js/copo_parse_spreadsheet.js' %}"></script>
-    <script src="{% static 'copo/js/filesaver.js' %}"></script>
-    <script src="{% static 'copo/js/jszip-utils.min.js' %}"></script>
-    <script src="{% static 'copo/js/jszip.min.js' %}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
-    <script src="https://cdn.datatables.net/fixedheader/3.4.0/js/dataTables.fixedHeader.min.js"></script>
-    <script src="{% static 'copo_dtol_submission/js/copo_sample_accept_reject.js' %}"></script>
-    <script>socket = undefined</script>
+  <script src="{% static 'copo/js/generic_handlers.js' %}"></script>
+  <script src="{% static 'copo/js/generic_handlers_ext2.js' %}"></script>
+  <script src="{% static 'copo/js/copo_form_handlers.js' %}"></script>
+  <script src="{% static 'copo/js/dtol_functions.js' %}"></script>
+  <script src="{% static 'copo/js/copo_parse_spreadsheet.js' %}"></script>
+  <script src="{% static 'copo/js/filesaver.js' %}"></script>
+  <script src="{% static 'copo/js/jszip-utils.min.js' %}"></script>
+  <script src="{% static 'copo/js/jszip.min.js' %}"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+  <script src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
+  <script src="https://cdn.datatables.net/fixedheader/3.4.0/js/dataTables.fixedHeader.min.js"></script>
+  <script src="{% static 'copo_dtol_submission/js/copo_sample_accept_reject.js' %}"></script>
+  <script> socket = undefined; </script>
 {% endblock %}
