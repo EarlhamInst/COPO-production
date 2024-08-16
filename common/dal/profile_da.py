@@ -2,12 +2,11 @@
 import pymongo
 from bson.errors import InvalidId
 from common.dal.mongo_util import cursor_to_list, cursor_to_list_str
-from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from common.utils import helpers
 from bson.objectid import ObjectId
-from .copo_base_da import DAComponent, handle_dict, DataSchemas
-from src.apps.copo_core.models import ProfileType
+from .copo_base_da import DAComponent, handle_dict
 import re
+from common.utils.helpers import get_class
 
 class ProfileInfo:
     def __init__(self, profile_id=None):
@@ -154,6 +153,9 @@ class Profile(DAComponent):
         new_record = False
         profile_type = auto_fields.get("copo.profile.type", "")
 
+        from src.apps.copo_core.models import ProfileType
+        rec = {"status":"success", "message": ""}
+    
         if not kwargs.get("target_id", str()):
             new_record = True
             for k, v in dict(
@@ -162,26 +164,40 @@ class Profile(DAComponent):
             ).items():
                 auto_fields[self.get_qualified_field(k)] = v
 
-        schema = self.get_component_schema(profile_type = profile_type)
-        rec = super(Profile, self).save_record(auto_fields, schema=schema, **kwargs)
+        type = auto_fields.get("copo.profile.type", "")
+        profile_type_def = ProfileType.objects.filter(type=type).first()
 
-        # Trigger if record has been updated
-        if not new_record:
-            if ProfileType.objects.get(type=profile_type).is_dtol_profile:
-                associated_type_lst = auto_fields.get("copo.profile.associated_type", [])
+        if profile_type_def:
+            pre_action =  profile_type_def.pre_save_action
+            if pre_action:
+                index = pre_action.rfind(".")
+                provider = pre_action[0:index]
+                method = pre_action[index+1:]
+                result = getattr(get_class(provider), method)(auto_fields)
+                if result:
+                    rec["status"] =  result.get("status", "success")
+                    rec["message"] = result.get("message", "")
 
-                # Get associated type(s) as string separated by '|' symbol
-                associated_type = " | ".join(associated_type_lst)
+        if rec["status"] == "success":
+            schema = self.get_component_schema(profile_type = type)
+            rec = super(Profile, self).save_record(auto_fields, schema=schema, **kwargs)
 
-                # Update the 'associated_tol_project' field for unaccepted sample record(s) (if any exist)
-                is_associated_tol_project_update_required =  Sample().is_associated_tol_project_update_required(profile_id=kwargs["target_id"], new_associated_tol_project=associated_type)
-                
-                if is_associated_tol_project_update_required:
-                    Sample().update_associated_tol_project(profile_id=kwargs["target_id"], associated_tol_project=associated_type)
 
-        # trigger after save actions
-        if not kwargs.get("target_id", str()):
-            Person(profile_id=str(rec["_id"])).create_sra_person()
+        if profile_type_def:
+            post_action =  profile_type_def.post_save_action
+            if post_action:
+                index = post_action.rfind(".")
+                provider = post_action[0:index]
+                method = post_action[index+1:]
+                result =  getattr(get_class(provider), method)(rec)
+                if result:
+                    rec["status"] =  result.get("status", "success")
+                    rec["message"] = result.get("message", "")
+
+            # trigger after save actions
+            if not kwargs.get("target_id", str()):
+                Person(profile_id=str(rec["_id"])).create_sra_person()
+
         return rec
 
     def add_dataverse_details(self, profile_id, dataverse):

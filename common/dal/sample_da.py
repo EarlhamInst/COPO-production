@@ -311,18 +311,6 @@ class Sample(DAComponent):
         profile_type = Profile().get_type(self.profile_id).lower()
 
         current_schema_version = ""
-        """
-        profile_type = ""
-        # Get manifest version based on profile type
-        if "asg" in manifest_type:
-            profile_type = "asg"
-        elif "dtolenv" in manifest_type:
-            profile_type = "dtolenv"
-        elif "dtol" in manifest_type:
-            profile_type = "dtol"
-        elif "erga" in manifest_type:
-            profile_type = "erga"
-        """
 
         current_schema_version = settings.MANIFEST_VERSION.get(
             profile_type.upper(), "")
@@ -604,6 +592,23 @@ class Sample(DAComponent):
                 }
              })
 
+    def update_field_by_query(self, query, field_values):
+        # Determine if the update is being done by a user or by the system
+        set_update_data = {'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(timezone.utc).replace(
+            microsecond=0)}
+
+        try:
+            email = ThreadLocal.get_current_user().email
+            set_update_data['updated_by'] = email
+            set_update_data['update_type'] = 'tempuser_'+str(shortuuid.ShortUUID().random(length=10)) #special handling for audit log
+        except:
+            set_update_data['updated_by'] = 'system'
+            set_update_data['update_type'] = 'system'
+
+        set_update_data.update(field_values)
+
+        return self.get_collection_handle().update_many(query, {"$set": set_update_data})
+
     def update_field(self, field=None, value=None, oid=None, field_values={}, oids=[]):
         if not oids:
             oids = []
@@ -616,6 +621,9 @@ class Sample(DAComponent):
         if field:
             field_values[field] = value
 
+        return self.update_field_by_query({"_id": {"$in": [ObjectId(oid) for oid in oids]}}, field_values)
+
+        """
         # Determine if the update is being done by a user or by the system
         set_update_data = {'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(timezone.utc).replace(
             microsecond=0)}
@@ -631,6 +639,7 @@ class Sample(DAComponent):
         set_update_data.update(field_values)
 
         return self.get_collection_handle().update_many({"_id": {"$in": [ObjectId(oid) for oid in oids]}}, {"$set": set_update_data})
+        """
 
     def remove_field(self, field, oid):
         return self.get_collection_handle().update_one(
@@ -1173,6 +1182,7 @@ class Sample(DAComponent):
             self.get_collection_handle().update_one({"profile_id": self.profile_id, "read.file_id": {
                 "$regex": id}, "read.$.status": {"$ne": status}}, {"$set": {"read.$.status": status, "modifed_date":  dt}})
     
+    """
     def is_associated_tol_project_update_required (self, profile_id, new_associated_tol_project):
         # Determine if the 'associated_tol_project' field should be updated for unaccepted samples
         is_update_required = False
@@ -1191,8 +1201,7 @@ class Sample(DAComponent):
                 # then, update it with the new value
                 is_update_required = True
         return is_update_required
-        
+    """
     def update_associated_tol_project(self, profile_id, associated_tol_project):
         # Update the 'associated_tol_project' field for all samples that have not been accepted based on the 'profile_id'
-        sample_ids = cursor_to_list_no_ids(self.get_collection_handle().find({"profile_id": profile_id, "status": {"$ne": "accepted"}},{"_id": 1}))
-        self.update_field(field ="associated_tol_project", value=associated_tol_project, oids=sample_ids)
+         self.update_field_by_query(query={"profile_id": profile_id, "status": {"$ne": "accepted"}}, field_values={"associated_tol_project":associated_tol_project})

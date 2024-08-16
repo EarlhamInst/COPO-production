@@ -36,6 +36,9 @@ class UserDetails(models.Model):
     # class Meta:
     # app_label = 'django.contrib.auth'
 
+    def __str__(self):
+        return self.user.username
+
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -369,16 +372,20 @@ class ProfileType(models.Model):
     widget_colour = models.CharField(max_length=200, blank=True, null=True)
     is_dtol_profile = models.BooleanField(default=False)
     is_permission_required = models.BooleanField(default=True)
+    post_save_action = models.CharField(max_length=100, blank=True, null=True)
+    pre_save_action = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.type + " : " + self.description
 
-    def create_profile_type(self, type, description, widget_colour, is_dtol_profile, is_permission_required):
+    def create_profile_type(self, type, description, widget_colour, is_dtol_profile, is_permission_required, post_save_action=None, pre_save_action=None):
         self.type = type
         self.description = description
         self.widget_colour = widget_colour
         self.is_dtol_profile = is_dtol_profile
         self.is_permission_required = is_permission_required
+        self.post_save_action = post_save_action
+        self.pre_save_action = pre_save_action
         self.save()
         return self
 

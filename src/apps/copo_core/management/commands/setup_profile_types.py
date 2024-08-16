@@ -1,6 +1,6 @@
 from typing import Any
 from django.core.management.base import BaseCommand
-from src.apps.copo_core.models import ProfileType, Component, RecordActionButton, TitleButton
+from src.apps.copo_core.models import ProfileType, Component, RecordActionButton, TitleButton, AssociatedProfileType
 
 '''
 ProfileType
@@ -175,10 +175,10 @@ class Command(BaseCommand):
         ProfileType().remove_all_profile_types()
         self.stdout.write("Adding Profile Types")
 
-        erga = ProfileType().create_profile_type(type="erga",description="European Reference Genome Atlas (ERGA)", widget_colour="#E61A8D", is_dtol_profile=True, is_permission_required=True)
-        asg = ProfileType().create_profile_type(type="asg",description="Aquatic Symbiosis Genomics (ASG)", widget_colour="#5829bb", is_dtol_profile=True, is_permission_required=True)
+        erga = ProfileType().create_profile_type(type="erga",description="European Reference Genome Atlas (ERGA)", widget_colour="#E61A8D", is_dtol_profile=True, is_permission_required=True, post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile", pre_save_action="src.apps.copo_profile.utils.profile_utils.pre_save_erga_profile")
+        asg = ProfileType().create_profile_type(type="asg",description="Aquatic Symbiosis Genomics (ASG)", widget_colour="#5829bb", is_dtol_profile=True, is_permission_required=True, post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile")
         dtolenv = ProfileType().create_profile_type(type="dtolenv",description="Darwin Tree of Life Environmental Samples (DTOLENV)", widget_colour="#fb7d0d", is_dtol_profile=True, is_permission_required=True)
-        dtol = ProfileType().create_profile_type(type="dtol",description="Darwin Tree of Life (DTOL)", widget_colour="#16ab39", is_dtol_profile=True, is_permission_required=True)
+        dtol = ProfileType().create_profile_type(type="dtol",description="Darwin Tree of Life (DTOL)", widget_colour="#16ab39", is_dtol_profile=True, is_permission_required=True, post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile")
         genomics = ProfileType().create_profile_type(type="genomics",description="Genomics", widget_colour="#009c95", is_dtol_profile=False, is_permission_required=False)
 
         erga.components.set([assembly, taggedseq, files, seqannotation, read, sample, accessions])
@@ -187,6 +187,25 @@ class Command(BaseCommand):
         dtol.components.set([assembly, taggedseq, files, seqannotation, read, sample, accessions])
         genomics.components.set([assembly, files, seqannotation, read, sample, accessions])
 
+
+        at_asg = AssociatedProfileType.objects.get(name="ASG")
+        at_bge = AssociatedProfileType.objects.get(name="BGE")
+        at_bioblitz = AssociatedProfileType.objects.get(name="BIOBLITZ")  
+        at_cbp = AssociatedProfileType.objects.get(name="CBP") 
+        at_dtol = AssociatedProfileType.objects.get(name="DTOL")
+        at_dtolenv = AssociatedProfileType.objects.get(name="DTOL_ENV")
+        at_erga = AssociatedProfileType.objects.get(name="ERGA") 
+        at_erga_pilot = AssociatedProfileType.objects.get(name="ERGA_PILOT")
+        at_erga_satellites = AssociatedProfileType.objects.get(name="ERGA_SATELLITES")
+        at_pop_genomics = AssociatedProfileType.objects.get(name="POP_GENOMICS")                              
+        at_sanger = AssociatedProfileType.objects.get(name="SANGER")  
+
+
+        erga.associated_profile_types.set([at_erga, at_bge, at_bioblitz, at_cbp, at_erga_pilot, at_erga_satellites, at_pop_genomics, at_sanger])
+        asg.associated_profile_types.set([at_asg])
+        dtolenv.associated_profile_types.set([at_dtolenv])
+        dtol.associated_profile_types.set([at_dtol])
+        
         self.stdout.write("Profile Types Added")
         records = ProfileType.objects.all()
 

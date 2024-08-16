@@ -85,9 +85,10 @@ class BrokerDA:
             # check users are not changing the type of an existing profile
         # save record
         record_object = self.da_object.save_record(auto_fields=self.auto_fields, **kwargs)
+
         if action_type == "edit":
             report_metadata["message"] += " Record updated!"
-
+            """
             #update ENA project 
             if isinstance(self.da_object, Profile):
                 type = self.auto_fields.get("copo.profile.type", "")
@@ -102,9 +103,12 @@ class BrokerDA:
                             else:
                                 report_metadata["message"] += " However, profile ENA submission failed! " + result.get("message", str())
                                 status = "warning"
-
+            """
         else:
             report_metadata["message"] += " New " + self.component + " record created! " + validation_result.get ("message","")
+
+        status = record_object.get("status", "success")  
+        report_metadata["message"] += " " + record_object.get("message", "")
 
         report_metadata["status"] = status
         self.context["action_feedback"] = report_metadata
