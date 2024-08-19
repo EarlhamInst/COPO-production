@@ -147,7 +147,7 @@ $(document).on('document_ready', function () {
   $('.select-all').prop('disabled', true);
 
   // add field names here which you don't want to appear in the supervisors table
-  excluded_fields = ['profile_id', 'biosample_id', '_id'];
+  //excluded_fields = ['profile_id', 'biosample_id', '_id'];
   searchable_fields = [''];
   // populate profiles panel on left
 
@@ -1043,16 +1043,9 @@ function update_pending_samples_table() {
         });
         $('#sample_panel').find('.labelling').empty().append(header);
 
-        var rows = [];
-        rows.push({ title: '' });
+        var rows = data;
+        rows.unshift({ title: '' });
 
-        let i = 0;
-        while (i < data.length) {
-          if (!excluded_fields.includes(data[i])) {
-            rows.push({ title: data[i], data: data[i] });
-          }
-          i++;
-        }
         if ($.fn.DataTable.isDataTable('#profile_samples')) {
           $('#profile_samples').DataTable().clear().destroy();
           $('#profile_samples').empty();

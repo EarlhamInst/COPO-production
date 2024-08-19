@@ -786,7 +786,7 @@ class Sample(DAComponent):
 
         sc = self.get_component_schema()
         columns = []
-        columns.append("_id")
+        #columns.append(dict(data="_id", label="ID"))
         group_set = set(TOL_PROFILE_TYPES)
         if group_filter:
             group_set = {group_filter}
@@ -794,11 +794,12 @@ class Sample(DAComponent):
 
             if  (not field.get("specifications", "") or group_set.intersection(set(field.get("specifications", "")))) \
                     and field.get("show_in_table",""):
-                column = field.get("id", "").split(".")[-1]
-                if column not in columns:
-                    columns.append(column)
+                column_data = field.get("id", "").split(".")[-1]
+                column_label = field.get("label", "")
+                column = dict(data=column_data, title=column_label)
+                columns.append(column)
 
-        columns.append("error")
+        columns.append(dict(data="error", title="Error"))
         return columns
 
     def get_dtol_from_profile_id_and_project(self, profile_id, project):
