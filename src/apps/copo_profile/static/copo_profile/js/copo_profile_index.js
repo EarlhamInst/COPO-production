@@ -1,10 +1,8 @@
 let contactCOPODialogCount = 1;
 
 function get_profile_type() {
-     return $('#profile_type').find(':selected').val();
+  return $('#profile_type').find(':selected').val();
 }
-
-
 
 $(document).ready(function () {
   //****************************** Event handlers block *************************//
@@ -25,6 +23,25 @@ $(document).ready(function () {
   let end_pagination = false;
   let grid_count = $('#grid-count');
   let grid_total = $('#grid-total');
+
+  // Create an object to store the arguments to
+  // be passed to the function
+  const obj = {
+    tableLoader: tableLoader,
+    copoProfileIndexURL: copoProfileIndexURL,
+    page: page,
+    end_pagination: end_pagination,
+    block_request: block_request,
+    tableID: tableID,
+    copoVisualsURL: copoVisualsURL,
+    csrftoken: csrftoken,
+    component: component,
+    copoSamplesURL: copoSamplesURL,
+    copoENAReadManifestValidateURL: copoENAReadManifestValidateURL,
+    copoENAAssemblyURL: copoENAAssemblyURL,
+    copoENAAnnotationURL: copoENAAnnotationURL,
+    grid_count: grid_count,
+  };
 
   csrftoken = $.cookie('csrftoken');
 
@@ -62,7 +79,7 @@ $(document).ready(function () {
     return false;
   }
 
-  initialise_popover()
+  initialise_popover();
 
   // Profile records exist
   // Initialise the popover 'View profile options' for each profile record
@@ -130,6 +147,17 @@ $(document).ready(function () {
   $('#contactCOPODialogBtnID').bind('click', function () {
     contactCOPODialogCount++;
   });
+
+  // Trigger refresh of the table div to reflect the changes made
+  $('#copo-sidebar-info #page_alert_panel').on(
+    'refreshtable2',
+    function (event) {
+      // Check if any alert messages are visible
+      if ($('#copo-sidebar-info #page_alert_panel').children().length > 0) {
+        populate_profiles_records(obj);
+      }
+    }
+  );
 
   $(document).data('sortByDescendingOrder', true);
 
@@ -221,9 +249,13 @@ $(document).ready(function () {
 
   $(document).on('click', '#editProfileBtn', function (e) {
     let profile_id = $(e.currentTarget).closest('.ellipsisDiv').attr('id');
-    let profile_type = $(e.currentTarget).closest('.copo-records-panel').attr('profile_type');
+    let profile_type = $(e.currentTarget)
+      .closest('.copo-records-panel')
+      .attr('profile_type');
     if (profile_type == undefined) {
-      profile_type = $(e.currentTarget).closest('.copo-records-panel').attr('shared_profile_type');
+      profile_type = $(e.currentTarget)
+        .closest('.copo-records-panel')
+        .attr('shared_profile_type');
     }
     editProfileRecord(profile_id, profile_type);
   });
@@ -256,48 +288,7 @@ $(document).ready(function () {
 
       $('#component_table_loader').append(tableLoader); // Show loading .gif
 
-      $.ajax({
-        type: 'GET',
-        url: copoProfileIndexURL,
-        data: {
-          page: page,
-        },
-        success: function (data) {
-          if (data.end_pagination === true) {
-            end_pagination = true;
-          } else {
-            block_request = false;
-          }
-
-          let content = $(data.content);
-          appendRecordComponents(content); // Adds 'Actions' and 'Components' buttons
-
-          // Appends the html template from the 'copo_profile_record.html' to the 'copo_profiels_table' div
-          $(`#${tableID}`).append(content);
-
-          // Initialise functions for the profile grids beyond the 8 records that are shown by default
-          refresh_tool_tips(); // Refreshes/reloades/reinitialises all popover and dropdown functions
-          initialise_loaded_records(
-            copoVisualsURL,
-            csrftoken,
-            component,
-            tableID,
-            copoSamplesURL,
-            copoENAReadManifestValidateURL,
-            copoENAAssemblyURL,
-            copoENAAnnotationURL
-          ); // Initialise functions for the profile grids beyond the 8 records that are shown by default
-
-          set_profile_grid_heading(content); // Set profile grid heading
-          showMoreProfileInfoPopover(content); // Initialise 'show more' information popover for profile records
-
-          grid_count.text($('.grid').length); // Increment the number of profile records displayed
-          tableLoader.remove(); // Remove loading .gif
-        },
-        error: function () {
-          alert("Couldn't retrieve profiles!");
-        },
-      });
+      populate_profiles_records(obj);
     }
   });
 
@@ -354,11 +345,11 @@ $(document).ready(function () {
 }); // End document ready
 
 //****************************** Functions block ******************************//
-function initialise_popover() {
 
+function initialise_popover() {
   // Profile records exist
   // Initialise the popover 'View profile options' for each profile record
- 
+
   let popover = $('#ellipsisID[data-toggle="popover"]')
     .popover({
       sanitize: false,
@@ -370,7 +361,7 @@ function initialise_popover() {
     })
     .on('show.bs.popover', function (e) {
       $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
- 
+
       // Set content of the popover
       const $content = $('<div></div>');
       const $editButton = $(
@@ -384,20 +375,94 @@ function initialise_popover() {
       $content.append($editButton);
       $content.append($deleteButton);
 
-      component_def["profile"]["recordActions"].forEach((item) => { 
-        var action = record_action_button_def[item]
-        const $button = $('<button id="'+ item  + '" class="btn btn-sm btn-primary" title="' + action["title"] + '"><i class="' + action["icon_class"] +' "></i>' +  action["label"] +'</button>');
+      component_def['profile']['recordActions'].forEach((item) => {
+        var action = record_action_button_def[item];
+        const $button = $(
+          '<button id="' +
+            item +
+            '" class="btn btn-sm btn-primary" title="' +
+            action['title'] +
+            '"><i class="' +
+            action['icon_class'] +
+            ' "></i>' +
+            action['label'] +
+            '</button>'
+        );
         $button.css('margin-top', '10px');
-        $content.append($button)
+        $content.append($button);
       });
 
       // Apply the content to the popover
       popover.attr('data-content', $content.html());
-    })
-    //.on('shown.bs.popover', function (e) {
-    //  $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
-    //});
+    });
+  //.on('shown.bs.popover', function (e) {
+  //  $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
+  //});
+}
 
+function populate_profiles_records(obj) {
+  tableLoader = obj.tableLoader;
+  copoProfileIndexURL = obj.copoProfileIndexURL;
+  page = obj.page;
+  end_pagination = obj.end_pagination;
+  block_request = obj.block_request;
+  tableID = obj.tableID;
+  copoVisualsURL = obj.copoVisualsURL;
+  csrftoken = obj.csrftoken;
+  component = obj.component;
+  copoSamplesURL = obj.copoSamplesURL;
+  copoENAReadManifestValidateURL = obj.copoENAReadManifestValidateURL;
+  copoENAAssemblyURL = obj.copoENAAssemblyURL;
+  copoENAAnnotationURL = obj.copoENAAnnotationURL;
+  grid_count = obj.grid_count;
+
+  $.ajax({
+    type: 'GET',
+    url: copoProfileIndexURL,
+    data: {
+      page: page,
+    },
+    success: function (data) {
+      if (data.end_pagination === true) {
+        end_pagination = true;
+      } else {
+        block_request = false;
+      }
+
+      // Check if div has content, if yes, empty the div
+      if ($(`#${tableID}`).children().length > 0) {
+        $(`#${tableID}`).empty();
+      }
+
+      let content = $(data.content);
+      appendRecordComponents(content); // Adds 'Actions' and 'Components' buttons
+
+      // Appends the html template from the 'copo_profile_record.html' to the 'copo_profiels_table' div
+      $(`#${tableID}`).append(content);
+
+      // Initialise functions for the profile grids beyond the 8 records that are shown by default
+      refresh_tool_tips(); // Refreshes/reloads/reinitialises all popover and dropdown functions
+      initialise_loaded_records(
+        copoVisualsURL,
+        csrftoken,
+        component,
+        tableID,
+        copoSamplesURL,
+        copoENAReadManifestValidateURL,
+        copoENAAssemblyURL,
+        copoENAAnnotationURL
+      ); // Initialise functions for the profile grids beyond the 8 records that are shown by default
+
+      set_profile_grid_heading(content); // Set profile grid heading
+      showMoreProfileInfoPopover(content); // Initialise 'show more' information popover for profile records
+
+      grid_count.text($('.grid').length); // Increment the number of profile records displayed
+      tableLoader.remove(); // Remove loading .gif
+    },
+    error: function () {
+      alert("Couldn't retrieve profiles!");
+    },
+  });
 }
 
 function appendRecordComponents(grids) {
@@ -495,27 +560,31 @@ function deleteProfileRecord(profileRecordID) {
             },
           })
             .done(function () {
-              // Delete the profile
-              BootstrapDialog.show({
-                title: 'Profile deleted',
-                message: 'Profile has been deleted.',
-                cssClass: 'copo-modal1',
-                closable: true,
-                animate: true,
-                type: BootstrapDialog.TYPE_INFO,
+              // Show a feedback message to the user
+              const action_feedback = {
+                message: 'Profile deleted!',
+                status: 'success',
+              };
+
+              do_crud_action_feedback(action_feedback);
+
+              // Hide the deleted profile record from the web page
+              document
+                .getElementById(profileRecordID)
+                .closest('.copo-records-panel').style.display = 'none';
+
+              // Close any other dialog that might be opened still
+              $.each(BootstrapDialog.dialogs, function (id, dialog) {
+                dialog.close();
               });
 
-              // Refresh web page to have change reflected
-              setTimeout(function () {
-                document
-                  .getElementById(profileRecordID)
-                  .closest('.copo-records-panel').style.display = 'none';
-
-                window.location.reload();
-              }, 1000);
+              // Add an event listener that will reload a particular div to
+              // reflect the changes made after a record is deleted
+              var event = jQuery.Event('refreshtable2');
+              $('#copo-sidebar-info #page_alert_panel').trigger(event);
             })
             .fail(function (data_response) {
-              email = $("#email").val();
+              email = $('#email').val();
               const message =
                 "Profile couldn't be removed. Only profiles that have no datafiles or" +
                 ' samples associated can be deleted.';
@@ -527,7 +596,11 @@ function deleteProfileRecord(profileRecordID) {
                 '</div>';
               $content += '<p style="margin-top:10px">Please contact ';
               $content +=
-                '<a style="text-decoration: underline;" href="mailto:'+email+'">' + email + '</a> ';
+                '<a style="text-decoration: underline;" href="mailto:' +
+                email +
+                '">' +
+                email +
+                '</a> ';
               $content += 'if you would like this profile to be deleted.</p>';
               $content += '</div>';
 
@@ -709,12 +782,10 @@ function append_component_buttons(record_id, profile_type) {
       return false;
     }
     */
-  
 
-    let component_link = "#";
+    let component_link = '#';
     if (item.url != undefined)
-        component_link = item.url.replace('999', record_id);
- 
+      component_link = item.url.replace('999', record_id);
 
     // Create button html
     let pcomponent_count_div = $('<div></div>');
@@ -766,8 +837,10 @@ function filter_action_menu() {
       //if($(el).attr("shared_profile_type")) $(el).removeAttr("shared_profile_type")
     }
 
-    $(el).find("a[profile_component]").hide();
-    $(el).find("a[profile_component="+ t + "]").show();
+    $(el).find('a[profile_component]').hide();
+    $(el)
+      .find('a[profile_component=' + t + ']')
+      .show();
 
     /*
     if (t.includes('ERGA')) {
@@ -830,13 +903,14 @@ function set_profile_grid_heading(grids) {
             $(el).removeAttr('shared_profile_type'); // Remove 'shared_profile_type' attribute
 
           acronym = profile_type.toUpperCase();
-          colour = profile_type_def[profile_type.toLowerCase()]["widget_colour"]  //'#fb7d0d'
+          colour =
+            profile_type_def[profile_type.toLowerCase()]['widget_colour']; //'#fb7d0d'
           $(el)
-              .find('.panel-heading')
-              .find('.row-title span')
-              .append('<small>('+  acronym  +')</small>');
-            $(el).find('.panel-heading').css('background-color', colour);
-       
+            .find('.panel-heading')
+            .find('.row-title span')
+            .append('<small>(' + acronym + ')</small>');
+          $(el).find('.panel-heading').css('background-color', colour);
+
           /*
           if (profile_type.includes('DTOLENV')) {
             acronym = 'DTOL-ENV';
@@ -1094,9 +1168,8 @@ function initialise_loaded_records(
     $('#showMoreProfileInfoBtn[rel="popover"]').popover('hide');
   });
 
-
   // Initialise the popover 'View profile options' for each profile record
-  initialise_popover()
+  initialise_popover();
   /*
   let popover = $('#ellipsisID[data-toggle="popover"]')
     .popover({

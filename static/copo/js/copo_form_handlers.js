@@ -270,7 +270,6 @@ function json2HtmlForm(data) {
             return false;
           }
           */
-
         });
 
       const event = jQuery.Event('postformload'); //individual compnents can trap and handle this event as they so wish
@@ -316,8 +315,8 @@ function json2HtmlForm(data) {
           '<i class="copo-components-icons glyphicon glyphicon-close"></i> Close',
         cssClass: 'tiny ui basic button',
         action: function (dialogRef) {
-            window.location.reload();
-        }
+          window.location.reload();
+        },
       },
     ],
   });
@@ -956,7 +955,7 @@ var dispatchFormControl = {
     var selectCtrl = $('<select/>', {
       class: 'form-control input-copo copo-select-control',
       id: formElem.id,
-      name: formElem.id
+      name: formElem.id,
     });
 
     if (formElem.option_values) {
@@ -1631,8 +1630,8 @@ var dispatchFormControl = {
     if (elemValue) {
       if (typeof elemValue === 'string') {
         currentValue = elemValue.split(',');
-      }
-       /*else if (
+      } else if (typeof elemValue === 'object') {
+      /*else if (
         formElem.id.includes('associated_type') &&
         typeof elemValue === 'object'
       ) {
@@ -1641,7 +1640,6 @@ var dispatchFormControl = {
           currentValue.push(item.value);
         });
       } */
-      else if (typeof elemValue === 'object') {
         currentValue = elemValue;
       }
     }
@@ -3505,7 +3503,7 @@ function save_form(formJSON, dialogRef) {
       } 
       else {
       */
-        form_values[this.id] = $(this).val();
+      form_values[this.id] = $(this).val();
       //}
     });
 
@@ -3524,7 +3522,7 @@ function save_form(formJSON, dialogRef) {
   const btnClose = dialogRef.getButton('btnFormClose');
   btnSave.disable();
   btnCancel.disable();
-  btnClose.disable()
+  btnClose.disable();
   btnSave.spin();
 
   $.ajax({
@@ -3583,7 +3581,6 @@ function save_form(formJSON, dialogRef) {
 
           return true;
         } else if (['warning'].indexOf(data.action_feedback.status) > -1) {
-
           let feedbackControl = get_alert_control();
           let alertClass = 'alert-warning';
 
@@ -3597,7 +3594,7 @@ function save_form(formJSON, dialogRef) {
             .find('.formMessageDiv')
             .html(feedbackControl);
 
-          btnClose.enable()
+          btnClose.enable();
           btnSave.enable();
           btnCancel.disable();
           btnSave.stopSpin();
@@ -3609,8 +3606,6 @@ function save_form(formJSON, dialogRef) {
           $('#' + modalId).scrollTop(0);
 
           return true;
-
-
         } else {
           dialogRef.close();
 
@@ -3624,10 +3619,10 @@ function save_form(formJSON, dialogRef) {
 
           do_crud_action_feedback(data.action_feedback);
 
-          // Refresh web page to have change reflected
-          setTimeout(function () {
-            window.location.reload();
-          }, 1000);
+          // Add an event listener that will reload a particular div to
+          // reflect the changes made after a form is saved
+          var event = jQuery.Event('refreshtable2');
+          $('#copo-sidebar-info #page_alert_panel').trigger(event);
 
           return true;
         }
