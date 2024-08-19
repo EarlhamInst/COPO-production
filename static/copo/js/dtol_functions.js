@@ -70,7 +70,7 @@ var dt_options = {
     const associated_profiles_type_approval_for_arr =
       associated_profiles_type_approval_for.split(',');
     for (var i = numCols - 1; i >= 0; i--) {
-      if ($(api.column(i).header()).text() == 'approval') {
+      if ($(api.column(i).header()).text() == 'Approval Date') {
         var error = api
           .rows()
           .eq(0)

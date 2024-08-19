@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django_tools.middlewares import ThreadLocal
 import common.schemas.utils.data_utils as d_utils
-from common.utils.helpers import map_to_dict, get_datetime, notify_frontend
+from common.utils.helpers import map_to_dict, get_datetime, notify_frontend, get_current_user
 from common.dal.copo_da import  DataFile
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample, Source
@@ -28,6 +28,8 @@ from common.schema_versions.lookup import dtol_lookups as lookup
 from common.utils.logger import Logger
 from PIL import Image
 import numpy as np
+from src.apps.copo_core.models import AssociatedProfileType
+
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -669,6 +671,15 @@ class DtolSpreadsheet:
                                                      project=self.type.upper(), is_new=True, profile_id=profile_id)
         
     def update_records(self):
+        current_user = get_current_user()
+        request = ThreadLocal.get_current_request()
+        profile_id = request.session["profile_id"]
+        # Update the associated tol project for each sample in the manifest
+        # get associated profile type(s) of manifest
+        profile = Profile().get_record(profile_id)
+        associated_profiles = profile.get("associated_type", [])
+
+
         #is_bge = "BGE" in self.associated_type
         binary = pickle.loads(self.vr["manifest_data"])
         try:
@@ -677,7 +688,6 @@ class DtolSpreadsheet:
         except ValueError:
             sample_data = binary
 
-        request = ThreadLocal.get_current_request()
         public_name_list = list()
         sample_data["_id"] = ""
         need_send_email = False
@@ -751,14 +761,14 @@ class DtolSpreadsheet:
                         Sample().update_field('public_name', '', recorded_sample["_id"])
 
 
-
-            if (recorded_sample["biosampleAccession"] or recorded_sample["status"] == "rejected") and is_updated:
+            if (recorded_sample["status"] == "rejected" or recorded_sample.get("approval",[])) and is_updated:
                 is_private = "erga" in self.type.lower() and s["ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID"]
                 is_erga = "erga" in self.type.lower()
                 Sample().mark_pending(sample_ids = [str(recorded_sample["_id"])], is_erga=is_erga, is_private=is_private)
                 need_send_email = True
 
             uri = request.build_absolute_uri('/')
+            '''
             # query public service service a first time now to trigger request for public names that don't exist
             public_names = query_public_name_service(public_name_list)
             for name in public_names:
@@ -767,15 +777,11 @@ class DtolSpreadsheet:
                         name['specimen']["specimenId"])
                     continue
                 Sample().update_public_name(name)
-            
-            profile_id = request.session["profile_id"]
-            # Update the associated tol project for each sample in the manifest
-            # get associated profile type(s) of manifest
-            profile = Profile().get_record(profile_id)
-            associated_type_lst = profile.get("associated_type", [])
+            '''
+
             # Get associated type(s) as string separated by '|' symbol
             # then, update the associated tol project field in the sample
-            associated_type = " | ".join(associated_type_lst)
+            associated_type = " | ".join(associated_profiles)
             
             Sample().update_field("associated_tol_project",
                                     associated_type, recorded_sample["_id"])
