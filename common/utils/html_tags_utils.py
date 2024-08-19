@@ -25,6 +25,7 @@ from common.utils import helpers
 from django.conf import settings
 from common.s3.s3Connection import S3Connection as s3
 import numpy as np
+import datetime
 
 # dictionary of components table id, gotten from the UI
 table_id_dict = dict(  # publication="publication_table",
@@ -1439,6 +1440,9 @@ def get_resolver(data, elem):
     func_map["date-picker"] = resolve_datepicker_data
     func_map["copo-duration"] = resolve_copo_duration_data
     func_map["copo-datafile-id"] = resolve_copo_datafile_id_data
+    func_map["copo_approval"] = resolve_copo_approval_data    
+    func_map["user_id"] = resolve_user_data    
+
 
     control = elem.get("control", "text").lower()
     if control in func_map:
@@ -1757,6 +1761,26 @@ def resolve_datepicker_data(data, elem):
         resolved_value = data
     return resolved_value
 
+def resolve_copo_approval_data(data, elem):
+    schema = d_utils.get_copo_schema("approval")
+
+    resolved_data = list()
+    for f in schema:
+        if f.get("show_in_table", True):
+            # a = dict()
+            if f["id"].split(".")[-1] in data:
+                # a[f["label"]] = data[f["id"].split(".")[-1]]
+                resolved_data.append(
+                    ((f["label"] + ": ") if f["label"] else "") + get_resolver(data[f["id"].split(".")[-1]], f))
+    return ",".join(resolved_data)
+
+def resolve_user_data(data, elem):
+    resolved_value = str()
+    if data:
+        user = User.objects.get(pk=data)
+        resolved_value = user.first_name+ " " + user.last_name
+    return resolved_value
+
 
 def resolve_copo_duration_data(data, elem):
     schema = d_utils.get_copo_schema("duration")
@@ -1788,8 +1812,10 @@ def resolve_copo_datafile_id_data(data, elem):
 
 
 def resolve_default_data(data):
-    return data
-
+    if type(data) == datetime.datetime:
+        return data.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        return str(data)
 
 # @register.filter("generate_copo_profiles_counts")
 def generate_copo_profiles_counts(profiles=list()):

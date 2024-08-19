@@ -481,7 +481,7 @@
     },
     {
       "colour": "",
-      "control": "datetime",
+      "control": "copo_approval",
       "control_meta": {},
       "default_value": "",
       "deprecated": false,

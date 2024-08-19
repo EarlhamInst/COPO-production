@@ -128,6 +128,7 @@ def mark_sample_rejected(request):
 @web_page_access_checker
 @login_required
 def add_sample_to_dtol_submission(request):
+    user = get_current_user()
     sample_ids = request.POST.get("sample_ids")
     sample_ids = json.loads(sample_ids)
     profile_id = request.POST.get("profile_id")
@@ -172,7 +173,7 @@ def add_sample_to_dtol_submission(request):
                     all_approved = True
                     for associated_profile in assoicated_profiles_type_require_approval:
                         if associated_profile in associated_profiles_type_approval_for:
-                            update_approval[f"approval.{associated_profile.name}"] = now
+                            update_approval[f"approval.{associated_profile.name}"] = {"user_id": user.pk, "date": now} 
                             update_approval_for_samples.append(sample["_id"])
                         elif not sample.get("approval",{}).get(associated_profile.name,""):
                             all_approved = False

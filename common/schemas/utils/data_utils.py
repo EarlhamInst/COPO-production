@@ -411,7 +411,8 @@ def get_copo_schema(component, as_object=False):
         environment_variables=schema_base.get("miappe").get(
             "environment_variables").get("fields", list()),
         metadata_template=schema_base.get(
-            "metadata_template").get("fields", list())
+            "metadata_template").get("fields", list()),
+        approval=schema_base.get("approval").get("fields", list()),
     )
 
     schema = schema_dict.get(component, list())
