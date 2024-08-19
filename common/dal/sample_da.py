@@ -799,7 +799,7 @@ class Sample(DAComponent):
                 column = dict(data=column_data, title=column_label)
                 columns.append(column)
 
-        columns.append(dict(data="error", title="Error"))
+        #columns.append(dict(data="error", title="Error"))
         return columns
 
     def get_dtol_from_profile_id_and_project(self, profile_id, project):
@@ -901,8 +901,7 @@ class Sample(DAComponent):
             field_values["status"] = "private"
         else:
             field_values["status"]  = "pending"
-            if is_erga:
-                field_values["approval"] = {}
+            field_values["approval"] = {}
         field_values["error"] = ""
                 
         return self.update_field(field_values=field_values, oids=sample_ids)    
