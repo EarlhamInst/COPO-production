@@ -1,7 +1,7 @@
 __author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
 
 from common.lookup.lookup import API_RETURN_TEMPLATES
-from common.schema_versions.lookup.dtol_lookups import STANDARDS, STANDARDS_MAPPING_FILE_PATH
+from common.schema_versions.lookup.dtol_lookups import GDPR_SENSITIVE_FIELDS, STANDARDS, STANDARDS_MAPPING_FILE_PATH
 from django.http import HttpResponse
 from django_tools.middlewares import ThreadLocal
 
@@ -136,7 +136,7 @@ def generate_rocrate_response(samples):
 
         df = pd.DataFrame(samples)
         dateCreated = df["time_created"].min()
-        dateModifed = df["time_updated"].max()
+        dateModified = df["time_updated"].max()
 
         # @type: Person
         # updatedby = df["updated_by"].unique()
@@ -144,8 +144,8 @@ def generate_rocrate_response(samples):
         collectedby = df["COLLECTED_BY"].unique()
         coordinator = df["SAMPLE_COORDINATOR"].unique(
         ) if "SAMPLE_COORDINATOR" in df.columns else []
-        perservedby = df["PERSERVED_BY"].unique(
-        ) if "PERSERVED_BY" in df.columns else []
+        perservedby = df["PRESERVED_BY"].unique(
+        ) if "PRESERVED_BY" in df.columns else []
         identifiedby = df["IDENTIFIED_BY"].unique(
         ) if "IDENTIFIED_BY" in df.columns else []
 
@@ -155,14 +155,14 @@ def generate_rocrate_response(samples):
         rocrate_person = generate_rocrate_person_object(
             df, coordinator, "SAMPLE_COORDINATOR", "SAMPLE_COORDINATOR", rocrate_person)
         rocrate_person = generate_rocrate_person_object(
-            df, perservedby, "PERSERVED_BY", "PERSERVER", rocrate_person)
+            df, perservedby, "PRESERVED_BY", "PRESERVER", rocrate_person)
         rocrate_person = generate_rocrate_person_object(
             df, identifiedby, "IDENTIFIED_BY", "IDENTIFIER", rocrate_person)
 
         # @type: Dataset
         # f"https://copo-project.org/api/manifest/{key}
         manifest_item = {"@id": f"https://copo-project.org/api/manifest/{manifest_id}",
-                         "@type": "Dataset", "dateCreated": dateCreated, "datedModified": dateModifed}
+                         "@type": "Dataset", "dateCreated": dateCreated, "datedModified": dateModified}
         manifest_item["contributor"] = []
         manifest_item["contributor"].extend(
             {"@id":  p["@id"]} for p in rocrate_person.values())
@@ -235,7 +235,7 @@ def generate_rocrate_response(samples):
                 sample_item["identifier"] = {
                     "@id": f"http://identifiers.org/biosample:{biosampleAccession}"}
 
-            for p in "COLLECTOR:COLLECTED_BY", "SAMPLE_COORDINATOR:SAMPLE_COORDINATOR", "PERSERVER:PERSERVED_BY", "IDENTIFIER:IDENTIFIED_BY":
+            for p in "COLLECTOR:COLLECTED_BY", "SAMPLE_COORDINATOR:SAMPLE_COORDINATOR", "PRESERVER:PRESERVED_BY", "IDENTIFIER:IDENTIFIED_BY":
                 pp = p.split(":")
                 collectors = x.get(pp[1], "")
                 if collectors:
@@ -262,7 +262,11 @@ def generate_rocrate_response(samples):
                             # sample_item[pp[0].lower()].append({"@id": collector["@id"]})
                             x[field].append({"@id": collector["@id"]})
 
-            sample_item.update(x)
+            # GDPR sensitive fields should be excluded
+            filtered_x = {key: value for key, value in x.items() if key not in GDPR_SENSITIVE_FIELDS}
+
+            # Update sample_item with the filtered item
+            sample_item.update(filtered_x)
             graph_list.append(sample_item)
 
         rocrate_json["@graph"] = graph_list
