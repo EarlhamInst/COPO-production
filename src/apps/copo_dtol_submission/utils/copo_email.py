@@ -49,9 +49,6 @@ class Email:
     def notify_sample_accepted_after_approval(self, **kwargs):
         profile = kwargs.get('profile', '')
         accepted_samples_notifiers = set()
-        email_addresses = set()
-        p_id = kwargs.get("profile_id", "")
-        profile = Profile().get_record(p_id) if p_id else None
         if profile: 
             profile_owner_userID = profile.get('user_id','')   
             title = profile.get('title','')
@@ -77,8 +74,8 @@ class Email:
                     # Contact name and email address of the partner for the sequencing centre
                     centre_contact_details.extend(json.loads(centre.contact_details)) 
 
-            # Join the list of sequencing centre labels with commas then, have 'and' as the last entry
-            centre_labels = d_utils.join_list_with_and_as_last_entry(centre_labels) 
+                # Join the list of sequencing centre labels with commas then, have 'and' as the last entry
+                centre_labels = d_utils.join_list_with_and_as_last_entry(centre_labels) 
 
 
         
@@ -113,14 +110,14 @@ class Email:
 
                 # Get profile owner name and shared profile user name
                 profile_owner_name = f"{user.first_name} {user.last_name}"
-                greetings_name = list(profile_owner_name)
+                greetings_name = [profile_owner_name]
                 greetings_name.extend(shared_profile_users_names)
                 greetings_name = d_utils.join_list_with_and_as_last_entry(greetings_name)
                 sub = f"{title} Sample Manifest accepted in COPO"
 
                 for apt_obj in apt_objs:
                     # 'cc' email address recipients
-                    msg = apt_obj.acceptance_email_body.format(gretting=greetings_name, title=title, centre_labels=centre_labels) if  apt_obj.acceptance_email_body else self.messages["sample_accepted"].format(greetings_name, title)
+                    msg = apt_obj.acceptance_email_body.format(gretting=greetings_name, title=title, centre_labels=centre_labels) if  apt_obj.acceptance_email_body else self.messages["sample_accepted"].format(gretting=greetings_name, title=title)
                     accepted_samples_notifiers = set(apt_obj.users.all())
                     cc_email_addresses = set(centre_contact_emails)
                     cc_email_addresses.update([x.email for x in accepted_samples_notifiers])
