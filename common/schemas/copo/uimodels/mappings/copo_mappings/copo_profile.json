@@ -108,8 +108,8 @@
           "label": "European Reference Genome Atlas - Pilot (ERGA_PILOT)"
         },
         {
-          "value": "ERGA_SATELLITES",
-          "label": "European Reference Genome Atlas - Satellites (ERGA_SATELLITES)"
+          "value": "ERGA_COMMUNITY",
+          "label": "European Reference Genome Atlas - Community (ERGA_COMMUNITY)"
         },
         {
           "value": "POP_GENOMICS",
