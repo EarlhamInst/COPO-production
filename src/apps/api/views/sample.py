@@ -144,9 +144,9 @@ def filter_for_API(sample_list, add_all_fields=False):
             if k in export:
                 if k in time_fields:
                     s_out[k] = format_date(v)
-                elif k in ["created_by", "updated_by"]:
-                    s_out[k] = "*****@" + (v.split("@")[1] if "@" in v else "")
-
+                elif k in lookup.GDPR_SENSITIVE_FIELDS:
+                    # GDPR sensitive fields should be excluded
+                    pass
                 else:
                     s_out[k] = v
             if k == "changelog":
@@ -164,11 +164,17 @@ def filter_for_API(sample_list, add_all_fields=False):
                     if k not in s_out.keys():
                         if k in defaults_list.keys():
                             s_out[k] = defaults_list[k]
+                        elif k in lookup.GDPR_SENSITIVE_FIELDS:
+                            # GDPR sensitive fields should be excluded
+                            pass
                         else:
                             s_out[k] = ""
                 out.append(s_out)
             else:
-                out.append(s_out)
+                # Exclude GDPR sensitive fields before appending 's_out'
+                filtered_s_out = {key: value for key, value in s_out.items() if key not in lookup.GDPR_SENSITIVE_FIELDS}
+
+                out.append(filtered_s_out)
 
     return out
 
