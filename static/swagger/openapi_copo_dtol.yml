@@ -5,6 +5,8 @@ info:
     The following are Swagger Application Programming Interface (API) methods for audits, 
     manifests, samples, profiles, statistics and Tree of Life (ToL) fields mapping.
 
+    Sensitive data such as ORCIDs and email addresses will be excluded from API responses.
+
     Please view our [API methods' documentation](https://copo-docs.readthedocs.io/en/latest/retrieval/copo-api.html) for guidance.
 
   version: 1.1.8
@@ -550,7 +552,7 @@ paths:
       summary: Get sample records in a project by associated project type(s)
       description: |
         Get a list of all samples of a project in COPO by associated project type
-        Available associated projects - **ASG**, **BGE**, **DTOL**, **dtolenv**, **ERGA**, **ERGA_PILOT**, **ERGA_SATELLITES**, **POP_GENOMICS**
+        Available associated projects - **ASG**, **BGE**, **DTOL**, **dtolenv**, **ERGA**, **ERGA_PILOT**, **ERGA_COMMUNITY**, **POP_GENOMICS**
 
         To query multiple associated projects, separate them with a comma.
 
@@ -560,10 +562,10 @@ paths:
         - **dtolenv** refers to Darwin Tree of Life (DTOL)
         - **ERGA** refers to European Reference Genome Atlas (ERGA)
         - **ERGA_PILOT** refers to uropean Reference Genome Atlas - Pilot (ERGA_PILOT)
-        - **ERGA_SATELLITES** refers to European Reference Genome Atlas - Satellites (ERGA_SATELLITES)
+        - **ERGA_COMMUNITY** refers to European Reference Genome Atlas - Community (ERGA_COMMUNITY)
         - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
 
-        For example, to query all associated Tree of Life (ToL) projects, input: ASG,BGE,DTOL,dtolenv,ERGA,ERGA_PILOT,ERGA_SATELLITES,POP_GENOMICS
+        For example, to query all associated Tree of Life (ToL) projects, input: ASG,BGE,DTOL,dtolenv,ERGA,ERGA_PILOT,ERGA_COMMUNITY,POP_GENOMICS
       parameters:
         - name: values
           in: path
@@ -1445,9 +1447,6 @@ components:
           type: string
         biosampleAccession:
           type: string
-        created_by:
-          type: string
-          format: email
         time_created:
           type: string
           format: date-time
@@ -1463,9 +1462,6 @@ components:
         time_updated:
           type: string
           format: date-time
-        updated_by:
-          type: string
-          format: email
         copo_id:
           type: string
         sampleDerivedFrom:
@@ -1517,7 +1513,6 @@ components:
           'COLLECTED_BY',
           'COLLECTION_LOCATION',
           'COLLECTOR_AFFILIATION',
-          'COLLECTOR_ORCID_ID',
           'COLLECTOR_SAMPLE_ID',
           'COMMON_NAME',
           'CULTURE_OR_STRAIN_ID',
@@ -1582,7 +1577,6 @@ components:
           'RELATIONSHIP',
           'SAMPLE_COORDINATOR',
           'SAMPLE_COORDINATOR_AFFILIATION',
-          'SAMPLE_COORDINATOR_ORCID_ID',
           'SAMPLE_FORMAT',
           'SAMPLING_PERMITS_DEF',
           'SAMPLING_PERMITS_FILENAME',
@@ -1613,7 +1607,6 @@ components:
           'associated_tol_project',
           'biosampleAccession',
           'copo_profile_title',
-          'created_by',
           'manifest_id',
           'public_name',
           'sampleDerivedFrom',
@@ -1625,10 +1618,9 @@ components:
           'time_created',
           'time_updated',
           'tol_project',
-          'updated_by',
         ]
       description: Fields that are associated with a sample record in COPO
-    
+
     Sample_short:
       type: object
       properties:
