@@ -15,6 +15,7 @@ import os
 import random
 import uuid
 import shutil
+from django.conf import settings
 
 lg = Logger()
 
@@ -112,7 +113,7 @@ class News(models.Model):
     author = models.CharField(max_length=200, blank=False, default='COPO Project Team')
     
     # Image will be uploaded to 'media/news_images' directory
-    news_image = models.ImageField(upload_to=news_image_upload_path, storage=OverwriteStorage(), blank=True, null=True)
+    news_image = models.ImageField(upload_to=news_image_upload_path, storage=OverwriteStorage(location=settings.STATIC_ROOT, base_url=settings.MEDIA_URL), blank=True, null=True)
     created_date = models.DateTimeField(default=timezone.now, editable=False)
     updated_date = models.DateTimeField(auto_now=True)
     is_news_article_active = models.BooleanField(default=True)
@@ -264,6 +265,17 @@ class News(models.Model):
                     lg.error(f'News images directory does not exist for news article with ID: {news.pk}')
         except Exception as e:
             lg.exception(f'Error deleting unwanted news images: {str(e)}')
+
+@receiver(post_save, sender=News)
+def move_image(sender, instance, **kwargs):
+
+    if instance.news_image and instance.news_image.name.startswith('temp/'):
+        news_image_name = os.path.join('news_images',str(instance.pk), os.path.basename(instance.news_image.name))
+        news_images_directory = os.path.join(settings.MEDIA_ROOT, 'news_images', str(instance.pk))
+        os.makedirs(news_images_directory, exist_ok=True)
+        shutil.move(instance.news_image.path, os.path.join(settings.MEDIA_ROOT,news_image_name))
+        instance.news_image.name = news_image_name
+        instance.save()
 
 @receiver(post_delete, sender=News)
 def delete_associated_news_images_media_directory(sender, instance, **kwargs):
