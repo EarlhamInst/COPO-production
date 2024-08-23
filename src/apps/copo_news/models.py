@@ -1,9 +1,5 @@
 from common.utils.logger import Logger
-
-from datetime import datetime
-
-from django.core.files import File
-from django.core.files.storage import default_storage
+from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_delete, pre_save, post_save
 from django.dispatch import receiver
@@ -13,9 +9,8 @@ from tinymce.models import HTMLField
 from .storage import OverwriteStorage
 import os
 import random
-import uuid
 import shutil
-from django.conf import settings
+
 
 lg = Logger()
 
@@ -24,7 +19,7 @@ def default_news_image():
 
 def news_image_upload_path(instance, filename):
     # Return a temporary directory path by default
-    return f'temp/{filename}'
+    return f'news_images/temp/{filename}'
 
 def delete_news_images_directory_content():
     media_directory = os.path.join('media', 'news_images')
@@ -48,51 +43,6 @@ class NewsCategory(models.Model):
 
     def __str__(self):
         return self.name
-    
-    def add_news_category(self, name, description='', colour=None):
-        if colour is None:
-            colour = '#' + uuid.uuid4().hex[:6]
-
-        self.name = name
-        self.description = description
-        self.colour = colour
-        self.save()
-        return self
-    
-    def get_all_news_categories(self):
-        return NewsCategory.objects.all()
-    
-    def update_news_category_by_name(self, old_name, new_name=None, new_description=None, new_colour=None):
-        try:
-            category = NewsCategory.objects.get(name=old_name)
-            if new_name:
-                category.name = new_name
-            if new_description:
-                category.description = new_description
-            if new_colour:
-                category.colour = new_colour
-            category.save()
-            return category
-        except NewsCategory.DoesNotExist as e:
-            lg.exception(f'News category with name, "{old_name}", does not exist. ', str(e))
-            return None
-        
-    def get_news_category_by_name(self, name):
-        try:
-            return NewsCategory.objects.get(name=name)
-        except NewsCategory.DoesNotExist as e:
-            lg.exception(f'News category with name, "{name}", does not exist. ', str(e))
-            return None
-
-    
-    def remove_news_category_by_name(self, name):
-        try:
-            category = NewsCategory.objects.get(name=name)
-            category.delete()
-            return True
-        except NewsCategory.DoesNotExist as e:
-            lg.exception(f'News category with name, "{name}", does not exist. ', str(e))
-            return False
 
     def remove_all_news_categories(self):
         NewsCategory.objects.all().delete()
@@ -127,21 +77,6 @@ class News(models.Model):
         self.updated_at = timezone.now()
         super(News, self).save(*args, **kwargs)
 
-    def set_news_images_directory_permissions(self):
-        news_images_directory = os.path.join('media', 'news_images')
-
-        try:
-            if os.path.exists(news_images_directory):
-                # try:
-                #     subprocess.run(['chmod', '-R', '775', news_images_directory], check=True)
-                # except subprocess.CalledProcessError as e:
-                #     print(f'Error: {e}')
-                os.chmod(news_images_directory, 0o775)
-            else:
-                self.create_news_images_directory()
-        except Exception as e:
-            lg.exception(f'Error changing directory permissions: {news_images_directory} {str(e)}')
-
     # Get related news items within the same category, excluding the current news item
     def get_related_news(self):
         # Show 6 related news items each time
@@ -156,93 +91,8 @@ class News(models.Model):
         next_news = News.objects.filter(id__gt=self.id).order_by('id').first()
         return previous_news, next_news
 
-    def add_news_article(self, title, content,  category='General', author='COPO Project Team', news_image=default_news_image(), is_news_article_active=False):
-        self.title = title
-        self.content = content
-        self.category = NewsCategory().get_news_category_by_name(category)
-        self.author = author
-        self.news_image = news_image
-        self.is_news_article_active = is_news_article_active
-        self.save()
-        return self
-    
-    def get_all_news_articles(self):
-        return News.objects.all()
-    
-    def get_news_article_by_id(self, id):
-        try:
-            objects= News.objects.get(id=id)
-            return objects
-        except News.DoesNotExist as e:
-            lg.exception(f'News article with ID, "{id}", does not exist. ', str(e))
-            return None
-    
-    def get_news_article_by_title(self, title):
-        try:
-            objects = News.objects.get(title=title)
-            return objects
-        except News.DoesNotExist as e:
-            lg.exception(f'News article with title, "{title}", does not exist. ', str(e))
-            return None
-        
-    def update_news_article_by_title(self, old_title, new_title, new_content, new_category, new_author, new_associated_website_link):
-        try:
-            # Get news article by title
-            self = News.objects.get(title=old_title)
-
-            if new_title:
-                self.title = new_title
-
-            if new_content:
-                self.content = new_content
-
-            if new_category:
-                self.category = new_category
-
-            if new_author:
-                self.author = new_author
-
-            if new_associated_website_link:
-                self.associated_website_link = new_associated_website_link
-            
-            self.updated_date = datetime.now(datetime.UTC)
-            self.save()
-        except News.DoesNotExist as e:
-            lg.exception(f'News article with title, "{old_title}", does not exist. ', str(e))
-            return None
-    
-    def update_news_article_active_status_by_title(self, title, new_news_article_active_status):
-        try:
-            self = News.objects.get(title=title)
-            self.is_news_article_active = new_news_article_active_status
-            self.updated_date = datetime.now(datetime.UTC)
-            self.save()
-        except News.DoesNotExist as e:
-            lg.exception(f'News article with title, "{title}", does not exist. ', str(e))
-            return None
-    
-    def remove_news_article_by_title(self, title):
-        try:
-            self = News.objects.get(title=title)
-            self.delete_news_images_directory_content()
-            self.delete()
-            return True
-        except News.DoesNotExist as e:
-            lg.exception(f'News article with title, "{title}", does not exist. ', str(e))
-            return False
-    
-    def remove_news_article_by_id(self, id):
-        try:
-            self = News.objects.get(id=id)
-            self.delete_news_images_directory_content()
-            self.delete()
-            return True
-        except News.DoesNotExist as e:
-            lg.exception(f'News article with ID, "{id}", does not exist. ', str(e))
-            return False
-
     def remove_all_news_articles(self):
-        # Delete all directories in the 'media/news_images' folder
+        # Delete all directories in the 'media/news_images/' folder
         News.objects.all().delete()
         delete_news_images_directory_content()
         return True
@@ -268,14 +118,22 @@ class News(models.Model):
 
 @receiver(post_save, sender=News)
 def move_image(sender, instance, **kwargs):
+    static_news_directory = os.path.join(settings.STATIC_ROOT, 'news_images')
+    static_temp_directory = os.path.join(static_news_directory, 'temp')
 
-    if instance.news_image and instance.news_image.name.startswith('temp/'):
+    # Update image path and move the image to 'media/news_images/' directory 
+    # from 'static/news_images/temp/' directory
+    if instance.pk and instance.news_image and instance.news_image.name.startswith('news_images/temp/'):
         news_image_name = os.path.join('news_images',str(instance.pk), os.path.basename(instance.news_image.name))
-        news_images_directory = os.path.join(settings.MEDIA_ROOT, 'news_images', str(instance.pk))
-        os.makedirs(news_images_directory, exist_ok=True)
-        shutil.move(instance.news_image.path, os.path.join(settings.MEDIA_ROOT,news_image_name))
+        media_news_images_directory = os.path.join(settings.MEDIA_ROOT, 'news_images', str(instance.pk))
+        os.makedirs(media_news_images_directory, exist_ok=True)
+        shutil.move(instance.news_image.path, os.path.join(settings.MEDIA_ROOT, news_image_name))
         instance.news_image.name = news_image_name
         instance.save()
+
+        # Clean up the 'static/news_images' directory
+        shutil.rmtree(static_temp_directory, ignore_errors=True)
+        shutil.rmtree(static_news_directory, ignore_errors=True)
 
 @receiver(post_delete, sender=News)
 def delete_associated_news_images_media_directory(sender, instance, **kwargs):

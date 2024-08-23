@@ -1,8 +1,6 @@
 from common.utils.logger import Logger
 from django.conf import settings
-from django.core.files import File
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 from src.apps.copo_news.models import News, NewsCategory
 import os
 import shutil
@@ -44,14 +42,6 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.SUCCESS('Removed existing news items and categories\n'))
             lg.debug('Removed existing news items and categories')
-            
-            # Check if the default news image exists in the 'media/news_images' directory
-            # self.stdout.write('Checking for default news image...')
-            # lg.debug('Checking for default news image...')
-
-            # self.check_for_default_news_image()
-            # self.stdout.write('Default news image check complete\n')
-            # lg.debug('Default news image check complete')
 
             self.stdout.write('Adding news categories...')
             lg.debug(f'Adding news categories...')
@@ -258,7 +248,7 @@ class Command(BaseCommand):
                 news_item.save()
             
             # Remove unwanted images that were uploaded to 
-            # the 'media/news/images' folder. There should be only one image 
+            # the 'media/news_images' folder. There should be only one image 
             # per news item according to the 'news_item' list of dictionaries above
             # but some news items ended up having more than one image
             News().remove_unwanted_news_images()
