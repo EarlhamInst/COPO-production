@@ -119,7 +119,7 @@ def web_page_access_checker(func):
                 # Grant web page access if the current web page viewer is a data manager
                 # i.e. a COPO developer/team member
                 # with permission to view the web page
-                # NB: Useful for viewing web pages related to 'Stand-alone' profiles
+                # NB: Useful for viewing web pages related to 'Genomics' profiles
                 if profile_type:
                     request.session['profile_id'] = profile_id
 

@@ -172,8 +172,8 @@ def get_filter_accession_titles(request):
         accession_titles = [{'title': d_utils.convertStringToTitleCase(
             item), 'value': item} for item in NON_SAMPLE_ACCESSION_TYPES if item in accession_types]
     else:
-        # Sample project types including Stand-alone
-        # since samples might exist in Standa-lone projects
+        # Sample project types including Genomics
+        # since samples might exist in Genomics projects
         profile_types = list()
 
         for i in accession_types:
