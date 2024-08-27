@@ -882,9 +882,9 @@ paths:
                   type: string
                   enum:
                     [
-                      'Stand-alone',
+                      'Genomics',
                       'Darwin Tree of Life (DTOL)',
-                      'Darwin Tree of Life Environmental Samples (dtolenv)',
+                      'Darwin Tree of Life Environmental Samples (DTOLENV)',
                       'Aquatic Symbiosis Genomics (ASG)',
                       'European Reference Genome Atlas (ERGA)',
                     ]
