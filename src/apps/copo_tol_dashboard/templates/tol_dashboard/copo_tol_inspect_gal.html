@@ -78,7 +78,7 @@
             </div>
 
             <div>
-                <div id="taxonomyPieChartTabID" class="tabcontent" style="height: 480px!important;">
+                <div id="taxonomyPieChartTabID" class="tabcontent" style="height: 380px!important;">
                     <!--   Pie chart component loader -->
                     <div class="piechart_component_loader">
                         <div class="piechart_spinner ui huge_loader hidden inverted dimmer">
@@ -86,10 +86,11 @@
                         </div>
                     </div>
 
-                    <canvas id="pieChartID" class="chartjs-render-monitor"
-                            style="margin:0 auto;height: 480px; width: 600px; display:none;"
-                            aria-label="taxonomy representation" role="figure">
-                    </canvas>
+                    <div class="piechart_container">
+                        <canvas id="pieChartID" class="chartjs-render-monitor"
+                                aria-label="taxonomy representation" role="figure">
+                        </canvas>
+                    </div>
                 </div>
                 <div id="galSampleGoalStatisticsTabID" class="tabcontent">
                     <canvas id="barGraphID" class="chartjs-render-monitor" width="400" height="100"

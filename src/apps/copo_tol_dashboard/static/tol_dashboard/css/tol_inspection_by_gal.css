@@ -82,10 +82,10 @@ div.x-off-canvas .x-off-canvas-content {
     background-color: hsl(0, 0%, 100%);
 }
 
-canvas {
+/* canvas {
     width: 100%;
     object-fit: contain;
-}
+} */
 
 .word-break {
     word-break: break-word;
@@ -118,12 +118,27 @@ canvas {
     font-family: 'Helvetica Nueue';
 }
 
+#pieChartID {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.piechart_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
 #current_gal_name {
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1; /* number of lines to show */
+    -moz-line-clamp: 1;
+    -ms-line-clamp: 1;
+    line-clamp: 1;
     line-height: 1.5em; /* fallback */
     max-height: 1.5em; /*1.5em x 1 = 1.5em*/ /* fallback */
     color: #344767;
