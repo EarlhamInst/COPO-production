@@ -58,7 +58,7 @@ def copo_tol_dashboard(request):
     # Determine if users are in the appropriate membership group to view the web page
     member_groups = get_group_membership_asString()
 
-    # Stand-alone users/anonymous users can only view certain aspects of the tol dashboard
+    # Genomics users/anonymous users can only view certain aspects of the tol dashboard
     if any(item in member_groups for item in REQUIRED_MEMBER_GROUPS):
         context = {'group_status': False}
     else:
@@ -177,7 +177,7 @@ def get_number_of_samples_produced(field_name, field_value):
 
 def get_profile_titles_nav_tabs(request):
     queryUserProfileRecords = request.GET["queryUserProfileRecords"]
-    regex = r'\((.*?)\)'  # value within enclosed parentheses regex
+    #regex = r'\((.*?)\)'  # value within enclosed parentheses regex
 
     if queryUserProfileRecords:
         owner_id = helpers.get_user_id()
@@ -185,14 +185,19 @@ def get_profile_titles_nav_tabs(request):
     else:
         profiles = Profile().get_all_profiles()
 
-    profile_types = [i.get("type", "") for i in profiles if i.get(
-        "type", "") != "Stand-alone"]  # Get tol profile types
+    # Get TOL profile types
+    profile_types = [i.get("type", "") for i in profiles if i.get("type", "") != "genomics"]  
 
     #  Extract value within enclosed parentheses from a unique set of profile types
     #  If the value exists, return it else, return the profile type
-    profile_types = [re.search(regex, i).group(1) if re.search(
-        regex, i) else i for i in set(profile_types)]
+    # profile_types = [re.search(regex, i).group(1) if re.search(
+    #     regex, i) else i for i in set(profile_types)]
+
+    profile_types = list(set(profile_types))  # Get unique profile types
     profile_types.sort()  # Sort profile types in ascending order
+
+    # Convert each item in the 'profile_types' list to uppercase
+    profile_types = [x.upper() for x in profile_types]
 
     return HttpResponse(json_util.dumps(profile_types))
 
