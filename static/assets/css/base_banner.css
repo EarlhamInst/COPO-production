@@ -44,11 +44,11 @@
 }
 
 .display-flex {
-    display: flex;
+    display: flex !important;
 }
 
 .display-block {
-    display: block;
+    display: block !important;
 }
 
 .margin-top-neg-8 {
