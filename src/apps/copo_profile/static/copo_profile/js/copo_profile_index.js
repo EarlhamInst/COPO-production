@@ -1228,7 +1228,7 @@ function filter_associatedProfileTypeList_based_on_selectedProfileType(
             'BGE',
             'POP_GENOMICS',
             'ERGA_PILOT',
-            'ERGA_SATELLITES',
+            'ERGA_COMMUNITY',
           ];
           if (!selected_type.includes('ERGA')) {
             if (

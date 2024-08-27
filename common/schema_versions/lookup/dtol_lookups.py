@@ -701,7 +701,7 @@ DTOL_ENUMS = {
         'ERGA-associated',
         'ERGA-BGE',
         'ERGA-Pilot',
-        'ERGA-Satellites'
+        'ERGA-Community'
         ],
     'PURPOSE_OF_SPECIMEN': {
         'ASG':

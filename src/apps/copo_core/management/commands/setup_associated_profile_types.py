@@ -39,8 +39,8 @@ class Command(BaseCommand):
         AssociatedProfileType().create_associated_profile_type(name="ERGA_PILOT",
                                                              label="European Reference Genome Atlas - Pilot (ERGA_PILOT)")
         
-        AssociatedProfileType().create_associated_profile_type(name="ERGA_SATELLITES",
-                                                             label="European Reference Genome Atlas - Satellites (ERGA_SATELLITES)")
+        AssociatedProfileType().create_associated_profile_type(name="ERGA_COMMUNITY",
+                                                             label="European Reference Genome Atlas - COMMUNITY (ERGA_COMMUNITY)")
         
         AssociatedProfileType().create_associated_profile_type(name="POP_GENOMICS",
                                                              label="Population Genomics (POP_GENOMICS)")                                 
