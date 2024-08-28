@@ -736,10 +736,6 @@ $(document).on('document_ready', function () {
       // Set the scrollbar to the bottom of the status log
       scrollToBottomOfStatusLog();
     }
-
-    if (sample_table != undefined) {
-      sample_table.columns.adjust().draw();
-    }
   });
 });
 
@@ -831,9 +827,6 @@ function row_select(ev) {
         }
       }
     });
-
-    // Adjust 'profile_samples' columns and redraw without resetting the paging
-    sample_table.columns.adjust().draw(false);
 
     $('#spinner').fadeOut('fast');
   }
