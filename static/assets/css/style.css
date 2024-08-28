@@ -288,12 +288,6 @@ blockquote {
     z-index: 99;
 }
 
-#frontpage-navbar {
-    font-size: 8px;
-    float: right !important;
-    padding-left: 20px;
-}
-
 /*nav {*/
 /*    position: absolute;*/
 /*    width: 100%;*/
@@ -679,7 +673,7 @@ blockquote {
     min-height: 300px;
 }
 
-.news-item {
+/* .news-item {
     color: black;
     min-height: 200px;
     background-color: white;
@@ -696,7 +690,7 @@ blockquote {
 
 .news-item-text {
     padding-left: 30px
-}
+} */
 
  /*.news-item-text a {
        color: indianred;

@@ -24,6 +24,7 @@ body {
     position: relative;
 }
 
+/* footer styles */
 #footer {
     background-color: white;
     height: 100px;
@@ -34,6 +35,11 @@ body {
     bottom: 0;
 }
 
+.footer-frontpage {
+    margin-top: 100px !important;
+    bottom: initial !important
+}
+
 /*=======================================
     NAVIGATION STYLES
 =========================================*/
@@ -41,14 +47,6 @@ body {
 /* .container-fluid nav{
     background-color: white;
 } */
-
-#frontpage-navbar {
-    font-size: 8px;
-    float: right !important;
-    /*Align top navbar to the right of the web page*/
-    padding-left: 20px;
-}
-
 .nav {
     padding-right: 45px;
 }
@@ -327,6 +325,7 @@ p {
     padding: 20px !important
 }
 
+/* Contact section CSS */
 #contact-sec {
     padding-top: 5px !important;
     color: white;
@@ -340,15 +339,34 @@ p {
     box-shadow: 0 0 0 1px #fff inset !important;
 }
 
-.warning_banner {
-    background-color: white !important;
+#email_form #name,
+#email_form #email {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-top: 6px;
+    margin-bottom: 16px;
+    resize: vertical;
 }
 
-.warning_banner h1 {
-    margin: 0 40px 40px 40px;
-    text-decoration: underline;
+#email_form #message {
+    height: 200px;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-top: 6px;
+    margin-bottom: 16px;
+    resize: vertical;
 }
 
-.warning_banner p {
-    margin-top: 0
+.white-text {
+    color: white !important;
+}
+
+.black-text {
+    color: black!important;
 }

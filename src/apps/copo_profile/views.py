@@ -9,7 +9,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from jsonpickle import encode
-from src.apps.copo_core.models import banner_view
+from src.apps.copo_core.models import Banner
 from common.utils.helpers import get_group_membership_asString, get_datetime, get_env
 from common.utils.logger import Logger
 from datetime import datetime
@@ -29,7 +29,7 @@ l = Logger()
 def copo_profile_index(request):
     # Banner and groups
     member_groups = get_group_membership_asString()
-    banner = banner_view.objects.all()
+    banner = Banner.objects.filter(active=True)
 
     if len(banner) > 0:
         context = {'user': request.user, "banner": banner[0]}

@@ -860,7 +860,23 @@ class Submission(DAComponent):
                 self.get_collection_handle().update_one({"_id": ObjectId(s["_id"])},
                                                         {"$set": {"tagged_seq_status": "sending", "date_modified": current_time}})
         return out
+    
+    def get_accession_records_count(self, element_dict):
+        # Check if there are any records in the collection in the database
+        # based on the 'accessions' field
+        showAllCOPOAccessions = element_dict['showAllCOPOAccessions']
+        isUserProfileActive = element_dict['isUserProfileActive']
+        profile_id = element_dict['profile_id']
 
+        filter = dict()
+        filter["accessions"] = {"$exists": True, "$ne": {}}
+
+        if not showAllCOPOAccessions:
+            if isUserProfileActive and profile_id:
+                filter['profile_id'] = profile_id
+
+        return self.get_collection_handle().count_documents(filter)
+    
     def get_non_sample_accessions(self, element_dict):
         from .profile_da import Profile
         from .da_utils import filter_non_sample_accession_dict_lst

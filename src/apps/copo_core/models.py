@@ -16,6 +16,13 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserDetails(models.Model):
+    # This allows the model to be pluralised
+    # as 'UserDetails' instead of 'UserDetailss'
+    # in the Django admin interface
+    # since Django classes should be singular
+    class Meta:
+        verbose_name_plural = 'UserDetails'
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     orcid_id = models.TextField(max_length=40, blank=True)
     repo_manager = ArrayField(
@@ -86,10 +93,10 @@ class StatusMessage(models.Model):
         get_latest_by = 'created'
 
 
-class banner_view(models.Model):
-    header_txt = models.TextField(max_length=100, blank=False, default="")
-    body_txt = models.TextField(max_length=2000, blank=False, default="")
-    active = models.BooleanField()
+class Banner(models.Model):
+    header = models.TextField(max_length=78, blank=False, default="")
+    body = models.TextField(max_length=2000, blank=True, default="")
+    active = models.BooleanField(default=False)
 
 
 class ViewLock(models.Model):

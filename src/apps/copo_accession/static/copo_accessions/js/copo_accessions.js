@@ -15,6 +15,7 @@ if (showAllCOPOAccessions) {
 } else {
   // Store data for accessions web page for a given profile
   isUserProfileActive = true;
+  isOtherAccessionsTabActive = false;
 }
 
 // URL for accessions dashboard where the view for it does not require user to be logged in
@@ -153,25 +154,11 @@ let dt_options = {
   },
 };
 
-$(document).on("document_ready", function() {
+$(document).on('document_ready', function () {
   const acceptRejectSampleURL = '/copo/dtol_submission/accept_reject_sample';
   const accessionsDashboardURL = '/copo/copo_accessions/dashboard';
   const tolInspectURL = '/copo/tol_dashboard/tol_inspect';
   const tolInspectByGALURL = '/copo/tol_dashboard/tol_inspect/gal';
-
-  const sample_manager_groups = [
-    'dtol_sample_managers',
-    'dtolenv_sample_managers',
-    'erga_sample_managers',
-  ];
-
-  const user_and_sample_manager_groups = [
-    'dtol_users',
-    'dtol_sample_managers',
-    'dtolenv_sample_managers',
-    'erga_users',
-    'erga_sample_managers',
-  ];
 
   $(document).on('click', '.accept_reject_samples', function () {
     document.location = acceptRejectSampleURL;
@@ -191,13 +178,19 @@ $(document).on("document_ready", function() {
 
   $(document).on('click', '.toggle-view', toggle_accessions_view);
 
-  $(document).on('change', '.filter-accessions', filterRecordsByAccessionType);
+  $(document).on(
+    'change',
+    '.filter-accessions',
+    filter_records_by_accession_type
+  );
 
-  if (groups.some((x) => sample_manager_groups.indexOf(x) !== -1)) {
+  if (groups.some((x) => x.endsWith('_sample_managers'))) {
     $('.accept_reject_samples').show(); // Show 'accept/reject samples' button
   }
 
-  if (groups.some((x) => user_and_sample_manager_groups.indexOf(x) !== -1)) {
+  if (
+    groups.some((x) => x.endsWith('_sample_managers') || x.endsWith('_users'))
+  ) {
     $('.tol_inspect').show(); // Show 'tol_inspect' button
     $('.tol_inspect_gal').show(); // Show 'tol_inspect_gal' button
   }
@@ -216,8 +209,11 @@ $(document).on("document_ready", function() {
     $('.copo_accessions').show();
   }
 
-  // Load records
-  load_accessions_records();
+  // Check if records exist in the table
+  // irrespective of the active tab
+  // Load records if they exist, else
+  // show the component welcome message
+  do_accessions_table_records_exist();
 
   // Instantiate/refresh tooltips
   refresh_tool_tips();
@@ -235,7 +231,7 @@ const getValues = function ($el) {
   return items;
 };
 
-function filterRecordsByAccessionType() {
+function filter_records_by_accession_type() {
   // Get the checked accession types
   let checkedAccessions = getValues($('.filter-accessions:checked:visible'));
 
@@ -248,7 +244,7 @@ function filterRecordsByAccessionType() {
 
 function get_filter_accession_titles(api) {
   // Get accession types from the 'accession_type' column in the data table
-  let table_accession_types = api.column(2).data().unique().sort().toArray();
+  // let table_accession_types = api.column(2).data().unique().sort().toArray();
 
   $.ajax({
     url: '/copo/copo_accessions/get_filter_accession_titles',
@@ -256,6 +252,8 @@ function get_filter_accession_titles(api) {
     headers: { 'X-CSRFToken': $.cookie('csrftoken') },
     dataType: 'json',
     data: {
+      showAllCOPOAccessions: $('#showAllCOPOAccessions').val(),
+      isUserProfileActive: isUserProfileActive,
       isOtherAccessionsTabActive: isOtherAccessionsTabActive,
     },
     success: function (data) {
@@ -264,11 +262,11 @@ function get_filter_accession_titles(api) {
       } else {
         // Filter the accession types that are not in the table
         // if the web page is not the Accessions dashboard web page
-        if ($('#showAllCOPOAccessions').val() === 'False') {
-          data = data.filter((item) =>
-            table_accession_types.includes(item.value)
-          );
-        }
+        // if ($('#showAllCOPOAccessions').val() === 'False') {
+        //   data = data.filter((item) =>
+        //     table_accession_types.includes(item.value)
+        //   );
+        // }
         set_filter_checkboxes(data);
       }
     },
@@ -402,6 +400,45 @@ function customise_accessions_table(table) {
 
   // Add padding between table and show records filter
   table_wrapper.find('.dataTables_length').css('padding-top', '20px');
+}
+
+function do_accessions_table_records_exist() {
+  // Check if any records exist in the table using the
+  // 'accessions' field as reference
+  $.ajax({
+    url: '/copo/copo_accessions/records/available',
+    method: 'GET',
+    dataType: 'json',
+    data: {
+      showAllCOPOAccessions: $('#showAllCOPOAccessions').val(),
+      isUserProfileActive: isUserProfileActive,
+    },
+    success: function (data_length) {
+      // NB: The count of the table records is being returned
+      if (data_length === 0) {
+        // Hide the filter accessions legend
+        $('.accessions-legend').hide();
+        $('.accessions-checkboxes').hide();
+
+        // Set empty component message
+        if ($('.page-welcome-message').length) {
+          $('.page-welcome-message').show();
+          $(`#${table_id}_wrapper`).hide();
+        }
+        return false;
+      } else {
+        // Show the filter accessions legend
+        $('.accessions-legend').show();
+        $('.accessions-checkboxes').show();
+
+        // Load records
+        load_accessions_records();
+      }
+    },
+    error: function (error) {
+      console.log(`Error: ${error.message}`);
+    },
+  });
 }
 
 function load_accessions_records() {

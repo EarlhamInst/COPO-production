@@ -196,12 +196,12 @@ class Command(BaseCommand):
         at_dtolenv = AssociatedProfileType.objects.get(name="DTOL_ENV")
         at_erga = AssociatedProfileType.objects.get(name="ERGA") 
         at_erga_pilot = AssociatedProfileType.objects.get(name="ERGA_PILOT")
-        at_erga_satellites = AssociatedProfileType.objects.get(name="ERGA_SATELLITES")
+        at_erga_community = AssociatedProfileType.objects.get(name="ERGA_COMMUNITY")
         at_pop_genomics = AssociatedProfileType.objects.get(name="POP_GENOMICS")                              
         at_sanger = AssociatedProfileType.objects.get(name="SANGER")  
 
 
-        erga.associated_profile_types.set([at_erga, at_bge, at_bioblitz, at_cbp, at_erga_pilot, at_erga_satellites, at_pop_genomics, at_sanger])
+        erga.associated_profile_types.set([at_erga, at_bge, at_bioblitz, at_cbp, at_erga_pilot, at_erga_community, at_pop_genomics, at_sanger])
         asg.associated_profile_types.set([at_asg])
         dtolenv.associated_profile_types.set([at_dtolenv])
         dtol.associated_profile_types.set([at_dtol])

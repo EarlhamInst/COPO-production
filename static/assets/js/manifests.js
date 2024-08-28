@@ -3,6 +3,14 @@ $(document).ready(function () {
   $('.dropdown-toggle').dropdown(); // Facilitate the display of the manifest template dropdown menu options
   $.fn.datepicker.noConflict(); // Does not conflict with other scripts that also have datepicker defined
 
+  // Set text colour according to the current theme
+  let section_header = $('.secondary-container').find('p');
+  if ($('.gray-theme').is(':visible')) {
+    section_header.addClass('white-text');
+  } else {
+    section_header.removeClass('white-text');
+  }
+
   $(document).data('manifest_type', '');
 
   $(document).on('click', '#downloadBtn', generateManifestTemplate);
@@ -245,7 +253,7 @@ function get_common_value_dropdown_list_handler(common_field, commonValueDiv) {
     },
   })
     .done(function (data) {
-      if (data['dropdownlist'] !== [] && data['dropdownlist'].length !== 0) {
+      if (data['dropdownlist'].length !== 0) {
         const value_input = document.createElement('select');
         value_input.setAttribute('id', 'commonValueID');
         value_input.setAttribute('class', 'form-control');

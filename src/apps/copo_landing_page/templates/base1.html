@@ -21,6 +21,8 @@
     <title>{% block title %}{% endblock %} | COPO</title>
 
     <link href="/static/assets/css/base_styles.css" rel="stylesheet"/>
+    <link href="/static/assets/css/base_banner.css" rel="stylesheet" />
+
     <link rel="stylesheet" media="print" onload="this.media='all'"
           href="{% static 'copo/semantic_ui/semantic.min.css' %}">
     <link href="/static/assets/css/bootstrap.css" rel="stylesheet"/>
@@ -35,6 +37,7 @@
     <script src="{% static 'assets/js/landing.js' %}"></script>
     {% block headblock %}
     {% endblock %}
+
     <style>
         .dot-color {
             color: #eaf0f0
@@ -53,10 +56,10 @@
         .wizard-link {
             cursor: pointer;
         }
-
-        {% block css_block %}
-        {% endblock %}
     </style>
+    
+    {% block css_block %}
+    {% endblock %}
 
 
     <script>
@@ -68,9 +71,11 @@
             image_pre + "lavender1_bw.jpg", image_pre + "mist_bw.jpg", image_pre + "otter_bw.jpg"
         ]
         var content_classes = ["gray-theme", "green-theme"]
-        {% block javascript_block %}
-        {% endblock %}
+      
     </script>
+    
+    {% block javascript_block %}
+    {% endblock %}
 
 </head>
 <body>

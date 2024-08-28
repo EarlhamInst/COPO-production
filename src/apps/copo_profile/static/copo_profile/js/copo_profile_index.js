@@ -2,6 +2,7 @@ let contactCOPODialogCount = 1;
 
 function get_profile_type() {
   return $('#profile_type').find(':selected').val();
+  return $('#profile_type').find(':selected').val();
 }
 
 $(document).ready(function () {
@@ -99,7 +100,7 @@ $(document).ready(function () {
       // Set content of the popover
       const $content = $('<div></div>');
       const $editButton = $(
-        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil-square-o"></i>&nbsp;Edit</button>'
+        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil"></i>&nbsp;Edit</button>'
       );
       const $deleteButton = $(
         '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
@@ -365,7 +366,7 @@ function initialise_popover() {
       // Set content of the popover
       const $content = $('<div></div>');
       const $editButton = $(
-        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil-square-o"></i>&nbsp;Edit</button>'
+        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil"></i>&nbsp;Edit</button>'
       );
       const $deleteButton = $(
         '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
@@ -384,11 +385,12 @@ function initialise_popover() {
             action['title'] +
             '"><i class="' +
             action['icon_class'] +
-            ' "></i>' +
+            ' "></i>&nbsp;' +
             action['label'] +
             '</button>'
         );
         $button.css('margin-top', '10px');
+        $content.append($button);
         $content.append($button);
       });
 
@@ -1184,7 +1186,7 @@ function initialise_loaded_records(
       // Set content of the popover
       const $content = $('<div></div>');
       const $editButton = $(
-        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil-square-o"></i>&nbsp;Edit</button>'
+        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil"></i>&nbsp;Edit</button>'
       );
       const $deleteButton = $(
         '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
@@ -1292,7 +1294,7 @@ function filter_associatedProfileTypeList_based_on_selectedProfileType(
             'BGE',
             'POP_GENOMICS',
             'ERGA_PILOT',
-            'ERGA_SATELLITES',
+            'ERGA_COMMUNITY',
           ];
           if (!selected_type.includes('ERGA')) {
             if (

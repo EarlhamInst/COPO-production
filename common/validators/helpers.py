@@ -68,15 +68,15 @@ def check_taxon_ena_submittable(taxon, by="id"):
         if by == "id":
             if taxinfo["submittable"] != 'true':
                 errors.append("TAXON_ID " + taxon + " is not submittable to ENA")
-            if taxinfo["rank"] not in ["species", "subspecies"]:
-                errors.append("TAXON_ID " + taxon + " is not a 'species' or 'subspecies' level entity.")
+            if taxinfo["rank"] not in ["species", "tmp_subspecies"]:
+                errors.append("TAXON_ID " + taxon + " is not a 'species' or 'tmp_subspecies' level entity.")
             if taxinfo["binomial"] == "false":  
                 errors.append(MESSAGE['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))    
         elif by == "binomial":
             if taxinfo[0]["submittable"] != 'true':
                 errors.append("TAXON_ID " + taxon + " is not submittable to ENA")
-            if taxinfo[0]["rank"] not in ["species", "subspecies"]:
-                errors.append("TAXON_ID " + taxon + " is not a 'species' or 'subspecies' level entity.")
+            if taxinfo[0]["rank"] not in ["species", "tmp_subspecies"]:
+                errors.append("TAXON_ID " + taxon + " is not a 'species' or 'tmp_subspecies' level entity.")
             if taxinfo[0]["binomial"] == "false":
                 errors.append(MESSAGE['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))    
     except Exception as e:

@@ -1,0 +1,86 @@
+{% extends "copo/base2.html" %}
+{% load static %}
+
+{% block title %}News{% endblock %}
+
+{% block stylesheet_block %}
+    <link rel="stylesheet" href="{% static '/copo_news/css/copo_news.css' %}">
+{% endblock %}
+
+{% block content_area %}
+    <br><br><br><br>
+    <div class="news-container">
+        {% if newsList|length > 0 %}
+            <!-- Search and Filter section -->
+            <div class="news-search-filter">
+                <input id="newsSearchBoxID" type="text" placeholder="&emsp;Search news...">
+                <select id="newsCategoryFilterID" class="form-control">
+                    <option value="">All Categories</option>
+                    {% for category in allCategories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+                <!-- Refresh icon -->
+                <i id='getAllNewsItemsIconID' class="fa fa-refresh" aria-hidden="true" title="Get all news items by all categories"></i>
+            </div>
+            
+            <!-- News List section -->
+            <div class="news {% if newsList|length == 1 %}news1{% elif newsList|length == 2 %}news2{% else %}news_more{% endif %}">
+                {% for news in newsList %}
+                    <div class="news-item">
+                        {% if news.news_image %}
+                            <div class="news-image" style="background-image: url({{ news.news_image.url }})"></div>
+                        {% else %}
+                            <div class="news-image news-image-default"></div>
+                        {% endif %}
+                        
+                        <div class="news-content">
+                            <div class="news-inside">
+                                <div class="news-row">
+                                    <div class="news-category fl-left">{{ news.category }}</div>
+                                    <div class="news-date fl-right"> {{ news.created_date|date:"D, j M Y H:i" }}</div>
+                                </div>
+                                <br>
+                                <h3 class="news-title">{{ news.title|truncatechars:50 }}</h3>
+                                <div class="news-excerpt">
+                                    {% autoescape off %}
+                                        {{ news.content|truncatechars:400 }}
+                                    {% endautoescape %}
+                                </div>
+                                <div class="centre mt-10 mb-10">
+                                    <a id="readMoreBtnID" class="btn-accent news-button btn-big" href="{% url 'news:news_item' news.id %}">
+                                        Read more
+                                        <i class="fa fa-chevron-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div> 
+        {% else %}
+            <div class="news">
+                <div class="news-item">
+                    <div class="news-image news-image-default"></div>
+                    <div class="news-content">
+                        <div class="news-inside">
+                            <h3 class="news-title">No news available</h3>
+                            <p class="news-excerpt">
+                                There are no news articles available at this time. Please check back later.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Miscellaneous news button section -->
+    <div class="centre mt-10">
+        <div id="miscNewsButtonID" class="btn-accent news-button btn-large"></div>
+    </div>
+{% endblock %}
+
+{% block js_block %}
+    <script src="{% static '/copo_news/js/copo_news.js' %}"></script>
+{% endblock %}

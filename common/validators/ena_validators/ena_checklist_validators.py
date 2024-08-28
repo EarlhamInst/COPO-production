@@ -1,5 +1,6 @@
 from common.validators.validator import Validator
 from common.dal.sample_da import Sample
+from django.conf import settings
 import re
 import requests
 from common.utils.helpers import get_env
@@ -14,6 +15,8 @@ pass_word = get_env('WEBIN_USER_PASSWORD')
 user_token = get_env('WEBIN_USER').split("@")[0]
 session = requests.Session()
 session.auth = (user_token, pass_word) 
+
+lg = settings.LOGGER
 
 class MandatoryValuesValidator(Validator):
     def validate(self):
@@ -98,7 +101,8 @@ class IncorrectValueValidator(Validator):
                                     else:
                                         self.errors.append("Invalid value " + row + " in column:'" + field["name"] + "'")
                                         self.flag = False
-                                except: 
+                                except Exception as e:
+                                    lg.exception(e)
                                     self.errors.append("Invalid value " + row + " in column:'" + field["name"] + "'")
                                     self.flag = False
 

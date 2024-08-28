@@ -1,0 +1,50 @@
+{% extends 'copo/base_simple.html' %}
+
+{% load static %}
+{% load web_tags %}
+
+{% block title %}Error {% endblock %}
+
+{% block stylesheet_block %}
+    <link rel="stylesheet" href="{% static 'copo_news/css/copo_news.css' %}">
+    <style>
+        body {
+            background-image: none !important;
+        }
+    </style>
+{% endblock %}
+
+{% block header_section %}
+{% endblock header_section %}
+
+{% block image_div %}
+    <div class="text-center" style="padding:50px">
+        <img src="{% static 'assets/img/COPO-logo-full-CMYK-black.png' %}" height="200px">
+    </div>
+{% endblock image_div%}
+
+{% block content %}
+    <br><br><br><br>
+    <div class="error-page-wrapper">
+        <div class="text-centre">
+            <span class="lead error-page-title">Unforseen Consequences</span>
+            <p class="error-page-message">{{ message }}</p>
+        </div>
+        <div class="row text-centre">
+            <img id="headCrabImgID" class="text-center" src="{% static 'copo/img/headcrab.gif' %}" 
+                alt="Gordon Freeman and His Crowbar" />
+            <img id='freemanGifID' class="text-center" src="{% static 'copo/img/freeman.gif' %}"  
+                alt="Gordon Freeman and His Crowbar" />
+            <br />
+            <a id="returnToNewsListBtn" class="btn btn-default" href="/news">Return to News List</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block help_section %}
+<!-- sidebar -->
+{% endblock %}
+
+{% block js_block %}
+    <script src="{% static 'copo_news/js/copo_news.js' %}"></script>
+{% endblock %}

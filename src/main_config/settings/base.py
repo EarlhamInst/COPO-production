@@ -84,6 +84,7 @@ PROJECT_APPS = [
     'src.apps.copo_accession',
     'src.apps.copo_tol_dashboard',
     'src.apps.copo_manifest_wizard',
+    'src.apps.copo_news',
     'src.apps.api',
     'allauth',
     'allauth.account',
@@ -91,6 +92,7 @@ PROJECT_APPS = [
     'allauth.socialaccount.providers.orcid',
     'rest_framework',
     'rest_framework.authtoken',
+    'tinymce',
     'compressor',
     'django_extensions',
     'django_user_agents',
@@ -172,9 +174,9 @@ LOGIN_URL = '/copo/auth/login'
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en-gb'
 
-TIME_ZONE = 'Etc/GMT+0'
+TIME_ZONE = 'Europe/London'
 
 USE_I18N = True
 
@@ -285,3 +287,27 @@ ROOT_URLCONF = 'src.main_config.urls'
 
 UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads')
 LOCAL_UPLOAD_PATH = os.path.join(BASE_DIR, 'local_uploads')
+
+# Tinymce configuration
+TINYMCE_JS_URL = os.path.join(STATIC_URL, 'copo', 'tinymce','tinymce.min.js')
+TINYMCE_COMPRESSOR = False
+
+TINYMCE_DEFAULT_CONFIG = {
+    'selector': 'textarea',  # You can specify a more specific selector if needed
+    'height': 500,
+    'menubar': 'file edit view insert format tools table help',
+    'plugins': [
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview', 'anchor',
+        'searchreplace', 'visualblocks', 'code', 'fullscreen', 'insertdatetime', 'media', 'table', 'help', 'wordcount'
+    ],
+    'theme': 'silver',
+    'toolbar': 'undo redo | formatselect | bold italic backcolor | \
+                alignleft aligncenter alignright alignjustify | \
+                bullist numlist outdent indent | removeformat | help',
+    'content_css': [
+        '/static/copo/tinymce/tincymce_default_config_content_css.css'
+    ],
+    'forced_root_block' : 'p',
+    'forced_root_block_attrs': { "class": "news-excerpt"},
+
+}

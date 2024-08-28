@@ -1,3 +1,17 @@
+
+
+/* Ignore conflicting CSS from material-dashboard.css */
+.navbar > .container-fluid {
+    flex-wrap: revert;
+    align-items: revert;
+    justify-content: revert;
+}
+
+.navbar-collapse {
+    flex-basis: revert;
+    flex-grow: revert;
+}
+
 /* Custom CSS*/
 .alert-info {
     background-image: none !important;

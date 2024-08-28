@@ -3,34 +3,18 @@
 
 {% block title %}Collaborative OPen Omics{% endblock %}
 
-{% block javascript_block %}
-
-
-
-{% endblock %}
-
-
 {% block css_block %}
-
-
-
+<link rel="stylesheet" href="{% static '/copo_news/css/copo_news.css' %}">
 {% endblock %}
 
+{% block javascript_block %}
+<script src="{% static '/copo_news/js/copo_news.js' %}"></script>
+{% endblock %}
 
 {% block baseblock %}
-
     <div class="container-fluid">
-        {% if banner and banner.active %}
 
-            <div class="warning_banner">
-
-                <h1>{{ banner.header_txt }}</h1>
-                <p style="color:red">{{ banner.body_txt }}</p>
-            </div>
-
-        {% endif %}
-
-        <section>
+        <section id="statistics-section">
             <!-- include navbar html -->
             <div class="pull-right">
                 {% include "nav_dropdown.html" %}
@@ -61,55 +45,12 @@
             </div>
         </section>
 
-        <section class="shade">
-            <!-- main content block -->
-            {% block content %}
-            {% endblock %}
-            <div class="col-md-3"></div>
-            <div id="contact-sec" class="col-md-6">
-                <div>
-                    <h2 id="contact-title" class="big_button">Contact Us</h2>
-                </div>
-                <div style="padding-top: 10px;">
-                    <form id="email_form" action="mailto:{{copo_email}}?subject=I'm interested in COPO!"
-                          method="post"
-                          enctype="text/plain">
-                        <div class="row">
-                            <div class="col-md-6 col-sm-6">
-                                <div class="form-group">
-                                    <input type="text" class="form-control" required="required" placeholder="Name"/>
-                                </div>
-                            </div>
-                            <div class="col-md-6 col-sm-6">
-                                <div class="form-group">
-                                    <input type="text" class="form-control" required="required"
-                                           placeholder="Email address">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12 col-sm-12">
-                                <div class="form-group">
-                                    <textarea name="message" id="message" required="required" class="form-control"
-                                              rows="3"
-                                              placeholder="Message"></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <button id="email_submit" type="submit" class="btn btn-default" style="font-weight: bold;">Submit Request
-                                    </button>
-
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                    <br/>
-                </div>
-                <div class="col-md-3"></div>
-            </div>
+        <section id="news-section">
+            {% include 'copo/news_sublist.html' with newsList=newsList %}    
         </section>
     </div>
     <!-- </br></br></br></br></br> -->
-    <footer id="footer" class="for-full-back">
+    <footer id="footer" class="for-full-back footer-frontpage">
         <div class="pull-right">
             <a href="https://www.earlham.ac.uk/">
                 <img class="img-responsive" src="{% static 'assets/img/ei.png' %}" width="200" height="200" alt="Earlham Institute logo"/>
@@ -117,3 +58,4 @@
         </div>
     </footer>
 {% endblock %}
+

@@ -150,7 +150,8 @@
     {% csrf_token %}
     <div hidden id="hidden_attrs">
         <!-- hidden attributes  -->
-        <input type="hidden" id="nav_component_name" value="group"/>
+         <!-- NB: This page is not a component of a COPO profile. It is a custom page created. -->
+        <!-- <input type="hidden" id="nav_component_name" value="group"/> -->
         <input type="hidden" id="profile_tab_title" value="{{ profile_tab_title }}" />
     </div>
 {% endblock browse_header_block %}
@@ -176,7 +177,7 @@
         <div class="col-lg-12">
             <div class="btn-group">
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                    <span id="group_name_button" class="selection">Choose Group&nbsp</span><span class="caret"></span>
+                    <span id="group_name_button" class="selection">Choose Group&nbsp;</span><span class="caret"></span>
                 </button>
                 <ul id="group_dropdown_ul" class="dropdown-menu" role="menu">
                     {% for g in group_list %}

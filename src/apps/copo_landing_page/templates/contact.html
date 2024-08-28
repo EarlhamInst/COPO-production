@@ -1,0 +1,52 @@
+{% extends "secondary.html" %}
+{% load static %}
+{% load web_tags %}
+
+{% block title %}Contact{% endblock %}
+
+{% block topbanner %}Contact{% endblock %}
+
+{% block content %}
+<div class="col-md-12 contact-div">
+    <div id="contact-sec" class="col-md-12">
+        <div style="padding-top: 10px;">
+            <form id="email_form" action="mailto:{{copo_email}}?subject=I'm interested in COPO!"
+                method="post" enctype="text/plain">
+                <div class="row">
+                    <div class="col-md-6 col-sm-6">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input id="name" type="text" class="form-control" required="required" placeholder="Your name..." />
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-6">
+                        <div class="form-group">
+                            <label for="email">Email address</label>
+                            <input id="email" type="text" class="form-control" required="required" placeholder="Your email address...">
+                        </div>
+                    </div>
+                </div>
+                <div class="row padding-top-10">
+                    <div class="col-md-12 col-sm-12">
+                        <div class="form-group">
+                            <textarea name="message" id="message" required="required" class="form-control" rows="3"
+                                placeholder="Message..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button id="email_submit" type="submit" class="btn btn-primary"
+                                style="font-weight: bold;">Submit Request
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <br />
+        </div>
+    </div>
+</div>
+{% endblock content%}
+
+{% block headblock %}
+<link rel="stylesheet" href="{% static 'assets/css/manifests.css' %}">
+{% endblock headblock %}

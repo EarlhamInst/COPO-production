@@ -50,7 +50,7 @@ jobs:
               }
   
               wait_for_readiness  copo_web 8000
-              docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_web) bash -c 'python manage.py makemigrations && python manage.py makemigrations allauth && python manage.py migrate && python manage.py setup_sequencing_centres && python manage.py createsuperuser --noinput'
+              docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_web) bash -c 'python manage.py makemigrations && python manage.py makemigrations allauth && python manage.py migrate && python manage.py setup_sequencing_centres && python manage.py setup_associated_profile_types && python manage.py setup_profile_types &&  python manage.py createsuperuser --noinput'
       - run: "docker cp test/testfiles/. $(docker-compose -f test/docker-compose.yaml ps -q copo_browser):/usr/src/app/workspace"
       - run:  
           name: puppeteer test

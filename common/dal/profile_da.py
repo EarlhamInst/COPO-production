@@ -7,6 +7,9 @@ from bson.objectid import ObjectId
 from .copo_base_da import DAComponent, handle_dict
 import re
 from common.utils.helpers import get_class
+from common.utils.logger import Logger
+
+logger = Logger()
 
 class ProfileInfo:
     def __init__(self, profile_id=None):

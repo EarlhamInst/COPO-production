@@ -4,7 +4,7 @@ from pymongo import ReturnDocument
 from django.conf import settings
 from django_tools.middlewares import ThreadLocal
 from common.dal.mongo_util import cursor_to_list, cursor_to_list_str, cursor_to_list_no_ids
-from common.schema_versions.lookup.dtol_lookups import EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY, EXCLUDED_SAMPLE_TYPES, TOL_PROFILE_TYPES, SANGER_TOL_PROFILE_TYPES, PERMIT_FILENAME_COLUMN_NAMES
+from common.schema_versions.lookup.dtol_lookups import EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY, EXCLUDED_SAMPLE_TYPES, TOL_PROFILE_TYPES, SANGER_TOL_PROFILE_TYPES, PERMIT_FILENAME_COLUMN_NAMES, GENOMICS_PROJECT_SAMPLE_TYPE_DICT
 from pymongo.collection import ReturnDocument
 from common.utils import helpers
 from bson.objectid import ObjectId
@@ -453,8 +453,8 @@ class Sample(DAComponent):
     def get_number_of_samples(self):
         return self.get_collection_handle().count_documents({})
 
-    def get_distinct_sample_types(self):
-        return self.get_collection_handle().distinct("sample_type")
+    def get_distinct_sample_types(self, filter={}):
+        return self.get_collection_handle().distinct("sample_type", filter)
 
     def get_sample_accessions(self, element_dict):
         # Get elements from the dictionary
@@ -474,18 +474,21 @@ class Sample(DAComponent):
         handler = self.get_collection_handle()
 
         # Filter based on accession type
-        # Get Stand-alone project sample types and TOL project sample types
+        # Get Genomics project sample types and TOL project sample types
         # Get distinct sample types
-        all_sample_types = self.get_distinct_sample_types()
+        distinct_sample_type_filter = dict()
+
+        if not showAllCOPOAccessions:
+            if isUserProfileActive and profile_id:
+                filter['profile_id'] = profile_id
+                distinct_sample_type_filter["profile_id"] = profile_id
+
+        all_sample_types = self.get_distinct_sample_types(distinct_sample_type_filter)
 
         # Remove excluded sample types
         all_sample_types = [sample_type for sample_type in all_sample_types if sample_type not in EXCLUDED_SAMPLE_TYPES]
 
         sample_types = filter_accessions if filter_accessions else all_sample_types
-
-        if not showAllCOPOAccessions:
-            if isUserProfileActive and profile_id:
-                filter['profile_id'] = profile_id
 
         # Filter based on search
         if search:
@@ -515,7 +518,7 @@ class Sample(DAComponent):
                 row_data = dict()
                 row_data['record_id'] = i.get('_id','')
                 row_data['DT_RowId'] = 'row_' + i.get('_id','')
-                row_data['accession_type'] = 'STANDALONE' if i.get('sample_type','') == 'isasample' else i.get('tol_project','')
+                row_data['accession_type'] = GENOMICS_PROJECT_SAMPLE_TYPE_DICT.get(i.get('sample_type',''), '').upper() if i.get('sample_type','') in GENOMICS_PROJECT_SAMPLE_TYPE_DICT else i.get('tol_project','').upper()
 
                 row_data.update({key: i.get(key,'') for key in i.keys() if key in labels})
                 out.append(row_data)            

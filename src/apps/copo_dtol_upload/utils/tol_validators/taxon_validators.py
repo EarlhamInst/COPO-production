@@ -169,7 +169,7 @@ class DtolEnumerationValidator(Validator):
                         self.flag = False
                         continue
 
-                if not self.taxonomy_dict[taxon_id]['Rank'] in ['subspecies', 'species']:
+                if not self.taxonomy_dict[taxon_id]['Rank'] in ['tmp_subspecies', 'species']:
                     # if not "ASG" in Profile().get_type(self.profile_id):  # ASG is allowed non species level ids
                     #if not "SYMBIONT" in self.data.at[index, "SYMBIONT"]:
                     self.errors.append(msg["validation_msg_invalid_rank"] % (str(index + 2)))
