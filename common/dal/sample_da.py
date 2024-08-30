@@ -1208,3 +1208,7 @@ class Sample(DAComponent):
     def update_associated_tol_project(self, profile_id, associated_tol_project):
         # Update the 'associated_tol_project' field for all samples that have not been accepted based on the 'profile_id'
          self.update_field_by_query(query={"profile_id": profile_id, "status": {"$ne": "accepted"}}, field_values={"associated_tol_project":associated_tol_project})
+
+
+    def get_distinct_checklist(self,profile_id):
+        return self.get_collection_handle().distinct("read.checklist_id", {"profile_id": profile_id}) 

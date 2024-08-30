@@ -592,10 +592,13 @@ def copo_reads(request, profile_id):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
     checklists = EnaChecklist().get_sample_checklists_no_fields()
+    profile_checklist_ids = Sample().get_distinct_checklist(profile_id)
+    if not profile_checklist_ids:
+        profile_checklist_ids = []
     profile_type = ProfileType.objects.get(type=profile["type"])
     if profile_type.is_dtol_profile:
         checklists = [x for x in checklists if x["primary_id"] == "read"]
-    return render(request, 'copo/copo_read.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists})
+    return render(request, 'copo/copo_read.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids})
 
 
 @login_required
