@@ -1099,7 +1099,7 @@ function update_pending_samples_table() {
       $(document).removeData('selected_row');
       var api = this.api();
 
-      if (api.data().coount() > 0) {
+      if (api.data().count() > 0) {
         this.find('tbody').find('tr:first').click();
 
         // Allow the full title of the profile to be
