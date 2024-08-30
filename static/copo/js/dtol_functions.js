@@ -769,7 +769,7 @@ function row_select(ev) {
   } else {
     row = $(document).data('selected_row');
   }
-
+  
   if (sample_table != undefined) {
     let active_tab = $('#sample_filter').find('.active').find('a').attr('href');
 
@@ -802,6 +802,7 @@ function row_select(ev) {
         });
         $('#sample_panel').find('.labelling').empty().append(header);
         $('#profile_samples_wrapper').show();
+        sample_table.columns.adjust().draw();
 
         // Enable table buttons when profile has samples in it
         view_images_btn.prop('disabled', false).show();
@@ -905,7 +906,7 @@ function update_pending_samples_table() {
           });
           return date;
         } else {
-          return '';
+          return data
         }
       },
     },
@@ -1051,6 +1052,7 @@ function update_pending_samples_table() {
         sample_table = $('#profile_samples').DataTable(dt_options);
         //.columns.adjust()
         //.draw();
+        profile_table.ajax.reload();
       }
     });
 
@@ -1086,28 +1088,36 @@ function update_pending_samples_table() {
     serverSide: true,
     responsive: true,
     paging: false,
+    deferLoading: 0,
     dom: '<"top"f>rt<"bottom"lp><"clear">',
     order: [[0, 'desc']],
     columnDefs: columnDefs,
     search: {
       return: true,
     },
-    initComplete: function () {
+    drawCallback: function () {
       $(document).removeData('selected_row');
       var api = this.api();
 
-      if (api.row(0) != undefined) {
+      if (api.data().coount() > 0) {
         this.find('tbody').find('tr:first').click();
-      }
 
-      // Allow the full title of the profile to be
-      // displayed on mouseover/hover i.e. on
-      // to the first column of the profile table
-      api.rows().every(function () {
-        let data = this.data();
-        let row = this.node();
-        $(row).find('td').first().attr('title', data.title);
+        // Allow the full title of the profile to be
+        // displayed on mouseover/hover i.e. on
+        // to the first column of the profile table
+        api.rows().every(function () {
+          let data = this.data();
+          let row = this.node();
+          $(row).find('td').first().attr('title', data.title);
+        });
+      }
+    else {
+      var header = $('<h4/>', {
+        html: 'No Samples Found',
       });
+      $('#sample_panel').find('.labelling').empty().append(header);
+      $('#profile_samples_wrapper').hide();
+    }
     },
   });
 
