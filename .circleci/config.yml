@@ -62,7 +62,7 @@ jobs:
             echo "running assign_permission.js" && \
             docker exec $copo_browser node -e "$(cat test/testcases/assign_permission.js)" && \
             echo "running assign_associated_profile_types.js ei" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/assign_associated_profile_types.js)" ei && \
+            docker exec $copo_browser node -e "$(cat test/testcases/assign_associated_profile_types.js)" bge && \
             echo "running assign_associated_profile_types.js sanger" && \
             docker exec $copo_browser node -e "$(cat test/testcases/assign_associated_profile_types.js)" sanger && \            
             echo "running ERGA_profile.js ei" && \
