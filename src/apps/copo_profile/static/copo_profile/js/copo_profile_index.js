@@ -1,7 +1,4 @@
-let contactCOPODialogCount = 1;
-
 function get_profile_type() {
-  return $('#profile_type').find(':selected').val();
   return $('#profile_type').find(':selected').val();
 }
 
@@ -15,9 +12,10 @@ $(document).ready(function () {
   const copoENAAssemblyURL = '/copo/copo_assembly/';
   const copoENAAnnotationURL = '/copo/copo_seq_annotation/';
   const copoVisualsURL = '/copo/copo_visualize/';
-  const tableLoader = $('<div class="copo-i-loader"></div>');
   const componentMeta = get_component_meta(component);
+  const csrftoken = $.cookie('csrftoken');
   const tableID = componentMeta.tableID;
+  const tableLoader = $('<div class="copo-i-loader"></div>');
 
   let page = 1;
   let block_request = false;
@@ -27,7 +25,7 @@ $(document).ready(function () {
 
   // Create an object to store the arguments to
   // be passed to the function
-  const obj = {
+  let obj = {
     tableLoader: tableLoader,
     copoProfileIndexURL: copoProfileIndexURL,
     page: page,
@@ -43,8 +41,6 @@ $(document).ready(function () {
     copoENAAnnotationURL: copoENAAnnotationURL,
     grid_count: grid_count,
   };
-
-  csrftoken = $.cookie('csrftoken');
 
   // Store the title displayed when a user hovers the ellipsis/profile options icon
   $(document).data('profileOptionsTitle', $('.row-ellipsis').attr('title'));
@@ -82,48 +78,6 @@ $(document).ready(function () {
 
   initialise_popover();
 
-  // Profile records exist
-  // Initialise the popover 'View profile options' for each profile record
-  /*
-  let popover = $('#ellipsisID[data-toggle="popover"]')
-    .popover({
-      sanitize: false,
-    })
-    .click(function (e) {
-      $(this).popover('toggle');
-      $('#ellipsisID[data-toggle="popover"]').not(this).popover('hide');
-      e.stopPropagation();
-    })
-    .on('show.bs.popover', function (e) {
-      $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
- 
-      // Set content of the popover
-      const $content = $('<div></div>');
-      const $editButton = $(
-        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil"></i>&nbsp;Edit</button>'
-      );
-      const $deleteButton = $(
-        '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
-      );
-
-      $deleteButton.css('margin-left', '15px');
-      $content.append($editButton);
-      $content.append($deleteButton);
-
-      component_def["profile"]["recordActions"].forEach((item) => { 
-        var action = record_action_button_def[item]
-        const $button = $('<button id="'+ action["action"]  + '" class="btn btn-sm btn-primary" title="' + action["title"] + '"><i class="' + action["icon_class"] +' "></i>' +  action["label"] +'</button>');
-        $button.css('margin-top', '10px');
-        $content.append($button)
-      });
-
-      // Apply the content to the popover
-      popover.attr('data-content', $content.html());
-    })
-    //.on('shown.bs.popover', function (e) {
-    //  $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
-    //});
-    */
   $('#sortProfilesBtn')[0].selectedIndex = 0; // Set first option of sort menu
 
   grid_count.text(profiles_visible_length); // Number of profile records visible
@@ -135,18 +89,13 @@ $(document).ready(function () {
   filter_action_menu();
   update_counts(copoVisualsURL, csrftoken, component);
 
-  set_profile_grid_heading(div_grid); // Set profile grid heading
+  set_profile_grid_heading(div_grid, tableID); // Set profile grid heading
 
   showMoreProfileInfoPopover(div_grid); // Initialise 'show more' information popover for profile records
 
   $('#sortProfilesBtn').on('change', function () {
     const option_selected = this.value;
     sort_profile_records(option_selected);
-  });
-
-  // Add an event listener/bind the close button of the 'COPO contact dialog'
-  $('#contactCOPODialogBtnID').bind('click', function () {
-    contactCOPODialogCount++;
   });
 
   // Trigger refresh of the table div to reflect the changes made
@@ -178,10 +127,7 @@ $(document).ready(function () {
       let id = el.closest('.expanding_menu').attr('id');
       id = id.split('_')[1];
 
-      /*if (action_type === "dtol" || action_type === "erga") {
-                url = copoSamplesURL + id + "/view"
-                document.location = url
-            } else */ if (action_type === 'release_study') {
+      if (action_type === 'release_study') {
         result = confirm('Are you sure to release the study?');
         if (result) {
           url = '/copo/copo_profile/' + id + '/release_study';
@@ -192,20 +138,12 @@ $(document).ready(function () {
               $('#study_status_' + id).html('PUBLIC');
               $('#study_release_date_' + id).html(data['study_release_date']);
               el.hide();
-              /*
-                        el.attr('aria-disabled', true).attr("role","link").css("pointer-events", "none").css("color", "grey")
-                        alert("Study released successfully")
-                        */
             })
             .fail(function (data) {
               alert(data.responseText);
             });
         }
-      } /* else if (action_type === "assembly") {
-                url = copoENAAssemblyURL + id + "/view"
-            } else if (action_type === "annotation") {
-                url = copoENAAnnotationURL + id + "/view"
-            }*/ else {
+      } else {
         url = '/copo/copo_' + action_type + '/' + id + '/view';
         document.location = url;
       }
@@ -289,6 +227,8 @@ $(document).ready(function () {
 
       $('#component_table_loader').append(tableLoader); // Show loading .gif
 
+      obj.page = page;
+      obj.block_request = block_request;
       populate_profiles_records(obj);
     }
   });
@@ -397,9 +337,6 @@ function initialise_popover() {
       // Apply the content to the popover
       popover.attr('data-content', $content.html());
     });
-  //.on('shown.bs.popover', function (e) {
-  //  $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
-  //});
 }
 
 function populate_profiles_records(obj) {
@@ -432,37 +369,50 @@ function populate_profiles_records(obj) {
       }
 
       // Check if div has content, if yes, empty the div
-      if ($(`#${tableID}`).children().length > 0) {
-        $(`#${tableID}`).empty();
-      }
+      // if ($(`#${tableID}`).children().length > 0) {
+      //   $(`#${tableID}`).empty();
+      // }
 
       let content = $(data.content);
-      appendRecordComponents(content); // Adds 'Actions' and 'Components' buttons
 
-      // Appends the html template from the 'copo_profile_record.html' to the 'copo_profiels_table' div
-      $(`#${tableID}`).append(content);
+      // Appends the html template from the 'copo_profile_record.html' to the 'copo_profiles_table' div
+      // Check if the content already exists in the div, if it does, replace it with the new content
+      let incoming_records = content;
+      let existing_records = $(`#${tableID}`).find('.grid');
+
+      // Iterate through incoming records
+      incoming_records.each(function () {
+        let incoming_record_id = $(this).find('.row-title span').attr('id');
+
+        let existing_record = existing_records
+          .find(`#${incoming_record_id}`)
+          .closest('.grid'); //existing_records.find(`#${incoming_record_id}`);
+
+        if (existing_record.length) {
+          // Replace the existing record with the incoming record
+          existing_record.replaceWith($(this));
+        } else {
+          // Append the new record if it doesn't exist
+          $(`#${tableID}`).append($(this));
+        }
+      });
+
+      let div_grid = $('div.grid');
+      appendRecordComponents(div_grid); // Adds 'Components' buttons
 
       // Initialise functions for the profile grids beyond the 8 records that are shown by default
       refresh_tool_tips(); // Refreshes/reloads/reinitialises all popover and dropdown functions
-      initialise_loaded_records(
-        copoVisualsURL,
-        csrftoken,
-        component,
-        tableID,
-        copoSamplesURL,
-        copoENAReadManifestValidateURL,
-        copoENAAssemblyURL,
-        copoENAAnnotationURL
-      ); // Initialise functions for the profile grids beyond the 8 records that are shown by default
+      initialise_loaded_records(copoVisualsURL, csrftoken, component);
 
-      set_profile_grid_heading(content); // Set profile grid heading
-      showMoreProfileInfoPopover(content); // Initialise 'show more' information popover for profile records
+      set_profile_grid_heading(div_grid, tableID); // Set profile grid heading
+      showMoreProfileInfoPopover(div_grid); // Initialise 'show more' information popover for profile records
 
       grid_count.text($('.grid').length); // Increment the number of profile records displayed
+
       tableLoader.remove(); // Remove loading .gif
     },
     error: function () {
-      alert("Couldn't retrieve profiles!");
+      alert(`Couldn't retrieve ${component}s!`);
     },
   });
 }
@@ -570,10 +520,11 @@ function deleteProfileRecord(profileRecordID) {
 
               do_crud_action_feedback(action_feedback);
 
-              // Hide the deleted profile record from the web page
+              // Remove the deleted profile record from the web page
               document
                 .getElementById(profileRecordID)
-                .closest('.copo-records-panel').style.display = 'none';
+                .closest('.grid')
+                .remove();
 
               // Close any other dialog that might be opened still
               $.each(BootstrapDialog.dialogs, function (id, dialog) {
@@ -582,11 +533,15 @@ function deleteProfileRecord(profileRecordID) {
 
               // Add an event listener that will reload a particular div to
               // reflect the changes made after a record is deleted
+              // This ensures that the 'grid_count' is updated
               var event = jQuery.Event('refreshtable2');
               $('#copo-sidebar-info #page_alert_panel').trigger(event);
+
+              // Decrement the total number of profile records displayed
+              $('#grid-total').text(profiles_total - 1);
             })
             .fail(function (data_response) {
-              email = $('#email').val();
+              email = $('#copo_email').val();
               const message =
                 "Profile couldn't be removed. Only profiles that have no datafiles or" +
                 ' samples associated can be deleted.';
@@ -752,7 +707,7 @@ function update_counts(copoVisualsURL, csrftoken, component) {
       do_render_profile_counts(data);
     },
     error: function () {
-      alert("Couldn't retrieve profiles information!");
+      alert(`Couldn't retrieve ${component}s information!`);
     },
   });
 }
@@ -773,25 +728,12 @@ function append_component_buttons(record_id, profile_type) {
     ) {
       return false;
     }
-    /*
-    if (
-      !item.hasOwnProperty('profile_component') ||
-      (profile_type === 'genomics' &&
-        !item.profile_component.includes('stand-alone')) ||
-      (profile_type !== 'genomics' &&
-        item.profile_component.includes('stand-alone'))
-    ) {
-      return false;
-    }
-    */
 
     let component_link = '#';
     if (item.url != undefined)
       component_link = item.url.replace('999', record_id);
 
     // Create button html
-    let pcomponent_count_div = $('<div></div>');
-
     let pcomponent_name_div = $('<div></div>')
       .attr('class', `tiny ui button pcomponent-color ${item.color}`)
       .append('<i class="pcomponent-icon ' + item.iconClass + '"></i>')
@@ -832,11 +774,6 @@ function filter_action_menu() {
 
     if (shared_t && !t) {
       t = shared_t;
-      //if($(el).attr("profile_type")) $(el).removeAttr("profile_type")
-    }
-
-    if (t && !shared_t) {
-      //if($(el).attr("shared_profile_type")) $(el).removeAttr("shared_profile_type")
     }
 
     $(el).find('a[profile_component]').hide();
@@ -844,138 +781,88 @@ function filter_action_menu() {
       .find('a[profile_component=' + t + ']')
       .show();
 
-    /*
-    if (t.includes('ERGA')) {
-      $(el).find("a[profile_component ='stand-alone']").hide();
-      $(el).find("a[profile_component ='dtol']").hide();
-    } else if (t.includes('DTOL') || t.includes('ASG')) {
-      $(el).find("a[profile_component ='stand-alone']").hide();
-      $(el).find("a[profile_component ='erga']").hide();
-    } else if (t.includes('Stand-alone')) {
-      $(el).find("a[profile_component ='erga']").hide();
-      $(el).find("a[profile_component ='dtol']").hide();
-    }
-    */
     if (s == undefined || s != 'PRIVATE') {
       $(el).find("a[data-action_type ='release_study']").hide();
     }
-    /*
-        else if (s == "PUBLIC") {
-            $(el).find("a[data-action_type ='release_study']").attr('aria-disabled', true).attr("role","link").css("pointer-events", "none").css("color", "grey")
-        } */
   });
 }
 
-// function set_mediaQueries() {
-//   // Add responsiveness to profile grids once web page screen size is changed
-//   const screenSize_lst = [
-//     window.matchMedia('(max-width: 1908px)'),
-//     window.matchMedia('(max-width: 1901px)'),
-//     window.matchMedia('(max-width: 1893px)'),
-//     window.matchMedia('(max-width: 1818px)'),
-//     window.matchMedia('(max-width: 1564px)'),
-//     window.matchMedia('(max-width: 1703px)'),
-//   ];
-
-//   // Attach listener function on state changes
-//   $.each(screenSize_lst, function (index, element) {
-//     element.addEventListener('change', (e) => {
-//       set_associated_types_marginBottom();
-//     });
-//   });
-// }
-
-function set_profile_grid_heading(grids) {
+function set_profile_grid_heading(grids, tableID) {
   let profiles_legend_lst = [];
+  let existing_records = $(`#${tableID}`).find('.grid');
 
   grids.each(function () {
     $(this)
       .find('.copo-records-panel')
       .each(function (idx, el) {
         const profile_type = $(el).attr('profile_type');
+
+        let record_id = $(this).find('.row-title span').attr('id');
+        let existing_record = existing_records
+          .find(`#${record_id}`)
+          .closest('.grid');
+
         let colour;
         let acronym;
-        let legend_data;
-        let current_profile_legendData = $(
-          '.profiles-legend-group-item'
-        ).text();
 
         if (profile_type) {
-          if ($(el).attr('shared_profile_type') === '')
-            $(el).removeAttr('shared_profile_type'); // Remove 'shared_profile_type' attribute
-
           acronym = profile_type.toUpperCase();
           colour =
             profile_type_def[profile_type.toLowerCase()]['widget_colour']; //'#fb7d0d'
-          $(el)
-            .find('.panel-heading')
-            .find('.row-title span')
-            .append('<small>(' + acronym + ')</small>');
-          $(el).find('.panel-heading').css('background-color', colour);
 
-          /*
-          if (profile_type.includes('DTOLENV')) {
-            acronym = 'DTOL-ENV';
-            colour = '#fb7d0d';
-            $(el)
-              .find('.panel-heading')
-              .find('.row-title span')
-              .append('<small>(DTOL-ENV)</small>');
-            $(el).find('.panel-heading').css('background-color', colour);
-          } else if (profile_type.includes('DTOL')) {
-            acronym = 'DTOL';
-            colour = '#16ab39';
-            $(el)
-              .find('.panel-heading')
-              .find('.row-title span')
-              .append('<small>(DTOL)</small>');
-            $(el).find('.panel-heading').css('background-color', colour);
-          } else if (profile_type.includes('ASG')) {
-            acronym = 'ASG';
-            colour = '#5829bb';
-            $(el)
-              .find('.panel-heading')
-              .find('.row-title span')
-              .append('<small>(ASG)</small>');
-            $(el).find('.panel-heading').css('background-color', colour);
-          } else if (profile_type.includes('ERGA')) {
-            acronym = 'ERGA';
-            colour = '#E61A8D';
-            $(el)
-              .find('.panel-heading')
-              .find('.row-title span')
-              .append('<small>(ERGA)</small>');
-            $(el).find('.panel-heading').css('background-color', colour);
-          } else if (profile_type.includes('Stand-alone')) {
-            acronym = 'Standalone';
-            colour = '#009c95';
-            $(el)
-              .find('.panel-heading')
-              .find('.row-title span')
-              .append('<small>(Standalone)</small>');
-            $(el).find('.panel-heading').css('background-color', colour);
+          if ($(el).attr('shared_profile_type') === '') {
+            // Remove 'shared_profile_type' attribute
+            $(el).removeAttr('shared_profile_type');
           }
-          */
         } else {
-          acronym = 'Shared';
+          acronym = 'Shared With Me';
           colour = '#f26202';
+
+          // Remove 'profile_type' attribute if it exists
+          if ($(el).attr('profile_type') === '') {
+            $(el).removeAttr('profile_type');
+          }
+        }
+
+        if (existing_record.length) {
+          // If the record already exists, update the heading and color
+          existing_record
+            .find('.panel-heading')
+            .css('background-color', colour);
+
+          // Remove existing acronym if it exists
+          existing_record
+            .find('.panel-heading')
+            .find('.row-title span small')
+            .remove();
+
+          // Add new acronym
+          existing_record
+            .find('.panel-heading')
+            .find('.row-title span')
+            .append('<small> (' + acronym + ') </small>');
+        } else {
+          // If the record is new, set the heading and color
+          if ($(el).attr('shared_profile_type') === '')
+            $(el).removeAttr('shared_profile_type'); // Remove 'shared_profile_type' attribute if empty
+
           $(el)
             .find('.panel-heading')
             .find('.row-title span')
-            .append('<small>(Shared With Me)</small>');
+            .append('<small> (' + acronym + ') </small>');
           $(el).find('.panel-heading').css('background-color', colour);
-
-          // Remove 'profile_type' attribute if it exists since
-          if ($(el).attr('profile_type') === '')
-            $(el).removeAttr('profile_type');
         }
 
         // Add profile type legend data if it is not already in the list/displayed
-        legend_data = {
+        let legend_data = {
           profileType: profile_type,
           profileTypeAcronym: acronym,
           profileTypeColour: colour,
         };
+
+        let current_profile_legendData = $(
+          '.profiles-legend-group-item'
+        ).text();
 
         if (
           !profiles_legend_lst
@@ -992,155 +879,9 @@ function set_profile_grid_heading(grids) {
   set_copo_sidebar_info_padding();
 }
 
-// function set_associated_types_marginBottom() {
-//   // Set the margin bottom once a profile description is displayed on two lines
-//   // NB: If line height is 21 or 24, then, profile description is displayed on one line
-//   // NB: If line height is 42 or 48 then, profile description is displayed on two lines
-
-//   $('div.profileDescription').each(function () {
-//     // Study release status div
-//     let studyStatusDiv = $(this).prev().prev().prev();
-
-//     if ($(this).height() === 42 || $(this).height() === 48) {
-//       // No associated types
-//       if ($(this).hasClass('no_associatedTypes_marginBottom')) {
-//         // Has study release details
-//         $(this)
-//           .removeClass('no_associatedTypes_marginBottom')
-//           .addClass('no_associatedTypes_marginBottom_2LineDescriptionText');
-//       } else if ($(this).hasClass('no_associatedTypes_marginBottom_release')) {
-//         // Does not have study release details
-//         $(this)
-//           .removeClass('no_associatedTypes_marginBottom_release')
-//           .addClass(
-//             'no_associatedTypes_marginBottom_2LineDescriptionText_release'
-//           );
-//       } else {
-//         // Associated types
-//         let associated_type_div_value = $(this).next().next();
-//         if ($(this).hasClass('associatedTypes_marginBottom')) {
-//           if (studyStatusDiv.hasClass('studyStatusDiv')) {
-//             // Has study release details
-//             if (
-//               associated_type_div_value.hasClass(
-//                 'one_associatedType_marginBottom_release'
-//               )
-//             ) {
-//               associated_type_div_value
-//                 .removeClass('one_associatedType_marginBottom_release')
-//                 .addClass(
-//                   'one_associatedType_marginBottom_2LineDescriptionText_release'
-//                 );
-//             } else if (
-//               associated_type_div_value.hasClass(
-//                 'two_associatedTypes_marginBottom_release'
-//               )
-//             ) {
-//               associated_type_div_value
-//                 .removeClass('two_associatedTypes_marginBottom_release')
-//                 .addClass(
-//                   'two_associatedTypes_marginBottom_2LineDescriptionText_release'
-//                 );
-//             } else if (
-//               associated_type_div_value.hasClass(
-//                 'three_associatedTypes_marginBottom_release'
-//               )
-//             ) {
-//               associated_type_div_value
-//                 .removeClass('three_associatedTypes_marginBottom_release')
-//                 .addClass(
-//                   'three_associatedTypes_marginBottom_2LineDescriptionText_release'
-//                 );
-//             } else if (
-//               associated_type_div_value.hasClass(
-//                 'several_associatedTypes_marginBottom_release'
-//               )
-//             ) {
-//               associated_type_div_value
-//                 .removeClass('several_associatedTypes_marginBottom_release')
-//                 .addClass(
-//                   'several_associatedTypes_marginBottom_2LineDescriptionText_release'
-//                 );
-//             }
-//           } else {
-//             // Does not have study release details
-//             if (
-//               associated_type_div_value.hasClass(
-//                 'one_associatedType_marginBottom'
-//               )
-//             ) {
-//               associated_type_div_value
-//                 .removeClass('one_associatedType_marginBottom')
-//                 .addClass(
-//                   'one_associatedType_marginBottom_2LineDescriptionText'
-//                 );
-//             } else if (
-//               associated_type_div_value.hasClass(
-//                 'two_associatedTypes_marginBottom'
-//               )
-//             ) {
-//               associated_type_div_value
-//                 .removeClass('two_associatedTypes_marginBottom')
-//                 .addClass(
-//                   'two_associatedTypes_marginBottom_2LineDescriptionText'
-//                 );
-//             } else if (
-//               associated_type_div_value.hasClass(
-//                 'three_associatedTypes_marginBottom'
-//               )
-//             ) {
-//               associated_type_div_value
-//                 .removeClass('three_associatedTypes_marginBottom')
-//                 .addClass(
-//                   'three_associatedTypes_marginBottom_2LineDescriptionText'
-//                 );
-//             } else if (
-//               associated_type_div_value.hasClass(
-//                 'several_associatedTypes_marginBottom'
-//               )
-//             ) {
-//               associated_type_div_value
-//                 .removeClass('several_associatedTypes_marginBottom')
-//                 .addClass(
-//                   'several_associatedTypes_marginBottom_2LineDescriptionText'
-//                 );
-//             }
-//           }
-//         }
-//       }
-//     }
-//   });
-// }
-
-function initialise_loaded_records(
-  copoVisualsURL,
-  csrftoken,
-  component,
-  tableID,
-  copoSamplesURL,
-  copoENAReadManifestValidateURL,
-  copoENAAssemblyURL
-) {
+function initialise_loaded_records(copoVisualsURL, csrftoken, component) {
   filter_action_menu();
   update_counts(copoVisualsURL, csrftoken, component);
-  /*
-    $(".item a").click(function (e) {
-        let url;
-        const el = $(e.currentTarget);
-        if (el.hasClass("action")) {
-            const action_type = el.data("action_type");
-            let id = el.closest(".expanding_menu").attr("id");
-            id = id.split("_")[1]
-
-            if (action_type === "dtol" || action_type === "erga") {
-                url = copoSamplesURL + id + "/view"
-            }  else {
-                url = "/copo/copo_" +  action_type + "/" +  id + "/view"
-            }
-            document.location = url
-        }
-    })
-    */
 
   $('.expanding_menu > div').click(function (e) {
     const el = $(e.currentTarget);
@@ -1150,18 +891,6 @@ function initialise_loaded_records(
       .removeClass('grid-panel-body-selected');
   });
 
-  /*
-  $('#editProfileBtn').click(function (e) {
-    let profile_id = $(e.currentTarget).closest('.ellipsisDiv').attr('id');
-    let profile_type = $(e.currentTarget).closest('.copo-records-panel').attr('profile_type');
-    editProfileRecord(profile_id, profile_type);
-  });
-
-  $('#deleteProfileBtn').click(function (e) {
-    let profile_id = $(e.currentTarget).closest('.ellipsisDiv').attr('id');
-    deleteProfileRecord(profile_id);
-  });
-  */
   $('#profileOptionsPopoverCloseBtn').click(function () {
     $('#ellipsisID[data-toggle="popover"]').popover('hide');
   });
@@ -1172,211 +901,8 @@ function initialise_loaded_records(
 
   // Initialise the popover 'View profile options' for each profile record
   initialise_popover();
-  /*
-  let popover = $('#ellipsisID[data-toggle="popover"]')
-    .popover({
-      sanitize: false,
-    })
-    .click(function (e) {
-      $(this).popover('toggle');
-      $('#ellipsisID').not(this).popover('hide');
-      e.stopPropagation();
-    })
-    .on('show.bs.popover', function (e) {
-      // Set content of the popover
-      const $content = $('<div></div>');
-      const $editButton = $(
-        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil"></i>&nbsp;Edit</button>'
-      );
-      const $deleteButton = $(
-        '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
-      );
-
-      $deleteButton.css('margin-left', '15px');
-      $content.append($editButton);
-      $content.append($deleteButton);
-
-      component_def["profile"]["recordActions"].forEach((item) => { 
-        var action = record_action_button_def[item]
-        const $button = $('<button id="'+ action["action"]  + '" class="btn btn-sm btn-primary" title="' + action["title"] + '"><i class="' + action["icon_class"] +' "></i>' +  action["label"] +'</button>');
-        $button.css('margin-top', '10px');
-        $content.append($button)
-      });
-
-      // Apply the content to the popover
-      popover.attr('data-content', $content.html());
-    })
-    .on('shown.bs.popover', function (e) {
-      $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
-    });
-    */
-}
-/*
-function contact_COPO_popup_dialog() {
-  email = $("#email").val();
-  const message =
-    'If you would like to make manifest submissions to an ASG, ERGA or DToL manifest group';
-  let $content = '<div>';
-
-  $content +=
-    '<div style="margin-bottom: 10px; padding-bottom: 15px; font-weight: bold">' +
-    message +
-    '</div>';
-  $content +=
-    '<p style="margin-top:10px">Please contact <a style="text-decoration: underline;" href="mailto:' + email + '">' + email + '</a> in order to be added to the manifest group. We will grant you the permission to select the desired group, create a profile for the group and subsequently upload a manifest to the group.</p>';
-  $content += '</div>';
-
-  const dialog = new BootstrapDialog({
-    type: BootstrapDialog.TYPE_WARNING,
-    title: 'Contact COPO via email',
-    message: $content,
-    closable: false,
-    onshown: function (dialogRef) {
-      contactCOPODialogCount++; // Increment the number of times the dialog is shown
-    },
-    onhide: function (dialogRef) {},
-    buttons: [
-      {
-        id: 'contactCOPODialogBtnID',
-        label: 'Okay',
-        cssClass: 'btn-custom3',
-        hotkey: 13,
-        action: function (dialogRef) {
-          dialogRef.close(); // Close the 'Contact COPO' dialog
-        },
-      },
-    ],
-  });
-
-  dialog.realize();
-  dialog.getModalFooter().removeClass('modal-footer');
-  dialog.getModalFooter().css({ padding: '15px', 'text-align': 'right' });
-
-  // Show the 'Contact COPO dialog' once
-  if (contactCOPODialogCount > 1) {
-    contactCOPODialogCount++;
-    return false;
-  } else {
-    dialog.open();
-  }
-} //end of contact_COPO_popup_dialog  **************
-*/
-/*
-function filter_associatedProfileTypeList_based_on_selectedProfileType(
-  profileTypeID
-) {
-  if (
-    !document.getElementById(profileTypeID).value ||
-    document.getElementById(profileTypeID).value != 'Stand-alone'
-  ) {
-    let selected_type = get_acronym(
-      document.getElementById(profileTypeID).value
-    );
-    let multi_select_options = $('.copo-multi-select2');
-    let associated_type_option = multi_select_options.find(
-      "option[value*='" + selected_type + "']"
-    );
-    let selected_associated_types = multi_select_options.find(':selected');
-
-    // Check any associated type (s) exists
-    if (selected_associated_types.length || associated_type_option.length) {
-      // Exclude the selected profile from the associated profile type dropdown menu options
-      multi_select_options.select2({
-        templateResult: function (option) {
-          let option_value = get_acronym(option.text);
-
-          if (option_value === selected_type) {
-            return null;
-          }
-          // Exclude erga associated types from the associated profile type dropdown menu options
-          // if "ERGA" is not selected as the profile type
-          let erga_associated_types = [
-            'BGE',
-            'POP_GENOMICS',
-            'ERGA_PILOT',
-            'ERGA_COMMUNITY',
-          ];
-          if (!selected_type.includes('ERGA')) {
-            if (
-              erga_associated_types.some((erga_a_type) =>
-                option.text.includes(erga_a_type)
-              )
-            ) {
-              return null;
-            }
-          }
-          return option.text;
-        },
-      });
-
-      // Reinitialise/update the multi-select options
-      multi_select_options.trigger('change');
-    }
-  }
 }
 
-function remove_selectedProfileType_from_associatedProfileTypeList(
-  profileTypeID
-) {
-  document
-    .getElementById(profileTypeID)
-    .addEventListener('change', function () {
-      // Perform the following only if selected 'Profile Type' is not "Stand-alone"
-      //if (this.value == 'European Reference Genome Atlas (ERGA)') {
-      if (this.value == 'erga') {
-        $('.row:nth-child(4) > .col-sm-12').show(); // Show 'Associated Profile Type(s)' field
-        $('.row:nth-child(5) > .col-sm-12').show(); // Show 'Sequencing Centre(s)' field
-        $('.row:nth-child(5) > .col-sm-12')
-          .find('select')
-          .attr('required', 'required');
-        // $('[id*="sequencing_centre"]').parent().parent().hide().show();
-        let selected_type = get_acronym(this.value);
-        let multi_select_options = $('.copo-multi-select2');
-        let associated_type_option = multi_select_options.find(
-          "option[value*='" + selected_type + "']"
-        );
-
-        // Clear associated type(s) options when profile type is changed
-        multi_select_options.val(null).trigger('change');
-
-        if (associated_type_option.length) {
-          // Exclude the selected profile from the associated profile type dropdown menu options
-          multi_select_options.select2({
-            templateResult: function (option) {
-              let option_value = option.text //get_acronym(option.text);
-
-              if (option_value === selected_type) {
-                return null;
-              }
-              // Exclude erga associated types from the associated profile type dropdown menu options
-              // if "ERGA" is not selected as the profile type
-              let erga_associated_types = ['BGE', 'POP_GENOMICS', 'ERGA_PILOT'];
-              if (!selected_type.includes('erga')) {
-                if (
-                  erga_associated_types.some((erga_a_type) =>
-                    option.text.includes(erga_a_type)
-                  )
-                ) {
-                  return null;
-                }
-              }
-              return option.text;
-            },
-          });
-          // Reinitialise/update the multi-select options
-          multi_select_options.trigger('change');
-        }
-      } else {
-        $('.row:nth-child(4) > .col-sm-12').hide(); // Hide 'Associated Profile Type(s)' field
-        $('.row:nth-child(5) > .col-sm-12').hide(); // Hide 'Sequencing Centre(s)' field
-        $('.row:nth-child(5) > .col-sm-12')
-          .find('select')
-          .removeAttr('required');
-        // $('[id*="sequencing_centre"]').parent().parent().hide().hide;
-      }
-    });
-}
-*/
 function showMoreProfileInfoPopover(grids) {
   grids.each(function () {
     let showMoreProfileInfoBtn = $(this)
@@ -1427,29 +953,3 @@ function showMoreProfileInfoPopover(grids) {
       });
   });
 }
-/*
-function get_acronym(txt) {
-  // Retrieve the parentheses and the enclosed string from the
-  // selected profile type
-  const regex = /\(([^()]*)\)/g;
-  let select_value;
-
-  if (!regex.test(txt)) {
-    select_value = txt; // Get selected value if no parentheses exist
-  } else {
-    let associated_type_abbreviation_without_parentheses = txt.substring(
-      txt.indexOf('(') + 1,
-      txt.indexOf(')')
-    );
-
-    // Get associated type acronym that is enclosed in parentheses
-    // If empty an empty string is returned, set the acronym as the full string
-    select_value =
-      associated_type_abbreviation_without_parentheses === ''
-        ? txt.replace(/\(\s*\)/g, '')
-        : associated_type_abbreviation_without_parentheses.trim();
-  }
-
-  return select_value;
-}
-*/
