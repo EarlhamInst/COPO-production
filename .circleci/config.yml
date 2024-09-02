@@ -61,10 +61,10 @@ jobs:
             docker exec $copo_browser node -e "$(cat test/testcases/copo-login-logout.js)" && \
             echo "running assign_permission.js" && \
             docker exec $copo_browser node -e "$(cat test/testcases/assign_permission.js)" && \
-            echo "running assign_sequencing_center.js ei" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/assign_sequencing_center.js)" ei && \
-            echo "running assign_sequencing_center.js sanger" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/assign_sequencing_center.js)" sanger && \            
+            echo "running assign_associated_profile_types.js ei" && \
+            docker exec $copo_browser node -e "$(cat test/testcases/assign_associated_profile_types.js)" ei && \
+            echo "running assign_associated_profile_types.js sanger" && \
+            docker exec $copo_browser node -e "$(cat test/testcases/assign_associated_profile_types.js)" sanger && \            
             echo "running ERGA_profile.js ei" && \
             docker exec $copo_browser node -e "$(cat test/testcases/ERGA_profile.js)" ei "EARLHAM INSTITUTE" && \
             echo "running ERGA_upload_manifest.js" ei && \
