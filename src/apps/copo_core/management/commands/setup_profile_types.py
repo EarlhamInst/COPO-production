@@ -185,7 +185,7 @@ class Command(BaseCommand):
         asg.components.set([assembly, taggedseq, files, seqannotation, read, sample, accessions])
         dtolenv.components.set([assembly, taggedseq, files, seqannotation, read, sample, accessions])
         dtol.components.set([assembly, taggedseq, files, seqannotation, read, sample, accessions])
-        genomics.components.set([assembly, files, seqannotation, read, sample, accessions])
+        genomics.components.set([assembly, files, seqannotation, read, accessions])
 
 
         at_asg = AssociatedProfileType.objects.get(name="ASG")
