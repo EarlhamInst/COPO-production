@@ -421,19 +421,11 @@ function appendRecordComponents(grids) {
   // loop through each grid
   grids.each(function () {
     let record_id = $(this).closest('.grid').find('.row-title span').attr('id');
+
+    let copoRecordsPanel = $(this).closest('.grid').find('.copo-records-panel');
     let profile_type =
-      $(this)
-        .closest('.grid')
-        .find('.copo-records-panel')
-        .attr('profile_type') === ''
-        ? $(this)
-            .closest('.grid')
-            .find('.copo-records-panel')
-            .attr('shared_profile_type')
-        : $(this)
-            .closest('.grid')
-            .find('.copo-records-panel')
-            .attr('profile_type');
+      copoRecordsPanel.attr('profile_type') ||
+      copoRecordsPanel.attr('shared_profile_type');
 
     if (profile_type) {
       profile_type = profile_type.toLowerCase().trim();
