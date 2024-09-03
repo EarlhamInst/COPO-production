@@ -59,7 +59,7 @@ class Command(BaseCommand):
                                                              is_approval_required=True)                                 
 
         AssociatedProfileType().create_associated_profile_type(name="SANGER",
-                                                             label="Need Approval from Sanger Institute (SANGER)",
+                                                             label="Sanger Institute Approval Needed (SANGER)",
                                                              is_approval_required=True)        
 
         self.stdout.write("Associated Profile Types Added")
