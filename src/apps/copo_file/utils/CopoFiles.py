@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 l = Logger()
 
 def generate_files_record(user_id=str()):
-    label = ['file_name', "S3_ETag", "last_uploaded", "size"]
+    label = ['file_name', "S3_ETag", "last_uploaded", "size_in_bytes"]
     data_set = []
     columns = []
     columns.append(dict(data="record_id", visible=False))
@@ -25,6 +25,7 @@ def generate_files_record(user_id=str()):
                     columns=columns,
                     )
     bucket_name = str(user_id) + "_" + user.username
+    #bucket_size = 0
     if s3obj.check_for_s3_bucket(bucket_name):
         files = s3obj.list_objects(bucket_name)
         if files:
@@ -33,13 +34,15 @@ def generate_files_record(user_id=str()):
                 row_data["record_id"] = file["Key"]
                 row_data["file_name"] = file["Key"].replace("/", "_")
                 row_data["DT_RowId"] = "row_" + file["Key"].replace("/", "_")
-                row_data["size"] = file["Size"]
+                row_data["size_in_bytes"] = file["Size"]
                 row_data["last_uploaded"] = file["LastModified"]
                 row_data["S3_ETag"] = file["ETag"].replace('"', '')
                 data_set.append(row_data)
+                #bucket_size += file["Size"]
 
     return_dict = dict(dataSet=data_set,
                        columns=columns,
+                       #bucket_size_in_GB=round(bucket_size/1024/1024/1024,2),  
                        )
 
     return return_dict

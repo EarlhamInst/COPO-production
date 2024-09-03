@@ -56,6 +56,34 @@ $(document).ready(function () {
     do_record_task(event);
   });
 
+  $('body').on('posttablerefresh', function (event) {
+    table = $('#' + componentMeta.tableID).DataTable();
+    var numCols = table.columns().nodes().length;
+
+    for (var i = 0; i < numCols; i++) {
+      if ($(table.column(i).header()).text() == 'SIZE IN BYTES') {
+        var bucket_size_in_GB = table
+        .column(i)
+        .data()
+        .toArray()
+        .reduce(
+          (accumulator, currentValue) => accumulator + currentValue, 0,
+        );
+      
+        let table_wrapper = $('#' + componentMeta.tableID + '_wrapper');
+        
+        total_size = table_wrapper.find('#total_size')
+        if (total_size.length == 0) {
+          $('<span id="total_size"/>').insertBefore(table_wrapper.find('.dataTables_filter').find("label")).css({ float: 'left', padding: '16px 0'  });
+          total_size = table_wrapper.find('#total_size')
+        }
+        total_size.text('Total size for the files: ' + Math.round(bucket_size_in_GB/1024/1024/1024 * 100) / 100 + 'GB');
+        break
+      }
+    }
+
+  });
+
   // Remove profile title if present
   if (
     $('.page-title-custom').find("span[title='Profile title']").is(':visible')
