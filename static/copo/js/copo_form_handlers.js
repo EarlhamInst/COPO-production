@@ -1631,7 +1631,7 @@ var dispatchFormControl = {
       if (typeof elemValue === 'string') {
         currentValue = elemValue.split(',');
       } else if (typeof elemValue === 'object') {
-      /*else if (
+        /*else if (
         formElem.id.includes('associated_type') &&
         typeof elemValue === 'object'
       ) {
@@ -3619,10 +3619,16 @@ function save_form(formJSON, dialogRef) {
 
           do_crud_action_feedback(data.action_feedback);
 
-          // Add an event listener that will reload a particular div to
+          // Trigger the 'refreshtable2' event to add an event
+          // listener that will reload a particular div to
           // reflect the changes made after a form is saved
-          var event = jQuery.Event('refreshtable2');
-          $('#copo-sidebar-info #page_alert_panel').trigger(event);
+          var event1 = jQuery.Event('refreshtable2');
+          $('#copo-sidebar-info #page_alert_panel').trigger(event1);
+
+          // Trigger the 'reloadWebPage2' event to refresh the web page
+          // when 1 profile record exist
+          var event2 = jQuery.Event('reloadWebPage2');
+          $('#copo-sidebar-info #page_alert_panel').trigger(event2);
 
           return true;
         }

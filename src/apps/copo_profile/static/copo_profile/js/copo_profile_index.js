@@ -2,7 +2,7 @@ function get_profile_type() {
   return $('#profile_type').find(':selected').val();
 }
 
-$(document).ready(function () {
+$(document).on('document_ready', function () {
   //****************************** Event handlers block *************************//
   const component = 'profile';
   const copoProfileIndexURL = '/copo/';
@@ -40,7 +40,40 @@ $(document).ready(function () {
     copoENAAssemblyURL: copoENAAssemblyURL,
     copoENAAnnotationURL: copoENAAnnotationURL,
     grid_count: grid_count,
+    on_scroll: false,
   };
+
+  // Trigger refresh of the table div to reflect the changes made
+  $('#copo-sidebar-info #page_alert_panel').on(
+    'refreshtable2 reloadWebPage2',
+    function (event) {
+      event.stopPropagation();
+      if (event.type === 'refreshtable2') {
+        obj.page = 1;
+        obj.block_request = false;
+        obj.on_scroll = false;
+        populate_profiles_records(obj);
+
+        // Reload web page if no profiles exist
+        reload_if_no_profiles(tableID);
+      } else if (event.type === 'reloadWebPage2') {
+        // Trigger reload of the web page based on the value of 'grid-total'
+        // i.e. when one profile record is created
+        // to have the change reflected on the web page
+        if ($('#grid-count').text() === '' && $('#grid-total').text() === '') {
+          setTimeout(function () {
+            window.location.reload();
+          }, 1000);
+        }
+      }
+    }
+  );
+
+  // Trigger reload of the web page when no profile records exist
+  // to have the change reflected on the web page
+  $('#grid-total').on('reloadWebPage1', function () {
+    reload_if_no_profiles(tableID);
+  });
 
   // Store the title displayed when a user hovers the ellipsis/profile options icon
   $(document).data('profileOptionsTitle', $('.row-ellipsis').attr('title'));
@@ -97,17 +130,6 @@ $(document).ready(function () {
     const option_selected = this.value;
     sort_profile_records(option_selected);
   });
-
-  // Trigger refresh of the table div to reflect the changes made
-  $('#copo-sidebar-info #page_alert_panel').on(
-    'refreshtable2',
-    function (event) {
-      // Check if any alert messages are visible
-      if ($('#copo-sidebar-info #page_alert_panel').children().length > 0) {
-        populate_profiles_records(obj);
-      }
-    }
-  );
 
   $(document).data('sortByDescendingOrder', true);
 
@@ -229,6 +251,7 @@ $(document).ready(function () {
 
       obj.page = page;
       obj.block_request = block_request;
+      obj.on_scroll = true;
       populate_profiles_records(obj);
     }
   });
@@ -340,20 +363,24 @@ function initialise_popover() {
 }
 
 function populate_profiles_records(obj) {
-  tableLoader = obj.tableLoader;
-  copoProfileIndexURL = obj.copoProfileIndexURL;
-  page = obj.page;
-  end_pagination = obj.end_pagination;
-  block_request = obj.block_request;
-  tableID = obj.tableID;
-  copoVisualsURL = obj.copoVisualsURL;
-  csrftoken = obj.csrftoken;
-  component = obj.component;
-  copoSamplesURL = obj.copoSamplesURL;
-  copoENAReadManifestValidateURL = obj.copoENAReadManifestValidateURL;
-  copoENAAssemblyURL = obj.copoENAAssemblyURL;
-  copoENAAnnotationURL = obj.copoENAAnnotationURL;
-  grid_count = obj.grid_count;
+  // Destructure properties from obj
+  let {
+    tableLoader,
+    copoProfileIndexURL,
+    page,
+    end_pagination,
+    block_request,
+    tableID,
+    copoVisualsURL,
+    csrftoken,
+    component,
+    copoSamplesURL,
+    copoENAReadManifestValidateURL,
+    copoENAAssemblyURL,
+    copoENAAnnotationURL,
+    grid_count,
+    on_scroll,
+  } = obj;
 
   $.ajax({
     type: 'GET',
@@ -362,26 +389,25 @@ function populate_profiles_records(obj) {
       page: page,
     },
     success: function (data) {
-      if (data.end_pagination === true) {
+      if (data.end_pagination) {
         end_pagination = true;
       } else {
         block_request = false;
       }
 
-      // Check if div has content, if yes, empty the div
-      // if ($(`#${tableID}`).children().length > 0) {
-      //   $(`#${tableID}`).empty();
-      // }
+      // Empty the table if not scrolling
+      if (!on_scroll && $(`#${tableID}`).children().length) {
+        $(`#${tableID}`).empty();
+      }
 
       let content = $(data.content);
 
       // Appends the html template from the 'copo_profile_record.html' to the 'copo_profiles_table' div
       // Check if the content already exists in the div, if it does, replace it with the new content
-      let incoming_records = content;
       let existing_records = $(`#${tableID}`).find('.grid');
 
       // Iterate through incoming records
-      incoming_records.each(function () {
+      content.each(function () {
         let incoming_record_id = $(this).find('.row-title span').attr('id');
 
         let existing_record = existing_records
@@ -459,7 +485,7 @@ function editProfileRecord(profileRecordID, profileType) {
       json2HtmlForm(data);
     },
     error: function () {
-      alert("Couldn't build profile form!");
+      alert(`Couldn't build ${component} form!`);
     },
   });
 }
@@ -531,6 +557,17 @@ function deleteProfileRecord(profileRecordID) {
 
               // Decrement the total number of profile records displayed
               $('#grid-total').text(profiles_total - 1);
+
+              // Refresh the web page when no profile records exist
+              if ($('#grid-total').text() === '0') {
+                // Hide the panels
+                $('#bottom-panel').hide();
+                $('.profiles-legend').hide();
+                $('.other-projects-accessions-filter-checkboxes').hide();
+
+                var event = jQuery.Event('reloadWebPage1');
+                $('#grid-total').trigger(event);
+              }
             })
             .fail(function (data_response) {
               email = $('#copo_email').val();
@@ -944,4 +981,15 @@ function showMoreProfileInfoPopover(grids) {
         }
       });
   });
+}
+
+function reload_if_no_profiles(tableID) {
+  if (
+    $('#grid-total').text() === '0' ||
+    $(`#${tableID}`).children().length === 0
+  ) {
+    setTimeout(function () {
+      window.location.reload();
+    }, 1000);
+  }
 }
