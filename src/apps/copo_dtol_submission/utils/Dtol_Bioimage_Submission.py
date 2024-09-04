@@ -11,8 +11,8 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from common.utils.helpers import get_env, get_datetime, notify_frontend
 
-BIOIMAGE_SERVER = get_env("BIOIMAGE_SERVER")  # "bsaspera_w@hx-fasp-1.ebi.ac.uk"
-BIOIMAGE_UPLOAD_PATH = get_env("BIOIMAGE_PATH")  # "/.beta/91/31c15a-f0a0-4847-ab09-4135cefc03bd-a31912"
+BIOIMAGE_SERVER = get_env("BIOIMAGE_SERVER")  #  
+BIOIMAGE_UPLOAD_PATH = get_env("BIOIMAGE_PATH")  #  
 BIOIMAGE_LOCAL_ARCHIVE_PARENT_PATH = f"{get_env('MEDIA_PATH')}sample_images/archive"
 BIOIMAGE_LOCAL_ARCHIVE_PATH = {"asg_specimen" : f"{BIOIMAGE_LOCAL_ARCHIVE_PARENT_PATH}/ASG",
                              "dtol_specimen" : f"{BIOIMAGE_LOCAL_ARCHIVE_PARENT_PATH}/DToL",
