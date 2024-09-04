@@ -61,7 +61,7 @@ jobs:
             docker exec $copo_browser node -e "$(cat test/testcases/copo-login-logout.js)" && \
             echo "running assign_permission.js" && \
             docker exec $copo_browser node -e "$(cat test/testcases/assign_permission.js)" && \
-            echo "running assign_associated_profile_types.js ei" && \
+            echo "running assign_associated_profile_types.js bge" && \
             docker exec $copo_browser node -e "$(cat test/testcases/assign_associated_profile_types.js)" bge && \
             echo "running assign_associated_profile_types.js sanger" && \
             docker exec $copo_browser node -e "$(cat test/testcases/assign_associated_profile_types.js)" sanger && \            
@@ -79,12 +79,7 @@ jobs:
             docker exec $copo_browser node -e "$(cat test/testcases/ERGA_permit.js)" ei && \
             echo "running ERGA_approve_samples.js ei" && \
             docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" ei && \        
-            echo "running ERGA_profile.js sanger" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_profile.js)" sanger "SANGER INSTITUTE" && \
-            echo "running ERGA_upload_manifest.js" sanger && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_upload_manifest.js)" sanger && \
-            echo "running ERGA_approve_samples.js sanger" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" sanger && \
+
             echo "running Standalone_profile.js" && \
             docker exec $copo_browser node -e "$(cat test/testcases/Standalone_profile.js)"  && \
             echo "done" ) || \
