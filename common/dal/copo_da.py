@@ -887,8 +887,8 @@ class EnaFileTransfer(DAComponent):
     def get_processing_transfers(self):
         return self.get_collection_handle().find({"transfer_status": {"$gt": 0}, "status": "processing"})
 
-    def set_processing(self, tx_id):
-        self.get_collection_handle().update_one({"_id": ObjectId(tx_id)},
+    def set_processing(self, tx_ids):
+        self.get_collection_handle().update_many({"_id": {"$in": tx_ids}},
                                                 {"$set": {"status": "processing",
                                                           "last_checked": helpers.get_datetime()}})
 

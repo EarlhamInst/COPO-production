@@ -99,10 +99,10 @@ def process_pending_file_transfers():
     if docs:
         # cast cursor to list for double iteration
         # docs = list(docs)
-        for tx in docs:
-            # first iterate all transfer records and set to processing so celery won't pick them again and send for processing as this
-            # can lead to circular operations which won't terminate
-            EnaFileTransfer().set_processing(tx["_id"])
+        # first iterate all transfer records and set to processing so celery won't pick them again and send for processing as this
+        # can lead to circular operations which won't terminate
+        tx_ids = [tx["_id"] for tx in docs]
+        EnaFileTransfer().set_processing(tx_ids)
 
         for tx in docs:
             # set userdetails to active_task for notifications to work
@@ -160,7 +160,7 @@ def process_pending_file_transfers():
                     mark_complete(tx)
                     continue 
 
-                EnaFileTransfer().set_processing(tx["_id"])
+                #EnaFileTransfer().set_processing(tx["_id"])
                 insert_message(message="Transfering to ENA: " + tx["ecs_location"], user=user)
                 log.log("transfering to ENA: " + tx["local_path"])
                 thread = ToENA(tx=tx, user_details=ud, pid=pid)
