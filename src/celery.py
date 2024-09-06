@@ -41,6 +41,12 @@ app.conf.beat_schedule = {
         'task': 'src.apps.copo_dtol_submission.tasks.process_dtol_sample_submission',
         'schedule': timedelta(seconds=10)
     },
+    
+    'process_stale_dtol_sample_submission': {
+        'task': 'src.apps.copo_dtol_submission.tasks.process_stale_dtol_sample_submission',
+        'schedule': timedelta(seconds=10)
+    },
+
     'process_bioimage_submission': {
         'task': 'src.apps.copo_dtol_submission.tasks.process_bioimage_submission',
         'schedule': timedelta(seconds=30)
@@ -67,7 +73,7 @@ app.conf.beat_schedule = {
     },
     'process_ena_transfers': {
         'task': 'src.apps.copo_read_submission.tasks.process_pending_file_transfers',
-        'schedule': timedelta(seconds=5)
+        'schedule': timedelta(seconds=10)
     },
     'check_for_stuck_transfers': {
         'task': 'src.apps.copo_read_submission.tasks.check_for_stuck_transfers',

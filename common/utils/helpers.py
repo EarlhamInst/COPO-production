@@ -82,11 +82,13 @@ def notify_frontend(action="message", msg=str(), data={}, html_id="", max_ellips
 
     # The following line sometimes causes a RuntimeError - 
     # 'you cannot use AsyncToSync in the same thread as an async event loop'
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        event
-    )
-
+    try:
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            event
+        )
+    except RuntimeError:
+        pass
     return True
 
 def notify_assembly_status(action="message", msg=str(), data={}, html_id="", profile_id=""):

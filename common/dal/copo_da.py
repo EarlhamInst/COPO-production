@@ -870,7 +870,7 @@ class EnaFileTransfer(DAComponent):
     def get_pending_transfers(self):
         result_list = []
         result = self.get_collection_handle().find(
-            {"transfer_status": {"$ne": 2}, "status": "pending"})
+            {"transfer_status": {"$ne": 2}, "status": "pending"}).limit(10)
 
         if result:
             result_list = list(result)
@@ -878,10 +878,10 @@ class EnaFileTransfer(DAComponent):
         count = self.get_collection_handle().count_documents(
             {"transfer_status": 2, "status": "processing"})
         if count <= 1:
-            result = self.get_collection_handle().find_one(
-                {"transfer_status": 2, "status": "pending"})
+            result = self.get_collection_handle().find(
+                {"transfer_status": 2, "status": "pending"}).limit(2 - count)
             if result:
-                result_list.append(result)
+                result_list.extend(list(result))
         return result_list
 
     def get_processing_transfers(self):
@@ -890,15 +890,15 @@ class EnaFileTransfer(DAComponent):
     def set_processing(self, tx_id):
         self.get_collection_handle().update_one({"_id": ObjectId(tx_id)},
                                                 {"$set": {"status": "processing",
-                                                          "last_checked": datetime.utcnow()}})
+                                                          "last_checked": helpers.get_datetime()}})
 
     def set_pending(self, tx_id):
         self.get_collection_handle().update_one({"_id": ObjectId(tx_id)}, {
-            "$set": {"status": "pending", "last_checked": datetime.utcnow()}})
+            "$set": {"status": "pending", "last_checked": helpers.get_datetime()}})
 
     def set_complete(self, tx_id):
         self.get_collection_handle().update_one(
-            {"_id": ObjectId(tx_id)}, {"$set": {"status": "complete"}})
+            {"_id": ObjectId(tx_id)}, {"$set": {"status": "complete","last_checked": helpers.get_datetime()}})
 
     def get_transfer_status_by_local_path(self, profile_id, local_paths):
         #return self.get_collection_handle().find({"profile_id"})

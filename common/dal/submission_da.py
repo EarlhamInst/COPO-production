@@ -10,7 +10,8 @@ import pymongo.errors as pymongo_errors
 from bson import ObjectId, json_util
 from django.conf import settings
 from common.schemas.utils.cg_core.cg_schema_generator import CgCoreSchemas
-
+from datetime import datetime, timedelta
+ 
 lg =  Logger()
 
 class Submission(DAComponent):
@@ -28,17 +29,27 @@ class Submission(DAComponent):
         # samples left to go. If not, make submission complete. This will stop celery processing the this submission.
         sub_handle = self.get_collection_handle()
         # for sam_id in sam_ids:
+        action = {}
         if submission_id:
-            sub_handle.update_one({"_id": ObjectId(sub_id)}, {
-                "$pull": {"submission": {"id": submission_id}}})
+            action.update( {"$pull": {"submission": {"id": submission_id}}})
         if sam_ids:
-            sub_handle.update_one({"_id": ObjectId(sub_id)}, {
-                "$pull": {"dtol_samples": {"$in": sam_ids}}})
+            action.update({"$pull": {"dtol_samples": {"$in": sam_ids}}})
+
+        sub_handle.update_one({"_id": ObjectId(sub_id)}, action )
+     
         sub = sub_handle.find_one({"_id": ObjectId(sub_id)}, {
-                                  "submission": 1, "dtol_samples": 1})
+                                  "submission": 1, "dtol_samples": 1, "profile_id":1})
         if len(sub["submission"]) < 1 and len(sub["dtol_samples"]) < 1:
             sub_handle.update_one({"_id": ObjectId(sub_id)},
                                   {"$set": {"dtol_status": next_status, "date_modified": helpers.get_datetime()}})
+            
+        elif len(sub["dtol_samples"]) > 0:
+            dtol_samples_id = [ObjectId(x) for x in sub["dtol_samples"]]
+            processing_sample_count = Sample().get_collection_handle().count_documents({"profile_id":sub["profile_id"], "_id": {"$in": dtol_samples_id}, "status":"processing"})
+            if processing_sample_count > 0:
+                sub_handle.update_one({"_id": ObjectId(sub_id)},
+                                  {"$set": {"dtol_status":"pending" , "date_modified": helpers.get_datetime() } })
+
 
     def update_dtol_specimen_for_bioimage_tosend(self, sub_id, sepcimen_ids):
         sub_handle = self.get_collection_handle()
@@ -107,9 +118,9 @@ class Submission(DAComponent):
 
         sub = self.get_collection_handle().find(
             {"type": {"$in": TOL_PROFILE_TYPES},
-                "dtol_status": {"$in": ["sending", "pending"]}},
+                "dtol_status": {"$in": ["pending"]}},
             {"dtol_samples": 1, "dtol_status": 1, "profile_id": 1,
-             "date_modified": 1, "type": 1, "dtol_specimen": 1})
+             "date_modified": 1, "type": 1, "dtol_specimen": 1}).limit(1)
         sub = cursor_to_list(sub)
         out = list()
 
@@ -1046,3 +1057,7 @@ class Submission(DAComponent):
                                                  {"$set": {"assembly_status": "pending"}})
 
 
+    def process_stale_dtol_submissions(self, refresh_threshold=3600):
+        update_data = {"dtol_status": "pending", "date_modified": helpers.get_datetime()}
+        self.get_collection_handle().update_many(
+            {"type": {"$in": TOL_PROFILE_TYPES}, "dtol_status": "sending", "date_modified": {"$lt": helpers.get_datetime() - timedelta(seconds=refresh_threshold)}},{"$set": update_data})

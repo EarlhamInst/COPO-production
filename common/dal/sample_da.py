@@ -1,5 +1,5 @@
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pymongo import ReturnDocument
 from django.conf import settings
 from django_tools.middlewares import ThreadLocal
@@ -1183,8 +1183,8 @@ class Sample(DAComponent):
         dt = helpers.get_datetime()
         for id in datafile_ids:
             self.get_collection_handle().update_one({"profile_id": self.profile_id, "read.file_id": {
-                "$regex": id}, "read.$.status": {"$ne": status}}, {"$set": {"read.$.status": status, "modifed_date":  dt}})
-    
+                "$regex": id}, "read.$.status": {"$ne": status}}, {"$set": {"read.$.status": status, "modifed_date":  dt}})    
+
     """
     def is_associated_tol_project_update_required (self, profile_id, new_associated_tol_project):
         # Determine if the 'associated_tol_project' field should be updated for unaccepted samples
@@ -1212,3 +1212,9 @@ class Sample(DAComponent):
 
     def get_distinct_checklist(self,profile_id):
         return self.get_collection_handle().distinct("read.checklist_id", {"profile_id": profile_id}) 
+
+    def process_stale_sending_dtol_samples(self,refresh_threshold=3600):
+        update_data = {"status": "processing", "update_type": "system", "updated_by": "system", 'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(timezone.utc).replace(microsecond=0)}
+        self.get_collection_handle().update_many(
+            {"sample_type": {"$in": TOL_PROFILE_TYPES},
+                "status": "sending", "date_modified": {"$lt": datetime.now(timezone.utc).replace(microsecond=0) - timedelta(seconds=refresh_threshold)}},{"$set": update_data})

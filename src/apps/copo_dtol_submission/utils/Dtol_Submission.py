@@ -24,6 +24,7 @@ from .copo_email import Email
 from pathlib import Path
 from django.conf import settings
 
+_REFRESH_THRESHOLD = 3600 
 
 with open(SRA_SETTINGS, "r") as settings_stream:
     sra_settings = json.loads(settings_stream.read())["properties"]
@@ -48,6 +49,9 @@ b2drop_permits_directory_path = get_env('B2DROP_PERMITS')
 submission_id = ""
 profile_id = ""
 
+def process_stale_dtol_samples_submission():
+    Sample().process_stale_sending_dtol_samples(refresh_threshold = _REFRESH_THRESHOLD)
+    Submission().process_stale_dtol_submissions(refresh_threshold = _REFRESH_THRESHOLD)
 
 def process_pending_dtol_samples():
     '''
@@ -60,7 +64,6 @@ def process_pending_dtol_samples():
     tolidflag = True
     specimenID_map = dict()  # Map of specimen IDs
     current_time = get_datetime()
-    _REFRESH_THRESHOLD = 3600 
 
     # send each to ENA for Biosample ids
     for submission in sub_id_list:
@@ -345,9 +348,9 @@ def process_pending_dtol_samples():
                         
                         msg_content =  "<br>" + accessions.get("msg", "") if accessions else "<br>" + " ERROR "
                         msg =  "Submission rejected: Specimen level " + sam["SPECIMEN_ID"] + msg_content
-
-                        notify_frontend(data={"profile_id": profile_id}, msg=msg, action="error",
-                                        html_id="dtol_sample_info")
+                        log_message(msg, Loglvl.ERROR, profile_id=profile_id)
+                        #notify_frontend(data={"profile_id": profile_id}, msg=msg, action="error",
+                        #                html_id="dtol_sample_info")
                         status = {}
                         status["msg"] = msg
                         Sample().add_rejected_status(status, s_id)
@@ -490,9 +493,10 @@ def process_pending_dtol_samples():
         else:
 
             # query for public names and update
-            notify_frontend(data={"profile_id": profile_id}, msg="Querying public naming service", action="info",
-                            html_id="dtol_sample_info")
-            l.log("Querying public name service at line 489")
+            log_message("Querying public naming service", Loglvl.INFO, profile_id=profile_id)
+            #notify_frontend(data={"profile_id": profile_id}, msg="Querying public naming service", action="info",
+            #                html_id="dtol_sample_info")
+            #l.log("Querying public name service at line 489")
             public_names = query_public_name_service(public_name_list)
             tolidflag = True
             if any(not public_names[x].get("tolId", "") for x in range(len(public_names))):
@@ -514,8 +518,9 @@ def process_pending_dtol_samples():
                     Submission().make_dtol_status_awaiting_tolids(
                         submission['_id'])
                     Sample().mark_processing(sample_ids=s_ids)
-                    notify_frontend(data={"profile_id": profile_id}, msg=msg, action="info",
-                                    html_id="dtol_sample_info")
+                    log_message(msg, Loglvl.INFO, profile_id=profile_id)
+                    #notify_frontend(data={"profile_id": profile_id}, msg=msg, action="info",
+                    #                html_id="dtol_sample_info")
                     tolidflag = False
 
             for name in public_names:
@@ -546,8 +551,9 @@ def process_pending_dtol_samples():
 
             l.log("updating bundle xml")
             if len(s_ids) == 0:
-                notify_frontend(data={"profile_id": profile_id}, msg="Nothing more to submit", action="info",
-                                html_id="dtol_sample_info")
+                log_message("No samples to submit", Loglvl.INFO, profile_id=profile_id)
+                #notify_frontend(data={"profile_id": profile_id}, msg="Nothing more to submit", action="info",
+                #                html_id="dtol_sample_info")
                 
                 # if all samples were moved to rejected
                 continue
