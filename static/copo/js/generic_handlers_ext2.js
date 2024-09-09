@@ -47,7 +47,7 @@ function place_task_buttons(componentMeta) {
 
   if (componentMeta.recordActions.length) {
     componentMeta.recordActions.forEach(function (item) {
-      button_str = record_action_button_def[item].template
+      button_str = record_action_button_def[item].template;
       var actionBTN = $(button_str);
       /*
       var actionBTN = $('.record-action-templates')
@@ -61,22 +61,22 @@ function place_task_buttons(componentMeta) {
     is_custom_buttons_needed = true;
   }
 
+  $('.components_custom_templates')
+    .find('.record-action-custom-template')
+    .each(function () {
+      var actionBTN = $(this).clone();
+      actionBTN.removeClass('record-action-custom-template');
+      customButtons.append(actionBTN);
+      is_custom_buttons_needed = true;
+    });
 
-
- $('.components_custom_templates').find('.record-action-custom-template').each(function () {
-    var actionBTN = $(this).clone();
-    actionBTN.removeClass('record-action-custom-template');
-    customButtons.append(actionBTN);
-    is_custom_buttons_needed = true;
- }) ;
-
- if (is_custom_buttons_needed) {
-  var table = $('#' + componentMeta.tableID).DataTable();
-  $(table.buttons().container()).append(customButtons);
-  refresh_tool_tips();
-  //table action buttons
-  do_table_buttons_events();
- }
+  if (is_custom_buttons_needed) {
+    var table = $('#' + componentMeta.tableID).DataTable();
+    $(table.buttons().container()).append(customButtons);
+    refresh_tool_tips();
+    //table action buttons
+    do_table_buttons_events();
+  }
 }
 
 function do_crud_action_feedback(meta) {
@@ -654,7 +654,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
       },
     },
   ];
-  
+
   if (columnDefs) {
     local_columnDefs = local_columnDefs.concat(columnDefs);
   }
@@ -727,6 +727,19 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
         refresh_tool_tips();
         var event = jQuery.Event('posttablerefresh'); //individual compnents can trap and handle this event as they so wish
         $('body').trigger(event);
+      },
+      fnRowCallback: function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+        $(nRow)
+          .children()
+          .each(function (index, td) {
+            if (index > 0) {
+              if (td.innerText === 'NA') {
+                $(td).addClass('na_colour');
+              } else if (td.innerText === '') {
+                $(td).addClass('empty_colour');
+              }
+            }
+          });
       },
       columnDefs: columnDefs,
       createdRow: function (row, data, index) {
