@@ -427,9 +427,9 @@ function get_profile_samples_table_first_element_block_of_code(
   $(td).css({ 'text-align': 'center' });
   $(td).css({ width: '360px' });
   if (row[el] === 'NA') {
-    $(td).addClass('na_color');
+    $(td).addClass('na_colour');
   } else if (row[el] === '' || row[el] === ' ') {
-    $(td).addClass('empty_color');
+    $(td).addClass('empty_colour');
   }
   $(td_row).append(td);
 }
@@ -442,9 +442,9 @@ function get_profile_samples_table_not_first_element_block_of_code(
   let td = document.createElement('td');
   td.innerHTML = row[el];
   if (row[el] === 'NA') {
-    td.className = 'na_color';
+    td.className = 'na_colour';
   } else if (row[el] === '' || row[el] === ' ') {
-    td.className = 'empty_color';
+    td.className = 'empty_colour';
   }
   td_row.appendChild(td);
 }
@@ -1257,23 +1257,23 @@ function highlight_empty_cells_in_selected_row() {
 
   table_rows.forEach((row) => {
     if (row.classList.contains('selected_row')) {
-      // Highlight empty cells by removing "empty_color" class from them
+      // Highlight empty cells by removing "empty_colour" class from them
       row.childNodes.forEach((td) => {
         if (
-          td.classList.contains('empty_color') &&
+          td.classList.contains('empty_colour') &&
           td.innerHTML.trim() === ''
         ) {
-          td.classList.remove('empty_color');
+          td.classList.remove('empty_colour');
         }
       });
     } else {
-      // Add "empty_color" class to cells that have no text i.e cells that are empty
+      // Add "empty_colour" class to cells that have no text i.e cells that are empty
       row.childNodes.forEach((td) => {
         if (
-          !td.classList.contains('empty_color') &&
+          !td.classList.contains('empty_colour') &&
           td.innerHTML.trim() === ''
         ) {
-          td.classList.add('empty_color');
+          td.classList.add('empty_colour');
         }
       });
     }
