@@ -3813,10 +3813,12 @@ function get_card_panel() {
 
 function get_alert_control() {
   let alert = $(
-    '<div class="alert alert-success alert-dismissable fade in copo-alert-message" style="background-image: none; border: none;">\n' +
-      '            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>\n' +
-      '            <span class="webpop-content-div alert-message"></span>\n' +
-      '        </div>'
+    '<div class="alert alert-success alert-dismissible fade in copo-alert-message" style="background-image: none; border: none;" role="alert">\n' +
+      '<button type="button" class="close" data-dismiss="alert" aria-label="Close">\n' +
+      '<span aria-hidden="true">&times;</span>\n' +
+      '</button>\n' +
+      '<span class="webpop-content-div alert-message"></span>\n' +
+      '</div>'
   );
 
   return alert.clone();
