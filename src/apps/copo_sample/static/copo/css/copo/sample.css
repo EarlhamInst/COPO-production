@@ -18,6 +18,14 @@ th {
     height: 100px
 }
 
+.na_colour {
+    background-color: #eee;
+}
+
+.empty_colour {
+    background-color: #f7eded;
+}
+
 .cell_highlight_in_column {
     background-color: #e0e1e2 !important;
 }
