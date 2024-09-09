@@ -84,9 +84,9 @@ let dt_options = {
       .each(function (index, td) {
         if (index > 0) {
           if (td.innerText === 'NA') {
-            $(td).addClass('na_color');
+            $(td).addClass('na_colour');
           } else if (td.innerText === '') {
-            $(td).addClass('empty_color');
+            $(td).addClass('empty_colour');
           }
         }
       });

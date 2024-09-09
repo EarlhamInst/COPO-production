@@ -52,9 +52,9 @@ var dt_options = {
       .each(function (index, td) {
         if (index > 0) {
           if (td.innerText === 'NA') {
-            $(td).addClass('na_color');
+            $(td).addClass('na_colour');
           } else if (td.innerText === '') {
-            $(td).addClass('empty_color');
+            $(td).addClass('empty_colour');
           }
         }
       });
@@ -769,7 +769,7 @@ function row_select(ev) {
   } else {
     row = $(document).data('selected_row');
   }
-  
+
   if (sample_table != undefined) {
     let active_tab = $('#sample_filter').find('.active').find('a').attr('href');
 
@@ -906,7 +906,7 @@ function update_pending_samples_table() {
           });
           return date;
         } else {
-          return data
+          return data;
         }
       },
     },
@@ -1110,14 +1110,13 @@ function update_pending_samples_table() {
           let row = this.node();
           $(row).find('td').first().attr('title', data.title);
         });
+      } else {
+        var header = $('<h4/>', {
+          html: 'No Samples Found',
+        });
+        $('#sample_panel').find('.labelling').empty().append(header);
+        $('#profile_samples_wrapper').hide();
       }
-    else {
-      var header = $('<h4/>', {
-        html: 'No Samples Found',
-      });
-      $('#sample_panel').find('.labelling').empty().append(header);
-      $('#profile_samples_wrapper').hide();
-    }
     },
   });
 

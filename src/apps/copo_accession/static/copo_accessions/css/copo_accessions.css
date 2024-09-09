@@ -24,11 +24,11 @@ th {
 }
 
 .cell-no-content,
-.empty_color {
+.empty_colour {
     background-color: #fff3f3 !important;
 }
 
-.na_color {
+.na_colour {
     background-color: #eee;
 }
 
