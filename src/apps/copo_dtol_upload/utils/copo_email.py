@@ -1,4 +1,4 @@
-from src.apps.copo_core.models import User, SequencingCentre
+from src.apps.copo_core.models import User, AssociatedProfileType
 from common.utils.copo_email import CopoEmail
 from common.dal.profile_da import Profile
 from common.utils.logger import Logger
@@ -15,54 +15,23 @@ class Email:
     def notify_manifest_pending_approval(self, data, **kwargs):
         
         # get email addresses of users in sequencing centre
-        users = []
+        users = set()
         p_id = kwargs.get("profile_id", "")
-        type = kwargs.get("project", "")
-        sequencing_centres = []
-        if p_id:
-            profile = Profile().get_record(p_id)
-            #logger.debug(profile)
-            checker_users = User.objects.filter(groups__name='bge_checkers')
-            #logger.debug(checker_users)
-            #all_seq_centres = SequencingCentre.objects.all()
-            #for centre in all_seq_centres:
-            #    logger.debug(centre)
-            #    logger.debug(centre.users.all())
-
-            sequencing_centres = profile.get("sequencing_centre", [])
-
-            '''
-            is_bge_profile = "BGE" in [ x.get("value","") for x in profile.get("associated_type",[]) ]
-            if is_bge_profile:
-                users = User.objects.filter(groups__name='bge_checkers')
-            elif type in ["ERGA"]:
-                for sc in sequencing_centres:
-                    centre = SequencingCentre.objects.get(name=sc)
-                    users += centre.users.all()
-            '''        
-            if type in ["ERGA"]:
-                centres = SequencingCentre.objects.filter(name__in=sequencing_centres)
-                for sc in centres:
-                    users += sc.users.all()
-                    #logger.debug(users)
-                checker_users = User.objects.filter(groups__name='bge_checkers')
-                users = list(set(users) & set(checker_users))
-            else :
-                users = User.objects.filter(groups__name=f'{type.lower()}_sample_notifiers')    
-            """    
-            elif type in ["DTOL", "ASG"]:
-                users = User.objects.filter(groups__name='dtol_sample_notifiers')
-            elif type in ["DTOTENV"]:
-                users = User.objects.filter(groups__name='dtolenv_sample_notifiers')
-            else:
-                users = []
-            """
-
-        email_addresses = list()
+        profile = Profile().get_record(p_id) if p_id else None
+        if profile:
+            type = profile.get("type", "").upper()
+            #if type == "ERGA":
+            associated_profiles = profile.get("associated_type", [])
+            assoicated_profiles_type_require_approval = AssociatedProfileType.objects.filter(is_approval_required=True,  name__in =  associated_profiles)
+            for ap in assoicated_profiles_type_require_approval:
+                users.update(ap.users.all())
+            #else :
+            #    users = set(User.objects.filter(groups__name=f'{type.lower()}_sample_notifiers'))    
+ 
+        email_addresses = set()
         sub = ""
-        if len(users) > 0:
-            for u in users:
-                email_addresses.append(u.email)
+        if users:
+            email_addresses.update([u.email for u in users])
 
             demo_notification = ""
             is_new = "New "
@@ -72,6 +41,6 @@ class Email:
                 is_new = "Modified "
             msg = self.messages["new_manifest"].format(kwargs["title"], demo_notification + kwargs["description"], data, data)
             sub = demo_notification + is_new + kwargs["project"] + " Manifest - " + kwargs["title"]
-            CopoEmail().send(to=email_addresses, sub=sub, content=msg, html=True)
+            CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
         else:
-            logger.log("No users found for sequencing centre " )
+            logger.log("No users found for associated_project_type_checker" if type =="ERGA" else "No users found for sample_notifiers")

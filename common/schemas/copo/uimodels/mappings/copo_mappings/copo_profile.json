@@ -63,7 +63,7 @@
     },
     {
       "help_tip": "What are the other profile type(s) that the profile type (above) is associated with?",
-      "required": "false",
+      "required": "true",
       "default_value": "",
       "control_meta": {},
       "versions": [
@@ -82,41 +82,74 @@
       "type": "array",
       "show_in_table": true,
       "control": "copo-multi-select2",
-      "option_values": [
-        {
-          "value": "ASG",
-          "label": "Aquatic Symbiosis Genomics (ASG)"
-        },
-        {
-          "value": "BGE",
-          "label": "Biodiversity Genomics Europe (BGE)"
-        },
-        {
-          "value": "CBP",
-          "label": "Catalan Initiative for the Earth BioGenome Project (CBP)"
-        },
-        {
-          "value": "DTOL",
-          "label": "Darwin Tree of Life (DTOL)"
-        },
-        {
-          "value": "DTOLENV",
-          "label": "Darwin Tree of Life Environmental Samples (DTOLENV)"
-        },
-        {
-          "value": "ERGA_PILOT",
-          "label": "European Reference Genome Atlas - Pilot (ERGA_PILOT)"
-        },
-        {
-          "value": "ERGA_COMMUNITY",
-          "label": "European Reference Genome Atlas - Community (ERGA_COMMUNITY)"
-        },
-        {
-          "value": "POP_GENOMICS",
-          "label": "Population Genomics (POP_GENOMICS)"
-        }
-      ]
+      "option_values": {
+        "callback": {
+          "parameter": {"profile_type": "erga"},
+          "function": "get_all_associated_profile_type_for_options",
+          "provider": "src.apps.copo_core.utils"
+         }
+      }
     },
+    {
+      "help_tip": "What are the other profile type(s) that the profile type (above) is associated with?",
+      "required": "true",
+      "default_value": ["ASG"],
+      "control_meta": {},
+      "versions": [
+        "associated_type"
+      ],
+      "specifications": [
+        "asg"
+      ],
+      "ref": "",
+      "deprecated": false,
+      "hidden": true,
+      "label": "Associated Profile Type",
+      "placeholder": "Select associated type(s)",
+      "show_in_form": true,
+      "id": "copo.profile.associated_type",
+      "type": "array",
+      "show_in_table": false,
+      "readonly": "true",
+      "control": "hidden",
+      "option_values": {
+        "callback": {
+          "parameter": {"profile_type": "asg"},
+          "function": "get_all_associated_profile_type_for_options",
+          "provider": "src.apps.copo_core.utils"
+         }
+      }    
+    },  
+    {
+      "help_tip": "What are the other profile type(s) that the profile type (above) is associated with?",
+      "required": "true",
+      "default_value": ["DTOL"],
+      "control_meta": {},
+      "versions": [
+        "associated_type"
+      ],
+      "specifications": [
+        "dtol"
+      ],
+      "ref": "",
+      "deprecated": false,
+      "hidden": true,
+      "label": "Associated Profile Type",
+      "placeholder": "Select associated type(s)",
+      "show_in_form": true,
+      "id": "copo.profile.associated_type",
+      "type": "array",
+      "show_in_table": false,
+      "readonly": "true",
+      "control": "hidden",
+      "option_values": {
+        "callback": {
+          "parameter": {"profile_type": "dtol"},
+          "function": "get_all_associated_profile_type_for_options",
+          "provider": "src.apps.copo_core.utils"
+         }
+      }    
+    },        
     {
       "help_tip": "Choose the sequencing centre that will handle the samples uploaded to this profile.<br><br><p style='margin-top: 10px'>If no sequencing centres are displayed, please contact <b style='font-weight:bold;'>ei.copo@earlham.ac.uk</b> in order to be added to the sequencing centre group to complete the profile creation.</p>",
       "required": "true",

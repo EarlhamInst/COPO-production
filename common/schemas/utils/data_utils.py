@@ -66,16 +66,7 @@ def convertStringToTitleCase(str):
 
 def get_profile_type(profile_type):
     return profile_type.upper()
-    '''
-    if "ASG" in profile_type:
-        return "ASG"
-    elif "ERGA" in profile_type:
-        return "ERGA"
-    elif "DTOLENV" in profile_type:
-        return "DTOLENV"
-    else:
-        return "DTOL"
-    '''
+
     
 def join_list_with_and_as_last_entry(lst):
     # Join the list of sequencing centre labels 
@@ -420,7 +411,8 @@ def get_copo_schema(component, as_object=False):
         environment_variables=schema_base.get("miappe").get(
             "environment_variables").get("fields", list()),
         metadata_template=schema_base.get(
-            "metadata_template").get("fields", list())
+            "metadata_template").get("fields", list()),
+        approval=schema_base.get("approval").get("fields", list()),
     )
 
     schema = schema_dict.get(component, list())

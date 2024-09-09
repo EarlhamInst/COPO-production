@@ -3,7 +3,7 @@ from django import template
 from django.contrib.auth.models import Group
 from django.conf import settings
 from datetime import datetime
-from src.apps.copo_core.models import SequencingCentre
+from src.apps.copo_core.models import SequencingCentre, AssociatedProfileType
 import re
 
 register = template.Library()
@@ -108,3 +108,10 @@ def get_sequencing_centre_label(value):
     centre = SequencingCentre.objects.get(name=value)
     return f"{centre.label.title()} ({value})"
 
+@register.filter(is_safe=True, name="get_assoicated_type_label")
+def get_assoicated_type_label(value):
+    # Get the label of the sequencing centre based on the abbreviation
+    associated_types = AssociatedProfileType.objects.filter(name=value)
+    if associated_types:
+        return f"{associated_types[0].label}"
+    return value

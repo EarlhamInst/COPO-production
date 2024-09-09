@@ -9,6 +9,37 @@ import jsonref
 import json
 from django.conf import settings
 import datetime
+from functools import wraps
+
+def get_class( kls ):
+    parts = kls.split('.')
+    #module = ".".join(parts[:-1])
+    m = __import__( kls )
+    for comp in parts[1:]:
+        m = getattr(m, comp)            
+    return m
+
+def post_interceptor(func=None, provider=None, call_back_function=None, parameter=None):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        if provider:
+            obj = get_class(provider)
+            getattr(obj, call_back_function)(**parameter)
+        return result
+    return wrapper
+
+def pre_interceptor(func=None, provider=None, call_back_function=None, parameter=None):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if provider:
+            obj = get_class(provider)
+            if getattr(obj, call_back_function)(**parameter):
+                return func(*args, **kwargs)
+        else:
+            return func(*args, **kwargs)
+    return wrapper
+
 
 def get_group_membership_asString():
     r = ThreadLocal.get_current_request()
@@ -51,11 +82,13 @@ def notify_frontend(action="message", msg=str(), data={}, html_id="", max_ellips
 
     # The following line sometimes causes a RuntimeError - 
     # 'you cannot use AsyncToSync in the same thread as an async event loop'
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        event
-    )
-
+    try:
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            event
+        )
+    except RuntimeError:
+        pass
     return True
 
 def notify_assembly_status(action="message", msg=str(), data={}, html_id="", profile_id=""):
@@ -173,7 +206,8 @@ def default_jsontype(type):
         d_type = list()
     elif type == "boolean":
         d_type = False
-
+    elif type == "dict":
+        d_type = dict()
     return d_type        
 
 def get_user_id():
@@ -232,4 +266,10 @@ def get_users_seq_centres():
     from src.apps.copo_core.models import SequencingCentre
     user = ThreadLocal.get_current_user()
     seq_centres = SequencingCentre.objects.filter(users=user)
+    return seq_centres
+
+def get_users_associated_profile_checkers():
+    from src.apps.copo_core.models import AssociatedProfileType
+    user = ThreadLocal.get_current_user()
+    seq_centres = AssociatedProfileType.objects.filter(users=user)
     return seq_centres

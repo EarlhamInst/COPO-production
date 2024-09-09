@@ -83,11 +83,12 @@ class BrokerDA:
             return self.context
 
             # check users are not changing the type of an existing profile
-        if action_type == "edit":
-            # edit record
-            record_object = self.da_object.save_record(auto_fields=self.auto_fields, **kwargs)
-            report_metadata["message"] += " Record updated!"
+        # save record
+        record_object = self.da_object.save_record(auto_fields=self.auto_fields, **kwargs)
 
+        if action_type == "edit":
+            report_metadata["message"] += " Record updated!"
+            """
             #update ENA project 
             if isinstance(self.da_object, Profile):
                 type = self.auto_fields.get("copo.profile.type", "")
@@ -102,67 +103,12 @@ class BrokerDA:
                             else:
                                 report_metadata["message"] += " However, profile ENA submission failed! " + result.get("message", str())
                                 status = "warning"
-
+            """
         else:
-            # save record
-            record_object = self.da_object.save_record(auto_fields=self.auto_fields, **kwargs)
             report_metadata["message"] += " New " + self.component + " record created! " + validation_result.get ("message","")
-            #status = "success"
 
-
-#        if not record_object and status not in ["duplicated", "forbidden action", "error"]:
-#            status = "danger"
-
-        '''
-        if action_type == "add" and status == "success":
-            #report_metadata["message"] = "New " + self.component + " record created!"
-            pass
-        elif action_type == "add" and status == "duplicated":
-            #report_metadata["message"] = "Record already exist with title, " + self.auto_fields["copo.profile.title"]
-            status = "error"
-        elif action_type == "add" and status != "success":
-            report_metadata["message"] = "There was a problem creating the " + self.component + " record!"
-        elif action_type == "edit" and status == "success":
-            report_metadata["message"] = "Record updated!"
-        elif action_type == "edit" and status == "duplicated":
-            targetid = kwargs["target_id"]
-            targetprofiletitle = self.da_object.get_record(targetid).get("title", "")
-            user_id = helpers.get_user_id()
-            existing_profiles_ids = Profile().get_collection_handle().find(
-                {"title": self.auto_fields["copo.profile.title"]}, {"_id": 1})
-
-            # Get a list of profile IDs that have the same profile title as the profile record to be edited
-            lst_of_profile_ids = cursor_to_list_str(existing_profiles_ids)
-
-            # Get target profile type
-            targetprofiletype = self.da_object.get_record(kwargs["target_id"]).get("type", "")
-
-            if targetprofiletype != self.auto_fields["copo.profile.type"]:
-                # Profile type cannot be changed
-                report_metadata["message"] = "Forbidden action, it is not possible to modify the profile type"
-                status = "error"
-            elif targetprofiletitle == self.auto_fields["copo.profile.title"] and targetid == lst_of_profile_ids[0].get(
-                    "_id", "") and len(lst_of_profile_ids) == 1:
-                # if the target ID  matches the ID in the list and the targeted profile title matches the title
-                # in the editable field then, proceed with the 'edit' task
-                record_object = self.da_object.save_record(auto_fields=self.auto_fields, **kwargs)
-                report_metadata["message"] = "Record updated!"
-                status = "success"
-            elif targetprofiletitle != self.auto_fields["copo.profile.title"] and targetid != lst_of_profile_ids[0].get(
-                    "_id", "") and len(lst_of_profile_ids) == 1:
-                # if the target ID  does not match the ID in the list and the targeted profile title is not the
-                # same as the title in the editable field then, the title already exists
-                report_metadata["message"] = "Record already exist with title, " + self.auto_fields["copo.profile.title"]
-                status = "error"
-            else:
-                report_metadata["message"] = "Record already exist with title, " + self.auto_fields["copo.profile.title"]
-                status = "error"
-        elif action_type == "edit" and status == "forbidden action":
-            report_metadata["message"] = "Forbidden action, it is not possible to modify the profile type"
-            status = "error"
-        elif action_type == "edit" and status != "success":
-            report_metadata["message"] = "There was a problem updating the " + self.component + " record! " + report_metadata["message"]
-        '''
+        status = record_object.get("status", "success")  
+        report_metadata["message"] += " " + record_object.get("message", "")
 
         report_metadata["status"] = status
         self.context["action_feedback"] = report_metadata

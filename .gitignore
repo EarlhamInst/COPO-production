@@ -14,6 +14,9 @@ media/news_images/
 media/sample_images/
 media/sample_permits/
 media/uploads/
+media/ena_assembly_files
+media/ena_tagged_seq_files
+
 
 # Backup files #
 *.bak

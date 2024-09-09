@@ -287,8 +287,7 @@ const profile_type_def = {
 
 
 function get_profile_components(profile_type) {
-
+  if (profile_type){
     return profile_type_def[profile_type.toLowerCase()].components.map(component => component_def[component]);
-
-
+  }
 }

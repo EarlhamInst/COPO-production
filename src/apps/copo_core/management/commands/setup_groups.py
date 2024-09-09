@@ -54,4 +54,9 @@ class Command(BaseCommand):
         bge_checkers, created = Group.objects.get_or_create(name='bge_checkers')
         # receive email notification if erga samples have been accepted
         erga_accepted_samples_notifiers, created = Group.objects.get_or_create(name='erga_accepted_samples_notifiers')
-       
+        # view asg functionality
+        asg_group, create = Group.objects.get_or_create(name='asg_users')
+        # view asg accept/reject view
+        asg_managers, created = Group.objects.get_or_create(name='asg_sample_managers')
+        # receive asg notification emails
+        asg_notifiers, created = Group.objects.get_or_create(name='asg_sample_notifiers')

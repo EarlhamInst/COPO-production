@@ -1,5 +1,5 @@
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pymongo import ReturnDocument
 from django.conf import settings
 from django_tools.middlewares import ThreadLocal
@@ -8,11 +8,10 @@ from common.schema_versions.lookup.dtol_lookups import EXCLUDED_FIELDS_FOR_GET_B
 from pymongo.collection import ReturnDocument
 from common.utils import helpers
 from bson.objectid import ObjectId
-
 from src.apps.copo_core.models import SequencingCentre
 from .copo_base_da import DAComponent, handle_dict
 import shortuuid
- 
+import pandas as pd
 
 lg = settings.LOGGER
 
@@ -312,18 +311,6 @@ class Sample(DAComponent):
         profile_type = Profile().get_type(self.profile_id).lower()
 
         current_schema_version = ""
-        """
-        profile_type = ""
-        # Get manifest version based on profile type
-        if "asg" in manifest_type:
-            profile_type = "asg"
-        elif "dtolenv" in manifest_type:
-            profile_type = "dtolenv"
-        elif "dtol" in manifest_type:
-            profile_type = "dtol"
-        elif "erga" in manifest_type:
-            profile_type = "erga"
-        """
 
         current_schema_version = settings.MANIFEST_VERSION.get(
             profile_type.upper(), "")
@@ -337,6 +324,7 @@ class Sample(DAComponent):
             # Filter schema based on manfest type and manifest version
             f_specifications = f.get("specifications", "")
             f_manifest_version = f.get("manifest_version", "")
+            f_type = f.get("type", "")
 
             if f_specifications and profile_type not in f_specifications or f_manifest_version and current_schema_version not in f_manifest_version:
                 continue
@@ -546,8 +534,8 @@ class Sample(DAComponent):
         return self.get_collection_handle().find_one(
             {"$or": [{"biosampleAccession": id}, {"sraAccession": id}, {"biosampleAccession": id}]})
 
-    def get_from_profile_id(self, profile_id):
-        return self.get_collection_handle().find({'profile_id': profile_id})
+    def get_by_profile_id(self, profile_id):
+        return cursor_to_list(self.get_collection_handle().find({'profile_id': profile_id}))
 
     def timestamp_dtol_sample_created(self, sample_id):
         email = ThreadLocal.get_current_user().email
@@ -607,6 +595,23 @@ class Sample(DAComponent):
                 }
              })
 
+    def update_field_by_query(self, query, field_values):
+        # Determine if the update is being done by a user or by the system
+        set_update_data = {'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(timezone.utc).replace(
+            microsecond=0)}
+
+        try:
+            email = ThreadLocal.get_current_user().email
+            set_update_data['updated_by'] = email
+            set_update_data['update_type'] = 'tempuser_'+str(shortuuid.ShortUUID().random(length=10)) #special handling for audit log
+        except:
+            set_update_data['updated_by'] = 'system'
+            set_update_data['update_type'] = 'system'
+
+        set_update_data.update(field_values)
+
+        return self.get_collection_handle().update_many(query, {"$set": set_update_data})
+
     def update_field(self, field=None, value=None, oid=None, field_values={}, oids=[]):
         if not oids:
             oids = []
@@ -619,6 +624,9 @@ class Sample(DAComponent):
         if field:
             field_values[field] = value
 
+        return self.update_field_by_query({"_id": {"$in": [ObjectId(oid) for oid in oids]}}, field_values)
+
+        """
         # Determine if the update is being done by a user or by the system
         set_update_data = {'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(timezone.utc).replace(
             microsecond=0)}
@@ -634,6 +642,7 @@ class Sample(DAComponent):
         set_update_data.update(field_values)
 
         return self.get_collection_handle().update_many({"_id": {"$in": [ObjectId(oid) for oid in oids]}}, {"$set": set_update_data})
+        """
 
     def remove_field(self, field, oid):
         return self.get_collection_handle().update_one(
@@ -647,18 +656,7 @@ class Sample(DAComponent):
         )
 
     def add_rejected_status(self, status, oid):
-        return self.update_field(field_values={'error': status["msg"],'status': "rejected"}, oid=oid)
-        '''
-        return self.get_collection_handle().update_one(
-            {
-                "_id": ObjectId(oid)
-            },
-            {"$set":
-             {'error': status["msg"],
-              'status': "rejected"}
-             }
-        )
-        '''
+        return self.update_field(field_values={'error': status["msg"],'status': "rejected", "approval":{}}, oid=oid)
 
     def add_rejected_status_for_tolid(self, specimen_id):
         return self.get_collection_handle().update_many(
@@ -679,6 +677,7 @@ class Sample(DAComponent):
         return cursor_to_list(self.get_collection_handle().find({field: {"$in": value}, "tol_project": project}))
 
     def get_dtol_from_profile_id(self, profile_id, filter, draw, start, length, sort_by, dir, search, profile_type,is_associated_project_type_checker=False, is_sequencing_centre_checker=False):
+        from common.utils.html_tags_utils import resolve_control_output_apply
 
         sc = self.get_component_schema()
         if sort_by == "0":
@@ -687,7 +686,7 @@ class Sample(DAComponent):
             i = 0
             sort_by_column = ""
             for field in sc:
-                if profile_type in field.get("specifications", []) and field.get(
+                if(not field.get("specifications", []) or profile_type in field.get("specifications", [])) and field.get(
                         "show_in_table", ""):
                     i = i + 1
                     if i == int(sort_by):
@@ -706,16 +705,8 @@ class Sample(DAComponent):
             # $nin will return where status neq to values in array, or status is absent altogether
             find_condition["status"] = {
                 "$nin": ["barcode_only", "rejected", "accepted", "processing", "conflicting", "private", "sending", "bge_pending"]}
-            
-            if profile_type == "erga":
-                status_lst = list()
-                if is_associated_project_type_checker:
-                    status_lst.append("associated_project_pending")
-                
-                if is_sequencing_centre_checker:
-                    status_lst.append("pending")
-            
-                find_condition["status"] = {"$in": status_lst}
+                       
+            find_condition["status"] = {"$in": ["pending"]}
                 
         elif filter == "conflicting_barcode":
             find_condition["status"] = "conflicting"
@@ -745,27 +736,47 @@ class Sample(DAComponent):
         # samples = list(cursor);
         # sc = self.get_component_schema()
         out = list()
-        taxon = dict()
-        for i in samples:
-            if "species_list" in i:
-                sp_lst = i["species_list"]
-                for sp in sp_lst:
-                    # only extract target info...don't extract symnbiont info
-                    if sp["SYMBIONT"] == "TARGET":
-                        for k, v in sp.items():
-                            i[k] = v
-                    else:
-                        pass
-            sam = dict()
-            sam["_id"] = str(i["_id"])
-            for field in sc:
-                if profile_type in field.get("specifications", []) and field.get(
-                        "show_in_table", ""):
-                    name = field.get("id", "").split(".")[-1]
-                    sam[name] = i.get(name, "")
+       
+        if samples:
+            df = pd.DataFrame(samples)
+            df = df.fillna("")
+            schema = [x for x in sc if x.get("show_in_table", True) and  (not x.get("specifications", []) or profile_type in x.get("specifications", []))]
 
-            sam["error"] = i.get("error", "")
-            out.append(sam)
+            for x in schema:
+                x["id"] = x["id"].split(".")[-1]
+                if x["id"] in df:
+                    df[x["id"]] = df[x["id"]].apply(
+                        resolve_control_output_apply, args=(x,))
+                else:
+                    df[x["id"]] = ""
+            
+            if not "error" in df:
+                df["error"] = ""
+        
+            df["_id"]=df["_id"].astype(str)
+            out = df.to_dict(orient="records")
+            """
+            for i in samples:
+                if "species_list" in i:
+                    sp_lst = i["species_list"]
+                    for sp in sp_lst:
+                        # only extract target info...don't extract symnbiont info
+                        if sp["SYMBIONT"] == "TARGET":
+                            for k, v in sp.items():
+                                i[k] = v
+                        else:
+                            pass
+                sam = dict()
+                sam["_id"] = str(i["_id"])
+                for field in sc:
+                    if profile_type in field.get("specifications", []) and field.get(
+                            "show_in_table", ""):
+                        name = field.get("id", "").split(".")[-1]
+                        sam[name] = i.get(name, "")
+
+                sam["error"] = i.get("error", "")
+                out.append(sam)
+            """
 
         result = dict()
         result["recordsTotal"] = total_count
@@ -778,19 +789,20 @@ class Sample(DAComponent):
 
         sc = self.get_component_schema()
         columns = []
-        columns.append("_id")
+        #columns.append(dict(data="_id", label="ID"))
         group_set = set(TOL_PROFILE_TYPES)
         if group_filter:
             group_set = {group_filter}
         for field in sc:
 
-            if  group_set.intersection(set(field.get("specifications", ""))) and field.get("show_in_table",
-                                                                                                       ""):
-                column = field.get("id", "").split(".")[-1]
-                if column not in columns:
-                    columns.append(column)
+            if  (not field.get("specifications", "") or group_set.intersection(set(field.get("specifications", "")))) \
+                    and field.get("show_in_table",""):
+                column_data = field.get("id", "").split(".")[-1]
+                column_label = field.get("label", "")
+                column = dict(data=column_data, title=column_label)
+                columns.append(column)
 
-        columns.append("error")
+        #columns.append(dict(data="error", title="Error"))
         return columns
 
     def get_dtol_from_profile_id_and_project(self, profile_id, project):
@@ -861,7 +873,12 @@ class Sample(DAComponent):
             out.append(sam)
         return out
 
-    def mark_rejected(self, sample_id, reason="Sample rejected by curator."):
+    def mark_rejected(self, sample_id=None, reason="Sample rejected by curator.", sample_ids=[]):
+        if not sample_ids:
+            sample_ids = list()
+        if sample_id:
+            sample_ids.append(sample_id)
+        return self.update_field(field_values={"status":"rejected", "error":reason, "approval":{}}, oids=sample_ids)  
 
         #return self.get_collection_handle().update_one({"_id": ObjectId(sample_id)},
         #                                               {"$set": {"status": "rejected", "error": reason}})
@@ -878,15 +895,19 @@ class Sample(DAComponent):
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": "processing"}})
 
     def mark_pending(self, sample_ids, is_erga=False, is_associated_project_check_required=False, is_private=False):
-        if is_erga:
-            status = "bge_pending"
-        elif is_associated_project_check_required:
-            status = "associated_project_pending"
-        elif is_private:
-            status = "private"
+        #if is_erga:
+        #    status = "bge_pending"
+        #elif is_associated_project_check_required:
+        #    status = "associated_project_pending"
+        field_values = dict()
+        if is_private:
+            field_values["status"] = "private"
         else:
-            status = "pending"
-        return self.update_field(field="status", value=status, oids=sample_ids)    
+            field_values["status"]  = "pending"
+            field_values["approval"] = {}
+        field_values["error"] = ""
+                
+        return self.update_field(field_values=field_values, oids=sample_ids)    
         #sample_obj_ids = [ObjectId(x) for x in sample_ids]
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": status}})
 
@@ -1162,4 +1183,38 @@ class Sample(DAComponent):
         dt = helpers.get_datetime()
         for id in datafile_ids:
             self.get_collection_handle().update_one({"profile_id": self.profile_id, "read.file_id": {
-                "$regex": id}, "read.$.status": {"$ne": status}}, {"$set": {"read.$.status": status, "modifed_date":  dt}})
+                "$regex": id}, "read.$.status": {"$ne": status}}, {"$set": {"read.$.status": status, "modifed_date":  dt}})    
+
+    """
+    def is_associated_tol_project_update_required (self, profile_id, new_associated_tol_project):
+        # Determine if the 'associated_tol_project' field should be updated for unaccepted samples
+        is_update_required = False
+
+        record = self.get_collection_handle().find_one({"profile_id": str(profile_id), "status": {"$ne": "accepted"}},{"_id":0, "associated_tol_project":1})
+
+        # If the record exists
+        if record:
+            existing_associated_tol_project = record.get("associated_tol_project", "")
+
+            if existing_associated_tol_project:
+                if existing_associated_tol_project != new_associated_tol_project:
+                        is_update_required = True
+            else:
+                # If the 'associated_tol_project' field is empty
+                # then, update it with the new value
+                is_update_required = True
+        return is_update_required
+    """
+    def update_associated_tol_project(self, profile_id, associated_tol_project):
+        # Update the 'associated_tol_project' field for all samples that have not been accepted based on the 'profile_id'
+         self.update_field_by_query(query={"profile_id": profile_id, "status": {"$ne": "accepted"}}, field_values={"associated_tol_project":associated_tol_project})
+
+
+    def get_distinct_checklist(self,profile_id):
+        return self.get_collection_handle().distinct("read.checklist_id", {"profile_id": profile_id}) 
+
+    def process_stale_sending_dtol_samples(self,refresh_threshold=3600):
+        update_data = {"status": "processing", "update_type": "system", "updated_by": "system", 'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(timezone.utc).replace(microsecond=0)}
+        self.get_collection_handle().update_many(
+            {"sample_type": {"$in": TOL_PROFILE_TYPES},
+                "status": "sending", "date_modified": {"$lt": datetime.now(timezone.utc).replace(microsecond=0) - timedelta(seconds=refresh_threshold)}},{"$set": update_data})

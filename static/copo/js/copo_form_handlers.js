@@ -270,7 +270,6 @@ function json2HtmlForm(data) {
             return false;
           }
           */
-
         });
 
       const event = jQuery.Event('postformload'); //individual compnents can trap and handle this event as they so wish
@@ -316,8 +315,8 @@ function json2HtmlForm(data) {
           '<i class="copo-components-icons glyphicon glyphicon-close"></i> Close',
         cssClass: 'tiny ui basic button',
         action: function (dialogRef) {
-            window.location.reload();
-        }
+          window.location.reload();
+        },
       },
     ],
   });
@@ -956,7 +955,7 @@ var dispatchFormControl = {
     var selectCtrl = $('<select/>', {
       class: 'form-control input-copo copo-select-control',
       id: formElem.id,
-      name: formElem.id
+      name: formElem.id,
     });
 
     if (formElem.option_values) {
@@ -1631,7 +1630,8 @@ var dispatchFormControl = {
     if (elemValue) {
       if (typeof elemValue === 'string') {
         currentValue = elemValue.split(',');
-      } else if (
+      } else if (typeof elemValue === 'object') {
+        /*else if (
         formElem.id.includes('associated_type') &&
         typeof elemValue === 'object'
       ) {
@@ -1639,7 +1639,7 @@ var dispatchFormControl = {
         $.each(obj, function (index, item) {
           currentValue.push(item.value);
         });
-      } else if (typeof elemValue === 'object') {
+      } */
         currentValue = elemValue;
       }
     }
@@ -2723,7 +2723,8 @@ function resolve_ctrl_values(ctrlsDiv, counter, formElem, elemValue) {
   }
 
   if (elemValue) {
-    if (formElem.type === 'array' && !formElem.id.includes('associated_type')) {
+    //if (formElem.type === 'array' && !formElem.id.includes('associated_type')) {
+    if (formElem.type === 'array') {
       if (elemValue.length > 0) {
         //first element should not be open to deletion
         ctrlsWithValuesDiv.find(':input').each(function () {
@@ -3481,6 +3482,7 @@ function save_form(formJSON, dialogRef) {
     .find(':input')
     .each(function () {
       // Add the acronym and full word of the associated type
+      /*
       if (this.id.includes('associated_type')) {
         options_lst = $(this).data('optionslist');
 
@@ -3497,9 +3499,12 @@ function save_form(formJSON, dialogRef) {
           });
         }
         form_values[this.id] = a_type_lst;
-      } else {
-        form_values[this.id] = $(this).val();
-      }
+        
+      } 
+      else {
+      */
+      form_values[this.id] = $(this).val();
+      //}
     });
 
   const auto_fields = JSON.stringify(form_values);
@@ -3517,7 +3522,7 @@ function save_form(formJSON, dialogRef) {
   const btnClose = dialogRef.getButton('btnFormClose');
   btnSave.disable();
   btnCancel.disable();
-  btnClose.disable()
+  btnClose.disable();
   btnSave.spin();
 
   $.ajax({
@@ -3576,7 +3581,6 @@ function save_form(formJSON, dialogRef) {
 
           return true;
         } else if (['warning'].indexOf(data.action_feedback.status) > -1) {
-
           let feedbackControl = get_alert_control();
           let alertClass = 'alert-warning';
 
@@ -3590,7 +3594,7 @@ function save_form(formJSON, dialogRef) {
             .find('.formMessageDiv')
             .html(feedbackControl);
 
-          btnClose.enable()
+          btnClose.enable();
           btnSave.enable();
           btnCancel.disable();
           btnSave.stopSpin();
@@ -3602,8 +3606,6 @@ function save_form(formJSON, dialogRef) {
           $('#' + modalId).scrollTop(0);
 
           return true;
-
-
         } else {
           dialogRef.close();
 
@@ -3617,10 +3619,16 @@ function save_form(formJSON, dialogRef) {
 
           do_crud_action_feedback(data.action_feedback);
 
-          // Refresh web page to have change reflected
-          setTimeout(function () {
-            window.location.reload();
-          }, 1000);
+          // Trigger the 'refreshtable2' event to add an event
+          // listener that will reload a particular div to
+          // reflect the changes made after a form is saved
+          var event1 = jQuery.Event('refreshtable2');
+          $('#copo-sidebar-info #page_alert_panel').trigger(event1);
+
+          // Trigger the 'reloadWebPage2' event to refresh the web page
+          // when 1 profile record exist
+          var event2 = jQuery.Event('reloadWebPage2');
+          $('#copo-sidebar-info #page_alert_panel').trigger(event2);
 
           return true;
         }

@@ -138,12 +138,14 @@ $(document).on("document_ready", function() {
     $('.new-samples-spreadsheet-template-erga').addClass('pink');
   }
   */
-  if (
-    groups.includes('dtol_sample_managers') ||
-    groups.includes('erga_sample_managers') ||
-    groups.includes('dtolenv_sample_managers')
-  ) {
-    $('.accept_reject_samples').show();
+  // Show web page buttons according to the group that the users are associated with
+  if (groups.length != 0) {
+    for (let g in groups) {
+      // Display 'Accept/reject' button for sample managers
+      if (groups[g].includes('sample_managers')) {
+        $('.accept_reject_samples').show();
+      }
+    }
   }
 
   $(document).on('click', '.accept_reject_samples', function (evt) {

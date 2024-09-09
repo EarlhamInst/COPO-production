@@ -6,6 +6,22 @@ function get_checklist_id() {
   }
 }
 
+function initialise_checklist_id() {
+  if ($('#checklist_id').length > 0) {
+    first = true;
+    var profile_checklist_ids = document.getElementById('profile_checklist_ids').value;
+    $('#checklist_id option').each(function () {
+      if (profile_checklist_ids.includes($(this).val())) {
+        $(this).text("* " + $(this).text());
+        if (first) {
+          $(this).prop('selected', true);
+          first = false;
+        }
+      }  
+    });
+  }  
+} 
+
 var columnDefs = []
 
 var dialog = new BootstrapDialog({
@@ -200,6 +216,8 @@ $(document).on("document_ready", function() {
 
   //load_records(componentMeta); // call to load component records
 
+
+  initialise_checklist_id()
   var args_dict = { sample_checklist_id: get_checklist_id() };
   $('.download-blank-manifest-template').attr(
     'href',

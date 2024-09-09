@@ -25,6 +25,7 @@ from common.utils import helpers
 from django.conf import settings
 from common.s3.s3Connection import S3Connection as s3
 import numpy as np
+import datetime
 
 # dictionary of components table id, gotten from the UI
 table_id_dict = dict(  # publication="publication_table",
@@ -174,22 +175,6 @@ def generate_copo_form(da_object=DAComponent(), target_id=str(), component_dict=
 
     schema = da_object.get_component_schema(**kwargs)
 
-    """
-    # Check if a user is in ASG group, DTOL group, ERGA group or DTOLENV group,
-    is_user_in_any_manifest_group = False
-    if component == "profile":
-        # Check if a user is in ASG group, DTOL group, ERGA group or DTOLENV group,
-        request = ThreadLocal.get_current_request()
-        is_user_in_any_manifest_group = request.user.groups.filter(
-            name__in=['dtol_users', 'erga_users', 'dtolenv_users']).exists()
-
-        '''
-        is_standalone_profile = False
-        for f in schema:
-            if "type" in f["id"] and 'Stand-alone' in f["option_values"]:
-                is_standalone_profile = True
-        '''
-    """
 
     # get schema fields
     for f in schema:
@@ -359,7 +344,7 @@ def generate_table_columns(da_object=None):
 
     for x in schema:
         x["id"] = x["id"].split(".")[-1]
-        columns.append(dict(data=x["id"], title=x["label"], orderable=True))
+        columns.append(dict(data=x["id"], title=x["label"], defaultContent='', orderable=True))
 
         # orderable = False
         # if x["id"] in indexed_fields:
@@ -487,20 +472,7 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
 
     if da_object.component == "sample":
         profile_type = Profile().get_type(profile_id=profile_id).lower()
-        '''
-        profile_type = type.lower()
-        if "asg" in profile_type:
-            profile_type = "asg"
-
-        elif "dtolenv" in profile_type:
-            profile_type = "dotlenv"
-
-        elif "dtol" in profile_type:
-            profile_type = "dtol"
-
-        elif "erga" in profile_type:
-            profile_type = "erga"
-        '''
+ 
         current_schema_version = settings.MANIFEST_VERSION.get(
             profile_type.upper(), '') if profile_type else ''
 
@@ -509,9 +481,9 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
         if get_dtol_fields:
             schema = list()
             for x in da_object.get_schema().get("schema_dict"):
-                if x.get("show_in_table", True) and profile_type in x.get("specifications",
-                                                                            []) and current_schema_version in x.get(
-                        "manifest_version", ""):
+                if x.get("show_in_table", True) and \
+                   (not x.get("specifications",[]) or profile_type in x.get("specifications",[])) \
+                    and (not x.get("manifest_version", "") or current_schema_version in x.get("manifest_version", "")):
                     schema.append(x)
     if not schema:
         for x in da_object.get_schema().get("schema_dict"):
@@ -555,7 +527,7 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
 
         for x in schema:
             x["id"] = x["id"].split(".")[-1]
-            columns.append(dict(data=x["id"], title=x["label"], className="ena-accession" if x["id"].lower().endswith("accession") else "" ))
+            columns.append(dict(data=x["id"], title=x["label"], defaultContent='', className="ena-accession" if x["id"].lower().endswith("accession") else "" ))
             if x["id"] not in df_columns:
                 df[x["id"]] = str()
             df[x["id"]] = df[x["id"]].fillna('')
@@ -1392,6 +1364,10 @@ def resolve_control_output_apply(data, args):
         resolved_value = list()
         for d in data:
             resolved_value.append(get_resolver(d, args))
+    elif args.get("type", str()) == "dict" and data:  # resolve object data types
+        resolved_value = list()
+        for key, value in data.items():
+            resolved_value.append(key + " : " + get_resolver(value, args))
     else:  # non-array types
         resolved_value = get_resolver(data, args)
 
@@ -1464,6 +1440,9 @@ def get_resolver(data, elem):
     func_map["date-picker"] = resolve_datepicker_data
     func_map["copo-duration"] = resolve_copo_duration_data
     func_map["copo-datafile-id"] = resolve_copo_datafile_id_data
+    func_map["copo_approval"] = resolve_copo_approval_data    
+    func_map["user_id"] = resolve_user_data    
+
 
     control = elem.get("control", "text").lower()
     if control in func_map:
@@ -1782,6 +1761,26 @@ def resolve_datepicker_data(data, elem):
         resolved_value = data
     return resolved_value
 
+def resolve_copo_approval_data(data, elem):
+    schema = d_utils.get_copo_schema("approval")
+
+    resolved_data = list()
+    for f in schema:
+        if f.get("show_in_table", True):
+            # a = dict()
+            if f["id"].split(".")[-1] in data:
+                # a[f["label"]] = data[f["id"].split(".")[-1]]
+                resolved_data.append(
+                    ((f["label"] + ": ") if f["label"] else "") + get_resolver(data[f["id"].split(".")[-1]], f))
+    return ",".join(resolved_data)
+
+def resolve_user_data(data, elem):
+    resolved_value = str()
+    if data:
+        user = User.objects.get(pk=data)
+        resolved_value = user.first_name+ " " + user.last_name
+    return resolved_value
+
 
 def resolve_copo_duration_data(data, elem):
     schema = d_utils.get_copo_schema("duration")
@@ -1813,8 +1812,10 @@ def resolve_copo_datafile_id_data(data, elem):
 
 
 def resolve_default_data(data):
-    return data
-
+    if type(data) == datetime.datetime:
+        return data.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        return str(data)
 
 # @register.filter("generate_copo_profiles_counts")
 def generate_copo_profiles_counts(profiles=list()):

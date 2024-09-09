@@ -35,6 +35,32 @@ let browser = null;
     {
         const targetPage = page;
         await puppeteer.Locator.race([
+            targetPage.locator('#profile_type'),
+            targetPage.locator('::-p-xpath(//*[@id=\\"profile_type\\"])'),
+            targetPage.locator(':scope >>> #profile_type')
+        ])
+            .setTimeout(timeout)
+            .click({
+              offset: {
+                x: 375.4765625,
+                y: 11.3671875,
+              },
+            });
+    }
+    {
+        const targetPage = page;
+        await puppeteer.Locator.race([
+            targetPage.locator('#profile_type'),
+            targetPage.locator('::-p-xpath(//*[@id=\\"profile_type\\"])'),
+            targetPage.locator(':scope >>> #profile_type')
+        ])
+            .setTimeout(timeout)
+            .fill('genomics');
+    }
+  
+    {
+        const targetPage = page;
+        await puppeteer.Locator.race([
             targetPage.locator('::-p-aria() >>>> ::-p-aria([role=\\"generic\\"])'),
             targetPage.locator('div.global-page-title button.primary > i'),
             targetPage.locator('::-p-xpath(/html/body/div[5]/div/div[1]/div[2]/div[2]/div[1]/span[2]/button[2]/i)'),

@@ -2,11 +2,11 @@
 import pymongo
 from bson.errors import InvalidId
 from common.dal.mongo_util import cursor_to_list, cursor_to_list_str
-from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from common.utils import helpers
 from bson.objectid import ObjectId
-from .copo_base_da import DAComponent, handle_dict, DataSchemas
+from .copo_base_da import DAComponent, handle_dict
 import re
+from common.utils.helpers import get_class
 from common.utils.logger import Logger
 
 logger = Logger()
@@ -83,7 +83,8 @@ class Profile(DAComponent):
             return p.get("type", "").upper()
         else:
             return False
-
+        
+    """
     def get_associated_type(self, profile_id, value=True, label=True):
         p = self.get_collection_handle().find_one(
             {"_id": ObjectId(profile_id)})
@@ -99,7 +100,7 @@ class Profile(DAComponent):
                 return []
         else:
             return False
-
+    """
     def get_for_user(self, user=None, id_only=False):
         if not user:
             user = helpers.get_current_user().id
@@ -151,21 +152,55 @@ class Profile(DAComponent):
 
     def save_record(self, auto_fields=dict(), **kwargs):
         from .copo_da import Person
+        from .sample_da import Sample
+        new_record = False
+        profile_type = auto_fields.get("copo.profile.type", "")
+
+        from src.apps.copo_core.models import ProfileType
+        rec = {"status":"success", "message": ""}
+    
         if not kwargs.get("target_id", str()):
+            new_record = True
             for k, v in dict(
                     copo_id=helpers.get_copo_id(),
                     user_id=helpers.get_user_id()
             ).items():
                 auto_fields[self.get_qualified_field(k)] = v
 
-        schema = self.get_component_schema(profile_type = auto_fields.get("copo.profile.type", ""))
-        rec = super(Profile, self).save_record(auto_fields, schema=schema, **kwargs)
+        type = auto_fields.get("copo.profile.type", "")
+        profile_type_def = ProfileType.objects.filter(type=type).first()
 
-        logger.debug(f"Profile record saved: {rec}")
+        if profile_type_def:
+            pre_action =  profile_type_def.pre_save_action
+            if pre_action:
+                index = pre_action.rfind(".")
+                provider = pre_action[0:index]
+                method = pre_action[index+1:]
+                result = getattr(get_class(provider), method)(auto_fields)
+                if result:
+                    rec["status"] =  result.get("status", "success")
+                    rec["message"] = result.get("message", "")
 
-        # trigger after save actions
-        if not kwargs.get("target_id", str()):
-            Person(profile_id=str(rec["_id"])).create_sra_person()
+        if rec["status"] == "success":
+            schema = self.get_component_schema(profile_type = type)
+            rec = super(Profile, self).save_record(auto_fields, schema=schema, **kwargs)
+
+
+        if profile_type_def:
+            post_action =  profile_type_def.post_save_action
+            if post_action:
+                index = post_action.rfind(".")
+                provider = post_action[0:index]
+                method = post_action[index+1:]
+                result =  getattr(get_class(provider), method)(rec)
+                if result:
+                    rec["status"] =  result.get("status", "success")
+                    rec["message"] = result.get("message", "")
+
+            # trigger after save actions
+            if not kwargs.get("target_id", str()):
+                Person(profile_id=str(rec["_id"])).create_sra_person()
+
         return rec
 
     def add_dataverse_details(self, profile_id, dataverse):
@@ -194,73 +229,14 @@ class Profile(DAComponent):
         profile_oids_from_sample = [ObjectId(id) for id in profile_ids_from_sample ]
         profile_condition = {"$or" : [{"_id": {"$in" : profile_oids_from_sample }}, {"title": { "$regex" : search_filter, "$options": "i"}}]}
         profile_condition["type"] = group_filter
-        """
-        if group_filter == "dtol":
-            profile_condition["type"] = {"$in": ["Darwin Tree of Life (DTOL)", "Aquatic Symbiosis Genomics (ASG)"]}
-            #return self.get_dtol_profiles("all_profiles", search_filter, profile_oids_from_sample)
-        elif group_filter == "erga":
-            profile_condition["type"] = {"$in": ["European Reference Genome Atlas (ERGA)"]}
-            #return self.get_erga_profiles(filter, search_filter, profile_oids_from_sample)
-        elif group_filter == "dtolenv":
-            profile_condition["type"] = {"$in": ["Darwin Tree of Life Environmental Samples (DTOLENV)"]}
-            #return self.get_dtolenv_profiles("all_profiles", search_filter, profile_oids_from_sample)
-        """
-        if filter == "my_profiles" and group_filter=="erga": 
-            seq_centres = helpers.get_users_seq_centres()
-            seq_centres = [str(x.name) for x in seq_centres]
-            profile_condition["sequencing_centre"] = {"$in": seq_centres}
+
+        if filter == "my_profiles": 
+            associated_profile_types = helpers.get_users_associated_profile_checkers()
+            profile_condition["associated_type"] = {"$in": [str(x.name) for x in associated_profile_types]}
 
         p = self.get_collection_handle().find(profile_condition).sort(sort_by, pymongo.DESCENDING if dir == -1 else pymongo.ASCENDING)
         return cursor_to_list(p)
 
-    '''
-    def get_dtol_profiles(self, filter="all_profiles", search_filter=None, profile_oids_from_sample=[]):
-
-        if filter == "all_profiles":
-            p = self.get_collection_handle().find(
-                {"type": {"$in": ["Darwin Tree of Life (DTOL)", "Aquatic Symbiosis Genomics (ASG)"]}} ).sort(
-                "date_created",
-                pymongo.DESCENDING)
-        elif filter == 'my_profiles':
-            seq_centres = helpers.get_users_seq_centres()
-            seq_centres = [str(x.name) for x in seq_centres]
-            p = self.get_collection_handle().find(
-                {"type": {"$in": ["Darwin Tree of Life (DTOL)", "Aquatic Symbiosis Genomics (ASG)"]},
-                 "sequencing_centre": {"$in": seq_centres}}).sort(
-                "date_created",
-                pymongo.DESCENDING)
-        return cursor_to_list(p)
-
-    def get_erga_profiles(self, filter="all_profiles", search_filter=None, profile_ids_from_sample=[]):
-
-        if filter == "all_profiles":
-            p = self.get_collection_handle().find(
-                {"type": {"$in": ["European Reference Genome Atlas (ERGA)"]}}).sort("date_created", pymongo.DESCENDING)
-        elif filter == 'my_profiles':
-            seq_centres = helpers.get_users_seq_centres()
-            seq_centres = [str(x.name) for x in seq_centres]
-            p = self.get_collection_handle().find(
-                {"type": {"$in": ["European Reference Genome Atlas (ERGA)"]},
-                 "sequencing_centre": {"$in": seq_centres}}).sort(
-                "date_created",
-                pymongo.DESCENDING)
-        return cursor_to_list(p)
-
-    def get_dtolenv_profiles(self, filter="all_profiles", search_filter=None, profile_ids_from_sample=[]):
-        if filter == "all_profiles":
-            p = self.get_collection_handle().find(
-                {"type": {"$in": ["Darwin Tree of Life Environmental Samples (DTOLENV)"]}}).sort("date_modified",
-                                                                                                  pymongo.DESCENDING)
-        elif filter == 'my_profiles':
-            seq_centres = helpers.get_users_seq_centres()
-            seq_centres = [str(x.name) for x in seq_centres]
-            p = self.get_collection_handle().find(
-                {"type": {"$in": ["Darwin Tree of Life Environmental Samples (DTOLENV)"]},
-                 "sequencing_centre": {"$in": seq_centres}}).sort(
-                "date_created",
-                pymongo.DESCENDING)
-        return cursor_to_list(p)
-    '''
 
     def get_profile_records(self, data, currentUser=True):
         #from common.schemas.utils import data_utils

@@ -1870,7 +1870,7 @@ REQUIRED_MEMBER_GROUPS = ['bge_checkers','dtol_users', 'dtol_sample_managers', '
                           'erga_users', 'erga_sample_managers']
 
 # A list of web pages that can be accessed by both COPO users and sample managers
-SAMPLE_MANAGERS_ACCESSIBLE_WEB_PAGES = ['copo_samples']
+SAMPLE_MANAGERS_ACCESSIBLE_WEB_PAGES = ['dtol_submission', "copo_sample", "dtol_manifest"]
 
 SANGER_TOL_PROFILE_TYPES = ["asg", "dtol", "dtolenv", "erga"]
 

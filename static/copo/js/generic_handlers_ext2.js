@@ -656,7 +656,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
   ];
   
   if (columnDefs) {
-    local_columnDefs = local_columnDefs.push(columnDefs);
+    local_columnDefs = local_columnDefs.concat(columnDefs);
   }
 
   //set data

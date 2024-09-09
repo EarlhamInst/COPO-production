@@ -1,20 +1,17 @@
 # Created by fshaw at 03/04/2020
 import os
-import re
 import uuid
 import pickle
-import importlib
 from os.path import join, isfile
 from pathlib import Path
 from shutil import rmtree
-from urllib.error import HTTPError
 import jsonpath_rw_ext as jp
 import pandas
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django_tools.middlewares import ThreadLocal
 import common.schemas.utils.data_utils as d_utils
-from common.utils.helpers import map_to_dict, get_datetime, notify_frontend
+from common.utils.helpers import map_to_dict, get_datetime, notify_frontend, get_current_user
 from common.dal.copo_da import  DataFile
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample, Source
@@ -31,6 +28,8 @@ from common.schema_versions.lookup import dtol_lookups as lookup
 from common.utils.logger import Logger
 from PIL import Image
 import numpy as np
+from src.apps.copo_core.models import AssociatedProfileType
+
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -137,22 +136,12 @@ class DtolSpreadsheet:
         # if not then we are looking at creating samples having previously validated
 
         # get type of manifest
-        self.type = Profile().get_type(self.profile_id).upper()
-        """
-        if "ASG" in t:
-            self.type = "ASG"
-        elif "ERGA" in t:
-            self.type = "ERGA"
-        elif "DTOLENV" in t:
-            self.type = "DTOLENV"
-        else:
-            self.type = "DTOL"
-        """    
+        profile = Profile().get_record(self.profile_id)
+        self.type = profile.get("type", "").upper()
+        associated_type_lst = profile.get("associated_type", [])
         self.current_schema_version = settings.MANIFEST_VERSION.get(
             self.type, "")
-        # get associated profile type(s) of manifest
-        associated_type_lst = Profile().get_associated_type(
-            self.profile_id, value=True, label=False)
+ 
         # Get associated type(s) as string separated by '|' symbol
         self.associated_type = " | ".join(associated_type_lst)
 
@@ -284,6 +273,7 @@ class DtolSpreadsheet:
         return True
     """
 
+    """
     def validate_taxonomy(self):
         ''' check if provided scientific name, TAXON ID,
         family and order are consistent with each other in known taxonomy'''
@@ -331,7 +321,7 @@ class DtolSpreadsheet:
                             action="error",
                             html_id="sample_info")
             return False
-
+    """
     def check_image_names(self, files):
         # compare list of sample names with specimen ids already uploaded
         samples = self.sample_data
@@ -579,29 +569,21 @@ class DtolSpreadsheet:
                 permit_filename_mapping[permit_filename] = new_permit_filename
 
         sample_data["_id"] = ""
+
         for index, p in sample_data.iterrows():
             s = dict(p)
-            type = ""
             # store manifest version for posterity. If unknown store as 0
-            if "asg" in self.type.lower():
-                type = "ASG"
-            elif "dtolenv" in self.type.lower():
-                type = "DTOLENV"
-            elif "dtol" in self.type.lower():
-                type = "DTOL"
-            elif "erga" in self.type.lower():
-                type = "ERGA"
 
-            s["manifest_version"] = settings.MANIFEST_VERSION.get(type, "0")
+            s["manifest_version"] = settings.MANIFEST_VERSION.get(self.type.upper(), "0")
             s["sample_type"] = self.type.lower()
-            s["tol_project"] = self.type
+            s["tol_project"] = self.type.lower()
             s["associated_tol_project"] = self.associated_type
             s["biosample_accession"] = []
             s["manifest_id"] = manifest_id
             if "erga" in self.type.lower() and s.get("ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID", str()):
                 s["status"] = "private"
-            elif type == "ERGA":
-                s["status"] = "bge_pending"
+            #elif type == "ERGA":
+            #    s["status"] = "bge_pending"
             else :
                 s["status"] = "pending"
             s["rack_tube"] = s.get("RACK_OR_PLATE_ID", "") + \
@@ -689,6 +671,15 @@ class DtolSpreadsheet:
                                                      project=self.type.upper(), is_new=True, profile_id=profile_id)
         
     def update_records(self):
+        current_user = get_current_user()
+        request = ThreadLocal.get_current_request()
+        profile_id = request.session["profile_id"]
+        # Update the associated tol project for each sample in the manifest
+        # get associated profile type(s) of manifest
+        profile = Profile().get_record(profile_id)
+        associated_profiles = profile.get("associated_type", [])
+
+
         #is_bge = "BGE" in self.associated_type
         binary = pickle.loads(self.vr["manifest_data"])
         try:
@@ -697,7 +688,6 @@ class DtolSpreadsheet:
         except ValueError:
             sample_data = binary
 
-        request = ThreadLocal.get_current_request()
         public_name_list = list()
         sample_data["_id"] = ""
         need_send_email = False
@@ -771,14 +761,14 @@ class DtolSpreadsheet:
                         Sample().update_field('public_name', '', recorded_sample["_id"])
 
 
-
-            if (recorded_sample["biosampleAccession"] or recorded_sample["status"] == "rejected") and is_updated:
+            if (recorded_sample["status"] == "rejected" or recorded_sample.get("approval",[])) and is_updated:
                 is_private = "erga" in self.type.lower() and s["ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID"]
                 is_erga = "erga" in self.type.lower()
                 Sample().mark_pending(sample_ids = [str(recorded_sample["_id"])], is_erga=is_erga, is_private=is_private)
                 need_send_email = True
 
             uri = request.build_absolute_uri('/')
+            '''
             # query public service service a first time now to trigger request for public names that don't exist
             public_names = query_public_name_service(public_name_list)
             for name in public_names:
@@ -787,16 +777,11 @@ class DtolSpreadsheet:
                         name['specimen']["specimenId"])
                     continue
                 Sample().update_public_name(name)
-            
-            profile_id = request.session["profile_id"]
-            # Update the associated tol project for each sample in the manifest
-            # get associated profile type(s) of manifest
-            associated_type_lst = Profile().get_associated_type(
-                profile_id, value=True, label=False)
-            
+            '''
+
             # Get associated type(s) as string separated by '|' symbol
             # then, update the associated tol project field in the sample
-            associated_type = " | ".join(associated_type_lst)
+            associated_type = " | ".join(associated_profiles)
             
             Sample().update_field("associated_tol_project",
                                     associated_type, recorded_sample["_id"])

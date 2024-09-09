@@ -130,25 +130,44 @@ def copo_profile_index(request):
     profile_page_length = len(profile_page)
     profile_page_length += profile_page_length
 
+
+    schema_map = dict()
+    for profile in profile_page:
+        profile_type = profile.get("type", "")
+        if type not in schema_map:
+            schema = Profile().get_component_schema(profile_type = profile_type )
+            schema_map[profile_type] = schema
+        schema = schema_map.get(profile_type, dict())
+
+        for f in schema:
+            f_id = f["id"].split(".")[-1]
+            if f_id in profile and not f.get("show_in_table", False):
+                profile.pop(f_id)
+
+
     if request.headers.get('x-requested-with') != 'XMLHttpRequest':
         # Set up the profile grids that are loaded by default when a user launches the web page
         context['profiles'] = profile_page
         context['profiles_total'] = profiles_length
         context['profiles_visible_length'] = len(profile_page)
-        #context['profile_types'] = ProfileType.objects.all()
+        context['profiles_per_page'] = num_of_profiles_per_page
         context['profile_types'] = get_all_profile_types_for_options_for_user(request.user)
         return render(request, 'copo/profile/copo_profile_index.html', context)
     else:
         # Set up the profile grids that are loaded when a user scrolls down the web page
+        output = dict()
         content = ''
 
         for profile in profile_page:
             content += render_to_string('copo/profile/copo_profile_record.html',
                                         {'profile': profile,"profile_types":get_all_profile_types_for_options_for_user(request.user)},
-                                        request=request)
-        return JsonResponse({
-            "content": content,
-            "end_pagination": True if page >= num_of_pages else False})
+                                    request=request)
+        output['content'] = content
+        output['profiles_total'] = profiles_length
+        output['profiles_per_page'] = num_of_profiles_per_page
+        output['end_pagination'] = True if page >= num_of_pages else False
+
+        return JsonResponse(output)
 
 
 """
