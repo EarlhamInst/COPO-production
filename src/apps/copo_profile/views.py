@@ -163,6 +163,7 @@ def copo_profile_index(request):
                                         request=request)
         return JsonResponse({
             "content": content,
+            "profiles_total": profiles_length,
             "end_pagination": True if page >= num_of_pages else False})
 
 

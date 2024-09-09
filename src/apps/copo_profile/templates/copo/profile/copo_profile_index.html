@@ -22,28 +22,12 @@
     <div hidden id="hidden_attrs">
         <!-- hidden attributes  -->
         <input type="hidden" id="nav_component_name" value="profile"/>
-        <!--input type="hidden" id="view_copo_profile_url" value="{# url 'copo_profile:view_copo_profile' profile_id='999' #}"/-->
-
-        <!--input type="hidden" value="{# url 'copo:copo_publications' profile_id='999' #}" name="publication_url"
-               id="publication_url"/-->
-        <!--input type="hidden" value="{# url 'copo:copo_data' profile_id='999' #}" name="datafile_url"
-               id="datafile_url"/-->
         <input type="hidden" value="{% url 'copo_sample:copo_samples' profile_id='999' %}" name="sample_url"
                id="sample_url"/>
         <input type="hidden" value="{% url 'copo_accession:copo_accessions' profile_id='999' %}" name="accessions_url"
                id="accessions_url"/>
-        <!--input type="hidden" value="{# url 'copo:copo_submissions' profile_id='999' #}" name="submission_url"
-               id="submission_url"/-->
-        <!--input type="hidden" value="{# url 'copo:copo_people' profile_id='999' #}" name="person_url" id="person_url"/-->
-
-        <!--input type="hidden" value="{# url 'copo:copo_repository' profile_id='999'#%}" name="repository_url"
-               id="repository_url"/-->
-        <!--input type="hidden" value="{# url 'copo:view_templates' profile_id='999' #}" name="metadata_template_url"
-               id="metadata_template_url"/-->
-
         <input type="hidden" value="{% url 'copo_seq_annotation_submission:copo_seq_annotation' profile_id='999' %}" name="seqannotation_url"
                id="seqannotation_url"/>
-
         <input type="hidden" value="{% url 'copo_assembly_submission:copo_assembly' profile_id='999' %}" name="assembly_url"
                id="assembly_url"/>
         <input type="hidden" value="{% url 'copo_read_submission:copo_reads' profile_id='999' %}" name="read_url"
@@ -57,7 +41,10 @@
         id="component_subtitle"
         value="<select id='profile_type' name='profile_type'>{% for profile_type in profile_types %}<option value='{{ profile_type.value }}' title='{{profile_type.label}}' >{{ profile_type.label }}</option>{% endfor %}</select> "
       />   
-        <input type="hidden" id="copo_email" value="{{copo_email}}"/>     
+        <input type="hidden" id="copo_email" value="{{copo_email}}"/>
+        <input type="hidden" id="groups" value="{{groups}}"/>
+        <input type="hidden" id="profiles_visible_length" value="{{profiles_visible_length}}"/>
+        <input type="hidden" id="profiles_total" value="{{profiles_total}}"/>
     </div>
 
     <style>
@@ -88,14 +75,6 @@
 {% endblock page_tile %}
 
 {% block content %}
-    <script>
-        let groups = {{ groups|safe }}
-        let profiles_visible_length = {{ profiles_visible_length|safe }}  
-        let profiles_total = {{ profiles_total|safe }}
-   </script>
-    <!-- test -->
-    <!-- end test -->
-
     <!-- Indicate that one should scroll downwards to view more profiles -->
     <a href="javascript:void(0);" id="navigateToBottom" class="navigate-to-bottom"
        title="Scroll down to view more profiles">
@@ -163,7 +142,7 @@
 
     <!-- Sort Work Profiles button-->
     {% if profiles %}
-        <div class="row">
+        <div id="sortProfilesDiv" class="row">
             <div class="col-xs-2 col-md-3 col-lg-4">
                 <div class="pull-right" style="padding-top: 9px;"> Sort by:</div>
             </div>

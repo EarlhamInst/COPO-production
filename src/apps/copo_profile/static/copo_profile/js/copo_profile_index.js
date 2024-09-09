@@ -2,24 +2,41 @@ function get_profile_type() {
   return $('#profile_type').find(':selected').val();
 }
 
+function get_groups() {
+  // Parse the stringified list to an array
+  let stringList = $('#groups').val();
+  stringList = stringList.replace(/'/g, '"');
+  return JSON.parse(stringList);
+}
+
+function get_profiles_visible_length() {
+  return Number($('#profiles_visible_length').val());
+}
+
+function get_profiles_total() {
+  return Number($('#profiles_total').val());
+}
+
 $(document).on('document_ready', function () {
   //****************************** Event handlers block *************************//
   const component = 'profile';
   const copoProfileIndexURL = '/copo/';
   const copoAcceptRejectURL = '/copo/dtol_submission/accept_reject_sample';
-  const copoSamplesURL = '/copo/copo_sample/';
-  const copoENAReadManifestValidateURL = '/copo/copo_read/';
-  const copoENAAssemblyURL = '/copo/copo_assembly/';
-  const copoENAAnnotationURL = '/copo/copo_seq_annotation/';
   const copoVisualsURL = '/copo/copo_visualize/';
   const componentMeta = get_component_meta(component);
   const csrftoken = $.cookie('csrftoken');
   const tableID = componentMeta.tableID;
   const tableLoader = $('<div class="copo-i-loader"></div>');
 
-  let page = 1;
-  let block_request = false;
-  let end_pagination = false;
+  const profiles_total = get_profiles_total();
+  const profiles_visible_length = get_profiles_visible_length();
+  const groups = get_groups();
+
+  $(document).data('page', 1);
+  $(document).data('block_request', false);
+  $(document).data('end_pagination', false);
+  $(document).data('profiles_total', profiles_total);
+
   let grid_count = $('#grid-count');
   let grid_total = $('#grid-total');
 
@@ -28,18 +45,13 @@ $(document).on('document_ready', function () {
   let obj = {
     tableLoader: tableLoader,
     copoProfileIndexURL: copoProfileIndexURL,
-    page: page,
-    end_pagination: end_pagination,
-    block_request: block_request,
+    page: $(document).data('page'),
     tableID: tableID,
     copoVisualsURL: copoVisualsURL,
     csrftoken: csrftoken,
     component: component,
-    copoSamplesURL: copoSamplesURL,
-    copoENAReadManifestValidateURL: copoENAReadManifestValidateURL,
-    copoENAAssemblyURL: copoENAAssemblyURL,
-    copoENAAnnotationURL: copoENAAnnotationURL,
     grid_count: grid_count,
+    grid_total: grid_total,
     on_scroll: false,
   };
 
@@ -50,12 +62,26 @@ $(document).on('document_ready', function () {
       event.stopPropagation();
       if (event.type === 'refreshtable2') {
         obj.page = 1;
-        obj.block_request = false;
         obj.on_scroll = false;
+
+        // Reset the page number to 1
+        $(document).data('page', obj.page);
+
+        // Load new content or updated content
         populate_profiles_records(obj);
 
         // Reload web page if no profiles exist
         reload_if_no_profiles(tableID);
+
+        // Reload the scroll handler after table refresh
+        set_profile_div_scroll(obj, tableLoader);
+
+        if (
+          $(document).data('profiles_total') != Number($('#grid-count').text())
+        ) {
+          $(document).data('end_pagination', false);
+          $(document).data('block_request', false);
+        }
       } else if (event.type === 'reloadWebPage2') {
         // Trigger reload of the web page based on the value of 'grid-total'
         // i.e. when one profile record is created
@@ -69,8 +95,9 @@ $(document).on('document_ready', function () {
     }
   );
 
-  // Trigger reload of the web page when no profile records exist
-  // to have the change reflected on the web page
+  // Trigger reload of the web page when no profile
+  // records exist to have the change reflected on
+  // the web page
   $('#grid-total').on('reloadWebPage1', function () {
     reload_if_no_profiles(tableID);
   });
@@ -88,14 +115,9 @@ $(document).on('document_ready', function () {
     document.location = copoAcceptRejectURL;
   });
 
-  // Show web page buttons according to the group that the users are associated with
-  if (groups.length != 0) {
-    for (let g in groups) {
-      // Display 'Accept/reject' button for sample managers
-      if (groups[g].includes('sample_managers')) {
-        $('#accept_reject_shortcut').show();
-      }
-    }
+  // Display 'Accept/reject' button for sample managers
+  if (groups.some((g) => g.includes('sample_managers'))) {
+    $('#accept_reject_shortcut').show();
   }
 
   // Display empty profile message for potential first time users
@@ -111,10 +133,15 @@ $(document).on('document_ready', function () {
 
   initialise_popover();
 
-  $('#sortProfilesBtn')[0].selectedIndex = 0; // Set first option of sort menu
+  if ($('#sortProfilesBtn').length) {
+    // Set first option of sort menu
+    $('#sortProfilesBtn')[0].selectedIndex = 0;
+  }
 
   grid_count.text(profiles_visible_length); // Number of profile records visible
-  grid_total.text(profiles_total); //  Total number of profile records for the user
+
+  //  Total number of profile records for the user
+  grid_total.text(profiles_total);
 
   let div_grid = $('div.grid');
 
@@ -124,7 +151,7 @@ $(document).on('document_ready', function () {
 
   set_profile_grid_heading(div_grid, tableID); // Set profile grid heading
 
-  showMoreProfileInfoPopover(div_grid); // Initialise 'show more' information popover for profile records
+  profile_info_popover(div_grid); // Initialise 'view more' information popover for profile records
 
   $('#sortProfilesBtn').on('change', function () {
     const option_selected = this.value;
@@ -191,8 +218,9 @@ $(document).on('document_ready', function () {
     e.preventDefault();
   });
 
-  // Hide the profile options popover, display 'View profile options' on hover of the profile
-  // options ellipsis icon and unhighlight focus on desired profile grid
+  // Hide the profile options popover, display 'View profile options'
+  // on hover of the profile options ellipsis icon and unhighlight
+  // focus on desired profile grid
   $(document).on('click', `#${tableID}`, function () {
     $('#ellipsisID[data-toggle="popover"]').popover('hide');
     $('.row-ellipsis').attr('title', $(document).data('profileOptionsTitle'));
@@ -234,27 +262,9 @@ $(document).on('document_ready', function () {
     $('#showMoreProfileInfoBtn[rel="popover"]').popover('hide');
   });
 
-  // Trigger infinite scroll once user scrolls downwards to display more profile records that exist
-  $(window).scroll(function () {
-    const margin = $(document).height() - $(window).height() - 200;
-
-    // Scroll downwards
-    if (
-      $(window).scrollTop() > margin &&
-      end_pagination === false &&
-      block_request === false
-    ) {
-      block_request = true;
-      page += 1;
-
-      $('#component_table_loader').append(tableLoader); // Show loading .gif
-
-      obj.page = page;
-      obj.block_request = block_request;
-      obj.on_scroll = true;
-      populate_profiles_records(obj);
-    }
-  });
+  // Initial call to trigger infinite scroll once user scrolls downwards
+  // to display more profile records that exist
+  set_profile_div_scroll(obj, tableLoader);
 
   // Show a button which once a user hovers, it'll indicate that the
   // user can scroll downwards to view more profile records that were created
@@ -289,13 +299,16 @@ $(document).on('document_ready', function () {
     );
   });
 
-  // On web page reload/refresh, sort profile records by default sort option and method
+  // On web page reload/refresh, sort profile records
+  // by default sort option and method
   window.onload = () => {
-    let option = $('#sortProfilesBtn').val();
-    sort_profile_records(option);
+    if ($('#sortProfilesBtn').length) {
+      let option = $('#sortProfilesBtn').val();
+      sort_profile_records(option);
+    }
   };
 
-  // Programmatically scroll down the web page a little if a user decides to
+  // Programmatically, scroll down the web page a little if a user decides to
   // click the button which indicates on hover to scroll down to view more profiles
   navigateToBottomOfPageBtn.click(function () {
     $('html, body').animate(
@@ -363,22 +376,20 @@ function initialise_popover() {
 }
 
 function populate_profiles_records(obj) {
+  // Save current scroll position before refreshing the table
+  const scroll_position = $(window).scrollTop();
+
   // Destructure properties from obj
   let {
     tableLoader,
     copoProfileIndexURL,
     page,
-    end_pagination,
-    block_request,
     tableID,
     copoVisualsURL,
     csrftoken,
     component,
-    copoSamplesURL,
-    copoENAReadManifestValidateURL,
-    copoENAAssemblyURL,
-    copoENAAnnotationURL,
     grid_count,
+    grid_total,
     on_scroll,
   } = obj;
 
@@ -390,13 +401,21 @@ function populate_profiles_records(obj) {
     },
     success: function (data) {
       if (data.end_pagination) {
-        end_pagination = true;
+        if (
+          $(document).data('profiles_total') === Number($('#grid-count').text())
+        ) {
+          $(document).data('end_pagination', true);
+          $(document).data('block_request', true);
+        } else {
+          $(document).data('end_pagination', false);
+          $(document).data('block_request', false);
+        }
       } else {
-        block_request = false;
+        $(document).data('block_request', false);
       }
 
       // Empty the table if not scrolling
-      if (!on_scroll && $(`#${tableID}`).children().length) {
+      if (!on_scroll) {
         $(`#${tableID}`).empty();
       }
 
@@ -412,14 +431,21 @@ function populate_profiles_records(obj) {
 
         let existing_record = existing_records
           .find(`#${incoming_record_id}`)
-          .closest('.grid'); //existing_records.find(`#${incoming_record_id}`);
+          .closest('.grid');
 
         if (existing_record.length) {
           // Replace the existing record with the incoming record
           existing_record.replaceWith($(this));
         } else {
           // Append the new record if it doesn't exist
-          $(`#${tableID}`).append($(this));
+          // only if the welcome message is not visible
+          // since the web page will reload when the
+          // first record is created
+          let welcome_message = $('.page-welcome-message');
+
+          if (!welcome_message.is(':visible')) {
+            $(`#${tableID}`).append($(this));
+          }
         }
       });
 
@@ -431,11 +457,18 @@ function populate_profiles_records(obj) {
       initialise_loaded_records(copoVisualsURL, csrftoken, component);
 
       set_profile_grid_heading(div_grid, tableID); // Set profile grid heading
-      showMoreProfileInfoPopover(div_grid); // Initialise 'show more' information popover for profile records
+      profile_info_popover(div_grid); // Initialise 'view more' information popover for profile records
 
-      grid_count.text($('.grid').length); // Increment the number of profile records displayed
+      grid_count.text(div_grid.length); // Increment the number of profile records displayed
 
-      tableLoader.remove(); // Remove loading .gif
+      // Set the total number of profile records
+      grid_total.text(data.profiles_total);
+      $(document).data('profiles_total', data.profiles_total);
+
+      tableLoader.remove(); // Remove loading spinner
+
+      // Restore scroll position after the content is loaded
+      $(window).scrollTop(scroll_position);
     },
     error: function () {
       alert(`Couldn't retrieve ${component}s!`);
@@ -560,7 +593,8 @@ function deleteProfileRecord(profileRecordID) {
 
               // Refresh the web page when no profile records exist
               if ($('#grid-total').text() === '0') {
-                // Hide the panels
+                // Hide divs
+                $('#sortProfilesDiv').hide();
                 $('#bottom-panel').hide();
                 $('.profiles-legend').hide();
                 $('.other-projects-accessions-filter-checkboxes').hide();
@@ -688,10 +722,22 @@ function do_render_profile_counts(data) {
   }
 }
 
+function get_title_by_value(value) {
+  // Function to get the title from the profile type
+  // dropdown menu based on a given value
+  return $("#profile_type option[value='" + value + "']").attr('title');
+}
+
 function display_profiles_legend(legend_data) {
   $.each(legend_data, function (index, element) {
-    let acronym = element.profileTypeAcronym;
-    let type = acronym === 'Shared' ? acronym : element.profileType;
+    let acronym = element.profileTypeAcronym.includes('Shared')
+      ? 'Shared'
+      : element.profileTypeAcronym;
+
+    let type = acronym.includes('Shared')
+      ? element.profileTypeAcronym
+      : get_title_by_value(element.profileType);
+
     let colour = element.profileTypeColour;
 
     // Create profile type legend item
@@ -704,7 +750,7 @@ function display_profiles_legend(legend_data) {
       '<span class="fa fa-circle profiles-legend-circle" style="color:' +
       colour +
       '"></span>';
-    $legendItem += acronym;
+    $legendItem += acronym.toUpperCase();
     $legendItem += '</li>';
 
     $('.profiles-legend').find('.profiles-legend-group').append($legendItem);
@@ -837,7 +883,7 @@ function set_profile_grid_heading(grids, tableID) {
         if (profile_type) {
           acronym = profile_type.toUpperCase();
           colour =
-            profile_type_def[profile_type.toLowerCase()]['widget_colour']; //'#fb7d0d'
+            profile_type_def[profile_type.toLowerCase()]['widget_colour'];
 
           if ($(el).attr('shared_profile_type') === '') {
             // Remove 'shared_profile_type' attribute
@@ -869,7 +915,7 @@ function set_profile_grid_heading(grids, tableID) {
           existing_record
             .find('.panel-heading')
             .find('.row-title span')
-            .append('<small> (' + acronym + ') </small>');
+            .append('<small> (' + acronym.toUpperCase() + ') </small>');
         } else {
           // If the record is new, set the heading and color
           if ($(el).attr('shared_profile_type') === '')
@@ -878,7 +924,7 @@ function set_profile_grid_heading(grids, tableID) {
           $(el)
             .find('.panel-heading')
             .find('.row-title span')
-            .append('<small> (' + acronym + ') </small>');
+            .append('<small> (' + acronym.toUpperCase() + ') </small>');
           $(el).find('.panel-heading').css('background-color', colour);
         }
 
@@ -932,7 +978,7 @@ function initialise_loaded_records(copoVisualsURL, csrftoken, component) {
   initialise_popover();
 }
 
-function showMoreProfileInfoPopover(grids) {
+function profile_info_popover(grids) {
   grids.each(function () {
     let showMoreProfileInfoBtn = $(this)
       .closest('.grid')
@@ -992,4 +1038,55 @@ function reload_if_no_profiles(tableID) {
       window.location.reload();
     }, 1000);
   }
+}
+
+function set_profile_div_scroll(obj, tableLoader) {
+  $(window)
+    .off('scroll')
+    .on('scroll', function () {
+      const margin = $(document).height() - $(window).height() - 200;
+      const profiles_total = $(document).data('profiles_total');
+
+      let block_request = $(document).data('block_request');
+      let end_pagination = $(document).data('end_pagination');
+      let page = $(document).data('page');
+      let grid_count = Number($('#grid-count').text());
+
+      // Calculate max number of pages
+      const profiles_per_page = 8;
+      const max_pages = Math.ceil(profiles_total / profiles_per_page);
+
+      // Trigger infinite scroll once user scrolls downwards to
+      // display more profile records that exist
+      if (profiles_total > grid_count) {
+        block_request = false;
+      }
+
+      if (profiles_total === grid_count) {
+        end_pagination = true;
+      } else {
+        end_pagination = false;
+      }
+
+      // Update the values of the variables
+      $(document).data('block_request', block_request);
+      $(document).data('end_pagination', end_pagination);
+
+      if ($(window).scrollTop() > margin && !block_request && !end_pagination) {
+        // Increment the page and load new or updated content
+        if (page < max_pages) {
+          page += 1; // Increment the page if more pages are available
+          $(document).data('page', page);
+          $('#component_table_loader').append(tableLoader); // Show loading spinner
+
+          obj.page = page;
+          obj.on_scroll = true;
+          populate_profiles_records(obj);
+        } else {
+          // Prevent further scrolling when all pages are loaded
+          $(document).data('end_pagination', true);
+          $(document).data('block_request', true);
+        }
+      }
+    });
 }
