@@ -595,6 +595,10 @@ function deleteProfileRecord(profileRecordID) {
               // Decrement the total number of profile records displayed
               $('#grid-total').text(profilesTotal - 1);
 
+              // Update the profile type legend after 
+              // a profile record is deleted
+              updateProfileTypesLegend();
+
               // Refresh the web page when no profile records exist
               if ($('#grid-total').text() === '0') {
                 // Hide divs
@@ -922,7 +926,7 @@ function setProfileGridHeading(grids, tableID) {
           $(el).find('.panel-heading').css('background-color', colour);
         }
 
-        // Add profile type legend data if it is not already included or displayed
+        // Add profile type legend item if it is not already included or displayed
         let legend_data = {
           profileType: acronym.includes('Shared')
             ? acronym
@@ -933,15 +937,17 @@ function setProfileGridHeading(grids, tableID) {
           profileTypeColour: colour,
         };
 
-        let current_profile_legendData = $(
-          '.profiles-legend-group-item'
-        ).text();
+        // Convert the string to a list separated by commas
+        let currentProfileLegendData = $('.profiles-legend-group-item')
+          .text()
+          .replace(/\s+/g, ',')
+          .split(',');
 
         if (
           !profiles_legend_lst
             .map((x) => x.profileType)
             .includes(legend_data.profileType) &&
-          !current_profile_legendData.includes(legend_data.profileTypeAcronym)
+          !currentProfileLegendData.includes(legend_data.profileTypeAcronym)
         ) {
           profiles_legend_lst.push(legend_data);
         }
@@ -1087,4 +1093,62 @@ function setProfileDivScroll(obj, tableLoader) {
         }
       }
     });
+}
+
+function fetchVisibleProfileTypes() {
+  let profileTypesLst = [];
+
+  $('.copo-records-panel').each(function () {
+    // Get the profile_type and shared_profile_type attributes
+    let profileType = $(this).attr('profile_type');
+    let sharedProfileType = $(this).attr('shared_profile_type');
+
+    // Check if profileType is not undefined or empty
+    if (
+      profileType !== undefined &&
+      profileType !== '' &&
+      !profileTypesLst.includes(profileType)
+    ) {
+      profileTypesLst.push(profileType);
+    }
+
+    // Check if sharedProfileType is not undefined or empty
+    if (
+      sharedProfileType !== undefined &&
+      sharedProfileType !== '' &&
+      !profileTypesLst.includes(sharedProfileType)
+    ) {
+      profileTypesLst.push(sharedProfileType);
+    }
+  });
+
+  // Convert all elements to uppercase
+  profileTypesLst = profileTypesLst.map(function (element) {
+    return element.toUpperCase();
+  });
+
+  return profileTypesLst;
+}
+
+function updateProfileTypesLegend() {
+  // Convert the string to a list separated by commas
+  let currentProfileLegendData = $('.profiles-legend-group-item')
+    .text()
+    .trim()
+    .replace(/\s+/g, ',')
+    .split(',');
+
+  let allProfileTypes = fetchVisibleProfileTypes();
+
+  // Find the profile types that have been removed
+  let removedProfileTypes = currentProfileLegendData.filter(
+    (element) => !allProfileTypes.includes(element)
+  );
+
+  // Remove the profile type legend item if profile record is deleted
+  if (removedProfileTypes.length) {
+    removedProfileTypes.forEach((element) => {
+      $('.profiles-legend-group-item:contains(' + element + ')').remove();
+    });
+  }
 }
