@@ -150,21 +150,24 @@ def copo_profile_index(request):
         context['profiles'] = profile_page
         context['profiles_total'] = profiles_length
         context['profiles_visible_length'] = len(profile_page)
-        #context['profile_types'] = ProfileType.objects.all()
+        context['profiles_per_page'] = num_of_profiles_per_page
         context['profile_types'] = get_all_profile_types_for_options_for_user(request.user)
         return render(request, 'copo/profile/copo_profile_index.html', context)
     else:
         # Set up the profile grids that are loaded when a user scrolls down the web page
+        output = dict()
         content = ''
 
         for profile in profile_page:
             content += render_to_string('copo/profile/copo_profile_record.html',
                                         {'profile': profile,"profile_types":get_all_profile_types_for_options_for_user(request.user)},
-                                        request=request)
-        return JsonResponse({
-            "content": content,
-            "profiles_total": profiles_length,
-            "end_pagination": True if page >= num_of_pages else False})
+                                    request=request)
+        output['content'] = content
+        output['profiles_total'] = profiles_length
+        output['profiles_per_page'] = num_of_profiles_per_page
+        output['end_pagination'] = True if page >= num_of_pages else False
+
+        return JsonResponse(output)
 
 
 """
