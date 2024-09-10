@@ -773,11 +773,6 @@ function row_select(ev) {
   if (sample_table != undefined) {
     let active_tab = $('#sample_filter').find('.active').find('a').attr('href');
 
-    if (active_tab === 'processing' || active_tab === 'accepted') {
-      delete_selected_btn.prop('disabled', true).hide(); // Disable 'Delete selected' button
-      accept_reject_btn.hide(); // Hide 'Accept/Reject' button
-    }
-
     if (row == undefined) {
       $('#profile_id').val('');
     } else {
@@ -805,27 +800,38 @@ function row_select(ev) {
         sample_table.columns.adjust().draw();
 
         // Enable table buttons when profile has samples in it
-        view_images_btn.prop('disabled', false).show();
-        download_permits_btn.prop('disabled', false).show();
-        delete_selected_btn.prop('disabled', false).show();
-        select_none_btn.prop('disabled', false).show();
-        select_all_btn.prop('disabled', false).show();
+        if (active_tab != 'processing') {
+          view_images_btn.prop('disabled', false).show();
+          download_permits_btn.prop('disabled', false).show();
+        }
+
+        if (active_tab === 'processing' || active_tab === 'accepted') {
+          delete_selected_btn.prop('disabled', true).hide(); // Disable 'Delete selected' button
+          accept_reject_btn.find('button').prop('disabled', true);
+          accept_reject_btn.hide(); // Hide 'Accept/Reject' button
+        } else {
+          accept_reject_btn.find('button').prop('disabled', false);
+          accept_reject_btn.show(); // Show 'Accept/Reject' button
+          delete_selected_btn.prop('disabled', false).show();
+          select_none_btn.prop('disabled', false).show();
+          select_all_btn.prop('disabled', false).show();
+        }
 
         // Enable and show the 'Accept/Reject' button if the profile has samples
         // and the active 'ERGA' profile tab is 'Profiles for My Sequencing Centre'
-        let current_group = get_group_id();
-        let which_profiles = $('.profile-filter:visible')
-          .find('.active')
-          .find('a')
-          .attr('href');
+        // let current_group = get_group_id();
+        // let which_profiles = $('.profile-filter:visible')
+        //   .find('.active')
+        //   .find('a')
+        //   .attr('href');
 
-        if (current_group === 'erga' && which_profiles != 'my_profiles') {
-          accept_reject_btn.find('button').prop('disabled', true);
-          accept_reject_btn.hide();
-        } else {
-          accept_reject_btn.find('button').prop('disabled', false);
-          accept_reject_btn.show();
-        }
+        // if (current_group === 'erga' && which_profiles != 'my_profiles') {
+        //   accept_reject_btn.find('button').prop('disabled', true);
+        //   accept_reject_btn.hide();
+        // } else {
+        //   accept_reject_btn.find('button').prop('disabled', false);
+        //   accept_reject_btn.show();
+        // }
       }
     });
 
@@ -885,7 +891,7 @@ function delay(fn, ms) {
 
 function update_pending_samples_table() {
   // get profiles with samples needing looked at and populate left hand column
-  //check whether we are getting my profiles or all profiles
+  //check whether we are getting profiles
   var which_profiles = $('.profile-filter:visible')
     .find('.active')
     .find('a')
@@ -895,7 +901,7 @@ function update_pending_samples_table() {
     {
       name: 'first_manifest_created',
       data: 'first_manifest_date_created',
-      title: 'First manifest upload',
+      title: 'First Manifest Upload',
       type: 'date',
       targets: [1],
       className: 'dt-center text-center',
@@ -914,7 +920,7 @@ function update_pending_samples_table() {
     {
       name: 'last_manifest_updated',
       data: 'last_manifest_date_modified',
-      title: 'Last manifest upload',
+      title: 'Last Manifest Upload',
       type: 'date',
       targets: [2],
       className: 'dt-center text-center',
@@ -937,7 +943,7 @@ function update_pending_samples_table() {
     columnDefs.push({
       name: 'title',
       data: 'title',
-      title: 'Profile Title &emsp;&emsp;',
+      title: 'Profile Title&emsp;&emsp;',
       targets: [0],
       className: 'profile_title_header_my_profiles',
     });
@@ -1120,10 +1126,8 @@ function update_pending_samples_table() {
     },
   });
 
-  // Adjust the width of the table if it is 'All Profiles'
-  if (which_profiles != 'my_profiles') {
-    $('#profile_titles').css('width', '100%');
-  }
+  // Adjust the width of the table
+  $('#profile_titles').css('width', '100%');
 
   // Adjust the width and padding of the search input
   let profile_titles_table_wrapper = $('#profile_titles_wrapper');
