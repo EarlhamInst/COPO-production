@@ -201,7 +201,7 @@ class Command(BaseCommand):
         at_sanger = AssociatedProfileType.objects.get(name="SANGER")  
 
 
-        erga.associated_profile_types.set([at_erga, at_bge, at_bioblitz, at_cbp, at_erga_pilot, at_erga_community, at_pop_genomics, at_sanger])
+        erga.associated_profile_types.set([at_bge, at_bioblitz, at_cbp, at_erga_pilot, at_erga_community, at_pop_genomics, at_sanger])
         asg.associated_profile_types.set([at_asg])
         dtolenv.associated_profile_types.set([at_dtolenv])
         dtol.associated_profile_types.set([at_dtol])
