@@ -959,6 +959,11 @@ var dispatchFormControl = {
     });
 
     if (formElem.option_values) {
+      // Sort the options
+      formElem.option_values.sort(function (a, b) {
+        return a.label.localeCompare(b.label);
+      });
+
       for (var i = 0; i < formElem.option_values.length; ++i) {
         var option = formElem.option_values[i];
         var lbl = '';
@@ -1442,6 +1447,11 @@ var dispatchFormControl = {
     var currentValue = [];
 
     if (formElem.option_values && formElem.option_values.length) {
+      // Sort the options
+      formElem.option_values.sort(function (a, b) {
+        return a.label.localeCompare(b.label);
+      });
+
       currentValue = formElem.option_values.map(function (item) {
         if (typeof item === 'string') {
           var newItem = item;
@@ -1561,6 +1571,11 @@ var dispatchFormControl = {
     });
 
     if (formElem.option_values) {
+      // Sort the options
+      formElem.option_values.sort(function (a, b) {
+        return a.label.localeCompare(b.label);
+      });
+
       for (var i = 0; i < formElem.option_values.length; ++i) {
         var option = formElem.option_values[i];
         var lbl = '';
@@ -1609,6 +1624,11 @@ var dispatchFormControl = {
     var optionsList = [];
 
     if (formElem.option_values && formElem.option_values.length) {
+      // Sort the options
+      formElem.option_values.sort(function (a, b) {
+        return a.label.localeCompare(b.label);
+      });
+
       optionsList = formElem.option_values.map(function (item) {
         if (typeof item === 'string') {
           var newItem = item;
@@ -1684,6 +1704,11 @@ var dispatchFormControl = {
     var optionsList = [];
 
     if (formElem.option_values && formElem.option_values.length) {
+      // Sort the options
+      formElem.option_values.sort(function (a, b) {
+        return a.label.localeCompare(b.label);
+      });
+
       optionsList = formElem.option_values.map(function (item) {
         if (typeof item === 'string') {
           var newItem = item;
@@ -1901,6 +1926,11 @@ var dispatchFormControl = {
       columnClass = 'five';
     }
 
+    // Sort the options
+    formElem.option_values.sort(function (a, b) {
+      return a.label.localeCompare(b.label);
+    });
+
     for (var i = 0; i < formElem.option_values.length; ++i) {
       var option = formElem.option_values[i];
       var description = '';
@@ -2114,6 +2144,11 @@ var dispatchFormControl = {
     });
 
     ctrlsDiv.append(form_label_ctrl(formElem)).append(listGroup);
+
+    // Sort the options
+    formElem.option_values.sort(function (a, b) {
+      return a.label.localeCompare(b.label);
+    });
 
     for (var i = 0; i < formElem.option_values.length; ++i) {
       var option = formElem.option_values[i];
@@ -2381,6 +2416,11 @@ function create_attachable_component(formElem) {
 
               if (formElem.control == 'copo-lookup2') {
                 if (data.option_values.length) {
+                  // Sort the options
+                  data.option_values.sort(function (a, b) {
+                    return a.label.localeCompare(b.label);
+                  });
+
                   var currentValue = data.option_values.map(function (item) {
                     if (typeof item === 'string') {
                       var newItem = item;
@@ -2936,6 +2976,11 @@ function get_general_ontologyselect_span(ontologySpan, formElem) {
 
   var option_values = [];
   if (formElem.hasOwnProperty('option_values')) {
+    // Sort the options
+    formElem.option_values.sort(function (a, b) {
+      return a.label.localeCompare(b.label);
+    });
+    
     option_values = formElem.option_values;
   }
 
@@ -3086,6 +3131,11 @@ function get_lookup_span(ctrlsDiv, formElem) {
 
   var elemJson = [];
   if (formElem.hasOwnProperty('option_values')) {
+    // Sort the options
+    formElem.option_values.sort(function (a, b) {
+      return a.label.localeCompare(b.label);
+    });
+
     elemJson = formElem.option_values;
   }
 
