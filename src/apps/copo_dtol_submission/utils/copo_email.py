@@ -15,7 +15,7 @@ class Email:
     def __init__(self):
         # Message content for 'accepted samples' email notifications
 
-        sample_accepted_msg_content = "Dear {gretting},<br><br>We have now accepted your manifest submission of <b>{title}</b> in Collaborative OPen Omics (COPO).<br><br><br>If you have any questions, please do not hesitate to get in touch.<br><br><br>Best regards,<br>Collaborative OPen Omics (COPO) Project Team"
+        sample_accepted_msg_content = "Dear {greeting},<br><br>We have now accepted your manifest submission of <b>{title}</b> in Collaborative OPen Omics (COPO).<br><br><br>If you have any questions, please do not hesitate to get in touch.<br><br><br>Best regards,<br>Collaborative OPen Omics (COPO) Project Team"
         """
         sample_accepted_msg_content = "Dear {},"
         sample_accepted_msg_content += "<br><br>We have now accepted your manifest submission of <b>{}</b> in Collaborative OPen Omics (COPO).<br>"
@@ -117,11 +117,11 @@ class Email:
 
                 for apt_obj in apt_objs:
                     # 'cc' email address recipients
-                    msg = apt_obj.acceptance_email_body.format(gretting=greetings_name, title=title, centre_labels=centre_labels) if  apt_obj.acceptance_email_body else self.messages["sample_accepted"].format(gretting=greetings_name, title=title)
+                    msg = apt_obj.acceptance_email_body.format(greeting=greetings_name, title=title, centre_labels=centre_labels) if  apt_obj.acceptance_email_body else self.messages["sample_accepted"].format(greeting=greetings_name, title=title)
                     accepted_samples_notifiers = set(apt_obj.users.all())
                     cc_email_addresses = set(centre_contact_emails)
                     cc_email_addresses.update([x.email for x in accepted_samples_notifiers])
-                    #msg = apt_obj.acceptance_email_body.format(gretting=greetings_name, title=title, centre_labels=centre_labels)
+                    #msg = apt_obj.acceptance_email_body.format(greeting=greetings_name, title=title, centre_labels=centre_labels)
                     CopoEmail().send(to=list(to_email_addresses), sub=sub, content=msg, html=True, is_cc_required=True, cc=list(cc_email_addresses))
             else:
                 logger.log('No users found to send email to. Perhaps the user has been deleted.')    
