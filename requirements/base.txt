@@ -33,7 +33,7 @@ chardet==5.1.0
 #colored==1.4.3
 #configparser==3.7.4
 constantly==15.1.0
-cryptography==39.0.2
+cryptography==42.0.4
 daphne==4.0.0
 #-e git+https://github.com/IQSS/dataverse-client-python.git@5f95a11e2f32bcfabe28e6ad43b2f7edac60d983#egg=dataverse
 decorator==4.4.0
@@ -42,7 +42,7 @@ defusedxml==0.7.1
 Deprecated==1.2.13
 dict-toolbox==2.2.0
 dict.sorted==1.0.0
-Django==4.2.4
+Django==4.2.15
 django-allauth==0.55.0
 django-allow-cidr==0.6.0
 django-appconf==1.0.5
@@ -67,9 +67,9 @@ entrypoints==0.4
 et-xmlfile==1.1.0
 #eventlet==0.22.1
 #Genshi==0.7.3
-gevent==22.10.2
+gevent==24.2.1
 greenlet==2.0.2
-gunicorn==20.1.0
+gunicorn==22.0.0
 #hiredis==1.0.0
 #html5lib==1.1
 #hurry.filesize==0.9
@@ -181,7 +181,7 @@ six==1.16.0
 #snowballstemmer==1.2.1
 soupsieve==1.9.2
 sphinxcontrib-websupport==1.0.1
-sqlparse==0.4.3
+sqlparse==0.5.0
 supervisor==4.2.5
 #tables==3.7.0
 terminado==0.8.2
@@ -196,7 +196,7 @@ typed-ast==1.5.4
 ua-parser==0.18.0
 urllib3==1.26.13
 user-agents==2.2.0
-validators==0.20.0
+validators==0.21.0
 vine==5.0.0
 wcwidth==0.2.6
 #webencodings==0.5.1
@@ -207,6 +207,6 @@ xmljson==0.2.1
 XlsxWriter==3.0.9
 zipp==0.6.0
 zope.interface==6.0
-Pillow==9.4.0
+Pillow==10.2.0
 tzdata==2022.7
 geopy==2.3.0
