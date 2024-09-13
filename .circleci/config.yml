@@ -10,7 +10,7 @@ jobs:
     # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/configuration-reference/#executor-job
     docker:
-      - image: cimg/base:2023.12
+      - image: cimg/base:2024.09
 
     # Add steps to the job
     # See: https://circleci.com/docs/configuration-reference/#steps
@@ -80,8 +80,8 @@ jobs:
             echo "running ERGA_approve_samples.js ei" && \
             docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" ei && \        
 
-            echo "running Standalone_profile.js" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/Standalone_profile.js)"  && \
+            echo "running Genomics_profile.js" && \
+            docker exec $copo_browser node -e "$(cat test/testcases/genomics_profile.js)"  && \
             echo "done" ) || \
             (docker logs $copo_web && \
             docker exec $copo_web bash -c "less /copo/logs/*.log" && exit 1)
