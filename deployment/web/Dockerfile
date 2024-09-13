@@ -6,8 +6,8 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update && apt-get install -y \
     default-jre \
     rsync \
-    git \
-    nano \
+    #git \
+    #nano \
     vim \
     less \
     libxml2-dev \
