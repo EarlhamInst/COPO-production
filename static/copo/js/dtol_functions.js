@@ -783,6 +783,8 @@ function row_select(ev) {
     $('#spinner').show();
 
     sample_table.ajax.reload(function () {
+      let profile_samples_table_wrapper = $('#profile_samples_wrapper');
+
       sample_table.draw();
 
       if (sample_table.data().length == 0) {
@@ -790,13 +792,23 @@ function row_select(ev) {
           html: 'No Samples Found',
         });
         $('#sample_panel').find('.labelling').empty().append(header);
-        $('#profile_samples_wrapper').hide();
+        profile_samples_table_wrapper.hide();
       } else {
         var header = $('<h4/>', {
           html: 'Samples',
         });
         $('#sample_panel').find('.labelling').empty().append(header);
-        $('#profile_samples_wrapper').show();
+
+        // Adjust the padding of the search input
+        profile_samples_table_wrapper
+          .find('.dataTables_filter')
+          .find('label')
+          .css({ padding: '10px 0' })
+          .find('input')
+          .removeClass('input-sm')
+          .attr('placeholder', 'Search samples');
+
+        profile_samples_table_wrapper.show();
         sample_table.columns.adjust().draw();
 
         // Enable table buttons when profile has samples in it
@@ -816,22 +828,6 @@ function row_select(ev) {
           select_none_btn.prop('disabled', false).show();
           select_all_btn.prop('disabled', false).show();
         }
-
-        // Enable and show the 'Accept/Reject' button if the profile has samples
-        // and the active 'ERGA' profile tab is 'Profiles for My Sequencing Centre'
-        // let current_group = get_group_id();
-        // let which_profiles = $('.profile-filter:visible')
-        //   .find('.active')
-        //   .find('a')
-        //   .attr('href');
-
-        // if (current_group === 'erga' && which_profiles != 'my_profiles') {
-        //   accept_reject_btn.find('button').prop('disabled', true);
-        //   accept_reject_btn.hide();
-        // } else {
-        //   accept_reject_btn.find('button').prop('disabled', false);
-        //   accept_reject_btn.show();
-        // }
       }
     });
 
