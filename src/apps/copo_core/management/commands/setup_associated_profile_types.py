@@ -52,7 +52,8 @@ class Command(BaseCommand):
                                                              is_approval_required=True)
         
         AssociatedProfileType().create_associated_profile_type(name="ERGA_COMMUNITY",
-                                                             label="European Reference Genome Atlas - Community (ERGA_COMMUNITY)")
+                                                             label="European Reference Genome Atlas - Community (ERGA_COMMUNITY)",
+                                                             is_approval_required=True)
         
         AssociatedProfileType().create_associated_profile_type(name="POP_GENOMICS",
                                                              label="Population Genomics (POP_GENOMICS)",
