@@ -1,11 +1,12 @@
-from common.dal.profile_da import Profile
 from common.dal.copo_da import CopoGroup
+from common.dal.profile_da import Profile
+from common.dal.sample_da import Sample
 from common.utils.copo_email import CopoEmail
 from common.utils.logger import Logger
 from django.conf import settings
 from src.apps.copo_core.models import AssociatedProfileType, SequencingCentre
 from src.apps.copo_core.models import User
-
+from common.utils.helpers import get_base_url
 import common.schemas.utils.data_utils as d_utils
 import json
 
@@ -43,7 +44,25 @@ class Email:
             "sample_rejected" : "<h4>Following samples are rejected by ENA</h4><h5>{} - {}</h5><ul>{}</ul>",
             "pending_samples" : "<h4>Samples Available for Approval</h4><p>The following sample(s) has/have been approved by the Biodiversity Genomics Europe (BGE) checkers. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
             "bge_pending_samples" : "<h4>Samples Available for Approval</h4><p>The previous rejected sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
-            "associated_project_samples" : "<h4>Samples Available for Approval</h4><p>The following sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>"
+            "associated_project_samples" : "<h4>Samples Available for Approval</h4><p>The following sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
+            "associated_project_samples_reminder" : """
+                <h4>Reminder: Samples Available for Approval</h4>
+                <p>The following {} sample(s) are associated with {} profile type and are still pending approval. 
+                Please follow the link to proceed</p>
+                <p><a href='{}'>{}</a></p>
+                <br>
+                <div style='overflow-y: auto; max-height: 200px;'>
+                    <table border='1' style='width: 100%; border-collapse: collapse;'>
+                        <thead>
+                            <tr>
+                                <th><b>Profile Title</b></th>
+                                <th><b>Number of Pending Samples</b></th>
+                            </tr>
+                        </thead>
+                        <tbody>{}</tbody>
+                    </table>
+                </div>
+            """
         }
 
     def notify_sample_accepted_after_approval(self, **kwargs):
@@ -176,4 +195,58 @@ class Email:
                 CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
                 return
         logger.log("No users found for associated_project_type_checker")
+
+    def remind_manifest_pending_for_associated_project_type_checker(self):
+        # This function will be used to send an email reminder fortnightly to 
+        # associated project type checkers about pending samples awaiting approval
+        results = Sample().get_pending_samples()
+
+        if results:
+            base_url = get_base_url()
+            url_path = 'copo/dtol_submission/accept_reject_sample'
+            data = f'{base_url}/{url_path}'
+            users = set()
+
+            for x in results:
+                # Retrieve users who require approval
+                apt_obj = AssociatedProfileType.objects.filter(name=x.get('associated_tol_project_grouped',''), is_approval_required=True)
+                
+                if apt_obj.exists():  # Ensure at least one result is found
+                    users.update(apt_obj[0].users.all())
+
+                # If there are users to notify
+                if users:
+                    email_addresses = set([u.email for u in users])
+                    demo_notification = ''
+
+                    # Add demo notification prefix if in demo environment
+                    if settings.ENVIRONMENT_TYPE == 'demo':
+                        demo_notification = 'DEMO SERVER NOTIFICATION: '
+
+                    # Get manifest type and generate email content
+                    if x.get('sample_data', []):
+                        manifest_type = x.get('sample_data','')[0].get('tol_project','').upper()
+
+                        # Create HTML table for email
+                        html_list = ''.join(['<tr><td>{}</td><td>{}</td></tr>'.format(item.get('profile_title',''), item.get('sample_count','')) for item in x.get('sample_data',[])])
+                        
+                        # Email message with dynamic content
+                        msg = self.messages['associated_project_samples_reminder'].format(manifest_type, x.get('associated_tol_project_grouped',''), data, data,  html_list)
+
+                        # Subject line for the email
+                        sub = f'{demo_notification}Reminder: {x.get("total_sample_count","")} {manifest_type} Manifest Samples ({x.get("associated_tol_project_grouped","")} Association) Pending Approval'
+                        
+                        # Exclude redundancy if both manifest type and associated project type are the same
+                        if manifest_type == x.get('associated_tol_project_grouped',''):
+                            msg = msg.replace(f' are associated with {x.get("associated_tol_project_grouped","")} profile type and ', ' ')
+                            sub = sub.replace(f' ({x.get("associated_tol_project_grouped","")} Association) ', ' ')
+
+                        # Send email
+                        CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
+                    
+            logger.log('Processed pending samples and sent email reminders')
+            return
+        else:
+            logger.log('No pending samples found for any associated_project_type_checker')
+            return
     

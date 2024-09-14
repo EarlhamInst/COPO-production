@@ -910,6 +910,92 @@ class Sample(DAComponent):
         return self.update_field(field_values=field_values, oids=sample_ids)    
         #sample_obj_ids = [ObjectId(x) for x in sample_ids]
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": status}})
+    
+    def get_pending_samples(self):
+        # Get all pending TOL samples grouped by each associated_tol_project
+        from .profile_da import Profile
+
+        results = list()
+
+        results = cursor_to_list(
+            self.get_collection_handle().aggregate([
+                { '$match': { 'status': 'pending','sample_type': {'$in': TOL_PROFILE_TYPES} } },
+                { 
+                    # Split 'associated_tol_project' by the pipe symbol into an array
+                    '$addFields': {
+                        'associated_types_array': { '$split': ['$associated_tol_project', '|'] }
+                    }
+                },
+                { 
+                    # Unwind the array so that each separated value becomes its own document
+                    '$unwind': '$associated_types_array' 
+                },
+                { 
+                    #  Trim whitespace from the values in the associated_types_array
+                    '$addFields': {
+                        'associated_types_array': { 
+                            '$trim': { 
+                                'input': '$associated_types_array' 
+                            } 
+                        }
+                    }
+                },
+                { 
+                    # Group by each associated_tol_project_type and profile_id
+                    '$group': { 
+                            '_id': {
+                            'associated_tol_project_grouped': '$associated_types_array', 
+                            'profile_id': '$profile_id'
+                        },
+                        'sample_count': { '$sum': 1 },
+                        'tol_project': { '$first': '$tol_project' },  # Get the first tol_project
+                        'associated_tol_project': { '$first': '$associated_tol_project' }  # Get the first associated_tol_project
+                    }
+                },
+                { 
+                    # Group by the associated_tol_project and collect profile_ids with their sample counts
+                    '$group': { 
+                        '_id': '$_id.associated_tol_project_grouped',  # Group by associated_tol_project
+                        'sample_data': { 
+                            '$push': { 
+                                'profile_id': '$_id.profile_id', 
+                                'sample_count': '$sample_count',
+                                'tol_project': '$tol_project',
+                                'associated_tol_project': '$associated_tol_project'
+                            } 
+                        },
+                        'count': { '$sum': '$sample_count' }  # Total count of samples per associated_tol_project
+                    }
+                },
+                { 
+                    # Output the associated_tol_project, sample_data, and the overall total of pending samples
+                    '$project': {
+                        'associated_tol_project_grouped': '$_id',
+                        'sample_data': 1,  # List of profile_ids with their sample counts and project data
+                        'total_sample_count': '$count'  # Total number of samples per associated_tol_project
+                    }
+                }
+            ]))
+
+        if results:
+            profile_instance = Profile()
+
+            for item in results:
+                sample_data = item.get('sample_data', [])
+
+                if isinstance(sample_data, list):
+                    item['profile_titles'] = []
+
+                    for data in sample_data:
+                        # Get the profile title based on the profile_id
+                        profile_id = data.get('profile_id', '')
+
+                        if profile_id:
+                            profile_title = profile_instance.get_name(profile_id)
+                            # Append the profile title to the dictionary
+                            data.update({'profile_title': profile_title})
+        return results
+
 
     def get_by_manifest_id(self, manifest_id):
         samples_filter = dict()
