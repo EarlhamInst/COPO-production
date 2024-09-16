@@ -47,21 +47,10 @@ class Email:
             "associated_project_samples" : "<h4>Samples Available for Approval</h4><p>The following sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
             "associated_project_samples_reminder" : """
                 <h4>Reminder: Samples Available for Approval</h4>
-                <p>The following {} sample(s) are associated with {} profile type and are still pending approval. 
-                Please follow the link to proceed</p>
-                <p><a href='{}'>{}</a></p>
+                <p>The following {profile_type} profile(s) are associated with {associated_profile_type} profile type and have samples pending approval. Please follow the link to proceed: </p>
+                <p><a href='{link}'>{link_text}</a></p>
                 <br>
-                <div style='overflow-y: auto; max-height: 200px;'>
-                    <table border='1' style='width: 100%; border-collapse: collapse;'>
-                        <thead>
-                            <tr>
-                                <th><b>Profile Title</b></th>
-                                <th><b>Number of Pending Samples</b></th>
-                            </tr>
-                        </thead>
-                        <tbody>{}</tbody>
-                    </table>
-                </div>
+                <ul>{html_list}</ul>
             """
         }
 
@@ -205,11 +194,12 @@ class Email:
             base_url = get_base_url()
             url_path = 'copo/dtol_submission/accept_reject_sample'
             data = f'{base_url}/{url_path}'
-            users = set()
+            
+            for associated_type, value_dict in results.items():
+                users = set()
 
-            for x in results:
-                # Retrieve users who require approval
-                apt_obj = AssociatedProfileType.objects.filter(name=x.get('associated_tol_project_grouped',''), is_approval_required=True)
+                # Retrieve users from associated profile types that require approval
+                apt_obj = AssociatedProfileType.objects.filter(name=associated_type, is_approval_required=True)
                 
                 if apt_obj.exists():  # Ensure at least one result is found
                     users.update(apt_obj[0].users.all())
@@ -223,27 +213,27 @@ class Email:
                     if settings.ENVIRONMENT_TYPE == 'demo':
                         demo_notification = 'DEMO SERVER NOTIFICATION: '
 
-                    # Get manifest type and generate email content
-                    if x.get('sample_data', []):
-                        manifest_type = x.get('sample_data','')[0].get('tol_project','').upper()
+                    # Create unordered list  for email
+                    html_list = ''.join('<li>{}</li>'.format(p.get('title', '')) for p in value_dict)
 
-                        # Create HTML table for email
-                        html_list = ''.join(['<tr><td>{}</td><td>{}</td></tr>'.format(item.get('profile_title',''), item.get('sample_count','')) for item in x.get('sample_data',[])])
-                        
+                    if value_dict:
+                        # Use the first profile in value_dict to get the profile type since all profiles based on the associated type share the same profile type
+                        profile_type = value_dict[0].get('type','').upper()
+
                         # Email message with dynamic content
-                        msg = self.messages['associated_project_samples_reminder'].format(manifest_type, x.get('associated_tol_project_grouped',''), data, data,  html_list)
+                        msg = self.messages['associated_project_samples_reminder'].format(profile_type=profile_type, associated_profile_type=associated_type, link=data, link_text=data, html_list=html_list).strip()
 
                         # Subject line for the email
-                        sub = f'{demo_notification}Reminder: {x.get("total_sample_count","")} {manifest_type} Manifest Samples ({x.get("associated_tol_project_grouped","")} Association) Pending Approval'
+                        sub = f'{demo_notification}Reminder: {profile_type} Manifest Samples ({associated_type} Association) Pending Approval'
                         
                         # Exclude redundancy if both manifest type and associated project type are the same
-                        if manifest_type == x.get('associated_tol_project_grouped',''):
-                            msg = msg.replace(f' are associated with {x.get("associated_tol_project_grouped","")} profile type and ', ' ')
-                            sub = sub.replace(f' ({x.get("associated_tol_project_grouped","")} Association) ', ' ')
+                        if profile_type == associated_type:
+                            msg = msg.replace(f' are associated with {associated_type} profile type and', '')
+                            sub = sub.replace(f' ({associated_type} Association)', ' ')
 
-                        # Send email
+                        # Send an email once for this associated type
                         CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
-                    
+                        
             logger.log('Processed pending samples and sent email reminders')
             return
         else:

@@ -3,6 +3,7 @@ from datetime import datetime, timezone, timedelta
 from pymongo import ReturnDocument
 from django.conf import settings
 from django_tools.middlewares import ThreadLocal
+from collections import defaultdict
 from common.dal.mongo_util import cursor_to_list, cursor_to_list_str, cursor_to_list_no_ids
 from common.schema_versions.lookup.dtol_lookups import EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY, EXCLUDED_SAMPLE_TYPES, TOL_PROFILE_TYPES, SANGER_TOL_PROFILE_TYPES, PERMIT_FILENAME_COLUMN_NAMES, GENOMICS_PROJECT_SAMPLE_TYPE_DICT
 from pymongo.collection import ReturnDocument
@@ -912,88 +913,60 @@ class Sample(DAComponent):
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": status}})
     
     def get_pending_samples(self):
-        # Get all pending TOL samples grouped by each associated_tol_project
+        # Get all pending TOL samples grouped by distinct profile IDs
         from .profile_da import Profile
 
         results = list()
 
-        results = cursor_to_list(
-            self.get_collection_handle().aggregate([
-                { '$match': { 'status': 'pending','sample_type': {'$in': TOL_PROFILE_TYPES} } },
+        results = cursor_to_list(self.get_collection_handle().aggregate([
+                { '$match': { 'status': 'pending', 'approval': {'$exists': True}} },
                 { 
-                    # Split 'associated_tol_project' by the pipe symbol into an array
-                    '$addFields': {
-                        'associated_types_array': { '$split': ['$associated_tol_project', '|'] }
+                    # Group by distinct profile_id
+                    '$group': {
+                        '_id': None,
+                        'distinct_profile_ids': { '$addToSet': '$profile_id' }
                     }
                 },
                 { 
-                    # Unwind the array so that each separated value becomes its own document
-                    '$unwind': '$associated_types_array' 
-                },
-                { 
-                    #  Trim whitespace from the values in the associated_types_array
-                    '$addFields': {
-                        'associated_types_array': { 
-                            '$trim': { 
-                                'input': '$associated_types_array' 
-                            } 
-                        }
-                    }
-                },
-                { 
-                    # Group by each associated_tol_project_type and profile_id
-                    '$group': { 
-                            '_id': {
-                            'associated_tol_project_grouped': '$associated_types_array', 
-                            'profile_id': '$profile_id'
-                        },
-                        'sample_count': { '$sum': 1 },
-                        'tol_project': { '$first': '$tol_project' },  # Get the first tol_project
-                        'associated_tol_project': { '$first': '$associated_tol_project' }  # Get the first associated_tol_project
-                    }
-                },
-                { 
-                    # Group by the associated_tol_project and collect profile_ids with their sample counts
-                    '$group': { 
-                        '_id': '$_id.associated_tol_project_grouped',  # Group by associated_tol_project
-                        'sample_data': { 
-                            '$push': { 
-                                'profile_id': '$_id.profile_id', 
-                                'sample_count': '$sample_count',
-                                'tol_project': '$tol_project',
-                                'associated_tol_project': '$associated_tol_project'
-                            } 
-                        },
-                        'count': { '$sum': '$sample_count' }  # Total count of samples per associated_tol_project
-                    }
-                },
-                { 
-                    # Output the associated_tol_project, sample_data, and the overall total of pending samples
+                    # Output the distinct profile_ids
                     '$project': {
-                        'associated_tol_project_grouped': '$_id',
-                        'sample_data': 1,  # List of profile_ids with their sample counts and project data
-                        'total_sample_count': '$count'  # Total number of samples per associated_tol_project
+                        '_id': 0,  # Exclude the _id field
+                        'distinct_profile_ids': 1,
                     }
                 }
             ]))
 
         if results:
             profile_instance = Profile()
+            profile_ids = results[0].get('distinct_profile_ids', [])
 
-            for item in results:
-                sample_data = item.get('sample_data', [])
+            # Create profile data list
+            profile_data = [
+                {
+                    'id': x,
+                    'title': profile_instance.get_name(x),
+                    'type': profile_instance.get_type(x),
+                    'associated_type': profile_instance.get_associated_type(x)
+                }
+                for x in profile_ids
+            ]
 
-                if isinstance(sample_data, list):
-                    item['profile_titles'] = []
+            # Create a dictionary to hold grouped data
+            grouped_data = defaultdict(list)
 
-                    for data in sample_data:
-                        # Get the profile title based on the profile_id
-                        profile_id = data.get('profile_id', '')
+            # Group profiles by each associated type
+            for profile in profile_data:
+                associated_types = profile.get('associated_type', [])
+                for associated_type in associated_types:
+                    grouped_data[associated_type].append({
+                        'id': profile['id'],
+                        'title': profile['title'],
+                        'type': profile['type']
+                    })
 
-                        if profile_id:
-                            profile_title = profile_instance.get_name(profile_id)
-                            # Append the profile title to the dictionary
-                            data.update({'profile_title': profile_title})
+            # Convert grouped_data to a normal dictionary
+            results = dict(grouped_data)
+                    
         return results
 
 
