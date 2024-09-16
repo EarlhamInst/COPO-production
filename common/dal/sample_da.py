@@ -918,24 +918,8 @@ class Sample(DAComponent):
 
         results = list()
 
-        results = cursor_to_list(self.get_collection_handle().aggregate([
-                { '$match': { 'status': 'pending', 'approval': {'$exists': True}} },
-                { 
-                    # Group by distinct profile_id
-                    '$group': {
-                        '_id': None,
-                        'distinct_profile_ids': { '$addToSet': '$profile_id' }
-                    }
-                },
-                { 
-                    # Output the distinct profile_ids
-                    '$project': {
-                        '_id': 0,  # Exclude the _id field
-                        'distinct_profile_ids': 1,
-                    }
-                }
-            ]))
-
+        results = cursor_to_list(self.get_collection_handle().distinct('profile_id', { 'status': 'pending', 'approval': {'$exists': True}}))
+                                 
         if results:
             profile_instance = Profile()
             profile_ids = results[0].get('distinct_profile_ids', [])
