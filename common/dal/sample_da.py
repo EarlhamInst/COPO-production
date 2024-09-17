@@ -916,24 +916,17 @@ class Sample(DAComponent):
         # Get all pending TOL samples grouped by distinct profile IDs
         from .profile_da import Profile
 
-        results = list()
+        out = list()
 
-        results = cursor_to_list(self.get_collection_handle().distinct('profile_id', { 'status': 'pending', 'approval': {'$exists': True}}))
+        profile_ids = self.get_collection_handle().distinct('profile_id', { 'status': 'pending', 'approval': {'$exists': True}})
                                  
-        if results:
+        if profile_ids:
             profile_instance = Profile()
-            profile_ids = results[0].get('distinct_profile_ids', [])
+            # Convert list of profile IDs to a list of ObjectIds
+            profile_ids_oid = [ObjectId(x) for x in profile_ids]
 
             # Create profile data list
-            profile_data = [
-                {
-                    'id': x,
-                    'title': profile_instance.get_name(x),
-                    'type': profile_instance.get_type(x),
-                    'associated_type': profile_instance.get_associated_type(x)
-                }
-                for x in profile_ids
-            ]
+            profile_data = cursor_to_list(profile_instance.get_collection_handle().find({'_id': {'$in': profile_ids_oid}}, {'_id':0, 'title': 1, 'type': 1, 'associated_type': 1}))
 
             # Create a dictionary to hold grouped data
             grouped_data = defaultdict(list)
@@ -943,15 +936,14 @@ class Sample(DAComponent):
                 associated_types = profile.get('associated_type', [])
                 for associated_type in associated_types:
                     grouped_data[associated_type].append({
-                        'id': profile['id'],
                         'title': profile['title'],
                         'type': profile['type']
                     })
 
             # Convert grouped_data to a normal dictionary
-            results = dict(grouped_data)
+            out = dict(grouped_data)
                     
-        return results
+        return out
 
 
     def get_by_manifest_id(self, manifest_id):
