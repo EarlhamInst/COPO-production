@@ -194,19 +194,24 @@ class Email:
             base_url = get_base_url()
             url_path = 'copo/dtol_submission/accept_reject_sample'
             data = f'{base_url}/{url_path}'
-            
-            for associated_type, value_dict in results.items():
-                users = set()
 
-                # Retrieve users from associated profile types that require approval
-                apt_obj = AssociatedProfileType.objects.filter(name=associated_type, is_approval_required=True)
+            associated_profile_types = [x for x in results.keys()]
+
+            # Retrieve users from associated profile types that require approval
+            apt_objs = AssociatedProfileType.objects.filter(name__in=associated_profile_types, is_approval_required=True)
+
+            for apt_obj in apt_objs:
+                associated_type = apt_obj.name
+
+                # Get details from result dictionary based on the name from the object
+                # This will be a list of dictionaries
+                records = results.get(associated_type, [])
                 
-                if apt_obj.exists():  # Ensure at least one result is found
-                    users.update(apt_obj[0].users.all())
+                # Get email addresses of users from the associated profile type
+                email_addresses = {u.email for u in apt_obj.users.all()}
 
                 # If there are users to notify
-                if users:
-                    email_addresses = set([u.email for u in users])
+                if email_addresses:
                     demo_notification = ''
 
                     # Add demo notification prefix if in demo environment
@@ -214,11 +219,11 @@ class Email:
                         demo_notification = 'DEMO SERVER NOTIFICATION: '
 
                     # Create unordered list  for email
-                    html_list = ''.join('<li>{}</li>'.format(p.get('title', '')) for p in value_dict)
+                    html_list = ''.join('<li>{}</li>'.format(p.get('title', '')) for p in records)
 
-                    if value_dict:
-                        # Use the first profile in value_dict to get the profile type since all profiles based on the associated type share the same profile type
-                        profile_type = value_dict[0].get('type','').upper()
+                    if records:
+                        # Use the first profile in records to get the profile type since all profiles based on the associated type share the same profile type
+                        profile_type = records[0].get('type','').upper()
 
                         # Email message with dynamic content
                         msg = self.messages['associated_project_samples_reminder'].format(profile_type=profile_type, associated_profile_type=associated_type, link=data, link_text=data, html_list=html_list).strip()
