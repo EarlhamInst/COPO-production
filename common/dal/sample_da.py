@@ -916,7 +916,7 @@ class Sample(DAComponent):
         # Get all pending TOL samples grouped by distinct profile IDs
         from .profile_da import Profile
 
-        out = list()
+        out = dict()
 
         profile_ids = self.get_collection_handle().distinct('profile_id', { 'status': 'pending', 'approval': {'$exists': True}})
                                  
