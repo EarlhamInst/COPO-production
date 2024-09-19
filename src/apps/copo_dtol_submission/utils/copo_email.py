@@ -248,10 +248,6 @@ class Email:
                         if associated_type in profile_types:
                             msg = msg.replace(f' have {associated_type} as the associated profile type and', '').replace(f'<h3>{associated_type}</h3>', '')
                             sub = sub.replace(f' with {associated_type} Association', '')
-
-                        # Remove redundancy if profile type is the same for all profiles
-                        if len(set(profile_types)) > 1:
-                            msg = msg.replace(f'<h3>{profile_types[0]} profile(s)</h3>', '')
                             
                         # Send an email once for this associated type
                         CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
