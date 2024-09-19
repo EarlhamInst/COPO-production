@@ -47,7 +47,7 @@ class Email:
             "bge_pending_samples" : "<h4>Samples Available for Approval</h4><p>The previous rejected sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
             "associated_project_samples" : "<h4>Samples Available for Approval</h4><p>The following sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
             "associated_project_samples_reminder" : """
-                <p>The following {profile_type} profile(s) have {associated_profile_type} as the associated profile type and have samples pending review. Please follow the link to proceed: </p>
+                <p>The following profile(s) have {associated_profile_type} as the associated profile type and have samples pending review. Please follow the link to proceed: </p>
                 <p><a href='{link}'>{link_text}</a></p>
                 <br>
                 {html_list}
@@ -229,13 +229,12 @@ class Email:
 
                         # Create an unordered list with headings for each profile type
                         html_list = ''.join(
-                            f'<h3>{profile_type}</h3><ul>{"".join(f"<li>{profile}</li>" for profile in profiles)}</ul>'
+                            f'<h3>{profile_type} profile(s)</h3><ul>{"".join(f"<li>{profile}</li>" for profile in profiles)}</ul>'
                             for profile_type, profiles in profiles_by_type.items()
                         )
 
                         # Email message with dynamic content
                         msg = self.messages['associated_project_samples_reminder'].format(
-                            profile_type=d_utils.join_list_with_and_as_last_entry(profile_types),
                             associated_profile_type=associated_type,
                             link=data,
                             link_text=data,
@@ -251,8 +250,8 @@ class Email:
                             sub = sub.replace(f' with {associated_type} Association', '')
 
                         # Remove redundancy if profile type is the same for all profiles
-                        if all(profile_type == profile_types[0] for profile_type in profile_types):
-                            msg = msg.replace(f'<h3>{profile_types[0]}</h3>', '')
+                        if len(set(profile_types)) > 1:
+                            msg = msg.replace(f'<h3>{profile_types[0]} profile(s)</h3>', '')
                             
                         # Send an email once for this associated type
                         CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
