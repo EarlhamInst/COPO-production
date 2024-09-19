@@ -1,3 +1,4 @@
+from collections import defaultdict
 from common.dal.copo_da import CopoGroup
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
@@ -46,11 +47,10 @@ class Email:
             "bge_pending_samples" : "<h4>Samples Available for Approval</h4><p>The previous rejected sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
             "associated_project_samples" : "<h4>Samples Available for Approval</h4><p>The following sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
             "associated_project_samples_reminder" : """
-                <h4>Reminder: Samples Available for Approval</h4>
-                <p>The following {profile_type} profile(s) are associated with {associated_profile_type} profile type and have samples pending approval. Please follow the link to proceed: </p>
+                <p>The following {profile_type} profile(s) have {associated_profile_type} as the associated profile type and have samples pending review. Please follow the link to proceed: </p>
                 <p><a href='{link}'>{link_text}</a></p>
                 <br>
-                <ul>{html_list}</ul>
+                {html_list}
             """
         }
 
@@ -218,30 +218,48 @@ class Email:
                     if settings.ENVIRONMENT_TYPE == 'demo':
                         demo_notification = 'DEMO SERVER NOTIFICATION: '
 
-                    # Create unordered list  for email
-                    html_list = ''.join('<li>{}</li>'.format(p.get('title', '')) for p in records)
-
                     if records:
-                        # Use the first profile in records to get the profile type since all profiles based on the associated type share the same profile type
-                        profile_type = records[0].get('type','').upper()
+                        # Group profiles by type
+                        profiles_by_type = defaultdict(list)
+                        for p in records:
+                            profiles_by_type[p.get('type', '').upper()].append(p.get('title', ''))
+
+                        # List of keys from profiles_by_type
+                        profile_types = list(profiles_by_type.keys())
+
+                        # Create an unordered list with headings for each profile type
+                        html_list = ''.join(
+                            f'<h3>{profile_type}</h3><ul>{"".join(f"<li>{profile}</li>" for profile in profiles)}</ul>'
+                            for profile_type, profiles in profiles_by_type.items()
+                        )
 
                         # Email message with dynamic content
-                        msg = self.messages['associated_project_samples_reminder'].format(profile_type=profile_type, associated_profile_type=associated_type, link=data, link_text=data, html_list=html_list).strip()
+                        msg = self.messages['associated_project_samples_reminder'].format(
+                            profile_type=d_utils.join_list_with_and_as_last_entry(profile_types),
+                            associated_profile_type=associated_type,
+                            link=data,
+                            link_text=data,
+                            html_list=html_list
+                        ).strip()
 
                         # Subject line for the email
-                        sub = f'{demo_notification}Reminder: {profile_type} Manifest Samples ({associated_type} Association) Pending Approval'
+                        sub = f'{demo_notification}Reminder: Manifest Samples with {associated_type} Association Pending Review'
                         
-                        # Exclude redundancy if both manifest type and associated project type are the same
-                        if profile_type == associated_type:
-                            msg = msg.replace(f' are associated with {associated_type} profile type and', '')
-                            sub = sub.replace(f' ({associated_type} Association)', ' ')
+                        # Remove redundancy if profile type matches associated type
+                        if associated_type in profile_types:
+                            msg = msg.replace(f' have {associated_type} as the associated profile type and', '').replace(f'<h3>{associated_type}</h3>', '')
+                            sub = sub.replace(f' with {associated_type} Association', '')
 
+                        # Remove redundancy if profile type is the same for all profiles
+                        if all(profile_type == profile_types[0] for profile_type in profile_types):
+                            msg = msg.replace(f'<h3>{profile_types[0]}</h3>', '')
+                            
                         # Send an email once for this associated type
                         CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
                         
             logger.log('Processed pending samples and sent email reminders')
             return
         else:
-            logger.log('No pending samples found for any associated_project_type_checker')
+            logger.log('No emails sent as no pending samples were found for any associated profile type sample manager')
             return
     
