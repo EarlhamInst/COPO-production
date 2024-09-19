@@ -73,11 +73,11 @@ def get_mapping_for_manifest_type(request, manifest_type):
 
     default_value = d_utils.convertListToString(STANDARDS)
     standard = request.GET.get('standard', default_value)
-    standard_list = d_utils.convertStringToList(standard)
+    standard_list = d_utils.convertStringToList(standard) # Split the 'standard' string into a list
 
-    if return_type == "csv":
-        return HttpResponse(content="Not Implemented")
+    if return_type == 'csv':
+        return HttpResponse(content='Not Implemented')
 
     standard_data = get_standard_data(standard_list=standard_list, manifest_type=manifest_type.lower(), queryByManifestType=True)
 
-    return HttpResponse(jsonb.dumps(standard_data), content_type="application/json")
+    return HttpResponse(jsonb.dumps(standard_data), content_type='application/json')
