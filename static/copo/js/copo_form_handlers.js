@@ -185,7 +185,13 @@ function json2HtmlForm(data) {
       refresh_tool_tips();
     },
     onshown: function (dialogRef) {
+      // Set aria-hidden to false and aria-modal to true
+      const $dialogElement = dialogRef.$modal; // Get the dialog element
+      $dialogElement.attr('aria-hidden', 'false');
+      $dialogElement.attr('aria-modal', 'true');
+
       dialog.getButton('btnFormClose').disable();
+
       //prevent enter keypress from submitting form automatically
       $('form').keypress(function (e) {
         //Enter key

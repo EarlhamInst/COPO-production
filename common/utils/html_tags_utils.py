@@ -357,7 +357,7 @@ def generate_table_columns(da_object=None):
                             title='', width="1%",
                             defaultContent='<span title="Annotate datafile" style="cursor: '
                                            'pointer;" class="copo-tooltip">'
-                                           '<i class="ui icon violet write" aria-hidden="true"></i></span>')
+                                           '<i class="ui icon violet write"></i></span>')
         columns.append(special_dict)
 
     return columns
