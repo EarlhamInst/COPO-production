@@ -103,8 +103,11 @@ app.conf.beat_schedule = {
     'processing_pending_tagged_seq_submission': {
         'task': 'src.apps.copo_barcoding_submission.tasks.processing_pending_tagged_seq_submission',
         'schedule': timedelta(seconds=10)
-    },  
-
+    },
+    'send_fortnightly_pending_manifest_notification': {
+        'task': 'src.apps.copo_dtol_submission.tasks.send_fortnightly_pending_manifest_notification',
+        'schedule': timedelta(weeks=2)
+    }
 }
 
 app.conf.task_routes = {

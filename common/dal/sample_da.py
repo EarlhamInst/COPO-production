@@ -3,6 +3,7 @@ from datetime import datetime, timezone, timedelta
 from pymongo import ReturnDocument
 from django.conf import settings
 from django_tools.middlewares import ThreadLocal
+from collections import defaultdict
 from common.dal.mongo_util import cursor_to_list, cursor_to_list_str, cursor_to_list_no_ids
 from common.schema_versions.lookup.dtol_lookups import EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY, EXCLUDED_SAMPLE_TYPES, TOL_PROFILE_TYPES, SANGER_TOL_PROFILE_TYPES, PERMIT_FILENAME_COLUMN_NAMES, GENOMICS_PROJECT_SAMPLE_TYPE_DICT
 from pymongo.collection import ReturnDocument
@@ -910,6 +911,40 @@ class Sample(DAComponent):
         return self.update_field(field_values=field_values, oids=sample_ids)    
         #sample_obj_ids = [ObjectId(x) for x in sample_ids]
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": status}})
+    
+    def get_pending_samples(self):
+        # Get all pending TOL samples grouped by distinct profile IDs
+        from .profile_da import Profile
+
+        out = dict()
+
+        profile_ids = self.get_collection_handle().distinct('profile_id', { 'status': 'pending', 'approval': {'$exists': True}})
+                                 
+        if profile_ids:
+            profile_instance = Profile()
+            # Convert list of profile IDs to a list of ObjectIds
+            profile_ids_oid = [ObjectId(x) for x in profile_ids]
+
+            # Create profile data list
+            profile_data = cursor_to_list(profile_instance.get_collection_handle().find({'_id': {'$in': profile_ids_oid}}, {'_id':0, 'title': 1, 'type': 1, 'associated_type': 1}))
+
+            # Create a dictionary to hold grouped data
+            grouped_data = defaultdict(list)
+
+            # Group profiles by each associated type
+            for profile in profile_data:
+                associated_types = profile.get('associated_type', [])
+                for associated_type in associated_types:
+                    grouped_data[associated_type].append({
+                        'title': profile['title'],
+                        'type': profile['type']
+                    })
+
+            # Convert grouped_data to a normal dictionary
+            out = dict(grouped_data)
+                    
+        return out
+
 
     def get_by_manifest_id(self, manifest_id):
         samples_filter = dict()

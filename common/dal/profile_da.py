@@ -84,23 +84,17 @@ class Profile(DAComponent):
         else:
             return False
         
-    """
-    def get_associated_type(self, profile_id, value=True, label=True):
+    def get_associated_type(self, profile_id):
         p = self.get_collection_handle().find_one(
             {"_id": ObjectId(profile_id)})
+        
+        associated_type = []
+
         if p:
-            if p.get("associated_type", ""):
-                if value and not label:
-                    return [i.get("value", "") for i in p.get("associated_type", "") if i.get("value", "")]
-                elif label and not value:
-                    return [i.get("label", "") for i in p.get("associated_type", "") if i.get("label", "")]
-                else:
-                    return p.get("associated_type", "")
-            else:
-                return []
-        else:
-            return False
-    """
+            associated_type = p.get("associated_type", [])
+
+        return associated_type
+    
     def get_for_user(self, user=None, id_only=False):
         if not user:
             user = helpers.get_current_user().id
