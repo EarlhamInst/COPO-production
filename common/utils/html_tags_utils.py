@@ -1446,7 +1446,8 @@ def get_resolver(data, elem):
     func_map["copo-duration"] = resolve_copo_duration_data
     func_map["copo-datafile-id"] = resolve_copo_datafile_id_data
     func_map["copo_approval"] = resolve_copo_approval_data    
-    func_map["user_id"] = resolve_user_data    
+    func_map["user_id"] = resolve_user_data 
+    func_map["upper_text"] = resolve_upper_text_data 
 
 
     control = elem.get("control", "text").lower()
@@ -1821,6 +1822,9 @@ def resolve_default_data(data):
         return data.strftime('%Y-%m-%d %H:%M:%S')
     else:
         return str(data)
+
+def resolve_upper_text_data(data):
+    return data.upper() if data else ""
 
 # @register.filter("generate_copo_profiles_counts")
 def generate_copo_profiles_counts(profiles=list()):
