@@ -505,11 +505,6 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
                                                 projection=dict(projection), filter_by=filter_by)
 
     if len(records):
-        # Uppercase the value of the 'tol_project' field for each sample record
-        if da_object.component == 'sample':
-            for record in records:
-                record['tol_project'] = record.get('tol_project', '').upper()
-        
         df = pd.DataFrame(records)
         if  "_id" in additional_columns:
             df = df.merge(additional_columns, on='_id', how="left")
@@ -1823,7 +1818,7 @@ def resolve_default_data(data):
     else:
         return str(data)
 
-def resolve_upper_text_data(data):
+def resolve_upper_text_data(data, elem):
     return data.upper() if data else ""
 
 # @register.filter("generate_copo_profiles_counts")

@@ -107,10 +107,6 @@ def get_dtol_samples_for_profile(request):
                  else:
                     samples = Sample().get_dtol_from_profile_id(
                         profile_id, filter, draw, start, length, sort_by, dir, search, type, is_associated_project_type_checker, is_sequencing_centre_checker)
-                     
-                    # Uppercase the value of the 'tol_project' field for each sample record
-                    for sample in samples['data']:
-                        sample['tol_project'] = sample.get('tol_project', '').upper()
 
         out = encode(samples, unpicklable=False)
         return HttpResponse(out, content_type='application/json')

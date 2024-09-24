@@ -437,7 +437,7 @@
     },
     {
       "colour": "",
-      "control": "text",
+      "control": "upper_text",
       "control_meta": {},
       "default_value": "",
       "deprecated": false,
@@ -535,7 +535,7 @@
       "id": "copo.sample.error",
       "type": "string",
       "show_in_table": true,
-      "control": "textr"
-    }    
+      "control": "text"
+    }
   ]
 }
