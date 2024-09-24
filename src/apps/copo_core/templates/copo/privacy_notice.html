@@ -15,28 +15,25 @@
         font-weight: 400;
     }
 
-    a:link {
+    a.pn-atag:link {
         color: #0000EE;
         text-decoration: underline;
     }
 
-    a:visited {
+    a.pn-atag:visited {
         color: #551A8B;
         text-decoration: none;
     }
 
-    a:link:active, 
-    a:visited:active,
-    a:hover { 
+    a.pn-atag:link:active, 
+    a.pn-atag:visited:active,
+    a.pn-atag:hover { 
         color: #FF0000;
         text-decoration: underline;
         background-color: transparent;
     }
 
-    #privacy_notice_ul1 li,
-    #privacy_notice_ul2 li,
-    #privacy_notice_ul3 li,
-    #privacy_notice_ul4 li {
+    .pn-ul li {
         color: #1a1c1a;
         font-size: 19px;
         font-weight: 400;
@@ -55,7 +52,7 @@
            stores and uses personal information in operating the website, in accordance with the General Data Protection
            Regulation (GDPR).
         </p>
-        <p> Please view our <a href="/about/terms_of_use" target="_parent">Terms of Use</a> regarding the rules 
+        <p> Please view our <a class="pn-atag" href="/about/terms_of_use" target="_parent">Terms of Use</a> regarding the rules 
             and requirements for the use of the service.
         </p>
 
@@ -75,12 +72,12 @@
         <h2>Data Collected</h2>
         <p>COPO adopts appropriate data collection, validation, storage and processing practices as well as security
             measures to protect against unauthorised access, alteration, disclosure or destruction of your 
-            personal information, <a href="https://orcid.org" target="_blank">ORCid</a> credentials and metadata provided on our 
-            service.
+            personal information, <a class="pn-atag" href="https://orcid.org" target="_blank">ORCid</a> 
+            credentials and metadata provided on our service.
         </p>
 
         <h3>Information collected:</h3>
-        <ul id="privacy_notice_ul1">
+        <ul class="pn-ul">
             <li>Internet Protocol (IP) address</li>
             <li>Operating system</li>
             <li>Browser</li>
@@ -98,7 +95,7 @@
         </ul>
 
         <h3>Usage of information collected:</h3>
-        <ul id="privacy_notice_ul2">
+        <ul class="pn-ul">
             <li>To utilise Google Fonts, an interactive web directory via Cascading Style Sheets (CSS), 
                 which is embedded in the service
             </li>
@@ -117,22 +114,22 @@
 
         <h2>Storing and Sharing of your information</h2>
         <p>Your information is shared and stored in the following ways:</p>
-        <ul id="privacy_notice_ul3">
+        <ul class="pn-ul">
             <li>Authorised COPO team developers</li>
             <li>Public metadata repositories that COPO relies on to provide the service. They are:
                 <ul>
                     <li>
-                        <a href="https://www.ebi.ac.uk/bioimage-archive" target="_blank">
+                        <a class="pn-atag" href="https://www.ebi.ac.uk/bioimage-archive" target="_blank">
                             BioImage Archive (BIA)
                         </a>
                     </li>
                     <li>
-                        <a href="https://copo-docs.readthedocs.io/en/latest/help/glossary.html#term-ENA" 
+                        <a class="pn-atag" href="https://copo-docs.readthedocs.io/en/latest/help/glossary.html#term-ENA" 
                            target="_blank">European Nucleotide Archive (ENA)
                         </a>
                     </li>
                     <li>
-                        <a href="https://copo-docs.readthedocs.io/en/latest/help/glossary.html#term-NCBI" 
+                        <a class="pn-atag" href="https://copo-docs.readthedocs.io/en/latest/help/glossary.html#term-NCBI" 
                            target="_blank">National Centre for Biotechnology Information (NCBI)
                         </a>
                     </li>
@@ -141,14 +138,14 @@
         </ul><br>
 
         <h2>Data Retention</h2>
-        <ul id="privacy_notice_ul4">
+        <ul class="pn-ul">
             <li>Any personal data (name and email address) and metadata obtained from you will be retained as long as
                 the service is live, even if you stop using the service
             </li>
-            <li>COPO omits your email address, ORCid identifier (ID) and name from the <a href="/api" target="_parent">COPO 
-                Application Programming Interface (API)</a> method results after a manifest submission. However, your  
-                email address will be submitted to public repositories and will be visible on public records as a metadata 
-                submitter.
+            <li>COPO omits your email address, ORCid identifier (ID) and name from the <a class="pn-atag" href="/api" 
+                target="_parent">COPO Application Programming Interface (API)</a> method results after a manifest 
+                submission. However, your  email address will be submitted to public repositories and will be visible 
+                on public records as a metadata submitter.
             </li>
             <li>Access to the web and security logs containing personal data are restricted to the relevant COPO team developers
             </li>
@@ -170,16 +167,19 @@
             decision. You have a range of other rights under the GDPR.
         </p>
         <p>If you would like more information, please see the 
-           <a href="https://ico.org.uk" target="_blank">Information Commissioner's Office (ICO) website</a> (see <b>For the public</b>).
+           <a class="pn-atag" href="https://ico.org.uk" target="_blank">Information Commissioner's Office (ICO) website</a> 
+           (see <b>For the public</b>).
         </p>
 
         <br>
 
         <h2>Questions</h2>
         <p>If you have any questions about how your personal information is used, or wish to exercise any of your rights, you can
-            do so by <a href="/contact" target="_parent">contacting us</a>.
+            do so by <a class="pn-atag" href="/contact" target="_parent">contacting us</a>.
         </p>
-        <br>
+
+        <br><br>
+
         <p><b>Published on: 28-10-2023</b></p>
         <p><b>Last updated: 24-09-2024</b></p>
     </div>
