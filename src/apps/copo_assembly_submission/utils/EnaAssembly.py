@@ -315,13 +315,13 @@ def process_assembly_pending_submission():
                     with open(join(these_assemblies,"manifest.txt.report")) as report_file:
                         error = output + " " + report_file.read()
                 elif return_code == 3:
-                    directories = sorted(glob.glob(f"{settings.MEDIA_ROOT}/ena_assembly_files/{sub['profile_id']}/genome/*"),key=os.path.getmtime)
+                    directories = sorted(glob.glob(f"{settings.MEDIA_ROOT}/ena_assembly_files/{sub['profile_id']}/{submission_type}/*"),key=os.path.getmtime)
                     with open(f"{directories[-1]}/validate/webin-cli.report") as report_file:
                         error = output + " " + report_file.read()
                     for file in os.scandir(f"{directories[-1]}/validate"):
                         if file.name != "webin-cli.report":
                             with open(file) as report_file:
-                                error = error + f'<br/><a href="{these_assemblies_url_path}/genome/{os.path.basename(directories[0])}/validate/{file.name}">{file.name}</a>'                    
+                                error = error + f'<br/><a href="{these_assemblies_url_path}/{submission_type}/{os.path.basename(directories[-1])}/validate/{file.name}">{file.name}</a>'                    
                 Assembly().update_assembly_error( assembly_ids=[assembly_id], msg=error)                
                 ghlper.notify_assembly_status(data={"profile_id": sub["profile_id"]}, msg=error, action="error", html_id="assembly_info")
 
