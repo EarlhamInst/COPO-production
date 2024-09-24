@@ -1,5 +1,6 @@
 from .utils import Dtol_Submission as dtol
 from .utils import Dtol_Bioimage_Submission as dtol_bioimage
+from .utils.copo_email import Email
 
 from common.dal.sample_da import Sample
 from src.celery import app
@@ -53,4 +54,10 @@ def poll_asyn_ena_submission(self):
 def process_bioimage_housekeeping(self):
     Logger().debug("Running process_bioimage_housekeeping")
     dtol_bioimage.housekeeping_bioimage_archive()
+    return True
+
+@app.task(bind=True, base=CopoBaseClassForTask)
+def send_fortnightly_pending_manifest_notification(self):
+    Logger().debug("Running send_fortnightly_pending_manifest_notification")
+    Email().remind_manifest_pending_for_associated_project_type_checker()
     return True

@@ -225,13 +225,13 @@
                                 <button id="help_add_button" class="circular tiny ui icon button">
                                     <i class="icon sign table"></i>
                                 </button>
-                                to upload <strong>{{ profile.type }}</strong> samples.
+                                to upload <strong>{{ profile.type | get_profile_type_description}}</strong> samples.
                                 <br/><br/>
                                 Click the
                                     <button class="circular tiny ui icon brown  button">
                                         <i class="icon download sign"></i>
                                     </button>
-                                to download a blank <strong>{{ profile.type }}</strong> manifest template.
+                                to download a blank <strong>{{ profile.type | get_profile_type_description }}</strong> manifest template.
                                 <br /><br />
                                 <div><strong>Quick Tour: </strong>To explore the various
                                     controls available on this page, click the

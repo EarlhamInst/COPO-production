@@ -22,8 +22,8 @@ class Email:
             type = profile.get("type", "").upper()
             #if type == "ERGA":
             associated_profiles = profile.get("associated_type", [])
-            assoicated_profiles_type_require_approval = AssociatedProfileType.objects.filter(is_approval_required=True,  name__in =  associated_profiles)
-            for ap in assoicated_profiles_type_require_approval:
+            associated_profiles_type_require_approval = AssociatedProfileType.objects.filter(is_approval_required=True,  name__in =  associated_profiles)
+            for ap in associated_profiles_type_require_approval:
                 users.update(ap.users.all())
             #else :
             #    users = set(User.objects.filter(groups__name=f'{type.lower()}_sample_notifiers'))    

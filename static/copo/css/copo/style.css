@@ -2035,20 +2035,10 @@ div.shown span.side-help-trigger:before {
 
 /*end cover spin*/
 
-/*select2 styling*/
-.select2-search__field {
-    width: 100% !important;
-}
-
 .wtHolder {
     width: 100%;
     overflow: scroll;
 }
-
-/*end select2 styling*/
-
-/*bundle styles*/
-
 
 /*draggable*/
 .draggable_tr {

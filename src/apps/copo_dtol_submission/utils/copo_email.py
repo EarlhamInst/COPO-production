@@ -1,11 +1,13 @@
-from common.dal.profile_da import Profile
+from collections import defaultdict
 from common.dal.copo_da import CopoGroup
+from common.dal.profile_da import Profile
+from common.dal.sample_da import Sample
 from common.utils.copo_email import CopoEmail
 from common.utils.logger import Logger
 from django.conf import settings
 from src.apps.copo_core.models import AssociatedProfileType, SequencingCentre
 from src.apps.copo_core.models import User
-
+from common.utils.helpers import get_base_url
 import common.schemas.utils.data_utils as d_utils
 import json
 
@@ -43,7 +45,13 @@ class Email:
             "sample_rejected" : "<h4>Following samples are rejected by ENA</h4><h5>{} - {}</h5><ul>{}</ul>",
             "pending_samples" : "<h4>Samples Available for Approval</h4><p>The following sample(s) has/have been approved by the Biodiversity Genomics Europe (BGE) checkers. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
             "bge_pending_samples" : "<h4>Samples Available for Approval</h4><p>The previous rejected sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
-            "associated_project_samples" : "<h4>Samples Available for Approval</h4><p>The following sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>"
+            "associated_project_samples" : "<h4>Samples Available for Approval</h4><p>The following sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
+            "associated_project_samples_reminder" : """
+                <p>The following profile(s) have {associated_profile_type} as the associated profile type and have samples pending review. Please follow the link to proceed: </p>
+                <p><a href='{link}'>{link_text}</a></p>
+                <br>
+                {html_list}
+            """
         }
 
     def notify_sample_accepted_after_approval(self, **kwargs):
@@ -176,4 +184,77 @@ class Email:
                 CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
                 return
         logger.log("No users found for associated_project_type_checker")
+
+    def remind_manifest_pending_for_associated_project_type_checker(self):
+        # This function will be used to send an email reminder fortnightly to 
+        # associated project type checkers about pending samples awaiting approval
+        results = Sample().get_pending_samples()
+
+        if results:
+            base_url = get_base_url()
+            url_path = 'copo/dtol_submission/accept_reject_sample'
+            data = f'{base_url}/{url_path}'
+
+            associated_profile_types = [x for x in results.keys()]
+
+            # Retrieve users from associated profile types that require approval
+            apt_objs = AssociatedProfileType.objects.filter(name__in=associated_profile_types, is_approval_required=True)
+
+            for apt_obj in apt_objs:
+                associated_type = apt_obj.name
+
+                # Get details from result dictionary based on the name from the object
+                # This will be a list of dictionaries
+                records = results.get(associated_type, [])
+                
+                # Get email addresses of users from the associated profile type
+                email_addresses = {u.email for u in apt_obj.users.all()}
+
+                # If there are users to notify
+                if email_addresses:
+                    demo_notification = ''
+
+                    # Add demo notification prefix if in demo environment
+                    if settings.ENVIRONMENT_TYPE == 'demo':
+                        demo_notification = 'DEMO SERVER NOTIFICATION: '
+
+                    if records:
+                        # Group profiles by type
+                        profiles_by_type = defaultdict(list)
+                        for p in records:
+                            profiles_by_type[p.get('type', '').upper()].append(p.get('title', ''))
+
+                        # List of keys from profiles_by_type
+                        profile_types = list(profiles_by_type.keys())
+
+                        # Create an unordered list with headings for each profile type
+                        html_list = ''.join(
+                            f'<h3>{profile_type} profile(s)</h3><ul>{"".join(f"<li>{profile}</li>" for profile in profiles)}</ul>'
+                            for profile_type, profiles in profiles_by_type.items()
+                        )
+
+                        # Email message with dynamic content
+                        msg = self.messages['associated_project_samples_reminder'].format(
+                            associated_profile_type=associated_type,
+                            link=data,
+                            link_text=data,
+                            html_list=html_list
+                        ).strip()
+
+                        # Subject line for the email
+                        sub = f'{demo_notification}Reminder: Manifest Samples with {associated_type} Association Pending Review'
+                        
+                        # Remove redundancy if profile type matches associated type
+                        if associated_type in profile_types:
+                            msg = msg.replace(f' have {associated_type} as the associated profile type and', '').replace(f'<h3>{associated_type}</h3>', '')
+                            sub = sub.replace(f' with {associated_type} Association', '')
+                            
+                        # Send an email once for this associated type
+                        CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
+                        
+            logger.log('Processed pending samples and sent email reminders')
+            return
+        else:
+            logger.log('No emails sent as no pending samples were found for any associated profile type sample manager')
+            return
     
