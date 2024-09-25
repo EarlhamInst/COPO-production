@@ -340,6 +340,16 @@ class ProcessValidationQueue:
                 # this requires different logic to discriminate between symbionts
                 return False
             exsam = Sample().get_target_by_field("rack_tube", rack_tube)
+
+            # Check if ‘RACK_OR_PLATE_ID’ or ‘TUBE_OR_WELL_ID’ has been changed to 
+            # prevent an assertion error and an update lag if the assertion below is executed
+            if len(exsam) != 1:
+                field =  "RACK_OR_PLATE_ID" if "RACK_OR_PLATE_ID" in list(s.keys()) else "TUBE_OR_WELL_ID"
+                msg = validation_msg["validation_msg_error_updating_compliance_field"] % (field, profile.get("type","").upper())
+                notify_frontend(data={"profile_id": self.profile_id}, msg=msg, action="error",
+                                html_id="sample_info")
+                return False
+            
             assert len(exsam) == 1
             exsam = exsam[0]
             updates[rack_tube] = {}
@@ -353,7 +363,7 @@ class ProcessValidationQueue:
             for field in s.keys():
                 if s[field].strip() != exsam.get(field, "") and s[field].strip() != exsam["species_list"][0].get(field,
                                                                                                                  ""):
-                    if is_manager or is_not_approved or field in lookup.DTOL_NO_COMPLIANCE_FIELDS[self.type.lower()]:
+                    if is_manager or is_not_approved or field not in lookup.COMPLIANCE_FIELDS[self.type.lower()]:
                         updates[rack_tube][field] = {}
                         if field in lookup.SPECIES_LIST_FIELDS:
                             updates[rack_tube][field]["old_value"] = exsam["species_list"][0][field]
@@ -365,7 +375,7 @@ class ProcessValidationQueue:
                             updates[rack_tube][field]["old_value"] = exsam.get(field,"")  #to cater for the case where the field not exist in the old maniest
                             updates[rack_tube][field]["new_value"] = s[field]
                     else:
-                        msg = validation_msg["validation_msg_error_updating_compliance_field"] % (field, profile.get("type",""))
+                        msg = validation_msg["validation_msg_error_updating_compliance_field"] % (field, profile.get("type","").upper())
                         notify_frontend(data={"profile_id": self.profile_id}, msg=msg, action="error",
                                         html_id="sample_info")
                         return False

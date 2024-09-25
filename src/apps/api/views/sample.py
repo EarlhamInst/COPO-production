@@ -302,15 +302,22 @@ def get_samples_by_sequencing_centre(request):
     return finish_request(out)
 
 def get_updatable_fields_by_project(request, project):
-    project_lst = project.split(",")
-    project_lst = list(map(lambda x: x.strip(), project_lst))
-    # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
-    project_lst[:] = [x.lower() for x in project_lst if x] # Convert all strings in the list to lowercase
     out = list()
+    project_lst = d_utils.convertStringToList(project)
     
     for project in project_lst:
-        if project in lookup.DTOL_NO_COMPLIANCE_FIELDS:
-            out.append({project.upper(): lookup.DTOL_NO_COMPLIANCE_FIELDS[project]})
+        project = project.lower()
+
+        exported_fields = lookup.DTOL_EXPORT_TO_STS_FIELDS.get(project, [])
+        compliance_fields = set(lookup.COMPLIANCE_FIELDS.get(project, []))
+
+        # Filter non-compliant fields
+        non_compliant_fields = [field for field in exported_fields if field.isupper() and field not in compliance_fields]
+
+        # Return non-compliant fields i.e. fields that user can update
+        if non_compliant_fields:
+            non_compliant_fields.sort()
+            out.append({project.upper(): non_compliant_fields})
     return finish_request(out)
 
 def get_fields_based_on_standards(project_type, standard_list, s, manifest_version=str()):
