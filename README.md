@@ -27,8 +27,10 @@ This repository builds on the work of the [COPO](https://github.com/collaborativ
 - [Guidelines for configuring profile types](https://copo-docs.readthedocs.io/en/latest/advanced/profile_setup/profile-setup-index.html)
 
 - [Other documentation about the COPO project](https://copo-docs.readthedocs.io/en/latest)
-
-- [To report issues](https://github.com/TGAC/COPO-production/issues)
-
+  
 - [![DOI](https://zenodo.org/badge/31064842.svg)](https://zenodo.org/badge/latestdoi/31064842)
+  
+- [COPO's FAIRsharing resource](https://doi.org/10.25504/FAIRsharing.91a79b)
+  
+- [To report issues](https://github.com/TGAC/COPO-production/issues)
 
