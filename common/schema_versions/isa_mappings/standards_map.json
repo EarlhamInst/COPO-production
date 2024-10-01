@@ -1,30 +1,5 @@
 [
     {
-        "ASSOCIATED_BIOGENOME_PROJECTS": {
-            "dwc": {
-                "field": "",
-                "uri": "",
-                "description": ""
-            },
-            "ena": {
-                "field": "associated biogenome projects",
-                "type": "",
-                "uri": "",
-                "description": ""
-            },
-            "mixs": {
-                "field": "",
-                "type": "",
-                "uri": "",
-                "regex": "",
-                "description": ""
-            },
-            "tol": {
-                "field": "ASSOCIATED_BIOGENOME_PROJECTS",
-                "type": "",
-                "uri": ""
-            }
-        },
         "ASSOCIATED_PROJECT_ACCESSIONS": {
             "dwc": {
                 "field": "",
@@ -219,7 +194,7 @@
                 "uri": ""
             }
         },
-        "CHLA": {
+        "BOLD_ACCESSION_NUMBER": {
             "dwc": {
                 "field": "",
                 "uri": "",
@@ -238,7 +213,7 @@
                 "description": ""
             },
             "tol": {
-                "field": "CHLA",
+                "field": "BOLD_ACCESSION_NUMBER",
                 "type": "",
                 "uri": ""
             }
@@ -355,11 +330,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "samp_name",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0001107",
+                "field": "",
+                "type": "",
+                "uri": "",
                 "regex": "",
-                "description": "A local identifier or name that for the material sample used for extracting nucleic acids, and subsequent sequencing. It can refer either to the original material collected or to any derived sub-samples. It can have any format, but we suggest that you make it concise, unique and consistent within your lab, and as informative as possible. INSDC requires every sample name from a single Submitter to be unique. Use of a globally unique identifier for the field source_mat_id is recommended in addition to sample_name"
+                "description": ""
             },
             "tol": {
                 "field": "COLLECTOR_SAMPLE_ID",
@@ -380,7 +355,7 @@
             },
             "mixs": {
                 "field": "host_common_name",
-                "type": "string",
+                "type": "object",
                 "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000248",
                 "regex": "",
                 "description": "Common name of the host"
@@ -404,11 +379,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "microb_start_taxID",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0001222",
-                "regex": "^(([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+) \\[[a-zA-Z]{2,}:[a-zA-Z0-9]\\d+\\])|[1-9][0-9]*$",
-                "description": "Please include Genus species and strain ID, if known of microorganisms used in food production. For complex communities, pipes can be used to separate two or more microbes"
+                "field": "",
+                "type": "",
+                "uri": "",
+                "regex": "",
+                "description": ""
             },
             "tol": {
                 "field": "CULTURE_OR_STRAIN_ID",
@@ -430,11 +405,11 @@
                 "description": "YYYY-MM-DD, YYYY-MM, YYYY, NOT_COLLECTED or NOT_PROVIDED"
             },
             "mixs": {
-                "field": "collection_date",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000011",
+                "field": "",
+                "type": "",
+                "uri": "",
                 "regex": "",
-                "description": "The time of sampling, either as an instance (single point in time) or interval. In case no exact time is available, the date/time can be right truncated i.e. all of these are valid times: 2008-01-23T19:23:10+00:00; 2008-01-23T19:23:10; 2008-01-23; 2008-01; 2008; Except: 2008-01; 2008 all are ISO8601 compliant"
+                "description": ""
             },
             "tol": {
                 "field": "DATE_OF_COLLECTION",
@@ -481,11 +456,11 @@
                 "description": "numeric, NOT_COLLECTED or NOT_PROVIDED"
             },
             "mixs": {
-                "field": "lat_lon",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000009",
-                "regex": "^(-?((?:[0-8]?[0-9](?:\\.\\d{0,8})?)|90)) -?[0-9]+(?:\\.[0-9]{0,8})?$|^-?(1[0-7]{1,2})$",
-                "description": "The geographical origin of the sample as defined by latitude and longitude. The values should be reported in decimal degrees and in WGS84 system"
+                "field": "",
+                "type": "",
+                "uri": "",
+                "regex": "",
+                "description": ""
             },
             "tol": {
                 "field": "DECIMAL_LATITUDE",
@@ -508,11 +483,11 @@
                 "description": "numeric, NOT_COLLECTED or NOT_PROVIDED"
             },
             "mixs": {
-                "field": "lat_lon",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000009",
-                "regex": "^(-?((?:[0-8]?[0-9](?:\\.\\d{0,8})?)|90)) -?[0-9]+(?:\\.[0-9]{0,8})?$|^-?(1[0-7]{1,2})$",
-                "description": "The geographical origin of the sample as defined by latitude and longitude. The values should be reported in decimal degrees and in WGS84 system"
+                "field": "",
+                "type": "",
+                "uri": "",
+                "regex": "",
+                "description": ""
             },
             "tol": {
                 "field": "DECIMAL_LONGITUDE",
@@ -536,9 +511,9 @@
             },
             "mixs": {
                 "field": "depth",
-                "type": "string",
+                "type": "object",
                 "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000018",
-                "regex": "^[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?( *- *[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?)? *([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+)$",
+                "regex": "",
                 "description": "The vertical distance below local surface. For sediment or soil samples depth is measured from sediment or soil surface, respectively. Depth can be reported as an interval for subsurface samples"
             },
             "tol": {
@@ -560,11 +535,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "samp_collect_method",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0001225",
-                "regex": "^^PMID:\\d+$|^doi:10.\\d{2,9}/.*$|^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$|([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+)$",
-                "description": "The method employed for collecting the sample"
+                "field": "",
+                "type": "",
+                "uri": "",
+                "regex": "",
+                "description": ""
             },
             "tol": {
                 "field": "DESCRIPTION_OF_COLLECTION_METHOD",
@@ -592,31 +567,6 @@
             },
             "tol": {
                 "field": "DIFFICULT_OR_HIGH_PRIORITY_SAMPLE",
-                "type": "",
-                "uri": ""
-            }
-        },
-        "DISSOLVED_OXYGEN": {
-            "dwc": {
-                "field": "",
-                "uri": "",
-                "description": ""
-            },
-            "ena": {
-                "field": "",
-                "uri": "",
-                "description": "integer",
-                "regex": "^\\d+$"
-            },
-            "mixs": {
-                "field": "diss_oxygen",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000119",
-                "regex": "^[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?( *- *[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?)? *([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+)$",
-                "description": "Concentration of dissolved oxygen"
-            },
-            "tol": {
-                "field": "DISSOLVED_OXYGEN",
                 "type": "",
                 "uri": ""
             }
@@ -685,11 +635,11 @@
                 "description": "numeric, or empty string"
             },
             "mixs": {
-                "field": "elev",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000093",
-                "regex": "^[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?( *- *[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?)? *([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+)$",
-                "description": "Elevation of the sampling site is its height above a fixed reference point, most commonly the mean sea level. Elevation is mainly used when referring to points on the earth's surface, while altitude is used for points above the surface, such as an aircraft in flight or a spacecraft in orbit"
+                "field": "",
+                "type": "",
+                "uri": "",
+                "regex": "",
+                "description": ""
             },
             "tol": {
                 "field": "ELEVATION",
@@ -730,7 +680,7 @@
             "ena": {
                 "field": "",
                 "uri": "",
-                "description": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
+                "description": "filename (including \".pdf\" extension) if permit is required or NOT_APPLICABLE if permit is not required"
             },
             "mixs": {
                 "field": "",
@@ -905,7 +855,7 @@
             },
             "mixs": {
                 "field": "host_body_habitat",
-                "type": "string",
+                "type": "object",
                 "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000866",
                 "regex": "",
                 "description": "Original body habitat where the sample was obtained from"
@@ -1141,30 +1091,6 @@
                 "uri": ""
             }
         },
-        "LIGHT_INTENSITY": {
-            "dwc": {
-                "field": "",
-                "uri": "",
-                "description": ""
-            },
-            "ena": {
-                "field": "",
-                "uri": "",
-                "description": ""
-            },
-            "mixs": {
-                "field": "light_intensity",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000706",
-                "regex": "^[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?( *- *[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?)? *([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+)$",
-                "description": "Measurement of light intensity"
-            },
-            "tol": {
-                "field": "LIGHT_INTENSITY",
-                "type": "",
-                "uri": ""
-            }
-        },
         "LONGITUDE_END": {
             "dwc": {
                 "field": "",
@@ -1276,7 +1202,7 @@
             "ena": {
                 "field": "",
                 "uri": "",
-                "description": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
+                "description": "filename (including \".pdf\" extension) if permit is required or NOT_APPLICABLE if permit is not required"
             },
             "mixs": {
                 "field": "",
@@ -1457,11 +1383,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "geo_loc_name",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000010",
-                "regex": "^([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+): ([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+), ([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+)$",
-                "description": "The geographical origin of the sample as defined by the country or sea name followed by specific region name. Country or sea names should be chosen from the INSDC country list (http://insdc.org/country.html), or the GAZ ontology (http://purl.bioontology.org/ontology/GAZ)"
+                "field": "",
+                "type": "",
+                "uri": "",
+                "regex": "",
+                "description": ""
             },
             "tol": {
                 "field": "ORIGINAL_GEOGRAPHIC_LOCATION",
@@ -1481,11 +1407,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "additional_info",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000300",
+                "field": "",
+                "type": "",
+                "uri": "",
                 "regex": "",
-                "description": "Information that doesn't fit anywhere else. Can also be used to propose new entries for fields with controlled vocabulary"
+                "description": ""
             },
             "tol": {
                 "field": "OTHER_INFORMATION",
@@ -1493,26 +1419,52 @@
                 "uri": ""
             }
         },
-        "PH": {
+        "PARTNER": {
             "dwc": {
-                "field": "phylum",
-                "uri": "http://rs.tdwg.org/dwc/terms/phylum",
-                "description": "The full scientific name of the phylum or division in which the dwc:Taxon is classified."
-            },
-            "ena": {
                 "field": "",
                 "uri": "",
                 "description": ""
             },
+            "ena": {
+                "field": "GAL",
+                "type": "",
+                "uri": "",
+                "description": ""
+            },
             "mixs": {
-                "field": "ph",
-                "type": "number",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0001001",
+                "field": "",
+                "type": "",
+                "uri": "",
                 "regex": "",
-                "description": "Ph measurement of the sample, or liquid portion of sample, or aqueous phase of the fluid"
+                "description": ""
             },
             "tol": {
-                "field": "PH",
+                "field": "PARTNER",
+                "type": "",
+                "uri": ""
+            }
+        },
+        "PARTNER_SAMPLE_ID": {
+            "dwc": {
+                "field": "",
+                "uri": "",
+                "description": ""
+            },
+            "ena": {
+                "field": "GAL_sample_id",
+                "type": "",
+                "uri": "",
+                "description": ""
+            },
+            "mixs": {
+                "field": "",
+                "type": "",
+                "uri": "",
+                "regex": "",
+                "description": ""
+            },
+            "tol": {
+                "field": "PARTNER_SAMPLE_ID",
                 "type": "",
                 "uri": ""
             }
@@ -1553,11 +1505,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "samp_preserv",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000463",
-                "regex": "^([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+);[-+]?[0-9]*\\.?[0-9]+ ([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+)$",
-                "description": "Preservative added to the sample (e.g. Rnalater, alcohol, formaldehyde, etc.). Where appropriate include volume added (e.g. Rnalater; 2 ml)"
+                "field": "",
+                "type": "",
+                "uri": "",
+                "regex": "",
+                "description": ""
             },
             "tol": {
                 "field": "PRESERVATION_APPROACH",
@@ -1577,11 +1529,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "samp_store_sol",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0001317",
+                "field": "",
+                "type": "",
+                "uri": "",
                 "regex": "",
-                "description": "Solution within which sample was stored, if any"
+                "description": ""
             },
             "tol": {
                 "field": "PRESERVATIVE_SOLUTION",
@@ -1748,11 +1700,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "samp_purpose",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0001151",
+                "field": "",
+                "type": "",
+                "uri": "",
                 "regex": "",
-                "description": "The reason that the sample was collected"
+                "description": ""
             },
             "tol": {
                 "field": "PURPOSE_OF_SPECIMEN",
@@ -1822,38 +1774,13 @@
             },
             "mixs": {
                 "field": "biotic_relationship",
-                "type": "",
+                "type": "object",
                 "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000028",
                 "regex": "",
                 "description": "Description of relationship(s) between the subject organism and other organism(s) it is associated with. E.g., parasite on species X; mutualist with species Y. The target organism is the subject of the relationship, and the other organism(s) is the object"
             },
             "tol": {
                 "field": "RELATIONSHIP",
-                "type": "",
-                "uri": ""
-            }
-        },
-        "SALINITY": {
-            "dwc": {
-                "field": "",
-                "uri": "",
-                "description": ""
-            },
-            "ena": {
-                "field": "",
-                "uri": "",
-                "description": "integer",
-                "regex": "^\\d+$"
-            },
-            "mixs": {
-                "field": "hcr_fw_salinity",
-                "type": "string",
-                "uri": "",
-                "regex": "^[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?( *- *[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?)? *([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+)$",
-                "description": "Original formation water salinity (prior to secondary recovery e.g. Waterflooding) expressed as TDS"
-            },
-            "tol": {
-                "field": "SALINITY",
                 "type": "",
                 "uri": ""
             }
@@ -1991,7 +1918,7 @@
             "ena": {
                 "field": "",
                 "uri": "",
-                "description": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
+                "description": "filename (including \".pdf\" extension) if permit is required or NOT_APPLICABLE if permit is not required"
             },
             "mixs": {
                 "field": "",
@@ -2043,11 +1970,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "specific_host",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000029",
+                "field": "",
+                "type": "",
+                "uri": "",
                 "regex": "",
-                "description": "Report the host's taxonomic name and/or NCBI taxonomy ID"
+                "description": ""
             },
             "tol": {
                 "field": "SCIENTIFIC_NAME",
@@ -2092,11 +2019,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "urobiom_sex",
-                "type": "",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000862",
+                "field": "ANIMALSEXENUM",
+                "type": "string",
+                "uri": "",
                 "regex": "",
-                "description": "Physical sex of the host"
+                "description": ""
             },
             "tol": {
                 "field": "SEX",
@@ -2116,38 +2043,14 @@
                 "description": ""
             },
             "mixs": {
-                "field": "size_frac",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000017",
+                "field": "",
+                "type": "",
+                "uri": "",
                 "regex": "",
-                "description": "Filtering pore size used in sample preparation"
+                "description": ""
             },
             "tol": {
                 "field": "SIZE_OF_TISSUE_IN_TUBE",
-                "type": "",
-                "uri": ""
-            }
-        },
-        "SPECIES_RARITY": {
-            "dwc": {
-                "field": "",
-                "uri": "",
-                "description": ""
-            },
-            "ena": {
-                "field": "",
-                "uri": "",
-                "description": ""
-            },
-            "mixs": {
-                "field": "",
-                "type": "",
-                "uri": "",
-                "regex": "",
-                "description": ""
-            },
-            "tol": {
-                "field": "SPECIES_RARITY",
                 "type": "",
                 "uri": ""
             }
@@ -2165,11 +2068,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "source_mat_id",
-                "type": "array",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000026",
+                "field": "",
+                "type": "",
+                "uri": "",
                 "regex": "",
-                "description": "A unique identifier assigned to a material sample (as defined by http://rs.tdwg.org/dwc/terms/materialSampleID, and as opposed to a particular digital record of a material sample) used for extracting nucleic acids, and subsequent sequencing. The identifier can refer either to the original material collected or to any derived sub-samples. The INSDC qualifiers /specimen_voucher, /bio_material, or /culture_collection may or may not share the same value as the source_mat_id field. For instance, the /specimen_voucher qualifier and source_mat_id may both contain 'UAM:Herps:14' , referring to both the specimen voucher and sampled tissue with the same identifier. However, the /culture_collection qualifier may refer to a value from an initial culture (e.g. ATCC:11775) while source_mat_id would refer to an identifier from some derived culture from which the nucleic acids were extracted (e.g. xatc123 or ark:/2154/R2)"
+                "description": ""
             },
             "tol": {
                 "field": "SPECIMEN_ID",
@@ -2214,7 +2117,7 @@
             },
             "mixs": {
                 "field": "host_symbiont",
-                "type": "array",
+                "type": "object",
                 "uri": "https://genomicsstandardsconsortium.github.io/mixs/0001298",
                 "regex": "",
                 "description": "The taxonomic name of the organism(s) found living in mutualistic, commensalistic, or parasitic symbiosis with the specific host. The sampled symbiont can have its own symbionts. For example, parasites may have hyperparasites (=parasites of the parasite)"
@@ -2239,9 +2142,9 @@
             },
             "mixs": {
                 "field": "samp_taxon_id",
-                "type": "string",
+                "type": "object",
                 "uri": "https://genomicsstandardsconsortium.github.io/mixs/0001320",
-                "regex": "^([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+) \\[NCBITaxon:\\d+\\]$",
+                "regex": "",
                 "description": "NCBI taxon id of the sample.  Maybe be a single taxon or mixed taxa sample. Use 'synthetic metagenome  for mock community/positive controls, or 'blank sample' for negative controls"
             },
             "tol": {
@@ -2274,31 +2177,6 @@
                 "uri": ""
             }
         },
-        "TEMPERATURE": {
-            "dwc": {
-                "field": "",
-                "uri": "",
-                "description": ""
-            },
-            "ena": {
-                "field": "",
-                "uri": "",
-                "description": "integer",
-                "regex": "^\\d+$"
-            },
-            "mixs": {
-                "field": "samp_store_temp",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000110",
-                "regex": "^[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?( *- *[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?)? *([^\\s-]{1,2}|[^\\s-]+.+[^\\s-]+)$",
-                "description": "Temperature at which sample was stored, e.g. -80 degree Celsius"
-            },
-            "tol": {
-                "field": "TEMPERATURE",
-                "type": "",
-                "uri": ""
-            }
-        },
         "TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION": {
             "dwc": {
                 "field": "",
@@ -2311,11 +2189,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "timepoint",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0001173",
-                "regex": "^P(?:(?:\\d+D|\\d+M(?:\\d+D)?|\\d+Y(?:\\d+M(?:\\d+D)?)?)(?:T(?:\\d+H(?:\\d+M(?:\\d+S)?)?|\\d+M(?:\\d+S)?|\\d+S))?|T(?:\\d+H(?:\\d+M(?:\\d+S)?)?|\\d+M(?:\\d+S)?|\\d+S)|\\d+W)$",
-                "description": "Time point at which a sample or observation is made or taken from a biomaterial as measured from some reference point. Indicate the timepoint written in ISO 8601 format"
+                "field": "",
+                "type": "",
+                "uri": "",
+                "regex": "",
+                "description": ""
             },
             "tol": {
                 "field": "TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION",
@@ -2481,11 +2359,11 @@
                 "description": ""
             },
             "mixs": {
-                "field": "samp_well_name",
-                "type": "string",
-                "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000296",
+                "field": "",
+                "type": "",
+                "uri": "",
                 "regex": "",
-                "description": "Name of the well (e.g. BXA1123) where sample was taken"
+                "description": ""
             },
             "tol": {
                 "field": "TUBE_OR_WELL_ID",

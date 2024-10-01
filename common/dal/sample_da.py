@@ -1253,3 +1253,30 @@ class Sample(DAComponent):
         self.get_collection_handle().update_many(
             {"sample_type": {"$in": TOL_PROFILE_TYPES},
                 "status": "sending", "date_modified": {"$lt": datetime.now(timezone.utc).replace(microsecond=0) - timedelta(seconds=refresh_threshold)}},{"$set": update_data})
+        
+    def get_all_sample_fields(self, has_copo_defined_fields=True, has_project_defined_fields=True):
+        schema = self.get_component_schema()
+
+        all_fields = [field.get('id', '').split('.')[-1] for field in schema]
+
+        # Get unique fields
+        all_fields = list(set(all_fields))
+        all_fields.sort()
+
+        # Get COPO defined field names
+        # i.e. field names that are camel case or lowercase
+        copo_defined_fields =  helpers.get_non_uppercase_fields(all_fields)
+        copo_defined_fields.sort()
+
+        # Get project defined field names
+        # i.e. field names that are uppercase and are uppercase with underscores
+        project_defined_fields = list(set(all_fields) - set(copo_defined_fields))
+        
+        if has_copo_defined_fields and has_project_defined_fields:
+            return all_fields
+        elif not has_copo_defined_fields and has_project_defined_fields:
+            return project_defined_fields
+        elif has_copo_defined_fields and not has_project_defined_fields:
+            return copo_defined_fields
+        else:
+            return list()

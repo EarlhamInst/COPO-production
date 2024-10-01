@@ -1883,7 +1883,7 @@ GENOMICS_PROJECT_SAMPLE_TYPE_DICT = {"isasample":"genomics"}
 
 STANDARDS = ["dwc", "ena", "mixs", "tol"]
 
-STANDARDS_MAPPING_FILE_PATH = "/copo/common/schema_versions/isa_mappings/dwc_ena_mixs_tol_fields_mapping.json"
+STANDARDS_MAPPING_FILE_PATH = "/copo/common/schema_versions/isa_mappings/standards_map.json"
 
 SYMBIONT_FIELDS = ["ORDER_OR_GROUP", "FAMILY", "GENUS", "TAXON_ID", "SCIENTIFIC_NAME", "TAXON_REMARKS",
                    "INFRASPECIFIC_EPITHET", "CULTURE_OR_STRAIN_ID", "COMMON_NAME", "LIFESTAGE", "SEX", "SYMBIONT",

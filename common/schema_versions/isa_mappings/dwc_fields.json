@@ -1068,5 +1068,10 @@
         "field": "MachineObservation",
         "description": "An output of a machine observation process.",
         "uri": "http://rs.tdwg.org/dwc/terms/MachineObservation"
+    },
+    {
+        "field": "license",
+        "description": "",
+        "uri": "http://purl.org/dc/terms/license"
     }
 ]

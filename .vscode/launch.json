@@ -93,6 +93,17 @@
             ],
             "django": true,
             "justMyCode": false
-        }, 
+        },
+        {
+            "name": "Python: Generate standards map",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/shared_tools/scripts/generate_standards_map.py",
+            "console": "integratedTerminal", 
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
+            },
+            "justMyCode": false
+        },  
     ]
 }
