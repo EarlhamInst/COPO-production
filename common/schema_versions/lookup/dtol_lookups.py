@@ -1847,7 +1847,7 @@ EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY = ["_id"]
 
 EXCLUDED_SAMPLE_TYPES = ['biosample']
 
-GDPR_SENSITIVE_FIELDS = ['COLLECTOR_ORCID_ID', 'SAMPLE_COORDINATOR_ORCID_ID', 'created_by', 'updated_by']
+GDPR_SENSITIVE_FIELDS = ['ASSOCIATED_TRADITIONAL_KNOWLEDGE_CONTACT', 'COLLECTOR_ORCID_ID', 'SAMPLE_COORDINATOR_ORCID_ID', 'created_by', 'updated_by']
 
 NA_VALS = ['#N/A', '#N/A N/A', '#NA', '-1.#IND', '-1.#QNAN', '-NaN', '-nan', '1.#IND', '1.#QNAN', '<NA>', 'N/A', 'NULL',
            'NaN', 'n/a', 'nan', 'NaT', 'null', 'NIL', 'nil', 'NA', 'na', 'NAN', 'Nan', 'NA']
