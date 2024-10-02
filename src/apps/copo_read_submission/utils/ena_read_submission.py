@@ -592,11 +592,14 @@ class EnaReads:
                 if checklist:
                    fields = checklist["fields"]
                    key_mapping = { key :  value["synonym"] if "synonym" in value.keys() else value["name"] for key, value in fields.items() }
+                   unit_mapping = { key :  value["unit"] if "unit" in value.keys() else "" for key, value in fields.items() }
                    for key in sample.keys():
                        if key in key_mapping and sample[key]:
                             sample_attribute_node = etree.SubElement(sample_attributes_node, 'SAMPLE_ATTRIBUTE')
                             etree.SubElement(sample_attribute_node, 'TAG').text = key_mapping[key]
                             etree.SubElement(sample_attribute_node, 'VALUE').text = sample[key]
+                            if unit_mapping.get(key, str()):
+                                etree.SubElement(sample_attribute_node, 'UNITS').text = unit_mapping[key]
 
             for atr in sample.get("attributes", list()):
                 sample_attribute_node = etree.SubElement(sample_attributes_node, 'SAMPLE_ATTRIBUTE')

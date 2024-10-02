@@ -5,12 +5,14 @@ from common.schemas.utils import data_utils as d_utils
 from common.schema_versions.lookup.dtol_lookups import GDPR_SENSITIVE_FIELDS, STANDARDS, STANDARDS_MAPPING_FILE_PATH
 from django.http import HttpResponse
 from django_tools.middlewares import ThreadLocal
+from io import BytesIO
 
 import bson.json_util as jsonb
 import json
 import pandas as pd
 import shortuuid
 import uuid
+import zipfile
 
 def get_return_template(type):
     """
@@ -22,6 +24,21 @@ def get_return_template(type):
     with open(path) as data_file:
         data = json.load(data_file)
     return data
+
+def convert_to_list_of_dicts(standard_list, nested_dict):
+    output = list()
+    
+    for standard in standard_list:
+        result = {}
+        for sample in nested_dict:
+            for key, value in sample.items():
+                for k, v in value.items():
+                    standard_key = v.get(standard, {}).get('key', '')
+                    standard_value = v.get(standard, {}).get('value', '')
+                    if standard in v and standard_key:
+                        result[standard_key] = standard_value
+            output.append(result)
+    return output
 
 def extract_to_template(object=None, template=None):
     """
@@ -274,6 +291,32 @@ def generate_rocrate_response(samples):
         # result_list.append(rocrate_json)
     return rocrate_json
 
+def generate_csv_response(standard_list, template):
+    # Return a zip file of CSV even if there is only one CSV file
+    buffer = BytesIO()
+
+    with zipfile.ZipFile(buffer, 'w') as zf:
+        # Iterate through the standard list and generate CSVs
+        for standard in standard_list:
+            # Convert the nested dictionary into a list of dictionaries
+            output = template if standard_list == ['tol'] else convert_to_list_of_dicts([standard], template)
+
+            # Create a DataFrame for the entire output (list of dictionaries)
+            csv_buffer = BytesIO()
+            df = pd.DataFrame(output)
+            df.to_csv(csv_buffer, index=False)
+            
+            # Use the standard name for the file name, sanitiSe if needed
+            sanitised_standard = standard.replace(' ', '_').replace('/', '-')
+            zf.writestr(f'{sanitised_standard}_export.csv', csv_buffer.getvalue().decode('utf-8'))
+
+    # Set the response type and headers to indicate a zip file download
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename=export.zip'
+
+    return response
+
 def get_standard_mapping(standard_list, template):    
     with open(STANDARDS_MAPPING_FILE_PATH) as f:
         standards_data = json.load(f)
@@ -297,9 +340,9 @@ def get_standard_mapping(standard_list, template):
                     inner_dict = dict()
 
                     if key in standards_data.keys():
-                        inner_dict[standard] = {'key': key, 'value': value} if standard == "tol" else {'key':  standards_data.get(key, str()).get(standard, str()).get('field', str()), 'value': value}
+                        inner_dict[standard] = {'key': key, 'value': value} if standard == 'tol' else {'key':  standards_data.get(key, str()).get(standard, str()).get('field', str()), 'value': value}
                     else:
-                        inner_dict[standard] = {'key': key, 'value': value} if standard == "tol" else {'key': str(), 'value': value}
+                        inner_dict[standard] = {'key': key, 'value': value} if standard == 'tol' else {'key': str(), 'value': value}
                     
                     # Set value to an empty string if key is unknown in the 'inner_dict'
                     if inner_dict[standard]['key'] == '':
@@ -368,16 +411,8 @@ def finish_request(template=None, error=None, num_found=None, return_http_respon
     output = jsonb.dumps(wrapper)
     
     if return_http_response:
-        if return_type == "csv" and standard_list == ["tol"]:
-            # Create the HttpResponse object with the appropriate CSV header
-            # only if the standard is TOL
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename=export.csv'
-            df = pd.DataFrame(template)
-            df.to_csv(response, index=False)
-            return response
-        elif return_type == "csv" and standard_list != ["tol"]:
-            return HttpResponse(content="Not Implemented")
+        if return_type == 'csv':
+            return generate_csv_response(standard_list, template)
         elif return_type == "rocrate":
             df = pd.DataFrame(template)
             manifest_ids = df['manifest_id'].unique() if 'manifest_id' in df.columns else []

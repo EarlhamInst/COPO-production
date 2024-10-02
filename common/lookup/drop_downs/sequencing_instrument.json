@@ -30,13 +30,13 @@
     "platform": "LS454"
   },
   {
-    "value": "HiSeq X Five",
-    "label": "HiSeq X Five",
+    "value": "Illumina HiSeq X Five",
+    "label": "Illumina HiSeq X Five",
     "platform": "ILLUMINA"
   },
   {
-    "value": "HiSeq X Ten",
-    "label": "HiSeq X Ten",
+    "value": "Illumina HiSeq X Ten",
+    "label": "Illumina HiSeq X Ten",
     "platform": "ILLUMINA"
   },
   {
