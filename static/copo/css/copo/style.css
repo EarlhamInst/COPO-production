@@ -147,6 +147,11 @@ div[class*=" col-"] {
     padding-top: 15px !important;
 }
 
+.dataTables_scrollBody {
+    max-height: 350px; /* Set max height to 350px */
+    overflow-y: auto; /* Enable scrolling */
+}
+
 /*server-side processing styling for datatables*/
 div.dataTables_wrapper div.dataTables_processing {
     background: transparent !important;

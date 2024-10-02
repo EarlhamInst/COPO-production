@@ -684,7 +684,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
       ordering: true,
       lengthChange: true,
       scrollX: true,
-      scrollY: 350,
+      scrollY: 'auto', // Adjust height to the content dynamically
       buttons: [
         'selectAll',
         {
