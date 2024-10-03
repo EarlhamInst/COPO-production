@@ -154,7 +154,7 @@ $(document).on("document_ready", function() {
       }
       $('#sample_info').hide();
       $('#sample_parse_table').DataTable({
-        scrollY: '400px',
+        scrollY: 'auto',
         scrollX: true,
       });
       $('#table_div').fadeIn(1000);
