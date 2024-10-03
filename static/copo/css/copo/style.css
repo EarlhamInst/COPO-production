@@ -471,11 +471,15 @@ div.dataTables_processing.ui.segment {
     font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif
 }
 
-/*
-.bolder {
+
+.text-bold {
   font-weight: bold;
 }
-*/
+
+.text-underline {
+  text-decoration: underline;
+}
+
 
 /*custom styling of bootstrap dialog*/
 .copo-modal2 > .modal-dialog {
