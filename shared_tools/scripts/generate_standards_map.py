@@ -381,6 +381,12 @@ DWC_FIELD_NAMES_MAPPING = {
     'DATE_OF_COLLECTION':{
         'dwc':'eventDate'
     },
+    'DEPTH':{
+        'dwc':'verbatimDepth'
+    },
+    'ELEVATION':{
+        'dwc':'verbatimElevation'
+    },
     'ETHICS_PERMITS_DEF':{
         'dwc': 'license'
     },
@@ -410,6 +416,9 @@ DWC_FIELD_NAMES_MAPPING = {
     },
     'PRESERVATION_APPROACH': {
         'dwc': 'preparations'
+    },
+    'RELATIONSHIP': {
+        'dwc': 'relationshipRemarks'
     },
     'SAMPLE_COORDINATOR_AFFILIATION': {
         'dwc': 'institutionCode'
@@ -527,6 +536,7 @@ def create_tol_dwc_mapping():
         # iterate through the list to get the dictionary
         if dwc_field_info:
             item = dwc_field_info[0] # Get first item in the list
+            dwc_field = item['field']
             out.update({tol_field: {'field': dwc_field, 'description': item['description'], 'uri': item['uri']}})
 
     # print(f'\out:\n {json.dumps(out, indent=4, sort_keys=False,default=str)}\n')
