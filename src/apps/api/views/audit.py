@@ -4,11 +4,12 @@ import dateutil.parser as parser
 from .sample import format_date
 from bson import ObjectId
 from common.dal.copo_da import Audit
-from common.schema_versions.lookup.dtol_lookups import GDPR_SENSITIVE_FIELDS, TOL_PROFILE_TYPES
+from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from django.http import HttpResponse
-from src.apps.api.utils import finish_request
+from src.apps.api.utils import finish_request, get_sensitive_fields
 
 def filter_audits_for_API(audits):
+    sensitive_fields = get_sensitive_fields(component='sample')
     time_fields = ['time_updated']
     audit_log_types = ['update_log', 'removal_log', 'truncated_log']   
     out = list()
@@ -24,7 +25,7 @@ def filter_audits_for_API(audits):
                     for k, v in element.items():
                         if k in time_fields:
                             data[k] = format_date(v)
-                        elif k in GDPR_SENSITIVE_FIELDS:
+                        elif k in sensitive_fields:
                             # GDPR sensitive fields should be excluded
                             pass
                         elif k == 'copo_id':

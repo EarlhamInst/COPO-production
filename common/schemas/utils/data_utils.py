@@ -422,7 +422,6 @@ def get_copo_schema(component, as_object=False):
 
     return schema
 
-
 def object_type_control_map():
     """
     function keeps a mapping of object type controls to schema names

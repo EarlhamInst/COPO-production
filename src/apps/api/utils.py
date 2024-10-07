@@ -1,7 +1,7 @@
 __author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
 
 from common.lookup.lookup import API_RETURN_TEMPLATES
-from common.schema_versions.lookup.dtol_lookups import GDPR_SENSITIVE_FIELDS
+from common.schemas.utils.data_utils import get_copo_schema
 from django.http import HttpResponse
 from django_tools.middlewares import ThreadLocal
 from .views.mapping import get_mapped_result
@@ -11,6 +11,11 @@ import json
 import pandas as pd
 import shortuuid
 import uuid
+
+def get_sensitive_fields(component):
+    schema = get_copo_schema(component)
+    sensitive_fields = [x['id'].split('.')[-1] for x in schema if x['is_sensitive']]
+    return sensitive_fields
 
 def get_return_template(type):
     """
@@ -264,7 +269,8 @@ def generate_rocrate_response(samples):
                             x[field].append({"@id": collector["@id"]})
 
             # GDPR sensitive fields should be excluded
-            filtered_x = {key: value for key, value in x.items() if key not in GDPR_SENSITIVE_FIELDS}
+            sensitive_fields = get_sensitive_fields(component='sample')
+            filtered_x = {key: value for key, value in x.items() if key not in sensitive_fields}
 
             # Update sample_item with the filtered item
             sample_item.update(filtered_x)
@@ -326,10 +332,10 @@ def finish_request(template=None, error=None, num_found=None, return_http_respon
     else:
         is_csv = False
     '''
-
-    # Set template with data based on the standard
-    if return_http_response:
-        template = template if standard == 'tol' else get_mapped_result(are_fields_required=False, standard=standard, template=template,project=str(), is_query_by_project=False) #get_mapped_fields_from_sample_data(standard, template)
+    
+    # Set template with data based on the standard if there is no error and template exists
+    if not error or not template:
+        template = template if standard == 'tol' else get_mapped_result(standard=standard, template=template, project=str())
     
     wrapper = generate_wrapper_response(error, num_found, template)
 

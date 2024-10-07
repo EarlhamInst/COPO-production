@@ -274,14 +274,3 @@ def get_users_associated_profile_checkers():
     user = ThreadLocal.get_current_user()
     seq_centres = AssociatedProfileType.objects.filter(users=user)
     return seq_centres
-
-def get_non_uppercase_fields(lst):
-    # Get unique field names that are not uppercase and not 
-    # uppercase with underscores
-    non_uppercase_fields = []
-    
-    for element in lst:
-        has_uppercase_with_underscores = bool(re.match(r'^[A-Z_]+$', element))
-        if not has_uppercase_with_underscores:
-            non_uppercase_fields.append(element)
-    return list(set(non_uppercase_fields))

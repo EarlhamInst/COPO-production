@@ -11,7 +11,7 @@ from django.http import HttpResponse
 import json
 import jsonpath_rw_ext as jp
 from bson.errors import InvalidId
-from src.apps.api.utils import generate_csv_response, generate_wrapper_response, get_return_template, extract_to_template, finish_request
+from src.apps.api.utils import generate_csv_response, generate_wrapper_response, get_return_template, get_sensitive_fields, extract_to_template, finish_request
 from src.apps.api.views.mapping import get_mapped_fields_for_project
 from common.dal.copo_da import APIValidationReport
 from common.dal.sample_da import Sample, Source
@@ -79,6 +79,7 @@ def format_date(input_date):
 def filter_for_API(sample_list, add_all_fields=False):
     # add field(s) here which should be time formatted
     time_fields = ["time_created", "time_updated"]
+    sensitive_fields = get_sensitive_fields(component='sample')
     profile_type = None
     if len(sample_list) > 0:
         profile_type = sample_list[0].get("tol_project", "dtol").lower()
@@ -145,7 +146,7 @@ def filter_for_API(sample_list, add_all_fields=False):
             if k in export:
                 if k in time_fields:
                     s_out[k] = format_date(v)
-                elif k in lookup.GDPR_SENSITIVE_FIELDS:
+                elif k in sensitive_fields:
                     # GDPR sensitive fields should be excluded
                     pass
                 else:
@@ -165,7 +166,7 @@ def filter_for_API(sample_list, add_all_fields=False):
                     if k not in s_out.keys():
                         if k in defaults_list.keys():
                             s_out[k] = defaults_list[k]
-                        elif k in lookup.GDPR_SENSITIVE_FIELDS:
+                        elif k in sensitive_fields:
                             # GDPR sensitive fields should be excluded
                             pass
                         else:
@@ -173,7 +174,7 @@ def filter_for_API(sample_list, add_all_fields=False):
                 out.append(s_out)
             else:
                 # Exclude GDPR sensitive fields before appending 's_out'
-                filtered_s_out = {key: value for key, value in s_out.items() if key not in lookup.GDPR_SENSITIVE_FIELDS}
+                filtered_s_out = {key: value for key, value in s_out.items() if key not in sensitive_fields}
 
                 out.append(filtered_s_out)
 
@@ -325,7 +326,7 @@ def get_fields_based_on_standard(project_type, standard, s, manifest_version=str
     fields = list(filter(lambda x: x[0].isupper() == True, fields))
 
     if standard in lookup.STANDARDS and standard != 'tol':
-        fields = get_mapped_fields_for_project(standard=standard, project=project_type.lower(), is_query_by_project=True)
+        fields = get_mapped_fields_for_project(standard=standard, project=project_type.lower())
 
     if isinstance(fields, dict):
         fields = fields.get('data','')

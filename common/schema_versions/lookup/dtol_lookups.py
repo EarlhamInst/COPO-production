@@ -1847,8 +1847,6 @@ EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY = ["_id"]
 
 EXCLUDED_SAMPLE_TYPES = ['biosample']
 
-GDPR_SENSITIVE_FIELDS = ['ASSOCIATED_TRADITIONAL_KNOWLEDGE_CONTACT', 'COLLECTOR_ORCID_ID', 'SAMPLE_COORDINATOR_ORCID_ID', 'created_by', 'updated_by']
-
 NA_VALS = ['#N/A', '#N/A N/A', '#NA', '-1.#IND', '-1.#QNAN', '-NaN', '-nan', '1.#IND', '1.#QNAN', '<NA>', 'N/A', 'NULL',
            'NaN', 'n/a', 'nan', 'NaT', 'null', 'NIL', 'nil', 'NA', 'na', 'NAN', 'Nan', 'NA']
 
@@ -1882,8 +1880,6 @@ SPECIES_LIST_FIELDS = ["SYMBIONT", "TAXON_ID", "ORDER_OR_GROUP", "FAMILY", "GENU
 GENOMICS_PROJECT_SAMPLE_TYPE_DICT = {"isasample":"genomics"}
 
 STANDARDS = ["dwc", "ena", "mixs", "tol"]
-
-STANDARDS_MAPPING_FILE_PATH = "/copo/common/schema_versions/isa_mappings/standards_map.json"
 
 SYMBIONT_FIELDS = ["ORDER_OR_GROUP", "FAMILY", "GENUS", "TAXON_ID", "SCIENTIFIC_NAME", "TAXON_REMARKS",
                    "INFRASPECIFIC_EPITHET", "CULTURE_OR_STRAIN_ID", "COMMON_NAME", "LIFESTAGE", "SEX", "SYMBIONT",

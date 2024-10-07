@@ -20,51 +20,63 @@
       "$ref": "isa_mappings/additional_attributes/erga_sample_attributes.json"
     },
     {
-      "help_tip": "A sample represents major outputs resulting from a protocol application other than the special case outputs of Extract or a Labeled Extract.",
-      "unique": true,
-      "default_value": "",
+      "colour": "",
+      "control": "text",
       "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "A sample represents major outputs resulting from a protocol application other than the special case outputs of Extract or a Labeled Extract.",
+      "hidden": "false",
+      "id": "copo.sample.name",
+      "is_custom": false,
+      "is_sensitive": false,
+      "label": "Name",
+      "ref": "Name",
       "required": "true",
+      "show_as_attribute": true,
+      "show_in_form": true,
+      "show_in_table": true,
       "specifications": [
         "isasample",
         "biosample"
       ],
+      "standard": "",
+      "type":"string",
+      "unique": true,
+      "unique_items": [],
       "versions": [
         "name"
-      ],
-      "unique_items": [],
-      "deprecated": false,
-      "hidden": "false",
-      "label": "Name",
-      "show_in_form": true,
-      "id": "copo.sample.name",
-      "type": "string",
-      "show_in_table": true,
-      "ref": "Name",
-      "control": "text",
-      "show_as_attribute": true
+      ]
     },
     {
-      "help_tip": "",
-      "required": "false",
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
       "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "true",
+      "id": "copo.sample.description",
+      "is_custom": false,
+      "is_sensitive": false,
+      "label": "Description",
+      "ref": "",
+      "required": "false",
+      "show_as_attribute": false,
+      "show_in_form": true,
+      "show_in_table": true,
       "specifications": [
         "isasample"
       ],
-      "control_meta": {},
+      "standard": "",
+      "type":"object",
       "versions": [
         "description"
-      ],
-      "ref": "",
-      "deprecated": false,
-      "hidden": "true",
-      "label": "Description",
-      "show_in_form": true,
-      "id": "copo.sample.description",
-      "type": "object",
-      "show_in_table": true,
-      "control": "text",
-      "show_as_attribute": false
+      ]
     },
     {
       "colour": "",
@@ -72,10 +84,13 @@
       "control_meta": {},
       "default_value": "",
       "deprecated": false,
+      "dwc": "",
       "excel_col": "",
       "help_tip": "Characteristics of the sample e.g., height, sex",
       "hidden": "false",
       "id": "copo.sample.characteristics",
+      "is_custom": false,
+      "is_sensitive": false,
       "label": "Characteristics",
       "order": null,
       "ref": "",
@@ -87,7 +102,8 @@
         "isasample",
         "biosample"
       ],
-      "type": "array",
+      "standard": "",
+      "type":"array",
       "versions": [
         "characteristics"
       ]
@@ -98,10 +114,13 @@
       "control_meta": {},
       "default_value": "",
       "deprecated": false,
+      "dwc": "",
       "excel_col": "",
       "help_tip": "Factors express treatments on the sample, e.g., compound, dose, duration",
       "hidden": "false",
       "id": "copo.sample.factorValues",
+      "is_custom": false,
+      "is_sensitive": false,
       "label": "Factors",
       "order": null,
       "ref": "",
@@ -112,80 +131,99 @@
       "specifications": [
         "isasample"
       ],
-      "type": "array",
+      "standard": "",
+      "type":"array",
       "versions": [
         "factorValues"
       ]
     },
     {
-      "help_tip": "A taxonomic information associated to the Source Biological material (e.g., species, genus, strain).",
-      "required": "false",
-      "default_value": "",
-      "show_as_attribute": true,
-      "control_meta": {},
       "control": "ontology term",
-      "versions": [
-        "organism"
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "help_tip": "A taxonomic information associated to the Source Biological material (e.g., species, genus, strain).",
+      "hidden": "false",
+      "id": "copo.sample.organism",
+      "is_custom": false,
+      "is_sensitive": false,
+      "label": "Organism",
+      "ontology_names": [
+        "ncbitaxon"
       ],
       "ref": "",
+      "required": "false",
+      "show_as_attribute": true,
+      "show_in_form": true,
+      "show_in_table": false,
       "specifications": [
         "biosample"
       ],
-      "deprecated": false,
-      "hidden": "false",
-      "type": "string",
-      "show_in_form": true,
-      "id": "copo.sample.organism",
-      "label": "Organism",
-      "show_in_table": false,
-      "ontology_names": [
-        "ncbitaxon"
+      "standard": "",
+      "type":"string",
+      "versions": [
+        "organism"
       ]
     },
     {
-      "help_tip": "Source from which this sample is derived",
-      "required": "true",
-      "default_value": "",
-      "show_as_attribute": true,
+      "colour": "",
+      "control": "copo-lookup2",
       "control_meta": {},
-      "versions": [
-        "derivesFrom"
-      ],
+      "create_new_item": true,
+      "data_maxItems": 1,
+      "data_source": "sample_source_lookup",
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "Source from which this sample is derived",
+      "hidden": "false",
+      "id": "copo.sample.derivesFrom",
+      "is_custom": false,
+      "is_sensitive": false,
+      "label": "Source",
+      "order": null,
+      "option_component": "source",
+      "option_values": [],
+      "ref": "",
+      "required": "true",
+      "show_as_attribute": true,
+      "show_in_form": true,
+      "show_in_table": false,
       "specifications": [
         "isasample"
       ],
-      "deprecated": false,
-      "id": "copo.sample.derivesFrom",
-      "label": "Source",
-      "show_in_form": true,
-      "ref": "",
-      "type": "string",
-      "show_in_table": false,
-      "hidden": "false",
-      "control": "copo-lookup2",
-      "create_new_item": true,
-      "option_component": "source",
-      "data_maxItems": 1,
-      "data_source": "sample_source_lookup",
-      "option_values": []
+      "standard": "",
+      "type":"string",
+      "versions": [
+        "derivesFrom"
+      ]
     },
     {
-      "help_tip": "",
-      "required": "true",
-      "default_value": "",
+      "colour": "",
+      "control": "text",
       "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "true",
+      "id": "copo.sample.deleted",
+      "is_custom": false,
+      "is_sensitive": false,
+      "label": "Delete",
+      "order": null,
+      "ref": "",
+      "required": "true",
+      "show_in_form": false,
+      "show_in_table": false,
+      "standard": "",
+      "type":"string",
       "versions": [
         "deleted"
-      ],
-      "ref": "",
-      "deprecated": false,
-      "hidden": "true",
-      "label": "Delete",
-      "show_in_form": false,
-      "id": "copo.sample.deleted",
-      "type": "string",
-      "show_in_table": false,
-      "control": "text"
+      ]
     },
     {
       "colour": "",
@@ -198,13 +236,17 @@
       "help_tip": "",
       "hidden": "false",
       "id": "copo.sample.public_name",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "Public Name",
       "order": null,
       "ref": "",
       "required": "false",
       "show_in_form": false,
       "show_in_table": true,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "public_name"
       ]
@@ -220,6 +262,9 @@
       "help_tip": "rack_tube",
       "hidden": "true",
       "id": "copo.sample.rack_tube",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "Rack Tube",
       "order": null,
       "ref": "",
@@ -227,7 +272,8 @@
       "show_as_attribute": false,
       "show_in_form": false,
       "show_in_table": false,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "rack_tube"
       ]
@@ -243,6 +289,9 @@
       "help_tip": "",
       "hidden": "false",
       "id": "copo.sample.species_list",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "Species List",
       "order": null,
       "ref": "",
@@ -250,7 +299,8 @@
       "show_as_attribute": false,
       "show_in_form": false,
       "show_in_table": false,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "species_list"
       ]
@@ -265,6 +315,9 @@
       "help_tip": "",
       "hidden": "true",
       "id": "copo.sample.sample_type",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "Sample Type",
       "option_values": {
         "callback": {
@@ -278,7 +331,8 @@
       "show_as_attribute": true,
       "show_in_form": false,
       "show_in_table": false,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "sample_type"
       ]
@@ -294,13 +348,17 @@
       "help_tip": "",
       "hidden": "false",
       "id": "copo.sample.status",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "Status",
       "order": null,
       "ref": "",
       "required": "false",
       "show_in_form": false,
       "show_in_table": true,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "status"
       ]
@@ -316,13 +374,17 @@
       "help_tip": "",
       "hidden": "false",
       "id": "copo.sample.biosampleAccession",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "Biosample Accession",
       "order": null,
       "ref": "",
       "required": "false",
       "show_in_form": false,
       "show_in_table": true,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "biosampleAccession"
       ]
@@ -338,13 +400,17 @@
       "help_tip": "",
       "hidden": "false",
       "id": "copo.sample.sraAccession",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "SRA Accession",
       "order": null,
       "ref": "",
       "required": "false",
       "show_in_form": false,
       "show_in_table": true,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "sraAccession"
       ]
@@ -360,13 +426,17 @@
       "help_tip": "",
       "hidden": "false",
       "id": "copo.sample.submissionAccession",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "Submission Accession",
       "order": null,
       "ref": "",
       "required": "false",
       "show_in_form": false,
       "show_in_table": true,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "submissionAccession"
       ]
@@ -381,13 +451,17 @@
       "help_tip": "",
       "hidden": "true",
       "id": "copo.sample.manifest_id",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "Manifest Identifier",
       "order": null,
       "ref": "",
       "required": "false",
       "show_in_form": false,
       "show_in_table": true,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "manifest_id"
       ]
@@ -403,13 +477,17 @@
       "help_tip": "",
       "hidden": "true",
       "id": "copo.sample.manifest_version",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "Manifest Version",
       "order": null,
       "ref": "",
       "required": "false",
       "show_in_form": false,
       "show_in_table": true,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "manifest_version"
       ]
@@ -424,13 +502,17 @@
       "help_tip": "",
       "hidden": "true",
       "id": "copo.sample.profile_id",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": true,
       "label": "Profile Identifier",
       "order": null,
       "ref": "",
       "required": "true",
       "show_in_form": false,
       "show_in_table": false,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "profile_id"
       ]
@@ -446,13 +528,17 @@
       "help_tip": "",
       "hidden": "false",
       "id": "copo.sample.tol_project",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "TOL (Tree of Life) Project",
       "order": null,
       "ref": "",
       "required": "false",
       "show_in_form": false,
       "show_in_table": true,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "tol_project"
       ]
@@ -468,13 +554,17 @@
       "help_tip": "",
       "hidden": "false",
       "id": "copo.sample.associated_tol_project",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "Associated TOL (Tree of Life) Project",
       "order": null,
       "ref": "",
       "required": "false",
       "show_in_form": false,
       "show_in_table": true,
-      "type": "string",
+      "standard": "",
+      "type":"string",
       "versions": [
         "associated_tol_project"
       ]
@@ -490,52 +580,117 @@
       "help_tip": "",
       "hidden": "false",
       "id": "copo.sample.approval",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
       "label": "Approval Date",
       "order": null,
       "ref": "",
       "required": "false",
       "show_in_form": false,
       "show_in_table": true,
-      "type": "dict",
+      "standard": "",
+      "type":"dict",
       "versions": [
         "approval"
       ]
     },
     {
-      "help_tip": "",
-      "required": "true",
-      "default_value": "",
+      "colour": "",
+      "control": "text",
       "control_meta": {},
-      "versions": [
-        "date_modified"
-      ],
-      "ref": "",
+      "default_value": "",
       "deprecated": false,
+      "dwc": "",
+      "excel_col": "",
+      "help_tip": "",
       "hidden": "true",
-      "label": "Date Modified",
+      "id": "copo.sample.created_by",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": true,
+      "label": "Created By",
+      "ref": "",
+      "required": "false",
       "show_in_form": false,
-      "id": "copo.sample.date_modified",
-      "type": "string",
       "show_in_table": false,
-      "control": "date-picker"
+      "standard": "",
+      "type":"string",
+      "versions": [
+        "created_by"
+      ]
     },
     {
-      "help_tip": "",
-      "required": "true",
-      "default_value": "",
+      "colour": "",
+      "control": "date-picker",
       "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "true",
+      "id": "copo.sample.date_modified",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
+      "label": "Date Modified",
+      "ref": "",
+      "required": "true",
+      "show_in_form": false,
+      "show_in_table": false,
+      "standard": "",
+      "type":"string",
+      "versions": [
+        "date_modified"
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "",
+      "deprecated": false,
+      "excel_col": "",
+      "help_tip": "",
+      "hidden": "true",
+      "id": "copo.sample.error",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": false,
+      "label": "Error",
+      "ref": "",
+      "required": "true",
+      "show_in_form": false,
+      "show_in_table": true,
+      "standard": "",
+      "type":"string",
       "versions": [
         "error"
-      ],
-      "ref": "",
+      ]
+    },
+    {
+      "colour": "",
+      "control": "text",
+      "control_meta": {},
+      "default_value": "",
       "deprecated": false,
+      "excel_col": "",
+      "help_tip": "",
       "hidden": "true",
-      "label": "Error",
+      "id": "copo.sample.updated_by",
+      "is_builtin": false,
+      "is_custom": true,
+      "is_sensitive": true,
+      "label": "Updated By",
+      "ref": "",
+      "required": "false",
       "show_in_form": false,
-      "id": "copo.sample.error",
-      "type": "string",
-      "show_in_table": true,
-      "control": "text"
+      "show_in_table": false,
+      "standard": "",
+      "type":"string",
+      "versions": [
+        "updated_by"
+      ]
     }
   ]
 }

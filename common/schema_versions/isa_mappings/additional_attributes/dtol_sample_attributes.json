@@ -10,6 +10,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.SERIES",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Series",
     "manifest_version": [
       "2.5",
@@ -23,6 +26,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "SERIES"
@@ -39,6 +43,9 @@
     "help_tip": "Rack or Plate Identifier",
     "hidden": "false",
     "id": "copo.sample.RACK_OR_PLATE_ID",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Rack or Plate Identifier",
     "manifest_version": [
       "2.5",
@@ -53,6 +60,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "RACK_OR_PLATE_ID"
@@ -69,6 +77,9 @@
     "help_tip": "Tube or Well Identifier",
     "hidden": "false",
     "id": "copo.sample.TUBE_OR_WELL_ID",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Tube or Well Identifier",
     "manifest_version": [
       "2.5",
@@ -84,6 +95,7 @@
       "dtol",
       "bc"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "TUBE_OR_WELL_ID"
@@ -100,6 +112,9 @@
     "help_tip": "An identifier given to the Occurrence at the time it was recorded. Often serves as a link between field notes and an Occurrence record, such as a specimen collector's number.",
     "hidden": "false",
     "id": "copo.sample.SPECIMEN_ID",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Specimen Identifier",
     "manifest_version": [
       "2.5",
@@ -114,6 +129,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "SPECIMEN_ID"
@@ -130,6 +146,9 @@
     "help_tip": "The taxonomic Order into which the Family is placed.",
     "hidden": "false",
     "id": "copo.sample.ORDER_OR_GROUP",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Order or Group",
     "manifest_version": [
       "2.5",
@@ -144,6 +163,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "ORDER_OR_GROUP"
@@ -160,6 +180,9 @@
     "help_tip": "The taxonomic Family into which the Genus is placed.",
     "hidden": "false",
     "id": "copo.sample.FAMILY",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Family",
     "manifest_version": [
       "2.5",
@@ -174,6 +197,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "FAMILY"
@@ -190,6 +214,9 @@
     "help_tip": "The taxonomic Genus to which the Species belongs.",
     "hidden": "false",
     "id": "copo.sample.GENUS",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Genus",
     "manifest_version": [
       "2.5",
@@ -204,6 +231,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "GENUS"
@@ -220,6 +248,9 @@
     "help_tip": "A valid NCBI TAXON_ID to the species level is mandatory in order to submit data to public repositories.",
     "hidden": "false",
     "id": "copo.sample.TAXON_ID",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Taxon Identifier",
     "manifest_version": [
       "2.5",
@@ -234,6 +265,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "TAXON_ID"
@@ -250,6 +282,9 @@
     "help_tip": "The official scientific name as found in NCBI taxonomy database",
     "hidden": "false",
     "id": "copo.sample.SCIENTIFIC_NAME",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Scientific Name",
     "manifest_version": [
       "2.5",
@@ -264,6 +299,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "SCIENTIFIC_NAME"
@@ -280,6 +316,9 @@
     "help_tip": "Taxon remarks",
     "hidden": "false",
     "id": "copo.sample.TAXON_REMARKS",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Taxon Remarks",
     "manifest_version": [
       "2.5",
@@ -294,6 +333,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "TAXON_REMARKS"
@@ -310,6 +350,9 @@
     "help_tip": "Infraspecific epithet",
     "hidden": "false",
     "id": "copo.sample.INFRASPECIFIC_EPITHET",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Infraspecific Ephithet",
     "manifest_version": [
       "2.5",
@@ -324,6 +367,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "INFRASPECIFIC_EPITHET"
@@ -340,6 +384,9 @@
     "help_tip": "Culture or Strain ID",
     "hidden": "false",
     "id": "copo.sample.CULTURE_OR_STRAIN_ID",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Culture or Strain Identifier",
     "manifest_version": [
       "2.5",
@@ -354,6 +401,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "CULTURE_OR_STRAIN_ID"
@@ -370,6 +418,9 @@
     "help_tip": "Common name",
     "hidden": "false",
     "id": "copo.sample.COMMON_NAME",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Common Name",
     "manifest_version": [
       "2.5",
@@ -384,6 +435,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "COMMON_NAME"
@@ -399,6 +451,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.LIFESTAGE",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Lifestage",
     "manifest_version": [
       "2.5",
@@ -429,6 +484,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "LIFESTAGE"
@@ -445,6 +501,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.SEX",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Sex",
     "manifest_version": [
       "2.5",
@@ -468,6 +527,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "SEX"
@@ -484,6 +544,9 @@
     "help_tip": "e.g. Leg removed from complete organism",
     "hidden": "false",
     "id": "copo.sample.ORGANISM_PART",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Organism Part",
     "manifest_version": [
       "2.5",
@@ -498,6 +561,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "ORGANISM_PART"
@@ -514,6 +578,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.SYMBIONT",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Symbiont",
     "manifest_version": [
       "2.5",
@@ -532,6 +599,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "SYMBIONT"
@@ -548,6 +616,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.RELATIONSHIP",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Relationship",
     "manifest_version": [
       "2.5",
@@ -562,6 +633,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "RELATIONSHIP"
@@ -578,6 +650,9 @@
     "help_tip": "Genome Acquisition Laboratory",
     "hidden": "false",
     "id": "copo.sample.GAL",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "GAL (Genome Acquisition Laboratory)",
     "manifest_version": [
       "2.5",
@@ -601,6 +676,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "GAL"
@@ -617,6 +693,9 @@
     "help_tip": "Genome Acquisition Laboratory Sample ID",
     "hidden": "false",
     "id": "copo.sample.GAL_SAMPLE_ID",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "GAL (Genome Acquisition Laboratory) Sample Identifier",
     "manifest_version": [
       "2.5",
@@ -631,6 +710,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "GAL_SAMPLE_ID"
@@ -647,6 +727,9 @@
     "help_tip": "Collector Sample ID",
     "hidden": "false",
     "id": "copo.sample.COLLECTOR_SAMPLE_ID",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Collector Sample Identifier",
     "manifest_version": [
       "2.5",
@@ -661,6 +744,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "COLLECTOR_SAMPLE_ID"
@@ -677,6 +761,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.COLLECTED_BY",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Collected By",
     "manifest_version": [
       "2.5",
@@ -690,6 +777,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "COLLECTED_BY"
@@ -706,6 +794,9 @@
     "help_tip": "The name (or acronym) in use by the institution having custody of the object(s) or information referred to in the record.",
     "hidden": "false",
     "id": "copo.sample.COLLECTOR_AFFILIATION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Collector Affiliation",
     "manifest_version": [
       "2.5",
@@ -720,6 +811,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "COLLECTOR_AFFILIATION"
@@ -736,6 +828,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.DATE_OF_COLLECTION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Date of Collection",
     "manifest_version": [
       "2.5",
@@ -749,6 +844,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "DATE_OF_COLLECTION"
@@ -765,6 +861,9 @@
     "help_tip": "Time of Collection",
     "hidden": "false",
     "id": "copo.sample.TIME_OF_COLLECTION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Time of Collection",
     "manifest_version": [
       "2.5",
@@ -779,6 +878,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "TIME_OF_COLLECTION"
@@ -795,6 +895,9 @@
     "help_tip": "A list of geographic names less specific than the information captured in the Collection Site term. Starting with the least specific, add geograhic place names to identify location using the blue plus. E.g. U.K., London, Westminster, Westminster Abbey all as separate list entries.",
     "hidden": "false",
     "id": "copo.sample.COLLECTION_LOCATION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Collection Location",
     "manifest_version": [
       "2.5",
@@ -812,6 +915,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "COLLECTION_LOCATION"
@@ -828,6 +932,9 @@
     "help_tip": "The geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
     "hidden": "false",
     "id": "copo.sample.DECIMAL_LATITUDE",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Decimal Latitude",
     "manifest_version": [
       "2.5",
@@ -842,6 +949,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "DECIMAL_LATITUDE"
@@ -858,6 +966,9 @@
     "help_tip": "The geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
     "hidden": "false",
     "id": "copo.sample.DECIMAL_LONGITUDE",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Decimal Longitude",
     "manifest_version": [
       "2.5",
@@ -872,6 +983,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "DECIMAL_LONGITUDE"
@@ -888,6 +1000,9 @@
     "help_tip": "A list of maps, gazetteers, or other resources used to georeference the Location, described specifically enough to allow anyone in the future to use the same resources.",
     "hidden": "false",
     "id": "copo.sample.GRID_REFERENCE",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Grid Reference",
     "manifest_version": [
       "2.5",
@@ -902,6 +1017,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "GRID_REFERENCE"
@@ -918,6 +1034,9 @@
     "help_tip": "Comments or notes about the Location. e.g. Underwater since 2005",
     "hidden": "false",
     "id": "copo.sample.HABITAT",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Habitat Remarks",
     "manifest_version": [
       "2.5",
@@ -932,6 +1051,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "HABITAT"
@@ -948,6 +1068,9 @@
     "help_tip": "The original description of the depth below the local surface.",
     "hidden": "false",
     "id": "copo.sample.DEPTH",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Depth (in metres)",
     "manifest_version": [
       "2.5",
@@ -962,6 +1085,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "DEPTH"
@@ -978,6 +1102,9 @@
     "help_tip": "The original description of the elevation (altitude, usually above sea level) of the Location.",
     "hidden": "false",
     "id": "copo.sample.ELEVATION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Elevation (in metres)",
     "manifest_version": [
       "2.5",
@@ -992,6 +1119,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "ELEVATION"
@@ -1008,6 +1136,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.ORIGINAL_COLLECTION_DATE",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Original Collection Date",
     "manifest_version": [
       "2.5",
@@ -1021,6 +1152,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "ORIGINAL_COLLECTION_DATE"
@@ -1037,6 +1169,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.ORIGINAL_GEOGRAPHIC_LOCATION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Original Geographic Location",
     "manifest_version": [
       "2.5",
@@ -1050,6 +1185,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "ORIGINAL_GEOGRAPHIC_LOCATION"
@@ -1066,6 +1202,9 @@
     "help_tip": "The original geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
     "hidden": "false",
     "id": "copo.sample.ORIGINAL_DECIMAL_LATITUDE",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Original Decimal Latitude",
     "manifest_version": [
       "2.5",
@@ -1080,6 +1219,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "ORIGINAL_DECIMAL_LATITUDE"
@@ -1096,6 +1236,9 @@
     "help_tip": "The original geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
     "hidden": "false",
     "id": "copo.sample.ORIGINAL_DECIMAL_LONGITUDE",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Original Decimal Longitude",
     "manifest_version": [
       "2.5",
@@ -1110,6 +1253,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "ORIGINAL_DECIMAL_LONGITUDE"
@@ -1126,6 +1270,9 @@
     "help_tip": "The name of, reference to, or description of the method or protocol used during an Event. E.g. UV light trap, mist net, bottom trawl, ad hoc observation, point count",
     "hidden": "false",
     "id": "copo.sample.DESCRIPTION_OF_COLLECTION_METHOD",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Description of Collection Method",
     "manifest_version": [
       "2.5",
@@ -1140,6 +1287,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "DESCRIPTION_OF_COLLECTION_METHOD"
@@ -1156,6 +1304,9 @@
     "help_tip": "Difficulty of sample re-collection. Quantify ie. 'guaranteed same day', 'several days searching', 'requires considerable effort' (offshore boat/Caving/remote location travel)",
     "hidden": "false",
     "id": "copo.sample.DIFFICULT_OR_HIGH_PRIORITY_SAMPLE",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Difficult or High Priority Sample",
     "manifest_version": [
       "2.5",
@@ -1178,6 +1329,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "DIFFICULT_OR_HIGH_PRIORITY_SAMPLE"
@@ -1194,6 +1346,9 @@
     "help_tip": "Separate multiple names with '|'",
     "hidden": "false",
     "id": "copo.sample.IDENTIFIED_BY",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Identified By",
     "manifest_version": [
       "2.5",
@@ -1207,6 +1362,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "IDENTIFIED_BY"
@@ -1223,6 +1379,9 @@
     "help_tip": "Separate multiple names with '|'",
     "hidden": "false",
     "id": "copo.sample.IDENTIFIER_AFFILIATION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Identifier Affiliation",
     "manifest_version": [
       "2.5",
@@ -1236,6 +1395,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "IDENTIFIER_AFFILIATION"
@@ -1252,6 +1412,9 @@
     "help_tip": "Comment if chance of misidentification, reference text used to identify, etc",
     "hidden": "true",
     "id": "copo.sample.IDENTIFIED_HOW",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Species Determination Method",
     "manifest_version": [
       "2.5",
@@ -1266,6 +1429,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "IDENTIFIED_HOW"
@@ -1282,6 +1446,9 @@
     "help_tip": "",
     "hidden": "true",
     "id": "copo.sample.SPECIMEN_IDENTITY_RISK",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Specimen Identity Risk",
     "manifest_version": [
       "2.5",
@@ -1300,6 +1467,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "SPECIMEN_IDENTITY_RISK"
@@ -1316,6 +1484,9 @@
     "help_tip": "Mixed sample risk",
     "hidden": "false",
     "id": "copo.sample.MIXED_SAMPLE_RISK",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Mixed Sample Risk",
     "manifest_version": [
       "2.5",
@@ -1334,6 +1505,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "MIXED_SAMPLE_RISK"
@@ -1350,6 +1522,9 @@
     "help_tip": "A list (concatenated and separated) of preparations and preservation methods for a specimen. Example, fossil, cast, photograph, DNA extract, skin, skull, skeleton, whole animal (ETOH), tissue (EDTA)",
     "hidden": "false",
     "id": "copo.sample.PRESERVED_BY",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Preserved By",
     "manifest_version": [
       "2.5",
@@ -1364,6 +1539,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "PRESERVED_BY"
@@ -1380,6 +1556,9 @@
     "help_tip": "A list of affiliations separated by '|'",
     "hidden": "false",
     "id": "copo.sample.PRESERVER_AFFILIATION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Preserver Affiliation",
     "manifest_version": [
       "2.5",
@@ -1394,6 +1573,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "PRESERVER_AFFILIATION"
@@ -1410,6 +1590,9 @@
     "help_tip": "Preparations and preservation methods for a specimen",
     "hidden": "false",
     "id": "copo.sample.PRESERVATION_APPROACH",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Preservation Approach",
     "manifest_version": [
       "2.5",
@@ -1424,6 +1607,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "PRESERVATION_APPROACH"
@@ -1440,6 +1624,9 @@
     "help_tip": "Specific preservative solution used in preparation",
     "hidden": "false",
     "id": "copo.sample.PRESERVATIVE_SOLUTION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Preservative Solution",
     "manifest_version": [
       "2.5",
@@ -1454,6 +1641,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "PRESERVATIVE_SOLUTION"
@@ -1470,6 +1658,9 @@
     "help_tip": "The date-time or interval during which an Event occurred. For occurrences, this is the date-time when the event was recorded. Not suitable for a time in a geological context. In format YYYY-MM-DD",
     "hidden": "false",
     "id": "copo.sample.TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Time Elapsed from Collection to Preservation (in hours)",
     "manifest_version": [
       "2.5",
@@ -1484,6 +1675,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION"
@@ -1500,6 +1692,9 @@
     "help_tip": "The date-time or interval during which an Event occurred. For occurrences, this is the date-time when the event was recorded. Not suitable for a time in a geological context. In format YYYY-MM-DD",
     "hidden": "false",
     "id": "copo.sample.DATE_OF_PRESERVATION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Date of Preservation",
     "manifest_version": [
       "2.5",
@@ -1514,6 +1709,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "DATE_OF_PRESERVATION"
@@ -1530,6 +1726,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.SIZE_OF_TISSUE_IN_TUBE",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Size of Tissue in Tube",
     "manifest_version": [
       "2.5",
@@ -1553,6 +1752,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "SIZE_OF_TISSUE_IN_TUBE"
@@ -1569,6 +1769,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.BARCODE_HUB",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Barcode Hub",
     "manifest_version": [
       "2.5",
@@ -1582,6 +1785,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "BARCODE_HUB"
@@ -1598,6 +1802,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.TISSUE_REMOVED_FOR_BARCODING",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Tissue Removed for Barcoding",
     "manifest_version": [
       "2.5",
@@ -1615,6 +1822,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "TISSUE_REMOVED_FOR_BARCODING"
@@ -1631,6 +1839,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.PLATE_ID_FOR_BARCODING",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Plate Identifier for Barcoding",
     "manifest_version": [
       "2.5",
@@ -1644,6 +1855,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "PLATE_ID_FOR_BARCODING"
@@ -1660,6 +1872,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.TUBE_OR_WELL_ID_FOR_BARCODING",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Tube or Well Identifier for Barcoding",
     "manifest_version": [
       "2.5",
@@ -1673,6 +1888,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "TUBE_OR_WELL_ID_FOR_BARCODING"
@@ -1689,6 +1905,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.TISSUE_FOR_BARCODING",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Tissue for Barcoding",
     "manifest_version": [
       "2.5",
@@ -1702,6 +1921,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "TISSUE_FOR_BARCODING"
@@ -1718,6 +1938,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.BARCODE_PLATE_PRESERVATIVE",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Barcode Plate Preservative",
     "manifest_version": [
       "2.5",
@@ -1731,6 +1954,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "BARCODE_PLATE_PRESERVATIVE"
@@ -1747,6 +1971,9 @@
     "help_tip": "Barcoding Status",
     "hidden": "false",
     "id": "copo.sample.BARCODING_STATUS",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Barcoding Status",
     "manifest_version": [
       "2.5",
@@ -1767,6 +1994,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "BARCODING_STATUS"
@@ -1783,6 +2011,9 @@
     "help_tip": "Field for recording the accession number for the barcoding data for this sample once submitted to BOLD",
     "hidden": "false",
     "id": "copo.sample.BOLD_ACCESSION_NUMBER",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Bold Accession Number",
     "manifest_version": [
       "2.5"
@@ -1796,6 +2027,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "BOLD_ACCESSION_NUMBER"
@@ -1812,6 +2044,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.VOUCHER_ID",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Voucher Identifier",
     "manifest_version": [
       "2.5",
@@ -1825,6 +2060,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "VOUCHER_ID"
@@ -1841,6 +2077,9 @@
     "help_tip": "Proxy voucher ID",
     "hidden": "false",
     "id": "copo.sample.PROXY_VOUCHER_ID",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Proxy Voucher Identifier",
     "manifest_version": [
       "2.5",
@@ -1855,6 +2094,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "PROXY_VOUCHER_ID"
@@ -1871,6 +2111,9 @@
     "help_tip": "Voucher Link",
     "hidden": "false",
     "id": "copo.sample.VOUCHER_LINK",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Voucher Link",
     "manifest_version": [
       "2.5",
@@ -1885,6 +2128,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "VOUCHER_LINK"
@@ -1901,6 +2145,9 @@
     "help_tip": "Proxy voucher Link",
     "hidden": "false",
     "id": "copo.sample.PROXY_VOUCHER_LINK",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Proxy Voucher Link",
     "manifest_version": [
       "2.5",
@@ -1915,6 +2162,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "PROXY_VOUCHER_LINK"
@@ -1931,6 +2179,9 @@
     "help_tip": "Voucher Institution",
     "hidden": "false",
     "id": "copo.sample.VOUCHER_INSTITUTION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Voucher Institution",
     "manifest_version": [
       "2.5",
@@ -1945,6 +2196,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "VOUCHER_INSTITUTION"
@@ -1961,6 +2213,9 @@
     "help_tip": "",
     "hidden": "false",
     "id": "copo.sample.PURPOSE_OF_SPECIMEN",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Purpose of Specimen",
     "manifest_version": [
       "2.5",
@@ -1982,6 +2237,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "PURPOSE_OF_SPECIMEN"
@@ -1998,6 +2254,9 @@
     "help_tip": "Sample format",
     "hidden": "false",
     "id": "copo.sample.SAMPLE_FORMAT",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Sample Format",
     "manifest_version": [
       "2.5",
@@ -2012,6 +2271,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "SAMPLE_FORMAT"
@@ -2028,6 +2288,9 @@
     "help_tip": "Hazard Group",
     "hidden": "false",
     "id": "copo.sample.HAZARD_GROUP",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Hazard Group",
     "manifest_version": [
       "2.5",
@@ -2047,6 +2310,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "HAZARD_GROUP"
@@ -2063,6 +2327,9 @@
     "help_tip": "Regulatory Compliance",
     "hidden": "false",
     "id": "copo.sample.REGULATORY_COMPLIANCE",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Regulatory Compliance",
     "manifest_version": [
       "2.5",
@@ -2082,6 +2349,7 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "REGULATORY_COMPLIANCE"
@@ -2098,6 +2366,9 @@
     "help_tip": "Other Information",
     "hidden": "false",
     "id": "copo.sample.OTHER_INFORMATION",
+    "is_builtin": true,
+    "is_custom": false,
+    "is_sensitive": false,
     "label": "Other Information",
     "manifest_version": [
       "2.5",
@@ -2112,68 +2383,10 @@
     "specifications": [
       "dtol"
     ],
+    "standard": "tol",
     "type": "string",
     "versions": [
       "OTHER_INFORMATION"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "dwc": "",
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "false",
-    "id": "copo.sample.public_name",
-    "label": "Public Name",
-    "manifest_version": [
-      "2.5",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_in_form": false,
-    "show_in_table": true,
-    "specifications": [
-      "dtol"
-    ],
-    "type": "string",
-    "versions": [
-      "public_name"
-    ]
-  },
-  {
-    "colour": "",
-    "control": "text",
-    "control_meta": {},
-    "default_value": "",
-    "deprecated": false,
-    "dwc": "",
-    "excel_col": "",
-    "help_tip": "",
-    "hidden": "false",
-    "id": "copo.sample.species_list",
-    "label": "Species List",
-    "manifest_version": [
-      "2.5",
-      "2.4.1"
-    ],
-    "order": null,
-    "ref": "",
-    "required": "false",
-    "show_as_attribute": false,
-    "show_in_form": false,
-    "show_in_table": false,
-    "specifications": [
-      "dtol"
-    ],
-    "type": "string",
-    "versions": [
-      "species_list"
     ]
   }
 ]
