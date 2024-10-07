@@ -518,25 +518,16 @@ def create_tol_dwc_mapping():
             dwc_field = DWC_FIELD_NAMES_MAPPING[tol_field]['dwc']
 
             dwc_field_info = [dwc_field_dict for dwc_field_dict in DWC_FIELDS if dwc_field_dict.get('field','') == dwc_field]
-        
-            for x in dwc_field_info:
-                data = dict()          
-                data[tol_field] = {'field': dwc_field, 'description': x['description'], 'uri': x['uri']}
-                out.update(data)   
-
         else:
             # If the TOL field is not in the DWC field names mapping,
             dwc_field_info = [dwc_field_dict for dwc_field_dict in DWC_FIELDS if tol_field.lower().replace('_','') in dwc_field_dict['field'].lower() or tol_field.lower() in dwc_field_dict['field'].lower()]
             
-            # Only mapped items are recorded
-            if dwc_field_info:
-                # The length of the 'dwc_field_info' list should be 1, 
-                # to signify that there are no duplicates but still 
-                # iterate through the list to get the dictionary
-                for x in dwc_field_info:
-                    data = dict()
-                    data[tol_field] = {'field':x['field'], 'description': x['description'], 'uri':x['uri']}
-                    out.update(data)
+        # The length of the 'dwc_field_info' list should be 1, 
+        # to signify that there are no duplicates but still 
+        # iterate through the list to get the dictionary
+        if dwc_field_info:
+            item = dwc_field_info[0] # Get first item in the list
+            out.update({tol_field: {'field': dwc_field, 'description': item['description'], 'uri': item['uri']}})
 
     # print(f'\out:\n {json.dumps(out, indent=4, sort_keys=False,default=str)}\n')
 
