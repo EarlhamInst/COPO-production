@@ -147,6 +147,11 @@ div[class*=" col-"] {
     padding-top: 15px !important;
 }
 
+.dataTables_scrollBody {
+    max-height: 350px; /* Set max height to 350px */
+    overflow-y: auto; /* Enable scrolling */
+}
+
 /*server-side processing styling for datatables*/
 div.dataTables_wrapper div.dataTables_processing {
     background: transparent !important;
@@ -466,11 +471,15 @@ div.dataTables_processing.ui.segment {
     font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif
 }
 
-/*
-.bolder {
+
+.text-bold {
   font-weight: bold;
 }
-*/
+
+.text-underline {
+  text-decoration: underline;
+}
+
 
 /*custom styling of bootstrap dialog*/
 .copo-modal2 > .modal-dialog {

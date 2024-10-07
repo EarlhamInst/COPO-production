@@ -129,7 +129,7 @@ $(document).ready(function () {
       }
       $('#sample_info').hide();
       $('#' + d.html_id).DataTable({
-        scrollY: '400px',
+        scrollY: 'auto',
         scrollX: true,
       });
       $('#table_div').fadeIn(1000);
@@ -233,10 +233,14 @@ $(document).ready(function () {
 
   // Set colour of 'help_add_button' button and 'new-samples-spreadsheet-template'
   // button based on profile type
-  var profile_type = document.getElementById('profile_type').value.toLowerCase();
-  var colour = profile_type_def[profile_type]["widget_colour"];
-  $('#help_add_button').css("color",'white').css("background-color",colour);
-  $('.new-taggedseq-spreadsheet-template').css("color",'white').css("background-color",colour);
+  var profile_type = document
+    .getElementById('profile_type')
+    .value.toLowerCase();
+  var colour = profile_type_def[profile_type]['widget_colour'];
+  $('#help_add_button').css('color', 'white').css('background-color', colour);
+  $('.new-taggedseq-spreadsheet-template')
+    .css('color', 'white')
+    .css('background-color', colour);
   /*
   if (document.getElementById('profile_type').value.includes('ASG')) {
     $('#help_add_button').addClass('violet');
@@ -323,26 +327,33 @@ $(document).ready(function () {
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
-            file_processing_status = table.cell(rowIdx, i).data()
-            if (file_processing_status == "" || file_processing_status.includes('File archived'))
-               return false;
-            else
-               return true;
+            file_processing_status = table.cell(rowIdx, i).data();
+            if (
+              file_processing_status == '' ||
+              file_processing_status.includes('File archived')
+            )
+              return false;
+            else return true;
           });
         table
           .rows(error)
           .nodes()
           .to$()
           .addClass('highlight_error_file_processing_status');
-      }      
+      }
     }
 
-    $(".ena-accession").each(function(i, obj) {
-      if ($(obj).prop("tagName") != 'TH' && $(obj).text() != '') {
-         $(obj).html("<a href='https://www.ebi.ac.uk/ena/browser/view/" + $(obj).text() + "' target='_blank'>"+ $(obj).text()+"</a>");
+    $('.ena-accession').each(function (i, obj) {
+      if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
+        $(obj).html(
+          "<a href='https://www.ebi.ac.uk/ena/browser/view/" +
+            $(obj).text() +
+            "' target='_blank'>" +
+            $(obj).text() +
+            '</a>'
+        );
       }
-   });
-
+    });
   });
 });
 

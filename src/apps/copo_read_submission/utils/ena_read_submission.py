@@ -1599,13 +1599,16 @@ class EnaReads:
             extra_info = "<li>An embargo is placed on this submission. Embargo will be automatically lifted on: " + \
                          release_date + \
                          "</li><li>" \
-                         "To release this study, select " \
-                         "<strong>Release Study</strong> from the <b>Actions</b> menu " \
-                         "associated with the profile on the <b>Work Profiles</b> web page</li>"
+                         "To release this study, click the " \
+                         "<strong>Release Study</strong> button from the option menu " \
+                         "associated with the profile on the <b>Work Profiles</b> web page. " \
+                         "Click <a class='text-bold text-underline' href='https://copo-docs.readthedocs.io/en/latest/profile/releasing-profiles.html' " \
+                         "target='_blank'>here</a> for guidance.</li>"
         elif status.upper() == "PUBLIC":
             extra_info = "<li>" \
-                         "To view this study on the ENA browser, select <strong>" \
-                         "View Accessions</strong> from the <b>Actions</b> menu associated with the profile on the <b>Work Profiles</b> web page</li>(<span style='font-size:10px;'>Recently " \
+                         "To view this study on the ENA browser, click " \
+                         "<a class='text-bold text-underline' href='https://copo-docs.readthedocs.io/en/latest/help/faq.html#faq-profiles-view-released-studies' " \
+                         "target='_blank'>here</a> for guidance</li> (<span style='font-size:10px;'>Recently " \
                          "completed submissions can take up to 24 hours to appear on ENA</span>)</li>"
 
         # add transfer status
