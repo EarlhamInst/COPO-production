@@ -1,7 +1,7 @@
-from  common.validators.validator import Validator
+from common.validators.validator import Validator
 from common.dal.sample_da import Sample
 from common.schema_versions.lookup import dtol_lookups as lookup
-from common.utils.helpers import notify_frontend
+from common.utils.helpers import notify_frontend, extract_ref_parts
 from common.validators.helpers import check_taxon_ena_submittable
 from .validation_messages import MESSAGES as msg
 from Bio import Entrez
@@ -162,6 +162,14 @@ class DuplicatedDataFile(Validator):
             for f in files:
                 sample = fileMap.get(f, None)
                 if sample and sample != sample_name:
-                    self.errors.append(f"File {f} for sample {sample_name} already attached sample {sample}")
+                    existing_sample_parts = extract_ref_parts(sample)
+                    # uploaded_sample_parts = extract_ref_parts(sample_name)
+
+                    self.errors.append(msg["validation_msg_sample_duplication_error"].format(
+                        filename=f,
+                        existing_sample_name=existing_sample_parts[2],
+                        existing_sample_profile_title=existing_sample_parts[0], 
+                        existing_sample_checklist=existing_sample_parts[1],
+                    ))
                     self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
