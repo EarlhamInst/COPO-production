@@ -1,7 +1,8 @@
 from common.validators.validator import Validator
+from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
 from common.schema_versions.lookup import dtol_lookups as lookup
-from common.utils.helpers import notify_frontend, extract_ref_parts
+from common.utils.helpers import notify_frontend
 from common.validators.helpers import check_taxon_ena_submittable
 from .validation_messages import MESSAGES as msg
 from Bio import Entrez
@@ -135,6 +136,32 @@ class DuplicatedSample(Validator):
 '''
     
 class DuplicatedDataFile(Validator):
+    def _extract_ref_parts(self, ref_string):
+        '''
+            Purpose: This function extracts parts of a sample reference string and returns them as a list.
+            Example: ref_string = "6576e64d8ec944db43757896|ERC000046|sample1"
+            Output: ['6576e64d8ec944db43757896', 'ERC000046', 'sample1']
+            
+            Explanation:
+                - '6576e64d8ec944db43757896' is the profile ID. This is replaced with the profile title.
+                - 'ERC000046' is the checklist ID
+                - 'sample1' is the sample name
+        '''
+
+        parts = ref_string.split('|') # Split the string by '|'
+        
+        # Add empty strings if there are fewer than expected parts
+        while len(parts) < 3:
+            parts.append('')
+
+        # If profile ID is present, replace the value with the profile title
+        if len(parts) > 0:
+            profile_id = parts[0]
+            profile_title = Profile().get_name(profile_id)
+            if profile_title:
+                parts[0] = profile_title
+        return parts
+        
     def validate(self):
         checklist = self.kwargs.get("checklist", {})
         checklist_id = checklist.get('primary_id',"")  
@@ -162,8 +189,8 @@ class DuplicatedDataFile(Validator):
             for f in files:
                 sample = fileMap.get(f, None)
                 if sample and sample != sample_name:
-                    existing_sample_parts = extract_ref_parts(sample)
-                    # uploaded_sample_parts = extract_ref_parts(sample_name)
+                    existing_sample_parts = self._extract_ref_parts(sample)
+                    # uploaded_sample_parts = self._extract_ref_parts(sample_name)
 
                     self.errors.append(msg["validation_msg_sample_duplication_error"].format(
                         filename=f,

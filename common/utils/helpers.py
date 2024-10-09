@@ -273,20 +273,3 @@ def get_users_associated_profile_checkers():
     user = ThreadLocal.get_current_user()
     seq_centres = AssociatedProfileType.objects.filter(users=user)
     return seq_centres
-
-def extract_ref_parts(ref_string):
-    from common.dal.profile_da import Profile
-    # Extract values from sample references
-    parts = ref_string.split('|') # Split the string by '|'
-    
-    # Add empty strings if there are fewer than expected parts
-    while len(parts) < 3:
-        parts.append('')
-
-    # If profile ID is present replace the value with the profile title
-    if len(parts) > 0:
-        profile_id = parts[0]
-        profile_title = Profile().get_name(profile_id)
-        if profile_title:
-            parts[0] = profile_title
-    return parts
