@@ -355,7 +355,11 @@ $(document).ready(function () {
                     });
 
                     $el = $('.modal-dialog').find('#id_experiment');
-                    experiment = $el.find(':selected').val();
+                    let experiment = []
+                    $el.find(':selected').each(function () {
+                      experiment.push($(this).val());
+                    });
+
                     $el.empty(); // remove old options
                     $.each(
                       data['experiment_accessions'],

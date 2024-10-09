@@ -41,14 +41,14 @@ class Command(BaseCommand):
         :return:
         """
         # instantiate data schema
-        data_schema = DataSchemas("COPO")
+        #data_schema = DataSchemas("COPO")
 
         # generate core schemas
         temp_dict = DataFormats("COPO").generate_ui_template()
 
         # store schemas in DB
         if temp_dict["status"] == "success" and temp_dict["data"]:
-            data_schema.add_ui_template(temp_dict["data"])
+            DataSchemas.add_ui_template('COPO', temp_dict["data"])
 
         return True
 
