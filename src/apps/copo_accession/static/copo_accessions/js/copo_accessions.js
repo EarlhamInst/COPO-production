@@ -120,11 +120,24 @@ let dt_options = {
     // Add hyperlink associated with COPO API
     $('.copo-api').each(function (i, obj) {
       if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
+        // Determine the prefix to use for the href attribute based on table column
+        let column = $(obj)
+          .closest('table')
+          .find('th')
+          .eq($(obj).index())
+          .text();
+
+        let href_prefix = column.toLowerCase().includes('manifest')
+          ? '/api/manifest/'
+          : '/api/sample/copo_id/';
+
+        let href = `${href_prefix}${$(obj).text()}`;
+
         $(obj).html(
-          "<a class='no-underline' href='/api/manifest/" +
-            $(obj).text() +
-            "' target='_blank'>" +
-            $(obj).text() +
+          '<a class="no-underline centre-icon" href="' +
+            href +
+            '" target="_blank">' +
+            ' <i class="fa fa-link" aria-hidden="true"></i>' +
             '</a>'
         );
       }
@@ -449,16 +462,14 @@ function load_accessions_records() {
   let columnDefinition = [
     {
       targets: '_all', // all fields
+      className: 'text-centre',
+      defaultContent: '',
       createdCell: function (td, cellData, rowData, row, col) {
         if (typeof cellData == 'undefined') {
           $(td).addClass('cell-no-content');
           $(td).text('');
         }
       },
-    },
-    {
-      targets: '_all', // all fields
-      defaultContent: '',
     },
   ];
 
