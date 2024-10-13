@@ -258,6 +258,11 @@
         }
     },
     "DESCRIPTION_OF_COLLECTION_METHOD": {
+        "dwc": {
+            "field": "samplingProtocol",
+            "uri": "http://rs.tdwg.org/dwc/terms/samplingProtocol",
+            "description": "The names of, references to, or descriptions of the methods or protocols used during a dwc:Event."
+        },
         "ena": {
             "field": "sample collection device or method"
         },
@@ -272,6 +277,11 @@
         }
     },
     "DIFFICULT_OR_HIGH_PRIORITY_SAMPLE": {
+        "dwc": {
+            "field": "samplingEffort",
+            "uri": "http://rs.tdwg.org/dwc/terms/samplingEffort",
+            "description": "The amount of effort expended during a dwc:Event."
+        },
         "tol": {
             "field": "DIFFICULT_OR_HIGH_PRIORITY_SAMPLE"
         }
@@ -395,9 +405,9 @@
     },
     "HABITAT": {
         "dwc": {
-            "field": "habitat",
-            "uri": "http://rs.tdwg.org/dwc/terms/habitat",
-            "description": "A category or description of the habitat in which the dwc:Event occurred."
+            "field": "locationRemarks",
+            "uri": "http://rs.tdwg.org/dwc/terms/locationRemarks",
+            "description": "Comments or notes about the dcterms:Location."
         },
         "ena": {
             "field": "habitat"

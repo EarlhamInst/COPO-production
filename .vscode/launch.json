@@ -82,28 +82,19 @@
             "console": "integratedTerminal",
             "args": ["-A", "src", "beat", "-l", "critical"]
          },
-         {
-            "name": "Python: Django Shell",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/manage.py",      
-            "args": [
-                "shell_plus",
-                "--ipython"
-            ],
-            "django": true,
-            "justMyCode": false
-        },
         {
             "name": "Python: Generate standards map",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/shared_tools/scripts/generate_standards_map.py",
-            "console": "integratedTerminal", 
+            "program": "${workspaceFolder}/manage.py",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
             },
+            "args": [
+                "generate_standards_map"
+            ],
+            "django": true,
             "justMyCode": false
-        },  
+        }
     ]
 }

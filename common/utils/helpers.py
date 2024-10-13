@@ -9,7 +9,6 @@ import jsonref
 import json
 from django.conf import settings
 import datetime
-import re
 from functools import wraps
 
 def get_class( kls ):

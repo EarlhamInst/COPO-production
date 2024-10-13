@@ -6,10 +6,10 @@ from bson import ObjectId
 from common.dal.copo_da import Audit
 from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from django.http import HttpResponse
-from src.apps.api.utils import finish_request, get_sensitive_fields
+from src.apps.api.utils import finish_request
 
 def filter_audits_for_API(audits):
-    sensitive_fields = get_sensitive_fields(component='sample')
+    sensitive_fields = d_utils.get_sensitive_fields(component='sample')
     time_fields = ['time_updated']
     audit_log_types = ['update_log', 'removal_log', 'truncated_log']   
     out = list()

@@ -981,11 +981,11 @@ paths:
       tags:
         - Tree of Life (ToL) Mapping
       summary: >
-        Get a mapping of fields brokered through COPO in a recognised standard and/or by a project type
+        Retrieve a mapping of fields for the latest manifest version brokered through COPO, categorised by project and based on a recognised standard.
       description: >
         If no standard is provided, fields will be mapped to Tree of Life (ToL).
       parameters:
-        - $ref: '#/components/parameters/project'
+        - $ref: '#/components/parameters/project_required'
         - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:

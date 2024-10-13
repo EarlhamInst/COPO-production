@@ -1,7 +1,7 @@
 __author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
 
 from common.lookup.lookup import API_RETURN_TEMPLATES
-from common.schemas.utils.data_utils import get_copo_schema
+from common.schemas.utils.data_utils import get_sensitive_fields
 from django.http import HttpResponse
 from django_tools.middlewares import ThreadLocal
 from .views.mapping import get_mapped_result
@@ -11,11 +11,6 @@ import json
 import pandas as pd
 import shortuuid
 import uuid
-
-def get_sensitive_fields(component):
-    schema = get_copo_schema(component)
-    sensitive_fields = [x['id'].split('.')[-1] for x in schema if x['is_sensitive']]
-    return sensitive_fields
 
 def get_return_template(type):
     """
@@ -308,8 +303,8 @@ def generate_wrapper_response(error, num_found, template):
         wrapper['data'] = template
         wrapper['status'] = 'OK'
     else:
-        wrapper['status']['error'] = True
-        wrapper['status']['error_detail'] = error
+        wrapper['status'] = 'Error'
+        wrapper['error_details'] = error
         wrapper['number_found'] = None
         wrapper['data'] = None
 
@@ -324,7 +319,7 @@ def finish_request(template=None, error=None, num_found=None, return_http_respon
     """
     request = ThreadLocal.get_current_request()
     return_type = request.GET.get('return_type', 'json').lower()
-    standard = request.GET.get('standard', 'tol')
+    standard = request.GET.get('standard', 'tol').lower()
 
     '''
     if is_csv == 'True' or is_csv == 'true' or is_csv == '1' or is_csv == 1 :
@@ -334,7 +329,7 @@ def finish_request(template=None, error=None, num_found=None, return_http_respon
     '''
     
     # Set template with data based on the standard if there is no error and template exists
-    if not error or not template:
+    if not error and template:
         template = template if standard == 'tol' else get_mapped_result(standard=standard, template=template, project=str())
     
     wrapper = generate_wrapper_response(error, num_found, template)

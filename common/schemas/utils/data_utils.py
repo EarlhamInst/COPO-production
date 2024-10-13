@@ -498,6 +498,17 @@ def san_check(val):
 def get_unqualified_id(qual):
     return qual.split(".")[-1]
 
+def get_sensitive_fields(component):
+    schema = get_copo_schema(component)
+    sensitive_fields = [x['id'].split('.')[-1] for x in schema if x.get('is_sensitive', False) and not x.get('show_in_api', False)]
+    return sensitive_fields
+
+def get_export_fields(component, project):
+    schema = get_copo_schema(component)
+    export_fields = [x['id'].split('.')[-1] for x in schema if x.get('show_in_api', False) and not x.get('is_sensitive', False)]
+    project_fields = [x['id'].split('.')[-1] for x in schema if project.lower() in x.get('specifications', list()) and x.get('show_in_api', False)]
+    output = list(set(export_fields) | set(project_fields)) # Merge the two lists and remove duplicates
+    return output
 
 class DecoupleFormSubmission:
     def __init__(self, auto_fields, schema):

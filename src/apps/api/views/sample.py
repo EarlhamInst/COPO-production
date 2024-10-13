@@ -9,24 +9,18 @@ from bson.errors import InvalidId
 from django.conf import settings
 from django.http import HttpResponse
 import json
-import jsonpath_rw_ext as jp
 from bson.errors import InvalidId
-from src.apps.api.utils import generate_csv_response, generate_wrapper_response, get_return_template, get_sensitive_fields, extract_to_template, finish_request
-from src.apps.api.views.mapping import get_mapped_fields_for_project
+from src.apps.api.utils import generate_csv_response, generate_wrapper_response, get_return_template, extract_to_template, finish_request
+from src.apps.api.views.mapping import get_mapped_field_by_standard
 from common.dal.copo_da import APIValidationReport
 from common.dal.sample_da import Sample, Source
 from common.dal.submission_da import Submission
 from common.dal.profile_da import Profile
-from itertools import chain
-from common.utils.helpers import json_to_pytype
 from common.schema_versions.lookup import dtol_lookups as lookup
-from common.lookup.lookup import API_ERRORS, WIZARD_FILES
+from common.lookup.lookup import API_ERRORS
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework import authentication, permissions
 from common.utils.logger import Logger
-import pickle
 from src.apps.copo_dtol_upload.utils.Dtol_Spreadsheet import DtolSpreadsheet
 from src.apps.copo_dtol_upload.utils.da import ValidationQueue
 from io import BytesIO
@@ -79,13 +73,13 @@ def format_date(input_date):
 def filter_for_API(sample_list, add_all_fields=False):
     # add field(s) here which should be time formatted
     time_fields = ["time_created", "time_updated"]
-    sensitive_fields = get_sensitive_fields(component='sample')
+    sensitive_fields = d_utils.get_sensitive_fields(component='sample')
     profile_type = None
     if len(sample_list) > 0:
         profile_type = sample_list[0].get("tol_project", "dtol").lower()
     if not profile_type:
         profile_type = "dtol"
-    export = lookup.DTOL_EXPORT_TO_STS_FIELDS[profile_type]
+    export = d_utils.get_export_fields(component='sample', project=profile_type)
     out = list()
     rights_to_lookup = list()
     notices = dict()
@@ -315,66 +309,36 @@ def get_updatable_fields_by_project(request, project):
             out.append({project.upper(): lookup.DTOL_NO_COMPLIANCE_FIELDS[project]})
     return finish_request(out)
 
-def get_fields_based_on_standard(project_type, standard, s, manifest_version=str()):
-    # Get current manifest version for a given project type if manifest_version is not provided
-    manifest_version = manifest_version if manifest_version else settings.MANIFEST_VERSION.get(project_type.upper(), str())
-    
-    # Get all fields for each manifest version for that project type
-    fields = jp.match('$.properties[?(@.specifications[*] == "' + project_type.lower() + '"& @.manifest_version[*]=="' + manifest_version + '")].versions[0]', s)
-    
-    # Filter list for field names that only begin with an uppercase letter
-    fields = list(filter(lambda x: x[0].isupper() == True, fields))
-
-    if standard in lookup.STANDARDS and standard != 'tol':
-        fields = get_mapped_fields_for_project(standard=standard, project=project_type.lower())
-
-    if isinstance(fields, dict):
-        fields = fields.get('data','')
-
-    return fields
-
 def get_fields_by_manifest_version(request):
-    standard = request.GET.get('standard', 'tol')
-    project_type = request.GET.get('project', str())
-    manifest_version = request.GET.get('manifest_version', str())
     return_type = request.GET.get('return_type', 'json').lower()
+    standard = request.GET.get('standard', 'tol').lower()
+    project = request.GET.get('project', str())
+    manifest_version = request.GET.get('manifest_version', str())
 
-    s = json_to_pytype(WIZARD_FILES['sample_details'], compatibility_mode=False)
-    error = None
-    template = list()
+    manifest_versions = Sample().get_available_manifest_versions(project)
+    template = None
 
-    if project_type and manifest_version:
-        # Project type is provided; manifest version is provided
-        # Get all manifest versions for a given project
-        manifest_versions = jp.match(f'$.properties[?(@.specifications[*] == {project_type.lower()})].manifest_version', s)
-        
-        # Get unique manifest versions from a nested list of manifest versions
-        # Sort the list of manifest versions
-        manifest_versions = sorted(list(set(chain(*manifest_versions)))) 
-        
-        if manifest_version in manifest_versions:
-            # Get fields based on standard
-            template = get_fields_based_on_standard(project_type, standard, s, manifest_version)
-        else:
-            error= f'No fields exist for the manifest version, {manifest_version}. Available manifest versions are {d_utils.join_list_with_and_as_last_entry(manifest_versions)}.'
-
-    elif project_type and not manifest_version:
-        # Project type is provided; no manifest version is provided
+    if manifest_version in manifest_versions:
         # Get fields based on standard
-        template = get_fields_based_on_standard(project_type, standard, s)
-
+        template = get_mapped_field_by_standard(standard=standard, project=project, manifest_version=manifest_version)
     else:
-        error = f'Please provide a project and/or manifest version'
-
-    if return_type == 'json':
-        output = generate_wrapper_response(error=error, num_found=len(template), template=template)
-        output = jsonb.dumps([output])
-
-        return  HttpResponse(output, content_type='application/json')
-    elif return_type == 'csv':
+        # Show error if manifest version does not exist
+        error= f'No fields exist for the manifest version, {manifest_version}. Available manifest versions are {d_utils.join_list_with_and_as_last_entry(manifest_versions)}.'
+        return HttpResponse(status=400, content=error)
+   
+    if return_type not in ['json', 'csv']:
+         # Show error if return type is not 'json' or 'csv'
+        error = 'Invalid return type provided. Please provide either "json" or "csv".'
+        return HttpResponse(status=400, content=error)
+    
+    if  return_type == 'csv':
         return generate_csv_response(standard, template)
-    else:
-        return HttpResponse(status=400, content='Invalid return type provided. Please provide either "json" or "csv".')
+    
+    # Generate JSON response
+    output = generate_wrapper_response(template=template)
+    output = jsonb.dumps([output])
+
+    return  HttpResponse(output, content_type='application/json')
 
 def get_project_samples_by_associated_project_type(request, values):
     associated_profile_types_List = values.split(",")
