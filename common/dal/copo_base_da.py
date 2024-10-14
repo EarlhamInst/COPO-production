@@ -6,39 +6,52 @@ from bson.errors import InvalidId
 from common.utils import helpers
 from common.dal.mongo_util import cursor_to_list
 
-Schemas = get_collection_ref("Schemas")
+
 
 class DataSchemas:
-    def __init__(self, schema):
-        self.schema = schema.upper()
+    ui_template_schemas = dict()
+    schemas_collection_handler = get_collection_ref("Schemas")
 
-    def add_ui_template(self, template):
+    @classmethod
+    def get_ui_template(cls, schema):
+        if schema not in cls.ui_template_schemas:
+            data = cls.schemas_collection_handler.find_one({"schemaName": schema.upper(), "schemaType": "UI"})
+            if data:
+                cls.ui_template_schemas[schema]= data.get("data", dict())
+        return cls.ui_template_schemas.get(schema.upper(),[])
+
+    @classmethod
+    def add_ui_template(cls, schema, template):
         # remove any existing UI templates for the target schema
-        self.delete_ui_template()
+        cls.delete_ui_template(schema)
+        doc = {"schemaName": schema.upper(), "schemaType": "UI", "data": template}
+        cls.schemas_collection_handler.insert_one(doc)
 
-        doc = {"schemaName": self.schema, "schemaType": "UI", "data": template}
-        Schemas.insert_one(doc)
+    @classmethod
+    def delete_ui_template(cls, schema):
+        cls.schemas_collection_handler.delete_one({"schemaName": schema, "schemaType": "UI"})
 
-    def delete_ui_template(self):
-        Schemas.delete_one({"schemaName": self.schema, "schemaType": "UI"})
-
-    def get_ui_template(self):
+    """
+    @classmethod
+    def get_ui_template(cls):
         try:
-            doc = Schemas.find_one({"schemaName": self.schema, "schemaType": "UI"})
+            doc = cls.Schemas_Collection_Handler.find_one({"schemaName": cls.Schema, "schemaType": "UI"})
             doc = doc["data"]
         except Exception as e:
             exception_message = "Couldn't retrieve component schema. " + str(e)
             print(exception_message)
             raise
-
         return doc
+    """
 
-    def get_ui_template_node(self, identifier):
-        doc = self.get_ui_template()
-        doc = {k.lower(): v for k, v in doc.items() if k.lower() == 'copo'}
-        doc = {k.lower(): v for k, v in doc.get("copo", dict()).items() if k.lower() == identifier.lower()}
+    @classmethod
+    def get_ui_template_node(cls, schema, identifier):
+        doc = cls.get_ui_template(schema)
+        #doc = {k.lower(): v for k, v in doc.items() if k.lower() == 'copo'}
+        #doc = {k.lower(): v for k, v in doc.get("copo", dict()).items() if k.lower() == identifier.lower()}
+        #return doc.get(identifier.lower(), dict()).get("fields", list())
+        return  doc.get(schema.lower(), dict()).get(identifier.lower(),dict()).get("fields",[])
 
-        return doc.get(identifier.lower(), dict()).get("fields", list())
 
 PubCollection = 'PublicationCollection'
 PersonCollection = 'PersonCollection'
@@ -186,16 +199,10 @@ class DAComponent:
         return self.get_id_base() + "." + elem
 
     def get_schema(self, **kwargs):
-        from common.schemas.utils import data_utils
-        schema_base = DataSchemas("COPO").get_ui_template().get("copo")
-        x = data_utils.json_to_object(schema_base.get(self.component, dict()))
-
-        return dict(schema_dict=schema_base.get(self.component, dict()).get("fields", list()),
-                    schema=x.fields
-                    )
+        return dict(schema_dict=DataSchemas.get_ui_template_node("COPO", self.component))
 
     def get_component_schema(self, **kwargs):
-        return DataSchemas("COPO").get_ui_template_node(self.component)
+        return DataSchemas.get_ui_template_node("COPO", self.component)
 
     def validate_record(self, auto_fields=dict(), validation_result=dict(), **kwargs):
         """

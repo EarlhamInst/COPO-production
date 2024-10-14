@@ -17,10 +17,10 @@ class AnnotationForm(forms.Form):
             self.fields['experiment'].widget.attrs['readonly'] = True
             self.fields['experiment'].choices =  [(x,x) for x in experiment_accession]
  
-        self.fields['sample'].choices = [("","None")]
+        #self.fields['sample'].choices = []
         if sample_accession:
             self.fields['sample'].widget.attrs['readonly'] = True
-            self.fields['sample'].choices.extend([(x,x) for x in sample_accession])
+            self.fields['sample'].choices=[(x,x) for x in sample_accession]
         if kwargs.get('id', ""):
             self.fields['id'].initial = kwargs.get('id', "")
             self.fields['id'].widget.attrs['readonly'] = True

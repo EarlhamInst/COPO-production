@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from src.apps.copo_core.models import ViewLock, ProfileType
 from src.apps.copo_core.views import web_page_access_checker
+from .utils.helpers import set_column_class_name, generate_column_title
 import common.schemas.utils.data_utils as d_utils
 import json
 
@@ -34,27 +35,29 @@ def get_accession_records_column_names(request):
     isOtherAccessionsTabActive = d_utils.convertStringToBoolean(request.GET.get('isOtherAccessionsTabActive', str()))
     
     columns = list()
-    columns.append(dict(data='record_id', visible=False))
     columns.append(dict(data='DT_RowId', visible=False))
     columns.append(dict(data='accession_type', title='Accession Type', visible=True))
 
     if isOtherAccessionsTabActive:
-        # Add profile_id column
+        columns.append(dict(data='record_id', visible=False))
         columns.append(dict(data='profile_id', visible=False))
 
         # Set column names
         labels = ['accession', 'alias', 'profile_title']
         
         for x in labels:
-            class_name = 'ena-accession' if x.lower().endswith("accession") else ''
-            columns.append(dict(data=x, title=d_utils.convertStringToTitleCase(x), visible=True,  className=class_name))
+            class_name = set_column_class_name(x)
+            title=d_utils.convertStringToTitleCase(x)
+            columns.append(dict(data=x, title=title, visible=True,  className=class_name))
     else:
         # Set column names
-        labels = ['biosampleAccession', 'sraAccession', 'submissionAccession', 'manifest_id', 'SCIENTIFIC_NAME', 'SPECIMEN_ID', 'TAXON_ID']
-        
+        labels = ['record_id', 'biosampleAccession', 'sraAccession', 'submissionAccession', 'manifest_id', 'SCIENTIFIC_NAME', 'SPECIMEN_ID', 'TAXON_ID']
+        copo_api_labels = ['record_id', 'manifest_id']
+
         for x in labels:
-            class_name = 'ena-accession' if x.lower().endswith("accession") else 'copo-api' if x.lower() == 'manifest_id' else ''
-            columns.append(dict(data=x, title=d_utils.convertStringToTitleCase(x),className=class_name))
+            class_name = set_column_class_name(x, copo_api_labels)
+            title = generate_column_title(x, copo_api_labels)
+            columns.append(dict(data=x, title=title, className=class_name))
 
     return HttpResponse(json_util.dumps(columns))
 
@@ -113,7 +116,7 @@ def get_accession_types(element_dict):
 
     if not showAllCOPOAccessions:
         if isUserProfileActive and profile_id:
-            filter["profile_id"] = profile_id
+            filter['profile_id'] = profile_id
 
     all_sample_types =  Sample().get_distinct_sample_types(filter)
 
