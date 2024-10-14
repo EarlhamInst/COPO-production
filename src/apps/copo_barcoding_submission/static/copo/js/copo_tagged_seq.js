@@ -403,10 +403,14 @@ function upload_spreadsheet(file) {
       }
     })
     .done(function (data) {
-      dialog.getButton('upload_taggedseq_manifest_button').enable();
+      // Hide upload button if 'Finish' button is visible and upload was successful
+      dialog
+        .getButton('upload_taggedseq_manifest_button')
+        .stopSpin()
+        .disable()
+        .hide();
       dialog.getButton('save_taggedseq_button').enable();
       dialog.setClosable(true);
-      dialog.getButton('upload_taggedseq_manifest_button').stopSpin();
     });
 }
 
