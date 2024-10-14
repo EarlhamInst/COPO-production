@@ -315,10 +315,10 @@ class _GET_ENA_FILE_PROCESSING_STATUS(threading.Thread):
             if i == sent_2_frontend_every:                 
                #notify_read_status(data={"profile_id": self.profile_id, "file_processing_status":data},  msg="", action="file_processing_status" )
                notify_read_status(data={"profile_id": self.profile_id, "table_data" : list(self.data_map.values())},
-                        msg="freshing table for file processing status", action="file_processing_status", html_id="sample_info")
+                        msg="Refreshing table for file processing status", action="file_processing_status", html_id="sample_info")
                i = 0
                #data=[]
         if i>0:
             #notify_read_status(data={"profile_id": self.profile_id, "file_processing_status":data},  msg="", action="file_processing_status" )
             notify_read_status(data={"profile_id": self.profile_id, "table_data" : list(self.data_map.values())},
-                        msg="freshing table for file processing status", action="file_processing_status", html_id="sample_info")
+                        msg="Refreshing table for file processing status", action="file_processing_status", html_id="sample_info")

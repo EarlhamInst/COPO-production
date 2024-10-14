@@ -72,7 +72,7 @@ def get_providers_orcid_first():
     return [{"id":o.id, "name":o.name} for o in result]
 '''
 
-
+"""
 def get_element_by_id(field_id):
     elem = {}
     out_list = get_fields_list(field_id)
@@ -82,7 +82,7 @@ def get_element_by_id(field_id):
             elem = f
             break
     return elem
-
+"""
 
 def trim_parameter_value_label(label):
     if "Parameter Value" in label:
@@ -1722,8 +1722,7 @@ def resolve_select_data(data, elem):
 
 
 def resolve_ontology_term_data(data, elem):
-    schema = DataSchemas("COPO").get_ui_template().get(
-        "copo").get("ontology_annotation").get("fields")
+    schema =DataSchemas.get_ui_template_node('COPO','ontology_annotation') 
 
     resolved_data = list()
 
@@ -1762,8 +1761,10 @@ def resolve_datepicker_data(data, elem):
         resolved_value = data
     return resolved_value
 
-def resolve_copo_approval_data(data, elem):
-    schema = d_utils.get_copo_schema("approval")
+def resolve_copo_approval_data(data, elem, approval_schema=None):
+    schema = approval_schema
+    if not schema:
+       schema = d_utils.get_copo_schema("approval")
 
     resolved_data = list()
     for f in schema:
@@ -1837,18 +1838,18 @@ def lookup_info(val):
         return lkup.UI_INFO[val]
     return ""
 
-
+"""
 def get_fields_list(field_id):
     key_split = field_id.split(".")
 
-    new_dict = DataSchemas(field_id.split(".")[0].upper()).get_ui_template()
+    new_dict = DataSchemas.get_ui_template(field_id.split(".")[0].upper())
 
     for kp in key_split[:-1]:
         if kp in new_dict:
             new_dict = new_dict[kp]
 
     return new_dict["fields"]
-
+"""
 
 # @register.filter("id_to_class")
 def id_to_class(val):

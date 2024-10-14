@@ -137,7 +137,6 @@ div[class*=" col-"] {
 }
 
 /*table styling*/
-
 .copo-datatable {
     font-size: 12px;
 }
@@ -2132,4 +2131,21 @@ div.shown span.side-help-trigger:before {
 
 .cell-no-content {
     background-color: #fff3f3 !important;
+}
+
+/* CSS styles for the '#sample_info' div */
+/* Wrap the file name in div */
+#sample_info h4 {
+    word-wrap: break-word;
+}
+
+/* Add ellipsis to profile title in error message */
+.title-ellipsis {
+    display: inline-block;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Aligns text with the baseline of the text */
+    vertical-align: bottom;
 }

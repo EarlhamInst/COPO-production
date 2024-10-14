@@ -384,20 +384,20 @@ def get_copo_schema(component, as_object=False):
     :return:
     """
     from common.dal.copo_base_da import DataSchemas
-    schema_base = DataSchemas("COPO").get_ui_template().get("copo")
+        
+    schema_base = DataSchemas.get_ui_template("COPO").get("copo")
 
+    """
     schema_dict = dict(
-        publication=schema_base.get("publication").get("fields", list()),
-        person=schema_base.get("person").get("fields", list()),
-        datafile=schema_base.get("datafile").get("fields", list()),
-        sample=schema_base.get("sample").get("fields", list()),
-        source=schema_base.get("source").get("fields", list()),
-        ontology_annotation=schema_base.get(
-            "ontology_annotation").get("fields", list()),
-        comment=schema_base.get("comment").get("fields", list()),
-        material_attribute_value=schema_base.get(
-            "material_attribute_value").get("fields", list()),
-        duration=schema_base.get("duration").get("fields", list()),
+        publication=DataSchemas.get_ui_template_node("COPO", "publication"),
+        person=DataSchemas.get_ui_template_node("COPO", "person"),
+        datafile=DataSchemas.get_ui_template_node("COPO", "datafile"),
+        sample=DataSchemas.get_ui_template_node("COPO", "sample"),  
+        source=DataSchemas.get_ui_template_node("COPO", "source"), 
+        ontology_annotation=DataSchemas.get_ui_template_node("COPO", "ontology_annotation"), 
+        comment=DataSchemas.get_ui_template_node("COPO", "comment"),
+        material_attribute_value=DataSchemas.get_ui_template_node("COPO", "material_attribute_value"), 
+        duration=DataSchemas.get_ui_template_node("COPO", "duration"),
         miappe_rooting_greenhouse=schema_base.get('miappe').get(
             'rooting').get('greenhouse').get("fields", list()),
         miappe_rooting_field=schema_base.get('miappe').get(
@@ -410,12 +410,28 @@ def get_copo_schema(component, as_object=False):
             "phenotypic_variables").get("fields", list()),
         environment_variables=schema_base.get("miappe").get(
             "environment_variables").get("fields", list()),
-        metadata_template=schema_base.get(
-            "metadata_template").get("fields", list()),
-        approval=schema_base.get("approval").get("fields", list()),
+        metadata_template=DataSchemas.get_ui_template_node("COPO", "metadata_template"),
+        approval=DataSchemas.get_ui_template_node("COPO", "approval")
     )
-
     schema = schema_dict.get(component, list())
+    """
+
+    schema = list()
+    match component:
+        case "miappe_rooting_greenhouse":
+            schema = schema_base.get('miappe').get('rooting').get('greenhouse').get("fields", list())
+        case "miappe_rooting_field":
+            schema = schema_base.get('miappe').get('rooting').get('field').get("fields", list())
+        case "hydroponics":
+            schema = schema_base.get('miappe').get('nutrients').get('hydroponics').get('fields', list())
+        case "soil":
+            schema = schema_base.get('miappe').get('nutrients').get('soil').get('fields', list())
+        case "phenotypic_variables":
+            schema = schema_base.get("miappe").get("phenotypic_variables").get("fields", list())
+        case "environment_variables":
+            schema = schema_base.get("miappe").get("environment_variables").get("fields", list())
+        case _:
+            schema = DataSchemas.get_ui_template_node("COPO", component)
 
     if schema and as_object:
         schema = json_to_object(dict(fields=schema)).fields

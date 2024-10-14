@@ -1,16 +1,17 @@
-FROM python:3.10.13-bullseye
+#FROM python:3.10.13-bullseye
+FROM python:3.10.15-slim-bookworm
 
 ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update && apt-get install -y \
     default-jre \
     rsync \
-    git \
-    nano \
+    #git \
+    #nano \
     vim \
     less \
     libxml2-dev \
-    python \
+    python3 \
     build-essential \
     make \
     gcc \
@@ -19,7 +20,10 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     ruby-dev \
     rubygems \
-    poppler-utils && \
+    poppler-utils \
+    wget \
+    curl \
+    python-is-python3 && \
     gem install sass && \
     pip install --upgrade pip && \
     apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
@@ -33,7 +37,7 @@ RUN mkdir /code
 WORKDIR /copo
 COPY . /code/
 
-RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/7.0.1/webin-cli-7.0.1.jar
+RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/8.0.0/webin-cli-8.0.0.jar
 
 # add aspera client to path
 COPY ./shared_tools/reposit/.aspera/ /root/.aspera/

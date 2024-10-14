@@ -32,7 +32,17 @@ th {
     background-color: #eee;
 }
 
-/*Filter projecttypes usign checkboxes*/
+.text-centre {
+    text-align: center !important;
+}
+
+.centre-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/*Filter project types usign checkboxes*/
 .alert {
     --bs-alert-bg: transparent;
     --bs-alert-padding-x: 1rem;

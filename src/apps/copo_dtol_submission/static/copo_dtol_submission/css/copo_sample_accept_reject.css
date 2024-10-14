@@ -83,8 +83,9 @@ td {
     max-height: 4em;
     /* fallback */
     max-width: 200px;
-    -webkit-line-clamp: 3;
     /* number of lines to show */
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -99,8 +100,9 @@ td {
     max-height: 4em;
     /* fallback */
     max-width: 150px;
-    -webkit-line-clamp: 3;
     /* number of lines to show */
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
