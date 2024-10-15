@@ -13,5 +13,5 @@ def generate_column_title(label, copo_api_labels=list()):
     title_case_label = convertStringToTitleCase(label)
     # Special case for COPO API labels to append 'Link' to the title
     if label.lower() in copo_api_labels:
-        return f"{title_case_label.replace('Record', 'Sample')} Link"
+        return f"{title_case_label.replace('Record Identifier', 'Sample').replace('Manifest Identifier', 'Manifest')} Link"
     return title_case_label
