@@ -73,7 +73,6 @@ def format_date(input_date):
 def filter_for_API(sample_list, add_all_fields=False):
     # add field(s) here which should be time formatted
     time_fields = ["time_created", "time_updated"]
-    sensitive_fields = d_utils.get_sensitive_fields(component='sample')
     profile_type = None
     if len(sample_list) > 0:
         profile_type = sample_list[0].get("tol_project", "dtol").lower()
@@ -140,9 +139,6 @@ def filter_for_API(sample_list, add_all_fields=False):
             if k in export:
                 if k in time_fields:
                     s_out[k] = format_date(v)
-                elif k in sensitive_fields:
-                    # GDPR sensitive fields should be excluded
-                    pass
                 else:
                     s_out[k] = v
             if k == "changelog":
@@ -160,18 +156,12 @@ def filter_for_API(sample_list, add_all_fields=False):
                     if k not in s_out.keys():
                         if k in defaults_list.keys():
                             s_out[k] = defaults_list[k]
-                        elif k in sensitive_fields:
-                            # GDPR sensitive fields should be excluded
-                            pass
                         else:
                             s_out[k] = ""
                 out.append(s_out)
             else:
-                # Exclude GDPR sensitive fields before appending 's_out'
-                filtered_s_out = {key: value for key, value in s_out.items() if key not in sensitive_fields}
-
+                filtered_s_out = {key: value for key, value in s_out.items() if key in export}
                 out.append(filtered_s_out)
-
     return out
 
 
@@ -320,7 +310,8 @@ def get_fields_by_manifest_version(request):
 
     if manifest_version in manifest_versions:
         # Get fields based on standard
-        template = get_mapped_field_by_standard(standard=standard, project=project, manifest_version=manifest_version)
+        mapped_field_dict = get_mapped_field_by_standard(standard=standard, project=project, manifest_version=manifest_version)
+        template = list(mapped_field_dict.values())    
     else:
         # Show error if manifest version does not exist
         error= f'No fields exist for the manifest version, {manifest_version}. Available manifest versions are {d_utils.join_list_with_and_as_last_entry(manifest_versions)}.'
@@ -341,10 +332,8 @@ def get_fields_by_manifest_version(request):
     return  HttpResponse(output, content_type='application/json')
 
 def get_project_samples_by_associated_project_type(request, values):
-    associated_profile_types_List = values.split(",")
+    associated_profile_types_List = d_utils.convertStringToList(values) # Convert string to list of lowercase strings
     associated_profile_types_List = list(map(lambda x: x.strip().upper(), associated_profile_types_List))
-    # remove any empty elements in the list (e.g. where 2 or more commas (i.e. ,) have been typed in error
-    associated_profile_types_List[:] = [x for x in associated_profile_types_List if x]
     samples = Sample().get_project_samples_by_associated_project_type(associated_profile_types_List)
     out = list()
     if samples:

@@ -562,7 +562,7 @@ paths:
         - **ERGA_COMMUNITY** refers to European Reference Genome Atlas - Community (ERGA_COMMUNITY)
         - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
 
-        For example, to query all associated Tree of Life (ToL) projects, input: ASG,BGE,DTOL,dtolenv,ERGA,ERGA_PILOT,ERGA_COMMUNITY,POP_GENOMICS
+        For example, to query all associated Tree of Life (ToL) projects, input: ASG,BGE,DTOL,DTOLENV,ERGA,ERGA_PILOT,ERGA_COMMUNITY,POP_GENOMICS
       parameters:
         - name: values
           in: path

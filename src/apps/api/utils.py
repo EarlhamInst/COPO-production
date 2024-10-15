@@ -1,7 +1,7 @@
 __author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
 
 from common.lookup.lookup import API_RETURN_TEMPLATES
-from common.schemas.utils.data_utils import get_sensitive_fields
+from common.schemas.utils.data_utils import get_export_fields
 from django.http import HttpResponse
 from django_tools.middlewares import ThreadLocal
 from .views.mapping import get_mapped_result
@@ -219,6 +219,7 @@ def generate_rocrate_response(samples):
             list(_dict.items())[:pos] + list(obj.items()) + list(_dict.items())[pos:])}
 
         for x in samples:
+            sample_type = x.get("tol_project", "")
             sample_item = {
                 "@id": f"https://copo-project.org/api/sample/copo_id/{x['copo_id']}", "@type": "BioSample"}
             keys_lst = list(x.keys())
@@ -263,9 +264,8 @@ def generate_rocrate_response(samples):
                             # sample_item[pp[0].lower()].append({"@id": collector["@id"]})
                             x[field].append({"@id": collector["@id"]})
 
-            # GDPR sensitive fields should be excluded
-            sensitive_fields = get_sensitive_fields(component='sample')
-            filtered_x = {key: value for key, value in x.items() if key not in sensitive_fields}
+            export_fields = get_export_fields(component='sample', project=sample_type)
+            filtered_x = {key: value for key, value in x.items() if key in export_fields}
 
             # Update sample_item with the filtered item
             sample_item.update(filtered_x)
