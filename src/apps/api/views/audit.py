@@ -9,42 +9,35 @@ from django.http import HttpResponse
 from src.apps.api.utils import finish_request
 
 def filter_audits_for_API(audits):
-    sensitive_fields = d_utils.get_sensitive_fields(component='sample')
+    default_fields = ['copo_id', 'field', 'outdated_value', 'sample_type', 'update_type', 'updated_value']
     time_fields = ['time_updated']
     audit_log_types = ['update_log', 'removal_log', 'truncated_log']   
     out = list()
 
-    for audit in audits:
-        for log_type in audit_log_types:
-            if log_type in audit:
-                audit_log = audit.get(log_type, list())
+    if audits:
+        for audit in audits:
+            for log_type in audit_log_types:
+                if log_type in audit:
+                    audit_log = audit.get(log_type, list())
+                    for element in audit_log:
+                        data = dict()
+                        sample_type = element.get('sample_type', str()).lower()
+                        export_fields = d_utils.get_export_fields(component='sample', project=sample_type)
 
-                for element in audit_log:
-                    data = dict()
-
-                    for k, v in element.items():
-                        if k in time_fields:
-                            data[k] = format_date(v)
-                        elif k in sensitive_fields:
-                            # GDPR sensitive fields should be excluded
-                            pass
-                        elif k == 'copo_id':
-                            # Convert the 'copo_id' to a string so that it can be displayed
-                            data[k] = str(element[k])
-                        else:
-                            data[k] = v
-
-                    out.append(data)
+                        for k, v in element.items():
+                            if k in export_fields or k in default_fields:
+                                if k in time_fields:
+                                    data[k] = format_date(v)
+                                elif k == 'copo_id':
+                                    # Convert the 'copo_id' to a string so that it can be displayed
+                                    data[k] = str(element[k])
+                                else:
+                                    data[k] = v
+                        out.append(data)
     return out
 
 def filtered_audits_by_updatable_field(sample_id, updatable_field, sample_type):
-    # Split the string into a list
-    sample_id_list = sample_id.split(',')
-    sample_id_list = list(map(lambda x: x.strip().lower(), sample_id_list))
-
-    # Remove any empty elements in the list e.g.
-    # where 2 or more commas have been typed in error
-    sample_id_list[:] = [x for x in sample_id_list if x]
+    sample_id_list = d_utils.convertStringToList(sample_id)
 
     sample_updates = Audit().get_sample_update_audits_by_field_updated(
         sample_type, sample_id_list, updatable_field)
@@ -72,13 +65,7 @@ def get_sample_updates_by_sample_field_and_value(request,field, field_value):
     return finish_request(out)
 
 def get_sample_updates_by_manifest_id(request, manifest_id):
-    # Split the string into a list
-    manifest_id_list = manifest_id.split(',')
-    manifest_id_list = list(map(lambda x: x.strip(), manifest_id_list))
-
-    # Remove any empty elements in the list (e.g.
-    # where 2 or more commas have been typed in error
-    manifest_id_list[:] = [x for x in manifest_id_list if x]
+    manifest_id_list = d_utils.convertStringToList(manifest_id)
 
     # Remove duplicates
     manifest_id_list = list(set(manifest_id_list))
@@ -98,14 +85,7 @@ def get_sample_updates_by_manifest_id(request, manifest_id):
 
 def get_sample_updates_by_copo_id(request, copo_id):
     # NB: 'sample_id' is the 'copo_id' key in DB
-
-    # Split the string into a list
-    sample_id_list = copo_id.split(',')
-    sample_id_list = list(map(lambda x: x.strip(), sample_id_list))
-
-    # Remove any empty elements in the list (e.g.
-    # where 2 or more commas have been typed in error
-    sample_id_list[:] = [x for x in sample_id_list if x]
+    sample_id_list = d_utils.convertStringToList(copo_id)
 
     # Check if the 'sample_id' provided is valid
     if sample_id_list and not all(d_utils.is_valid_ObjectId(x) for x in sample_id_list):
@@ -151,12 +131,7 @@ def get_sample_updates_by_update_type(request, update_type):
     # Get all sample updates by 'sample_type' and 'update_type'
     # 'update_type' can be 'system' or 'user'
     sample_type = request.GET.get('sample_type', str())
-    sample_type_list = sample_type.split(',')
-    sample_type_list = list(map(lambda x: x.strip().lower(), sample_type_list))
-
-    # Remove any empty elements in the list (e.g.
-    # where 2 or more commas have been typed in error
-    sample_type_list[:] = [x for x in sample_type_list if x]
+    sample_type_list = d_utils.convertStringToList(sample_type)
 
     if len(sample_type_list) > 1 and not all(x in TOL_PROFILE_TYPES for x in sample_type_list) or len(sample_type_list) == 1 and sample_type_list[0] not in TOL_PROFILE_TYPES:
         return HttpResponse(status=400, content=f'Invalid sample type provided! COPO does not support the sample type(s) provided.')
