@@ -8,32 +8,47 @@ from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from django.http import HttpResponse
 from src.apps.api.utils import finish_request
 
-def filter_audits_for_API(audits):
+def filter_audits_for_API(audits=list()):
     default_fields = ['copo_id', 'field', 'outdated_value', 'sample_type', 'update_type', 'updated_value']
     time_fields = ['time_updated']
     audit_log_types = ['update_log', 'removal_log', 'truncated_log']   
     out = list()
+    export_fields_map = dict()
+    
+    for audit in audits:
+         export_fields = dict()
+         sample_type = audit.get('sample_type','').lower()
+         if not sample_type:
+             continue
+         if sample_type not in export_fields_map():
+              export_fields = d_utils.get_export_fields(component='sample', project=sample_type)
+              export_fields_map[sample_type] = export_fields
+         else: 
+              export_fields = export_fields_map[sample_type]
+         audit_data = dict()
+         audit_log_list = list()
+         # Convert the 'copo_id' to a string so that it can be displayed
+         for key, value in audit.items():
+            if key = "copo_id":
+                audit_data['copo_id'] = str(audit.get('copo_id',ObjectId())
 
-    if audits:
-        for audit in audits:
-            for log_type in audit_log_types:
-                if log_type in audit:
-                    audit_log = audit.get(log_type, list())
-                    for element in audit_log:
-                        data = dict()
-                        sample_type = element.get('sample_type', str()).lower()
-                        export_fields = d_utils.get_export_fields(component='sample', project=sample_type)
-
+            elif key in audit_log_types:
+                for element in value:
+                    if element['field'] in export_fields:
+                        audit_log_data = dict()
+                        audit_log_data["audit_type"] = key
                         for k, v in element.items():
-                            if element['field'] in export_fields or k in default_fields:
+                             if k in default_fields:
                                 if k in time_fields:
-                                    data[k] = format_date(v)
-                                elif k == 'copo_id':
-                                    # Convert the 'copo_id' to a string so that it can be displayed
-                                    data[k] = str(element[k])
+                                    audit_log_data[k] = format_date(v)
                                 else:
-                                    data[k] = v
-                        out.append(data)
+                                    audit_log_data[k] = v
+                        audit_log_list.append(audit_log_data)
+            else:
+                audit_data[key] = value
+         for audit_log_data in audit_log_list():
+            audit_log_data.update(audit_data)
+            out.append(audit_log_data)
     return out
 
 def filtered_audits_by_updatable_field(sample_id, updatable_field, sample_type):
