@@ -25,7 +25,7 @@ def filter_audits_for_API(audits):
                         export_fields = d_utils.get_export_fields(component='sample', project=sample_type)
 
                         for k, v in element.items():
-                            if k in export_fields or k in default_fields:
+                            if element['field'] in export_fields or k in default_fields:
                                 if k in time_fields:
                                     data[k] = format_date(v)
                                 elif k == 'copo_id':
