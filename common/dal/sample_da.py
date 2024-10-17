@@ -6,6 +6,7 @@ from django_tools.middlewares import ThreadLocal
 from collections import defaultdict
 from common.dal.mongo_util import cursor_to_list, cursor_to_list_str, cursor_to_list_no_ids
 from common.schema_versions.lookup.dtol_lookups import EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY, EXCLUDED_SAMPLE_TYPES, TOL_PROFILE_TYPES, SANGER_TOL_PROFILE_TYPES, PERMIT_FILENAME_COLUMN_NAMES, GENOMICS_PROJECT_SAMPLE_TYPE_DICT
+from itertools import chain
 from pymongo.collection import ReturnDocument
 from common.utils import helpers
 from bson.objectid import ObjectId
@@ -1253,3 +1254,23 @@ class Sample(DAComponent):
         self.get_collection_handle().update_many(
             {"sample_type": {"$in": TOL_PROFILE_TYPES},
                 "status": "sending", "date_modified": {"$lt": datetime.now(timezone.utc).replace(microsecond=0) - timedelta(seconds=refresh_threshold)}},{"$set": update_data})
+        
+    def get_custom_sample_fields(self):
+        schema = self.get_component_schema()
+
+        # Get COPO defined field names
+        # i.e. field names that are camel case or lowercase
+        copo_defined_fields = [x['id'].split('.')[-1] for x in schema if not x.get('specifications', list()) and not x.get('manifest_versions', list())]
+
+        # Get unique fields
+        copo_defined_fields = list(set(copo_defined_fields))
+        copo_defined_fields.sort()
+
+        return copo_defined_fields
+    
+    def get_available_manifest_versions(self, project):
+        schema = self.get_component_schema()
+        manifest_versions = [x.get('manifest_version',list()) for x in schema if project.lower() in x.get('specifications', list())]
+        manifest_versions = sorted(list(set(chain(*manifest_versions))))
+        return manifest_versions
+
