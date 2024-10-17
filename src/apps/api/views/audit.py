@@ -30,7 +30,7 @@ def filter_audits_for_API(audits=list()):
          # Convert the 'copo_id' to a string so that it can be displayed
          for key, value in audit.items():
             if key == "copo_id":
-                audit_data['copo_id'] = str(audit.get('copo_id',ObjectId())
+                audit_data['copo_id'] = str(audit.get('copo_id',ObjectId()))
 
             elif key in audit_log_types:
                 for element in value:
