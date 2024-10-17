@@ -338,7 +338,8 @@
     "ETHICS_PERMITS_DEF": {
         "dwc": {
             "field": "license",
-            "uri": "http://purl.org/dc/terms/license"
+            "uri": "http://purl.org/dc/terms/license",
+            "description": "A legal document giving official permission to do something with the resource."
         },
         "tol": {
             "field": "ETHICS_PERMITS_DEF"

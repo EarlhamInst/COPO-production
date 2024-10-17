@@ -142,12 +142,6 @@ class Command(BaseCommand):
         }
         
         # DWC data
-        self.dwc_fields_uri_lst = {
-            'license': {
-                'uri': 'http://purl.org/dc/terms/license'
-            }
-        }
-
         self.DWC_FIELD_NAMES_MAPPING = {
             'DESCRIPTION_OF_COLLECTION_METHOD': {
                 'dwc': 'samplingProtocol'
@@ -473,13 +467,11 @@ class Command(BaseCommand):
             })
 
             # Apply the filtering criteria
-            dwc_uri_prefix = 'http://rs.tdwg.org/dwc/terms/'
             df_latest_term_versions = df.groupby('field')['issued'].transform('max')
 
             # Filter the dataframe based on latest versions, non-deprecated, and valid DWC term URIs
             df_filtered = df[(df['issued'] == df_latest_term_versions) & 
-                            (df['status'] != 'deprecated') & 
-                            (df['uri'].str.startswith(dwc_uri_prefix, na=False))]
+                            (df['status'] == 'recommended')]
             
             # Convert the filtered dataframe to JSON format
             dwc_json_latest_non_deprecated_term_versions = df_filtered[['field', 'description', 'uri']].to_json(orient='records', indent=4)
@@ -488,13 +480,6 @@ class Command(BaseCommand):
             dwc_json = json.loads(dwc_json_latest_non_deprecated_term_versions)
 
             # print(json.dumps(dwc_json, indent=4, sort_keys=False, default=str))
-                    
-            # Append custom items to the dwc_json
-            for custom in self.dwc_fields_uri_lst:
-                if custom not in [d.get('field','') for d in dwc_json]:
-                    field = custom
-                    uri = self.dwc_fields_uri_lst[custom]['uri']
-                    dwc_json.append({'field': field, 'description': '', 'uri': uri})
 
             ''' 
              Uncomment the following line to write the DWC json schema to a file
