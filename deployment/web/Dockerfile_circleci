@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     ruby-dev \
     rubygems \
+    wget \
     poppler-utils && \
     gem install sass && \
     pip install --upgrade pip && \
