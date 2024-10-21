@@ -1,4 +1,4 @@
-FROM python:3.10.13-bullseye
+FROM python:3.12.7-slim-bookworm
 
 ENV PYTHONUNBUFFERED 1
 
@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y \
     vim \
     less \
     libxml2-dev \
-    python \
     build-essential \
     make \
     gcc \
