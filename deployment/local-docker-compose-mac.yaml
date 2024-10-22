@@ -3,7 +3,7 @@
 version: "3.9"
 services:
   copo_web:
-    image: debbyku/copo_new:v2.0.u2204
+    image: copo-web:3.12_24.04
     command: >
       sleep infinity
     ports:
@@ -81,7 +81,7 @@ services:
       - POSTGRES_PASSWORD=password
 
   copo_mongo:
-    image: copo/copo-mongo-mac:v7.0.1
+    image: copo/copo-mongo-mac:v8.0.1
     command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
     entrypoint:
        - bash
@@ -100,26 +100,26 @@ services:
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD=password
       - MONGO_DB=copo_mongo
-  copo_browser:
-    image: debbyku/browserless.chrome
-    ports: 
-      - "3000:3000"
-    links:
-      - copo_web:copo-new.cyverseuk.org
-    environment:
-      - COPO_WEB_USER=${COPO_WEB_USER}
-      - COPO_WEB_USER_PW=${COPO_WEB_USER_PW}
-      - COPO_WEB_URL=http://copo-new.cyverseuk.org:8000
-      - BROWSERLESS_HTTP_URL=http://copo_browser:3000
-      - BROWSERLESS_WS_URL=ws://copo_browser:3000
-      - CHROME_REFRESH_TIME=1800000
-      - CHROME_REFRESH_TIME_RANDOMNESS=10000
-      - CHROME_ARGS=--no-sandbox,--keepalive=30000,--disable-dev-shm-usage,--disable-gpu,--disable-setuid-sandbox,--disable-software-rasterizer,--disable-dev-shm-usage,--disable-accelerated-2d-canvas,--disable-gpu-sandbox,--disable-infobars,--disable-notifications,--disable-extensions,--disable-web-security,--disable-features=IsolateOrigins,site-per-process,--disable-site-isolat
-      - KEEP_ALIVE=true
-      - PREBOOT_CHROME=true
-      - MAX_CONCURRENT_SESSIONS=5
-      - MAX_QUEUE_LENGTH=10
-      - PREBOOT_QUANTITY=2
+  #copo_browser:
+  #  image: debbyku/browserless.chrome
+  #  ports: 
+  #    - "3000:3000"
+  #  links:
+  #    - copo_web:copo-new.cyverseuk.org
+  #  environment:
+  #    - COPO_WEB_USER=${COPO_WEB_USER}
+  #    - COPO_WEB_USER_PW=${COPO_WEB_USER_PW}
+  #    - COPO_WEB_URL=http://copo-new.cyverseuk.org:8000
+  #    - BROWSERLESS_HTTP_URL=http://copo_browser:3000
+  #    - BROWSERLESS_WS_URL=ws://copo_browser:3000
+  #    - CHROME_REFRESH_TIME=1800000
+  #    - CHROME_REFRESH_TIME_RANDOMNESS=10000
+  #    - CHROME_ARGS=--no-sandbox,--keepalive=30000,--disable-dev-shm-usage,--disable-gpu,--disable-setuid-sandbox,--disable-software-rasterizer,--disable-dev-shm-usage,--disable-accelerated-2d-canvas,--disable-gpu-sandbox,--disable-infobars,--disable-notifications,--disable-extensions,--disable-web-security,--disable-features=IsolateOrigins,site-per-process,--disable-site-isolat
+  #    - KEEP_ALIVE=true
+  #    - PREBOOT_CHROME=true
+  #    - MAX_CONCURRENT_SESSIONS=5
+  #    - MAX_QUEUE_LENGTH=10
+  #    - PREBOOT_QUANTITY=2
   edp:
     image: python:3.10.13-bullseye
     command: sleep infinity
