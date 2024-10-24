@@ -166,6 +166,7 @@ $(document).ready(function () {
   args_dict['tagged_seq_checklist_id'] = $('#checklist_id')
     .find(':selected')
     .val();
+  args_dict['profile_id'] = $('#profile_id').val();
   load_records(componentMeta, args_dict); // call to load component records
   $('.download-blank-manifest-template').attr(
     'href',
@@ -228,6 +229,7 @@ $(document).ready(function () {
       $('#blank_manifest_url_' + this.value).val()
     );
     args_dict['tagged_seq_checklist_id'] = this.value;
+    args_dict['profile_id'] = $('#profile_id').val(),
     load_records(componentMeta, args_dict); // call to load component records
   });
 

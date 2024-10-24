@@ -44,8 +44,8 @@ class Submission(DAComponent):
                                   {"$set": {"dtol_status": next_status, "date_modified": helpers.get_datetime()}})
             
         elif len(sub["dtol_samples"]) > 0:
-            dtol_samples_id = [ObjectId(x) for x in sub["dtol_samples"]]
-            processing_sample_count = Sample().get_collection_handle().count_documents({"profile_id":sub["profile_id"], "_id": {"$in": dtol_samples_id}, "status":"processing"})
+            dtol_samples_ids = [ObjectId(x) for x in sub["dtol_samples"]]
+            processing_sample_count = Sample().get_collection_handle().count_documents({"profile_id":sub["profile_id"], "_id": {"$in": dtol_samples_ids}, "status":"processing"})
             if processing_sample_count > 0:
                 sub_handle.update_one({"_id": ObjectId(sub_id)},
                                   {"$set": {"dtol_status":"pending" , "date_modified": helpers.get_datetime() } })
@@ -85,7 +85,7 @@ class Submission(DAComponent):
         sub = self.get_collection_handle().find(
             {"type": {"$in": TOL_PROFILE_TYPES}, "dtol_status": {
                 "$in": ["bioimage_sending", "bioimage_pending"]}},
-            {"dtol_specimen": 1, "dtol_status": 1, "profile_id": 1,
+            {"dtol_specimen": 1, "dtol_status": 1, "profile_id": 1, "dtol_samples":1,
              "date_modified": 1, "type": 1})
         sub = cursor_to_list(sub)
         out = list()

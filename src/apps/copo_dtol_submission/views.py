@@ -151,8 +151,11 @@ def add_sample_to_dtol_submission(request):
  
         if not sub:
             sub = Submission(profile_id).save_record(
-                                dict(), **{"type": type_sub.lower()})     
-        sub["dtol_status"] = "pending"
+                                dict(), **{"type": type_sub.lower()})          
+            sub["dtol_status"] = "pending"
+        elif sub["dtol_status"] == "complete":
+            sub["dtol_status"] = "pending"
+
         sub["target_id"] = sub.pop("_id")
 
         sample_oids = [ObjectId(id) for id in sample_ids]

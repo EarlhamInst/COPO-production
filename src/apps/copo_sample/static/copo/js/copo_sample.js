@@ -20,7 +20,9 @@ $(document).on("document_ready", function() {
   var componentMeta = get_component_meta(component);
 
   //load records
-  load_records(componentMeta);
+  var args_dict = {};
+  args_dict['profile_id'] = $('#profile_id').val();
+  load_records(componentMeta, args_dict);
 
   //load pending description
   //pending_sample_description();   deprecated
@@ -1106,6 +1108,7 @@ $(document).on("document_ready", function() {
           data: {
             task: 'table_data',
             component: 'source',
+            profile_id: $('#profile_id').val(),
           },
           success: function (data) {
             var dataSet = data.table_data.dataSet;
@@ -1181,6 +1184,7 @@ $(document).on("document_ready", function() {
                     data: {
                       task: 'attributes_display',
                       component: 'source',
+                      profile_id: $('#profile_id').val(),
                       target_id: row.data().record_id,
                     },
                     success: function (data) {
