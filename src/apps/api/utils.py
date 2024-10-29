@@ -286,7 +286,7 @@ def generate_csv_response(standard, template):
 
     return response
 
-def generate_wrapper_response(error, num_found, template):
+def generate_wrapper_response(error=None, num_found=None, template=None):
     wrapper = get_return_template('WRAPPER')
 
     if error is None:
