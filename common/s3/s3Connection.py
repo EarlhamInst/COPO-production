@@ -6,7 +6,8 @@ from common.utils.helpers import notify_read_status
 from common.utils.logger import Logger
 from boto3.s3.transfer import TransferConfig
 import logging
-from io import BytesIO
+from common.dal.copo_da import EnaFileTransfer
+
 
 class S3Connection():
     """
@@ -212,8 +213,18 @@ class S3Connection():
     def validate_and_delete(self, target_id=str(), target_ids=list()):
         user = get_current_user()
         bucket_name = str(user.id) + "_" + user.username
+        filestatus_map = EnaFileTransfer().get_transfer_status_by_ecs_path(ecs_locations=[ f"{bucket_name}/{key}" for key in target_ids])
+        file_not_deleted = []
+        status = False
         for key in target_ids:
-            self.s3_client.delete_object(Bucket=bucket_name, Key=key)
-        return dict(status='success', message="File(s) have been deleted!")
- 
-        
+            #ok to delete the file if there is no need to tranfer to ENA
+            if filestatus_map.get(f"{bucket_name}/{key}", "ena_complete") == "ena_complete":
+                self.s3_client.delete_object(Bucket=bucket_name, Key=key)
+                status = True
+            else:
+                file_not_deleted.append(key)
+                
+        if status:
+            return dict(status="success", message="File(s) have been deleted " +  ("excepts for following files in use: " + "<br/>".join(file_not_deleted) if file_not_deleted else "")  )
+        else:
+            return dict(status="failure", message="No File has been deleted and all selected file(s) in use")

@@ -33,6 +33,8 @@ class Command(BaseCommand):
 
         self.generate_lookup_datasource()
 
+        DataSchemas().refresh()
+        
         self.stdout.write(self.style.SUCCESS('Successfully generated schemas'))
 
     def generate_ui_schemas(self):
