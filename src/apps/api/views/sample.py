@@ -66,8 +66,20 @@ def get(request, id):
 
 
 def format_date(input_date):
-    # format of date fields exported to STS
-    return input_date.replace(tzinfo=datetime.timezone.utc).isoformat()
+    try:
+        # Check if 'input_date' is an empty string
+        if input_date == '':
+            return ''
+
+        # Convert input_date from string to datetime if it's not already
+        if isinstance(input_date, str):
+            input_date = datetime.datetime.fromisoformat(input_date)
+
+        # Format of date fields exported to STS
+        return input_date.replace(tzinfo=datetime.timezone.utc).isoformat()
+    except Exception as e:
+        print(f'An error occurred while formatting the date: {e}')
+        return None
 
 
 def filter_for_API(sample_list, add_all_fields=False):
