@@ -102,9 +102,9 @@ class Command(BaseCommand):
                                                              description="WEST GERMAN GENOME CENTRE",
                                                              label="WEST GERMAN GENOME CENTRE")
                        
-        #SequencingCentre().create_sequencing_centre(name="OTHER",
-        #                                                     description="Other_ERGA_Associated_GAL",
-        #                                                     label="Other_ERGA_Associated_GAL")                                     
+        SequencingCentre().create_sequencing_centre(name="OTHER",
+                                                            description="Other associated sequencing centre",
+                                                            label="OTHER")                                     
 
         self.stdout.write("Sequencing Centres Added")
         records = SequencingCentre.objects.all()
