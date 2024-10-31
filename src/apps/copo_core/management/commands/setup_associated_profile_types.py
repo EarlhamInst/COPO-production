@@ -1,8 +1,7 @@
 from typing import Any
 from django.core.management.base import BaseCommand
 from src.apps.copo_core.models import AssociatedProfileType
-from django.contrib.auth.models import User
-
+from common.dal.copo_base_da import DataSchemas
 
 # The class must be named Command, and subclass BaseCommand
 class Command(BaseCommand):
@@ -68,3 +67,6 @@ class Command(BaseCommand):
 
         for record in records:
             self.stdout.write(record.name)
+
+        #refresh the schema in case it changes the schema
+        DataSchemas.refresh()

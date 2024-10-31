@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: COPO API
   description: |
-    The following are Swagger Application Programming Interface (API) methods for audits, 
+    The following are Swagger User Interface (UI) Application Programming Interface (API) methods for audits, 
     manifests, samples, profiles, statistics and Tree of Life (ToL) fields mapping.
 
     Sensitive data such as ORCIDs and email addresses will be excluded from API responses.
@@ -321,10 +321,7 @@ paths:
       description: >
         If no manifest type is provided, COPO will return a list of projects brokered with the latest manifest version of each project.
       parameters:
-        - in: query
-          name: manifest_type
-          schema:
-            $ref: '#/components/schemas/ManifestTypes'
+        - $ref: '#/components/parameters/manifest_type'
         - $ref: '#/components/parameters/return_type'
       responses:
         200:
@@ -552,20 +549,20 @@ paths:
       summary: Get sample records in a project by associated project type(s)
       description: |
         Get a list of all samples of a project in COPO by associated project type
-        Available associated projects - **ASG**, **BGE**, **DTOL**, **dtolenv**, **ERGA**, **ERGA_PILOT**, **ERGA_COMMUNITY**, **POP_GENOMICS**
+        Available associated projects - **ASG**, **BGE**, **DTOL**, **DTOLENV**, **ERGA**, **ERGA_PILOT**, **ERGA_COMMUNITY**, **POP_GENOMICS**
 
         To query multiple associated projects, separate them with a comma.
 
         - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
-        - **BGE** refers to Darwin Tree of Life (DTOL)
+        - **BGE** refers to Biodiversity Genomics Europe (BGE)
         - **DTOL** refers to Darwin Tree of Life (DTOL)
-        - **dtolenv** refers to Darwin Tree of Life (DTOL)
+        - **DTOLENV** refers to Darwin Tree of Life Environmental Samples (DTOLENV)
         - **ERGA** refers to European Reference Genome Atlas (ERGA)
-        - **ERGA_PILOT** refers to uropean Reference Genome Atlas - Pilot (ERGA_PILOT)
+        - **ERGA_PILOT** refers to European Reference Genome Atlas - Pilot (ERGA_PILOT)
         - **ERGA_COMMUNITY** refers to European Reference Genome Atlas - Community (ERGA_COMMUNITY)
         - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
 
-        For example, to query all associated Tree of Life (ToL) projects, input: ASG,BGE,DTOL,dtolenv,ERGA,ERGA_PILOT,ERGA_COMMUNITY,POP_GENOMICS
+        For example, to query all associated Tree of Life (ToL) projects, input: ASG,BGE,DTOL,DTOLENV,ERGA,ERGA_PILOT,ERGA_COMMUNITY,POP_GENOMICS
       parameters:
         - name: values
           in: path
@@ -597,16 +594,9 @@ paths:
       description: |
         Get a list of fields of a project for a given manifest version.
 
-        - If project type is provided and no manifest version is provided, COPO will return a list of fields for the given project type according to the latest manifest version for that project.
-
-        - If no project type is provided and manifest version is provided, COPO will return a list of fields for the given project type that matches the given manifest version.
-
-        - If no project type and no manifest version are provided, COPO will return a list of fields for all projects according to the latest manifest version for that project.
+        - If a manifest version is provided, COPO will return a list of fields for the first project in the dropdown menu based on the latest manifest version associated with that project.
       parameters:
-        - name: project
-          in: query
-          schema:
-            $ref: '#/components/schemas/ManifestTypes'
+        - $ref: '#/components/parameters/project_required'
         - name: manifest_version
           in: query
           schema:
@@ -965,7 +955,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TOLProjectList'
+                $ref: '#/components/schemas/GenericOutputSchema'
 
   /stats/associated_tol_projects:
     get:
@@ -978,7 +968,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TOLProjectList'
+                $ref: '#/components/schemas/GenericOutputSchema'
         '400':
           description: Invalid project found in request
 
@@ -991,12 +981,11 @@ paths:
       tags:
         - Tree of Life (ToL) Mapping
       summary: >
-        Get a mapping of ToL manifest fields brokered through COPO 
-        by DWC standard, MIxS standard or ENA standard
+        Retrieve a mapping of fields for the latest manifest version brokered through COPO, categorised by project and based on a recognised standard.
       description: >
-        If no standard is provided, COPO will return a list of mapping of Tree of Life (ToL) fields to Darwin Core (DWC) standard, 
-        Minimum Information about any (X) Sequence (MIxS) standard and European Nucleotide Archive (ENA) standard.
+        If no standard is provided, fields will be mapped to Tree of Life (ToL).
       parameters:
+        - $ref: '#/components/parameters/project_required'
         - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:
@@ -1005,63 +994,60 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TOLProjectList'
+                $ref: '#/components/schemas/GenericOutputSchema'
         '400':
-          description: Invalid mapping type found in request
+          description: Invalid request
 
         '500':
-          description: No mapping exist for the given mapping type
-
-  /mapping/manifest_type/{manifest_type}:
-    get:
-      tags:
-        - Tree of Life (ToL) Mapping
-      summary: >
-        Get a mapping of ToL fields by manifest type - ASG, DTOL, DTOLENV or ERGA
-        to DWC fields, MIxS fields and ENA fields
-      description: >
-        COPO will return a list of mapping for one of the manifests project types - Aquatic Symbiosis Genomics (ASG), 
-        Darwin Tree of Life (DTOL), Darwin Tree of Life Environmental Samples (DTOLENV) or European Reference Genome Atlas (ERGA)
-        to Darwin Core (DWC) fields, Minimum Information about any (X) Sequence (MIxS) fields and European Nucleotide Archive (ENA) fields
-      parameters:
-        - in: path
-          name: manifest_type
-          required: true
-          schema:
-            $ref: '#/components/schemas/ManifestTypes'
-        - $ref: '#/components/parameters/standard'
-        - $ref: '#/components/parameters/return_type'
-      responses:
-        '200': # status code
-          description: A JSON array of mapping
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TOLProjectList'
-        '400':
-          description: Invalid mapping type found in request
-
-        '500':
-          description: No mapping exist for the given mapping type
+          description: No mapping exist
 
 components:
   parameters:
+    project:
+      name: project
+      in: query
+      description: |
+        - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
+        - **DTOL** refers to Darwin Tree of Life (DTOL)
+        - **DTOLENV** refers to Darwin Tree of Life Environmental Samples (DTOLENV)
+        - **ERGA** refers to European Reference Genome Atlas (ERGA)
+      schema:
+        $ref: '#/components/schemas/Projects'
+
+    project_required:
+      name: project
+      in: query
+      required: true
+      description: |
+        - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
+        - **DTOL** refers to Darwin Tree of Life (DTOL)
+        - **DTOLENV** refers to Darwin Tree of Life Environmental Samples (DTOLENV)
+        - **ERGA** refers to European Reference Genome Atlas (ERGA)
+      schema:
+        $ref: '#/components/schemas/Projects'
+
+    manifest_type:
+      name: manifest_type
+      in: query
+      description: |
+        Manifest types:
+        - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
+        - **DTOL** refers to Darwin Tree of Life (DTOL)
+        - **DTOLENV** refers to Darwin Tree of Life Environmental Samples (DTOLENV)
+        - **ERGA** refers to European Reference Genome Atlas (ERGA)
+      schema:
+        $ref: '#/components/schemas/Projects'
+
     standard:
       name: standard
       in: query
       description: |
-        Available standards - **dwc**, **ena**, **mixs**, **tol**
-
-        To query multiple standards, separate them with a comma.
-
         - **dwc** refers to Darwin Core (DWC)
         - **ena** refers to European Nucleotide Archive (ENA)
         - **mixs** refers to Minimum Information about any (x) Sequence (MIxS)
         - **tol** refers to Tree of Life (ToL)
-
-        For example, to query all standards, input: dwc,ena,mixs,tol
       schema:
-        type: string
+        $ref: '#/components/schemas/Standards'
 
     return_type:
       name: return_type
@@ -1111,11 +1097,6 @@ components:
       type: string
       format: uuid
 
-    ManifestTypes:
-      type: string
-      enum: [ASG, DTOL, DTOLENV, ERGA]
-      description: Projects or manifest types brokered through COPO
-
     ManifestList:
       type: object
       properties:
@@ -1133,15 +1114,18 @@ components:
       type: string
       enum: ['2.5', '2.4', '2.4.1', '2.4.2', '2.4.3']
 
+    Projects:
+      type: string
+      enum: [ASG, DTOL, DTOLENV, ERGA]
+      description: Projects or manifest types brokered through COPO
+
     ReturnTypes:
       type: string
-      enum: [json, csv]
-      description: Return file formats
+      enum: [csv, json]
 
     ReturnTypes_with_rocrate:
       type: string
-      enum: [json, csv, rocrate]
-      description: Return file formats including RO-Crate
+      enum: [csv, json, rocrate]
 
     SequencingCentres:
       type: string
@@ -1169,6 +1153,10 @@ components:
           WEST GERMAN GENOME CENTRE,
         ]
       description: A list of sequencing centres
+
+    Standards:
+      type: string
+      enum: [dwc, ena, mixs, tol]
 
     Profile:
       type: object
@@ -1502,9 +1490,9 @@ components:
         [
           'ASSOCIATED_PROJECT_ACCESSIONS',
           'ASSOCIATED_TRADITIONAL_KNOWLEDGE_APPLICABLE',
-          'ASSOCIATED_TRADITIONAL_KNOWLEDGE_CONTACT',
           'ASSOCIATED_TRADITIONAL_KNOWLEDGE_LABEL',
           'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID',
+          'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE',
           'BARCODE_HUB',
           'BARCODE_PLATE_PRESERVATIVE',
           'BARCODING_STATUS',
@@ -1604,10 +1592,12 @@ components:
           'VOUCHER_ID',
           'VOUCHER_INSTITUTION',
           'VOUCHER_LINK',
+          'approval',
           'associated_tol_project',
           'biosampleAccession',
           'copo_profile_title',
           'manifest_id',
+          'manifest_version',
           'public_name',
           'sampleDerivedFrom',
           'sampleSameAs',
@@ -1716,7 +1706,7 @@ components:
           type: string
           description: Queried for sample biosample id
 
-    TOLProjectList:
+    GenericOutputSchema:
       type: object
       properties:
         status:

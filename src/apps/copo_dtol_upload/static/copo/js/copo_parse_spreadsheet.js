@@ -752,7 +752,7 @@ $(document).ready(function () {
           }
           $('#sample_info').hide();
           $('#sample_parse_table').DataTable({
-            scrollY: '400px',
+            scrollY: 'auto',
             scrollX: true,
           });
           $('#table_div').fadeIn(1000);
@@ -816,8 +816,8 @@ $(document).ready(function () {
           }
           $('#sample_info').hide();
           $('#sample_parse_table').DataTable({
-            scrollY: '400px',
-            scrollX: true,
+            scrollY: 'auto',
+            scrollX: true
           });
           $('#table_div').fadeIn(1000);
           $('#sample_parse_table').DataTable().draw();

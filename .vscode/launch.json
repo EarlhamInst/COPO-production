@@ -82,17 +82,19 @@
             "console": "integratedTerminal",
             "args": ["-A", "src", "beat", "-l", "critical"]
          },
-         {
-            "name": "Python: Django Shell",
+        {
+            "name": "Python: Generate standards map",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/manage.py",      
+            "program": "${workspaceFolder}/manage.py",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
+            },
             "args": [
-                "shell_plus",
-                "--ipython"
+                "generate_standards_map"
             ],
             "django": true,
             "justMyCode": false
-        }, 
+        }
     ]
 }

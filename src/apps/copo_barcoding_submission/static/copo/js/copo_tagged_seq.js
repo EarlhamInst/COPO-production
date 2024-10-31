@@ -129,7 +129,7 @@ $(document).ready(function () {
       }
       $('#sample_info').hide();
       $('#' + d.html_id).DataTable({
-        scrollY: '400px',
+        scrollY: 'auto',
         scrollX: true,
       });
       $('#table_div').fadeIn(1000);
@@ -166,6 +166,7 @@ $(document).ready(function () {
   args_dict['tagged_seq_checklist_id'] = $('#checklist_id')
     .find(':selected')
     .val();
+  args_dict['profile_id'] = $('#profile_id').val();
   load_records(componentMeta, args_dict); // call to load component records
   $('.download-blank-manifest-template').attr(
     'href',
@@ -228,15 +229,20 @@ $(document).ready(function () {
       $('#blank_manifest_url_' + this.value).val()
     );
     args_dict['tagged_seq_checklist_id'] = this.value;
+    args_dict['profile_id'] = $('#profile_id').val(),
     load_records(componentMeta, args_dict); // call to load component records
   });
 
   // Set colour of 'help_add_button' button and 'new-samples-spreadsheet-template'
   // button based on profile type
-  var profile_type = document.getElementById('profile_type').value.toLowerCase();
-  var colour = profile_type_def[profile_type]["widget_colour"];
-  $('#help_add_button').css("color",'white').css("background-color",colour);
-  $('.new-taggedseq-spreadsheet-template').css("color",'white').css("background-color",colour);
+  var profile_type = document
+    .getElementById('profile_type')
+    .value.toLowerCase();
+  var colour = profile_type_def[profile_type]['widget_colour'];
+  $('#help_add_button').css('color', 'white').css('background-color', colour);
+  $('.new-taggedseq-spreadsheet-template')
+    .css('color', 'white')
+    .css('background-color', colour);
   /*
   if (document.getElementById('profile_type').value.includes('ASG')) {
     $('#help_add_button').addClass('violet');
@@ -323,26 +329,33 @@ $(document).ready(function () {
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
-            file_processing_status = table.cell(rowIdx, i).data()
-            if (file_processing_status == "" || file_processing_status.includes('File archived'))
-               return false;
-            else
-               return true;
+            file_processing_status = table.cell(rowIdx, i).data();
+            if (
+              file_processing_status == '' ||
+              file_processing_status.includes('File archived')
+            )
+              return false;
+            else return true;
           });
         table
           .rows(error)
           .nodes()
           .to$()
           .addClass('highlight_error_file_processing_status');
-      }      
+      }
     }
 
-    $(".ena-accession").each(function(i, obj) {
-      if ($(obj).prop("tagName") != 'TH' && $(obj).text() != '') {
-         $(obj).html("<a href='https://www.ebi.ac.uk/ena/browser/view/" + $(obj).text() + "' target='_blank'>"+ $(obj).text()+"</a>");
+    $('.ena-accession').each(function (i, obj) {
+      if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
+        $(obj).html(
+          "<a href='https://www.ebi.ac.uk/ena/browser/view/" +
+            $(obj).text() +
+            "' target='_blank'>" +
+            $(obj).text() +
+            '</a>'
+        );
       }
-   });
-
+    });
   });
 });
 
@@ -392,10 +405,14 @@ function upload_spreadsheet(file) {
       }
     })
     .done(function (data) {
-      dialog.getButton('upload_taggedseq_manifest_button').enable();
+      // Hide upload button if 'Finish' button is visible and upload was successful
+      dialog
+        .getButton('upload_taggedseq_manifest_button')
+        .stopSpin()
+        .disable()
+        .hide();
       dialog.getButton('save_taggedseq_button').enable();
       dialog.setClosable(true);
-      dialog.getButton('upload_taggedseq_manifest_button').stopSpin();
     });
 }
 

@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.messages import constants as messages
 from datetime import timedelta
 from common.utils import helpers as resolve_env
+
 BASE_DIR = os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
@@ -134,6 +135,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_tools.middlewares.ThreadLocal.ThreadLocalMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
@@ -289,6 +291,7 @@ ROOT_URLCONF = 'src.main_config.urls'
 
 UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads')
 LOCAL_UPLOAD_PATH = os.path.join(BASE_DIR, 'local_uploads')
+STANDARDS_MAP_FILE_PATH = os.path.join(SCHEMA_VERSIONS_DIR, 'isa_mappings', 'standards_map.json')
 
 # Tinymce configuration
 TINYMCE_JS_URL = os.path.join(STATIC_URL, 'copo', 'tinymce','tinymce.min.js')

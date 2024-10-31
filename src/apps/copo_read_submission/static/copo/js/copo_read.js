@@ -9,20 +9,22 @@ function get_checklist_id() {
 function initialise_checklist_id() {
   if ($('#checklist_id').length > 0) {
     first = true;
-    var profile_checklist_ids = document.getElementById('profile_checklist_ids').value;
+    var profile_checklist_ids = document.getElementById(
+      'profile_checklist_ids'
+    ).value;
     $('#checklist_id option').each(function () {
       if (profile_checklist_ids.includes($(this).val())) {
-        $(this).text("* " + $(this).text());
+        $(this).text('* ' + $(this).text());
         if (first) {
           $(this).prop('selected', true);
           first = false;
         }
-      }  
+      }
     });
-  }  
-} 
+  }
+}
 
-var columnDefs = []
+var columnDefs = [];
 
 var dialog = new BootstrapDialog({
   title: 'Upload Read Manifest',
@@ -62,7 +64,7 @@ var dialog = new BootstrapDialog({
   ],
 });
 
-$(document).on("document_ready", function() {
+$(document).on('document_ready', function () {
   var uid = document.location.href;
   uid = uid.split('/');
   uid = uid[uid.length - 2];
@@ -84,9 +86,9 @@ $(document).on("document_ready", function() {
   };
   s3socket.onmessage = function (e) {
     d = JSON.parse(e.data);
-    var element = "";
+    var element = '';
 
-    if (d.html_id != "") {
+    if (d.html_id != '') {
       element = element = $('#' + d.html_id);
       if ($('.modal-dialog').is(':visible')) {
         elem = $('.modal-dialog').find('#' + d.html_id);
@@ -110,11 +112,11 @@ $(document).on("document_ready", function() {
       $(element).html(d.message);
       //$("#spinner").fadeOut()
     } else if (d.action === 'warning') {
-        // show something on the info div
-        // check info div is visible
-        $(element).removeClass('alert-danger').addClass('alert-warning');
-        $(element).html(d.message);
-        //$("#spinner").fadeOut()      
+      // show something on the info div
+      // check info div is visible
+      $(element).removeClass('alert-danger').addClass('alert-warning');
+      $(element).html(d.message);
+      //$("#spinner").fadeOut()
     } else if (d.action === 'error') {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');
@@ -154,7 +156,7 @@ $(document).on("document_ready", function() {
       }
       $('#sample_info').hide();
       $('#sample_parse_table').DataTable({
-        scrollY: '400px',
+        scrollY: 'auto',
         scrollX: true,
       });
       $('#table_div').fadeIn(1000);
@@ -166,20 +168,20 @@ $(document).on("document_ready", function() {
       $(element).html(d.message);
       var args_dict = {};
       args_dict['sample_checklist_id'] = get_checklist_id();
+      args_dict['profile_id'] = $('#profile_id').val(),
       load_records(componentMeta, args_dict, columnDefs); // call to load component records
     } else if (d.action === 'file_processing_status') {
-        $(element).html(d.message);
-        table = $('#read_table').DataTable();
-            //clear old, set new data
-        table.rows().deselect();
-        table.clear().draw();
-        table.rows.add(d.data["table_data"]).draw();
-        table.columns.adjust().draw();
-        table.search('').columns().search('').draw();
-        $(element).html(d.message + " ... Done");
+      $(element).html(d.message);
+      table = $('#read_table').DataTable();
+      //clear old, set new data
+      table.rows().deselect();
+      table.clear().draw();
+      table.rows.add(d.data['table_data']).draw();
+      table.columns.adjust().draw();
+      table.search('').columns().search('').draw();
+      $(element).html(d.message + ' ... Done');
 
-
-        /*
+      /*
         table = $('#read_table').DataTable();
         table.columns.adjust().draw();
          for (var i = 0; i < d.data["file_processing_status"].length; i++) {
@@ -198,7 +200,6 @@ $(document).on("document_ready", function() {
 
           }
           */
-
     }
   };
   window.addEventListener('beforeunload', function (event) {
@@ -216,13 +217,13 @@ $(document).on("document_ready", function() {
 
   //load_records(componentMeta); // call to load component records
 
-
-  initialise_checklist_id()
+  initialise_checklist_id();
   var args_dict = { sample_checklist_id: get_checklist_id() };
   $('.download-blank-manifest-template').attr(
     'href',
     $('#blank_manifest_url_' + get_checklist_id()).val()
   );
+  args_dict['profile_id'] = $('#profile_id').val(),
   load_records(componentMeta, args_dict, columnDefs); // call to load component records
 
   //register_resolvers_event(); //register event for publication resolvers
@@ -288,17 +289,22 @@ $(document).on("document_ready", function() {
       'href',
       $('#blank_manifest_url_' + this.value).val()
     );
+    var args_dict = {};
     args_dict['sample_checklist_id'] = this.value;
-    args_dict[''];
+    args_dict['profile_id'] = $('#profile_id').val();
     load_records(componentMeta, args_dict, columnDefs); // call to load component records
   });
 
   // Set colour of 'help_add_button' button and 'new-samples-spreadsheet-template'
   // button based on profile type
-  var profile_type = document.getElementById('profile_type').value.toLowerCase();
-  var colour = profile_type_def[profile_type]["widget_colour"];
-  $('#help_add_button').css("color",'white').css("background-color",colour);
-  $('.new-reads-spreadsheet-template').css("color",'white').css("background-color",colour);
+  var profile_type = document
+    .getElementById('profile_type')
+    .value.toLowerCase();
+  var colour = profile_type_def[profile_type]['widget_colour'];
+  $('#help_add_button').css('color', 'white').css('background-color', colour);
+  $('.new-reads-spreadsheet-template')
+    .css('color', 'white')
+    .css('background-color', colour);
   /*
   if (document.getElementById('profile_type').value.includes('ASG')) {
     $('#help_add_button').addClass('violet');
@@ -352,7 +358,7 @@ $(document).on("document_ready", function() {
     var numCols = table.columns().nodes().length;
     table.rows().nodes().to$().addClass('highlight_accession');
 
-    for (var i = 0; i <  numCols; i++) {
+    for (var i = 0; i < numCols; i++) {
       if ($(table.column(i).header()).text() == 'STATUS') {
         var no_accessiion_indexes = table
           .rows()
@@ -371,24 +377,32 @@ $(document).on("document_ready", function() {
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
-            file_processing_status = table.cell(rowIdx, i).data()
-            if (file_processing_status == "" || file_processing_status.includes('File archived'))
-               return false;
-            else
-               return true;
+            file_processing_status = table.cell(rowIdx, i).data();
+            if (
+              file_processing_status == '' ||
+              file_processing_status.includes('File archived')
+            )
+              return false;
+            else return true;
           });
         table
           .rows(error)
           .nodes()
           .to$()
           .addClass('highlight_error_file_processing_status');
-      }         
+      }
     }
 
-    $(".ena-accession").each(function(i, obj) {
-       if ($(obj).prop("tagName") != 'TH' && $(obj).text() != '') {
-          $(obj).html("<a href='https://www.ebi.ac.uk/ena/browser/view/" + $(obj).text() + "' target='_blank'>"+ $(obj).text()+"</a>");
-       }
+    $('.ena-accession').each(function (i, obj) {
+      if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
+        $(obj).html(
+          "<a href='https://www.ebi.ac.uk/ena/browser/view/" +
+            $(obj).text() +
+            "' target='_blank'>" +
+            $(obj).text() +
+            '</a>'
+        );
+      }
     });
   });
 });
@@ -439,10 +453,14 @@ function upload_spreadsheet(file) {
       }
     })
     .done(function (data) {
-      dialog.getButton('upload_read_manifest_button').enable();
+      // Hide upload button if 'Finish' button is visible and upload was successful
+      dialog
+        .getButton('upload_read_manifest_button')
+        .stopSpin()
+        .disable()
+        .hide();
       dialog.getButton('save_read_button').enable();
       dialog.setClosable(true);
-      dialog.getButton('upload_read_manifest_button').stopSpin();
     });
 }
 
@@ -450,30 +468,30 @@ function save_read_data() {
   $.ajax({
     url: '/copo/copo_read/save_ena_records',
   })
-  .fail(function (data) {
-    dialog.getButton('upload_read_manifest_button').enable();
-    dialog.setClosable(true);
-    dialog.getButton('upload_read_manifest_button').stopSpin();
-    console.log(data);
-    responseText = data.responseText;
-    if (responseText != '') {
-      BootstrapDialog.show({
-        title: 'Error',
-        message: 'Error ' + data.status + ': ' + data.responseText,
-      });
-    }
-  })
-  .done(function (data) {
-    result_dict = {};
-    result_dict['status'] = 'success';
-    result_dict['message'] = 'Read records are saved';
-    do_crud_action_feedback(result_dict);
-    dialog.close();
-    globalDataBuffer = data;
+    .fail(function (data) {
+      dialog.getButton('upload_read_manifest_button').enable();
+      dialog.setClosable(true);
+      dialog.getButton('upload_read_manifest_button').stopSpin();
+      console.log(data);
+      responseText = data.responseText;
+      if (responseText != '') {
+        BootstrapDialog.show({
+          title: 'Error',
+          message: 'Error ' + data.status + ': ' + data.responseText,
+        });
+      }
+    })
+    .done(function (data) {
+      result_dict = {};
+      result_dict['status'] = 'success';
+      result_dict['message'] = 'Read records are saved';
+      do_crud_action_feedback(result_dict);
+      dialog.close();
+      globalDataBuffer = data;
 
-    if (data.hasOwnProperty('table_data')) {
-      var event = jQuery.Event('refreshtable');
-      $('body').trigger(event);
-    }
-  });
+      if (data.hasOwnProperty('table_data')) {
+        var event = jQuery.Event('refreshtable');
+        $('body').trigger(event);
+      }
+    });
 }

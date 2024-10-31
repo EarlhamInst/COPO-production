@@ -43,8 +43,9 @@ $(document).ready(function () {
 
     //get component metadata
     var componentMeta = get_component_meta(component);
-
-    load_records(componentMeta); // call to load component records
+    var args_dict = {};
+    args_dict['profile_id'] = $('#profile_id').val();
+    load_records(componentMeta, args_dict); // call to load component records
 
     //register_resolvers_event(); //register event for publication resolvers
 

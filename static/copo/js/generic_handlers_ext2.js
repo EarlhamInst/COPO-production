@@ -3,6 +3,17 @@ var copoFormsURL = '/copo/copo_forms/';
 var copoVisualsURL = '/copo/copo_visualize/';
 var server_side_select = {}; //holds selected ids for table data - needed in server-side processing
 
+// Set custom page length options for the DataTables dropdown menu
+$.extend($.fn.dataTable.defaults, {
+  language: {
+    lengthMenu: 'show _MENU_ records',
+  },
+  lengthMenu: [
+    [10, 25, 50, 75, 100, 500, 1000, 2000, 3000, 4000, 5000], // values
+    [10, 25, 50, 75, 100, 500, 1000, 2000, 3000, 4000, 5000], // labels (displayed in the dropdown)
+  ],
+});
+
 $(document).ready(function () {
   //dismiss alert
   $(document).on('click', '.alertdismissOK', function () {
@@ -684,7 +695,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
       ordering: true,
       lengthChange: true,
       scrollX: true,
-      scrollY: 350,
+      scrollY: 'auto', // Adjust height to the content dynamically
       buttons: [
         'selectAll',
         {

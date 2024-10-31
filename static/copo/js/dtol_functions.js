@@ -1148,9 +1148,10 @@ function handle_accept_reject(el) {
     action = 'reject';
   }
   var sample_ids = [];
-  $(checked).each(function (it) {
-    sample_ids.push($(checked[it]).attr('id'));
-  });
+   $(checked).each(function (idx, row) {
+     sample_ids.push($(checked[idx]).attr('id'));
+     $(row).remove();
+   });
 
   if (sample_ids.length == 0) {
     alert('Please select samples to ' + action);
@@ -1161,10 +1162,6 @@ function handle_accept_reject(el) {
   $('#spinner').fadeIn(fadeSpeed);
   $('#accept_reject_button').find('button').prop('disabled', true);
 
-  $(checked).each(function (idx, row) {
-    $(row).fadeOut(fadeSpeed);
-    $(row).remove();
-  });
   var profile_id = $('#profile_id').val();
   var csrftoken = $.cookie('csrftoken');
   if (action == 'reject') {

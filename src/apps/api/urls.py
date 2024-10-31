@@ -123,9 +123,7 @@ stats_api_patterns = [
 ]
 
 mapping_api_patterns = [
-    re_path(r'^mapping/manifest_type/(?P<manifest_type>[a-zA-Z-_, ]+)', mapping.get_mapping_for_manifest_type,
-            name='get_mapping_for_manifest_type'),
-    re_path(r'^mapping', mapping.get_mapping, name='get_mapping'),
+    re_path(r'^mapping', mapping.get_mapping, name='get_mapping')
 ]
 
 manifest_patterns = [

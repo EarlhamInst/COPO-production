@@ -227,6 +227,11 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
 
     samples = Sample(profile_id=profile_id).execute_query({"read.checklist_id" : checklist_id, "profile_id": profile_id, 'deleted': get_not_deleted_flag()})
 
+    ena_file_transfer_list = EnaFileTransfer(profile_id=profile_id).execute_query()
+    data_files = DataFile(profile_id=profile_id).execute_query()
+    ena_file_transfer_map = { enaFile["file_id"] : enaFile for enaFile in ena_file_transfer_list}
+    ena_file_map = { str(file["_id"]): file for file in data_files}
+
     for sample in samples:
         for read in sample.get("read", []):
             if read.get("checklist_id","") == checklist_id:
@@ -256,19 +261,20 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
                                     break                        
 
                     row_data["ena_file_upload_status"] = "unknown"
-                    ena_file_transfer = EnaFileTransfer(profile_id=profile_id).execute_query({
-                        "file_id": {"$in": file_ids}})
-                    if ena_file_transfer:
-                        row_data["ena_file_upload_status"] = ena_file_transfer[0].get(
-                            "status", str())
-                        if len(ena_file_transfer) > 1:
-                            row_data["ena_file_upload_status"] = row_data["ena_file_upload_status"] + \
-                                " | " + \
-                                ena_file_transfer[1].get("status", str())
+                    #ena_file_transfer = EnaFileTransfer(profile_id=profile_id).execute_query({
+                    #    "file_id": {"$in": file_ids}})
+                    #if ena_file_transfer:
+                    row_data["ena_file_upload_status"] = ena_file_transfer_map.get(file_ids[0], {}).get(
+                        "status", str())
+                    if len(file_ids) > 1:
+                        row_data["ena_file_upload_status"] = row_data["ena_file_upload_status"] + \
+                            " | " + \
+                            ena_file_transfer_map.get(file_ids[1],{}).get("status", str())
                                 
-                    files = DataFile().get_records(file_ids)
-                    if files:
-                        read_values = files[0].get("description", dict()).get("attributes",dict())
+                    #files = DataFile().get_records(file_ids)
+                    file = ena_file_map.get(file_ids[0], {})
+                    if file:
+                        read_values = file.get("description", dict()).get("attributes",dict())
                         row_data.update({key : read_values.get(key, str()) for key in read_label})
 
                 row_data["ena_file_processing_status"] = ""
@@ -286,16 +292,18 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
                     )
 
     if run_accession_number_map:
-        thread = _GET_ENA_FILE_PROCESSING_STATUS(profile_id=profile_id, run_accession_number_map=run_accession_number_map, data_map=data_map)  
+        thread = _GET_ENA_FILE_PROCESSING_STATUS(profile_id=profile_id, run_accession_number_map=run_accession_number_map, data_map=data_map, ena_file_transfer_map=ena_file_transfer_map)  
         thread.start()
 
     return return_dict
 
 class _GET_ENA_FILE_PROCESSING_STATUS(threading.Thread):
-    def __init__(self, profile_id, run_accession_number_map, data_map=dict(), columns=dict()):
+    def __init__(self, profile_id, run_accession_number_map, data_map=dict(), columns=dict(), ena_file_transfer_map=dict()):
         self.profile_id = profile_id
         self.run_accession_number_map = run_accession_number_map
         self.data_map = data_map
+        self.ena_file_transfer_map = ena_file_transfer_map
+
         super(_GET_ENA_FILE_PROCESSING_STATUS, self).__init__() 
 
     def run(self):
@@ -303,22 +311,36 @@ class _GET_ENA_FILE_PROCESSING_STATUS(threading.Thread):
         #data = []
         i = 0
         #data = self.return_dict["dataSet"]
+        ecs_file_complete = []
 
         for run_accession in self.run_accession_number_map.keys():
             i += 1
             file_processing_status = _query_ena_file_processing_status(run_accession)
             if file_processing_status:
                #data.append({"run_accession":run_accession, "msg":file_processing_status})
+
                row = self.data_map.get(self.run_accession_number_map.get(run_accession), dict())
                row["ena_file_processing_status"] = file_processing_status
+               complete_cnt = file_processing_status.count("File archived")
+               if complete_cnt > 0:
+                   file_ids = row["DT_RowId"][4:].split("_")    #row_data["DT_RowId"] = "row_fileid1_fileid2"
+                   if complete_cnt == len(file_ids):
+                        for file_id in file_ids:
+                            ecs_location = self.ena_file_transfer_map.get(file_id, {}).get("ecs_location","")
+                            if ecs_location:
+                                ecs_file_complete.append(ecs_location)
+
 
             if i == sent_2_frontend_every:                 
                #notify_read_status(data={"profile_id": self.profile_id, "file_processing_status":data},  msg="", action="file_processing_status" )
                notify_read_status(data={"profile_id": self.profile_id, "table_data" : list(self.data_map.values())},
-                        msg="freshing table for file processing status", action="file_processing_status", html_id="sample_info")
+                        msg="Refreshing table for file processing status", action="file_processing_status", html_id="sample_info")
                i = 0
                #data=[]
         if i>0:
             #notify_read_status(data={"profile_id": self.profile_id, "file_processing_status":data},  msg="", action="file_processing_status" )
             notify_read_status(data={"profile_id": self.profile_id, "table_data" : list(self.data_map.values())},
-                        msg="freshing table for file processing status", action="file_processing_status", html_id="sample_info")
+                        msg="Refreshing table for file processing status", action="file_processing_status", html_id="sample_info")
+            
+        if ecs_file_complete:
+            EnaFileTransfer().update_transfer_status_by_ecs_path( ecs_locations=ecs_file_complete,status="ena_complete")

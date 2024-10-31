@@ -5,7 +5,6 @@ import json
 import pandas as pd
 from uuid import uuid4
 from bson import ObjectId
-from common.dal.mongo_util import cursor_to_list
 from django.urls import reverse
 from django.contrib.auth.models import User
 from common.lookup.lookup import HTML_TAGS
@@ -14,17 +13,13 @@ import common.schemas.utils.data_utils as d_utils
 from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES_FULL
 from .copo_lookup_service import COPOLookup
 from common.dal.copo_base_da import DataSchemas
-from src.apps.copo_core.models import SequencingCentre
 from common.dal.copo_da import DAComponent,  DataFile, Description
 from common.dal.profile_da import Profile, ProfileInfo
 from common.dal.submission_da import Submission
 # from hurry.filesize import size as hurrysize
-from django_tools.middlewares import ThreadLocal
 from common.utils.logger import Logger
 from common.utils import helpers
 from django.conf import settings
-from common.s3.s3Connection import S3Connection as s3
-import numpy as np
 import datetime
 
 # dictionary of components table id, gotten from the UI
@@ -72,7 +67,7 @@ def get_providers_orcid_first():
     return [{"id":o.id, "name":o.name} for o in result]
 '''
 
-
+"""
 def get_element_by_id(field_id):
     elem = {}
     out_list = get_fields_list(field_id)
@@ -82,7 +77,7 @@ def get_element_by_id(field_id):
             elem = f
             break
     return elem
-
+"""
 
 def trim_parameter_value_label(label):
     if "Parameter Value" in label:
@@ -1722,8 +1717,7 @@ def resolve_select_data(data, elem):
 
 
 def resolve_ontology_term_data(data, elem):
-    schema = DataSchemas("COPO").get_ui_template().get(
-        "copo").get("ontology_annotation").get("fields")
+    schema =DataSchemas.get_ui_template_node('COPO','ontology_annotation') 
 
     resolved_data = list()
 
@@ -1762,8 +1756,10 @@ def resolve_datepicker_data(data, elem):
         resolved_value = data
     return resolved_value
 
-def resolve_copo_approval_data(data, elem):
-    schema = d_utils.get_copo_schema("approval")
+def resolve_copo_approval_data(data, elem, approval_schema=None):
+    schema = approval_schema
+    if not schema:
+       schema = d_utils.get_copo_schema("approval")
 
     resolved_data = list()
     for f in schema:
@@ -1837,18 +1833,18 @@ def lookup_info(val):
         return lkup.UI_INFO[val]
     return ""
 
-
+"""
 def get_fields_list(field_id):
     key_split = field_id.split(".")
 
-    new_dict = DataSchemas(field_id.split(".")[0].upper()).get_ui_template()
+    new_dict = DataSchemas.get_ui_template(field_id.split(".")[0].upper())
 
     for kp in key_split[:-1]:
         if kp in new_dict:
             new_dict = new_dict[kp]
 
     return new_dict["fields"]
-
+"""
 
 # @register.filter("id_to_class")
 def id_to_class(val):

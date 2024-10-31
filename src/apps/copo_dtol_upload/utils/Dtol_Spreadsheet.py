@@ -28,8 +28,9 @@ from common.schema_versions.lookup import dtol_lookups as lookup
 from common.utils.logger import Logger
 from PIL import Image
 import numpy as np
-from src.apps.copo_core.models import AssociatedProfileType
+from PIL import ImageFile
 
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 Image.MAX_IMAGE_PIXELS = None
 

@@ -1,6 +1,7 @@
 from typing import Any
 from django.core.management.base import BaseCommand
 from src.apps.copo_core.models import ProfileType, Component, RecordActionButton, TitleButton, AssociatedProfileType
+from common.dal.copo_base_da import DataSchemas
 
 '''
 ProfileType
@@ -96,6 +97,8 @@ class Command(BaseCommand):
         submit_assembly_multi = RecordActionButton().create_record_action_button(name="submit_assembly_multi", title="Submit Assembly", label="Submit", type="multi", error_message="Please select one or more record to submit", icon_class="fa fa-info-circle", action="submit_assembly", icon_colour="teal")
         delete_record_multi = RecordActionButton().create_record_action_button(name="delete_record_multi", title="Delete records", label="Delete", type="multi", error_message="Please select one or more records to delete", icon_class="fa fa-trash-can", action="validate_and_delete", icon_colour="red")
         releasestudy = RecordActionButton().create_record_action_button(name="releasestudy", title="Release Study", label="Release Study", type="single", error_message="", icon_class="fa fa-globe", action="release_study", icon_colour="blue")
+        delete_read_multi = RecordActionButton().create_record_action_button(name="delete_read_multi", title="Delete records", label="Delete", type="multi", error_message="Please select one or more records to delete", icon_class="fa fa-trash-can", action="delete_read", icon_colour="red")
+        
         self.stdout.write("Record Action Button Added")
         records = RecordActionButton.objects.all()
 
@@ -154,7 +157,7 @@ class Command(BaseCommand):
         seqannotation.recordaction_buttons.set([add_record_all, edit_record_single, delete_record_multi, submit_annotation_multi])  
         seqannotation.title_buttons.set([new_component_template])
 
-        read.recordaction_buttons.set([delete_record_multi, submit_read_multi])
+        read.recordaction_buttons.set([delete_read_multi, submit_read_multi])
         read.title_buttons.set([new_reads_spreadsheet_template, download_blank_manifest_template])
 
         sample.recordaction_buttons.set([download_sample_manifest_single, download_permits_multiple, view_images_multiple])
@@ -211,3 +214,6 @@ class Command(BaseCommand):
 
         for record in records:
             self.stdout.write(record.type)
+
+        #refresh the schema in case it changes the schema
+        DataSchemas.refresh()

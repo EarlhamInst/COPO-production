@@ -1,0 +1,1095 @@
+{
+    "ASSOCIATED_PROJECT_ACCESSIONS": {
+        "tol": {
+            "field": "ASSOCIATED_PROJECT_ACCESSIONS"
+        }
+    },
+    "ASSOCIATED_TRADITIONAL_KNOWLEDGE_CONTACT": {
+        "tol": {
+            "field": "ASSOCIATED_TRADITIONAL_KNOWLEDGE_CONTACT"
+        }
+    },
+    "ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID": {
+        "ena": {
+            "regex": "^[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}$",
+            "description": "[ID provided by the local context hub]"
+        },
+        "tol": {
+            "field": "ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID"
+        }
+    },
+    "ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE": {
+        "tol": {
+            "field": "ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE"
+        }
+    },
+    "BARCODE_HUB": {
+        "ena": {
+            "field": "barcoding center"
+        },
+        "tol": {
+            "field": "BARCODE_HUB"
+        }
+    },
+    "BARCODE_PLATE_PRESERVATIVE": {
+        "tol": {
+            "field": "BARCODE_PLATE_PRESERVATIVE"
+        }
+    },
+    "BARCODING_STATUS": {
+        "tol": {
+            "field": "BARCODING_STATUS"
+        }
+    },
+    "BIOBANKED_TISSUE_PRESERVATIVE": {
+        "tol": {
+            "field": "BIOBANKED_TISSUE_PRESERVATIVE"
+        }
+    },
+    "BOLD_ACCESSION_NUMBER": {
+        "tol": {
+            "field": "BOLD_ACCESSION_NUMBER"
+        }
+    },
+    "CELL_NUMBER": {
+        "tol": {
+            "field": "CELL_NUMBER"
+        }
+    },
+    "CHLOROPHYL_A": {
+        "ena": {
+            "regex": "^\\d+$",
+            "description": "integer"
+        },
+        "tol": {
+            "field": "CHLOROPHYL_A"
+        }
+    },
+    "COLLECTED_BY": {
+        "dwc": {
+            "field": "recordedBy",
+            "uri": "http://rs.tdwg.org/dwc/terms/recordedBy",
+            "description": "A list (concatenated and separated) of names of people, groups, or organizations responsible for recording the original dwc:Occurrence. The primary collector or observer, especially one who applies a personal identifier (dwc:recordNumber), should be listed first."
+        },
+        "ena": {
+            "field": "collected_by"
+        },
+        "tol": {
+            "field": "COLLECTED_BY"
+        }
+    },
+    "COLLECTION_LOCATION": {
+        "dwc": {
+            "field": "higherGeography",
+            "uri": "http://rs.tdwg.org/dwc/terms/higherGeography",
+            "description": "A list (concatenated and separated) of geographic names less specific than the information captured in the dwc:locality term."
+        },
+        "tol": {
+            "field": "COLLECTION_LOCATION"
+        }
+    },
+    "COLLECTOR_AFFILIATION": {
+        "dwc": {
+            "field": "institutionCode",
+            "uri": "http://rs.tdwg.org/dwc/terms/institutionCode",
+            "description": "The name (or acronym) in use by the institution having custody of the object(s) or information referred to in the record."
+        },
+        "ena": {
+            "field": "collecting institution"
+        },
+        "tol": {
+            "field": "COLLECTOR_AFFILIATION"
+        }
+    },
+    "COLLECTOR_ORCID_ID": {
+        "dwc": {
+            "field": "recordedByID",
+            "uri": "http://rs.tdwg.org/dwc/terms/recordedByID",
+            "description": "A list (concatenated and separated) of the globally unique identifier for the person, people, groups, or organizations responsible for recording the original dwc:Occurrence."
+        },
+        "ena": {
+            "field": "collector ORCID ID",
+            "description": "16-digit number that is compatible with the ISO Standard (ISO 27729),  if multiple IDs separate with a | and no spaces",
+            "regex": "^((\\d{4}-){3}\\d{3}(\\d|X))(\\|(\\d{4}-){3}\\d{3}(\\d|X))*|(^not provided$)|(^not applicable$)"
+        },
+        "tol": {
+            "field": "COLLECTOR_ORCID_ID"
+        }
+    },
+    "COLLECTOR_SAMPLE_ID": {
+        "dwc": {
+            "field": "materialSampleID",
+            "uri": "http://rs.tdwg.org/dwc/terms/materialSampleID",
+            "description": "An identifier for the dwc:MaterialSample (as opposed to a particular digital record of the dwc:MaterialSample). In the absence of a persistent global unique identifier, construct one from a combination of identifiers in the record that will most closely make the dwc:materialSampleID globally unique."
+        },
+        "mixs": {
+            "field": "samp_name",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0001107",
+            "description": "A local identifier or name that for the material sample used for extracting nucleic acids, and subsequent sequencing. It can refer either to the original material collected or to any derived sub-samples. It can have any format, but we suggest that you make it concise, unique and consistent within your lab, and as informative as possible. INSDC requires every sample name from a single Submitter to be unique. Use of a globally unique identifier for the field source_mat_id is recommended in addition to sample_name."
+        },
+        "tol": {
+            "field": "COLLECTOR_SAMPLE_ID"
+        }
+    },
+    "COMMON_NAME": {
+        "dwc": {
+            "field": "vernacularName",
+            "uri": "http://rs.tdwg.org/dwc/terms/vernacularName",
+            "description": "A common or vernacular name."
+        },
+        "mixs": {
+            "field": "host_common_name",
+            "type": "object",
+            "description": "agriculture extension"
+        },
+        "tol": {
+            "field": "COMMON_NAME"
+        }
+    },
+    "CULTURE_OR_STRAIN_ID": {
+        "dwc": {
+            "field": "occurrenceID",
+            "uri": "http://rs.tdwg.org/dwc/terms/occurrenceID",
+            "description": "An identifier for the dwc:Occurrence (as opposed to a particular digital record of the dwc:Occurrence). In the absence of a persistent global unique identifier, construct one from a combination of identifiers in the record that will most closely make the dwc:occurrenceID globally unique."
+        },
+        "ena": {
+            "field": "culture_or_strain_id"
+        },
+        "mixs": {
+            "field": "microb_start_taxID",
+            "type": "object",
+            "description": "food-human foods extension"
+        },
+        "tol": {
+            "field": "CULTURE_OR_STRAIN_ID"
+        }
+    },
+    "DATE_OF_COLLECTION": {
+        "dwc": {
+            "field": "eventDate",
+            "uri": "http://rs.tdwg.org/dwc/terms/eventDate",
+            "description": "The date-time or interval during which a dwc:Event occurred. For occurrences, this is the date-time when the dwc:Event was recorded. Not suitable for a time in a geological context."
+        },
+        "ena": {
+            "field": "collection date",
+            "regex": "(^[12][0-9]{3}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01])(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?)?$)|(^not collected$)|(^not provided$)|(^restricted access$) ",
+            "description": "YYYY-MM-DD, YYYY-MM, YYYY, NOT_COLLECTED or NOT_PROVIDED"
+        },
+        "mixs": {
+            "field": "collection_date",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000011",
+            "description": "The time of sampling, either as an instance (single point in time) or interval. In case no exact time is available, the date/time can be right truncated i.e. all of these are valid times: 2008-01-23T19:23:10+00:00; 2008-01-23T19:23:10; 2008-01-23; 2008-01; 2008; Except: 2008-01; 2008 all are ISO8601 compliant"
+        },
+        "tol": {
+            "field": "DATE_OF_COLLECTION"
+        }
+    },
+    "DATE_OF_PRESERVATION": {
+        "tol": {
+            "field": "DATE_OF_PRESERVATION"
+        }
+    },
+    "DECIMAL_LATITUDE": {
+        "dwc": {
+            "field": "decimalLatitude",
+            "uri": "http://rs.tdwg.org/dwc/terms/decimalLatitude",
+            "description": "The geographic latitude (in decimal degrees, using the spatial reference system given in dwc:geodeticDatum) of the geographic center of a dcterms:Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive."
+        },
+        "ena": {
+            "field": "geographic location (latitude)",
+            "unit": "DD",
+            "regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+            "description": "numeric, NOT_COLLECTED or NOT_PROVIDED"
+        },
+        "mixs": {
+            "field": "lat_lon",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000009",
+            "description": "The geographical origin of the sample as defined by latitude and longitude. The values should be reported in decimal degrees and in WGS84 system"
+        },
+        "tol": {
+            "field": "DECIMAL_LATITUDE"
+        }
+    },
+    "DECIMAL_LONGITUDE": {
+        "dwc": {
+            "field": "decimalLongitude",
+            "uri": "http://rs.tdwg.org/dwc/terms/decimalLongitude",
+            "description": "The geographic longitude (in decimal degrees, using the spatial reference system given in dwc:geodeticDatum) of the geographic center of a dcterms:Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive."
+        },
+        "ena": {
+            "field": "geographic location (longitude)",
+            "unit": "DD",
+            "regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+            "description": "numeric, NOT_COLLECTED or NOT_PROVIDED"
+        },
+        "mixs": {
+            "field": "lat_lon",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000009",
+            "description": "The geographical origin of the sample as defined by latitude and longitude. The values should be reported in decimal degrees and in WGS84 system"
+        },
+        "tol": {
+            "field": "DECIMAL_LONGITUDE"
+        }
+    },
+    "DEPTH": {
+        "dwc": {
+            "field": "verbatimDepth",
+            "uri": "http://rs.tdwg.org/dwc/terms/verbatimDepth",
+            "description": "The original description of the depth below the local surface."
+        },
+        "ena": {
+            "field": "geographic location (depth)",
+            "unit": "m",
+            "regex": "(0|((0\\.)|([1-9][0-9]*\\.?))[0-9]*)([Ee][+-]?[0-9]+)?",
+            "description": "numeric, or empty string"
+        },
+        "mixs": {
+            "field": "depth",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000018",
+            "description": "The vertical distance below local surface, e.g. for sediment or soil samples depth is measured from sediment or soil surface, respectively. Depth can be reported as an interval for subsurface samples."
+        },
+        "tol": {
+            "field": "DEPTH"
+        }
+    },
+    "DESCRIPTION_OF_COLLECTION_METHOD": {
+        "dwc": {
+            "field": "samplingProtocol",
+            "uri": "http://rs.tdwg.org/dwc/terms/samplingProtocol",
+            "description": "The names of, references to, or descriptions of the methods or protocols used during a dwc:Event."
+        },
+        "ena": {
+            "field": "sample collection device or method"
+        },
+        "mixs": {
+            "field": "samp_collect_method",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0001225",
+            "description": "The method employed for collecting the sample."
+        },
+        "tol": {
+            "field": "DESCRIPTION_OF_COLLECTION_METHOD"
+        }
+    },
+    "DIFFICULT_OR_HIGH_PRIORITY_SAMPLE": {
+        "dwc": {
+            "field": "samplingEffort",
+            "uri": "http://rs.tdwg.org/dwc/terms/samplingEffort",
+            "description": "The amount of effort expended during a dwc:Event."
+        },
+        "tol": {
+            "field": "DIFFICULT_OR_HIGH_PRIORITY_SAMPLE"
+        }
+    },
+    "DISSOLVED_OXYGEN": {
+        "ena": {
+            "regex": "^\\d+$",
+            "description": "integer"
+        },
+        "mixs": {
+            "field": "diss_oxygen",
+            "type": "object",
+            "description": "microbial mat/biofilm extension"
+        },
+        "tol": {
+            "field": "DISSOLVED_OXYGEN"
+        }
+    },
+    "DNA_REMOVED_FOR_BIOBANKING": {
+        "tol": {
+            "field": "DNA_REMOVED_FOR_BIOBANKING"
+        }
+    },
+    "DNA_VOUCHER_ID_FOR_BIOBANKING": {
+        "ena": {
+            "field": "bio_material"
+        },
+        "tol": {
+            "field": "DNA_VOUCHER_ID_FOR_BIOBANKING"
+        }
+    },
+    "ELEVATION": {
+        "dwc": {
+            "field": "verbatimElevation",
+            "uri": "http://rs.tdwg.org/dwc/terms/verbatimElevation",
+            "description": "The original description of the elevation (altitude, usually above sea level) of the Location."
+        },
+        "ena": {
+            "field": "geographic location (elevation)",
+            "unit": "m",
+            "regex": "[+-]?(0|((0\\.)|([1-9][0-9]*\\.?))[0-9]*)([Ee][+-]?[0-9]+)?",
+            "description": "numeric, or empty string"
+        },
+        "mixs": {
+            "field": "elev",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000093",
+            "description": "Elevation of the sampling site is its height above a fixed reference point, most commonly the mean sea level. Elevation is mainly used when referring to points on the earth's surface, while altitude is used for points above the surface, such as an aircraft in flight or a spacecraft in orbit."
+        },
+        "tol": {
+            "field": "ELEVATION"
+        }
+    },
+    "ETHICS_PERMITS_DEF": {
+        "dwc": {
+            "field": "license",
+            "uri": "http://purl.org/dc/terms/license",
+            "description": "A legal document giving official permission to do something with the resource."
+        },
+        "tol": {
+            "field": "ETHICS_PERMITS_DEF"
+        }
+    },
+    "ETHICS_PERMITS_FILENAME": {
+        "ena": {
+            "description": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
+        },
+        "tol": {
+            "field": "ETHICS_PERMITS_FILENAME"
+        }
+    },
+    "ETHICS_PERMITS_REQUIRED": {
+        "tol": {
+            "field": "ETHICS_PERMITS_REQUIRED"
+        }
+    },
+    "FAMILY": {
+        "dwc": {
+            "field": "family",
+            "uri": "http://rs.tdwg.org/dwc/terms/family",
+            "description": "The full scientific name of the family in which the dwc:Taxon is classified."
+        },
+        "tol": {
+            "field": "FAMILY"
+        }
+    },
+    "GAL": {
+        "ena": {
+            "field": "GAL"
+        },
+        "tol": {
+            "field": "GAL"
+        }
+    },
+    "GAL_SAMPLE_ID": {
+        "ena": {
+            "field": "GAL_sample_id"
+        },
+        "tol": {
+            "field": "GAL_SAMPLE_ID"
+        }
+    },
+    "GENUS": {
+        "dwc": {
+            "field": "genus",
+            "uri": "http://rs.tdwg.org/dwc/terms/genus",
+            "description": "The full scientific name of the genus in which the dwc:Taxon is classified."
+        },
+        "tol": {
+            "field": "GENUS"
+        }
+    },
+    "GRID_REFERENCE": {
+        "dwc": {
+            "field": "georeferenceRemarks",
+            "uri": "http://rs.tdwg.org/dwc/terms/georeferenceRemarks",
+            "description": "Notes or comments about the spatial description determination, explaining assumptions made in addition or opposition to the those formalized in the method referred to in dwc:georeferenceProtocol."
+        },
+        "tol": {
+            "field": "GRID_REFERENCE"
+        }
+    },
+    "HABITAT": {
+        "dwc": {
+            "field": "locationRemarks",
+            "uri": "http://rs.tdwg.org/dwc/terms/locationRemarks",
+            "description": "Comments or notes about the dcterms:Location."
+        },
+        "ena": {
+            "field": "habitat"
+        },
+        "mixs": {
+            "field": "host_body_habitat",
+            "type": "object",
+            "description": "host-associated extension"
+        },
+        "tol": {
+            "field": "HABITAT"
+        }
+    },
+    "HAZARD_GROUP": {
+        "tol": {
+            "field": "HAZARD_GROUP"
+        }
+    },
+    "IDENTIFIED_BY": {
+        "dwc": {
+            "field": "identifiedBy",
+            "uri": "http://rs.tdwg.org/dwc/terms/identifiedBy",
+            "description": "A list (concatenated and separated) of names of people, groups, or organizations who assigned the dwc:Taxon to the subject."
+        },
+        "ena": {
+            "field": "identified_by"
+        },
+        "tol": {
+            "field": "IDENTIFIED_BY"
+        }
+    },
+    "IDENTIFIED_HOW": {
+        "tol": {
+            "field": "IDENTIFIED_HOW"
+        }
+    },
+    "IDENTIFIER_AFFILIATION": {
+        "ena": {
+            "field": "identifier_affiliation"
+        },
+        "tol": {
+            "field": "IDENTIFIER_AFFILIATION"
+        }
+    },
+    "INDIGENOUS_RIGHTS_DEF": {
+        "tol": {
+            "field": "INDIGENOUS_RIGHTS_DEF"
+        }
+    },
+    "INFRASPECIFIC_EPITHET": {
+        "dwc": {
+            "field": "infraspecificEpithet",
+            "uri": "http://rs.tdwg.org/dwc/terms/infraspecificEpithet",
+            "description": "The name of the lowest or terminal infraspecific epithet of the dwc:scientificName, excluding any rank designation."
+        },
+        "tol": {
+            "field": "INFRASPECIFIC_EPITHET"
+        }
+    },
+    "LATITUDE_END": {
+        "ena": {
+            "field": "Latitude End",
+            "unit": "DD",
+            "regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+            "description": "numeric, NOT_COLLECTED or NOT_PROVIDED"
+        },
+        "tol": {
+            "field": "LATITUDE_END"
+        }
+    },
+    "LATITUDE_START": {
+        "ena": {
+            "field": "Longitude End",
+            "unit": "DD",
+            "regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+            "description": "numeric, NOT_COLLECTED or NOT_PROVIDED"
+        },
+        "tol": {
+            "field": "LATITUDE_START"
+        }
+    },
+    "LIFESTAGE": {
+        "dwc": {
+            "field": "lifeStage",
+            "uri": "http://rs.tdwg.org/dwc/terms/lifeStage",
+            "description": "The age class or life stage of the dwc:Organism(s) at the time the dwc:Occurrence was recorded."
+        },
+        "ena": {
+            "field": "lifestage"
+        },
+        "tol": {
+            "field": "LIFESTAGE"
+        }
+    },
+    "LONGITUDE_END": {
+        "ena": {
+            "field": "Longitude End",
+            "unit": "DD",
+            "regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+            "description": "numeric, NOT_COLLECTED or NOT_PROVIDED"
+        },
+        "tol": {
+            "field": "LONGITUDE_END"
+        }
+    },
+    "LONGITUDE_START": {
+        "ena": {
+            "field": "Longitude Start",
+            "unit": "DD",
+            "regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+            "description": "numeric, NOT_COLLECTED or NOT_PROVIDED"
+        },
+        "tol": {
+            "field": "LONGITUDE_START"
+        }
+    },
+    "MIXED_SAMPLE_RISK": {
+        "tol": {
+            "field": "MIXED_SAMPLE_RISK"
+        }
+    },
+    "NAGOYA_PERMITS_DEF": {
+        "tol": {
+            "field": "NAGOYA_PERMITS_DEF"
+        }
+    },
+    "NAGOYA_PERMITS_FILENAME": {
+        "ena": {
+            "description": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
+        },
+        "tol": {
+            "field": "NAGOYA_PERMITS_FILENAME"
+        }
+    },
+    "NAGOYA_PERMITS_REQUIRED": {
+        "tol": {
+            "field": "NAGOYA_PERMITS_REQUIRED"
+        }
+    },
+    "NUTRIENTS": {
+        "tol": {
+            "field": "NUTRIENTS"
+        }
+    },
+    "ORDER_OR_GROUP": {
+        "dwc": {
+            "field": "order",
+            "uri": "http://rs.tdwg.org/dwc/terms/order",
+            "description": "The full scientific name of the order in which the dwc:Taxon is classified."
+        },
+        "tol": {
+            "field": "ORDER_OR_GROUP"
+        }
+    },
+    "ORGANISM_PART": {
+        "dwc": {
+            "field": "organismScope",
+            "uri": "http://rs.tdwg.org/dwc/terms/organismScope",
+            "description": "A description of the kind of dwc:Organism instance. Can be used to indicate whether the dwc:Organism instance represents a discrete organism or if it represents a particular type of aggregation."
+        },
+        "ena": {
+            "field": "organism part"
+        },
+        "tol": {
+            "field": "ORGANISM_PART"
+        }
+    },
+    "ORIGINAL_COLLECTION_DATE": {
+        "dwc": {
+            "field": "eventDate",
+            "uri": "http://rs.tdwg.org/dwc/terms/eventDate",
+            "description": "The date-time or interval during which a dwc:Event occurred. For occurrences, this is the date-time when the dwc:Event was recorded. Not suitable for a time in a geological context."
+        },
+        "ena": {
+            "field": "original collection date",
+            "regex": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?)?$",
+            "description": "Date as YYYY, YYYY-MM or YYYY-MM-DD"
+        },
+        "tol": {
+            "field": "ORIGINAL_COLLECTION_DATE"
+        }
+    },
+    "ORIGINAL_DECIMAL_LATITUDE": {
+        "ena": {
+            "field": "original geographic location (latitude)",
+            "unit": "DD",
+            "regex": "(^[+-]?[0-9]+.?[0-9]{0,8}$)",
+            "description": "numeric with 8 decimal places"
+        },
+        "tol": {
+            "field": "ORIGINAL_DECIMAL_LATITUDE"
+        }
+    },
+    "ORIGINAL_DECIMAL_LONGITUDE": {
+        "ena": {
+            "field": "original geographic location (longitude)",
+            "unit": "DD",
+            "regex": "(^[+-]?[0-9]+.?[0-9]{0,8}$)",
+            "description": "numeric with 8 decimal places"
+        },
+        "tol": {
+            "field": "ORIGINAL_DECIMAL_LONGITUDE"
+        }
+    },
+    "ORIGINAL_GEOGRAPHIC_LOCATION": {
+        "ena": {
+            "field": "original geographic location"
+        },
+        "mixs": {
+            "field": "geo_loc_name",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000010",
+            "description": "The geographical origin of the sample as defined by the country or sea name followed by specific region name. Country or sea names should be chosen from the INSDC country list (http://insdc.org/country.html), or the GAZ ontology (http://purl.bioontology.org/ontology/GAZ)"
+        },
+        "tol": {
+            "field": "ORIGINAL_GEOGRAPHIC_LOCATION"
+        }
+    },
+    "OTHER_INFORMATION": {
+        "mixs": {
+            "field": "additional_info",
+            "type": "object",
+            "description": "hydrocarbon resources-cores extension"
+        },
+        "tol": {
+            "field": "OTHER_INFORMATION"
+        }
+    },
+    "PARTNER": {
+        "ena": {
+            "field": "GAL"
+        },
+        "tol": {
+            "field": "PARTNER"
+        }
+    },
+    "PARTNER_SAMPLE_ID": {
+        "ena": {
+            "field": "GAL_sample_id"
+        },
+        "tol": {
+            "field": "PARTNER_SAMPLE_ID"
+        }
+    },
+    "PLATE_ID_FOR_BARCODING": {
+        "tol": {
+            "field": "PLATE_ID_FOR_BARCODING"
+        }
+    },
+    "PRESERVATION_APPROACH": {
+        "dwc": {
+            "field": "preparations",
+            "uri": "http://rs.tdwg.org/dwc/terms/preparations",
+            "description": "A list (concatenated and separated) of preparations and preservation methods for a dwc:MaterialEntity."
+        },
+        "mixs": {
+            "field": "samp_preserv",
+            "type": "object",
+            "description": "hydrocarbon resources-fluids/swabs extension"
+        },
+        "tol": {
+            "field": "PRESERVATION_APPROACH"
+        }
+    },
+    "PRESERVATIVE_SOLUTION": {
+        "mixs": {
+            "field": "samp_store_sol",
+            "type": "object",
+            "description": "MIxS data that complies with the MigsBa checklist and the SymbiontAssociated Extension"
+        },
+        "tol": {
+            "field": "PRESERVATIVE_SOLUTION"
+        }
+    },
+    "PRESERVED_BY": {
+        "tol": {
+            "field": "PRESERVED_BY"
+        }
+    },
+    "PRESERVER_AFFILIATION": {
+        "tol": {
+            "field": "PRESERVER_AFFILIATION"
+        }
+    },
+    "PRIMARY_BIOGENOME_PROJECT": {
+        "tol": {
+            "field": "PRIMARY_BIOGENOME_PROJECT"
+        }
+    },
+    "PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING": {
+        "ena": {
+            "field": "proxy biomaterial"
+        },
+        "tol": {
+            "field": "PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING"
+        }
+    },
+    "PROXY_VOUCHER_ID": {
+        "ena": {
+            "field": "proxy voucher"
+        },
+        "tol": {
+            "field": "PROXY_VOUCHER_ID"
+        }
+    },
+    "PROXY_VOUCHER_LINK": {
+        "ena": {
+            "field": "proxy voucher url"
+        },
+        "tol": {
+            "field": "PROXY_VOUCHER_LINK"
+        }
+    },
+    "PURPOSE_OF_SPECIMEN": {
+        "mixs": {
+            "field": "samp_purpose",
+            "type": "object",
+            "description": "food-animal and animal feed extension"
+        },
+        "tol": {
+            "field": "PURPOSE_OF_SPECIMEN"
+        }
+    },
+    "RACK_OR_PLATE_ID": {
+        "tol": {
+            "field": "RACK_OR_PLATE_ID"
+        }
+    },
+    "REGULATORY_COMPLIANCE": {
+        "tol": {
+            "field": "REGULATORY_COMPLIANCE"
+        }
+    },
+    "RELATIONSHIP": {
+        "dwc": {
+            "field": "relationshipRemarks",
+            "uri": "http://rs.tdwg.org/dwc/terms/relationshipRemarks",
+            "description": "Comments or notes about the relationship between the two resources."
+        },
+        "ena": {
+            "field": "relationship"
+        },
+        "mixs": {
+            "field": "biotic_relationship",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000028",
+            "description": "Description of relationship(s) between the subject organism and other organism(s) it is associated with. E.g., parasite on species X; mutualist with species Y. The target organism is the subject of the relationship, and the other organism(s) is the object"
+        },
+        "tol": {
+            "field": "RELATIONSHIP"
+        }
+    },
+    "SALINITY": {
+        "ena": {
+            "regex": "^\\d+$",
+            "description": "integer"
+        },
+        "mixs": {
+            "field": "salinity",
+            "type": "object",
+            "description": "air extension"
+        },
+        "tol": {
+            "field": "SALINITY"
+        }
+    },
+    "SAMPLE_COORDINATOR": {
+        "ena": {
+            "field": "sample coordinator"
+        },
+        "tol": {
+            "field": "SAMPLE_COORDINATOR"
+        }
+    },
+    "SAMPLE_COORDINATOR_AFFILIATION": {
+        "dwc": {
+            "field": "institutionCode",
+            "uri": "http://rs.tdwg.org/dwc/terms/institutionCode",
+            "description": "The name (or acronym) in use by the institution having custody of the object(s) or information referred to in the record."
+        },
+        "ena": {
+            "field": "sample coordinator affiliation"
+        },
+        "tol": {
+            "field": "SAMPLE_COORDINATOR_AFFILIATION"
+        }
+    },
+    "SAMPLE_COORDINATOR_ORCID_ID": {
+        "ena": {
+            "field": "sample coordinator ORCID ID",
+            "description": "16-digit number that is compatible with the ISO Standard (ISO 27729), if multiple IDs separate with a | and no spaces",
+            "regex": "^((\\d{4}-){3}\\d{3}(\\d|X))(\\|(\\d{4}-){3}\\d{3}(\\d|X))*$"
+        },
+        "tol": {
+            "field": "SAMPLE_COORDINATOR_ORCID_ID"
+        }
+    },
+    "SAMPLE_FORMAT": {
+        "tol": {
+            "field": "SAMPLE_FORMAT"
+        }
+    },
+    "SAMPLING_PERMITS_DEF": {
+        "tol": {
+            "field": "SAMPLING_PERMITS_DEF"
+        }
+    },
+    "SAMPLING_PERMITS_FILENAME": {
+        "ena": {
+            "description": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
+        },
+        "tol": {
+            "field": "SAMPLING_PERMITS_FILENAME"
+        }
+    },
+    "SAMPLING_PERMITS_REQUIRED": {
+        "tol": {
+            "field": "SAMPLING_PERMITS_REQUIRED"
+        }
+    },
+    "SAMPLING_WATER_BODY_DEPTH": {
+        "ena": {
+            "regex": "^\\d+$",
+            "description": "integer"
+        },
+        "tol": {
+            "field": "SAMPLING_WATER_BODY_DEPTH"
+        }
+    },
+    "SCIENTIFIC_NAME": {
+        "dwc": {
+            "field": "scientificName",
+            "uri": "http://rs.tdwg.org/dwc/terms/scientificName",
+            "description": "The full scientific name, with authorship and date information if known. When forming part of a dwc:Identification, this should be the name in lowest level taxonomic rank that can be determined. This term should not contain identification qualifications, which should instead be supplied in the dwc:identificationQualifier term."
+        },
+        "mixs": {
+            "field": "specific_host",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000029",
+            "description": "Report the host's taxonomic name and/or NCBI taxonomy ID."
+        },
+        "tol": {
+            "field": "SCIENTIFIC_NAME"
+        }
+    },
+    "SERIES": {
+        "dwc": {
+            "field": "fieldNumber",
+            "uri": "http://rs.tdwg.org/dwc/terms/fieldNumber",
+            "description": "An identifier given to the dwc:Event in the field. Often serves as a link between field notes and the dwc:Event."
+        },
+        "tol": {
+            "field": "SERIES"
+        }
+    },
+    "SEX": {
+        "dwc": {
+            "field": "sex",
+            "uri": "http://rs.tdwg.org/dwc/terms/sex",
+            "description": "The sex of the biological individual(s) represented in the dwc:Occurrence."
+        },
+        "ena": {
+            "field": "sex"
+        },
+        "mixs": {
+            "field": "ANIMALSEXENUM",
+            "type": "string"
+        },
+        "tol": {
+            "field": "SEX"
+        }
+    },
+    "SIZE_OF_TISSUE_IN_TUBE": {
+        "dwc": {
+            "field": "sampleSizeValue",
+            "uri": "http://rs.tdwg.org/dwc/terms/sampleSizeValue",
+            "description": "A numeric value for a measurement of the size (time duration, length, area, or volume) of a sample in a sampling dwc:Event."
+        },
+        "mixs": {
+            "field": "size_frac",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000017",
+            "description": "Filtering pore size used in sample preparation"
+        },
+        "tol": {
+            "field": "SIZE_OF_TISSUE_IN_TUBE"
+        }
+    },
+    "SORTED_BY": {
+        "tol": {
+            "field": "SORTED_BY"
+        }
+    },
+    "SORTER_AFFILIATION": {
+        "tol": {
+            "field": "SORTER_AFFILIATION"
+        }
+    },
+    "SORTING_APPROACH": {
+        "tol": {
+            "field": "SORTING_APPROACH"
+        }
+    },
+    "SORT_STAIN": {
+        "tol": {
+            "field": "SORT_STAIN"
+        }
+    },
+    "SPECIMEN_ID": {
+        "dwc": {
+            "field": "materialSampleID",
+            "uri": "http://rs.tdwg.org/dwc/terms/materialSampleID",
+            "description": "An identifier for the dwc:MaterialSample (as opposed to a particular digital record of the dwc:MaterialSample). In the absence of a persistent global unique identifier, construct one from a combination of identifiers in the record that will most closely make the dwc:materialSampleID globally unique."
+        },
+        "ena": {
+            "field": "specimen_id"
+        },
+        "mixs": {
+            "field": "source_mat_id",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0000026",
+            "description": "A unique identifier assigned to a material sample (as defined by http://rs.tdwg.org/dwc/terms/materialSampleID, and as opposed to a particular digital record of a material sample) used for extracting nucleic acids, and subsequent sequencing. The identifier can refer either to the original material collected or to any derived sub-samples. The INSDC qualifiers /specimen_voucher, /bio_material, or /culture_collection may or may not share the same value as the source_mat_id field. For instance, the /specimen_voucher qualifier and source_mat_id may both contain 'UAM:Herps:14' , referring to both the specimen voucher and sampled tissue with the same identifier. However, the /culture_collection qualifier may refer to a value from an initial culture (e.g. ATCC:11775) while source_mat_id would refer to an identifier from some derived culture from which the nucleic acids were extracted (e.g. xatc123 or ark:/2154/R2)."
+        },
+        "tol": {
+            "field": "SPECIMEN_ID"
+        }
+    },
+    "SPECIMEN_IDENTITY_RISK": {
+        "tol": {
+            "field": "SPECIMEN_IDENTITY_RISK"
+        }
+    },
+    "SYMBIONT": {
+        "mixs": {
+            "field": "host_symbiont",
+            "type": "object",
+            "description": "agriculture extension"
+        },
+        "tol": {
+            "field": "SYMBIONT"
+        }
+    },
+    "TAXON_ID": {
+        "dwc": {
+            "field": "taxonID",
+            "uri": "http://rs.tdwg.org/dwc/terms/taxonID",
+            "description": "An identifier for the set of dwc:Taxon information. May be a global unique identifier or an identifier specific to the data set."
+        },
+        "mixs": {
+            "field": "samp_taxon_id",
+            "type": "object",
+            "uri": "https://genomicsstandardsconsortium.github.io/mixs/0001320",
+            "description": "NCBI taxon id of the sample.  Maybe be a single taxon or mixed taxa sample. Use 'synthetic metagenome\u2019 for mock community/positive controls, or 'blank sample' for negative controls."
+        },
+        "tol": {
+            "field": "TAXON_ID"
+        }
+    },
+    "TAXON_REMARKS": {
+        "dwc": {
+            "field": "taxonRemarks",
+            "uri": "http://rs.tdwg.org/dwc/terms/taxonRemarks",
+            "description": "Comments or notes about the taxon or name."
+        },
+        "tol": {
+            "field": "TAXON_REMARKS"
+        }
+    },
+    "TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION": {
+        "mixs": {
+            "field": "timepoint",
+            "type": "object",
+            "description": "food-animal and animal feed extension"
+        },
+        "tol": {
+            "field": "TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION"
+        }
+    },
+    "TIME_OF_COLLECTION": {
+        "dwc": {
+            "field": "eventTime",
+            "uri": "http://rs.tdwg.org/dwc/terms/eventTime",
+            "description": "The time or interval during which a dwc:Event occurred."
+        },
+        "ena": {
+            "regex": "^([0-1][0-9]|2[0-4]):[0-5]\\d$",
+            "description": "24-hour format with hours and minutes separated by colon"
+        },
+        "tol": {
+            "field": "TIME_OF_COLLECTION"
+        }
+    },
+    "TISSUE_FOR_BARCODING": {
+        "tol": {
+            "field": "TISSUE_FOR_BARCODING"
+        }
+    },
+    "TISSUE_FOR_BIOBANKING": {
+        "tol": {
+            "field": "TISSUE_FOR_BIOBANKING"
+        }
+    },
+    "TISSUE_REMOVED_FOR_BARCODING": {
+        "tol": {
+            "field": "TISSUE_REMOVED_FOR_BARCODING"
+        }
+    },
+    "TISSUE_REMOVED_FOR_BIOBANKING": {
+        "tol": {
+            "field": "TISSUE_REMOVED_FOR_BIOBANKING"
+        }
+    },
+    "TISSUE_VOUCHER_ID_FOR_BIOBANKING": {
+        "ena": {
+            "field": "bio_material"
+        },
+        "tol": {
+            "field": "TISSUE_VOUCHER_ID_FOR_BIOBANKING"
+        }
+    },
+    "TUBE_OR_WELL_ID": {
+        "mixs": {
+            "field": "samp_well_name",
+            "type": "object",
+            "description": "hydrocarbon resources-cores extension"
+        },
+        "tol": {
+            "field": "TUBE_OR_WELL_ID"
+        }
+    },
+    "TUBE_OR_WELL_ID_FOR_BARCODING": {
+        "tol": {
+            "field": "TUBE_OR_WELL_ID_FOR_BARCODING"
+        }
+    },
+    "VOUCHER_ID": {
+        "ena": {
+            "field": "specimen_voucher"
+        },
+        "tol": {
+            "field": "VOUCHER_ID"
+        }
+    },
+    "VOUCHER_INSTITUTION": {
+        "ena": {
+            "field": "voucher institution url"
+        },
+        "tol": {
+            "field": "VOUCHER_INSTITUTION"
+        }
+    },
+    "VOUCHER_LINK": {
+        "ena": {
+            "field": "specimen voucher url"
+        },
+        "tol": {
+            "field": "VOUCHER_LINK"
+        }
+    },
+    "WATER_BODY_TYPE": {
+        "tol": {
+            "field": "WATER_BODY_TYPE"
+        }
+    },
+    "WATER_SPEED": {
+        "ena": {
+            "regex": "^\\d+$",
+            "description": "integer"
+        },
+        "tol": {
+            "field": "WATER_SPEED"
+        }
+    },
+    "WATER_TYPE": {
+        "mixs": {
+            "field": "wastewater_type",
+            "type": "object",
+            "description": "MIxS data that complies with the MigsBa checklist and the WastewaterSludge Extension"
+        },
+        "tol": {
+            "field": "WATER_TYPE"
+        }
+    }
+}

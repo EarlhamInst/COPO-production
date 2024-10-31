@@ -13,6 +13,7 @@ from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from asgiref.sync import sync_to_async
 from django.utils.translation import gettext_lazy as _
+from common.dal.copo_base_da import DataSchemas
 
 
 class UserDetails(models.Model):
@@ -403,3 +404,9 @@ class ProfileType(models.Model):
     def get_profile_types(self):
         return ProfileType.objects.all()
             
+
+@receiver(post_save, sender=SequencingCentre)
+@receiver(post_save, sender=AssociatedProfileType)
+@receiver(post_save, sender=ProfileType)
+def refresh_schema(sender, instance, **kwargs):
+    DataSchemas().refresh() 

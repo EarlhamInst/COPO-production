@@ -92,7 +92,7 @@ class CgCoreSchemas:
         """
 
         from dal.copo_base_da import DataSchemas
-        schema_fields = DataSchemas("COPO").get_ui_template_node('cgCore')
+        schema_fields = DataSchemas.get_ui_template_node('COPO', 'cgCore')
 
         df = self.resolve_field_constraint(schema=schema_fields, type_name=type_name)
         return df
@@ -213,7 +213,7 @@ class CgCoreSchemas:
 
         repo_type_option = repo_type_option[0]
 
-        cg_schema = DataSchemas("COPO").get_ui_template_node('cgCore')
+        cg_schema = DataSchemas.get_ui_template_node('COPO','cgCore')
 
         # filter schema items by repo
         cg_schema = [x for x in cg_schema if

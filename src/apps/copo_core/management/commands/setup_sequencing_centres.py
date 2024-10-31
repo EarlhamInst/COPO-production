@@ -1,7 +1,7 @@
 from typing import Any
 from django.core.management.base import BaseCommand
 from src.apps.copo_core.models import SequencingCentre
-from django.contrib.auth.models import User
+from common.dal.copo_base_da import DataSchemas
 
 
 # The class must be named Command, and subclass BaseCommand
@@ -102,12 +102,15 @@ class Command(BaseCommand):
                                                              description="WEST GERMAN GENOME CENTRE",
                                                              label="WEST GERMAN GENOME CENTRE")
                        
-        #SequencingCentre().create_sequencing_centre(name="OTHER",
-        #                                                     description="Other_ERGA_Associated_GAL",
-        #                                                     label="Other_ERGA_Associated_GAL")                                     
+        SequencingCentre().create_sequencing_centre(name="OTHER",
+                                                            description="Other associated sequencing centre",
+                                                            label="OTHER")                                     
 
         self.stdout.write("Sequencing Centres Added")
         records = SequencingCentre.objects.all()
 
         for record in records:
             self.stdout.write(record.name)
+
+        #refresh the schema in case it changes the schema
+        DataSchemas.refresh()
