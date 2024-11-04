@@ -42,6 +42,8 @@ MESSAGES = {
                                                                                            'field and <strong>LATITUDE_START/LATITUDE_END/LONGITUDE_START/LONGITUDE_END</strong> '
                                                                                            'field at row '
                                                                                            '<strong>%s</strong>',
+    'validation_msg_error_new_sample_detected_in_existing_manifest': 'New sample detected: <strong>%s (%s)</strong>. Sample cannot be processed. '
+                                                                    'Please add the sample to a new manifest to proceed with the upload.',                                                                                       
     'validation_msg_error_specimen_regex': 'Invalid data: <strong>%s</strong> in column <strong>%s</strong> at '
                                            'row <strong>%s</strong>. Expected format for %s <strong>%s</strong> '
                                            'is <strong>%s</strong> followed by 7 digits.',
