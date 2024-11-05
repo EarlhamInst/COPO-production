@@ -509,7 +509,7 @@ def get_args_from_parameter(parameter, param_value_dict):
 def san_check(val):
     return val if val is not None else ''
 
-def get_compliant_fields(component, project, can_be_exported=False):
+def get_compliant_fields(component, project):
     schema = get_copo_schema(component)
     project = project.lower()
     
@@ -518,7 +518,6 @@ def get_compliant_fields(component, project, can_be_exported=False):
         for x in schema
         if x.get('is_compliant', False) # Field is compliant
         and project in x.get('specifications', [])
-        and (x.get('show_in_api', False) if can_be_exported else True)
     ]
 
     return compliant_fields
@@ -532,7 +531,7 @@ def get_export_fields(component, project):
                 output.add(x['id'].split('.')[-1])
     return list(output)
 
-def get_non_compliant_fields(component, project, can_be_exported=False):
+def get_non_compliant_fields(component, project):
     schema = get_copo_schema(component)
     project = project.lower()
     
@@ -541,9 +540,8 @@ def get_non_compliant_fields(component, project, can_be_exported=False):
         for x in schema
         if not x.get('is_compliant_field', False)  # Field is non-compliant
         and project in x.get('specifications', [])
-        and (x.get('show_in_api', False) if can_be_exported else True)
     ]
-    
+
     return non_compliant_fields
 
 def get_sensitive_fields(component):

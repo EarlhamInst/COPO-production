@@ -301,7 +301,7 @@ def get_samples_by_sequencing_centre(request):
 
 def get_updatable_fields_by_project(request):
     project = request.GET.get('project', str()).lower()
-    non_compliant_fields = d_utils.get_non_compliant_fields(component='sample', project=project, can_be_exported=True)
+    non_compliant_fields = d_utils.get_non_compliant_fields(component='sample', project=project)
 
     # Return non-compliant fields i.e. fields that user can update
     non_compliant_fields.sort()
