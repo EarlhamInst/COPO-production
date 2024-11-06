@@ -78,7 +78,7 @@ def format_date(input_date):
         # Format of date fields exported to STS
         return input_date.replace(tzinfo=datetime.timezone.utc).isoformat()
     except Exception as e:
-        print(f'An error occurred while formatting the date: {e}')
+        Logger().exception(f'An error occurred while formatting the date: {e}')
         return None
 
 
