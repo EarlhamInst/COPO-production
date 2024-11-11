@@ -225,7 +225,7 @@
       "label": "Sample Identifier",
       "ref": "",
       "required": "false",
-      "show_in_api": false,
+      "show_in_api": true,
       "show_in_form": false,
       "show_in_table": false,
       "type": "string",
