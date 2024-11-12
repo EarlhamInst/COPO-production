@@ -506,18 +506,21 @@ def get_args_from_parameter(parameter, param_value_dict):
 
     return args
 
-
 def san_check(val):
     return val if val is not None else ''
 
-
-def get_unqualified_id(qual):
-    return qual.split(".")[-1]
-
-def get_sensitive_fields(component):
+def get_compliant_fields(component, project):
     schema = get_copo_schema(component)
-    sensitive_fields = [x['id'].split('.')[-1] for x in schema if x.get('is_sensitive', False)]
-    return sensitive_fields
+    project = project.lower()
+    
+    compliant_fields = [
+        x['id'].split('.')[-1]
+        for x in schema
+        if x.get('is_compliant', False) # Field is compliant
+        and project in x.get('specifications', [])
+    ]
+
+    return compliant_fields
 
 def get_export_fields(component, project):
     schema = get_copo_schema(component)
@@ -527,6 +530,27 @@ def get_export_fields(component, project):
             if not x.get('specifications', list()) or project.lower() in x.get('specifications', list()):
                 output.add(x['id'].split('.')[-1])
     return list(output)
+
+def get_non_compliant_fields(component, project):
+    schema = get_copo_schema(component)
+    project = project.lower()
+    
+    non_compliant_fields = [
+        x['id'].split('.')[-1]
+        for x in schema
+        if not x.get('is_compliant', False)  # Field is non-compliant
+        and project in x.get('specifications', [])
+    ]
+
+    return non_compliant_fields
+
+def get_sensitive_fields(component):
+    schema = get_copo_schema(component)
+    sensitive_fields = [x['id'].split('.')[-1] for x in schema if x.get('is_sensitive', False)]
+    return sensitive_fields
+
+def get_unqualified_id(qual):
+    return qual.split(".")[-1]
 
 class DecoupleFormSubmission:
     def __init__(self, auto_fields, schema):

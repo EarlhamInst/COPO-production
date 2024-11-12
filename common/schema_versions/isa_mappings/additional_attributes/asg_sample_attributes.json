@@ -9,6 +9,7 @@
         "help_tip": "",
         "hidden": "false",
         "id": "copo.sample.SERIES",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Series",
         "manifest_version": [
@@ -45,6 +46,7 @@
         "help_tip": "Rack or Plate Identifier",
         "hidden": "false",
         "id": "copo.sample.RACK_OR_PLATE_ID",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Rack or Plate Identifier",
         "manifest_version": [
@@ -82,6 +84,7 @@
         "help_tip": "Tube or Well Identifier",
         "hidden": "false",
         "id": "copo.sample.TUBE_OR_WELL_ID",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Tube or Well Identifier",
         "manifest_version": [
@@ -119,6 +122,7 @@
         "help_tip": "An identifier given to the Occurrence at the time it was recorded. Often serves as a link between field notes and an Occurrence record, such as a specimen collector's number.",
         "hidden": "false",
         "id": "copo.sample.SPECIMEN_ID",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Specimen Identifier",
         "manifest_version": [
@@ -156,6 +160,7 @@
         "help_tip": "The taxonomic Order into which the Family is placed.",
         "hidden": "false",
         "id": "copo.sample.ORDER_OR_GROUP",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Order or Group",
         "manifest_version": [
@@ -193,6 +198,7 @@
         "help_tip": "The taxonomic Family into which the Genus is placed.",
         "hidden": "false",
         "id": "copo.sample.FAMILY",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Family",
         "manifest_version": [
@@ -230,6 +236,7 @@
         "help_tip": "The taxonomic Genus to which the Species belongs.",
         "hidden": "false",
         "id": "copo.sample.GENUS",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Genus",
         "manifest_version": [
@@ -267,6 +274,7 @@
         "help_tip": "A valid NCBI TAXON_ID to the species level is mandatory in order to submit data to public repositories.",
         "hidden": "false",
         "id": "copo.sample.TAXON_ID",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Taxon Identifier",
         "manifest_version": [
@@ -304,6 +312,7 @@
         "help_tip": "The official scientific name as found in NCBI taxonomy database",
         "hidden": "false",
         "id": "copo.sample.SCIENTIFIC_NAME",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Scientific Name",
         "manifest_version": [
@@ -341,6 +350,7 @@
         "help_tip": "Taxon remarks",
         "hidden": "false",
         "id": "copo.sample.TAXON_REMARKS",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Taxon Remarks",
         "manifest_version": [
@@ -452,6 +462,7 @@
         "help_tip": "Common name",
         "hidden": "false",
         "id": "copo.sample.COMMON_NAME",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Common Name",
         "manifest_version": [
@@ -587,6 +598,7 @@
         "help_tip": "e.g. Leg removed from complete organism",
         "hidden": "false",
         "id": "copo.sample.ORGANISM_PART",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Organism Part",
         "manifest_version": [
@@ -624,6 +636,7 @@
         "help_tip": "",
         "hidden": "false",
         "id": "copo.sample.SYMBIONT",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Symbiont",
         "manifest_version": [
@@ -702,6 +715,7 @@
         "help_tip": "Partner",
         "hidden": "false",
         "id": "copo.sample.PARTNER",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Partner",
         "manifest_version": [
@@ -813,6 +827,7 @@
         "help_tip": "",
         "hidden": "false",
         "id": "copo.sample.COLLECTED_BY",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Collected By",
         "manifest_version": [
@@ -849,6 +864,7 @@
         "help_tip": "The name (or acronym) in use by the institution having custody of the object(s) or information referred to in the record.",
         "hidden": "false",
         "id": "copo.sample.COLLECTOR_AFFILIATION",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Collector Affiliation",
         "manifest_version": [
@@ -886,6 +902,7 @@
         "help_tip": "",
         "hidden": "false",
         "id": "copo.sample.DATE_OF_COLLECTION",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Date of Collection",
         "manifest_version": [
@@ -959,6 +976,7 @@
         "help_tip": "A list of geographic names less specific than the information captured in the Collection Site term. Starting with the least specific, add geograhic place names to identify location using the blue plus. E.g. U.K., London, Westminster, Westminster Abbey all as separate list entries.",
         "hidden": "false",
         "id": "copo.sample.COLLECTION_LOCATION",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Collection Location",
         "manifest_version": [
@@ -999,6 +1017,7 @@
         "help_tip": "The geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
         "hidden": "false",
         "id": "copo.sample.DECIMAL_LATITUDE",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Decimal Latitude",
         "manifest_version": [
@@ -1036,6 +1055,7 @@
         "help_tip": "The geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
         "hidden": "false",
         "id": "copo.sample.DECIMAL_LONGITUDE",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Decimal Longitude",
         "manifest_version": [
@@ -1073,6 +1093,7 @@
         "help_tip": "A list of maps, gazetteers, or other resources used to georeference the Location, described specifically enough to allow anyone in the future to use the same resources.",
         "hidden": "false",
         "id": "copo.sample.GRID_REFERENCE",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Grid Reference",
         "manifest_version": [
@@ -1110,6 +1131,7 @@
         "help_tip": "Comments or notes about the Location. e.g. Underwater since 2005",
         "hidden": "false",
         "id": "copo.sample.HABITAT",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Habitat Remarks",
         "manifest_version": [
@@ -1221,6 +1243,7 @@
         "help_tip": "",
         "hidden": "false",
         "id": "copo.sample.ORIGINAL_COLLECTION_DATE",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Original Collection Date",
         "manifest_version": [
@@ -1257,6 +1280,7 @@
         "help_tip": "",
         "hidden": "false",
         "id": "copo.sample.ORIGINAL_GEOGRAPHIC_LOCATION",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Original Geographic Location",
         "manifest_version": [
@@ -1293,6 +1317,7 @@
         "help_tip": "The original geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
         "hidden": "false",
         "id": "copo.sample.ORIGINAL_DECIMAL_LATITUDE",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Original Decimal Latitude",
         "manifest_version": [
@@ -1330,6 +1355,7 @@
         "help_tip": "The original geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
         "hidden": "false",
         "id": "copo.sample.ORIGINAL_DECIMAL_LONGITUDE",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Original Decimal Longitude",
         "manifest_version": [
@@ -1367,6 +1393,7 @@
         "help_tip": "The name of, reference to, or description of the method or protocol used during an Event. E.g. UV light trap, mist net, bottom trawl, ad hoc observation, point count",
         "hidden": "false",
         "id": "copo.sample.DESCRIPTION_OF_COLLECTION_METHOD",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Description of Collection Method",
         "manifest_version": [
@@ -1550,6 +1577,7 @@
         "help_tip": "",
         "hidden": "true",
         "id": "copo.sample.SPECIMEN_IDENTITY_RISK",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Specimen Identity Risk",
         "manifest_version": [
@@ -1591,6 +1619,7 @@
         "help_tip": "Mixed sample risk",
         "hidden": "false",
         "id": "copo.sample.MIXED_SAMPLE_RISK",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Mixed Sample Risk",
         "manifest_version": [
@@ -1706,6 +1735,7 @@
         "help_tip": "Preparations and preservation methods for a specimen",
         "hidden": "false",
         "id": "copo.sample.PRESERVATION_APPROACH",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Preservation Approach",
         "manifest_version": [
@@ -1743,6 +1773,7 @@
         "help_tip": "Specific preservative solution used in preparation",
         "hidden": "false",
         "id": "copo.sample.PRESERVATIVE_SOLUTION",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Preservative Solution",
         "manifest_version": [
@@ -2120,6 +2151,7 @@
         "help_tip": "Barcoding Status",
         "hidden": "false",
         "id": "copo.sample.BARCODING_STATUS",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "barcodingStatus",
         "manifest_version": [
@@ -2199,6 +2231,7 @@
         "help_tip": "",
         "hidden": "false",
         "id": "copo.sample.VOUCHER_ID",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Voucher Identifier",
         "manifest_version": [
@@ -2235,6 +2268,7 @@
         "help_tip": "Proxy Voucher Identifier",
         "hidden": "false",
         "id": "copo.sample.PROXY_VOUCHER_ID",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Proxy Voucher Identifier",
         "manifest_version": [
@@ -2272,6 +2306,7 @@
         "help_tip": "Voucher Link",
         "hidden": "false",
         "id": "copo.sample.VOUCHER_LINK",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Voucher Link",
         "manifest_version": [
@@ -2309,6 +2344,7 @@
         "help_tip": "Proxy Voucher Link",
         "hidden": "false",
         "id": "copo.sample.PROXY_VOUCHER_LINK",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Proxy Voucher Link",
         "manifest_version": [
@@ -2346,6 +2382,7 @@
         "help_tip": "Voucher Institution",
         "hidden": "false",
         "id": "copo.sample.VOUCHER_INSTITUTION",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Voucher Institution",
         "manifest_version": [
@@ -2427,6 +2464,7 @@
         "help_tip": "Sample format",
         "hidden": "false",
         "id": "copo.sample.SAMPLE_FORMAT",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Sample Format",
         "manifest_version": [
@@ -2506,6 +2544,7 @@
         "help_tip": "Regulatory Compliance",
         "hidden": "false",
         "id": "copo.sample.REGULATORY_COMPLIANCE",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Regulatory Compliance",
         "manifest_version": [
@@ -2548,6 +2587,7 @@
         "help_tip": "Other Information",
         "hidden": "false",
         "id": "copo.sample.OTHER_INFORMATION",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Other Information",
         "manifest_version": [

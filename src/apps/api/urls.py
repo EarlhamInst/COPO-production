@@ -71,7 +71,7 @@ dtol_api_patterns = [
             name='get_samples_from_study_accession'),
     re_path(r'^sample/StudyFromSampleAccession/(?P<accessions>[A-Za-z0-9, ]+)', s.get_study_from_sample_accession,
             name='get_study_from_sample_accession'),
-    re_path(r'^sample/updatable_fields/(?P<project>[a-zA-Z, ]+)/',
+    re_path(r'^sample/updatable_fields',
             s.get_updatable_fields_by_project, name='get_updatable_fields_by_project'),
     re_path(r'^sample/(?P<d_from>[A-Z0-9a-f- .:+]+)/(?P<d_to>[A-Z0-9a-f- .:+]+)',
             s.get_all_samples_between_dates, name='get_all_samples_between_dates'),

@@ -409,4 +409,4 @@ class ProfileType(models.Model):
 @receiver(post_save, sender=AssociatedProfileType)
 @receiver(post_save, sender=ProfileType)
 def refresh_schema(sender, instance, **kwargs):
-    DataSchemas().refresh() 
+    DataSchemas.refresh() 

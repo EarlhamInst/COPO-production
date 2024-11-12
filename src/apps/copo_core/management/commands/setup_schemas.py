@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
         self.generate_lookup_datasource()
 
-        DataSchemas().refresh()
+        DataSchemas.refresh()
         
         self.stdout.write(self.style.SUCCESS('Successfully generated schemas'))
 

@@ -652,7 +652,7 @@ paths:
         '400':
           description: \'from\' must be earlier than \'to\'
 
-  /sample/updatable_fields/{project}:
+  /sample/updatable_fields:
     get:
       tags:
         - Sample
@@ -660,22 +660,7 @@ paths:
       description: >
         Get a list of all the fields of a project that can be updated in COPO
       parameters:
-        - name: project
-          in: path
-          required: true
-          description: |
-            Available projects - **ASG**, **DTOL**, **ERGA**
-
-            To query multiple projects, separate them with a comma.
-
-            - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
-            - **DTOL** refers to Darwin Tree of Life (DTOL)
-            - **ERGA** refers to European Reference Genome Atlas (ERGA)
-
-            For example, to query all projects, input: ASG,DTOL,ERGA
-          schema:
-            type: string
-            minimum: 1
+        - $ref: '#/components/parameters/project_required'
         - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:

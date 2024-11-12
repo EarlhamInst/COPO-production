@@ -300,17 +300,13 @@ def get_samples_by_sequencing_centre(request):
         out = filter_for_API(samples)
     return finish_request(out)
 
-def get_updatable_fields_by_project(request, project):
-    project_lst = project.split(",")
-    project_lst = list(map(lambda x: x.strip(), project_lst))
-    # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
-    project_lst[:] = [x.lower() for x in project_lst if x] # Convert all strings in the list to lowercase
-    out = list()
-    
-    for project in project_lst:
-        if project in lookup.DTOL_NO_COMPLIANCE_FIELDS:
-            out.append({project.upper(): lookup.DTOL_NO_COMPLIANCE_FIELDS[project]})
-    return finish_request(out)
+def get_updatable_fields_by_project(request):
+    project = request.GET.get('project', str()).lower()
+    non_compliant_fields = d_utils.get_non_compliant_fields(component='sample', project=project)
+
+    # Return non-compliant fields i.e. fields that user can update
+    non_compliant_fields.sort()
+    return finish_request(non_compliant_fields)
 
 def get_fields_by_manifest_version(request):
     return_type = request.GET.get('return_type', 'json').lower()
