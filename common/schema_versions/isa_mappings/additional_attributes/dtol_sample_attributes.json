@@ -294,7 +294,7 @@
         ],
         "standards": {
             "dwc": "taxonID",
-            "ena": "",
+            "ena": "TAXON_ID",
             "mixs": "samp_taxon_id",
             "tol": "TAXON_ID"
         },
@@ -332,7 +332,7 @@
         ],
         "standards": {
             "dwc": "scientificName",
-            "ena": "",
+            "ena": "SCIENTIFIC_NAME",
             "mixs": "specific_host",
             "tol": "SCIENTIFIC_NAME"
         },
