@@ -538,7 +538,7 @@ def get_non_compliant_fields(component, project):
     non_compliant_fields = [
         x['id'].split('.')[-1]
         for x in schema
-        if not x.get('is_compliant_field', False)  # Field is non-compliant
+        if not x.get('is_compliant', False)  # Field is non-compliant
         and project in x.get('specifications', [])
     ]
 
