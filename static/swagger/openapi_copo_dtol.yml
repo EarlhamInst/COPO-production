@@ -652,7 +652,7 @@ paths:
         '400':
           description: \'from\' must be earlier than \'to\'
 
-  /sample/updatable_fields/{project}:
+  /sample/updatable_fields:
     get:
       tags:
         - Sample
