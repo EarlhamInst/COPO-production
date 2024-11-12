@@ -146,6 +146,7 @@ def filter_for_API(sample_list, add_all_fields=False):
             # always export copo id
             if k == "_id":
                 s_out["copo_id"] = str(v)
+                export.append("copo_id")
             # check if field is listed to be exported to STS
             # print(k)
             if k in export:

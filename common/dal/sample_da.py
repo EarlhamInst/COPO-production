@@ -1030,7 +1030,7 @@ class Sample(DAComponent):
             status_filter['manifest_id'] = manifest_id
               
         return cursor_to_list(self.get_collection_handle().find(status_filter,
-                                                                {"status": 1, "copo_id": 1, "manifest_id": 1,
+                                                                {"status": 1, "manifest_id": 1,
                                                                  "time_created": 1, "time_updated": 1}))
 
     def get_by_biosampleAccessions(self, biosampleAccessions):
