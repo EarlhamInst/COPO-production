@@ -761,7 +761,7 @@ class DtolSpreadsheet:
                         Sample().update_field('public_name', '', recorded_sample["_id"])
 
 
-            if (recorded_sample["status"] == "rejected" or recorded_sample.get("approval",[])) and is_updated:
+            if (recorded_sample["status"] in ["rejected", "accepted"] or recorded_sample.get("approval",{})) and is_updated:
                 is_private = "erga" in self.type.lower() and s["ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID"]
                 is_erga = "erga" in self.type.lower()
                 Sample().mark_pending(sample_ids = [str(recorded_sample["_id"])], is_erga=is_erga, is_private=is_private)
