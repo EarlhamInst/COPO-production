@@ -1053,18 +1053,20 @@ class CopoGroup(DAComponent):
         # if current user is a member of the  COPO development team, return all profiles
         # If not, return only the profiles for the current logged in user
         member_groups = helpers.get_group_membership_asString()
-        profiles = Profile().get_profiles(search_filter=str()) if 'data_managers' in member_groups else Profile().get_for_user(helpers.get_user_id())
+        profiles = Profile().get_profiles(filter='all_profiles') if 'data_managers' in member_groups else Profile().get_for_user(helpers.get_user_id())
         p_list = cursor_to_list(profiles)
 
         # Sort list of profiles by 'title' key
         p_list = sorted(p_list, key=lambda x: x['title'])
         
         group = CopoGroup().get_record(group_id)
-        for p in p_list:
-            if p['_id'] in group['shared_profile_ids']:
-                p['selected'] = True
-            else:
-                p['selected'] = False
+        
+        if p_list and group:
+            for p in p_list:
+                if p['_id'] in group['shared_profile_ids']:
+                    p['selected'] = True
+                else:
+                    p['selected'] = False
         return p_list
 
     '''
@@ -1081,13 +1083,16 @@ class CopoGroup(DAComponent):
 
     def get_users_for_group_info(self, group_id):
         group = CopoGroup().get_record(group_id)
-        member_ids = group['member_ids']
         user_list = list()
-        for u in member_ids:
-            usr = User.objects.get(pk=u)
-            x = {'id': usr.id, 'first_name': usr.first_name, 'last_name': usr.last_name, 'email': usr.email,
-                 'username': usr.username}
-            user_list.append(x)
+
+        if group:
+            member_ids = group['member_ids']
+
+            for u in member_ids:
+                usr = User.objects.get(pk=u)
+                x = {'id': usr.id, 'first_name': usr.first_name, 'last_name': usr.last_name, 'email': usr.email,
+                    'username': usr.username}
+                user_list.append(x)
         return user_list
 
     def add_user_to_group(self, group_id, user_id):
