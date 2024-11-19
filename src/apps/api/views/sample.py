@@ -20,6 +20,7 @@ from common.schema_versions.lookup import dtol_lookups as lookup
 from common.lookup.lookup import API_ERRORS
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from common.utils.helpers import get_excluded_associated_projects
 from common.utils.logger import Logger
 from src.apps.copo_dtol_upload.utils.Dtol_Spreadsheet import DtolSpreadsheet
 from src.apps.copo_dtol_upload.utils.da import ValidationQueue
@@ -340,10 +341,14 @@ def get_fields_by_manifest_version(request):
 
     return  HttpResponse(output, content_type='application/json')
 
-def get_project_samples_by_associated_project_type(request, values):
-    associated_profile_types_List = d_utils.convertStringToList(values) # Convert string to list of lowercase strings
-    associated_profile_types_List = list(map(lambda x: x.strip().upper(), associated_profile_types_List))
-    samples = Sample().get_project_samples_by_associated_project_type(associated_profile_types_List)
+def get_project_samples_by_associated_project_type(request, value):
+    excluded_associated_projects = get_excluded_associated_projects()
+    associated_project_type = value.upper().strip()
+
+    if associated_project_type in excluded_associated_projects:
+        return HttpResponse(status=400, content=f'Invalid input! {value.strip()} is not allowed.')
+    
+    samples = Sample().get_project_samples_by_associated_project_type(associated_project_type)
     out = list()
     if samples:
         out = filter_for_API(samples, add_all_fields=True)
