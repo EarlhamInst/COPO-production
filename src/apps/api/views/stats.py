@@ -7,6 +7,8 @@ from common.dal.sample_da import Sample
 import common.dal.copo_base_da as da
 import dateutil.parser as parser
 from common.dal.mongo_util import cursor_to_list
+from common.utils.helpers import get_excluded_associated_projects
+from src.apps.copo_core.models import AssociatedProfileType, ProfileType
 from ..utils import finish_request
 
 
@@ -105,18 +107,15 @@ def samples_hist_json(request, metric):
 
 
 def get_tol_projects(request):
-    project_lst = da.handle_dict["profile"].distinct(
-        "type")  # Get unique list of tol projects
-    project_lst.sort()  # Sort the list of tol projects
-
-    return finish_request(project_lst)
-
+    tol_project_lst = sorted({item.description for item in ProfileType().get_profile_types() if item.is_dtol_profile})
+    return finish_request(tol_project_lst)
 
 def get_associated_tol_projects(request):
-    associated_project_lst = da.handle_dict["profile"].distinct(
-        "associated_type")  # Get unique list of associated tol projects
-    associated_project_lst = [
-        item.get('label', '') for item in associated_project_lst]  # Get labels only
-    associated_project_lst.sort()  # Sort the list of associated tol projects
+    excluded_associated_projects = get_excluded_associated_projects()
 
-    return finish_request(associated_project_lst)
+   # Filter associated projects based on exclusion list
+    associated_projects = sorted(
+        item.label for item in AssociatedProfileType().get_associated_profile_types()
+        if item.name not in excluded_associated_projects
+    )
+    return finish_request(associated_projects)

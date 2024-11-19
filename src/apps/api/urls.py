@@ -62,7 +62,7 @@ dtol_api_patterns = [
             name='get_samples_by_sequencing_centre'),
     re_path(r'^sample/dtol/num_samples', s.get_num_dtol_samples,
             name='get_num_dtol_samples'),
-    re_path(r'^sample/associated_tol_project/(?P<values>[a-zA-Z, ]+)',
+    re_path(r'^sample/associated_tol_project/(?P<value>[a-zA-Z-_]+)',
             s.get_project_samples_by_associated_project_type,
             name='get_project_samples_by_associated_project_type'),
     re_path(r'^sample/project/manifest_version/fields',

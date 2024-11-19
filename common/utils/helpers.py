@@ -273,3 +273,20 @@ def get_users_associated_profile_checkers():
     user = ThreadLocal.get_current_user()
     seq_centres = AssociatedProfileType.objects.filter(users=user)
     return seq_centres
+
+def get_excluded_associated_projects():
+    # This function returns a set of projects that should be 
+    # excluded from the associated project list
+    from src.apps.copo_core.models import ProfileType, SequencingCentre
+    # Fetch all profile types and sequencing centres
+    profile_types = {item.type.upper() for item in ProfileType().get_profile_types()}
+
+    # Add DTOL_ENV to the list of profile types. It is not present in the ProfileType collection 
+    # with the underscore but present in the AssociatedProfileType collection with the underscore
+    profile_types.add('DTOL_ENV')
+    sequencing_centres = {item.name for item in SequencingCentre().get_sequencing_centres()}
+
+    # Combine profile types and sequencing centres into a set of excluded projects
+    exclusions = profile_types | sequencing_centres
+
+    return exclusions

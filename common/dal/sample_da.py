@@ -420,10 +420,9 @@ class Sample(DAComponent):
             {"_id": 1}
         ))
 
-    def get_project_samples_by_associated_project_type(self, values):
-        regex_values = ' | '.join(values)
+    def get_project_samples_by_associated_project_type(self, value):
         return cursor_to_list(
-            self.get_collection_handle().find({"associated_tol_project": {"$regex": regex_values, "$options": "i"}}))
+            self.get_collection_handle().find({"associated_tol_project": {"$regex": value, "$options": "i"}}))
 
     def get_gal_names(self, projects):
         return cursor_to_list(self.get_collection_handle().find(

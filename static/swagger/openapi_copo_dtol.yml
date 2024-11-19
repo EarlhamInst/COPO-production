@@ -542,35 +542,13 @@ paths:
         '404':
           description: Invalid project found in request. No sample records exist for the given project.
 
-  /sample/associated_tol_project/{values}:
+  /sample/associated_tol_project/{value}:
     get:
       tags:
         - Sample
-      summary: Get sample records in a project by associated project type(s)
-      description: |
-        Get a list of all samples of a project in COPO by associated project type
-        Available associated projects - **ASG**, **BGE**, **DTOL**, **DTOLENV**, **ERGA**, **ERGA_PILOT**, **ERGA_COMMUNITY**, **POP_GENOMICS**
-
-        To query multiple associated projects, separate them with a comma.
-
-        - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
-        - **BGE** refers to Biodiversity Genomics Europe (BGE)
-        - **DTOL** refers to Darwin Tree of Life (DTOL)
-        - **DTOLENV** refers to Darwin Tree of Life Environmental Samples (DTOLENV)
-        - **ERGA** refers to European Reference Genome Atlas (ERGA)
-        - **ERGA_PILOT** refers to European Reference Genome Atlas - Pilot (ERGA_PILOT)
-        - **ERGA_COMMUNITY** refers to European Reference Genome Atlas - Community (ERGA_COMMUNITY)
-        - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
-
-        For example, to query all associated Tree of Life (ToL) projects, input: ASG,BGE,DTOL,DTOLENV,ERGA,ERGA_PILOT,ERGA_COMMUNITY,POP_GENOMICS
+      summary: Get sample records by associated project type
       parameters:
-        - name: values
-          in: path
-          required: true
-          description: comma (,) separated list of supported associated project types
-          schema:
-            type: string
-            minimum: 1
+        - $ref: '#/components/parameters/associated_tol_project'
         - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:
@@ -988,6 +966,22 @@ paths:
 
 components:
   parameters:
+    associated_tol_project:
+      name: value
+      in: path
+      description: |
+        Get a list of samples in COPO by associated project type
+
+        - **BGE** refers to Biodiversity Genomics Europe (BGE)
+        - **BIOBLITZ** refers to BioBlitz
+        - **CBP** refers to Catalan Initiative for the Earth BioGenome Project (CBP)
+        - **ERGA_COMMUNITY** refers to European Reference Genome Atlas - Community (ERGA_COMMUNITY)
+        - **ERGA_PILOT** refers to European Reference Genome Atlas - Pilot (ERGA_PILOT)
+        - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
+      required: true
+      schema:
+        $ref: '#/components/schemas/AssociatedProjects'
+
     project:
       name: project
       in: query
@@ -1070,6 +1064,11 @@ components:
           items:
             $ref: '#/components/schemas/StudyAccession'
 
+    AssociatedProjects:
+      type: string
+      enum: [BGE, BIOBLITZ, CBP, ERGA_COMMUNITY, ERGA_PILOT, POP_GENOMICS]
+      description: A list of associated projects
+
     AuthBody:
       type: object
       properties:
@@ -1129,7 +1128,7 @@ components:
           NGS BERN,
           NGS COMPETENCE CENTER TÜBINGEN,
           NORWEGIAN SEQUENCING CENTRE,
-          Other_ERGA_Associated_GAL,
+          OTHER,
           SANGER INSTITUTE,
           SCILIFELAB,
           'SVARDAL LAB, ANTWERP',
