@@ -155,7 +155,7 @@ def process_pending_file_transfers():
                     # Todo - need to do something cleverer here
                     reset_status_counter(tx)
             elif tx_status == 5:
-                if not tx["remote_path"]:
+                if not tx.get("remote_path",""):
                     log.log("no ecs location, skipping transfer to ENA")
                     mark_complete(tx)
                     continue 

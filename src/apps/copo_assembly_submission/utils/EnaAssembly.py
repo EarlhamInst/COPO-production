@@ -189,14 +189,16 @@ def _submit_assembly(file_path, profile_id, submission_type):
                         html_id="assembly_info")
         output = subprocess.check_output(webin_cmd,stderr=subprocess.STDOUT, shell=True)
         output = output.decode("ascii")
+        return_code = 0
     except subprocess.CalledProcessError as cpe:
+        return_code = cpe.returncode
         output = cpe.stdout
         output = output.decode("ascii") + " ERROR return code " + str(cpe.returncode)
     Logger().debug(msg=output)
 
     #todo delete files after successfull submission
     #todo decide if keeping manifest.txt and store accession in assembly objec too
-    return output
+    return return_code, output
 
 def update_assembly_submission_pending():
     subs = Submission().get_assembly_file_uploading()
@@ -285,6 +287,7 @@ def process_assembly_pending_submission():
                 output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True)
                 Logger().debug(output)
                 output = output.decode("ascii")
+                return_code = 0
             except subprocess.CalledProcessError as cpe:
                 return_code = cpe.returncode
                 output = cpe.stdout
@@ -295,9 +298,9 @@ def process_assembly_pending_submission():
             #print(output)
             #todo decide if keeping or deleting these files
             #report is being stored in webin-cli.report and manifest.txt.report so we can get errors there
-            if not "ERROR" in output:
-                output = _submit_assembly(file_path=str(manifest_path), profile_id=sub["profile_id"], submission_type=submission_type)
-                if "ERROR" in output:
+            if return_code == 0:
+                return_code, output = _submit_assembly(file_path=str(manifest_path), profile_id=sub["profile_id"], submission_type=submission_type)
+                if return_code != 0 :
                     #handle possibility submission is not successfull
                     #this may happen for instance if the same assembly has already been submitted, which would not get caught
                     #by the validation step
