@@ -523,13 +523,29 @@ def get_compliant_fields(component, project):
     return compliant_fields
 
 def get_export_fields(component, project):
+    # Get fields that are not sensitive and can be exported or displayed via the API
     schema = get_copo_schema(component)
     output = set()
+
+    # Additional export fields that are not in the schema
+    addtl_export_fields = ['copo_id', 'copo_profile_title']
+    output.update(addtl_export_fields)
+
     for x in schema:
         if x.get('show_in_api', False) and not x.get('is_sensitive', False):
             if not x.get('specifications', list()) or project.lower() in x.get('specifications', list()):
                 output.add(x['id'].split('.')[-1])
     return list(output)
+
+# def get_import_fields(component, project):
+#     # Get fields that are sensitive or cannot be exported or displayed via the API
+#     schema = get_copo_schema(component)
+#     output = set()
+#     for x in schema:
+#         if not x.get('show_in_api', False) or x.get('is_sensitive', False):
+#             if not x.get('specifications', list()) or project.lower() in x.get('specifications', list()):
+#                 output.add(x['id'].split('.')[-1])
+#     return list(output)
 
 def get_non_compliant_fields(component, project):
     schema = get_copo_schema(component)
