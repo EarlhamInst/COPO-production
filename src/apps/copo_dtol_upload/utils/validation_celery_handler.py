@@ -24,6 +24,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Q
 from io import BytesIO
+import re
+import os
 
 class ProcessValidationQueue:
 
@@ -368,51 +370,57 @@ class ProcessValidationQueue:
                 if s[field].strip() != exsam.get(field, "") and s[field].strip() != exsam["species_list"][0].get(field,
                                                                                                                  ""):
                     if is_manager or is_not_approved or field not in compliant_fields:
-                        updates[rack_tube][field] = {}
+                        #updates[rack_tube][field] = {}
                         if field in lookup.SPECIES_LIST_FIELDS:
+                            updates[rack_tube][field] = {}
                             updates[rack_tube][field]["old_value"] = exsam["species_list"][0][field]
                             updates[rack_tube][field]["new_value"] = s[field]
-                        else:
- #                           if field in lookup.PERMIT_REQUIRED_COLUMN_NAMES:
- #                               s[field] == "Y"
- #                               permits_required = True
-                            updates[rack_tube][field]["old_value"] = exsam.get(field,"")  #to cater for the case where the field not exist in the old maniest
-                            updates[rack_tube][field]["new_value"] = s[field]
+
+                        if field.endswith("_PERMITS_FILENAME"):
+                            current_name = s[field].strip() 
+                            if current_name:
+                                file_name, file_ext = os.path.splitext(current_name)
+                                if re.search(rf"{file_name}_\d{{8}}{file_ext}", exsam.get(field,"")): 
+                                    continue
+                        updates[rack_tube][field] = {}        
+                        updates[rack_tube][field]["old_value"] = exsam.get(field,"")  #to cater for the case where the field not exist in the old maniest
+                        updates[rack_tube][field]["new_value"] = s[field]
                     else:
                         msg = validation_msg["validation_msg_error_updating_compliance_field"] % (field, profile.get("type","").upper())
                         notify_frontend(data={"profile_id": self.profile_id}, msg=msg, action="error",
                                         html_id="sample_info")
                         return False
-            # show upcoming updates here
-            msg = "<ul>"
-            for sample in updates:
+        # show upcoming updates here
+        msg = "<ul>"
+        for sample in updates:
+            if updates[sample]:
                 msg += "<li>Updating sample <strong>" + sample + "</strong>: <ul>"
                 for field in updates[sample]:
                     msg += "<li><strong> " + field + "</strong> from " + updates[sample][field]["old_value"] + " " \
-                                                                                                               "to <strong>" + \
-                           updates[sample][field]["new_value"] + "</strong></li>"
+                                                                                                            "to <strong>" + \
+                        updates[sample][field]["new_value"] + "</strong></li>"
                 msg += "</li></ul>"
-            msg += "</ul>"
+        msg += "</ul>"
 
-            out_data = []
-            headers = list()
-            for col in list(self.data.columns):
-                headers.append(col)
-            out_data.append(headers)
-            for index, row in self.data.iterrows():
-                r = list(row)
-                for idx, x in enumerate(r):
-                    if x is math.nan:
-                        r[idx] = ""
-                out_data.append(r)
+        out_data = []
+        headers = list()
+        for col in list(self.data.columns):
+            headers.append(col)
+        out_data.append(headers)
+        for index, row in self.data.iterrows():
+            r = list(row)
+            for idx, x in enumerate(r):
+                if x is math.nan:
+                    r[idx] = ""
+            out_data.append(r)
 
-            notify_frontend(data={"profile_id": self.profile_id}, msg=str(qm["_id"]),
-                            action="store_validation_record_id",
-                            html_id="")
-            notify_frontend(data={"profile_id": self.profile_id}, msg=msg, action="warning",
-                            html_id="warning_info3")
-            notify_frontend(data={"profile_id": self.profile_id, "permits_required": permits_required}, msg=out_data, action="make_update",
-                            html_id="sample_table")
+        notify_frontend(data={"profile_id": self.profile_id}, msg=str(qm["_id"]),
+                        action="store_validation_record_id",
+                        html_id="")
+        notify_frontend(data={"profile_id": self.profile_id}, msg=msg, action="warning",
+                        html_id="warning_info3")
+        notify_frontend(data={"profile_id": self.profile_id, "permits_required": permits_required}, msg=out_data, action="make_update",
+                        html_id="sample_table")
 
         #if permits_required:
         #    notify_frontend(data={"profile_id": self.profile_id}, msg="", action="require_permits",

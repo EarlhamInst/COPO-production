@@ -203,6 +203,7 @@ services:
     volumes:
       - static-data:/www/static
       - web-data:/www/media
+      - singlecellschemas:/www/singlecellschemas
     secrets:
       - copo-project.crt
       - copo-project.key
@@ -495,4 +496,5 @@ volumes:
     external: true
   b2drop-permits:
     external: true
-
+  singlecellschemas:
+    external: true
