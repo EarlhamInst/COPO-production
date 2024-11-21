@@ -10,7 +10,7 @@ from django.conf import settings
 from django.http import HttpResponse
 import json
 from bson.errors import InvalidId
-from src.apps.api.utils import generate_csv_response, generate_wrapper_response, get_return_template, extract_to_template, finish_request
+from src.apps.api.utils import generate_csv_response, generate_wrapper_response, get_return_template, extract_to_template, finish_request, sort_dict_list_by_priority
 from src.apps.api.views.mapping import get_mapped_field_by_standard
 from common.dal.copo_da import APIValidationReport
 from common.dal.sample_da import Sample, Source
@@ -87,6 +87,8 @@ def filter_for_API(sample_list, add_all_fields=False):
     # add field(s) here which should be time formatted
     time_fields = ["time_created", "time_updated"]
     profile_type = None
+    profile_title_map = dict()
+
     if len(sample_list) > 0:
         profile_type = sample_list[0].get("tol_project", "dtol").lower()
     if not profile_type:
@@ -115,6 +117,18 @@ def filter_for_API(sample_list, add_all_fields=False):
         if species_list:
             s = {**s, **species_list[0]}
         s_out = dict()
+
+        # Create a map of profile ID and profile title to avoid multiple queries
+        profile_id = s.get("profile_id", "")
+
+        if profile_id:
+            if profile_id not in profile_title_map:
+                profile = Profile().get_record(profile_id)
+                profile_title_map[profile_id] = profile.get("title", "")
+        
+            # Export profile title        
+            profile_title = profile_title_map.get(profile_id, "")
+            s_out["copo_profile_title"] = profile_title
 
         # handle corner cases
         for k, v in s.items():
@@ -147,7 +161,6 @@ def filter_for_API(sample_list, add_all_fields=False):
             # always export copo id
             if k == "_id":
                 s_out["copo_id"] = str(v)
-                export.append("copo_id")
             # check if field is listed to be exported to STS
             # print(k)
             if k in export:
@@ -176,6 +189,10 @@ def filter_for_API(sample_list, add_all_fields=False):
             else:
                 filtered_s_out = {key: value for key, value in s_out.items() if key in export}
                 out.append(filtered_s_out)
+    
+    # Sort data with uppercase keys preserved at the top, 
+    # followed by sorted lowercase camel case keys
+    out = sort_dict_list_by_priority(out)
     return out
 
 
@@ -222,7 +239,7 @@ def get_all_manifest_between_dates(request, d_from, d_to):
 
 
 def get_project_manifests_between_dates(request, project, d_from, d_to):
-    # get $project manifests between d_from and d_to
+    # get project manifests between d_from and d_to
     # dates must be ISO 8601 formatted
     d_from = parser.parse(d_from)
     d_to = parser.parse(d_to)

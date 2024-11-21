@@ -350,3 +350,26 @@ def finish_request(template=None, error=None, num_found=None, return_http_respon
             return HttpResponse(output, content_type="application/json")
     else:
         return output
+
+def sort_dict_list_by_priority(dict_list):
+    '''
+    Sorts a list of dictionaries so that:
+    - Uppercase keys remain at the top in their original order
+    - Lowercase camel case keys are alphabetically sorted and placed below
+    
+    Args:
+        dict_list (list[dict]): A list of dictionaries to be sorted.
+
+    Returns:
+        list[dict]: A new list of sorted dictionaries.
+    '''
+
+    def sort_fields_prioritised(data):
+        uppercase_keys = [k for k in data if k.isupper()]
+        lowercase_keys = sorted(k for k in data if not k.isupper())
+        
+        sorted_keys = uppercase_keys + lowercase_keys
+        return {key: data[key] for key in sorted_keys}
+
+    # Apply sorting to each dictionary in the list
+    return [sort_fields_prioritised(d) for d in dict_list]

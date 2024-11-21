@@ -544,28 +544,6 @@
     },
     {
       "colour": "",
-      "control": "text",
-      "control_meta": {},
-      "default_value": "",
-      "deprecated": false,
-      "excel_col": "",
-      "help_tip": "",
-      "hidden": "true",
-      "id": "copo.sample.copo_profile_title",
-      "is_sensitive": false,
-      "label": "Profile Title",
-      "ref": "",
-      "required": "false",
-      "show_in_api": true,
-      "show_in_form": false,
-      "show_in_table": false,
-      "type": "string",
-      "versions": [
-        "copo_profile_title"
-      ]
-    },
-    {
-      "colour": "",
       "control": "upper_text",
       "control_meta": {},
       "default_value": "",
