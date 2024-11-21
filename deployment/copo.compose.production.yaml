@@ -193,12 +193,13 @@ services:
       - copo_bioimage_path
       - ecs_secret_key        
   nginx:
-    image: copo/copo-nginx:1.25.3.2
+    image: copo/copo-nginx:1.25.3.3
     networks:
       - copo-frontend-network
     volumes:
       - static-data:/www/static
       - web-data:/www/media
+      - singlecellschemas:/www/singlecellschemas
     secrets:
       - copo-project.crt
       - copo-project.key
@@ -454,4 +455,6 @@ volumes:
   postgres-data:
     external: true
   b2drop-permits:
+    external: true
+  singlecellschemas:
     external: true
