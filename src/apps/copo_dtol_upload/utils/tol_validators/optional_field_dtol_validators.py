@@ -248,14 +248,22 @@ class DtolEnumerationValidator(Validator):
                         if c and re.match(biocollection_regex, c):
                             do_biocollection_checking = True
                     # validate link fields
-                    if header.endswith('_LINK') or header == "VOUCHER_INSTITUTION":
+                    if header == "VOUCHER_INSTITUTION":
                         if c.strip() and not validators.url(c.strip()):
                             self.errors.append(msg["validation_msg_invalid_link"] % (
                                 c, header, str(cellcount + 1)
                             ))
-                            self.flag = False
+                            self.flag = False                    
+                    elif header.endswith('_LINK') :
+                        urls = c.strip().split("|")
+                        for url in urls:
+                            if url.strip() and not validators.url(url.strip()):
+                                self.errors.append(msg["validation_msg_invalid_link"] % (
+                                    url, header, str(cellcount + 1)
+                                ))
+                                self.flag = False
                     # validation checks for SERIES
-                    if header == "SERIES":
+                    elif header == "SERIES":
                         try:
                             int(c)
                         except ValueError:
