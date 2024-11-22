@@ -166,6 +166,7 @@ class RackPlateUniquenessValidator(Validator):
                 for exsam in existingsam:
                     if exsam["profile_id"] == self.profile_id:
                         self.kwargs["isupdate"] = True
+                        """
                         # todo check SYMBIONT value in species list is the same too
                         # check accessions do not exist yet and status is pending
                         if not exsam["biosampleAccession"]:
@@ -177,6 +178,7 @@ class RackPlateUniquenessValidator(Validator):
                         #    #rack_tube has already been approved by sample manager and can't be updated any more
                         #    self.errors.append(msg["validation_msg_duplicate_tube_or_well_id_in_copo"] % (err))
                         #    self.flag = False
+                        """ 
                     else:
                         # rack_tube exist in another profile, can't be updated
                         self.errors.append(

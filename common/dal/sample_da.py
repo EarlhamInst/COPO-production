@@ -100,12 +100,13 @@ class Source(DAComponent):
                 {field: value, 'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(
                     timezone.utc).replace(microsecond=0), 'update_type': 'system'}
              })
-
-    def update_public_name(self, name):
+    
+    def update_public_name(self, specimen_id, taxon_id, tolid):
+        condition = {"SPECIMEN_ID": specimen_id}
+        if taxon_id:
+            condition["TAXON_ID"] = str(taxon_id)
         self.get_collection_handle().update_many(
-            {"SPECIMEN_ID": name['specimen']["specimenId"],
-                "TAXON_ID": str(name['species']["taxonomyId"])},
-            {"$set": {"public_name": name.get("tolId", "")}})
+            condition, {"$set": {"public_name": tolid}})
 
     def record_manual_update(self, field, old, new, oid):
         if not self.get_collection_handle().find({
@@ -365,11 +366,13 @@ class Sample(DAComponent):
             rec = self.get_record(target_id)
 
             return rec
-
-    def update_public_name(self, name):
+        
+    def update_public_name(self, specimen_id, taxon_id, tolid):
+        condition = {"SPECIMEN_ID": specimen_id}
+        if taxon_id:
+            condition["TAXON_ID"] = str(taxon_id)
         self.get_collection_handle().update_many(
-            {"SPECIMEN_ID": name['specimen']["specimenId"]},
-            {"$set": {"public_name": name.get("tolId", "")}})
+            condition, {"$set": {"public_name": tolid}})
 
     def delete_sample(self, sample_id):
         sample = self.get_record(sample_id)

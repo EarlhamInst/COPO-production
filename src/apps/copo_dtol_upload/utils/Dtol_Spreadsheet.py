@@ -627,8 +627,7 @@ class DtolSpreadsheet:
 
             if not sampl["species_list"][0]["SYMBIONT"] or sampl["species_list"][0]["SYMBIONT"] == "TARGET":
                 public_name_list.append(
-                    {"taxonomyId": int(sampl["species_list"][0]["TAXON_ID"]), "specimenId": sampl["SPECIMEN_ID"],
-                     "sample_id": str(sampl["_id"])})
+                    {"requested_taxonomy_id": int(sampl["species_list"][0]["TAXON_ID"]), "specimen_id": sampl["SPECIMEN_ID"]})
 
             p["_id"] = sampl["_id"]
 
@@ -647,11 +646,17 @@ class DtolSpreadsheet:
         # query public service service a first time now to trigger request for public names that don't exist
         public_names = query_public_name_service(public_name_list)
         for name in public_names:
-            if name.get("status", "") == "Rejected":
-                Sample().add_rejected_status_for_tolid(
-                    name['specimen']["specimenId"])
+            status = name.get("attributes",{}).get("status","")
+ 
+
+            if status == "Rejected":
+                Sample().add_rejected_status_for_tolid(specimen_id)
                 continue
-            Sample().update_public_name(name)
+            elif status != "Pending":
+                specimen_id = name.get("attributes", {}).get("specimen_id", "")
+                taxon_id = name.get("attributes", {}).get("species_id", "")
+                tolid = name.get("id", "")
+                Sample().update_public_name(specimen_id=specimen_id, taxon_id=taxon_id, tolid=tolid)
         profile_id = request.session["profile_id"]
         profile = Profile().get_record(profile_id)
 
@@ -768,16 +773,6 @@ class DtolSpreadsheet:
                 need_send_email = True
 
             uri = request.build_absolute_uri('/')
-            '''
-            # query public service service a first time now to trigger request for public names that don't exist
-            public_names = query_public_name_service(public_name_list)
-            for name in public_names:
-                if name.get("status", "") == "Rejected":
-                    Sample().add_rejected_status_for_tolid(
-                        name['specimen']["specimenId"])
-                    continue
-                Sample().update_public_name(name)
-            '''
 
             # Get associated type(s) as string separated by '|' symbol
             # then, update the associated tol project field in the sample

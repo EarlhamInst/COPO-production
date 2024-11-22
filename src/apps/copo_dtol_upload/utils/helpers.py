@@ -33,22 +33,23 @@ def query_public_name_service(sample_list):
     if not sample_list:
         return {}
     
-    headers = {"api-key": API_KEY}
-    url = urljoin(public_name_service, 'tol-ids')  # public-name
-    l.log("name service urls: " + url)
+    headers = {"token": API_KEY}
+    url = urljoin(public_name_service, 'request/create')  # public-name
+    #url = "https://id.tol.sanger.ac.uk/api/v3/request/create"
+    l.debug("name service urls: " + url)
     try:
-        r = requests.post(url=url, json=sample_list, headers=headers, verify=False)
+        r = requests.post(url=url, json=sample_list, headers=headers)
         if r.status_code == 200:
-            resp = json.loads(r.content)
-            print(resp)
+            resp = json.loads(r.content).get("data",[])
+            l.debug(resp)
         else:
             # in the case there is a network issue, just return an empty dict
-            resp = {}
+            resp = []
             l.error('Name service response status code: ' + str(r.status_code) + ' ' + r.text)
         l.log("name service response: " + str(resp))
         return resp
     except Exception as e:
         l.log("PUBLIC NAME SERVER ERROR: " + str(e))
         l.exception(e)
-        return {}
+        return []
 
