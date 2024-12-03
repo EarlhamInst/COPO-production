@@ -96,7 +96,9 @@ dtol_api_patterns = [
     re_path(r'^profile/make_profile', profile.APICreateProfile.as_view(),
             name='make_profile'),
     re_path(r'^profile/get_for_user', profile.APIGetProfilesForUser.as_view(),
-            name='get_for_user')
+            name='get_for_user'),
+    re_path(r'^profile/tube_or_well_ids', profile.associate_profiles_with_tubes_or_well_ids,
+            name='associate_profiles_with_tubes_or_well_ids')
 ]
 
 stats_api_patterns = [
