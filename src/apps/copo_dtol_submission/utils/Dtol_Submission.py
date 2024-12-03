@@ -1192,7 +1192,7 @@ def poll_asyn_ena_submission():
                     specimen_ids = Sample().get_collection_handle().distinct('SPECIMEN_ID',
                                                                              {"_id": {"$in": sample_ids_bson}})
                     specimens = [id for id in specimen_ids if
-                                 not submission["dtol_specimen"] or id not in submission["dtol_specimen"]]
+                                 not submission.get("dtol_specimen", "") or id not in submission.get("dtol_specimen", "")]
                     Submission().update_dtol_specimen_for_bioimage_tosend(
                         submission['_id'], specimens)
                     Submission().dtol_sample_processed(
