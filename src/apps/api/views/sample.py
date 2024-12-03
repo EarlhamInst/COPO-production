@@ -117,6 +117,9 @@ def filter_for_API(sample_list, add_all_fields=False):
         if species_list:
             s = {**s, **species_list[0]}
         s_out = dict()
+        
+        # Always export COPO ID i.e. sample ID
+        s_out["copo_id"] = str(s.get("_id", ""))
 
         # Create a map of profile ID and profile title to avoid multiple queries
         profile_id = s.get("profile_id", "")
@@ -158,9 +161,7 @@ def filter_for_API(sample_list, add_all_fields=False):
                             out.append(s_out)
                             embargoed = True
                             break
-            # always export copo id
-            if k == "_id":
-                s_out["copo_id"] = str(v)
+           
             # check if field is listed to be exported to STS
             # print(k)
             if k in export:
