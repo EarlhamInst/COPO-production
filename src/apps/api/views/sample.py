@@ -127,7 +127,8 @@ def filter_for_API(sample_list, add_all_fields=False):
         if profile_id:
             if profile_id not in profile_title_map:
                 profile = Profile().get_record(profile_id)
-                profile_title_map[profile_id] = profile.get("title", "")
+                if profile:
+                    profile_title_map[profile_id] = profile.get("title", "")
         
             # Export profile title        
             profile_title = profile_title_map.get(profile_id, "")
