@@ -134,11 +134,11 @@ def add_sample_to_dtol_submission(request):
     profile_id = request.POST.get("profile_id")
     profile = Profile().get_record(profile_id)
     associated_profiles = profile.get("associated_type",[])
-    sequencing_centres = profile.get("sequencing_centre", [])
-    group = get_group_membership_asString()
+    #sequencing_centres = profile.get("sequencing_centre", [])
+    #group = get_group_membership_asString()
     #is_bge_checker =  "bge_checkers" in group
     current_user = get_current_user()
-    is_sample_manager = True #assume user is a sample manager as it has been checked in the decorator
+    #is_sample_manager = True #assume user is a sample manager as it has been checked in the decorator
     associated_profiles_type_require_approval = AssociatedProfileType.objects.filter(is_approval_required=True,  name__in =  associated_profiles)
     associated_profiles_type_approval_for = AssociatedProfileType.objects.filter(is_approval_required=True,  users=current_user,  name__in = associated_profiles)
 

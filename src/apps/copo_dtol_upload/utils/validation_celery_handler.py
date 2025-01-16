@@ -361,10 +361,11 @@ class ProcessValidationQueue:
             is_not_approved = exsam.get("biosampleAccession", "") == ""
             compliant_fields = get_compliant_fields(component="sample", project=self.type.lower())
             
+
             # Always ask user to upload permit if it is required
-            if any(s.get(x,"") == "Y" for x in
-                    lookup.PERMIT_REQUIRED_COLUMN_NAMES):
-                permits_required = True
+            #if any(s.get(x,"") == "Y" for x in
+            #        lookup.PERMIT_REQUIRED_COLUMN_NAMES):
+            #    permits_required = True
 
             for field in s.keys():
                 if s[field].strip() != exsam.get(field, "") and s[field].strip() != exsam["species_list"][0].get(field,
@@ -382,6 +383,9 @@ class ProcessValidationQueue:
                                 file_name, file_ext = os.path.splitext(current_name)
                                 if re.search(rf"{file_name}_\d{{8}}{file_ext}", exsam.get(field,"")): 
                                     continue
+                                #ask user to upload permit if the file name has been changed
+                                elif any(s.get(x,"") == "Y" for x in lookup.PERMIT_REQUIRED_COLUMN_NAMES):
+                                    permits_required = True
                         updates[rack_tube][field] = {}        
                         updates[rack_tube][field]["old_value"] = exsam.get(field,"")  #to cater for the case where the field not exist in the old maniest
                         updates[rack_tube][field]["new_value"] = s[field]
