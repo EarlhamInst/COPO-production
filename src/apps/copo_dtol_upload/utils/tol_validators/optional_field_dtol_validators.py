@@ -68,7 +68,7 @@ class PermitColumnsValidator(Validator):
                     self.flag = False
 
     def validate(self):
-        p_type = Profile().get_type(profile_id=self.profile_id).upper
+        p_type = Profile().get_type(profile_id=self.profile_id).upper()
 
         # Only ERGA manifests have permit files
         if "ERGA" == p_type:

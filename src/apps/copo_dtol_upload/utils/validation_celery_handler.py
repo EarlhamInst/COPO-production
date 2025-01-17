@@ -368,24 +368,29 @@ class ProcessValidationQueue:
             #    permits_required = True
 
             for field in s.keys():
-                if s[field].strip() != exsam.get(field, "") and s[field].strip() != exsam["species_list"][0].get(field,
+                current_value = s[field].strip() 
+                if current_value != exsam.get(field, "") and current_value != exsam["species_list"][0].get(field,
                                                                                                                  ""):
                     if is_manager or is_not_approved or field not in compliant_fields:
                         #updates[rack_tube][field] = {}
                         if field in lookup.SPECIES_LIST_FIELDS:
                             updates[rack_tube][field] = {}
                             updates[rack_tube][field]["old_value"] = exsam["species_list"][0][field]
-                            updates[rack_tube][field]["new_value"] = s[field]
-
+                            updates[rack_tube][field]["new_value"] = current_value
+                        #if the permit file name is changed and it is required for the permit file
                         if field.endswith("_PERMITS_FILENAME"):
-                            current_name = s[field].strip() 
-                            if current_name:
-                                file_name, file_ext = os.path.splitext(current_name)
+                            #current_name = s[field].strip() 
+                            if current_value:
+                                file_name, file_ext = os.path.splitext(current_value)
                                 if re.search(rf"{file_name}_\d{{8}}{file_ext}", exsam.get(field,"")): 
                                     continue
                                 #ask user to upload permit if the file name has been changed
-                                elif any(s.get(x,"") == "Y" for x in lookup.PERMIT_REQUIRED_COLUMN_NAMES):
+                                required_field = field.replace("_PERMITS_FILENAME", "_PERMITS_REQUIRED")
+                                if s.get(required_field,"") == "Y":
                                     permits_required = True
+                        #if the permit file is changed from not required to required, ask user to upload the permit file
+                        elif field.endswith("_PERMITS_REQUIRED") and current_value == "Y":
+                            permits_required = True
                         updates[rack_tube][field] = {}        
                         updates[rack_tube][field]["old_value"] = exsam.get(field,"")  #to cater for the case where the field not exist in the old maniest
                         updates[rack_tube][field]["new_value"] = s[field]
