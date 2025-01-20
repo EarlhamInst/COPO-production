@@ -31,7 +31,7 @@ ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
 
 def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
     request = ThreadLocal.get_current_request()
-    bucket_name = str(request.user.id) + "_" + request.user.username
+    bucket_name = str(request.user.id) + "-" + request.user.username
 
     form_data["profile_id"] = profile_id  
     s3obj = s3()

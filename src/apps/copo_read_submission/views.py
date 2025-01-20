@@ -76,7 +76,7 @@ def parse_ena_spreadsheet(request):
         if ena.validate():
             l.log("About to collect Dtol manifest")
             # check s3 for bucket and files files
-            bucket_name = str(request.user.id) + "_" + request.user.username
+            bucket_name = str(request.user.id) + "-" + request.user.username
             # bucket_name = request.user.username
             file_names = ena.get_filenames_from_manifest()
 
@@ -299,7 +299,7 @@ def save_ena_records(request):
         df["file_type"] = "TODO"
         df["type"] = "RAW DATA FILE"
 
-        df["bucket_name"] = str(request.user.id) + "_" + request.user.username
+        df["bucket_name"] = str(request.user.id) + "-" + request.user.username
         # df["bucket_name"] = username
 
         # create local location

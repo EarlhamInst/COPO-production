@@ -212,7 +212,7 @@ class S3Connection():
 
     def validate_and_delete(self, target_id=str(), target_ids=list()):
         user = get_current_user()
-        bucket_name = str(user.id) + "_" + user.username
+        bucket_name = str(user.id) + "-" + user.username
         filestatus_map = EnaFileTransfer().get_transfer_status_by_ecs_path(ecs_locations=[ f"{bucket_name}/{key}" for key in target_ids])
         file_not_deleted = []
         status = False
