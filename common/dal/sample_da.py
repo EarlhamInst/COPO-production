@@ -10,7 +10,7 @@ from itertools import chain
 from pymongo.collection import ReturnDocument
 from common.utils import helpers
 from bson.objectid import ObjectId
-from src.apps.copo_core.models import SequencingCentre
+from src.apps.copo_core.models import SequencingCentre, AssociatedProfileType
 from .copo_base_da import DAComponent, handle_dict
 import shortuuid
 import pandas as pd
@@ -905,13 +905,12 @@ class Sample(DAComponent):
         #    status = "associated_project_pending"
         field_values = dict()
         if is_private:
-            field_values["status"] = "private"
+            status = "private"
         else:
-            field_values["status"]  = "pending"
-            field_values["approval"] = {}
-        field_values["error"] = ""
-                
-        return self.update_field(field_values=field_values, oids=sample_ids)    
+            status  = "pending"
+        approval_again_associated_types = AssociatedProfileType.objects.filter(is_approval_required_for_updated_manifest=True)
+        self.get_collection_handle().update_many({"_id": {"$in": [ObjectId(oid) for oid in sample_ids]}}, {"$unset": { "approval."+type.name : "" for type in  approval_again_associated_types}, "$set": {"status":status, "error":""}})
+        #return self.update_field(field_values=field_values, oids=sample_ids)    
         #sample_obj_ids = [ObjectId(x) for x in sample_ids]
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": status}})
     

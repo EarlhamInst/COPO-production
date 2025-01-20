@@ -196,6 +196,7 @@ class AssociatedProfileType(models.Model):
     name = models.CharField(max_length=100)
     label = models.CharField(max_length=100)
     is_approval_required = models.BooleanField(default=False)
+    is_approval_required_for_updated_manifest = models.BooleanField(default=True)
     is_acceptance_email_notification_required = models.BooleanField(default=False)
     acceptance_email_body = models.TextField(blank=True, null=True)
 
