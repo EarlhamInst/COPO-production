@@ -203,12 +203,13 @@ class AssociatedProfileType(models.Model):
     def __str__(self):
         return self.name
 
-    def create_associated_profile_type(self, name, label, is_approval_required=False, is_acceptance_email_notification_required=False, acceptance_email_body=""):
+    def create_associated_profile_type(self, name, label, is_approval_required=False, is_acceptance_email_notification_required=False, acceptance_email_body="", is_approval_required_for_updated_manifest=True):
         self.name = name
         self.label = label
         self.is_approval_required = is_approval_required
         self.is_acceptance_email_notification_required = is_acceptance_email_notification_required
         self.acceptance_email_body = acceptance_email_body
+        self.is_approval_required_for_updated_manifest = is_approval_required_for_updated_manifest
         self.save()
         return self
 
