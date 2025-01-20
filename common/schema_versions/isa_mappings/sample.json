@@ -219,28 +219,6 @@
       "deprecated": false,
       "excel_col": "",
       "help_tip": "",
-      "hidden": "true",
-      "id": "copo.sample.copo_id",
-      "is_sensitive": false,
-      "label": "Sample Identifier",
-      "ref": "",
-      "required": "false",
-      "show_in_api": false,
-      "show_in_form": false,
-      "show_in_table": false,
-      "type": "string",
-      "versions": [
-        "copo_id"
-      ]
-    },
-    {
-      "colour": "",
-      "control": "text",
-      "control_meta": {},
-      "default_value": "",
-      "deprecated": false,
-      "excel_col": "",
-      "help_tip": "",
       "hidden": "false",
       "id": "copo.sample.public_name",
       "is_sensitive": false,
@@ -351,7 +329,7 @@
       "required": "false",
       "show_in_api": true,
       "show_in_form": false,
-      "show_in_table": false,
+      "show_in_table": true,
       "type": "string",
       "versions": [
         "sampleDerivedFrom"
@@ -374,7 +352,7 @@
       "required": "false",
       "show_in_api": true,
       "show_in_form": false,
-      "show_in_table": false,
+      "show_in_table": true,
       "type": "string",
       "versions": [
         "sampleSameAs"
@@ -397,7 +375,7 @@
       "required": "false",
       "show_in_api": true,
       "show_in_form": false,
-      "show_in_table": false,
+      "show_in_table": true,
       "type": "string",
       "versions": [
         "sampleSymbiontOf"
@@ -562,28 +540,6 @@
       "type": "string",
       "versions": [
         "profile_id"
-      ]
-    },
-    {
-      "colour": "",
-      "control": "text",
-      "control_meta": {},
-      "default_value": "",
-      "deprecated": false,
-      "excel_col": "",
-      "help_tip": "",
-      "hidden": "true",
-      "id": "copo.sample.copo_profile_title",
-      "is_sensitive": false,
-      "label": "Profile Title",
-      "ref": "",
-      "required": "false",
-      "show_in_api": true,
-      "show_in_form": false,
-      "show_in_table": false,
-      "type": "string",
-      "versions": [
-        "copo_profile_title"
       ]
     },
     {

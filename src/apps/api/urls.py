@@ -62,7 +62,7 @@ dtol_api_patterns = [
             name='get_samples_by_sequencing_centre'),
     re_path(r'^sample/dtol/num_samples', s.get_num_dtol_samples,
             name='get_num_dtol_samples'),
-    re_path(r'^sample/associated_tol_project/(?P<values>[a-zA-Z, ]+)',
+    re_path(r'^sample/associated_tol_project/(?P<value>[a-zA-Z-_]+)',
             s.get_project_samples_by_associated_project_type,
             name='get_project_samples_by_associated_project_type'),
     re_path(r'^sample/project/manifest_version/fields',
@@ -71,7 +71,7 @@ dtol_api_patterns = [
             name='get_samples_from_study_accession'),
     re_path(r'^sample/StudyFromSampleAccession/(?P<accessions>[A-Za-z0-9, ]+)', s.get_study_from_sample_accession,
             name='get_study_from_sample_accession'),
-    re_path(r'^sample/updatable_fields/(?P<project>[a-zA-Z, ]+)/',
+    re_path(r'^sample/updatable_fields',
             s.get_updatable_fields_by_project, name='get_updatable_fields_by_project'),
     re_path(r'^sample/(?P<d_from>[A-Z0-9a-f- .:+]+)/(?P<d_to>[A-Z0-9a-f- .:+]+)',
             s.get_all_samples_between_dates, name='get_all_samples_between_dates'),
@@ -96,7 +96,9 @@ dtol_api_patterns = [
     re_path(r'^profile/make_profile', profile.APICreateProfile.as_view(),
             name='make_profile'),
     re_path(r'^profile/get_for_user', profile.APIGetProfilesForUser.as_view(),
-            name='get_for_user')
+            name='get_for_user'),
+    re_path(r'^profile/tube_or_well_ids', profile.associate_profiles_with_tubes_or_well_ids,
+            name='associate_profiles_with_tubes_or_well_ids')
 ]
 
 stats_api_patterns = [

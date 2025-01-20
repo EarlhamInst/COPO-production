@@ -46,6 +46,16 @@ class Command(BaseCommand):
     def load_data(self):
         # ENA data
         self.ena_field_names_mapping = DTOL_ENA_MAPPINGS
+
+        # Add additional ENA field names mapping: TAXON_ID and SCIENTIFIC_NAME
+        self.ena_field_names_mapping.update({
+            'TAXON_ID': {
+                'ena': 'TAXON_ID'
+            },
+            'SCIENTIFIC_NAME': {
+                'ena': 'SCIENTIFIC_NAME'
+            }
+        })
         self.ena_and_tol_rules = DTOL_RULES
         self.ena_units_mapping = DTOL_UNITS
 
@@ -243,7 +253,7 @@ class Command(BaseCommand):
         file_path = os.path.join(directory_path, file_name)
 
         with open(file_path, 'w+') as f:
-            print(json.dumps(data, indent=4, sort_keys=False, default=str), file=f)
+            f.write(json.dumps(data, indent=4, sort_keys=False, default=str))
         
         self.stdout.write(self.style.SUCCESS(f'Successfully generated the file: {file_name}'))
 

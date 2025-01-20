@@ -452,8 +452,6 @@ def save_ena_records(request):
     return JsonResponse(status=200, data=result)
 
 
-
-
 @login_required()
 def get_manifest_submission_list(request):
     profile_id = request.session["profile_id"]

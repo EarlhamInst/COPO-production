@@ -138,7 +138,7 @@ def validate_assembly(form, profile_id, assembly_id):
 
         df = dict()
         df["file_name"] = form[field]
-        df["ecs_location"] = ""
+        df["ecs_location"] =  bucket_name + "/" + form[field]
         df["bucket_name"] = bucket_name
         df["file_location"] = file_location
         df["name"] = form[field]
@@ -152,7 +152,7 @@ def validate_assembly(form, profile_id, assembly_id):
         inserted = DataFile().get_collection_handle().find_one_and_update({"file_location": file_location},
                                                                             {"$set": df}, upsert=True,
                                                                             return_document=ReturnDocument.AFTER)        
-        tx.make_transfer_record(file_id=str(inserted["_id"]), submission_id=str(sub_id))
+        tx.make_transfer_record(file_id=str(inserted["_id"]), submission_id=str(sub_id), no_remote_location=True)
         file_ids.append(str(inserted["_id"]))
 
     form["files"] = file_ids
@@ -189,14 +189,16 @@ def _submit_assembly(file_path, profile_id, submission_type):
                         html_id="assembly_info")
         output = subprocess.check_output(webin_cmd,stderr=subprocess.STDOUT, shell=True)
         output = output.decode("ascii")
+        return_code = 0
     except subprocess.CalledProcessError as cpe:
+        return_code = cpe.returncode
         output = cpe.stdout
         output = output.decode("ascii") + " ERROR return code " + str(cpe.returncode)
     Logger().debug(msg=output)
 
     #todo delete files after successfull submission
     #todo decide if keeping manifest.txt and store accession in assembly objec too
-    return output
+    return return_code, output
 
 def update_assembly_submission_pending():
     subs = Submission().get_assembly_file_uploading()
@@ -285,6 +287,7 @@ def process_assembly_pending_submission():
                 output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True)
                 Logger().debug(output)
                 output = output.decode("ascii")
+                return_code = 0
             except subprocess.CalledProcessError as cpe:
                 return_code = cpe.returncode
                 output = cpe.stdout
@@ -295,9 +298,9 @@ def process_assembly_pending_submission():
             #print(output)
             #todo decide if keeping or deleting these files
             #report is being stored in webin-cli.report and manifest.txt.report so we can get errors there
-            if not "ERROR" in output:
-                output = _submit_assembly(file_path=str(manifest_path), profile_id=sub["profile_id"], submission_type=submission_type)
-                if "ERROR" in output:
+            if return_code == 0:
+                return_code, output = _submit_assembly(file_path=str(manifest_path), profile_id=sub["profile_id"], submission_type=submission_type)
+                if return_code != 0 :
                     #handle possibility submission is not successfull
                     #this may happen for instance if the same assembly has already been submitted, which would not get caught
                     #by the validation step
@@ -349,11 +352,33 @@ def submit_assembly(profile_id, target_ids=list(),  target_id=str()):
 def generate_additional_columns(profile_id):
     result = []
     submissions = Submission().get_records_by_field("profile_id", profile_id)
+
+    enaFiles = Assembly() \
+        .get_collection_handle() \
+        .aggregate([
+            {"$match": {"profile_id": profile_id, "accession":{"$exists": True}, "accession":{"$ne":""}}},
+            {"$unwind": "$files"},
+            {"$lookup":
+                {
+                    "from": 'EnaFileTransferCollection',
+                    "localField": "files",
+                    "foreignField": "file_id",
+                    "as": "enaFileTransfer"
+                }
+            },
+            {"$unwind": {'path': '$enaFileTransfer', "preserveNullAndEmptyArrays": True}},
+            {"$project": {"accession":1 , "ecs_location": "$enaFileTransfer.ecs_location",  "status": "$enaFileTransfer.status"}}
+            ])
+    enaFilesMap = { enaFile["accession"] : enaFile["ecs_location"] for enaFile in list(enaFiles)}
+
     if submissions and len(submissions) > 0:
         project_accessions = submissions[0].get("accessions",[]).get("project",[])
         if project_accessions:
             assembly_accessions = submissions[0].get("accessions",[]).get("assembly",[])
             if assembly_accessions:
                 assession_map = query_ena_file_processing_status_by_project(project_accessions[0].get("accession"), "SEQUENCE_ASSEMBLY")
-                result = [{ "_id": ObjectId(accession_obj["assembly_id"]), "ena_file_processing_status":assession_map.get(accession_obj["accession"], "") } for accession_obj in assembly_accessions if accession_obj.get("accession","") ]        
+                result = [{ "_id": ObjectId(accession_obj["assembly_id"]), "ena_file_processing_status":assession_map.get(accession_obj["accession"], "") } for accession_obj in assembly_accessions if accession_obj.get("accession","") ]     
+                ecs_locations_with_file_archived = [ enaFilesMap[accession_obj["accession"]] for accession_obj in assembly_accessions if accession_obj.get("accession","") and "File archived" in assession_map.get(accession_obj["accession"], "")]
+                EnaFileTransfer().update_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived, status = "ena_complete")        
+
     return pd.DataFrame.from_dict(result)

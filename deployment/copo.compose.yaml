@@ -44,7 +44,7 @@ services:
       - MAIL_SERVER=outlook.office365.com
       - MAIL_USERNAME=eidata@nbi.ac.uk
       - ALLOWED_HOSTS=
-      - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v2/
+      - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
       - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
@@ -148,7 +148,7 @@ services:
       - MAIL_SERVER=outlook.office365.com
       - MAIL_USERNAME=eidata@nbi.ac.uk
       - ALLOWED_HOSTS=
-      - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v2/
+      - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
       - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
@@ -197,12 +197,13 @@ services:
       - copo_bioimage_path
       - ecs_secret_key
   nginx:
-    image: copo/copo-nginx:1.25.3.2
+    image: copo/copo-nginx:1.25.3.3
     networks:
       - copo-frontend-network
     volumes:
       - static-data:/www/static
       - web-data:/www/media
+      - singlecellschemas:/www/singlecellschemas
     secrets:
       - copo-project.crt
       - copo-project.key
@@ -495,4 +496,5 @@ volumes:
     external: true
   b2drop-permits:
     external: true
-
+  singlecellschemas:
+    external: true

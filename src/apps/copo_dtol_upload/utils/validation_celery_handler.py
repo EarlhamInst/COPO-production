@@ -15,7 +15,7 @@ import math
 from common.schema_versions.lookup import dtol_lookups as lookup
 from common.utils.helpers import notify_frontend
 from urllib.error import HTTPError
-from common.schemas.utils.data_utils import json_to_pytype
+from common.schemas.utils.data_utils import get_compliant_fields, json_to_pytype
 from common.lookup import lookup as lk
 import jsonpath_rw_ext as jp
 from common.utils.helpers import map_to_dict
@@ -24,6 +24,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Q
 from io import BytesIO
+import re
+import os
 
 class ProcessValidationQueue:
 
@@ -340,65 +342,94 @@ class ProcessValidationQueue:
                 # this requires different logic to discriminate between symbionts
                 return False
             exsam = Sample().get_target_by_field("rack_tube", rack_tube)
-            assert len(exsam) == 1
+
+            # Check if ‘RACK_OR_PLATE_ID’ or ‘TUBE_OR_WELL_ID’ has been changed to 
+            # prevent an assertion error and an update lag if the assertion below is executed
+            if len(exsam) != 1:
+                field, value =  (
+                    ("RACK_OR_PLATE_ID", s["RACK_OR_PLATE_ID"])
+                    if "RACK_OR_PLATE_ID" in s
+                    else ("TUBE_OR_WELL_ID", s["TUBE_OR_WELL_ID"])
+                )
+                msg = validation_msg["validation_msg_error_new_sample_detected_in_existing_manifest"] % (field, value)
+                notify_frontend(data={"profile_id": self.profile_id}, msg=msg, action="error",
+                                html_id="sample_info")
+                return False
+            
             exsam = exsam[0]
             updates[rack_tube] = {}
             is_not_approved = exsam.get("biosampleAccession", "") == ""
+            compliant_fields = get_compliant_fields(component="sample", project=self.type.lower())
+            
 
             # Always ask user to upload permit if it is required
-            if any(s.get(x,"") == "Y" for x in
-                    lookup.PERMIT_REQUIRED_COLUMN_NAMES):
-                permits_required = True
+            #if any(s.get(x,"") == "Y" for x in
+            #        lookup.PERMIT_REQUIRED_COLUMN_NAMES):
+            #    permits_required = True
 
             for field in s.keys():
-                if s[field].strip() != exsam.get(field, "") and s[field].strip() != exsam["species_list"][0].get(field,
+                current_value = s[field].strip() 
+                if current_value != exsam.get(field, "") and current_value != exsam["species_list"][0].get(field,
                                                                                                                  ""):
-                    if is_manager or is_not_approved or field in lookup.DTOL_NO_COMPLIANCE_FIELDS[self.type.lower()]:
-                        updates[rack_tube][field] = {}
+                    if is_manager or is_not_approved or field not in compliant_fields:
+                        #updates[rack_tube][field] = {}
                         if field in lookup.SPECIES_LIST_FIELDS:
+                            updates[rack_tube][field] = {}
                             updates[rack_tube][field]["old_value"] = exsam["species_list"][0][field]
-                            updates[rack_tube][field]["new_value"] = s[field]
-                        else:
- #                           if field in lookup.PERMIT_REQUIRED_COLUMN_NAMES:
- #                               s[field] == "Y"
- #                               permits_required = True
-                            updates[rack_tube][field]["old_value"] = exsam.get(field,"")  #to cater for the case where the field not exist in the old maniest
-                            updates[rack_tube][field]["new_value"] = s[field]
+                            updates[rack_tube][field]["new_value"] = current_value
+                        #if the permit file name is changed and it is required for the permit file
+                        if field.endswith("_PERMITS_FILENAME"):
+                            #current_name = s[field].strip() 
+                            if current_value:
+                                file_name, file_ext = os.path.splitext(current_value)
+                                if re.search(rf"{file_name}_\d{{8}}{file_ext}", exsam.get(field,"")): 
+                                    continue
+                                #ask user to upload permit if the file name has been changed
+                                required_field = field.replace("_PERMITS_FILENAME", "_PERMITS_REQUIRED")
+                                if s.get(required_field,"") == "Y":
+                                    permits_required = True
+                        #if the permit file is changed from not required to required, ask user to upload the permit file
+                        elif field.endswith("_PERMITS_REQUIRED") and current_value == "Y":
+                            permits_required = True
+                        updates[rack_tube][field] = {}        
+                        updates[rack_tube][field]["old_value"] = exsam.get(field,"")  #to cater for the case where the field not exist in the old maniest
+                        updates[rack_tube][field]["new_value"] = s[field]
                     else:
-                        msg = validation_msg["validation_msg_error_updating_compliance_field"] % (field, profile.get("type",""))
+                        msg = validation_msg["validation_msg_error_updating_compliance_field"] % (field, profile.get("type","").upper())
                         notify_frontend(data={"profile_id": self.profile_id}, msg=msg, action="error",
                                         html_id="sample_info")
                         return False
-            # show upcoming updates here
-            msg = "<ul>"
-            for sample in updates:
+        # show upcoming updates here
+        msg = "<ul>"
+        for sample in updates:
+            if updates[sample]:
                 msg += "<li>Updating sample <strong>" + sample + "</strong>: <ul>"
                 for field in updates[sample]:
                     msg += "<li><strong> " + field + "</strong> from " + updates[sample][field]["old_value"] + " " \
-                                                                                                               "to <strong>" + \
-                           updates[sample][field]["new_value"] + "</strong></li>"
+                                                                                                            "to <strong>" + \
+                        updates[sample][field]["new_value"] + "</strong></li>"
                 msg += "</li></ul>"
-            msg += "</ul>"
+        msg += "</ul>"
 
-            out_data = []
-            headers = list()
-            for col in list(self.data.columns):
-                headers.append(col)
-            out_data.append(headers)
-            for index, row in self.data.iterrows():
-                r = list(row)
-                for idx, x in enumerate(r):
-                    if x is math.nan:
-                        r[idx] = ""
-                out_data.append(r)
+        out_data = []
+        headers = list()
+        for col in list(self.data.columns):
+            headers.append(col)
+        out_data.append(headers)
+        for index, row in self.data.iterrows():
+            r = list(row)
+            for idx, x in enumerate(r):
+                if x is math.nan:
+                    r[idx] = ""
+            out_data.append(r)
 
-            notify_frontend(data={"profile_id": self.profile_id}, msg=str(qm["_id"]),
-                            action="store_validation_record_id",
-                            html_id="")
-            notify_frontend(data={"profile_id": self.profile_id}, msg=msg, action="warning",
-                            html_id="warning_info3")
-            notify_frontend(data={"profile_id": self.profile_id, "permits_required": permits_required}, msg=out_data, action="make_update",
-                            html_id="sample_table")
+        notify_frontend(data={"profile_id": self.profile_id}, msg=str(qm["_id"]),
+                        action="store_validation_record_id",
+                        html_id="")
+        notify_frontend(data={"profile_id": self.profile_id}, msg=msg, action="warning",
+                        html_id="warning_info3")
+        notify_frontend(data={"profile_id": self.profile_id, "permits_required": permits_required}, msg=out_data, action="make_update",
+                        html_id="sample_table")
 
         #if permits_required:
         #    notify_frontend(data={"profile_id": self.profile_id}, msg="", action="require_permits",

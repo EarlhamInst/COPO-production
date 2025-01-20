@@ -10,7 +10,7 @@ from itertools import chain
 from pymongo.collection import ReturnDocument
 from common.utils import helpers
 from bson.objectid import ObjectId
-from src.apps.copo_core.models import SequencingCentre
+from src.apps.copo_core.models import SequencingCentre, AssociatedProfileType
 from .copo_base_da import DAComponent, handle_dict
 import shortuuid
 import pandas as pd
@@ -100,12 +100,13 @@ class Source(DAComponent):
                 {field: value, 'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(
                     timezone.utc).replace(microsecond=0), 'update_type': 'system'}
              })
-
-    def update_public_name(self, name):
+    
+    def update_public_name(self, specimen_id, taxon_id, tolid):
+        condition = {"SPECIMEN_ID": specimen_id}
+        if taxon_id:
+            condition["TAXON_ID"] = str(taxon_id)
         self.get_collection_handle().update_many(
-            {"SPECIMEN_ID": name['specimen']["specimenId"],
-                "TAXON_ID": str(name['species']["taxonomyId"])},
-            {"$set": {"public_name": name.get("tolId", "")}})
+            condition, {"$set": {"public_name": tolid}})
 
     def record_manual_update(self, field, old, new, oid):
         if not self.get_collection_handle().find({
@@ -365,11 +366,13 @@ class Sample(DAComponent):
             rec = self.get_record(target_id)
 
             return rec
-
-    def update_public_name(self, name):
+        
+    def update_public_name(self, specimen_id, taxon_id, tolid):
+        condition = {"SPECIMEN_ID": specimen_id}
+        if taxon_id:
+            condition["TAXON_ID"] = str(taxon_id)
         self.get_collection_handle().update_many(
-            {"SPECIMEN_ID": name['specimen']["specimenId"]},
-            {"$set": {"public_name": name.get("tolId", "")}})
+            condition, {"$set": {"public_name": tolid}})
 
     def delete_sample(self, sample_id):
         sample = self.get_record(sample_id)
@@ -420,10 +423,9 @@ class Sample(DAComponent):
             {"_id": 1}
         ))
 
-    def get_project_samples_by_associated_project_type(self, values):
-        regex_values = ' | '.join(values)
+    def get_project_samples_by_associated_project_type(self, value):
         return cursor_to_list(
-            self.get_collection_handle().find({"associated_tol_project": {"$regex": regex_values, "$options": "i"}}))
+            self.get_collection_handle().find({"associated_tol_project": {"$regex": value, "$options": "i"}}))
 
     def get_gal_names(self, projects):
         return cursor_to_list(self.get_collection_handle().find(
@@ -896,20 +898,19 @@ class Sample(DAComponent):
         #sample_obj_ids = [ObjectId(x) for x in sample_ids]
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": "processing"}})
 
-    def mark_pending(self, sample_ids, is_erga=False, is_associated_project_check_required=False, is_private=False):
+    def mark_pending(self, sample_ids, is_private=False):
         #if is_erga:
         #    status = "bge_pending"
         #elif is_associated_project_check_required:
         #    status = "associated_project_pending"
         field_values = dict()
         if is_private:
-            field_values["status"] = "private"
+            status = "private"
         else:
-            field_values["status"]  = "pending"
-            field_values["approval"] = {}
-        field_values["error"] = ""
-                
-        return self.update_field(field_values=field_values, oids=sample_ids)    
+            status  = "pending"
+        approval_again_associated_types = AssociatedProfileType.objects.filter(is_approval_required_for_updated_manifest=True)
+        self.get_collection_handle().update_many({"_id": {"$in": [ObjectId(oid) for oid in sample_ids]}}, {"$unset": { "approval."+type.name : "" for type in  approval_again_associated_types}, "$set": {"status":status, "error":""}})
+        #return self.update_field(field_values=field_values, oids=sample_ids)    
         #sample_obj_ids = [ObjectId(x) for x in sample_ids]
         #return self.get_collection_handle().update_many({"_id": {"$in": sample_obj_ids}}, {"$set": {"status": status}})
     
@@ -1030,7 +1031,7 @@ class Sample(DAComponent):
             status_filter['manifest_id'] = manifest_id
               
         return cursor_to_list(self.get_collection_handle().find(status_filter,
-                                                                {"status": 1, "copo_id": 1, "manifest_id": 1,
+                                                                {"status": 1, "manifest_id": 1,
                                                                  "time_created": 1, "time_updated": 1}))
 
     def get_by_biosampleAccessions(self, biosampleAccessions):

@@ -9,6 +9,7 @@
         "help_tip": "Tube or Well Identifier",
         "hidden": "false",
         "id": "copo.sample.TUBE_OR_WELL_ID",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Tube or Well Identifier",
         "manifest_version": [
@@ -48,6 +49,7 @@
         "help_tip": "An identifier given to the Occurrence at the time it was recorded. Often serves as a link between field notes and an Occurrence record, such as a specimen collector's number.",
         "hidden": "false",
         "id": "copo.sample.SPECIMEN_ID",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Specimen Identifier",
         "manifest_version": [
@@ -384,7 +386,7 @@
         ],
         "standards": {
             "dwc": "taxonID",
-            "ena": "",
+            "ena": "TAXON_ID",
             "mixs": "samp_taxon_id",
             "tol": "TAXON_ID"
         },
@@ -423,7 +425,7 @@
         ],
         "standards": {
             "dwc": "scientificName",
-            "ena": "",
+            "ena": "SCIENTIFIC_NAME",
             "mixs": "specific_host",
             "tol": "SCIENTIFIC_NAME"
         },
@@ -739,6 +741,7 @@
         "help_tip": "",
         "hidden": "false",
         "id": "copo.sample.SYMBIONT",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Symbiont",
         "manifest_version": [
@@ -1036,6 +1039,7 @@
         "help_tip": "Collector ORCID ID",
         "hidden": "false",
         "id": "copo.sample.COLLECTOR_ORCID_ID",
+        "is_compliant": true,
         "is_sensitive": true,
         "label": "Collector Orcid Identifier",
         "manifest_version": [
@@ -1272,6 +1276,7 @@
         "help_tip": "The geographic latitude start (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
         "hidden": "false",
         "id": "copo.sample.LATITUDE_START",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Latitude Start",
         "manifest_version": [
@@ -1310,6 +1315,7 @@
         "help_tip": "The geographic longitude start (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
         "hidden": "false",
         "id": "copo.sample.LONGITUDE_START",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Longitude Start",
         "manifest_version": [
@@ -1348,6 +1354,7 @@
         "help_tip": "The geographic latitude end (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
         "hidden": "false",
         "id": "copo.sample.LATITUDE_END",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Latitude End",
         "manifest_version": [
@@ -1386,6 +1393,7 @@
         "help_tip": "The geographic longitude end (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
         "hidden": "false",
         "id": "copo.sample.LONGITUDE_END",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Longitude End",
         "manifest_version": [
@@ -1617,6 +1625,7 @@
         "help_tip": "The original geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.",
         "hidden": "false",
         "id": "copo.sample.ORIGINAL_DECIMAL_LATITUDE",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Original Decimal Latitude",
         "manifest_version": [
@@ -1656,6 +1665,7 @@
         "help_tip": "The original geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic centre of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.",
         "hidden": "false",
         "id": "copo.sample.ORIGINAL_DECIMAL_LONGITUDE",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Original Decimal Longitude",
         "manifest_version": [
@@ -1939,6 +1949,7 @@
         "help_tip": "Mixed sample risk",
         "hidden": "false",
         "id": "copo.sample.MIXED_SAMPLE_RISK",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Mixed Sample Risk",
         "manifest_version": [
@@ -3441,6 +3452,7 @@
         "help_tip": "",
         "hidden": "false",
         "id": "copo.sample.SAMPLING_PERMITS_DEF",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Sampling Permits Definition",
         "manifest_version": [
@@ -3676,6 +3688,7 @@
         "help_tip": "Primary Biogenome Project",
         "hidden": "false",
         "id": "copo.sample.PRIMARY_BIOGENOME_PROJECT",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Primary Biogenome Project",
         "manifest_version": [
@@ -3720,6 +3733,7 @@
         "help_tip": "Multiple projects can be entered by separating names/bioproject identifiers with a '|' (vertical pipe) character.",
         "hidden": "false",
         "id": "copo.sample.ASSOCIATED_PROJECT_ACCESSIONS",
+        "is_compliant": true,
         "is_sensitive": false,
         "label": "Associated Project Accessions",
         "manifest_version": [

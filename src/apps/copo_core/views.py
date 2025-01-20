@@ -233,7 +233,10 @@ def _core_visualize(request):
 
     task = request.POST.get("task", str())
 
-    profile_id = request.session.get("profile_id", str())
+    profile_id = request.POST.get("profile_id", str())
+
+    if not profile_id:
+        profile_id = request.session.get("profile_id", str())
 
     context["quick_tour_flag"] = request.session.get("quick_tour_flag", True)
     # for displaying tour message across site

@@ -36,7 +36,7 @@ services:
       - MAIL_SERVER=outlook.office365.com
       - MAIL_USERNAME=eidata@nbi.ac.uk
       - ALLOWED_HOSTS=
-      - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v2/
+      - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
       - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH=${BIOIMAGE_PATH}

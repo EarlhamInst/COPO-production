@@ -219,15 +219,25 @@ class Profile(DAComponent):
 
     def get_profiles(self, filter="all_profiles", group_filter=None, search_filter=None, sort_by="date_created", dir=-1):
         from .sample_da import Sample
-        profile_ids_from_sample = Sample().get_collection_handle().distinct("profile_id", {"$text": {"$search": search_filter} })
-        profile_oids_from_sample = [ObjectId(id) for id in profile_ids_from_sample ]
-        profile_condition = {"$or" : [{"_id": {"$in" : profile_oids_from_sample }}, {"title": { "$regex" : search_filter, "$options": "i"}}]}
-        profile_condition["type"] = group_filter
 
+        profile_condition = {}
+
+        # If a search filter is provided, apply the text search
+        if search_filter:
+            profile_ids_from_sample = Sample().get_collection_handle().distinct("profile_id", {"$text": {"$search": search_filter} })
+            profile_oids_from_sample = [ObjectId(id) for id in profile_ids_from_sample ]
+            profile_condition = {"$or" : [{"_id": {"$in" : profile_oids_from_sample }}, {"title": { "$regex" : search_filter, "$options": "i"}}]}
+        
+        # Add group filter condition if provided
+        if group_filter:
+            profile_condition["type"] = group_filter
+
+        # Filter by associated profiles if needed
         if filter == "my_profiles": 
             associated_profile_types = helpers.get_users_associated_profile_checkers()
             profile_condition["associated_type"] = {"$in": [str(x.name) for x in associated_profile_types]}
 
+        # Query the Profiles collection
         p = self.get_collection_handle().find(profile_condition).sort(sort_by, pymongo.DESCENDING if dir == -1 else pymongo.ASCENDING)
         return cursor_to_list(p)
 

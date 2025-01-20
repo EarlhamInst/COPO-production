@@ -106,7 +106,7 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
 
         df = dict()
         df["file_name"] = f_name
-        df["ecs_location"] = str(request.user.id) + "_" + request.user.username + "/" + f_name
+        df["ecs_location"] = bucket_name + "/" + f_name
         df["bucket_name"] = bucket_name
         df["file_location"] = file_location
         df["name"] = f_name
@@ -457,11 +457,34 @@ def submit_seq_annotation(profile_id, target_ids,  target_id):
 def generate_additional_columns(profile_id):
     result = []
     submissions = Submission().get_records_by_field("profile_id", profile_id)
+
+    enaFiles = SequenceAnnotation() \
+        .get_collection_handle() \
+        .aggregate([
+            {"$match": {"profile_id": profile_id, "accession":{"$exists": True}, "accession":{"$ne":""}}},
+            {"$unwind": "$files"},
+            {"$lookup":
+                {
+                    "from": 'EnaFileTransferCollection',
+                    "localField": "files",
+                    "foreignField": "file_id",
+                    "as": "enaFileTransfer"
+                }
+            },
+            {"$unwind": {'path': '$enaFileTransfer', "preserveNullAndEmptyArrays": True}},
+            {"$project": {"accession":1 , "ecs_location": "$enaFileTransfer.ecs_location",  "status": "$enaFileTransfer.status"}}
+            ])
+    enaFilesMap = { enaFile["accession"] : enaFile["ecs_location"] for enaFile in list(enaFiles)}
+
     if submissions and len(submissions) > 0:
         project_accessions = submissions[0].get("accessions",[]).get("project",[])
         if project_accessions:
-            assembly_accessions = submissions[0].get("accessions",[]).get("seq_annotation",[])
-            if assembly_accessions:
+            ecs_locations_with_file_archived = []
+            seq_annotation_accessions = submissions[0].get("accessions",[]).get("seq_annotation",[])
+            if seq_annotation_accessions:
                 assession_map = query_ena_file_processing_status_by_project(project_accessions[0].get("accession"), "SEQUENCE_ANNOTATION")
-                result = [{ "_id": ObjectId(accession_obj["alias"]), "ena_file_processing_status":assession_map.get(accession_obj["accession"], "") } for accession_obj in assembly_accessions if accession_obj.get("accession","") ]        
+                result = [{ "_id": ObjectId(accession_obj["alias"]), "ena_file_processing_status":assession_map.get(accession_obj["accession"], "") } for accession_obj in seq_annotation_accessions if accession_obj.get("accession","") ]
+                ecs_locations_with_file_archived = [ enaFilesMap[accession_obj["accession"]] for accession_obj in seq_annotation_accessions if accession_obj.get("accession","") and "File archived" in assession_map.get(accession_obj["accession"], "")]
+                EnaFileTransfer().update_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived, status = "ena_complete")        
+
     return pd.DataFrame.from_dict(result)

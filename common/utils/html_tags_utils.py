@@ -5,7 +5,6 @@ import json
 import pandas as pd
 from uuid import uuid4
 from bson import ObjectId
-from common.dal.mongo_util import cursor_to_list
 from django.urls import reverse
 from django.contrib.auth.models import User
 from common.lookup.lookup import HTML_TAGS
@@ -14,17 +13,13 @@ import common.schemas.utils.data_utils as d_utils
 from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES_FULL
 from .copo_lookup_service import COPOLookup
 from common.dal.copo_base_da import DataSchemas
-from src.apps.copo_core.models import SequencingCentre
 from common.dal.copo_da import DAComponent,  DataFile, Description
 from common.dal.profile_da import Profile, ProfileInfo
 from common.dal.submission_da import Submission
 # from hurry.filesize import size as hurrysize
-from django_tools.middlewares import ThreadLocal
 from common.utils.logger import Logger
 from common.utils import helpers
 from django.conf import settings
-from common.s3.s3Connection import S3Connection as s3
-import numpy as np
 import datetime
 
 # dictionary of components table id, gotten from the UI

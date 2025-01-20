@@ -51,6 +51,10 @@ class DataSchemas:
         #doc = {k.lower(): v for k, v in doc.get("copo", dict()).items() if k.lower() == identifier.lower()}
         #return doc.get(identifier.lower(), dict()).get("fields", list())
         return  doc.get(schema.lower(), dict()).get(identifier.lower(),dict()).get("fields",[])
+    
+    @classmethod
+    def refresh(cls):
+        cls.ui_template_schemas = dict()
 
 
 PubCollection = 'PublicationCollection'

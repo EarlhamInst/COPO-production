@@ -15,13 +15,13 @@ import threading
 import hashlib
 from pathlib import Path
 
-def make_transfer_record(file_id, submission_id):
+def make_transfer_record(file_id, submission_id, no_remote_location=False):
     # N.B. called from celery
     # make transfer object
     file = DataFile().get_record(file_id)
     tx = dict()
-
-    tx["remote_path"] = submission_id + "/reads/"
+    if not no_remote_location:
+        tx["remote_path"] = submission_id + "/reads/"
     tx["local_path"] = file["file_location"]
     tx["ecs_location"] = file["ecs_location"]
     tx["file_id"] = str(file["_id"])
@@ -155,13 +155,13 @@ def process_pending_file_transfers():
                     # Todo - need to do something cleverer here
                     reset_status_counter(tx)
             elif tx_status == 5:
-                if not tx["ecs_location"]:
+                if not tx.get("remote_path",""):
                     log.log("no ecs location, skipping transfer to ENA")
                     mark_complete(tx)
                     continue 
 
                 #EnaFileTransfer().set_processing(tx["_id"])
-                insert_message(message="Transfering to ENA: " + tx["ecs_location"], user=user)
+                insert_message(message=f'Transfering to ENA: {tx["local_path"]} to {tx["remote_path"]}', user=user)
                 log.log("transfering to ENA: " + tx["local_path"])
                 thread = ToENA(tx=tx, user_details=ud, pid=pid)
                 thread.start()

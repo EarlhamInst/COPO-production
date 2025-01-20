@@ -10,7 +10,7 @@ from django.conf import settings
 from django.http import HttpResponse
 import json
 from bson.errors import InvalidId
-from src.apps.api.utils import generate_csv_response, generate_wrapper_response, get_return_template, extract_to_template, finish_request
+from src.apps.api.utils import generate_csv_response, generate_wrapper_response, get_return_template, extract_to_template, finish_request, sort_dict_list_by_priority
 from src.apps.api.views.mapping import get_mapped_field_by_standard
 from common.dal.copo_da import APIValidationReport
 from common.dal.sample_da import Sample, Source
@@ -20,6 +20,7 @@ from common.schema_versions.lookup import dtol_lookups as lookup
 from common.lookup.lookup import API_ERRORS
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from common.utils.helpers import get_excluded_associated_projects
 from common.utils.logger import Logger
 from src.apps.copo_dtol_upload.utils.Dtol_Spreadsheet import DtolSpreadsheet
 from src.apps.copo_dtol_upload.utils.da import ValidationQueue
@@ -66,14 +67,28 @@ def get(request, id):
 
 
 def format_date(input_date):
-    # format of date fields exported to STS
-    return input_date.replace(tzinfo=datetime.timezone.utc).isoformat()
+    try:
+        # Check if 'input_date' is an empty string
+        if input_date == '':
+            return ''
+
+        # Convert input_date from string to datetime if it's not already
+        if isinstance(input_date, str):
+            input_date = datetime.datetime.fromisoformat(input_date)
+
+        # Format of date fields exported to STS
+        return input_date.replace(tzinfo=datetime.timezone.utc).isoformat()
+    except Exception as e:
+        Logger().exception(f'An error occurred while formatting the date: {e}')
+        return None
 
 
 def filter_for_API(sample_list, add_all_fields=False):
     # add field(s) here which should be time formatted
     time_fields = ["time_created", "time_updated"]
     profile_type = None
+    profile_title_map = dict()
+
     if len(sample_list) > 0:
         profile_type = sample_list[0].get("tol_project", "dtol").lower()
     if not profile_type:
@@ -102,6 +117,22 @@ def filter_for_API(sample_list, add_all_fields=False):
         if species_list:
             s = {**s, **species_list[0]}
         s_out = dict()
+        
+        # Always export COPO ID i.e. sample ID
+        s_out["copo_id"] = str(s.get("_id", ""))
+
+        # Create a map of profile ID and profile title to avoid multiple queries
+        profile_id = s.get("profile_id", "")
+
+        if profile_id:
+            if profile_id not in profile_title_map:
+                profile = Profile().get_record(profile_id)
+                if profile:
+                    profile_title_map[profile_id] = profile.get("title", "")
+        
+            # Export profile title        
+            profile_title = profile_title_map.get(profile_id, "")
+            s_out["copo_profile_title"] = profile_title
 
         # handle corner cases
         for k, v in s.items():
@@ -131,9 +162,7 @@ def filter_for_API(sample_list, add_all_fields=False):
                             out.append(s_out)
                             embargoed = True
                             break
-            # always export copo id
-            if k == "_id":
-                s_out["copo_id"] = str(v)
+           
             # check if field is listed to be exported to STS
             # print(k)
             if k in export:
@@ -162,6 +191,10 @@ def filter_for_API(sample_list, add_all_fields=False):
             else:
                 filtered_s_out = {key: value for key, value in s_out.items() if key in export}
                 out.append(filtered_s_out)
+    
+    # Sort data with uppercase keys preserved at the top, 
+    # followed by sorted lowercase camel case keys
+    out = sort_dict_list_by_priority(out)
     return out
 
 
@@ -208,7 +241,7 @@ def get_all_manifest_between_dates(request, d_from, d_to):
 
 
 def get_project_manifests_between_dates(request, project, d_from, d_to):
-    # get $project manifests between d_from and d_to
+    # get project manifests between d_from and d_to
     # dates must be ISO 8601 formatted
     d_from = parser.parse(d_from)
     d_to = parser.parse(d_to)
@@ -287,17 +320,13 @@ def get_samples_by_sequencing_centre(request):
         out = filter_for_API(samples)
     return finish_request(out)
 
-def get_updatable_fields_by_project(request, project):
-    project_lst = project.split(",")
-    project_lst = list(map(lambda x: x.strip(), project_lst))
-    # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
-    project_lst[:] = [x.lower() for x in project_lst if x] # Convert all strings in the list to lowercase
-    out = list()
-    
-    for project in project_lst:
-        if project in lookup.DTOL_NO_COMPLIANCE_FIELDS:
-            out.append({project.upper(): lookup.DTOL_NO_COMPLIANCE_FIELDS[project]})
-    return finish_request(out)
+def get_updatable_fields_by_project(request):
+    project = request.GET.get('project', str()).lower()
+    non_compliant_fields = d_utils.get_non_compliant_fields(component='sample', project=project)
+
+    # Return non-compliant fields i.e. fields that user can update
+    non_compliant_fields.sort()
+    return finish_request(non_compliant_fields)
 
 def get_fields_by_manifest_version(request):
     return_type = request.GET.get('return_type', 'json').lower()
@@ -331,10 +360,14 @@ def get_fields_by_manifest_version(request):
 
     return  HttpResponse(output, content_type='application/json')
 
-def get_project_samples_by_associated_project_type(request, values):
-    associated_profile_types_List = d_utils.convertStringToList(values) # Convert string to list of lowercase strings
-    associated_profile_types_List = list(map(lambda x: x.strip().upper(), associated_profile_types_List))
-    samples = Sample().get_project_samples_by_associated_project_type(associated_profile_types_List)
+def get_project_samples_by_associated_project_type(request, value):
+    excluded_associated_projects = get_excluded_associated_projects()
+    associated_project_type = value.upper().strip()
+
+    if associated_project_type in excluded_associated_projects:
+        return HttpResponse(status=400, content=f'Invalid input! {value.strip()} is not allowed.')
+    
+    samples = Sample().get_project_samples_by_associated_project_type(associated_project_type)
     out = list()
     if samples:
         out = filter_for_API(samples, add_all_fields=True)
