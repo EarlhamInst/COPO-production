@@ -1,5 +1,6 @@
 __author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
 
+from common.dal.profile_da import Profile
 from common.lookup.lookup import API_RETURN_TEMPLATES
 from common.schemas.utils.data_utils import get_export_fields
 from django.http import HttpResponse
@@ -98,7 +99,9 @@ def generate_rocrate_response(samples):
     '''
     rocrate_json = {}
     manifest_id = samples[0].get("manifest_id", "")
-
+    profile_title = samples[0].get("copo_profile_title", "")
+    profile_description = Profile().get_description_by_title(profile_title)
+    
     if not manifest_id:
         rocrate_json["error"] = "Not Implemented"
     else:
@@ -161,9 +164,15 @@ def generate_rocrate_response(samples):
             df, identifiedby, "IDENTIFIED_BY", "IDENTIFIER", rocrate_person)
 
         # @type: Dataset
-        # f"https://copo-project.org/api/manifest/{key}
-        manifest_item = {"@id": f"https://copo-project.org/api/manifest/{manifest_id}",
-                         "@type": "Dataset", "dateCreated": dateCreated, "datedModified": dateModified}
+        # f"https://copo-project.org/api/manifest/{key}/"
+        manifest_item = {"@id": f"https://copo-project.org/api/manifest/{manifest_id}/",
+                         "@type": "Dataset", 
+                         "datePublished": dateCreated, 
+                         "name": profile_title, 
+                         "description": profile_description, 
+                         "datedModified": dateModified,
+                         "license": {"@id": "https://creativecommons.org/publicdomain/zero/1.0"}
+                        }
         manifest_item["contributor"] = []
         manifest_item["contributor"].extend(
             {"@id":  p["@id"]} for p in rocrate_person.values())
@@ -222,6 +231,8 @@ def generate_rocrate_response(samples):
             sample_type = x.get("tol_project", "")
             sample_item = {
                 "@id": f"https://copo-project.org/api/sample/copo_id/{x['copo_id']}", "@type": "BioSample"}
+            sample_item["additionalProperty"] = []
+            
             keys_lst = list(x.keys())
             biosampleAccession = x.get("biosampleAccession", "")
 
@@ -267,8 +278,13 @@ def generate_rocrate_response(samples):
             export_fields = get_export_fields(component='sample', project=sample_type)
             filtered_x = {key: value for key, value in x.items() if key in export_fields}
 
+            # Set the rest of the data as additional properties in the sample_item
+            for key, value in filtered_x.items():
+                sample_item["additionalProperty"].append(
+                    {"@type": "PropertyValue", "name": key, "value": value})
+                
             # Update sample_item with the filtered item
-            sample_item.update(filtered_x)
+            # sample_item.update(filtered_x)
             graph_list.append(sample_item)
 
         rocrate_json["@graph"] = graph_list

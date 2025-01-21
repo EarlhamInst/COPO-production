@@ -273,8 +273,17 @@ class Profile(DAComponent):
         if type(p) != InvalidId:
             return p.get("title", "")
         else:
-            return "profile not exists"
+            return "Profile does not exist"
+        
+    def get_description_by_title(self, title):
+        # Get description by exact title
+        record = self.get_collection_handle().find_one({"title": title}, {"_id":0, "description":1})
 
+        if record:
+            return record.get("description", "")
+        else:
+            return "Profile by that title does not exist"
+        
     def get_by_title(self, title):
         p = self.get_collection_handle().find({"title": title}, {"_id":1})
         return cursor_to_list(p)
