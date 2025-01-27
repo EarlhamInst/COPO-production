@@ -528,7 +528,7 @@ def get_export_fields(component, project):
     output = set()
 
     # Additional export fields that are not in the schema
-    addtl_export_fields = ['copo_id', 'copo_profile_title']
+    addtl_export_fields = ['copo_id', 'copo_profile_title', 'last_bioimage_submitted']
     output.update(addtl_export_fields)
 
     for x in schema:

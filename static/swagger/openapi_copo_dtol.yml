@@ -755,6 +755,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/SampleList'
 
+  /sample/with_submitted_bioimages:
+    get:
+      tags:
+        - Sample
+      summary: Displays minimal information about accepted samples that have associated bioimages
+      description: >
+        Fetch minimal records of accepted samples that have associated bioimages, filtered by mandatory project type and optional date range.
+      parameters:
+        - $ref: '#/components/parameters/project_required'
+        - name: d_from
+          in: query
+          description: ISO 8601 formatted full date-time of the first bioimage submission, i.e. bioimages submitted or updated on or after this date will be matched. e.g. 2023-09-01T00:00:00+00:00
+          schema:
+            type: string
+            pattern: '^([A-Z0-9a-f- .:+]+)+$'
+            format: date-time
+        - name: d_to
+          in: query
+          description: ISO 8601 formatted full date-time of the last bioimage submission, i.e. bioimages submitted or updated before this date will be matched. e.g. 2023-09-30T00:00:00+00:00
+          schema:
+            type: string
+            pattern: '^([A-Z0-9a-f- .:+]+)+$'
+            format: date-time
+        - $ref: '#/components/parameters/return_type'
+      responses:
+        '200':
+          description: A JSON array of sample data if they have been accepted and have associated bioimages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SamplesWithSubmittedBioimages'
+
   /sample/StudyFromSampleAccession/{sample_ids}:
     get:
       tags:
@@ -1736,6 +1768,45 @@ components:
         copo_id:
           type: string
           description: unique COPO identifier for this sample
+
+    SamplesWithSubmittedBioimages:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: ['OK', 'Error']
+        number_found:
+          type: integer
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SamplesWithSubmittedBioimagesList'
+
+    SamplesWithSubmittedBioimagesList:
+      properties:
+        SPECIMEN_ID:
+          type: string
+          format: string
+        TAXON_ID:
+          type: string
+          format: string
+        copo_id:
+          type: string
+        copo_profile_title:
+          type: string
+        last_bioimage_submitted:
+          type: string
+          format: date-time
+        sampleDerivedFrom:
+          type: string
+        sampleSameAs:
+          type: string
+        sampleSymbiontOf:
+          type: string
+        status:
+          type: string
+        tol_project:
+          type: string
 
     SimpleSampleAccession:
       type: object

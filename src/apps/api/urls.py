@@ -77,7 +77,9 @@ dtol_api_patterns = [
             s.get_all_samples_between_dates, name='get_all_samples_between_dates'),
     re_path(r'^sample/(?P<project>[a-zA-Z, ]+)/',
             s.get_project_samples, name='get_project_samples'),
-
+    re_path(r'^sample/with_submitted_bioimages',
+            s.get_specimens_with_submitted_images, name='get_specimens_with_submitted_images'),
+    
     re_path(r'^audit/sample/asg',
             audit.get_asg_sample_updates_by_updatable_field, name='get_asg_sample_updates_by_updatable_field'),
     re_path(r'^audit/sample/dtol',

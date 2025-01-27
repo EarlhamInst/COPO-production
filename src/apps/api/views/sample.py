@@ -85,7 +85,7 @@ def format_date(input_date):
 
 def filter_for_API(sample_list, add_all_fields=False):
     # add field(s) here which should be time formatted
-    time_fields = ["time_created", "time_updated"]
+    time_fields = ["time_created", "time_updated", "last_bioimage_submitted"]
     profile_type = None
     profile_title_map = dict()
 
@@ -249,6 +249,39 @@ def get_project_manifests_between_dates(request, project, d_from, d_to):
         return HttpResponse(status=400, content="'from' must be earlier than'to'")
     manifest_ids = Sample().get_manifests_by_date_and_project(project, d_from, d_to)
     return finish_request(manifest_ids)
+
+def get_specimens_with_submitted_images(request):
+    # Fetch all specimens i.e. sources with submitted 
+    # sample images by sample type/project type and
+    # between 'from' date and 'to' date if provided
+    # Dates must be ISO 8601 formatted
+    project = request.GET.get('project', str()).lower()
+    
+    try:                
+        d_from = parser.parse(request.GET.get('d_from', None))
+    except TypeError: 
+        d_from = None
+
+    try:                
+        d_to = parser.parse(request.GET.get('d_to', None))
+    except TypeError: 
+        d_to = None
+
+    if d_from and d_to is None:
+        return HttpResponse(status=400, content=f'\'to date\' is required when \'from date\' is entered')
+
+    if d_from is None and d_to:
+        return HttpResponse(status=400, content=f'\'from date\' is required when \'to date\' is entered')
+
+    if d_from and d_to and d_from > d_to:
+        return HttpResponse(status=400, content=f'\'from date\' must be earlier than \'to date\'')
+    
+    specimens = Source().get_specimens_with_submitted_images(project, d_from, d_to)
+    
+    out = list()
+    if specimens:
+        out = filter_for_API(specimens, add_all_fields=False)
+    return finish_request(out)
 
 def get_all_samples_between_dates(request, d_from, d_to):
     # get all samples between d_from and d_to

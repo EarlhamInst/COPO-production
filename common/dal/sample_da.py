@@ -146,7 +146,85 @@ class Source(DAComponent):
             "user": "copo@earlham.ac.uk"
         }}})
 
-
+    def get_specimens_with_submitted_images(self, project, d_from, d_to):
+        from .profile_da import Profile
+        
+        profile_title_map = dict()
+        filter = dict()
+        
+        sample_type = f'{project}_specimen'
+        filter['$match'] = {'sample_type': sample_type, 'bioimage_archive_seq_no':{'$gt':0}}
+        projection = {'_id':0, 'SPECIMEN_ID':1,'TAXON_ID':1, 'biosampleAccession':1, 
+                      'last_bioimage_submitted':1, 'profile_id':1, 'sample_type':1
+                }
+        
+        if d_from is not None:
+            filter['$match']['last_bioimage_submitted']['$gte'] = d_from
+        if d_to is not None:
+            filter['$match']['last_bioimage_submitted']['$lt'] = d_to
+        
+        # Query for specimens with submitted bioimages   
+        specimens = cursor_to_list(self.get_collection_handle().aggregate(
+            [
+                filter,
+                {'$sort': {'last_bioimage_submitted': -1}},
+                {'$project': projection}
+            ]))
+        
+        for specimen in specimens:
+            profile_id = specimen.pop('profile_id', '')
+            specimen['last_bioimage_submitted'] = specimen['last_bioimage_submitted']
+            specimen['sample_type'] = specimen['sample_type'].replace('_specimen', '')
+            specimen['tol_project'] = specimen['sample_type']
+            source_biosample_accession = specimen.pop('biosampleAccession', '')
+                
+            if profile_id:
+                # Query for sample ID i.e. 'copo_id' and related fields
+                sample_record = Sample().get_collection_handle().find_one(
+                    {'profile_id': profile_id,
+                     'tol_project': specimen['sample_type'],
+                     'SPECIMEN_ID': specimen['SPECIMEN_ID'],
+                      '$or': [
+                            {'sampleDerivedFrom': source_biosample_accession},
+                            {'sampleSameAs': source_biosample_accession},
+                            {'sampleSymbiontOf': source_biosample_accession}
+                        ],
+                    },
+                    {'_id': 1, 'status':1, 'sampleDerivedFrom': 1, 
+                     'sampleSameAs': 1, 'sampleSymbiontOf': 1
+                     })
+                
+                # A map of profile ID and profile title is used to avoid multiple queries
+                if profile_id not in profile_title_map:
+                    profile = Profile().get_record(profile_id)
+                    if profile:
+                        profile_title_map[profile_id] = profile.get('title', '')
+            
+                # Export profile title        
+                profile_title = profile_title_map.get(profile_id, '')
+                specimen['copo_profile_title'] = profile_title
+                
+                # Export sample ID i.e. 'copo_id'
+                sources_fields = ['sampleDerivedFrom', 'sampleSameAs', 'sampleSymbiontOf']
+                if sample_record:
+                    non_empty_found = False
+                    specimen['copo_id'] = str(sample_record.get('_id', ''))
+                    specimen['status'] = sample_record.get('status', '')
+                    
+                    # Return only the source field that is not empty
+                    for field in sources_fields:
+                        value = sample_record.pop(field, None)
+                        if value:  # Check if the popped value is not None or empty
+                            specimen[field] = value
+                            non_empty_found = True
+                            break  # Break the loop after the first non-empty value is found
+                        
+                    # If no non-empty values are found, return all fields as they are      
+                    if not non_empty_found:  
+                        for field in sources_fields:
+                            specimen[field] = sample_record.pop(field, None)
+        return specimens
+    
 class Sample(DAComponent):
     def __init__(self, profile_id=None):
         super(Sample, self).__init__(profile_id, "sample")
