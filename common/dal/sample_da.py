@@ -158,10 +158,13 @@ class Source(DAComponent):
                       'last_bioimage_submitted':1, 'profile_id':1, 'sample_type':1
                 }
         
-        if d_from is not None:
-            filter['$match']['last_bioimage_submitted']['$gte'] = d_from
-        if d_to is not None:
-            filter['$match']['last_bioimage_submitted']['$lt'] = d_to
+        # Add conditions to 'last_bioimage_submitted' field if 'd_from' or 'd_to' is not None
+        if d_from is not None or d_to is not None:
+            filter['$match']['last_bioimage_submitted'] = {}
+            if d_from is not None:
+                filter['$match']['last_bioimage_submitted']['$gte'] = d_from
+            if d_to is not None:
+                filter['$match']['last_bioimage_submitted']['$lt'] = d_to
         
         # Query for specimens with submitted bioimages   
         specimens = cursor_to_list(self.get_collection_handle().aggregate(
