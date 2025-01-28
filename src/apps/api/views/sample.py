@@ -281,6 +281,9 @@ def get_specimens_with_submitted_images(request):
     out = list()
     if specimens:
         out = filter_for_API(specimens, add_all_fields=False)
+        # Remove 'copo_id' from the output
+        for item in out:
+            item.pop('copo_id', None) 
     return finish_request(out)
 
 def get_all_samples_between_dates(request, d_from, d_to):
