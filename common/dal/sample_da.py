@@ -153,7 +153,7 @@ class Source(DAComponent):
         filter = dict()
         
         filter['$match'] = {'sample_type': f'{project}_specimen', 'bioimage_archive_seq_no':{'$gt':0}}
-        projection = {'_id':0, 'SPECIMEN_ID':1,'TAXON_ID':1, 
+        projection = {'_id':0, 'SPECIMEN_ID':1,'TAXON_ID':1, 'biosampleAccession':1,
                       'last_bioimage_submitted':1, 'profile_id':1, 'sample_type':1
                 }
         
