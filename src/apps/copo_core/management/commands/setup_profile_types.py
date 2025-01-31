@@ -141,6 +141,7 @@ class Command(BaseCommand):
         files = Component().create_component(name="files", title="Files", widget_icon="file", widget_colour="blue", widget_icon_class="fa fa-file", table_id="files_table", reverse_url="copo_file:copo_files", subtitle="")
         seqannotation = Component().create_component(name="seqannotation", title="Sequence Annotations", widget_icon="tag", widget_colour="yellow", widget_icon_class="fa fa-tag", table_id="seqannotation_table", reverse_url="copo_seq_annotation_submission:copo_seq_annotation", subtitle="")
         read = Component().create_component(name="read", title="Reads", widget_icon="dna", widget_colour="orange", widget_icon_class="fa fa-dna", table_id="read_table", reverse_url="copo_read_submission:copo_reads", subtitle="#component_subtitle")
+        singlecell = Component().create_component(name="singlecell", title="Single Cell", widget_icon="dna", widget_colour="blue", widget_icon_class="fa fa-dna", table_id="singlecell_table", reverse_url="copo_single_cell_submission:copo_singlecell", subtitle="#component_subtitle")
         sample = Component().create_component(name="sample", title="Samples", widget_icon="filter", widget_colour="olive", widget_icon_class="fa fa-filter", table_id="sample_table", reverse_url="copo_sample:copo_samples", subtitle="")
         accessions = Component().create_component(name="accessions", title="Accessions", widget_icon="sitemap", widget_colour="pink", widget_icon_class="fa fa-sitemap", table_id="accessions_table", reverse_url="copo_accession:copo_accessions", subtitle="")
         profile = Component().create_component(name="profile", title="Work Profiles", widget_icon="", widget_colour="", widget_icon_class="", table_id="copo_profiles_table", reverse_url="", subtitle="#component_subtitle")
@@ -159,6 +160,9 @@ class Command(BaseCommand):
 
         read.recordaction_buttons.set([delete_read_multi, submit_read_multi])
         read.title_buttons.set([new_reads_spreadsheet_template, download_blank_manifest_template])
+
+        #singlecell.recordaction_buttons.set([delete_read_multi, submit_read_multi])
+        #singlecell.title_buttons.set([new_reads_spreadsheet_template, download_blank_manifest_template])
 
         sample.recordaction_buttons.set([download_sample_manifest_single, download_permits_multiple, view_images_multiple])
         sample.title_buttons.set([quick_tour_template, new_samples_spreadsheet_template, download_blank_manifest_template, download_sop, accept_reject_samples])
@@ -188,7 +192,7 @@ class Command(BaseCommand):
         asg.components.set([assembly, taggedseq, files, seqannotation, read, sample, accessions])
         dtolenv.components.set([assembly, taggedseq, files, seqannotation, read, sample, accessions])
         dtol.components.set([assembly, taggedseq, files, seqannotation, read, sample, accessions])
-        genomics.components.set([assembly, files, seqannotation, read, accessions])
+        genomics.components.set([assembly, files, seqannotation, read, singlecell, accessions])
 
 
         at_asg = AssociatedProfileType.objects.get(name="ASG")

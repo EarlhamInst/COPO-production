@@ -150,6 +150,19 @@ def notify_ena_object_status(action="message", msg=str(), data={}, html_id="", p
     )
     return True
 
+
+def notify_singlecell_status(action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()):
+    # type points to the object type which will be passed to the socket and is a method defined in consumer.py
+    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    channel_layer = get_channel_layer()
+    group_name = 'singlecell_status_%s' % data["profile_id"]
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        event
+    )
+    return True
+
+
 def json_to_pytype(path_to_json, compatibility_mode=True):
     # use compatability mode if jsonref is causing problems
     with open(path_to_json, encoding='utf-8') as data_file:

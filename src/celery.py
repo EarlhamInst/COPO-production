@@ -55,10 +55,12 @@ app.conf.beat_schedule = {
         'task': 'src.apps.copo_dtol_submission.tasks.process_bioimage_housekeeping',
         'schedule': timedelta(days=1)
     },    
+    '''
     'find_incorrectly_rejected_samples': {
         'task': 'src.apps.copo_dtol_submission.tasks.find_incorrectly_rejected_samples',
         'schedule': timedelta(seconds=60)
     },
+    '''
     'poll_missing_tolids': {
         'task': 'src.apps.copo_dtol_submission.tasks.poll_missing_tolids',
         'schedule': timedelta(hours=2)  # shortened cause sometimes it doesn't work?
@@ -107,7 +109,11 @@ app.conf.beat_schedule = {
     'send_fortnightly_pending_manifest_notification': {
         'task': 'src.apps.copo_dtol_submission.tasks.send_fortnightly_pending_manifest_notification',
         'schedule': timedelta(weeks=2)
-    }
+    },
+    'update_singlecell_schema': {
+        'task': 'src.apps.copo_single_cell_submission.tasks.update_singlecell_schema',
+        'schedule': timedelta(days=1)
+    },     
 }
 
 app.conf.task_routes = {

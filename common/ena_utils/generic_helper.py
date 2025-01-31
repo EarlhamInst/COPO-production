@@ -268,7 +268,6 @@ def notify_tagged_seq_status(action="message", msg=str(), data={}, html_id="", p
     )
     return True
 
-
 def notify_ena_object_status(action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()):
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
     if checklist_id.startswith("ERC"):
@@ -277,6 +276,17 @@ def notify_ena_object_status(action="message", msg=str(), data={}, html_id="", p
         group_name = 'tagged_seq_status_%s' % data["profile_id"]
     event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
     channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        event
+    )
+    return True
+
+def notify_singlecell_status(action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()):
+    # type points to the object type which will be passed to the socket and is a method defined in consumer.py
+    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    channel_layer = get_channel_layer()
+    group_name = 'singlecell_status_%s' % data["profile_id"]
     async_to_sync(channel_layer.group_send)(
         group_name,
         event

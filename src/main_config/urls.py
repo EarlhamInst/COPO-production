@@ -15,6 +15,7 @@ urlpatterns = [
     path('copo/dtol_manifest/', include('src.apps.copo_dtol_upload.urls', namespace='copo_dtol_upload')),
     path('copo/dtol_submission/', include('src.apps.copo_dtol_submission.urls', namespace='copo_dtol_submission')),
     path('copo/copo_read/', include('src.apps.copo_read_submission.urls', namespace='copo_read_submission')),
+    path('copo/copo_single_cell/', include('src.apps.copo_single_cell_submission.urls', namespace='copo_singlecell_submission')),
     path('copo/copo_assembly/', include('src.apps.copo_assembly_submission.urls', namespace='copo_assembly_submission')),
     path('copo/copo_seq_annotation/', include('src.apps.copo_seq_annotation_submission.urls', namespace='copo_seq_annotation_submission')),
     path('copo/copo_taggedseq/', include('src.apps.copo_barcoding_submission.urls', namespace='copo_barcoding_submission')),
@@ -26,6 +27,7 @@ urlpatterns = [
     path('copo/copo_accessions/', include('src.apps.copo_accession.urls', namespace='copo_accession')),
     path('copo/tol_dashboard/', include('src.apps.copo_tol_dashboard.urls', namespace='copo_tol_dashboard')),
     path('copo/', include('src.apps.copo_core.urls', namespace='copo')),
+
     #path('rest/', include('src.apps.copo_core.rest_urls', namespace='rest')),
 
     path('api/', include('src.apps.api.urls', namespace='api')),

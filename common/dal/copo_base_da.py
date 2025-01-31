@@ -87,6 +87,7 @@ AnnotationCollection = "SeqAnnotationCollection"
 TaggedSequenceCollection = "TagSequenceCollection"
 EnaChecklistCollection = "EnaChecklistCollection"
 ReadObjectCollection = "SampleCollection"
+SinglecellSchemasCollection = "SinglecellSchemasCollection"
 
 handle_dict = dict(audit=get_collection_ref(AuditCollection),
                    publication=get_collection_ref(PubCollection),
@@ -118,8 +119,9 @@ handle_dict = dict(audit=get_collection_ref(AuditCollection),
                        SubmissionQueueCollection),
                    taggedseq=get_collection_ref(TaggedSequenceCollection),
                    enaChecklist=get_collection_ref(EnaChecklistCollection),
-                   read=get_collection_ref(ReadObjectCollection)
-                   )
+                   read=get_collection_ref(ReadObjectCollection),
+                   singlecellSchemas = get_collection_ref(SinglecellSchemasCollection)
+                )
 
 
 class DAComponent:

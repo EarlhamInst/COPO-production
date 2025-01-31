@@ -89,6 +89,7 @@ PROJECT_APPS = [
     'src.apps.copo_manifest_wizard',
     'src.apps.copo_news',
     'src.apps.api',
+    'src.apps.copo_single_cell_submission',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',

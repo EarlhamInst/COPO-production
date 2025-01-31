@@ -36,7 +36,6 @@ def only_one(fun=None, key="", timeout=None):
         return inner_func
     return actual_only_one    
 
-
 class CopoBaseClassForTask(celery.Task):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         Logger().error('{0!r} failed: {1!r}'.format(task_id, exc))
