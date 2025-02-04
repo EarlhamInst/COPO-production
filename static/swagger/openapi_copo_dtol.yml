@@ -41,6 +41,28 @@ paths:
                 $ref: '#/components/schemas/AuthBody'
 
   # Section: Audit
+  /audit/samples:
+    get:
+      tags:
+        - Audit
+      summary: Get update audits for sample records by copo ID, updatable field and/or project
+      description: >
+        Retrieves update logs based on inputted parameters.
+
+        If no parameters are provided, COPO will return a list of updates for all samples.
+      parameters:
+        - $ref: '#/components/parameters/copo_id'
+        - $ref: '#/components/parameters/project'
+        - $ref: '#/components/parameters/updatable_field'
+        - $ref: '#/components/parameters/return_type'
+      responses:
+        200:
+          description: A JSON array of update audits by given project type, updatable field and copo_id (if provided)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleAudit_update_log'
+
   /audit/sample/{from}/{to}:
     get:
       tags:
@@ -101,32 +123,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/SampleAudit_update_log'
 
-  /audit/sample/copo_id/{copo_id}:
-    get:
-      tags:
-        - Audit
-      summary: Get update audit for sample records by copo_id
-      description: |
-        Get a list of sample update records in COPO by copo ID.
-
-        If copo_id is not provided, COPO will return a list of all sample updates.
-      parameters:
-        - name: copo_id
-          in: path
-          description: If known, provide a hexadecimal 'copo_id'. To query multiple 'copo_id', separate them with a comma.
-          required: false
-          schema:
-            type: string
-            minimum: 1
-        - $ref: '#/components/parameters/return_type'
-      responses:
-        '200': # status code
-          description: A JSON array sample update objects
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SampleAudit_update_log'
-
   /audit/sample/update_type/{update_type}:
     get:
       tags:
@@ -135,16 +131,9 @@ paths:
       description: |
         Get sample update audit records based on the type of person who performed the audit.
 
-        If no 'sample_type' is provided, COPO will return a list of sample updates for all sample types.
+        If no 'project' is provided, COPO will return a list of sample updates for all sample types.
       parameters:
-        - name: sample_type
-          in: query
-          description: To query multiple sample types, separate them with a comma. Supported sample types - ASG, DTOL, ERGA
-          schema:
-            type: string
-            pattern: '^([a-zA-Z_,]+)+$'
-            format:
-            minimum: 1
+        - $ref: '#/components/parameters/project_multiple'
         - name: update_type
           in: path
           required: true
@@ -185,6 +174,7 @@ paths:
           description: The value of the field to query sample updates by
           schema:
             type: string
+            pattern: '^.+$' # Ensures at least one character is present
         - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
@@ -195,87 +185,6 @@ paths:
                 $ref: '#/components/schemas/SampleAudit_update_log'
         '400':
           description: Invalid value found in request
-
-  /audit/sample/asg:
-    get:
-      tags:
-        - Audit
-      summary: Get update audit for 'ASG' sample records by an updatable field
-      description: >
-        If no 'copo_id' is provided, COPO will return a list of updates for the Aquatic Symbiosis Genomics (ASG) sample type for all updatable fields if an update was done on it
-      parameters:
-        - name: copo_id
-          in: query
-          description: If known, provide a hexadecimal 'copo_id'. To query multiple 'copo_id', separate them with a comma
-          schema:
-            type: string
-            minimum: 1
-        - in: query
-          name: updatable_field
-          required: true
-          schema:
-            $ref: '#/components/schemas/UpdatableFields_ASG'
-          description: A list of fields that can be updated for 'ASG' sample types
-        - $ref: '#/components/parameters/return_type'
-      responses:
-        200:
-          description: A JSON array of the latest manifest version for a given project type
-
-  /audit/sample/dtol:
-    get:
-      tags:
-        - Audit
-      summary: Get update audit for 'DTOL' sample records by an updatable field
-      description: >
-        If no 'copo_id' is selected, COPO will return a list of updates for the Darwin Tree of Life (DTOL) sample type for all updatable fields if an update was done on it
-      parameters:
-        - name: copo_id
-          in: query
-          description: If known, provide a hexadecimal 'copo_id'. To query multiple 'copo_id', separate them with a comma
-          schema:
-            type: string
-            minimum: 1
-        - in: query
-          name: updatable_field
-          required: true
-          schema:
-            $ref: '#/components/schemas/UpdatableFields_DTOL'
-          description: A list of fields that can be updated for 'DTOL' sample types
-        - $ref: '#/components/parameters/return_type'
-      responses:
-        200:
-          description: A JSON array of the latest manifest version for a given project type
-
-  /audit/sample/erga:
-    get:
-      tags:
-        - Audit
-      summary: Get update audit for 'ERGA' sample records by an updatable field
-      description: >
-        If no 'copo_id' is provided, COPO will return a list of updates for the European Reference Genome Atlas (ERGA) sample type for the desired field if an update was done on it
-      parameters:
-        - name: copo_id
-          in: query
-          description: If known, provide a hexadecimal 'copo_id'. To query multiple 'copo_id', separate them with a comma
-          schema:
-            type: string
-            minimum: 1
-        - in: query
-          name: updatable_field
-          required: true
-          schema:
-            $ref: '#/components/schemas/UpdatableFields_ERGA'
-          description: A list of fields that can be updated for 'ERGA' sample types
-        - name: copo_id
-          in: query
-          description: A hexadecimal 'copo_id'
-          schema:
-            type: string
-            minimum: 1
-        - $ref: '#/components/parameters/return_type'
-      responses:
-        200:
-          description: A JSON array of the latest manifest version for a given project type
 
   # Section: Manifest
   /manifest:
@@ -1076,7 +985,14 @@ components:
         - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
       required: true
       schema:
-        $ref: '#/components/schemas/AssociatedProjects'
+      $ref: '#/components/schemas/AssociatedProjects'
+
+    copo_id:
+      name: copo_id
+      in: query
+      description: If known, provide a hexadecimal 'copo_id'. To query multiple 'copo_id', separate them with a comma
+      schema:
+        type: string
 
     project:
       name: project
@@ -1088,6 +1004,19 @@ components:
         - **ERGA** refers to European Reference Genome Atlas (ERGA)
       schema:
         $ref: '#/components/schemas/Projects'
+
+    project_multiple:
+      name: project
+      in: query
+      description: |
+        To query multiple project types, CTRL + click on the project types
+
+        - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
+        - **DTOL** refers to Darwin Tree of Life (DTOL)
+        - **DTOLENV** refers to Darwin Tree of Life Environmental Samples (DTOLENV)
+        - **ERGA** refers to European Reference Genome Atlas (ERGA)
+      schema:
+        $ref: '#/components/schemas/Projects_multiple'
 
     project_required:
       name: project
@@ -1151,6 +1080,14 @@ components:
       schema:
         $ref: '#/components/schemas/SequencingCentres'
 
+    updatable_field:
+      name: updatable_field
+      in: query
+      description: |
+        A list of fields that can be updated by resubmitting a manifest for a project
+      schema:
+        $ref: '#/components/schemas/UpdatableFields'
+
   securitySchemes:
     app_id:
       type: apiKey
@@ -1185,6 +1122,19 @@ components:
         password:
           type: string
 
+    GenericOutputSchema:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: ['OK', 'Error']
+        number_found:
+          type: integer
+        data:
+          type: array
+          items:
+            type: string
+
     ManifestId:
       type: string
       format: uuid
@@ -1205,50 +1155,6 @@ components:
     ManifestVersions:
       type: string
       enum: ['2.5', '2.4', '2.4.1', '2.4.2', '2.4.3']
-
-    Projects:
-      type: string
-      enum: [ASG, DTOL, DTOLENV, ERGA]
-      description: Projects or manifest types brokered through COPO
-
-    ReturnTypes:
-      type: string
-      enum: [csv, json]
-
-    ReturnTypes_with_rocrate:
-      type: string
-      enum: [csv, json, rocrate]
-
-    SequencingCentres:
-      type: string
-      enum:
-        [
-          CENTRO NACIONAL DE ANÁLISIS GENÓMICO,
-          'DNA SEQUENCING AND GENOMICS LABORATORY, HELSINKI GENOMICS CORE FACILITY',
-          EARLHAM INSTITUTE,
-          FUNCTIONAL GENOMIC CENTER ZURICH,
-          GENOSCOPE,
-          'HANSEN LAB, DENMARK',
-          INDUSTRY PARTNER,
-          LAUSANNE GENOMIC TECHNOLOGIES FACILITY,
-          'LEIBNIZ INSTITUTE FOR THE ANALYSIS OF BIODIVERSITY CHANGE, MUSEUM KOENIG, BONN',
-          'NEUROMICS SUPPORT FACILITY, UANTWERP, VIB',
-          NGS BERN,
-          NGS COMPETENCE CENTER TÜBINGEN,
-          NORWEGIAN SEQUENCING CENTRE,
-          OTHER,
-          SANGER INSTITUTE,
-          SCILIFELAB,
-          'SVARDAL LAB, ANTWERP',
-          UNIVERSITY OF BARI,
-          UNIVERSITY OF FLORENCE,
-          WEST GERMAN GENOME CENTRE,
-        ]
-      description: A list of sequencing centres
-
-    Standards:
-      type: string
-      enum: [dwc, ena, mixs, tol]
 
     Profile:
       type: object
@@ -1295,6 +1201,28 @@ components:
           type: string
         profile_type:
           type: string
+
+    Projects:
+      type: string
+      enum: [ASG, DTOL, DTOLENV, ERGA]
+      description: Projects or manifest types brokered through COPO
+
+    Projects_multiple:
+      type: array
+      items:
+        type: string
+        enum: [ASG, DTOL, DTOLENV, ERGA]
+      explode: true # Ensures multiple values are passed correctly
+      style: form
+      description: Select one or more of the projects or manifest types brokered through COPO
+
+    ReturnTypes:
+      type: string
+      enum: [csv, json]
+
+    ReturnTypes_with_rocrate:
+      type: string
+      enum: [csv, json, rocrate]
 
     SampleAccession:
       properties:
@@ -1351,33 +1279,33 @@ components:
           type: string
         updated_value:
           type: string
-        updated_by:
-          type: string
-          format: email
         update_type:
           type: string
-          format: string
         time_updated:
           type: string
           format: date-time
+        RACK_OR_PLATE_ID:
+          type: string
+        SPECIMEN_ID:
+          type: string
+        TUBE_OR_WELL_ID:
+          type: string
         biosampleAccession:
           type: string
+        copo_audit_type:
+          type: string
         copo_id:
+          type: string
+        copo_profile_title:
           type: string
         manifest_id:
           type: string
           format: uuid
         public_name:
           type: string
-        sample_type:
-          type: string
         sraAccession:
           type: string
-        RACK_OR_PLATE_ID:
-          type: string
-        SPECIMEN_ID:
-          type: string
-        TUBE_OR_WELL_ID:
+        tol_project:
           type: string
 
     SampleList:
@@ -1822,6 +1750,33 @@ components:
         copo_sample_id:
           type: string
 
+    SequencingCentres:
+      type: string
+      enum:
+        [
+          CENTRO NACIONAL DE ANÁLISIS GENÓMICO,
+          'DNA SEQUENCING AND GENOMICS LABORATORY, HELSINKI GENOMICS CORE FACILITY',
+          EARLHAM INSTITUTE,
+          FUNCTIONAL GENOMIC CENTER ZURICH,
+          GENOSCOPE,
+          'HANSEN LAB, DENMARK',
+          INDUSTRY PARTNER,
+          LAUSANNE GENOMIC TECHNOLOGIES FACILITY,
+          'LEIBNIZ INSTITUTE FOR THE ANALYSIS OF BIODIVERSITY CHANGE, MUSEUM KOENIG, BONN',
+          'NEUROMICS SUPPORT FACILITY, UANTWERP, VIB',
+          NGS BERN,
+          NGS COMPETENCE CENTER TÜBINGEN,
+          NORWEGIAN SEQUENCING CENTRE,
+          OTHER,
+          SANGER INSTITUTE,
+          SCILIFELAB,
+          'SVARDAL LAB, ANTWERP',
+          UNIVERSITY OF BARI,
+          UNIVERSITY OF FLORENCE,
+          WEST GERMAN GENOME CENTRE,
+        ]
+      description: A list of sequencing centres
+
     SpeciesList:
       type: object
       properties:
@@ -1845,6 +1800,10 @@ components:
           type: string
         TAXON_REMARKS:
           type: string
+
+    Standards:
+      type: string
+      enum: [dwc, ena, mixs, tol]
 
     StatsNumber:
       type: object
@@ -1871,94 +1830,7 @@ components:
           type: string
           description: Queried for sample biosample id
 
-    GenericOutputSchema:
-      type: object
-      properties:
-        status:
-          type: string
-          enum: ['OK', 'Error']
-        number_found:
-          type: integer
-        data:
-          type: array
-          items:
-            type: string
-
-    UpdatableFields_ASG:
-      type: string
-      enum:
-        [
-          BARCODE_HUB,
-          BARCODE_PLATE_PRESERVATIVE,
-          BOLD_ACCESSION_NUMBER,
-          COLLECTOR_SAMPLE_ID,
-          CULTURE_OR_STRAIN_ID,
-          DATE_OF_PRESERVATION,
-          DEPTH,
-          DIFFICULT_OR_HIGH_PRIORITY_SAMPLE,
-          ELEVATION,
-          HAZARD_GROUP,
-          IDENTIFIED_BY,
-          IDENTIFIED_HOW,
-          IDENTIFIER_AFFILIATION,
-          INFRASPECIFIC_EPITHET,
-          LIFESTAGE,
-          PARTNER_SAMPLE_ID,
-          PLATE_ID_FOR_BARCODING,
-          PRESERVED_BY,
-          PRESERVER_AFFILIATION,
-          PURPOSE_OF_SPECIMEN,
-          RELATIONSHIP,
-          SEX,
-          SIZE_OF_TISSUE_IN_TUBE,
-          SPECIMEN_ID_RISK,
-          TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION,
-          TIME_OF_COLLECTION,
-          TISSUE_FOR_BARCODING,
-          TISSUE_REMOVED_FOR_BARCODING,
-          TUBE_OR_WELL_ID_FOR_BARCODING,
-          VOUCHER_ID,
-        ]
-      description: Fields that can be updated for 'ASG' projects brokered through COPO
-
-    UpdatableFields_DTOL:
-      type: string
-      enum:
-        [
-          BARCODE_HUB,
-          BARCODE_PLATE_PRESERVATIVE,
-          BOLD_ACCESSION_NUMBER,
-          COLLECTOR_SAMPLE_ID,
-          CULTURE_OR_STRAIN_ID,
-          DATE_OF_PRESERVATION,
-          DEPTH,
-          DIFFICULT_OR_HIGH_PRIORITY_SAMPLE,
-          ELEVATION,
-          GAL_SAMPLE_ID,
-          HAZARD_GROUP,
-          IDENTIFIED_BY,
-          IDENTIFIED_HOW,
-          IDENTIFIER_AFFILIATION,
-          INFRASPECIFIC_EPITHET,
-          LIFESTAGE,
-          PLATE_ID_FOR_BARCODING,
-          PRESERVED_BY,
-          PRESERVER_AFFILIATION,
-          PURPOSE_OF_SPECIMEN,
-          RELATIONSHIP,
-          SEX,
-          SIZE_OF_TISSUE_IN_TUBE,
-          SPECIMEN_IDENTITY_RISK,
-          TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION,
-          TIME_OF_COLLECTION,
-          TISSUE_FOR_BARCODING,
-          TISSUE_REMOVED_FOR_BARCODING,
-          TUBE_OR_WELL_ID_FOR_BARCODING,
-          VOUCHER_ID,
-        ]
-      description: Fields that can be updated for 'DTOL' projects brokered through COPO
-
-    UpdatableFields_ERGA:
+    UpdatableFields:
       type: string
       enum:
         [
@@ -1966,9 +1838,10 @@ components:
           ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID,
           ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE,
           BARCODE_HUB,
-          BARCODING_STATUS,
           BARCODE_PLATE_PRESERVATIVE,
+          BARCODING_STATUS,
           BIOBANKED_TISSUE_PRESERVATIVE,
+          BOLD_ACCESSION_NUMBER,
           COLLECTED_BY,
           COLLECTION_LOCATION,
           COLLECTOR_AFFILIATION,
@@ -1992,15 +1865,11 @@ components:
           GAL,
           GAL_SAMPLE_ID,
           GENUS,
-          GRID_REFERENCE,
           HABITAT,
           HAZARD_GROUP,
           IDENTIFIED_BY,
           IDENTIFIED_HOW,
           IDENTIFIER_AFFILIATION,
-          IDENTIFIER_AFFILIATION,
-          INDIGENOUS_RIGHTS_APPLICABLE,
-          INDIGENOUS_RIGHTS_DEF,
           INDIGENOUS_RIGHTS_DEF,
           INFRASPECIFIC_EPITHET,
           LIFESTAGE,
@@ -2012,6 +1881,8 @@ components:
           ORIGINAL_COLLECTION_DATE,
           ORIGINAL_GEOGRAPHIC_LOCATION,
           OTHER_INFORMATION,
+          PARTNER_SAMPLE_ID,
+          PLATE_ID_FOR_BARCODING,
           PRESERVATION_APPROACH,
           PRESERVATIVE_SOLUTION,
           PRESERVED_BY,
@@ -2024,7 +1895,6 @@ components:
           RELATIONSHIP,
           SAMPLE_COORDINATOR,
           SAMPLE_COORDINATOR_AFFILIATION,
-          SAMPLE_COORDINATOR_ORCID_ID,
           SAMPLING_PERMITS_FILENAME,
           SAMPLING_PERMITS_REQUIRED,
           SCIENTIFIC_NAME,
@@ -2039,11 +1909,10 @@ components:
           TISSUE_FOR_BIOBANKING,
           TISSUE_REMOVED_FOR_BARCODING,
           TISSUE_REMOVED_FOR_BIOBANKING,
-          TISSUE_REMOVED_FROM_BARCODING,
           TISSUE_VOUCHER_ID_FOR_BIOBANKING,
           TUBE_OR_WELL_ID_FOR_BARCODING,
           VOUCHER_ID,
           VOUCHER_INSTITUTION,
           VOUCHER_LINK,
         ]
-      description: Fields that can be updated for 'ERGA' projects brokered through COPO
+      description: Fields that can be updated in COPO

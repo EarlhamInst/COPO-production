@@ -26,8 +26,8 @@ dtol_api_patterns = [
     path('', general.forward_to_swagger),
     path('apiKey/', csrf_exempt(general.CustomAuthToken.as_view())),
     re_path(r'^sample/get/(?P<id>[A-Za-z0-9]+)', s.get, name='sample/get'),
-    re_path(r'^audit/sample/copo_id/(?P<copo_id>[A-Za-z0-9, ]+)',
-            audit.get_sample_updates_by_copo_id, name='get_sample_updates_by_copo_id'),
+    re_path(r'^audit/samples',
+            audit.get_sample_updates, name='get_sample_updates'),
 
     # dates must be ISO 8601 formatted
     re_path(r'^manifest/validations', APIGetUserValidations.as_view(),
@@ -80,12 +80,6 @@ dtol_api_patterns = [
     re_path(r'^sample/with_submitted_bioimages',
             s.get_specimens_with_submitted_images, name='get_specimens_with_submitted_images'),
     
-    re_path(r'^audit/sample/asg',
-            audit.get_asg_sample_updates_by_updatable_field, name='get_asg_sample_updates_by_updatable_field'),
-    re_path(r'^audit/sample/dtol',
-            audit.get_dtol_sample_updates_by_updatable_field, name='get_dtol_sample_updates_by_updatable_field'),
-    re_path(r'^audit/sample/erga',
-            audit.get_erga_sample_updates_by_updatable_field, name='get_erga_sample_updates_by_updatable_field'),
     re_path(r'^audit/sample/update_type/(?P<update_type>[a-zA-Z, ]+)',
             audit.get_sample_updates_by_update_type, name='get_sample_updates_by_update_type'),
     re_path(r'^audit/sample/manifest_id/(?P<manifest_id>[A-Z0-9a-f-, ]+)',
