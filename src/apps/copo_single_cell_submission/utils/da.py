@@ -19,6 +19,7 @@ class SinglecellSchemas(DAComponent):
         else:
             return {}
 
+    #target_id is the checklist_id
     def get_schema(self, target_id=str()) :
         schemas = {}
 
@@ -31,16 +32,22 @@ class SinglecellSchemas(DAComponent):
                 for component, item in singlecell_schemas.items():
                     component_schema_df = pd.DataFrame.from_records(item)
                     component_schema_df = component_schema_df.drop(component_schema_df[pd.isna(component_schema_df[target_id])].index)
-                    #component_schema_df["choice"] = component_schema_df[component_schema_df["term_type"] == "enum"]["term_name"].apply(lambda x:singlecell["enums"].get(x, []))
-                    #component_schema_df["mandatory"] = component_schema_df[self.checklist_id]
+                    if component_schema_df.empty:
+                        continue    
 
-                    component_schema_df["label"] = component_schema_df["term_name"]
+                    component_schema_df["label"] = component_schema_df["term_label"]
                     component_schema_df["control"] = "text"
                     component_schema_df["show_as_attribute"] = True
-                    component_schema_df["id"] = "term_name"
+                    component_schema_df["id"] = component_schema_df["term_name"]
 
-                    schemas[component] = component_schema_df[["id","label","control","show_as_attribute" ,"id"]].to_dict(orient="records")      
+                    schemas[component] = component_schema_df.to_dict(orient="records")      
 
-        return dict(schema_dict=schemas,
-                    schema=schemas
-                    )
+        return schemas
+
+
+class Singlecell(DAComponent):
+    def __init__(self, profile_id=None):
+        super(Singlecell, self).__init__(profile_id, "singlecell")
+
+    def get_schema(self, **kwargs):
+        return SinglecellSchemas().get_schema(**kwargs)

@@ -2,7 +2,15 @@ function get_checklist_id() {
   if ($('#checklist_id').length > 0) {
     return $('#checklist_id').find(':selected').val();
   } else {
-    return 'read';
+    return 'singlecell';
+  }
+}
+
+function get_selected_checklist_name() {
+  if ($('#checklist_id').length > 0) {
+    return $('#checklist_id').find(':selected').html();
+  } else {
+    return 'singlecell';
   }
 }
 
@@ -26,51 +34,13 @@ function initialise_checklist_id() {
 
 var columnDefs = [];
 
-var dialog = new BootstrapDialog({
-  title: 'Upload Single Cell Manifest',
-  message: "<div><input type='file' id='fileid' style='display:none' /></div>",
-  size: BootstrapDialog.SIZE_WIDE,
-  buttons: [
-    {
-      id: 'upload_singlecell_manifest_button',
-      label: 'Upload Single Cell Manifest',
-      cssClass: 'btn-primary',
-      title: 'Upload Single Cell Manifest',
-      action: function () {
-        document.getElementById('file').click();
-        //upload_spreadsheet($('#file').prop('files')[0])
-      },
-    },
-    {
-      id: 'save_singlecell_button',
-      label: 'Finish',
-      cssClass: 'btn-primary',
-      title: 'Finish',
-      disabled: true,
-      action: function () {
-        var $button = this; // 'this' here is a jQuery object that wrapping the <button> DOM element.
-        $button.disable();
-        $button.spin();
-        dialog.setClosable(false);
-        save_singlecell_data();
-      },
-    },
-    {
-      label: 'Close',
-      action: function (dialogItself) {
-        dialogItself.close();
-      },
-    },
-  ],
-});
-
 $(document).on('document_ready', function () {
   var uid = document.location.href;
   uid = uid.split('/');
   uid = uid[uid.length - 2];
   var wsprotocol = 'ws://';
   var s3socket;
-
+ 
   if (window.location.protocol === 'https:') {
     wsprotocol = 'wss://';
   }
@@ -123,45 +93,84 @@ $(document).on('document_ready', function () {
       $(element).html(d.message);
       //$("#spinner").fadeOut()
     } else if (d.action === 'make_table') {
-      // make table of metadata parsed from spreadsheet
-      if ($.fn.DataTable.isDataTable('#sample_parse_table')) {
-        $('#sample_parse_table').DataTable().clear().destroy();
-      }
-      $('#sample_parse_table').find('thead').empty();
-      $('#sample_parse_table').find('tbody').empty();
-      var body = $('tbody');
-      var count = 0;
-      for (r in d.message) {
-        row = d.message[r];
-        var tr = $('<tr/>');
-        for (c in row) {
-          cell = row[c];
-          if (count === 0) {
-            var td = $('<th/>', {
-              html: cell,
-            });
-          } else {
+ 
+        tabs = $('#singlecell-tabs');
+        tab_content = $('#singlecell-tab-content');
+        tabs.empty();
+        tab_content.empty();
+        is_first_compoent = true
+        d.data["components"].forEach(component => {
+          li = $('<li/>').addClass('nav-item');
+          a = $('<a/>').addClass('nav-link')
+              .attr('id', component + '-tab')
+              .attr('data-toggle', 'tab')
+              .attr('href', '#' + component)
+              .attr('role', 'tab')
+              .attr('aria-controls', component)
+              .attr('aria-selected', 'false')
+              .html(component.replace(/_/g, ' ').toUpperCase());
+
+          li.append(a);
+          tabs.append(li);
+
+          table_name = "singlecell_parse_table_" + component;
+          div = $('<div/>')
+                .addClass('tab-pane')
+                .addClass('fade')
+                .attr('id', component)
+                .attr('role', 'tabpanel')
+                .attr('aria-labelledby', component + '-tab');
+          table = $('<table/>')
+                  .attr('id', table_name)
+                  .addClass('table')
+                  .addClass('table-striped')
+                  .addClass('table-bordered');
+          thead = $('<thead/>');
+          tbody = $('<tbody/>');
+          table.append(thead);
+          table.append(tbody);
+          div.append(table);
+          tab_content.append(div);
+
+          if (is_first_compoent) {
+            li.addClass('active');
+            div.addClass('active in');
+            is_first_compoent = false;
+          } 
+ 
+        var is_first_row = true;
+        for (r in d.message[component]) {
+          row = d.message[component][r];
+          var tr = $('<tr/>');
+          for (c in row) {
+            cell = row[c];
             var td = $('<td/>', {
               html: cell,
             });
+            if (is_first_row) {
+                td = $('<th/>', {
+                html: cell.replace(/_/g, ' ').toUpperCase(),
+              });
+            } 
+            tr.append(td);
           }
-          tr.append(td);
+          if (is_first_row) {
+            thead.append(tr);
+          } else {
+            table.append(tr);
+          }
+          is_first_row = false
         }
-        if (count === 0) {
-          $('#sample_parse_table').find('thead').append(tr);
-        } else {
-          $('#sample_parse_table').find('tbody').append(tr);
-        }
-        count++;
-      }
-      $('#sample_info').hide();
-      $('#sample_parse_table').DataTable({
-        scrollY: 'auto',
-        scrollX: true,
+
+        table.DataTable({
+         scrollY: 'auto',
+         scrollX: true,
+       }).draw();
       });
+
+      $('#singlecell_info').hide();
+      //$('#singlecell-tabs').fadeIn();
       $('#table_div').fadeIn(1000);
-      $('#sample_parse_table').DataTable().draw();
-      $('#tabs').fadeIn();
       $('#ena_finish_button').fadeIn();
     } else if (d.action === 'refresh_table') {
       $(element).removeClass('alert-danger').addClass('alert-info');
@@ -181,25 +190,6 @@ $(document).on('document_ready', function () {
       table.search('').columns().search('').draw();
       $(element).html(d.message + ' ... Done');
 
-      /*
-        table = $('#read_table').DataTable();
-        table.columns.adjust().draw();
-         for (var i = 0; i < d.data["file_processing_status"].length; i++) {
-          	
-          let rows = table.rows((idx, data) => data.run_accession === d.data["file_processing_status"][i]["run_accession"]);
-          if (rows.count() > 0) {
-            rows.every(function (rowIdx, tableLoop, rowLoop) {
-              var row = this.data();
-              row["ena_file_processing_status"] = d.data["file_processing_status"][i]["msg"];
-              if (d.data["file_processing_status"][i]["msg"] != "" && !d.data["file_processing_status"][i]["msg"].includes("File archived")) {
-                $(table.row(this.index()).node()).addClass("highlight_error_file_processing_status")
-              }
-              this.data(row).draw();
-            });
-          }  
-
-          }
-          */
     }
   };
   window.addEventListener('beforeunload', function (event) {
@@ -214,6 +204,7 @@ $(document).on('document_ready', function () {
 
   //get component metadata
   var componentMeta = get_component_meta(component);
+
 
   //load_records(componentMeta); // call to load component records
 
@@ -249,20 +240,36 @@ $(document).on('document_ready', function () {
 
   //add new component button
   $(document)
-    .off('click')
+    .off('click', '.new-reads-spreadsheet-template')
     .on('click', '.new-reads-spreadsheet-template', function (event) {
-      url =
-        '/copo/copo_single_cell/singlecell_manifest_validate/' +
-        uid +
-        '?checklist_id=' +
-        get_checklist_id();
-      dialog.realize();
-      dialog.setMessage($('<div></div>').load(url));
-      dialog.open();
-      dialog.getButton('save_singlecell_button').disable();
+      $('#singlecell_spreadsheet_modal #span_checklist').html(get_selected_checklist_name());
+      $('#singlecell_spreadsheet_modal').modal({
+        //"closable": false,
+        "show": true,
+        "size": BootstrapDialog.SIZE_WIDE}
+      );
+    });
 
-      $('.modal-dialog')
-        .find('#file')
+    $('#singlecell_spreadsheet_modal').on('show.bs.modal', function (event) {
+        var modal = $(this)     
+        modal.find('#upload_singlecell_manifest_button').prop("disabled", false)
+        modal.find('#save_singlecell_button').prop('disabled', true)   
+   
+        modal.find('#upload_singlecell_manifest_button')
+        .off('click')
+        .on('click', function (event) {
+          modal.find('#file').click()
+        });
+
+        modal.find('#save_singlecell_button')
+        .off('click')
+        .on('click', function (event) {
+          $(this).prop('disabled', true);
+          modal.find('#upload_singlecell_manifest_button').prop("disabled", true)
+          save_singlecell_data();          
+        });
+      
+        modal.find('#file')
         .off('change')
         .on('change', function (event) {
           if (
@@ -271,12 +278,18 @@ $(document).on('document_ready', function () {
           ) {
             return;
           }
-          dialog.getButton('upload_singlecell_manifest_button').disable();
-          dialog.getButton('upload_singlecell_manifest_button').spin();
-          dialog.setClosable(false);
+          modal.find('#upload_singlecell_manifest_button').prop('disabled', true);
+          modal.find('#save_singlecell_button').prop('disabled', "true")
+
+          tabs = $('#singlecell-tabs');
+          tab_content = $('#singlecell-tab-content');
+          tabs.empty();
+          tab_content.empty();
+
           upload_spreadsheet($(this).prop('files')[0]);
         });
     });
+ 
 
   $('#checklist_id').change(function () {
     if ($.fn.dataTable.isDataTable('#' + componentMeta.tableID)) {
@@ -305,36 +318,7 @@ $(document).on('document_ready', function () {
   $('.new-reads-spreadsheet-template')
     .css('color', 'white')
     .css('background-color', colour);
-  /*
-  if (document.getElementById('profile_type').value.includes('ASG')) {
-    $('#help_add_button').addClass('violet');
-    $('.new-reads-spreadsheet-template').addClass('violet');
-  } else if (document.getElementById('profile_type').value.includes('DTOL')) {
-    $('#help_add_button').addClass('green');
-    $('.new-reads-spreadsheet-template').addClass('green');
-  } else if (document.getElementById('profile_type').value.includes('ERGA')) {
-    $('#help_add_button').addClass('pink');
-    $('.new-reads-spreadsheet-template').addClass('pink');
-  } else if (
-    document.getElementById('profile_type').value.includes('Stand-alone')
-  ) {
-    $('#help_add_button').addClass('teal active');
-    $('.new-reads-spreadsheet-template').addClass('teal active');
-  } else {
-    // Button colour for other profile types
-    // $('#help_add_button').addClass('green');
-    // $('.new-reads-spreadsheet-template').addClass('green');
-  }
-*/
-  //details button hover
-  /*
-    $(document).on("mouseover", ".detail-hover-message", function (event) {
-        $(this).prop('title', 'Click to view ' + component + ' details');
-    });
-    */
-
-  //$(".new-reads-spreadsheet-template").addClass("btn btn-info").attr("data-toggle", "modal").attr("data-target", "#uploadModal")
-
+ 
   //******************************Functions Block******************************//
 
   function do_record_task(event) {
@@ -440,9 +424,7 @@ function upload_spreadsheet(file) {
       },
     })
     .fail(function (data) {
-      dialog.getButton('upload_singlecell_manifest_button').enable();
-      dialog.setClosable(true);
-      dialog.getButton('upload_singlecell_manifest_button').stopSpin();
+      $('#singlecell_spreadsheet_modal').find('#upload_singlecell_manifest_button').prop("disabled", false)
       console.log(data);
       responseText = data.responseText;
       if (responseText != '') {
@@ -454,24 +436,17 @@ function upload_spreadsheet(file) {
     })
     .done(function (data) {
       // Hide upload button if 'Finish' button is visible and upload was successful
-      dialog
-        .getButton('upload_singlecell_manifest_button')
-        .stopSpin()
-        .disable()
-        .hide();
-      dialog.getButton('save_singlecell_button').enable();
-      dialog.setClosable(true);
+      $('#singlecell_spreadsheet_modal').find('#upload_singlecell_manifest_button').prop("disabled", false)
+      $('#singlecell_spreadsheet_modal').find('#save_singlecell_button').prop("disabled", false)
     });
 }
 
-function save_read_data() {
+function save_singlecell_data() {
   $.ajax({
-    url: '/copo/copo_singlecell/save_singlecell_records',
+    url: '/copo/copo_single_cell/save_singlecell_records',
   })
     .fail(function (data) {
-      dialog.getButton('upload_singlecell_manifest_button').enable();
-      dialog.setClosable(true);
-      dialog.getButton('upload_singlecell_manifest_button').stopSpin();
+      $('#singlecell_spreadsheet_modal').find('#upload_singlecell_manifest_button').prop("disabled", false)
       console.log(data);
       responseText = data.responseText;
       if (responseText != '') {
@@ -486,7 +461,7 @@ function save_read_data() {
       result_dict['status'] = 'success';
       result_dict['message'] = 'Single Cell records are saved';
       do_crud_action_feedback(result_dict);
-      dialog.close();
+      $('#singlecell_spreadsheet_modal').modal('hide');
       globalDataBuffer = data;
 
       if (data.hasOwnProperty('table_data')) {

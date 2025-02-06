@@ -47,7 +47,7 @@ class IncorrectValueValidator(Validator):
                         elif type == "string":
                             regex = field.get("term_regex","")
                             if regex:
-                                if not re.match(regex, row):
+                                if not re.match(regex, str(row)):
                                     self.errors.append(component + " : Invalid value '" + row + "' in column : '" + field["term_label"] + "' at row " + str(i) + ". Valid value should match: " + str(regex))
                                     self.flag = False
                         #elif type == "TAXON_FIELD":   

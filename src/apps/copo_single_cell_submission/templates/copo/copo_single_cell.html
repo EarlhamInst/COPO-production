@@ -38,11 +38,6 @@
     value="{{  'singlecell'|get_blank_manifest_url  }}"
   />
   
-  <input
-    type="hidden"
-    id="blank_manifest_url_singlecell"
-    value="{% url 'copo_singlecell_submission:download_initial_manifest' profile_id=profile_id %}"
-  />
   {% for checklist in checklists %}
     <input
       type="hidden"
@@ -103,43 +98,64 @@
   </div>
 </div>
 
-<div id="uploadModal" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">
-          &times;
-        </button>
-        <h4 class="modal-title">File upload form</h4>
-      </div>
-      <div class="modal-body">
-        <label
-          class="ui blue button"
-          for="file"
-          id="upload_label"
-          style="width: 200px"
-        >
-          <input id="file" type="file" style="display: none" />
-        </label>
-        <div
-          class="ui active inline loader"
-          id="ss_upload_spinner"
-          style="display: none"
-        >
-          <div class="percent"></div>
-        </div>
-        <button
-          class="ui green button"
-          id="ena_finish_button"
-          style="display: none"
-        >
-          Finish
-        </button>
-      </div>
+
+<div class="modal bootstrap-dialog type-primary fade size-wide" tabindex="-1" role="dialog" id="singlecell_spreadsheet_modal" style="overflow-y: scroll"
+data-backdrop="static" data-keyboard="false">
+<div class="modal-dialog modal-lg" role="document" style="width: 99%">
+   <div class="modal-content">
+    <div class="modal-header">
+        <button id='singlecell_close_btn' type="button" class="close" aria-label="Close" data-dismiss="modal"><span
+                aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Upload a completed manifest for : <span style="color:red;font-size:20px;" id="span_checklist" /> </h4>
     </div>
-  </div>
+    <div class="modal-body" style="width: 100%">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+
+              <input id="file" type="file" style="display:none"/>
+
+              <div style="display:none; margin-top: 30px; " id="warning_info" class="alert alert-info"
+                  role="alert">
+              </div>
+              <div style="display:none; margin-top: 30px; " id="warning_info2" class="alert alert-info"
+                  role="alert">
+              </div>
+              <div style="display:none; margin-top: 30px; " id="warning_info3" class="alert alert-info"
+                  role="alert">
+              </div>
+              <div style="display:none; margin-top: 30px; " id="singlecell_info" class="alert alert-info"
+                  role="alert">
+              </div>
+            </div>
+   
+
+    <ul class="nav nav-tabs" id="singlecell-tabs" >
+      <!--li >
+          <a data-toggle="tab" data-ba.tag id="study_table_nav_tab" href="#study">Study</a>
+      </li-->
+
+    </ul>
+    
+    <div class="tab-content" style="padding:30px" id="singlecell-tab-content">
+      <!--div class="tab-pane fade" id="study">
+          <table id="singlecell_parse_table_study" class="table table-striped table-bordered">
+              <thead></thead>
+              <tbody></tbody>
+          </table>
+      </div-->
+    </div>
+    </div> 
+  
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="upload_singlecell_manifest_button">Upload Single Cell Manifest</button>
+        <button type="button" class="btn btn-primary" id="save_singlecell_button" disabled>Finish</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    </div>
+   </div>
 </div>
-<!--singlecell_table -->
+</div>
+
+ 
+
 <div
   id="component_table_loader"
   class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"
@@ -164,7 +180,7 @@
 {% block component_info%}
 <div
   style="display: none; margin-top: 30px"
-  id="sample_info"
+  id="singlecell_info"
   class="alert alert-info"
   role="alert"
 ></div>
@@ -175,5 +191,6 @@
 <script src="{% static 'copo/js/generic_handlers_ext2.js' %}"></script>
 <script src="{% static 'copo/js/copo_form_handlers.js' %}"></script>
 <script src="{% static 'copo/js/copo_single_cell.js' %}"></script>
+
 
 {% endblock %}

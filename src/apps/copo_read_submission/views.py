@@ -136,6 +136,7 @@ def save_ena_records(request):
 
     organism_map = dict()
     source_map = dict()
+    #p = Profile().get_record(profile_id)
 
     for line in range(1, len(sample_data)):
         is_external_sample = False
@@ -146,7 +147,6 @@ def save_ena_records(request):
    
         #project_release_date = s["release_date"]
         df = dict()
-        p = Profile().get_record(profile_id)
         attributes = dict()
         # attributes["datafiles_pairing"] = list()
         attributes["target_repository"] = {"deposition_context": "ena"}

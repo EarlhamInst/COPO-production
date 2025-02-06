@@ -15,7 +15,5 @@ urlpatterns = [
     
     re_path(r'^(?P<profile_id>[a-z0-9]+)/view', views.copo_singlecell,
          name='copo_singlecell'),
-
-    re_path(r'^(?P<profile_id>[a-z0-9]+)/download_initial_singlecell_manifest', views.download_initial_singlecell_manifest, name='download_initial_manifest'),     
          
 ]

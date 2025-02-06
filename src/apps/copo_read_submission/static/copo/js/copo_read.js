@@ -249,7 +249,7 @@ $(document).on('document_ready', function () {
 
   //add new component button
   $(document)
-    .off('click')
+    .off('click', '.new-reads-spreadsheet-template')
     .on('click', '.new-reads-spreadsheet-template', function (event) {
       url =
         '/copo/copo_read/ena_read_manifest_validate/' +

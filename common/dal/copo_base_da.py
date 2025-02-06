@@ -87,7 +87,8 @@ AnnotationCollection = "SeqAnnotationCollection"
 TaggedSequenceCollection = "TagSequenceCollection"
 EnaChecklistCollection = "EnaChecklistCollection"
 ReadObjectCollection = "SampleCollection"
-SinglecellSchemasCollection = "SinglecellSchemasCollection"
+SinglecellSchemasCollection = "SingleCellSchemasCollection"
+SinglecellCollection = "SingleCellCollection"
 
 handle_dict = dict(audit=get_collection_ref(AuditCollection),
                    publication=get_collection_ref(PubCollection),
@@ -120,7 +121,8 @@ handle_dict = dict(audit=get_collection_ref(AuditCollection),
                    taggedseq=get_collection_ref(TaggedSequenceCollection),
                    enaChecklist=get_collection_ref(EnaChecklistCollection),
                    read=get_collection_ref(ReadObjectCollection),
-                   singlecellSchemas = get_collection_ref(SinglecellSchemasCollection)
+                   singlecellSchemas = get_collection_ref(SinglecellSchemasCollection),
+                   singlecell = get_collection_ref(SinglecellCollection)
                 )
 
 

@@ -37,6 +37,7 @@ class ForeignKeyValidator(Validator):
                 else:
                     for index, row in df.iterrows():
                         foreign_key =  referenced_component_dict["foreign_key"]
+                        referenced_component = referenced_component_dict["referenced_component"]
                         if row[foreign_key] not in self.data[referenced_component][identifier_map[referenced_component]].values:
                             self.errors.append("Foreign key constraint violated: '" + row[foreign_key] + "' is not present in the referenced component: '" + referenced_component + "'")
                             self.flag = False

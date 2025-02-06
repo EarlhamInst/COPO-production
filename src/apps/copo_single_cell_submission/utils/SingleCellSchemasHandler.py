@@ -14,13 +14,23 @@ from .validator import SingleCellSchemaValidators  as required_validators
 from .validator import SingleCellOverallValidators as overall_validators
 from common.validators.validator import Validator
 from openpyxl.utils import get_column_letter
-
+import re
 
 l = Logger()
 
 class SingleCellSchemasHandler:
     #def __init__(self):
         #self.headers = {'Accept': 'application/xsls' }
+
+    def _validate_regrex(self, regex):
+        if pd.isna(regex):
+            return True
+        
+        try:
+            re.compile(regex)
+            return True
+        except re.error:
+            return False
 
     def _loadSchemas(self, url):
         
@@ -42,6 +52,16 @@ class SingleCellSchemasHandler:
 
         component_schemas_dict = {}
         #validate the schema
+        #no duplicate name,label within a component with same version and item_name
+        #check foreign key constraints
+        #check valid regex
+
+        schemas_df["regex_valid"] = schemas_df["term_regex"].apply(lambda x: self._validate_regrex(x))
+        if not schemas_df["regex_valid"].all():
+            for c, row in schemas_df[schemas_df["regex_valid"]==False].iterrows():
+                l.error(f"Invalid regex: {row['term_regex']} for {row['term_name']}")
+            raise Exception("Invalid regex")
+
         for checklist_id in checklist_df.index:
                 #no duplicate name,label within a component with same versio and item_name
                 checklist_schema_df = schemas_df.drop(schemas_df[pd.isna(schemas_df[checklist_id])].index)
@@ -280,13 +300,14 @@ class SinglecellschemasSpreadsheet:
         # create table data to show to the frontend from parsed manifest
         singlecell_data = {}
 
-        for component, df in self.data:
+        for component, df in self.data.items():
+            df = df.iloc[3:]  # remove the first 3 rows
             singlecell_data[component] = []
             headers = list()
-            for col in list(self.data[component].columns):
+            for col in list(df.columns):
                 headers.append(col)
             singlecell_data[component].append(headers)
-            for index, row in self.data[component].iterrows():
+            for index, row in df.iterrows():
                 r = list(row)
                 for idx, x in enumerate(r):
                     if x is math.nan:
@@ -296,7 +317,7 @@ class SinglecellschemasSpreadsheet:
         self.req.session[f"{self.component}_data"] = singlecell_data
         self.req.session["checklist_id"] = self.checklist_id
 
-        notify_singlecell_status(data={"profile_id": self.profile_id}, msg=singlecell_data, action="make_table",
+        notify_singlecell_status(data={"profile_id": self.profile_id, "components": list(self.data.keys())}, msg=singlecell_data, action="make_table",
                         html_id=f"{self.component}_parse_table", checklist_id=self.checklist_id)
         
 
