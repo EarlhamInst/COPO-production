@@ -11,9 +11,10 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
     data_set = {}
     columns = {}
     column_keys = {}
+    studies = []
     new_column_name = {}
     identifier_map = {}
-    if checklist_id and study_id:
+    if checklist_id:
         schemas = SinglecellSchemas().get_schema(target_id=checklist_id)
 
         for component_name, component_schema in schemas.items():
@@ -25,16 +26,25 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
 
             detail_dict = dict(className='summary-details-control detail-hover-message', orderable=False, data=None,
                            title='', defaultContent='', width="5%")
-            columns[component_name].insert(0, detail_dict)
+            #columns[component_name].insert(0, detail_dict)
             columns[component_name].append(dict(data="record_id", visible=False))
             columns[component_name].append(dict(data="DT_RowId", visible=False))
-            columns[component_name].extend([item["term_label"] for item in component_schema])
+            columns[component_name].extend([dict(data=item["term_name"], title=item["term_label"], defaultContent='') for item in component_schema])
             column_keys[component_name] = ([item["term_name"] for item in component_schema])
+ 
+        if not study_id:
+            studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"checklist_id": checklist_id}, projection={"study_id": 1, "components.study": 1})
+            if studies:
+                study_id = studies[0]["study_id"]
+        
+        if study_id:
+            #retriever all components info for first study
+            singlecell = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"checklist_id": checklist_id, "study_id": study_id})
 
-            new_column_name[component_name] = {field["term_name"] : field["term_label"]  for field in component_schema }
+            if len(studies) > 1:
+                #combine all study component info from studies except the first one
+                singlecell[0]["components"]["study"].extend([study["components"]["study"] for study in studies if study["study_id"] != study_id])
 
-        singlecell = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"checklist_id": checklist_id, "study_id": study_id})
-        if singlecell:
             for component_name, component_data in singlecell[0]["components"].items():
                 component_data_df = pd.DataFrame(component_data)
                 
@@ -44,13 +54,14 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
 
                 #set the identifier to DT_RowId
                 #set the identifier to record_id
-                component_data_df["DT_RowId"] = component_name + "#"+ component_data_df.get(identifier_map.get(component_name,""), "")
+                component_data_df["DT_RowId"] = component_name + "_"+ study_id + "_" + component_data_df.get(identifier_map.get(component_name,""), "")
                 component_data_df["record_id"] = study_id
 
-                component_data_df.rename(columns=new_column_name[component_name], inplace=True)  
                 data_set[component_name] = component_data_df.to_dict(orient="records")
+
     return_dict = dict(dataSet=data_set,
                        columns=columns,
+                       components=list(columns.keys()),
                        #bucket_size_in_GB=round(bucket_size/1024/1024/1024,2),  
                        )
 

@@ -515,7 +515,7 @@ class BrokerVisuals:
             read = (ena_read.generate_read_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("sample_checklist_id", str()))),
             files = (copo_file.generate_files_record, dict(user_id=self.user_id)),
             taggedseq = (EnaTaggedSequence().generate_taggedseq_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("tagged_seq_checklist_id", str()))),
-            singlecell = (copo_single_cell.generate_singlecell_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("singlecell_checklist_id", str()))),
+            singlecell = (copo_single_cell.generate_singlecell_record, dict(profile_id=self.profile_id, study_id=self.request_dict.get("study_id", str()),  checklist_id=self.request_dict.get("singlecell_checklist_id", str()))),
         )
 
         # NB: in table_data_dict, use an empty dictionary as a parameter for listed functions that define zero arguments

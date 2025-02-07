@@ -1,3 +1,5 @@
+var current_study_id = '';
+
 function get_checklist_id() {
   if ($('#checklist_id').length > 0) {
     return $('#checklist_id').find(':selected').val();
@@ -30,6 +32,12 @@ function initialise_checklist_id() {
       }
     });
   }
+}
+
+function reset_value() {
+  $("#singlecell_data_tabs").empty();
+  $("#singlecell_data_tab_content").empty();
+  current_study_id = '';
 }
 
 var columnDefs = [];
@@ -178,7 +186,7 @@ $(document).on('document_ready', function () {
       var args_dict = {};
       args_dict['singlecell_checklist_id'] = get_checklist_id();
       args_dict['profile_id'] = $('#profile_id').val(),
-      load_records(componentMeta, args_dict, columnDefs); // call to load component records
+      load_records(componentMeta, args_dict, columnDefs); // call to load component records  
     } else if (d.action === 'file_processing_status') {
       $(element).html(d.message);
       table = $('#singlecell_table').DataTable();
@@ -215,7 +223,7 @@ $(document).on('document_ready', function () {
     $('#blank_manifest_url_' + get_checklist_id()).val()
   );
   args_dict['profile_id'] = $('#profile_id').val(),
-  load_records(componentMeta, args_dict, columnDefs); // call to load component records
+  load_records(componentMeta, args_dict, columnDefs); // call to load component records  
 
   //register_resolvers_event(); //register event for publication resolvers
 
@@ -224,7 +232,7 @@ $(document).on('document_ready', function () {
 
   //trigger refresh of table
   $('body').on('refreshtable', function (event) {
-    do_render_component_table(globalDataBuffer, componentMeta);
+    do_render_component_table_tabs(globalDataBuffer, componentMeta);
   });
 
   //handle task button event
@@ -302,10 +310,12 @@ $(document).on('document_ready', function () {
       'href',
       $('#blank_manifest_url_' + this.value).val()
     );
+
+    reset_value();
     var args_dict = {};
     args_dict['singlecell_checklist_id'] = this.value;
     args_dict['profile_id'] = $('#profile_id').val();
-    load_records(componentMeta, args_dict, columnDefs); // call to load component records
+    load_records(componentMeta, args_dict, columnDefs); // call to load component records 
   });
 
   // Set colour of 'help_add_button' button and 'new-samples-spreadsheet-template'
@@ -337,6 +347,15 @@ $(document).on('document_ready', function () {
   }
 
   $('body').on('posttablerefresh', function (event) {
+    if (event.tableID == "singlecell_study") {
+      if (current_study_id == '') {
+        $("#singlecell_study tbody tr:first").addClass('selected');
+        current_study_id = $("#singlecell_study tbody tr:first").attr('id');
+      } else {
+        $("#" + current_study_id).addClass('selected');
+      }
+    }
+    /*
     table = $('#' + component + '_table').DataTable();
     //var numCols = $('#' + component + '_table thead th').length;
     var numCols = table.columns().nodes().length;
@@ -388,7 +407,20 @@ $(document).on('document_ready', function () {
         );
       }
     });
+    */
   });
+
+  $(document).on('click', '#singlecell_study tbody tr', function (e) {
+    selected_id = $(e.currentTarget).attr("id")
+    if (selected_id != current_study_id) {  
+      $(e.currentTarget).removeClass('selected');
+      $(e.currentTarget).addClass('selected');
+      current_study_id = selected_id
+      id = selected_id.replace('study#', '');
+      load_records(componentMeta, { singlecell_checklist_id: get_checklist_id(), profile_id: $('#profile_id').val(), study_id: id }, columnDefs);
+    }
+  });
+
 });
 
 function upload_spreadsheet(file) {

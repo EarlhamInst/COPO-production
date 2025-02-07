@@ -55,9 +55,22 @@ class IncorrectValueValidator(Validator):
                 if is_identifier:
                     df = self.data[column].groupby(self.data[column]).filter(lambda x: len(x) >1).value_counts()
                     for index, row in df.items():
-                        self.errors.append(component + " : Invalid value '" + index + "' in column : '" + column + "' is duplicated " + row +"times." )
+                        self.errors.append(component + " : Invalid value '" + index + "' in column : '" + column + "' : duplicated " + ( "twice" if row == 2 else  str(row) ) +" times." )
                         self.flag = False                                         
             else:
                 self.errors.append(component + " : Invalid column : '" + column +"'")
+                self.flag = False
+        return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
+    
+class StudyComponentValidator(Validator):
+    def validate(self):
+        component = self.kwargs.get("component", "")
+        if component == "study":
+            if len(self.data) == 0:
+                self.errors.append("Study component is missing")
+                self.flag = False
+            #only one study component is allowed
+            elif len(self.data) > 1:
+                self.errors.append("Only one study is allowed")
                 self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")

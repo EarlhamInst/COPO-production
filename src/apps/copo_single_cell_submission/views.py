@@ -102,26 +102,71 @@ def save_singlecell_records(request):
     uid = str(request.user.id)
     checklist_id = request.session["checklist_id"]
     schemas = SinglecellSchemas().get_schema(target_id=checklist_id)
+    identifier_map = SinglecellSchemas.get_identifier_map(schemas)
+    additional_fields_default_value_map = {"status":"pending", "accession" :"", "error":""}
+    additional_fields = list(additional_fields_default_value_map.keys())
 
     singlecell_record = dict()
     singlecell_record["components"] = dict()
     now = get_datetime()
+    errors = []
 
     for component_name, component_schema in schemas.items():
         if len(singlecell_data.get(component_name,[])) > 1:
             component_data_df = pd.DataFrame(singlecell_data[component_name][1:], columns=singlecell_data[component_name][0])
 
             new_column_name = { name : name.replace(" (optional)", "",-1) for name in component_data_df.columns.values.tolist() }
-
             component_data_df.rename(columns=new_column_name, inplace=True)    
             new_column_name = {field["term_label"] : field["term_name"] for field in component_schema }
             component_data_df.rename(columns=new_column_name, inplace=True)
-            singlecell_record["components"][component_name] = component_data_df.to_dict(orient="records")
+            singlecell_record["components"][component_name] = component_data_df 
 
     if not singlecell_record['components']:
         return HttpResponse(status=400, content="Empty manifest")
     
-    study_id = singlecell_record["components"]["study"][0]["study_id"]
+    study_id = singlecell_record["components"]["study"].iloc[0]["study_id"]
+    existing_record = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id})
+    
+    if existing_record:
+        for component_name, existing_component_data in existing_record["components"].items():
+            component_data_df = singlecell_record["components"].get(component_name,pd.DataFrame())
+            existing_component_data_df = pd.DataFrame(existing_component_data)
+            is_error = False
+            if not existing_component_data_df.empty:
+                identifier = identifier_map.get(component_name, "")
+                if identifier:
+                    if "status" not in existing_component_data_df.columns:
+                        existing_component_data_df["status"] = "pending"
+                    if "accession" not in existing_component_data_df.columns:
+                        existing_component_data_df["accession"] = ""
+                    existing_component_data_cannnot_delete_df = existing_component_data_df.drop(existing_component_data_df[(existing_component_data_df["status"] == "pending") & (existing_component_data_df["accession"] =="")].index)
+                    existing_component_data_cannnot_update_df = existing_component_data_df.drop(existing_component_data_df[(existing_component_data_df["status"] != "processing")].index)
+                    if not component_data_df.empty:
+                        existing_component_data_cannnot_delete_df.drop(existing_component_data_cannnot_delete_df[existing_component_data_cannnot_delete_df[identifier].isin(component_data_df[identifier])].index, inplace=True)
+                    if not existing_component_data_cannnot_delete_df.empty:
+                        errors.append( component_name + ": Cannot delete records with status not \"pending\" or with accession number : " + existing_component_data_cannnot_delete_df[identifier].to_string(index=False))
+                        is_error = True
+                    if not existing_component_data_cannnot_update_df.empty:
+                        errors.append( component_name + ": Cannot update records with status \"processing\" : " + existing_component_data_cannnot_update_df[identifier].to_string(index=False))
+                        is_error = True
+                    if is_error:
+                        continue
+                    componnet_additional_fields = list(set(additional_fields) & set(existing_component_data_df.columns))
+                    if componnet_additional_fields:
+                        existing_component_additional_fields_df = existing_component_data_df[[identifier_map[component_name]]+ componnet_additional_fields]
+                        component_data_df.merge(existing_component_additional_fields_df, on=identifier_map[component_name], how="left")
+                        singlecell_record["components"][component_name] = component_data_df 
+            
+    if errors:
+        return HttpResponse(status=400, content="\n"+"\n".join(errors))
+
+    for component_name, component_data_df in singlecell_record["components"].items():
+        componnet_additional_fields=    list(set(additional_fields) - set(component_data_df.columns))
+        if componnet_additional_fields:
+            for field in componnet_additional_fields:
+                component_data_df[field] = additional_fields_default_value_map[field]
+        singlecell_record["components"][component_name] = component_data_df.to_dict(orient="records")
+
     condition = {"profile_id": profile_id, "study_id": study_id}
 
     singlecell_record["updated_by"] = uid
@@ -139,9 +184,7 @@ def save_singlecell_records(request):
                                                             {"$set": singlecell_record, "$setOnInsert": insert_record },
                                                             upsert=True,  return_document=ReturnDocument.AFTER)   
 
-
-
-    table_data = generate_singlecell_record(profile_id=profile_id, checklist_id=checklist_id, study_id=study_id)
+    table_data = generate_singlecell_record(profile_id=profile_id, checklist_id=checklist_id)
     result = {"table_data": table_data, "component": "singlecell"}
     return JsonResponse(status=200, data=result)
 

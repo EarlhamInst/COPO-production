@@ -44,6 +44,15 @@ class SinglecellSchemas(DAComponent):
 
         return schemas
 
+    def get_identifier_map(schemas):
+        identifier_map = {}
+        for component, schema in schemas.items():
+            schema_df = pd.DataFrame.from_records(list(schema))
+            identifier_df =  schema_df.loc[schema_df['identifier'], 'term_name']
+            if not identifier_df.empty:
+                identifier_map[component]= identifier_df.iloc[0]
+        return identifier_map
+
 
 class Singlecell(DAComponent):
     def __init__(self, profile_id=None):
