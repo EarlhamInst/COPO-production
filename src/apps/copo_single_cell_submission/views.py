@@ -130,7 +130,7 @@ def save_singlecell_records(request):
     if existing_record:
         for component_name, existing_component_data in existing_record["components"].items():
             component_data_df = singlecell_record["components"].get(component_name,pd.DataFrame())
-            existing_component_data_df = pd.DataFrame(existing_component_data)
+            existing_component_data_df = pd.DataFrame.from_records(existing_component_data)
             is_error = False
             if not existing_component_data_df.empty:
                 identifier = identifier_map.get(component_name, "")

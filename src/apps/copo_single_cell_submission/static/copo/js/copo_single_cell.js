@@ -413,10 +413,10 @@ $(document).on('document_ready', function () {
   $(document).on('click', '#singlecell_study tbody tr', function (e) {
     selected_id = $(e.currentTarget).attr("id")
     if (selected_id != current_study_id) {  
-      $(e.currentTarget).removeClass('selected');
+      $('#'+current_study_id).removeClass('selected');
       $(e.currentTarget).addClass('selected');
       current_study_id = selected_id
-      id = selected_id.replace('study#', '');
+      id = selected_id.substring(selected_id.lastIndexOf("_")+1);
       load_records(componentMeta, { singlecell_checklist_id: get_checklist_id(), profile_id: $('#profile_id').val(), study_id: id }, columnDefs);
     }
   });

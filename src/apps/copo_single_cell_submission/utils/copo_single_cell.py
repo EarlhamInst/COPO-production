@@ -32,21 +32,25 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
             columns[component_name].extend([dict(data=item["term_name"], title=item["term_label"], defaultContent='') for item in component_schema])
             column_keys[component_name] = ([item["term_name"] for item in component_schema])
  
+         
+        studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"checklist_id": checklist_id}, projection={"study_id": 1, "components.study": 1})
         if not study_id:
-            studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"checklist_id": checklist_id}, projection={"study_id": 1, "components.study": 1})
-            if studies:
-                study_id = studies[0]["study_id"]
+            study_id = studies[0]["study_id"]
         
         if study_id:
             #retriever all components info for first study
             singlecell = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"checklist_id": checklist_id, "study_id": study_id})
-
+            if not singlecell:
+                return dict(dataSet=data_set, columns=columns, components=list(columns.keys()))
+            
             if len(studies) > 1:
                 #combine all study component info from studies except the first one
-                singlecell[0]["components"]["study"].extend([study["components"]["study"] for study in studies if study["study_id"] != study_id])
-
+                for study in studies:
+                    if study["study_id"] != study_id:
+                        singlecell[0]["components"]["study"].extend(study["components"]["study"])
+ 
             for component_name, component_data in singlecell[0]["components"].items():
-                component_data_df = pd.DataFrame(component_data)
+                component_data_df = pd.DataFrame.from_records(component_data)
                 
                 for column in component_data_df.columns:
                     if column not in column_keys.get(component_name, []):
@@ -54,7 +58,8 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
 
                 #set the identifier to DT_RowId
                 #set the identifier to record_id
-                component_data_df["DT_RowId"] = component_name + "_"+ study_id + "_" + component_data_df.get(identifier_map.get(component_name,""), "")
+                        
+                component_data_df["DT_RowId"] = component_name + ( "_"+ study_id if component_name != 'study' else "")  + "_" + component_data_df.get(identifier_map.get(component_name,""), "")
                 component_data_df["record_id"] = study_id
 
                 data_set[component_name] = component_data_df.to_dict(orient="records")
