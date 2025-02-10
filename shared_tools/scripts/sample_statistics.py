@@ -26,8 +26,8 @@ print("Number of ASG profiles: " + json.dumps(x))
 """
 
 for x in ["erga", "dtol", "asg"]:
-    x = profile_collection.count_documents({"type": x})
-    print("Number of " + x.upper() + " profiles: " + json.dumps(x))
+    count = profile_collection.count_documents({"type": x})
+    print("Number of " + x.upper() + " profiles: " + str(count))
 
  
 x = profile_collection.count_documents({})
