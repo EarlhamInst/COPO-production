@@ -5,12 +5,13 @@ from django.http import HttpResponse, JsonResponse
 from .utils.copo_single_cell import generate_singlecell_record
 from .utils.da import SinglecellSchemas, Singlecell
 from common.utils.helpers import get_datetime, notify_singlecell_status
-from .utils.SingleCellSchemasHandler import SinglecellschemasSpreadsheet
+from .utils.SingleCellSchemasHandler import SinglecellschemasSpreadsheet, SingleCellSchemasHandler
 from common.s3.s3Connection import S3Connection as s3
 from common.utils.logger import Logger
 import pandas as pd
 from pymongo import ReturnDocument
 from common.utils import helpers
+from io import BytesIO
 
 l = Logger()
 
@@ -102,7 +103,7 @@ def save_singlecell_records(request):
     uid = str(request.user.id)
     checklist_id = request.session["checklist_id"]
     schemas = SinglecellSchemas().get_schema(target_id=checklist_id)
-    identifier_map = SinglecellSchemas.get_identifier_map(schemas)
+    identifier_map, _ = SinglecellSchemas().get_key_map(schemas)
     additional_fields_default_value_map = {"status":"pending", "accession" :"", "error":""}
     additional_fields = list(additional_fields_default_value_map.keys())
 
@@ -151,20 +152,41 @@ def save_singlecell_records(request):
                         is_error = True
                     if is_error:
                         continue
+
+
+                    #if the data has been changed, set the status to pending
+                    common_columns = list(set(existing_component_data_df.columns) & set(component_data_df.columns))
+
+                    #probably it is uploaded from new manifest with new columns
+                    if not (set(component_data_df.columns) - set(common_columns)):
+                        existing_component_common_columns_df = existing_component_data_df[common_columns]
+                        existing_component_common_columns_df.sort_index(axis=1, inplace=True)
+                        component_sorted_data_df = component_data_df.sort_index(axis=1)
+
+                        for index, row in existing_component_data_df.iterrows():
+                            if row["status"] != "pending":
+                                tmp_data = component_sorted_data_df.loc[component_sorted_data_df[identifier] == row[identifier]].sort_index(axis=1)
+                         
+                                if not tmp_data.iloc[0].compare(existing_component_common_columns_df.loc[(existing_component_common_columns_df[identifier] == row[identifier])].iloc[0]).empty:
+                                    existing_component_data_df.loc[(existing_component_data_df[identifier] == row[identifier]), "status"] = "pending"
+                    else:
+                        existing_component_data_df["status"] = "pending"
+
                     componnet_additional_fields = list(set(additional_fields) & set(existing_component_data_df.columns))
                     if componnet_additional_fields:
-                        existing_component_additional_fields_df = existing_component_data_df[[identifier_map[component_name]]+ componnet_additional_fields]
-                        component_data_df.merge(existing_component_additional_fields_df, on=identifier_map[component_name], how="left")
-                        singlecell_record["components"][component_name] = component_data_df 
+                        existing_component_additional_fields_df = existing_component_data_df[[identifier]+ componnet_additional_fields]
+                        singlecell_record["components"][component_name] = component_data_df.merge(existing_component_additional_fields_df, on=identifier, how="left" ) 
             
     if errors:
         return HttpResponse(status=400, content="\n"+"\n".join(errors))
 
     for component_name, component_data_df in singlecell_record["components"].items():
-        componnet_additional_fields=    list(set(additional_fields) - set(component_data_df.columns))
-        if componnet_additional_fields:
-            for field in componnet_additional_fields:
+        for field in additional_fields:
+            if field not in component_data_df.columns:
                 component_data_df[field] = additional_fields_default_value_map[field]
+            else:
+                component_data_df[field].fillna(additional_fields_default_value_map[field], inplace=True)
+
         singlecell_record["components"][component_name] = component_data_df.to_dict(orient="records")
 
     condition = {"profile_id": profile_id, "study_id": study_id}
@@ -201,3 +223,17 @@ def copo_singlecell(request, profile_id):
             checklists.append(checklist)
 
     return render(request, 'copo/copo_single_cell.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids})
+
+
+@login_required
+def download_manifest(request, profile_id, study_id):
+
+    singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "study_id": study_id})
+    if not singlecell:
+        return HttpResponse(status=404, content="No record found")
+    schemas = SinglecellSchemas().get_collection_handle().find_one({"name":"copo"})
+    bytesstring = BytesIO()
+    SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=singlecell["checklist_id"], singlecell=singlecell, file_path=bytesstring)
+    response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response['Content-Disposition'] = f"attachment; filename=singlecell_manifest_{study_id}.xlsx"
+    return response

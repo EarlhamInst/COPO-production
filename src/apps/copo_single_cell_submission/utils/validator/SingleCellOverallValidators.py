@@ -23,6 +23,7 @@ class ForeignKeyValidator(Validator):
                 if pd.isna(referenced_component):
                     continue
                 df = schema_df.loc[schema_df["referenced_component"] == referenced_component, 'item_name']
+                #it won't happen
                 if df.empty:
                     self.errors.append("Referenced component: '" + referenced_component + "' is missing")
                     self.flag = False

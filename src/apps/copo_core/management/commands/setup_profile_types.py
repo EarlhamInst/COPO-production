@@ -86,6 +86,7 @@ class Command(BaseCommand):
 
         add_terminal_all = RecordActionButton().create_record_action_button(name="add_terminal_all", title="Add new file by terminal", label="Add", type="", error_message="", icon_class="fa fa-terminal", action="add_files_by_terminal", icon_colour="blue")
         download_sample_manifest_single = RecordActionButton().create_record_action_button(name="download_sample_manifest_single", title="Download Sample Manifest", label="Download sample manifest", type="single", error_message="Please select one of samples in the manifest to download", icon_class="fa fa-download", action="download-sample-manifest", icon_colour="blue")
+        download_singlecell_manifest_single = RecordActionButton().create_record_action_button(name="download_singlecell_manifest_single", title="Download Single Cell Manifest", label="Download single cell manifest", type="single", error_message="Please select one of studies in the manifest to download", icon_class="fa fa-download", action="download-singlecell-manifest", icon_colour="blue")
         add_local_all = RecordActionButton().create_record_action_button(name="add_local_all", title="Add new file by browsing local file system", label="Add", type="", error_message="Add new file by browsing local file system", icon_class="fa fa-desktop", action="add_files_locally", icon_colour="blue")
         edit_record_single = RecordActionButton().create_record_action_button(name="edit_record_single", title="Edit record", label="Edit", type="single", error_message="Please select a record to edit", icon_class="fa fa-pencil-square", action="edit", icon_colour="green")
         add_record_all = RecordActionButton().create_record_action_button(name="add_record_all", title="Add new record", label="Add", type="", error_message="", icon_class="fa fa-plus-circle", action="add", icon_colour="blue")
@@ -98,7 +99,8 @@ class Command(BaseCommand):
         delete_record_multi = RecordActionButton().create_record_action_button(name="delete_record_multi", title="Delete records", label="Delete", type="multi", error_message="Please select one or more records to delete", icon_class="fa fa-trash-can", action="validate_and_delete", icon_colour="red")
         releasestudy = RecordActionButton().create_record_action_button(name="releasestudy", title="Release Study", label="Release Study", type="single", error_message="", icon_class="fa fa-globe", action="release_study", icon_colour="blue")
         delete_read_multi = RecordActionButton().create_record_action_button(name="delete_read_multi", title="Delete records", label="Delete", type="multi", error_message="Please select one or more records to delete", icon_class="fa fa-trash-can", action="delete_read", icon_colour="red")
-        
+        delete_singlecell_multi = RecordActionButton().create_record_action_button(name="delete_singlecell_multi", title="Delete records", label="Delete", type="multi", error_message="Please select one or more records to delete", icon_class="fa fa-trash-can", action="delete_singlecell", icon_colour="red")
+
         self.stdout.write("Record Action Button Added")
         records = RecordActionButton.objects.all()
 
@@ -117,6 +119,7 @@ class Command(BaseCommand):
         new_terminal_file = TitleButton().create_title_button(name="new_terminal_file", template="<button title=\"Add new file by terminal\"             class=\"big circular ui icon primary button new-terminal-file copo-tooltip\">         <i class=\"icon terminal sign\"></i>     </button>", additional_attr="")
         new_local_file = TitleButton().create_title_button(name="new_local_file", template="<button title=\"Add new file by browsing local file system\"             class=\"big circular ui icon primary button new-local-file copo-tooltip\">         <i class=\"icon desktop sign\"></i>     </button>", additional_attr="")
         new_reads_spreadsheet_template = TitleButton().create_title_button(name="new_reads_spreadsheet_template", template="<button style=\"display: inline\" title=\"Add Read(s) from Read Spreadsheet\"             class=\"big circular ui icon button new-reads-spreadsheet-template copo-tooltip\">         <i class=\"icon table sign\"></i>     </button>", additional_attr="")
+        new_singlecell_spreadsheet_template = TitleButton().create_title_button(name="new_singlecell_spreadsheet_template", template="<button style=\"display: inline\" title=\"Add study from Single Cell Spreadsheet\"             class=\"big circular ui icon button new-singlecell-spreadsheet-template copo-tooltip\">         <i class=\"icon table sign\"></i>     </button>", additional_attr="")
         new_samples_spreadsheet_template = TitleButton().create_title_button(name="new_samples_spreadsheet_template", template="<button   title=\"Add/Update sample(s) from spreadsheet\"             class=\"big circular ui icon button new-samples-spreadsheet-template copo-tooltip\">         <i class=\"icon table sign\"></i>     </button>", additional_attr="")
         quick_tour_template = TitleButton().create_title_button(name="quick_tour_template", template="<button title=\"Quick tour\"             class=\"big circular ui icon orange button takeatour quick-tour-template copo-tooltip\">         <i class=\"icon lightbulb\"></i>     </button>", additional_attr="")
         new_component_template = TitleButton().create_title_button(name="new_component_template", template="<button title=\"Add new profile record\"             class=\"big circular ui icon primary button new-component-template copo-tooltip\">         <i class=\"icon add sign\"></i>     </button>", additional_attr="")
@@ -161,8 +164,8 @@ class Command(BaseCommand):
         read.recordaction_buttons.set([delete_read_multi, submit_read_multi])
         read.title_buttons.set([new_reads_spreadsheet_template, download_blank_manifest_template])
 
-        #singlecell.recordaction_buttons.set([delete_read_multi, submit_read_multi])
-        #singlecell.title_buttons.set([new_reads_spreadsheet_template, download_blank_manifest_template])
+        singlecell.recordaction_buttons.set([delete_singlecell_multi, submit_read_multi,download_singlecell_manifest_single])
+        singlecell.title_buttons.set([new_singlecell_spreadsheet_template, download_blank_manifest_template])
 
         sample.recordaction_buttons.set([download_sample_manifest_single, download_permits_multiple, view_images_multiple])
         sample.title_buttons.set([quick_tour_template, new_samples_spreadsheet_template, download_blank_manifest_template, download_sop, accept_reject_samples])

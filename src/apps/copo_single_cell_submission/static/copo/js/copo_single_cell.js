@@ -248,8 +248,8 @@ $(document).on('document_ready', function () {
 
   //add new component button
   $(document)
-    .off('click', '.new-reads-spreadsheet-template')
-    .on('click', '.new-reads-spreadsheet-template', function (event) {
+    .off('click', '.new-singlecell-spreadsheet-template')
+    .on('click', '.new-singlecell-spreadsheet-template', function (event) {
       $('#singlecell_spreadsheet_modal #span_checklist').html(get_selected_checklist_name());
       $('#singlecell_spreadsheet_modal').modal({
         //"closable": false,
@@ -325,7 +325,7 @@ $(document).on('document_ready', function () {
     .value.toLowerCase();
   var colour = profile_type_def[profile_type]['widget_colour'];
   $('#help_add_button').css('color', 'white').css('background-color', colour);
-  $('.new-reads-spreadsheet-template')
+  $('.new-singlecell-spreadsheet-template')
     .css('color', 'white')
     .css('background-color', colour);
  
@@ -334,6 +334,7 @@ $(document).on('document_ready', function () {
   function do_record_task(event) {
     var task = event.task.toLowerCase(); //action to be performed e.g., 'Edit', 'Delete'
     var tableID = event.tableID; //get target table
+    var profile_id = $('#profile_id').val(); //get profile id
 
     //retrieve target records and execute task
     var table = $('#' + tableID).DataTable();
@@ -342,15 +343,37 @@ $(document).on('document_ready', function () {
       records.push(item);
     });
 
-    var args_dict = { singlecell_checklist_id: get_checklist_id() };
-    form_generic_task('sample', task, records, args_dict);
+    var args_dict = { singlecell_checklist_id: get_checklist_id()};
+
+    // Download sample manifest
+    if (task == 'download-singlecell-manifest') {
+      $('#download-singlecell-manifest-link').attr(
+        'href',
+        '/copo/copo_single_cell/download_manifest/' + profile_id + "/" + records[0].study_id
+      );
+      $('#download-singlecell-manifest-link span').trigger('click');
+      return;
+    }
+    else {
+      var study_id = '';
+      for (var i = 0; i < records.length; i++) {
+        if (study_id == '') {
+          study_id = records[i].study_id;
+        } else if (study_id != records[i].study_id) {
+          study_id = '';
+          break
+        }
+      }
+      args_dict['study_id'] = study_id;
+      form_generic_task('singlecell', task, records, args_dict);
+    }  
   }
 
   $('body').on('posttablerefresh', function (event) {
-    if (event.tableID == "singlecell_study") {
+    if (event.tableID == componentMeta.tableID+"_study") {
       if (current_study_id == '') {
-        $("#singlecell_study tbody tr:first").addClass('selected');
-        current_study_id = $("#singlecell_study tbody tr:first").attr('id');
+        $("#"+ event.tableID + " tbody tr:first").addClass('selected');
+        current_study_id = $("#"+ event.tableID + " tbody tr:first").attr('id');
       } else {
         $("#" + current_study_id).addClass('selected');
       }
@@ -410,7 +433,7 @@ $(document).on('document_ready', function () {
     */
   });
 
-  $(document).on('click', '#singlecell_study tbody tr', function (e) {
+  $(document).on('click', "#"+ componentMeta.tableID + "_study tbody tr", function (e) {
     selected_id = $(e.currentTarget).attr("id")
     if (selected_id != current_study_id) {  
       $('#'+current_study_id).removeClass('selected');

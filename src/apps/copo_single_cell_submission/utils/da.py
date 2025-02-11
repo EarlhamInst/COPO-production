@@ -44,7 +44,7 @@ class SinglecellSchemas(DAComponent):
 
         return schemas
 
-    def get_identifier_map(schemas):
+    def get_identifier_map(self, schemas=[]):
         identifier_map = {}
         for component, schema in schemas.items():
             schema_df = pd.DataFrame.from_records(list(schema))
@@ -52,6 +52,47 @@ class SinglecellSchemas(DAComponent):
             if not identifier_df.empty:
                 identifier_map[component]= identifier_df.iloc[0]
         return identifier_map
+    
+    def get_key_map(self, schemas=[]):
+        identifier_map = {}
+        foreignkey_map = {}
+        for component, schema in schemas.items():
+            schema_df = pd.DataFrame.from_records(list(schema))
+
+            identifier_df =  schema_df.loc[schema_df['identifier'], 'term_name']
+            if not identifier_df.empty:
+                identifier_map[component]= identifier_df.iloc[0]
+
+            referenced_components = schema_df["referenced_component"].unique()
+            foreignkey_map[component] = []
+            for referenced_component in referenced_components:
+                if pd.isna(referenced_component):
+                    continue
+                df = schema_df.loc[schema_df["referenced_component"] == referenced_component, 'term_name']
+                if df.empty:
+                    continue
+                foreign_key = df.iloc[0]
+                foreignkey_map[component].append({"referenced_component": referenced_component, "foreign_key": foreign_key})
+
+        return identifier_map, foreignkey_map
+
+    def get_parent_map(self, foreignkey_map):
+        parent_map = {}
+        for component, foreignkeys in foreignkey_map.items():
+            parent_map[component] = {}
+            for foreignkey in foreignkeys:
+                parent_map[component][foreignkey["referenced_component"]] = foreignkey["foreign_key"]
+        return parent_map
+    
+    def get_child_map(self, foreignkey_map):
+        child_map = {}
+        for component, foreignkeys in foreignkey_map.items():
+            for foreignkey in foreignkeys:
+                parent_component = foreignkey["referenced_component"]
+                if parent_component not in child_map:
+                    child_map[parent_component] = {}
+                child_map[parent_component][component] = foreignkey["foreign_key"]
+        return child_map
 
 
 class Singlecell(DAComponent):

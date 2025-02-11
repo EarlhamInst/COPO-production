@@ -12,8 +12,10 @@ urlpatterns = [
     path('save_singlecell_records/', views.save_singlecell_records,
          name="save_singlecell_records"),
 
-    
+    re_path("download_manifest/(?P<profile_id>[a-z0-9]+)/(?P<study_id>[A-Za-z0-9]+)", views.download_manifest),
+
     re_path(r'^(?P<profile_id>[a-z0-9]+)/view', views.copo_singlecell,
          name='copo_singlecell'),
+
          
 ]

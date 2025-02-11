@@ -45,7 +45,7 @@ class IncorrectValueValidator(Validator):
                                 self.errors.append( component + " : Invalid value '" + row + "' in column : '" + field["term_label"] + "' at row " + str(i) + ". Valid values are: " + str(field.get("choice")))
                                 self.flag = False
                         elif type == "string":
-                            regex = field.get("term_regex","")
+                            regex = field.get("term_regex","").strip()
                             if regex:
                                 if not re.match(regex, str(row)):
                                     self.errors.append(component + " : Invalid value '" + row + "' in column : '" + field["term_label"] + "' at row " + str(i) + ". Valid value should match: " + str(regex))
