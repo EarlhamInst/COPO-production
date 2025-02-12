@@ -2,6 +2,7 @@ from common.utils.logger import Logger
 from .da import SinglecellSchemas, Singlecell
 import pandas as pd
 from common.utils.helpers import get_datetime, get_not_deleted_flag
+from common.utils.helpers import notify_singlecell_status
 
 l = Logger()
 
@@ -12,7 +13,6 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
     columns = {}
     column_keys = {}
     studies = []
-    new_column_name = {}
     identifier_map = {}
     if checklist_id:
         schemas = SinglecellSchemas().get_schema(target_id=checklist_id)
@@ -72,6 +72,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
     return_dict = dict(dataSet=data_set,
                        columns=columns,
                        components=list(columns.keys()),
+                       study_id = study_id,
                        #bucket_size_in_GB=round(bucket_size/1024/1024/1024,2),  
                        )
 
@@ -88,10 +89,9 @@ def _check_child_component_data(singlecell_data, component_name, identifiers, id
             children_df = child_component_data_df.loc[child_component_data_df[foreign_key].isin(identifiers)]
             children_df["has_accession"] = children_df["accession"]!=""
             if not children_df.loc[child_component_data_df["accession"]!=""].empty:
-                l.error("Record deleted failed! Child record has accession number" + str(children_df[child_component_data_df["accession"]!=""]))
-                return False
+                return False,  f'Record deleted failed! Following child records get accession number: "{ child_component_name.replace("_"," ").title() }" : { children_df.loc[child_component_data_df["accession"]!="", child_identifier_key].tolist()}' 
             _check_child_component_data(singlecell_data, child_component_name, children_df[child_identifier_key].tolist(),  identifier_map, child_map)
-    return True
+    return True, ""
 
 def _delete_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map):
 
@@ -136,23 +136,31 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
     
 
     #all target_id should come from same component
+    #target_id format: component_study_identifier or study_identifier
     for target_id in target_ids:
 
         tmp = target_id.split("_")
-        if not component_name:
-            component_name = tmp[0]
-        elif component_name != tmp[0]:
-            return dict(status='error', message="Please select records from the same component!")
-        
-        if (len(tmp) < 2):
+        if len(tmp) >= 3:
+            identifier = tmp[len(tmp)-1]  
+            tmp_study_id = tmp[len(tmp)-2]          
+            tmp_component_name = "_".join(tmp[:len(tmp)-2])
+        elif len(tmp) == 2 and tmp[0] == "study":
+                tmp_component_name = "study"
+                tmp_study_id = tmp[1]
+                identifier = tmp[1]
+        else:
             return dict(status='error', message="taget id incorrect: " + target_id)
-        
-        if study_id != tmp[1] and is_single_study:
+
+        if not component_name:
+            component_name = tmp_component_name
+        elif component_name != tmp_component_name:
+            return dict(status='error', message="Please select records from the same component!")
+         
+        if study_id != tmp_study_id and is_single_study:
             return dict(status='error', message="Please select records from the same study!")
         elif not is_single_study:
             study_ids.append(tmp[1])
 
-        identifier = tmp[2] if len(tmp) > 2 else study_id
         identifiers.append(identifier)
 
     identifier_key = identifier_map.get(component_name, "")
@@ -160,7 +168,7 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
         return dict(status='error', message="Identifier not found for component: " + component_name)
     
     for study_id in study_ids:
-        singlecell_data =  Singlecell(profile_id=profile_id).get_collection_handle().find_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id }, {"components": 1})
+        singlecell_data =  Singlecell(profile_id=profile_id).get_collection_handle().find_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id }, {"components": 1, "profile_id":1, "checklist_id":1})
         
         if not singlecell_data:
             return dict(status='error', message="Study not found for study_id: " + study_id)
@@ -170,7 +178,8 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
         if not component_data_df.loc[(component_data_df[identifier_key].isin(identifiers)) & (component_data_df["accession"] !="")].empty:
             return dict(status='error', message="Record deleted failed!")   
      
-        if _check_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map):
+        result, message =  _check_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map)
+        if result:
             #delete the record and the child records
             _delete_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map)
             component_data_df = component_data_df.drop(component_data_df[component_data_df[identifier_key].isin(identifiers)].index)
@@ -184,6 +193,6 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
             else:
                 Singlecell(profile_id=profile_id).get_collection_handle().delete_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id})
         else:
-            return {"status": "error", "message": "Record deleted failed!"}
+            return {"status": "error", "message": message}
         
     return {"status": "success", "message": "Record deleted successfully!"}

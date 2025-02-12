@@ -1,6 +1,7 @@
 from common.validators.validator import Validator
 from django.conf import settings
 import re
+import pandas as pd
 
 lg = settings.LOGGER
 
@@ -45,9 +46,10 @@ class IncorrectValueValidator(Validator):
                                 self.errors.append( component + " : Invalid value '" + row + "' in column : '" + field["term_label"] + "' at row " + str(i) + ". Valid values are: " + str(field.get("choice")))
                                 self.flag = False
                         elif type == "string":
-                            regex = field.get("term_regex","").strip()
-                            if regex:
-                                if not re.match(regex, str(row)):
+                            regex = field.get("term_regex","")
+                            if regex and pd.notna(regex):
+                                
+                                if not re.match(regex.strip(), str(row)):
                                     self.errors.append(component + " : Invalid value '" + row + "' in column : '" + field["term_label"] + "' at row " + str(i) + ". Valid value should match: " + str(regex))
                                     self.flag = False
                         #elif type == "TAXON_FIELD":   

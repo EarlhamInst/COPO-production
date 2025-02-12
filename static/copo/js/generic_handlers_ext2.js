@@ -812,7 +812,8 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
           selectNone: 'Clear selection',
         },
       },
-      order: [[1, 'asc']],
+      order: [],
+      //order: [[1, 'asc']],
       columns: cols,
       fnDrawCallback: function () {
         refresh_tool_tips();

@@ -56,23 +56,28 @@ class SingleCellSchemasHandler:
         #check foreign key constraints
         #check valid regex
 
+        #schemas_df = schemas_df.apply(lambda x: x.astype(str))
+        #schemas_df = schemas_df.apply(lambda x: x.str.strip())
+        
         schemas_df["regex_valid"] = schemas_df["term_regex"].apply(lambda x: self._validate_regrex(x))
         if not schemas_df["regex_valid"].all():
             for c, row in schemas_df[schemas_df["regex_valid"]==False].iterrows():
                 l.error(f"Invalid regex: {row['term_regex']} for {row['term_name']}")
             raise Exception("Invalid regex")
 
+        schemas_df.drop(columns=["regex_valid"], inplace=True)
+        
         for checklist_id in checklist_df.index:
                 #no duplicate name,label within a component with same versio and item_name
                 checklist_schema_df = schemas_df.drop(schemas_df[pd.isna(schemas_df[checklist_id])].index)
                 checklist_schema_df.reset_index(inplace=True)
                 for c in checklist_schema_df.groupby(["component_name","term_name"]).size().reset_index().values:
                     if c[2] > 1:
-                        raise Exception(f"Duplicate item_name within a component with same version {c[0]} {c[1]}")
+                        raise Exception(f'Duplicate item_name: "{c[1]}" within a component: "{c[0]}"  with same version: {checklist_id}.')
 
                 for c in checklist_schema_df.groupby(["component_name","term_label"]).size().reset_index().values:
                     if c[2] > 1:
-                        raise Exception(f"Duplicate item_label within a component with same version {c[0]} {c[1]}")
+                        raise Exception(f'Duplicate item_label: "{c[1]}" within a component: "{c[0]}"  with same version: {checklist_id}.')
                     
                 #check foreign key constraints
                 identifier_map = {}
@@ -165,6 +170,7 @@ class SingleCellSchemasHandler:
                         if component_schema_df.empty:
                             continue
                         
+                        component_schema_df.fillna("", inplace=True)
                         component_schema_df["choice"] = component_schema_df[component_schema_df["term_type"] == "enum"]["term_name"].apply(lambda x:singlecell_schema.get("enums",[]).get(x, []))
                         component_schema_df["mandatory"] = component_schema_df[schema_checklist]
                         component_schema_df.set_index(keys="term_name", inplace=True)
@@ -186,7 +192,7 @@ class SingleCellSchemasHandler:
                                 component_data_df.rename(columns=new_column_name, inplace=True)
 
                                 component_schema_df_transposed  = pd.concat([component_schema_df_transposed , component_data_df], axis=0)
-                                component_schema_df_transposed = component_schema_df_transposed.fillna("")
+                                component_schema_df_transposed.fillna("", inplace=True)
                           
 
                         #sheet_name = component_names.get(component_name, {}).get("name", component_name)
@@ -268,7 +274,7 @@ class SingleCellSchemasHandler:
         SinglecellSchemas().get_collection_handle().find_one_and_update({"name": singlecell_schema["name"]},
                                                                             {"$set": singlecell_schema},
                                                                             upsert=True)
-        self().write_manifest(singlecell_schema)
+        self.write_manifest(singlecell_schema)
  
 class SinglecellschemasSpreadsheet:
    def __init__(self, file, checklist_id,  component, validators=[]):

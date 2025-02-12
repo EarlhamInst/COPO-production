@@ -370,12 +370,17 @@ $(document).on('document_ready', function () {
   }
 
   $('body').on('posttablerefresh', function (event) {
+    
     if (event.tableID == componentMeta.tableID+"_study") {
       if (current_study_id == '') {
-        $("#"+ event.tableID + " tbody tr:first").addClass('selected');
         current_study_id = $("#"+ event.tableID + " tbody tr:first").attr('id');
+        $("#"+ event.tableID + " tbody tr:first td:eq(1)").click();
       } else {
-        $("#" + current_study_id).addClass('selected');
+        if ( $("#" + current_study_id).hasClass('selected') ) {
+          ;
+        } else {
+          $("#" + current_study_id + " td:eq(1)").click();
+        }
       }
     }
     /*
@@ -433,8 +438,8 @@ $(document).on('document_ready', function () {
     */
   });
 
-  $(document).on('click', "#"+ componentMeta.tableID + "_study tbody tr", function (e) {
-    selected_id = $(e.currentTarget).attr("id")
+  $(document).on('click', "#"+ componentMeta.tableID + "_study tbody tr >td", function (e) {
+    selected_id = $(e.currentTarget).closest("tr").attr("id")
     if (selected_id != current_study_id) {  
       $('#'+current_study_id).removeClass('selected');
       $(e.currentTarget).addClass('selected');
