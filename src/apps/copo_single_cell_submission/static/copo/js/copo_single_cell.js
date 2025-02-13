@@ -232,6 +232,7 @@ $(document).on('document_ready', function () {
 
   //trigger refresh of table
   $('body').on('refreshtable', function (event) {
+    current_study_id = '';
     do_render_component_table_tabs(globalDataBuffer, componentMeta);
   });
 
@@ -245,6 +246,8 @@ $(document).on('document_ready', function () {
   $(document).on('click', '#page_alert_panel .alert .close', function () {
     $(this).closest('.alert').remove();
   });
+
+
 
   //add new component button
   $(document)

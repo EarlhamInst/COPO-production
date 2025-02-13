@@ -215,11 +215,11 @@ def copo_singlecell(request, profile_id):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
     singlecell_checklists = SinglecellSchemas().get_checklists(checklist_id="")
-    profile_checklist_ids = []
+    profile_checklist_ids = Singlecell().get_collection_handle().distinct("checklist_id", {"profile_id": profile_id})
     checklists = []
     if singlecell_checklists:
         for key, item in singlecell_checklists.items():
-            checklist = {"primary_id": key, "name": item.get("name", ""), "description": item.get("desciption", "")}
+            checklist = {"primary_id": key, "name": item.get("name", ""), "description": item.get("description", "")}
             checklists.append(checklist)
 
     return render(request, 'copo/copo_single_cell.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids})

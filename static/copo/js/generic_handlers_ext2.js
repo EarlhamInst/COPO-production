@@ -666,7 +666,6 @@ function do_render_component_table_tabs(data, componentMeta, columnDefs = null) 
         tabs.empty()
       }
     
-
     li = $('<li/>').addClass('nav-item');
 
     a = $('<a/>').addClass('nav-link')
@@ -711,7 +710,6 @@ function do_render_component_table_tabs(data, componentMeta, columnDefs = null) 
     var tableID = table_name;
     var cols = data.table_data.columns[component];
 
-
     tab_data = {table_data: {dataSet: dataSet, columns: cols}};
     new_componentMeta =  { ...componentMeta };
     new_componentMeta["tableID"]= tableID
@@ -719,9 +717,17 @@ function do_render_component_table_tabs(data, componentMeta, columnDefs = null) 
     new_componentMeta["title"] = tableTitle;
     do_render_component_table(tab_data, new_componentMeta, columnDefs);
   }
+
   if (is_empty) {
     set_empty_component_message(0)
   }
+
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    active_tab = $(e.target).attr('aria-controls');
+    table = $('#' + active_tab).find('table').DataTable();
+    table.columns.adjust().draw();
+  })
+
 }
 
 function do_render_component_table(data, componentMeta, columnDefs = null) {
