@@ -19,16 +19,14 @@ def sort_audit_output(audit_entry, default_fields):
     sorted_audit_log_data = OrderedDict(**default_part, **remaining_part)
     return sorted_audit_log_data
 
-def filter_audits_for_API(audits=list()):
+def filter_audits_for_API(audits=[]):
     default_fields = ['field', 'outdated_value', 'updated_value', 'update_type', 'time_updated']
     audit_log_types = ['update_log', 'removal_log', 'truncated_log']   
-    out = list()
-    export_fields_map = dict()
+    out = []
+    export_fields_map = {}
         
     for audit in audits:
-        export_fields = dict()
-        profile_title = audit.pop('profile_title', None)
-        
+        export_fields = {}        
         sample_type = audit.pop('sample_type', None)
         if not sample_type:
             continue
@@ -39,15 +37,14 @@ def filter_audits_for_API(audits=list()):
         else: 
             export_fields = export_fields_map[sample_type]
             
-        audit_data = dict()
-        audit_log_list = list()
+        audit_data = {}
+        audit_log_list = []
         for key, value in audit.items():
             if key in audit_log_types:
                 for element in value:               
                     if element.get('field', '') in export_fields:
-                        audit_log_data = dict()
+                        audit_log_data = {}
                         audit_log_data['copo_audit_type'] = key
-                        audit_log_data['copo_profile_title'] = profile_title
                         
                         # Replace 'sample_type' with 'tol_project'
                         element.pop('sample_type', None)
@@ -62,7 +59,7 @@ def filter_audits_for_API(audits=list()):
                                     audit_log_data[k] = format_date(v)
                                 else:
                                     audit_log_data[k] = v
-                    
+                                    
                         audit_log_data = sort_audit_output(audit_log_data, default_fields)
                         audit_log_list.append(audit_log_data)
             else:
@@ -109,7 +106,7 @@ def get_sample_updates_by_manifest_id(request, manifest_id):
 def get_sample_updates(request):
     # NB: 'sample_id' is the 'copo_id' key in DB
     sample_id = request.GET.get('copo_id', str())
-    sample_id_list = list()
+    sample_id_list = []
     updatable_field = request.GET.get('updatable_field', str())
     project = request.GET.get('project', str()).lower()
     
@@ -120,7 +117,7 @@ def get_sample_updates(request):
         if sample_id_list and not all(d_utils.is_valid_ObjectId(x) for x in sample_id_list):
             return HttpResponse(status=400, content=f'Invalid \'copo_id\'(s) provided!')
 
-        # Convert each string sample id to ObjectId sample id
+        # Convert each string sample ID to ObjectId sample ID
         sample_id_list = [ObjectId(x) for x in sample_id_list]
     
     sample_updates = Audit().get_sample_update_audits(

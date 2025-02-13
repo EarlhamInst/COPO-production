@@ -30,137 +30,173 @@ class Audit(DAComponent):
         self.update_log_addtl_fields = [*self.doc_included_field_lst, *self.doc_excluded_field_lst]
         self.update_log_addtl_fields.sort()
 
-    def get_sample_info_based_on_audit(self, sample_id, document):
+    def get_sample_info_based_on_audit(self, sample_id_list, documents):
         from .sample_da import Sample
+        from .profile_da import Profile
+        
+        # Get samples by their IDs
+        samples = Sample().get_by_field('_id', sample_id_list)
 
-        # Fields outside the document, excluded from the 'update_log' 
-        # dictionary but found in the sample
-        sample = Sample().get_by_field('_id', [sample_id])
-
-        if not sample:
+        if not samples:
             return dict()
         
-        sample_info = {field: sample[0].get(field, str()) for field in self.doc_excluded_field_lst if sample[0] is not None and len(sample) > 0}
+        # Map sample ID i.e. '_id' to documents for lookup
+        document_map = {doc.get('_id'): doc for doc in documents}
+        
+        # Store profile titles per manifest_id to avoid redundant queries
+        profile_title_map = {}
+        out = {}
+        
+        for sample in samples:
+            sample_info = {field: sample.get(field, str()) for field in self.doc_excluded_field_lst}
+            
+            # Find the corresponding audit document for this sample
+            document = document_map.get(sample.get('_id', ObjectId()), {})
+            
+            # Fields in the document but outside the 'update_log' dictionary
+            audit_info = {field: document.get(field, str()) for field in self.doc_included_field_lst if field in document}
 
-        # Fields in the document but outside the 'update_log' dictionary
-        audit_info = {field: document.get(field, str()) for field in self.doc_included_field_lst if field in list(document.keys())}
+            # Merge sample and audit info
+            merged_info = sample_info | audit_info
 
-        out = sample_info | audit_info
+            # Retrieve `manifest_id` and `profile_id` from the sample
+            manifest_id = sample.get('manifest_id', str())
+            profile_id = sample.get('profile_id', str())
+            
+            # Retrieve or fetch profile title
+            if manifest_id:
+                if manifest_id not in profile_title_map:
+                    if profile_id:
+                        profile = Profile().get_record(profile_id)
+                        profile_title_map[manifest_id] = profile.get('title', '')
 
-        # Sort the dictionary by key
-        out = {key:out[key] for key in sorted(out)}
+                # Get the profile title  
+                merged_info['copo_profile_title'] = profile_title_map.get(manifest_id, '')
+            
+                # Sort the dictionary by key
+                sorted_info = {key: merged_info[key] for key in sorted(merged_info)}
 
+                # Use `manifest_id` as the key for the output dictionary
+                out[manifest_id] = sorted_info
         return out
     
-    def get_sample_update_audits(self, sample_id_list, updatable_field, project):
-        from .sample_da import Sample
-        from common.dal.profile_da import Profile
+    def get_merged_audit_and_sample_info(self, audits):
+        audits_df = pd.DataFrame(audits) # Convert the list of dictionaries to a DataFrame
         
-        out = list()
-        profile_title_map = dict()
+        # Fetch additional audit information based on the sample ID i.e. 'copo_id'
+        # and ensure that 'copo_id' has no 'NaN' values before converting to list
+        sample_id_list = audits_df['copo_id'].dropna().tolist()
+        
+        # Fetch additional audit information based on the sample ID
+        audit_addtl_info = self.get_sample_info_based_on_audit(sample_id_list, audits)
+        audit_addtl_df = pd.DataFrame.from_dict(audit_addtl_info, orient='index')
+
+        # Merge audits_df with audit_addtl_df on 'manifest_id'
+        merged_df = audits_df.merge(
+            audit_addtl_df, 
+            left_on='manifest_id', 
+            right_index=True, 
+            how='left', 
+            suffixes=('_audit', '_sample')
+        )
+        
+        # Identify sample related fields
+        sample_columns = [col for col in merged_df.columns if col.endswith('_sample')]
+        
+        # Remove rows where all sample fields/columns are NaN or empty
+        filtered_df = merged_df.dropna(subset=sample_columns, how='all')
+        filtered_df = filtered_df[~(filtered_df[sample_columns] == '').all(axis=1)]
+        
+        return filtered_df, audit_addtl_info
+    
+    def get_sample_update_audits(self, sample_id_list, updatable_field, project):
+        out = []
         
         if project:
             self.filter['sample_type'] = project
             
         if sample_id_list:
             self.filter |= {'copo_id': {'$in': sample_id_list}}
-            
+        
         pipeline = [
-            {'$match': self.filter},  # Apply filters
-            {'$addFields': {  
-                 'update_log': {
-                    '$cond': {
-                        'if': {'$gt': [{'$strLenCP': updatable_field}, 0]},  # Check if updatable_field is non-empty
-                        'then': {
-                            '$filter': {
-                                'input': '$update_log',
-                                'as': 'log',
-                                'cond': {'$eq': ['$$log.field', updatable_field]}
-                            }
-                        },
-                        'else': '$update_log'  # If updatable_field is not provided, return full update_log
+            {'$match': self.filter},
+            {'$addFields': {
+                'update_log': {
+                    '$filter': {
+                        'input': '$update_log',
+                        'as': 'log',
+                        'cond': {'$eq': ['$$log.field', updatable_field]}
                     }
-                }
+                } if updatable_field else '$update_log'
             }},
-            {'$project': self.projection}  # Exclude 'updated_by'
+            {'$project': self.projection}
         ]
         
-        audits = cursor_to_list( self.get_collection_handle().aggregate(pipeline))
+        audits = cursor_to_list(self.get_collection_handle().aggregate(pipeline))
 
-        if audits:
-            for element in audits:
-                sample_type = element.get('sample_type', str())
-                sample_id = element.get('copo_id', ObjectId())
-                update_log = element.get('update_log', list())
-                audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
-                
-                manifest_id = element.get('manifest_id', str())
-                sample = Sample().get_by_field('manifest_id', [manifest_id])
-                profile_id = sample[0].get('profile_id','') if sample else ''
-                       
-                if profile_id:
-                    if profile_id not in profile_title_map:
-                        profile = Profile().get_record(profile_id)
-                        if profile:
-                            profile_title_map[profile_id] = profile.get('title', '')
-                            
-                # Get the profile title  
-                profile_title = profile_title_map.get(profile_id, '')
-    
-                # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
-                merged_data = [log | audit_addtl_out if updatable_field and log.get('field','') == updatable_field else log | audit_addtl_out for log in update_log ]
-                    
-                if merged_data:
-                    out.append({'sample_type': sample_type, 'profile_title': profile_title, 'update_log': merged_data})
+        if not audits:
+            return out
+        
+        merged_df, audit_addtl_info = self.get_merged_audit_and_sample_info(audits)
+
+        # Iterate over each row in the dataframe that has existing samples  
+        # and merge the 'update_log' with 'audit_addtl_info'
+        out = []
+        for _, row in merged_df.iterrows():
+            sample_type = row.get('sample_type_audit', '')
+
+            # Fetch the corresponding audit_addtl_info for the row's manifest_id
+            manifest_id = row.get('manifest_id_audit','')
+            audit_info = audit_addtl_info.get(manifest_id, {})
+
+            # Merge each log entry in the 'update_log_sample' with the corresponding 'audit_info'
+            update_log = [
+                log | audit_info if updatable_field and log.get('field', '') == updatable_field
+                else log | audit_info
+                for log in row.get('update_log', [])
+            ]
+
+            # If merged data exists, append to the output list
+            if update_log:
+                out.append({'sample_type': sample_type, 'update_log': update_log})
+
+        # Return the merged output as a list of dictionaries
         return out
     
     def get_sample_update_audits_field_value_lst(self, value_lst, key):
-        from .sample_da import Sample
-        from common.dal.profile_da import Profile
-        
-        out = list()
-        profile_title_map = dict()
+        out = []
         
         if value_lst:
             self.filter |= {key: {'$in': value_lst}}
 
         audits = cursor_to_list(
             self.get_collection_handle().find(self.filter,  self.projection))
+        
+        if not audits:
+            return out
+        
+        merged_df, audit_addtl_info = self.get_merged_audit_and_sample_info(audits)
 
-        if audits:
-            for element in audits:
-                sample_type = element.get('sample_type', str())
-                sample_id = element.get('copo_id', ObjectId())
-                update_log = element.get('update_log', list())
-                audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
-                
-                manifest_id = element.get('manifest_id', str())
-                sample = Sample().get_by_field('manifest_id', [manifest_id])
-                profile_id = sample[0].get('profile_id','') if sample else ''
-                
-                # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
-                merged_data = [log | audit_addtl_out for log in update_log]
-                
-              
-                if profile_id:
-                    if profile_id not in profile_title_map:
-                        profile = Profile().get_record(profile_id)
-                        if profile:
-                            profile_title_map[profile_id] = profile.get('title', '')
-                            
-                # Get the profile title  
-                profile_title = profile_title_map.get(profile_id, '')
-                
-                if merged_data:
-                    out.append({'sample_type': sample_type, 'profile_title': profile_title, 'update_log': merged_data})
+        # Iterate over each row in the dataframe that has existing samples  
+        # and merge the 'update_log' with 'audit_addtl_info'
+        out = []
+        for _, row in merged_df.iterrows():
+            sample_type = row.get('sample_type_audit', '')
+
+            # Fetch the corresponding audit_addtl_info for the row's manifest_id
+            manifest_id = row.get('manifest_id_audit','')
+            audit_info = audit_addtl_info.get(manifest_id, {})
+
+            # Merge each log entry in the 'update_log_sample' with the corresponding 'audit_info'
+            update_log = [log | audit_info for log in row.get('update_log', [])]
+            
+            if update_log:
+                out.append({'sample_type': sample_type, 'update_log': update_log})
         return out
     
     def get_sample_update_audits_by_field_and_value(self, field, value):
-        from .sample_da import Sample
-        from common.dal.profile_da import Profile
-        
-        out = list()
-        profile_title_map = dict()
+        from .sample_da import Sample        
+        out = []
         
         # Fields in the document but outside the 'update_log' dictionary
         if field in self.doc_included_field_lst:
@@ -171,12 +207,11 @@ class Audit(DAComponent):
             # Fields excluded from the document and 'update_log' dictionary
             sample = Sample().get_by_field(field, [value])
 
-            if sample is  None or len(sample) == 0:
-                return list()
+            if sample is None or len(sample) == 0:
+                return []
             
             copo_id = sample[0]['_id']
             self.filter['copo_id'] = copo_id
-
         else:
             # Fields in the 'update_log' dictionary
             self.filter['update_log'] = {'$elemMatch': {field: value}}
@@ -184,47 +219,38 @@ class Audit(DAComponent):
         audits = cursor_to_list(
             self.get_collection_handle().find(self.filter, self.projection))
 
-        if audits:
-            for element in audits:
-                sample_type = element.get('sample_type', str())
-                sample_id = element.get("copo_id", ObjectId())
-                audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
-                
-                manifest_id = element.get('manifest_id', str())
-                sample = Sample().get_by_field('manifest_id', [manifest_id])
-                profile_id = sample[0].get('profile_id','') if sample else ''
-                
-                update_log = []
+        if not audits:
+                return out
+        
+        merged_df, audit_addtl_info = self.get_merged_audit_and_sample_info(audits)
 
-                for x in element.get('update_log', list()):
-                    # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
-                    x |= audit_addtl_out
+        # Iterate over each row in the dataframe that has existing samples  
+        # and merge the 'update_log' with 'audit_addtl_info'
+        out = []
+        for _, row in merged_df.iterrows():
+            sample_type = row.get('sample_type_audit', '')
 
-                    if field not in self.doc_included_field_lst and field not in self.doc_excluded_field_lst:
-                        if x[field] == value:
-                            update_log.append(x)
-                    else:
+            # Fetch the corresponding audit_addtl_info for the row's manifest_id
+            manifest_id = row.get('manifest_id_audit','')
+            audit_info = audit_addtl_info.get(manifest_id, {})
+
+            # Merge each log entry in the 'update_log_sample' with the corresponding 'audit_info'
+            update_log = []
+            for x in row.get('update_log', []):
+                x |= audit_info
+
+                if field not in self.doc_included_field_lst and field not in self.doc_excluded_field_lst:
+                    if x[field] == value:
                         update_log.append(x)
-                        
-                if profile_id:
-                    if profile_id not in profile_title_map:
-                        profile = Profile().get_record(profile_id)
-                        if profile:
-                            profile_title_map[profile_id] = profile.get('title', '')
-                            
-                # Get the profile title  
-                profile_title = profile_title_map.get(profile_id, '')
-                
-                if update_log:
-                    out.append({'sample_type': sample_type, 'profile_title': profile_title, 'update_log': update_log})
+                else:
+                    update_log.append(x)
+            
+            if update_log:
+                out.append({'sample_type': sample_type, 'update_log': update_log})
         return out    
 
     def get_sample_update_audits_by_update_type(self, sample_type_list, update_type):
-        from .sample_da import Sample
-        from common.dal.profile_da import Profile
-        
-        out = list()
-        profile_title_map = dict()
+        out = []
         
         self.filter['update_log'] = {'$elemMatch': {'update_type': update_type}}
         
@@ -234,40 +260,34 @@ class Audit(DAComponent):
         audits = cursor_to_list(
             self.get_collection_handle().find(self.filter,  self.projection))
         
-        if audits:
-            for element in audits:
-                sample_type = element.get('sample_type', str())
-                sample_id = element.get('copo_id', ObjectId())
-                audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
-                
-                manifest_id = element.get('manifest_id', str())
-                sample = Sample().get_by_field('manifest_id', [manifest_id])
-                profile_id = sample[0].get('profile_id','') if sample else ''
-                if profile_id:
-                    if profile_id not in profile_title_map:
-                        profile = Profile().get_record(profile_id)
-                        if profile:
-                            profile_title_map[profile_id] = profile.get('title', '')
-                            
-                # Get the profile title  
-                profile_title = profile_title_map.get(profile_id, '')
-                
-                update_log = [
-                    log | audit_addtl_out
-                    for log in element.get('update_log', [])
-                    if log.get('update_type') == update_type
-                ]
+        if not audits:
+            return out
+        
+        merged_df, audit_addtl_info = self.get_merged_audit_and_sample_info(audits)
 
-                if update_log:
-                    out.append({'sample_type': sample_type, 'profile_title': profile_title, 'update_log': update_log})
+        # Iterate over each row in the dataframe that has existing samples  
+        # and merge the 'update_log' with 'audit_addtl_info'
+        out = []
+        for _, row in merged_df.iterrows():
+            sample_type = row.get('sample_type_audit', '')
+
+            # Fetch the corresponding audit_addtl_info for the row's manifest_id
+            manifest_id = row.get('manifest_id_audit','')
+            audit_info = audit_addtl_info.get(manifest_id, {})
+              
+            update_log = [
+                log | audit_info
+                for log in row.get('update_log', [])
+                if log.get('update_type') == update_type
+            ]
+            
+            # If merged data exists, append to the output list
+            if update_log:
+                out.append({'sample_type': sample_type, 'update_log': update_log})
         return out
 
     def get_sample_update_audits_by_date(self, d_from, d_to):
-        from .sample_da import Sample
-        from common.dal.profile_da import Profile
-        
-        out = list()
-        profile_title_map = dict()
+        out = []
         
         self.filter['sample_type'] = {'$in': TOL_PROFILE_TYPES}
         self.filter['update_log'] = {'$elemMatch': {
@@ -276,29 +296,26 @@ class Audit(DAComponent):
         audits = cursor_to_list(
             self.get_collection_handle().find(self.filter,  self.projection).sort([['update_log.time_updated', -1]]))
 
-        if audits:
-            for element in audits:
-                sample_type = element.get('sample_type', str())
-                sample_id = element.get('copo_id', ObjectId())
-                audit_addtl_out = self.get_sample_info_based_on_audit(sample_id, element)
-                
-                manifest_id = element.get('manifest_id', str())
-                sample = Sample().get_by_field('manifest_id', [manifest_id])
-                profile_id = sample[0].get('profile_id','') if sample else ''
-                if profile_id:
-                    if profile_id not in profile_title_map:
-                        profile = Profile().get_record(profile_id)
-                        if profile:
-                            profile_title_map[profile_id] = profile.get('title', '')
-                            
-                # Get the profile title  
-                profile_title = profile_title_map.get(profile_id, '')
-                
-                # Merge the 'update_log' dictionary with the 'audit_addtl_out' dictionary
-                update_logs = [log | audit_addtl_out for log in element.get('update_log', list())]
+        if not audits:
+            return out
+        
+        merged_df, audit_addtl_info = self.get_merged_audit_and_sample_info(audits)
+        
+        # Iterate over each row in the dataframe that has existing samples  
+        # and merge the 'update_log' with 'audit_addtl_info'
+        out = []
+        for _, row in merged_df.iterrows():
+            sample_type = row.get('sample_type_audit', '')
 
-                if update_logs:
-                    out.append({'sample_type': sample_type, 'profile_title': profile_title, 'update_log': update_logs})
+            # Fetch the corresponding audit_addtl_info for the row's manifest_id
+            manifest_id = row.get('manifest_id_audit','')
+            audit_info = audit_addtl_info.get(manifest_id, {})
+
+            # Merge each log entry in the 'update_log_sample' with the corresponding 'audit_info'
+            update_log = [log | audit_info for log in row.get('update_log', [])]
+
+            if update_log:
+                out.append({'sample_type': sample_type, 'update_log': update_log})
         return out
 
 class TestObjectType(DAComponent):
