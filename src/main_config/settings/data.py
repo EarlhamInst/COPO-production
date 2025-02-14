@@ -95,6 +95,7 @@ MANIFEST_VERSION = {
     "DTOL_EI": "2.4",
     "ERGA": "2.5",
     "DTOL_BARCODE": "",
+    "COPO_SINGLE_CELL": "0.1",
 }
                                       
 BARCODING_CHECKLIST = ["ERT000002", "ERT000020"]
@@ -109,5 +110,3 @@ ENA_CHECKLIST_URL  = [
     "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/ERT000020?type=sequence",
     "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/*?type=sample"
 ]
-
-SANGER_SEQUENCING_CENTRE = "SANGER"

@@ -14,6 +14,7 @@ from .validator import SingleCellSchemaValidators  as required_validators
 from .validator import SingleCellOverallValidators as overall_validators
 from common.validators.validator import Validator
 from openpyxl.utils import get_column_letter
+from common.dal.profile_da import Profile
 import re
 
 l = Logger()
@@ -37,7 +38,7 @@ class SingleCellSchemasHandler:
         xls = pd.ExcelFile(url)
         return xls
 
-    def _parseSchemas(self, xls):
+    def _parseSchemas(self, schema_name, xls):
         enums_df = pd.read_excel(xls, "allowed_values")
         compoents_df = pd.read_excel(xls, "components", index_col="key")
         standards_df = pd.read_excel(xls, "standards", index_col="key")
@@ -66,7 +67,7 @@ class SingleCellSchemasHandler:
             raise Exception("Invalid regex")
 
         schemas_df.drop(columns=["regex_valid"], inplace=True)
-        
+
         for checklist_id in checklist_df.index:
                 #no duplicate name,label within a component with same versio and item_name
                 checklist_schema_df = schemas_df.drop(schemas_df[pd.isna(schemas_df[checklist_id])].index)
@@ -112,19 +113,18 @@ class SingleCellSchemasHandler:
         singlecell_dict["technologies"]= technology_df.to_dict("index")
         singlecell_dict["components"]= compoents_df.to_dict("index")
         singlecell_dict["checklists"]= checklist_df.to_dict("index")
-        singlecell_dict["name"] = "copo"
+        singlecell_dict["name"] = schema_name
         singlecell_dict["deleted"] = 0
 
         return singlecell_dict
 
 
-
-
     def write_manifest(self, singlecell_schema, checklist_id=None, singlecell=None, file_path=None):
-
+            
+            schema_name = singlecell_schema["name"]
             schemas = singlecell_schema["schemas"]
             checklists = singlecell_schema["checklists"]
-            component_names = singlecell_schema["components"]
+            #component_names = singlecell_schema["components"]
 
             # Cell formats
             unlocked_format = {'locked': False}
@@ -146,18 +146,18 @@ class SingleCellSchemasHandler:
                 'bg_color': '#D3D3D3'
             }
 
+            version = settings.MANIFEST_VERSION.get(schema_name, str())
+            if version:
+                version = "_v" + version
 
             for checklist in checklists.keys():
                 if checklist_id and checklist_id != checklist:
                     continue
  
                 schema_checklist = checklist
-                version = settings.MANIFEST_VERSION.get(checklist, str())
-                if version:
-                    version = "_v" + version
 
                 if not checklist_id or file_path is None: 
-                    file_path = os.path.join(settings.MANIFEST_PATH, settings.MANIFEST_FILE_NAME.format(checklist, version)  )            
+                    file_path = os.path.join(settings.MANIFEST_PATH, settings.MANIFEST_FILE_NAME.format(schema_name +"_" + checklist, version)  )            
  
                 data_validation_column_index = 0
 
@@ -268,9 +268,10 @@ class SingleCellSchemasHandler:
                         sheet.autofit()
     
     def updateSchemas(self):
-        url = "singlecellschemas_master.xlsx"
+        name = "COPO_SINGLE_CELL"
+        url = "singlecell_schema_main_v0.1.xlsx"
         xls = self._loadSchemas(url)
-        singlecell_schema = self._parseSchemas(xls)
+        singlecell_schema = self._parseSchemas(name, xls)
         SinglecellSchemas().get_collection_handle().find_one_and_update({"name": singlecell_schema["name"]},
                                                                             {"$set": singlecell_schema},
                                                                             upsert=True)
@@ -340,7 +341,9 @@ class SinglecellschemasSpreadsheet:
                 
                 #if self.data.empty:
                 #    raise Exception("Empty file")
-    
+                profile = Profile().get_record(self.profile_id)
+                schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
+
                 for key, df in self.data.items():  
                     #df = df.iloc[3:]  # remove the first 3 rows                  
                     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
@@ -348,7 +351,7 @@ class SinglecellschemasSpreadsheet:
                     df = df.apply(lambda x: x.str.strip())
                     #self.data.columns = self.data.columns.str.replace(" ", "")
                    
-                singlecell = SinglecellSchemas().get_collection_handle().find_one({"name":"copo"},{"schemas":1, "enums":1})
+                singlecell = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name},{"schemas":1, "enums":1})
                 self.schemas = singlecell["schemas"]
 
                 if self.schemas:

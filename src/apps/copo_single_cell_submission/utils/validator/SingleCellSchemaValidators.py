@@ -22,7 +22,7 @@ class MandatoryValuesValidator(Validator):
                     null_rows.extend(self.data[self.data[key].isna()].index.tolist())
                     for row in null_rows:
                         self.errors.append("%s : Missing data detected in column <strong>%s</strong> part at row <strong>%s</strong>." % (
-                            component, key, str(row + 1)))
+                            component, field["term_label"], str(row + 1)))
                         self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 

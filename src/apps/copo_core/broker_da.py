@@ -503,7 +503,7 @@ class BrokerDA:
         report_metadata["message"] = result.get("message", "success")
         self.context["action_feedback"] = report_metadata
         if result.get("status","success") == "success":
-            self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id, checklist_id=checklist_id, study_id=study_id)
+            self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id, checklist_id=checklist_id)
             self.context["component"] = "read"
         return self.context
 

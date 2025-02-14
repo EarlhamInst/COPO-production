@@ -43,7 +43,7 @@
     <input
       type="hidden"
       id="blank_manifest_url_{{checklist.primary_id}}"
-      value="{{ checklist.primary_id  | get_blank_manifest_url  }}"
+      value="{{ schema_name|get_blank_manifest_url:checklist.primary_id   }}"
     />
   {% endfor %}
   <input

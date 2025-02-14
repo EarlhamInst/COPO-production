@@ -3,6 +3,7 @@ from .da import SinglecellSchemas, Singlecell
 import pandas as pd
 from common.utils.helpers import get_datetime, get_not_deleted_flag
 from common.utils.helpers import notify_singlecell_status
+from common.dal.profile_da import Profile
 
 l = Logger()
 
@@ -14,8 +15,13 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
     column_keys = {}
     studies = []
     identifier_map = {}
+
+    profile = Profile().get_record(profile_id)
+    if not profile:
+        return dict(dataSet=data_set, columns=columns, components=list(columns.keys()))
+    schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
     if checklist_id:
-        schemas = SinglecellSchemas().get_schema(target_id=checklist_id)
+        schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
 
         for component_name, component_schema in schemas.items():
             columns[component_name] = []
@@ -33,7 +39,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
             column_keys[component_name] = ([item["term_name"] for item in component_schema])
  
          
-        studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"checklist_id": checklist_id}, projection={"study_id": 1, "components.study": 1})
+        studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"schema_name": schema_name, "checklist_id": checklist_id}, projection={"study_id": 1, "components.study": 1})
         if not studies:
             return dict(dataSet=data_set, columns=columns, components=list(columns.keys()))
         
@@ -87,9 +93,9 @@ def _check_child_component_data(singlecell_data, component_name, identifiers, id
 
         if not child_component_data_df.empty:
             children_df = child_component_data_df.loc[child_component_data_df[foreign_key].isin(identifiers)]
-            children_df["has_accession"] = children_df["accession"]!=""
-            if not children_df.loc[child_component_data_df["accession"]!=""].empty:
-                return False,  f'Record deleted failed! Following child records get accession number: "{ child_component_name.replace("_"," ").title() }" : { children_df.loc[child_component_data_df["accession"]!="", child_identifier_key].tolist()}' 
+            children_has_accession_df = children_df.loc[children_df["accession"]!="",child_identifier_key]
+            if not children_has_accession_df.empty:
+                return False,  f'{child_component_name}:{children_has_accession_df.tolist()} : record with accession number'
             _check_child_component_data(singlecell_data, child_component_name, children_df[child_identifier_key].tolist(),  identifier_map, child_map)
     return True, ""
 
@@ -127,7 +133,11 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
     else:
         is_single_study = False
 
-    schemas = SinglecellSchemas().get_schema(target_id=checklist_id)
+    profile = Profile().get_record(profile_id)
+    if not profile:
+        return dict(status='error', message="Profile not found!")
+    schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
+    schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
     identifier_map, foreignkey_map = SinglecellSchemas().get_key_map(schemas)
     child_map = SinglecellSchemas().get_child_map(foreignkey_map)
 
@@ -167,32 +177,45 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
     if not identifier_key:
         return dict(status='error', message="Identifier not found for component: " + component_name)
     
+    study_messag_map = {}
     for study_id in study_ids:
         singlecell_data =  Singlecell(profile_id=profile_id).get_collection_handle().find_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id }, {"components": 1, "profile_id":1, "checklist_id":1})
         
         if not singlecell_data:
-            return dict(status='error', message="Study not found for study_id: " + study_id)
-        
+            message=f"Record not found"
+            study_messag_map[study_id] = message
+            continue
+
         #delete the record if both of it and its child records have no accession number
         component_data_df = pd.DataFrame.from_records(singlecell_data["components"][component_name])
-        if not component_data_df.loc[(component_data_df[identifier_key].isin(identifiers)) & (component_data_df["accession"] !="")].empty:
-            return dict(status='error', message="Record deleted failed!")   
-     
-        result, message =  _check_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map)
-        if result:
-            #delete the record and the child records
-            _delete_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map)
-            component_data_df = component_data_df.drop(component_data_df[component_data_df[identifier_key].isin(identifiers)].index)
-            if not component_data_df.empty:
-                singlecell_data["components"][component_name] = component_data_df.to_dict(orient="records")
-            else:
-                singlecell_data["components"].pop(component_name, None)
+        component_data_has_accession_df  = component_data_df.loc[(component_data_df[identifier_key].isin(identifiers)) & (component_data_df["accession"] !=""), identifier_key]
+        if not component_data_has_accession_df.empty:
+            message= f'{component_name}:{component_data_has_accession_df.tolist()}: record with accession number'
+            study_messag_map[study_id] = message
+            continue
 
-            if singlecell_data["components"]:                    
-                Singlecell(profile_id=profile_id).get_collection_handle().update_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id}, {"$set": {"components": singlecell_data["components"], "last_modified": dt, "last_update_by": dt}})
-            else:
-                Singlecell(profile_id=profile_id).get_collection_handle().delete_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id})
+        result, message =  _check_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map)
+        if not result:
+            study_messag_map[study_id] = message
+ 
+    if study_messag_map:
+        message = "Record deleted failed!"
+        for key, msg in study_messag_map.items():
+            message += f"<br/>study:'{key}'|{msg}"
+        return dict(status='error', message=message)
+
+    for study_id in study_ids: 
+        #delete the record and the child records
+        _delete_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map)
+        component_data_df = component_data_df.drop(component_data_df[component_data_df[identifier_key].isin(identifiers)].index)
+        if not component_data_df.empty:
+            singlecell_data["components"][component_name] = component_data_df.to_dict(orient="records")
         else:
-            return {"status": "error", "message": message}
-        
+            singlecell_data["components"].pop(component_name, None)
+
+        if singlecell_data["components"]:                    
+            Singlecell(profile_id=profile_id).get_collection_handle().update_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id}, {"$set": {"components": singlecell_data["components"], "last_modified": dt, "last_update_by": dt}})
+        else:
+            Singlecell(profile_id=profile_id).get_collection_handle().delete_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id})
+ 
     return {"status": "success", "message": "Record deleted successfully!"}

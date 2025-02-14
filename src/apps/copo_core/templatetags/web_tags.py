@@ -61,12 +61,12 @@ def check_group(user, group_name):
     return group in user.groups.all()
 
 
-@register.filter(is_safe=True, name="get_blank_manifest_url")
-def get_blank_manifest_url(value):
+@register.filter(is_safe=True,  name="get_blank_manifest_url")
+def get_blank_manifest_url(version_name, checklist_id=None):
     manifest_version = settings.MANIFEST_VERSION
-    version = manifest_version.get(value.upper(), "")
+    version = manifest_version.get(version_name.upper(), "")
     version = "_v" + version if version else ""
-    return settings.MANIFEST_DOWNLOAD_URL.format(value.upper(), version)
+    return settings.MANIFEST_DOWNLOAD_URL.format(version_name+(("_"+checklist_id) if checklist_id else "").upper(), version)
 
 
 @register.filter(is_safe=True, name="get_sop_url")

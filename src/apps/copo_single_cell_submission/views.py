@@ -99,10 +99,12 @@ def save_singlecell_records(request):
     # create mongo sample objects from info parsed from manifest and saved to session variable
     singlecell_data = request.session.get("singlecell_data")
     profile_id = request.session["profile_id"]
-    #profile_name = Profile().get_name(profile_id)
+    profile = Profile().get_record(profile_id)
+    schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
+
     uid = str(request.user.id)
     checklist_id = request.session["checklist_id"]
-    schemas = SinglecellSchemas().get_schema(target_id=checklist_id)
+    schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
     identifier_map, _ = SinglecellSchemas().get_key_map(schemas)
     additional_fields_default_value_map = {"status":"pending", "accession" :"", "error":""}
     additional_fields = list(additional_fields_default_value_map.keys())
@@ -126,9 +128,16 @@ def save_singlecell_records(request):
         return HttpResponse(status=400, content="Empty manifest")
     
     study_id = singlecell_record["components"]["study"].iloc[0]["study_id"]
-    existing_record = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id})
+    condition_for_singlecell_record = {"profile_id": profile_id, "study_id": study_id}
+
+    existing_record = Singlecell().get_collection_handle().find_one(condition_for_singlecell_record)
     
-    if existing_record:
+    if existing_record and existing_record["deleted"] != helpers.get_deleted_flag():
+        if existing_record["schema_name"] != schema_name :
+            return HttpResponse(status=400, content=f'Study already exists with different schema: {existing_record["schema_name"]}')
+        if existing_record["checklist_id"] != checklist_id:
+            return HttpResponse(status=400, content=f'Study already exists with different checklist: {existing_record["checklist_id"]}')
+        
         for component_name, existing_component_data in existing_record["components"].items():
             component_data_df = singlecell_record["components"].get(component_name,pd.DataFrame())
             existing_component_data_df = pd.DataFrame.from_records(existing_component_data)
@@ -189,20 +198,21 @@ def save_singlecell_records(request):
 
         singlecell_record["components"][component_name] = component_data_df.to_dict(orient="records")
 
-    condition = {"profile_id": profile_id, "study_id": study_id}
 
     singlecell_record["updated_by"] = uid
     singlecell_record["date_updated"] = now
-    singlecell_record["checklist_id"] = checklist_id
+    singlecell_record["deleted"] = helpers.get_not_deleted_flag()
+
 
     insert_record = {}
     insert_record["created_by"] = uid
     insert_record["date_created"] = now
     insert_record["profile_id"] = profile_id
     insert_record["study_id"] = study_id
-    insert_record["deleted"] = helpers.get_not_deleted_flag()
+    singlecell_record["checklist_id"] = checklist_id
+    singlecell_record["schema_name"] = schema_name
 
-    singlecell_record = Singlecell().get_collection_handle().find_one_and_update(condition,
+    singlecell_record = Singlecell().get_collection_handle().find_one_and_update(condition_for_singlecell_record,
                                                             {"$set": singlecell_record, "$setOnInsert": insert_record },
                                                             upsert=True,  return_document=ReturnDocument.AFTER)   
 
@@ -213,16 +223,19 @@ def save_singlecell_records(request):
 @login_required
 def copo_singlecell(request, profile_id):
     request.session["profile_id"] = profile_id
+
     profile = Profile().get_record(profile_id)
-    singlecell_checklists = SinglecellSchemas().get_checklists(checklist_id="")
-    profile_checklist_ids = Singlecell().get_collection_handle().distinct("checklist_id", {"profile_id": profile_id})
+    schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
+    singlecell_checklists = SinglecellSchemas().get_checklists(schema_name=schema_name, checklist_id="")
+    profile_checklist_ids = Singlecell().get_collection_handle().distinct("checklist_id", {"profile_id": profile_id, "schema_name" : schema_name})
+
     checklists = []
     if singlecell_checklists:
         for key, item in singlecell_checklists.items():
             checklist = {"primary_id": key, "name": item.get("name", ""), "description": item.get("description", "")}
             checklists.append(checklist)
 
-    return render(request, 'copo/copo_single_cell.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids})
+    return render(request, 'copo/copo_single_cell.html', {'profile_id': profile_id, 'profile': profile, 'schema_name':schema_name, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids})
 
 
 @login_required
@@ -231,7 +244,7 @@ def download_manifest(request, profile_id, study_id):
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "study_id": study_id})
     if not singlecell:
         return HttpResponse(status=404, content="No record found")
-    schemas = SinglecellSchemas().get_collection_handle().find_one({"name":"copo"})
+    schemas = SinglecellSchemas().get_collection_handle().find_one({"name":singlecell["schema_name"]})
     bytesstring = BytesIO()
     SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=singlecell["checklist_id"], singlecell=singlecell, file_path=bytesstring)
     response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
