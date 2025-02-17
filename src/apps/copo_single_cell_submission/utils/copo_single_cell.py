@@ -1,12 +1,34 @@
 from common.utils.logger import Logger
 from .da import SinglecellSchemas, Singlecell
 import pandas as pd
-from common.utils.helpers import get_datetime, get_not_deleted_flag
-from common.utils.helpers import notify_singlecell_status
+from common.utils.helpers import get_datetime
 from common.dal.profile_da import Profile
+import requests
 
 l = Logger()
+#https://www.ebi.ac.uk/ols4/api/v2/ontologies/ncbitaxon/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_1224659?includeObsoleteEntities=false
+#https://www.ebi.ac.uk/ols4/api/v2/entities?search=infant+stage&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId=uberon
+def checkTopologyTerm(ontology_id, ancestor, term):
+    url = f"https://www.ebi.ac.uk/ols4/api/v2/entities?search={term}&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId={ontology_id}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        for elm in data.get("elements",[]):
+            if term in elm.get("label",[]):
+                for ancestor_uri in elm.get("hierarchicalAncestor",[]):
+                    if ancestor_uri.endswith(f"{ontology_id.upper()}_{ancestor}"):
+                        return True
+    return False
 
+def checkNCBITaxonTerm(term):
+    url = f"https://www.ebi.ac.uk/ols4/api/v2/ontologies/ncbitaxon/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_{term}?includeObsoleteEntities=false"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        curie = data.get("curie","")
+        if curie == f"NCBITaxon:{term}":
+            return True
+    return False
 
 def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
 

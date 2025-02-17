@@ -2,7 +2,7 @@ from common.validators.validator import Validator
 from django.conf import settings
 import re
 import pandas as pd
-
+from ..copo_single_cell  import checkTopologyTerm, checkNCBITaxonTerm
 lg = settings.LOGGER
 
 class MandatoryValuesValidator(Validator):
@@ -41,6 +41,7 @@ class IncorrectValueValidator(Validator):
                 for row in self.data[column]:
                     i += 1
                     if row:
+                        row = str(row).strip()
                         if type == "enum":
                             if row not in field.get("choice", []):
                                 self.errors.append( component + " : Invalid value '" + row + "' in column : '" + field["term_label"] + "' at row " + str(i) + ". Valid values are: " + str(field.get("choice")))
@@ -52,8 +53,23 @@ class IncorrectValueValidator(Validator):
                                 if not re.match(regex.strip(), str(row)):
                                     self.errors.append(component + " : Invalid value '" + row + "' in column : '" + field["term_label"] + "' at row " + str(i) + ". Valid value should match: " + str(regex))
                                     self.flag = False
-                        #elif type == "TAXON_FIELD":   
-
+                        elif type == "ontology":   
+                            reference = field.get("term_reference", "")
+                            if reference:
+                                if reference == "NCBITaxon":
+                                    if not checkNCBITaxonTerm(row):
+                                        self.errors.append(component + " : Invalid value '" + row + "' in column : '" + field["term_label"] + "' at row " + str(i) + ". invalid NCBITaxon term")
+                                        self.flag = False
+                                else:
+                                    #it should be "ontology_id:ancestor, i.e. EFO:0004466"
+                                    ontology_id = reference.split(":")[0]
+                                    ancestor = reference.split(":")[1]
+                                    if not checkTopologyTerm(ontology_id, ancestor, row):
+                                        self.errors.append(component + " : Invalid value '" + row + "' in column : '" + field["term_label"] + "' at row " + str(i) + ". invalid ontology term for : " + str(reference))
+                                        self.flag = False
+                            else:
+                                self.errors.append(component + " : Ontology term reference is missing for column : '" + field["term_label"] + "'")
+                                self.flag = False
                 if is_identifier:
                     df = self.data[column].groupby(self.data[column]).filter(lambda x: len(x) >1).value_counts()
                     for index, row in df.items():

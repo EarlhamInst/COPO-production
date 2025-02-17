@@ -211,18 +211,29 @@ class SingleCellSchemasHandler:
                             column_index = component_schema_df_transposed.columns.get_loc(name)
 
                             column_length = len(description)
-                            column_length = 50 if column_length > 50 else column_length
-                            cell_format = writer.book.add_format()
-                            if type == ("string"):
-                                cell_format.set_num_format('@')
+                            column_length = 70 if column_length > 70 else column_length
+                            column_letter = get_column_letter(column_index + 1)
+
+                            cell_format = writer.book.add_format({'num_format': '@', 'text_wrap': True, "valign":"top"})  #dosen't work
                             writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
 
-                            if type == "enum" and "choice" in field:
+                            if type == "string":
+                                pass
+
+                                """ doesn't work
+                                if field["term_regex"]: 
+                                    for i in range(5, 1000):
+                                        writer.sheets[sheet_name].data_validation(f"{column_letter}{i}", {'validate': 'custom', 
+                                                                                                          'value': f'=REGEXTEST({column_letter}{i}, "{field["term_regex"]}")',
+                                                                                                          'error_title': 'Invalid value',
+                                                                                                          'error_message': f'Invalid value for {name}. The format should match: {field["term_regex"]}',
+                                                                                                          'ignore_blank': True})
+                                """
+                            elif type == "enum" and "choice" in field:
                                 choice = field["choice"]
-                                column_letter = get_column_letter(column_index + 1)
-                                cell_start_end = '%s5:%s1048576' % (column_letter, column_letter)
 
                                 if len(choice) > 0:
+                                    cell_start_end = '%s5:%s1048576' % (column_letter, column_letter)
                                     source = ""
                                     number_of_char_for_choice = sum([len(str(x)) for x in choice])
                                     if number_of_char_for_choice <= 255:
@@ -240,7 +251,6 @@ class SingleCellSchemasHandler:
                                                                             {'validate': 'list',
                                                                             'source': source})
                                     
-
                         # Set the conditional format for rows 1
                         cell_format = writer.book.add_format(title_format)
                         writer.sheets[sheet_name].conditional_format(f'A1:{last_column_letter}1', {'type': 'no_errors', 'format': cell_format})
@@ -264,14 +274,18 @@ class SingleCellSchemasHandler:
                         writer.sheets["data_values"].protect()
                         writer.sheets["data_values"].hide()
 
+                    """
                     for sheet in writer.sheets.values():
                         sheet.autofit()
+                    """
     
     def updateSchemas(self):
         name = "COPO_SINGLE_CELL"
-        url = "singlecell_schema_main_v0.1.xlsx"
+        version = settings.MANIFEST_VERSION.get(name, str())
+        url = f"singlecell_schema_main_v{version}.xlsx"
         xls = self._loadSchemas(url)
-        singlecell_schema = self._parseSchemas(name, xls)
+        singlecell_schema = self._parseSchemas(name,xls)
+        singlecell_schema["version"] = version
         SinglecellSchemas().get_collection_handle().find_one_and_update({"name": singlecell_schema["name"]},
                                                                             {"$set": singlecell_schema},
                                                                             upsert=True)
@@ -316,7 +330,17 @@ class SinglecellschemasSpreadsheet:
 
    def get_filenames_from_manifest(self):
         #return list(self.data["File name"])
-        return []
+        filelist = []
+        for component, df in self.new_data.items():
+            schema = self.schemas[component]        
+            schema_df = pd.DataFrame.from_records(list(schema.values()))
+            schema_file_df = schema_df.loc[schema_df['term_type'] == 'file', "item_name"]
+            if not schema_file_df.empty:
+                file_df = df[schema_file_df.tolist()]
+                fileslist = file_df.values.tolist()
+                for files in fileslist:
+                    filelist.extend(files)
+        return filelist
 
    def loadManifest(self, m_format):
 
@@ -445,10 +469,8 @@ class SinglecellschemasSpreadsheet:
                     self.data[column.removeprefix(Validator.PREFIX_4_NEW_FIELD)] = self.new_data[column]
 
         # if we get here we have a valid spreadsheet
-        notify_singlecell_status(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid", action="info",
-                        html_id=self.component_info)
-        notify_singlecell_status(data={"profile_id": self.profile_id}, msg="", action="close", html_id="upload_controls", checklist_id=self.checklist_id)
-        notify_singlecell_status(data={"profile_id": self.profile_id}, msg="", action="make_valid", html_id=self.component_info, checklist_id=self.checklist_id)
+        #notify_singlecell_status(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid", action="info",
+        #                html_id=self.component_info)
 
         return True
 
