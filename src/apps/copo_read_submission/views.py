@@ -83,7 +83,8 @@ def parse_ena_spreadsheet(request):
             if s3obj.check_for_s3_bucket(bucket_name):
                 # get filenames from manifest
                 # check for files
-                if not s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=file_names):
+                result,_ = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=file_names)
+                if not result:
                     # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
                     return HttpResponse(status=400)
             else:

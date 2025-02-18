@@ -39,7 +39,7 @@ class SingleCellSchemasHandler:
         return xls
 
     def _parseSchemas(self, schema_name, xls):
-        enums_df = pd.read_excel(xls, "allowed_values")
+        enums_df = pd.read_excel(xls, "allowed_values", dtype=str)
         compoents_df = pd.read_excel(xls, "components", index_col="key")
         standards_df = pd.read_excel(xls, "standards", index_col="key")
         technology_df = pd.read_excel(xls, "technologies", index_col="key")
@@ -56,9 +56,6 @@ class SingleCellSchemasHandler:
         #no duplicate name,label within a component with same version and item_name
         #check foreign key constraints
         #check valid regex
-
-        #schemas_df = schemas_df.apply(lambda x: x.astype(str))
-        #schemas_df = schemas_df.apply(lambda x: x.str.strip())
         
         schemas_df["regex_valid"] = schemas_df["term_regex"].apply(lambda x: self._validate_regrex(x))
         if not schemas_df["regex_valid"].all():
@@ -352,7 +349,7 @@ class SinglecellschemasSpreadsheet:
                 # read excel and convert all to string
                 if m_format == "xls":
                     self.data = pd.read_excel(self.file, keep_default_na=False,
-                                                  na_values=lookup.NA_VALS, sheet_name=None)    
+                                                  na_values=lookup.NA_VALS, sheet_name=None, dtype=str)    
 
                     if not isinstance(self.data, dict): 
                         raise Exception("invalid single cell manifest") 

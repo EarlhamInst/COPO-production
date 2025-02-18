@@ -119,7 +119,7 @@ def validate_assembly(form, profile_id, assembly_id):
     if s3obj.check_for_s3_bucket(bucket_name):
         # get filenames from manifest
 
-        s3_file_etags = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=files)
+        s3_file_etags,_ = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=files)
         # check for files
         if not s3_file_etags:
             # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running

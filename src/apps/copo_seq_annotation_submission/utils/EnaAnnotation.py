@@ -61,7 +61,7 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
     if s3obj.check_for_s3_bucket(bucket_name):
         # get filenames from manifest
 
-        s3_file_etags = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=files)
+        s3_file_etags, _ = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=files)
         # check for files
         if not s3_file_etags:
             # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running

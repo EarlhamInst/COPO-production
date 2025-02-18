@@ -60,33 +60,40 @@ def parse_singlecell_spreadsheet(request):
         l.log("Single cell manifest loaded")
         if singlecell.validate():
             l.log("About to collect Single cell manifest")
-            """
+            
             # check s3 for bucket and files files
             bucket_name = str(request.user.id) + "_" + request.user.username
             # bucket_name = request.user.username
             file_names = singlecell.get_filenames_from_manifest()
 
-            if s3obj.check_for_s3_bucket(bucket_name):
-                # get filenames from manifest
-                # check for files
-                if not s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=file_names):
-                    # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
+            if file_names: 
+                if s3obj.check_for_s3_bucket(bucket_name):
+                    # get filenames from manifest
+                    # check for files
+                    result,msg = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=file_names)
+                    if not result:
+                        notify_singlecell_status(data={"profile_id": profile_id},
+                            msg=msg, action="error", html_id="singlecell_info")
+                        # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
+                        return HttpResponse(status=400)
+                else:
+                    # bucket is missing, therefore create bucket and notify user to upload files
+                    notify_singlecell_status(data={"profile_id": profile_id},
+                                    msg='s3 bucket not found, creating it', action="info",
+                                    html_id="singlecell_info")
+                    s3obj.make_s3_bucket(bucket_name=bucket_name)
+                    notify_singlecell_status(data={"profile_id": profile_id},
+                                    msg='Files not found, please click "Upload Data into COPO" and follow the '
+                                        'instructions.', action="error",
+                                    html_id="singlecell_info")
                     return HttpResponse(status=400)
-            else:
-                # bucket is missing, therefore create bucket and notify user to upload files
-                notify_singlecell_status(data={"profile_id": profile_id},
-                                   msg='s3 bucket not found, creating it', action="info",
-                                   html_id="sample_info")
-                s3obj.make_s3_bucket(bucket_name=bucket_name)
-                notify_singlecell_status(data={"profile_id": profile_id},
-                                msg='Files not found, please click "Upload Data into COPO" and follow the '
-                                    'instructions.', action="error",
-                                html_id="sample_info")
-                return HttpResponse(status=400)
+                
             notify_singlecell_status(data={"profile_id": profile_id},
                             msg='Spreadsheet is valid', action="info",
-                            html_id="sample_info")
-            """
+                            html_id="singlecell_info")
+            notify_singlecell_status(data={"profile_id": profile_id}, msg="", action="close", html_id="upload_controls", checklist_id=checklist_id)
+            notify_singlecell_status(data={"profile_id": profile_id}, msg="", action="make_valid", html_id="singlecell_info", checklist_id=checklist_id)
+
             singlecell.collect()
             return HttpResponse()
         return HttpResponse(status=400)
