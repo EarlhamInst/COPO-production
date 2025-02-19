@@ -125,7 +125,7 @@ mapping_api_patterns = [
 ]
 
 manifest_patterns = [
-    path('get_latest_manifest_versions/', manifest_view.get_latest_manifest_versions,
+    path('index/get_latest_manifest_versions', manifest_view.get_latest_manifest_versions,
          name="get_latest_manifest_versions"),
     path('get_manifest_fields/', manifest_view.get_manifest_fields,
          name="get_manifest_fields"),
@@ -141,7 +141,7 @@ manifest_patterns = [
             name="view_images"),
     path('validate_common_value/', manifest_view.validate_common_value,
          name="validate_common_value"),
-    path('index', TemplateView.as_view(
+    path('index/', TemplateView.as_view(
         template_name="manifests.html"), name='manifests'),
 ]
 

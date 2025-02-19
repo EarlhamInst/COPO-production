@@ -643,7 +643,7 @@ function showWizardBasedOnManifestType(manifest_type) {
 function get_current_manifest_version() {
   $.ajax({
     type: 'GET',
-    url: 'get_latest_manifest_versions/',
+    url: 'get_latest_manifest_versions',
     dataType: 'json',
     data: {},
   })

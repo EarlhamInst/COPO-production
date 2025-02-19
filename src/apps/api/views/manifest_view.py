@@ -20,11 +20,12 @@ from common.dal.sample_da import Sample
 from common.dal.profile_da import Profile
 
 def get_latest_manifest_versions(request):
-    return HttpResponse(json.dumps({'current_asg_manifest_version': settings.MANIFEST_VERSION.get("ASG", ""),
-                                    'current_dtolenv_manifest_version': settings.MANIFEST_VERSION.get("DTOLENV", ""),
-                                    'current_dtol_manifest_version': settings.MANIFEST_VERSION.get("DTOL", ""),
-                                    'current_erga_manifest_version': settings.MANIFEST_VERSION.get("ERGA", "")}))
-
+    excluded_manifests = ['DTOL_EI', 'DTOL_BARCODE']
+    manifest_versions = {f'current_{key.lower()}_manifest_version': value 
+                         for key, value in settings.MANIFEST_VERSION.items() 
+                         if key not in excluded_manifests
+                        }
+    return HttpResponse(json.dumps(manifest_versions))
 
 def get_manifest_fields(request):
     manifest_type = request.GET["manifest_type"]
