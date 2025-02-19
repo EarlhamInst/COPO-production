@@ -59,9 +59,10 @@ class Audit(DAComponent):
             # Merge sample and audit info
             merged_info = sample_info | audit_info
 
-            # Retrieve `manifest_id` and `profile_id` from the sample
+            # Retrieve `manifest_id`, `profile_id` and `copo_id` from the sample
             manifest_id = sample.get('manifest_id', str())
             profile_id = sample.get('profile_id', str())
+            copo_id = str(sample.get('_id', ''))  # Ensure copo_id is stored as a string
             
             # Retrieve or fetch profile title
             if manifest_id:
@@ -70,14 +71,14 @@ class Audit(DAComponent):
                         profile = Profile().get_record(profile_id)
                         profile_title_map[manifest_id] = profile.get('title', '')
 
-                # Get the profile title  
-                merged_info['copo_profile_title'] = profile_title_map.get(manifest_id, '')
+            # Get the profile title  
+            merged_info['copo_profile_title'] = profile_title_map.get(manifest_id, '')
             
-                # Sort the dictionary by key
-                sorted_info = {key: merged_info[key] for key in sorted(merged_info)}
+            # Sort the dictionary by key
+            sorted_info = {key: merged_info[key] for key in sorted(merged_info)}
 
-                # Use `manifest_id` as the key for the output dictionary
-                out[manifest_id] = sorted_info
+            # Use `copo_id` as the key for the output dictionary
+            out[copo_id] = sorted_info
         return out
     
     def get_merged_audit_and_sample_info(self, audits):
@@ -91,23 +92,16 @@ class Audit(DAComponent):
         audit_addtl_info = self.get_sample_info_based_on_audit(sample_id_list, audits)
         audit_addtl_df = pd.DataFrame.from_dict(audit_addtl_info, orient='index')
 
-        # Merge audits_df with audit_addtl_df on 'manifest_id'
+        # Merge audits_df with audit_addtl_df on 'copo_id'
         merged_df = audits_df.merge(
             audit_addtl_df, 
-            left_on='manifest_id', 
+            left_on='copo_id',  # Use 'copo_id' for merging
             right_index=True, 
             how='left', 
             suffixes=('_audit', '_sample')
         )
         
-        # Identify sample related fields
-        sample_columns = [col for col in merged_df.columns if col.endswith('_sample')]
-        
-        # Remove rows where all sample fields/columns are NaN or empty
-        filtered_df = merged_df.dropna(subset=sample_columns, how='all')
-        filtered_df = filtered_df[~(filtered_df[sample_columns] == '').all(axis=1)]
-        
-        return filtered_df, audit_addtl_info
+        return merged_df, audit_addtl_info
     
     def get_sample_update_audits(self, sample_id_list, updatable_field, project):
         out = []
@@ -145,9 +139,9 @@ class Audit(DAComponent):
         for _, row in merged_df.iterrows():
             sample_type = row.get('sample_type_audit', '')
 
-            # Fetch the corresponding audit_addtl_info for the row's manifest_id
-            manifest_id = row.get('manifest_id_audit','')
-            audit_info = audit_addtl_info.get(manifest_id, {})
+            # Fetch the corresponding audit_addtl_info for the row's copo_id
+            copo_id = str(row.get('copo_id_audit',''))
+            audit_info = audit_addtl_info.get(copo_id, {})
 
             # Merge each log entry in the 'update_log_sample' with the corresponding 'audit_info'
             update_log = [
@@ -183,9 +177,9 @@ class Audit(DAComponent):
         for _, row in merged_df.iterrows():
             sample_type = row.get('sample_type_audit', '')
 
-            # Fetch the corresponding audit_addtl_info for the row's manifest_id
-            manifest_id = row.get('manifest_id_audit','')
-            audit_info = audit_addtl_info.get(manifest_id, {})
+            # Fetch the corresponding audit_addtl_info for the row's copo_id
+            copo_id = str(row.get('copo_id_audit',''))
+            audit_info = audit_addtl_info.get(copo_id, {})
 
             # Merge each log entry in the 'update_log_sample' with the corresponding 'audit_info'
             update_log = [log | audit_info for log in row.get('update_log', [])]
@@ -230,9 +224,9 @@ class Audit(DAComponent):
         for _, row in merged_df.iterrows():
             sample_type = row.get('sample_type_audit', '')
 
-            # Fetch the corresponding audit_addtl_info for the row's manifest_id
-            manifest_id = row.get('manifest_id_audit','')
-            audit_info = audit_addtl_info.get(manifest_id, {})
+            # Fetch the corresponding audit_addtl_info for the row's copo_id
+            copo_id = str(row.get('copo_id_audit',''))
+            audit_info = audit_addtl_info.get(copo_id, {})
 
             # Merge each log entry in the 'update_log_sample' with the corresponding 'audit_info'
             update_log = []
@@ -271,9 +265,9 @@ class Audit(DAComponent):
         for _, row in merged_df.iterrows():
             sample_type = row.get('sample_type_audit', '')
 
-            # Fetch the corresponding audit_addtl_info for the row's manifest_id
-            manifest_id = row.get('manifest_id_audit','')
-            audit_info = audit_addtl_info.get(manifest_id, {})
+            # Fetch the corresponding audit_addtl_info for the row's copo_id
+            copo_id = str(row.get('copo_id_audit',''))
+            audit_info = audit_addtl_info.get(copo_id, {})
               
             update_log = [
                 log | audit_info
@@ -307,9 +301,9 @@ class Audit(DAComponent):
         for _, row in merged_df.iterrows():
             sample_type = row.get('sample_type_audit', '')
 
-            # Fetch the corresponding audit_addtl_info for the row's manifest_id
-            manifest_id = row.get('manifest_id_audit','')
-            audit_info = audit_addtl_info.get(manifest_id, {})
+            # Fetch the corresponding audit_addtl_info for the row's copo_id
+            copo_id = str(row.get('copo_id_audit',''))
+            audit_info = audit_addtl_info.get(copo_id, {})
 
             # Merge each log entry in the 'update_log_sample' with the corresponding 'audit_info'
             update_log = [log | audit_info for log in row.get('update_log', [])]

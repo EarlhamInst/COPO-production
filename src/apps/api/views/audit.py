@@ -97,7 +97,7 @@ def get_sample_updates_by_manifest_id(request, manifest_id):
         return HttpResponse(status=400, content=f'Invalid \'manifest_id\'(s) provided!')
 
     sample_updates = Audit().get_sample_update_audits_field_value_lst(
-        manifest_id_list, key='manifest_id',)
+        manifest_id_list, key='manifest_id')
 
     out = filter_audits_for_API(sample_updates)
 
