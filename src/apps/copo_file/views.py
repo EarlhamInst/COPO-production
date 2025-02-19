@@ -25,7 +25,7 @@ def process_urls(request):
                             msg='', action="info",
                             html_id="sample_info", group_name=channels_group_name)
     file_list = json.loads(request.POST["data"])
-    bucket_name = str(request.user.id) + "_" + request.user.username
+    bucket_name = str(request.user.id) + "-" + request.user.username
     # bucket_name = request.user.username
 
     s3con = S3Connection()
@@ -58,7 +58,7 @@ def upload_ecs_files(request, profile_id):
                                 action="error",
                                 html_id="file_info", group_name=channels_group_name)
 
-    bucket = str(request.user.id) + "_" + request.user.username
+    bucket = str(request.user.id) + "-" + request.user.username
 
     # Upload the file
     s3 = S3Connection()
@@ -70,7 +70,7 @@ def upload_ecs_files(request, profile_id):
     for f in files:
         i  = 0
         file = files[f]
-        key = file.name.replace(" ", "_")
+        key = file.name.replace(" ", "-")
         response = s3.s3_client.create_multipart_upload(Bucket=bucket, Key=key)
 
         parts = []

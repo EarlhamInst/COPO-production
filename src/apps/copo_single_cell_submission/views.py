@@ -1,17 +1,22 @@
 from django.contrib.auth.decorators import login_required
 from common.dal.profile_da import Profile
+from common.dal.submission_da import Submission
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from .utils.copo_single_cell import generate_singlecell_record
 from .utils.da import SinglecellSchemas, Singlecell
-from common.utils.helpers import get_datetime, notify_singlecell_status
+from common.utils.helpers import get_datetime, notify_singlecell_status, get_not_deleted_flag, get_deleted_flag
 from .utils.SingleCellSchemasHandler import SinglecellschemasSpreadsheet, SingleCellSchemasHandler
 from common.s3.s3Connection import S3Connection as s3
 from common.utils.logger import Logger
 import pandas as pd
 from pymongo import ReturnDocument
-from common.utils import helpers
 from io import BytesIO
+from django.conf import settings
+from os.path import join
+from common.dal.copo_da import  DataFile
+import common.ena_utils.FileTransferUtils as tx
+from common.dal.mongo_util import cursor_to_list
 
 l = Logger()
 
@@ -62,11 +67,17 @@ def parse_singlecell_spreadsheet(request):
             l.log("About to collect Single cell manifest")
             
             # check s3 for bucket and files files
-            bucket_name = str(request.user.id) + "_" + request.user.username
+            bucket_name = str(request.user.id) + "-" + request.user.username
             # bucket_name = request.user.username
-            file_names = singlecell.get_filenames_from_manifest()
+            file_names, msg = singlecell.get_filenames_from_manifest()
 
-            if file_names: 
+            if not file_names:
+               if msg:
+                notify_singlecell_status(data={"profile_id": profile_id},
+                            msg=msg, action="error",
+                            html_id="singlecell_info")
+                return HttpResponse(status=400)
+            else: 
                 if s3obj.check_for_s3_bucket(bucket_name):
                     # get filenames from manifest
                     # check for files
@@ -105,11 +116,13 @@ def parse_singlecell_spreadsheet(request):
 def save_singlecell_records(request):
     # create mongo sample objects from info parsed from manifest and saved to session variable
     singlecell_data = request.session.get("singlecell_data")
+    filenames = request.session.get("filenames")
     profile_id = request.session["profile_id"]
     profile = Profile().get_record(profile_id)
     schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
 
     uid = str(request.user.id)
+    username = request.user.username
     checklist_id = request.session["checklist_id"]
     schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
     identifier_map, _ = SinglecellSchemas().get_key_map(schemas)
@@ -139,7 +152,7 @@ def save_singlecell_records(request):
 
     existing_record = Singlecell().get_collection_handle().find_one(condition_for_singlecell_record)
     
-    if existing_record and existing_record["deleted"] != helpers.get_deleted_flag():
+    if existing_record and existing_record["deleted"] != get_deleted_flag():
         if existing_record["schema_name"] != schema_name :
             return HttpResponse(status=400, content=f'Study already exists with different schema: {existing_record["schema_name"]}')
         if existing_record["checklist_id"] != checklist_id:
@@ -208,7 +221,7 @@ def save_singlecell_records(request):
 
     singlecell_record["updated_by"] = uid
     singlecell_record["date_updated"] = now
-    singlecell_record["deleted"] = helpers.get_not_deleted_flag()
+    singlecell_record["deleted"] = get_not_deleted_flag()
 
 
     insert_record = {}
@@ -218,6 +231,72 @@ def save_singlecell_records(request):
     insert_record["study_id"] = study_id
     singlecell_record["checklist_id"] = checklist_id
     singlecell_record["schema_name"] = schema_name
+
+
+    sub = dict()
+    sub["complete"] = "false"
+    sub["updated_by"] = uid
+    sub["deleted"] = get_not_deleted_flag()
+    sub["date_updated"] = now
+
+    insert_sub = dict()
+    insert_sub["date_created"] = now
+    insert_sub["created_by"] = uid
+    insert_sub["repository"] = "ena"
+    insert_sub["accessions"] = dict()
+    insert_sub["profile_id"] = profile_id
+    
+    sub = Submission().get_collection_handle().find_one_and_update({"profile_id": profile_id}, {"$set": sub,                                                             
+                                                             "$setOnInsert": insert_sub},
+                                                             upsert=True,
+                                                             return_document=ReturnDocument.AFTER)
+
+    #how about the files?
+    bucket_name = uid + "-" + username
+    file_location_folder = join(settings.LOCAL_UPLOAD_PATH, username, "singlecell")
+
+    file_locations = [join(file_location_folder, filename) for filename in filenames]   
+    datafiles = DataFile().get_collection_handle().find({"file_location": { "$in" : file_locations } })
+    datafiles = cursor_to_list(datafiles)
+    duplicated_files = [datafile for datafile in datafiles if datafile.get("study_id","") != study_id] 
+    if duplicated_files:
+        return HttpResponse(status=400, content="The following files are already associated with another study: " + ", ".join( [ datafile["file_name"] + " : " + datafile.get("study_id","NULL") for datafile in duplicated_files]))
+    
+    datafile_map = {datafile["file_location"]: datafile for datafile in cursor_to_list(datafiles)}
+    
+
+    datafile_list = [] 
+    for filename in filenames:
+        df = dict()
+        df["profile_id"] = profile_id
+        df["study_id"] = study_id
+        df["file_name"] = filename
+        df["name"] = filename
+        df["file_hash"] = "TODO"
+        file_location = join(file_location_folder, filename)
+        df["file_location"] = file_location
+        df["ecs_location"] = bucket_name + "/" + filename
+        df["file_type"] = "TODO"
+        df["type"] = "RAW DATA FILE"
+        df["bucket_name"] = bucket_name
+        df["deleted"] = get_not_deleted_flag()
+        datafile = datafile_map.get(file_location, None)
+        file_changed = True
+        if datafile:                
+            if datafile["file_hash"] == df["file_hash"]:
+                file_changed = False
+            file_id = str(datafile["_id"])
+        result = DataFile().get_collection_handle().update_one({"file_location": file_location}, {"$set": df},
+                                                                        upsert=True)
+        if result.upserted_id:
+            file_id = str(result.upserted_id)
+        if file_changed:
+            datafile_list.append(file_id)
+
+    """
+    for f in datafile_list:
+        tx.make_transfer_record(file_id=str(f), submission_id=str(sub["_id"]), remote_location=str(sub["_id"]) + "/reads/")
+    """
 
     singlecell_record = Singlecell().get_collection_handle().find_one_and_update(condition_for_singlecell_record,
                                                             {"$set": singlecell_record, "$setOnInsert": insert_record },

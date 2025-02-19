@@ -66,7 +66,7 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
 
     ecs_files = []
     s3obj = S3Connection()
-    bucket_name = str(request.user.id) + "_" + request.user.username
+    bucket_name = str(request.user.id) + "-" + request.user.username
     if s3obj.check_for_s3_bucket(bucket_name):
         files = s3obj.list_objects(bucket_name)
         if files:

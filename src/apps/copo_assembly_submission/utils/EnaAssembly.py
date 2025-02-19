@@ -83,7 +83,7 @@ def validate_assembly(form, profile_id, assembly_id):
     s3obj = s3()
     dt = get_datetime()
     request = ThreadLocal.get_current_request()
-    bucket_name = str(request.user.id) + "_" + request.user.username
+    bucket_name = str(request.user.id) + "-" + request.user.username
     these_assemblies = join(settings.MEDIA_ROOT, "ena_assembly_files", profile_id)
     Path(these_assemblies).mkdir(parents=True,exist_ok=True)
     #these_assemblies_url_path = f"{settings.MEDIA_URL}ena_assembly_files/{profile_id}"

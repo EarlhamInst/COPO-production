@@ -3,6 +3,7 @@ from .da import SinglecellSchemas, Singlecell
 import pandas as pd
 from common.utils.helpers import get_datetime
 from common.dal.profile_da import Profile
+from common.dal.copo_da import  DataFile
 import requests
 
 l = Logger()
@@ -121,19 +122,50 @@ def _check_child_component_data(singlecell_data, component_name, identifiers, id
             _check_child_component_data(singlecell_data, child_component_name, children_df[child_identifier_key].tolist(),  identifier_map, child_map)
     return True, ""
 
-def _delete_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map):
+
+def _delete_datafile(profile_id, to_be_delete_component_data_df, schema):
+    #delete the datafiles
+    schema_df = pd.DataFrame.from_records(schema)
+    schema_file_df = schema_df.loc[schema_df["term_type"] == "file", "term_name"]
+    if not schema_file_df.empty:
+        file_df = to_be_delete_component_data_df[schema_file_df.tolist()]
+        file_df = file_df.dropna()
+        fileslist = file_df.values.tolist()
+        filelist = []
+        for files in fileslist:
+            filelist.extend(list(filter(None, files))) #remove empty strings
+
+        if filelist:
+            #delete the files
+            DataFile().get_collection_handle().delete_many({"profile_id": profile_id, "file_name": {"$in": filelist}})        
+
+def _delete_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map, schemas):
 
     for child_component_name, foreign_key in child_map.get(component_name, {}).items():
-
+        child_schema = schemas.get(child_component_name, [])
         child_component_data = singlecell_data["components"].get(child_component_name, [])
         child_component_data_df = pd.DataFrame.from_records(child_component_data)
         child_component_identifier_key = identifier_map.get(child_component_name, "")
         
         if not child_component_data_df.empty:
-            children_df = child_component_data_df.loc[child_component_data_df[foreign_key].isin(identifiers)]
-            if not children_df.empty:        
-                _delete_child_component_data(singlecell_data, child_component_name, children_df[child_component_identifier_key].tolist(), identifier_map, child_map)
+            to_be_delete_child_component_data_df = child_component_data_df.loc[child_component_data_df[foreign_key].isin(identifiers)]
+            if not to_be_delete_child_component_data_df.empty:        
+                _delete_child_component_data(singlecell_data, child_component_name, to_be_delete_child_component_data_df[child_component_identifier_key].tolist(), identifier_map, child_map, schemas)
 
+                #delete the datafiles
+                _delete_datafile(singlecell_data["profile_id"], to_be_delete_child_component_data_df, child_schema)
+                '''
+                child_schema_df = pd.DataFrame.from_records(child_schema)
+                child_schema_file_df = child_schema_df.loc[child_schema_df["term_type"] == "file", "term_name"]
+                if not child_schema_file_df.empty:
+                    filelist = []
+                    fileslist = to_be_delete_child_component_data_df[child_schema_file_df.values.tolist()]
+                    for files in fileslist:
+                        filelist.extend(list(filter(None, files)))
+                    if filelist:
+                        #delete the files
+                        DataFile().get_collection_handle().delete_many({"profile_id":singlecell_data["profile_id"], "file_name": {"$in": filelist}})        
+                '''
                 child_component_data_df = child_component_data_df.drop(child_component_data_df[child_component_data_df[foreign_key].isin(identifiers)].index)
                 if not child_component_data_df.empty:
                     singlecell_data["components"][child_component_name] = child_component_data_df.to_dict(orient="records")
@@ -226,10 +258,21 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
             message += f"<br/>study:'{key}'|{msg}"
         return dict(status='error', message=message)
 
+    #get the schema for the file type item
+    component_schema = schemas.get(component_name, [])
+
     for study_id in study_ids: 
+
+        component_data_df = pd.DataFrame.from_records(singlecell_data["components"][component_name])
+
         #delete the record and the child records
-        _delete_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map)
+        _delete_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map, schemas)
+
+        to_be_delete_component_data_df = component_data_df.loc[component_data_df[identifier_key].isin(identifiers)]
+        _delete_datafile(singlecell_data["profile_id"], to_be_delete_component_data_df, component_schema)
+        
         component_data_df = component_data_df.drop(component_data_df[component_data_df[identifier_key].isin(identifiers)].index)
+
         if not component_data_df.empty:
             singlecell_data["components"][component_name] = component_data_df.to_dict(orient="records")
         else:

@@ -146,13 +146,14 @@ class S3Connection():
         :param file_list: list of files to look for
         :return: a list containing the names of files _not_ found
         '''
+        msg = ""
         try:
-            try:
-                profile_id = get_current_request().session["profile_id"]
-            except AttributeError:
-                profile_id = "xxxx"
-            # channels_group_name = "read_status_" + profile_id
+            profile_id = get_current_request().session["profile_id"]
+        except AttributeError:
+            profile_id = "xxxx"
 
+        # channels_group_name = "read_status_" + profile_id
+        try:
             missing_files = list()
             etags = dict()
             # get objects in the supplied bucket name
@@ -161,8 +162,8 @@ class S3Connection():
             if not bucket_files:
                 msg = "Bucket not found: " + bucket_name
                 notify_read_status(data={"profile_id": profile_id}, msg=msg, action="info",
-                                   html_id="sample_info")
-                return False
+                                   html_id="sample_info")                 
+                return False, msg
 
             for f in file_list:
 
@@ -190,20 +191,25 @@ class S3Connection():
                         missing_files.append(file)
             if len(missing_files) > 0:
                 # report missing files
-                notify_read_status(data={"profile_id": profile_id}, msg="Files Missing: " + str(
-                    missing_files) + ". Please upload these files to COPO and try again.",
+                msg="Files Missing: " + str(missing_files) + ". Please upload these files to COPO and try again."
+              
+                notify_read_status(data={"profile_id": profile_id}, msg=msg,
                                    action="error",
                                    html_id="sample_info")
+                
                 # return false to halt execution
-                return False
+                return False, msg
             else:
-                return etags
+                return etags, ''
 
         except KeyError as e:
-            notify_read_status(data={"profile_id": profile_id}, msg="Key Error occurred...cannot find key: " + str(e),
+            msg = "Key Error occurred...cannot find key: " + str(e)
+             
+            notify_read_status(data={"profile_id": profile_id}, msg=msg,
                                action="info",
                                html_id="sample_info")
-            return False
+           
+            return False, msg
         except Exception as e:
             Logger().exception(e)
             notify_read_status(data={"profile_id": profile_id}, msg="An error has occurred: " + str(e), action="info",
@@ -212,7 +218,7 @@ class S3Connection():
 
     def validate_and_delete(self, target_id=str(), target_ids=list()):
         user = get_current_user()
-        bucket_name = str(user.id) + "_" + user.username
+        bucket_name = str(user.id) + "-" + user.username
         filestatus_map = EnaFileTransfer().get_transfer_status_by_ecs_path(ecs_locations=[ f"{bucket_name}/{key}" for key in target_ids])
         file_not_deleted = []
         status = False

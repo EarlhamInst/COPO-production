@@ -16,6 +16,7 @@ from common.validators.validator import Validator
 from openpyxl.utils import get_column_letter
 from common.dal.profile_da import Profile
 import re
+import collections
 
 l = Logger()
 
@@ -303,6 +304,7 @@ class SinglecellschemasSpreadsheet:
         self.symbiont_list = []
         self.validator_list = []
         self.schemas = None
+        self.filenames = []
         # if a file is passed in, then this is the first time we have seen the spreadsheet,
         # if not then we are looking at creating samples having previously validated
         if file:
@@ -328,16 +330,26 @@ class SinglecellschemasSpreadsheet:
    def get_filenames_from_manifest(self):
         #return list(self.data["File name"])
         filelist = []
+        msg = ""
         for component, df in self.new_data.items():
             schema = self.schemas[component]        
             schema_df = pd.DataFrame.from_records(list(schema.values()))
             schema_file_df = schema_df.loc[schema_df['term_type'] == 'file', "item_name"]
             if not schema_file_df.empty:
                 file_df = df[schema_file_df.tolist()]
+                file_df = file_df.dropna()
                 fileslist = file_df.values.tolist()
                 for files in fileslist:
-                    filelist.extend(files)
-        return filelist
+                    filelist.extend(list(filter(None, files))) #remove empty strings
+
+        #find duplicated files
+        duplicated_files = [item for item, count in collections.Counter(filelist).items() if count > 1]
+        if duplicated_files:
+            msg = "Duplicated files: " + ", ".join(duplicated_files) + " in the manifest."
+            return False, msg
+        else: 
+            self.filenames = filelist            
+        return filelist, msg
 
    def loadManifest(self, m_format):
 
@@ -491,150 +503,8 @@ class SinglecellschemasSpreadsheet:
         # store sample data in the session to be used to create mongo objects
         self.req.session[f"{self.component}_data"] = singlecell_data
         self.req.session["checklist_id"] = self.checklist_id
+        self.req.session["filenames"] = self.filenames
 
         notify_singlecell_status(data={"profile_id": self.profile_id, "components": list(self.data.keys())}, msg=singlecell_data, action="make_table",
                         html_id=f"{self.component}_parse_table", checklist_id=self.checklist_id)
         
-
-def write_manifest1(singlecell_schema, samples=None, file_path=None):
-
-        schemas = singlecell_schema["schemas"]
-        checklists = singlecell_schema["checklists"]
-        component_names = singlecell_schema["components"]
-
-        # Cell formats
-        unlocked_format = {'locked': False}
-
-        title_format = {
-            'bold' : True
-        }
-
-        desc_eg_format = {
-            'text_wrap': True, 
-            'italic': True,
-            'font_color': '#808080'
-        }
-
-        seperator_format = {
-            'bold': True,
-            'align': 'left',
-            'valign': 'vcenter',
-            'bg_color': '#D3D3D3'
-        }
-
-
-        for checklist in checklists.keys():
-            schema_checklist = checklist
-            version = settings.MANIFEST_VERSION.get(checklist, str())
-            if version:
-                version = "_v" + version
-            file_path = os.path.join(settings.MANIFEST_PATH, settings.MANIFEST_FILE_NAME.format(checklist, version)  )            
-            data_validation_column_index = 0
-
-            with pd.ExcelWriter(path=file_path, engine='xlsxwriter' ) as writer:  
-
-                for component_name, schema in schemas.items():
-                    component_schema_df = pd.DataFrame.from_records(schema)
-                    component_schema_df = component_schema_df.drop(component_schema_df[pd.isna(component_schema_df[schema_checklist])].index)
-                    
-                    if component_schema_df.empty:
-                        continue
-                    
-                    component_schema_df["choice"] = component_schema_df[component_schema_df["term_type"] == "enum"]["term_name"].apply(lambda x:singlecell_schema.get("enums",[]).get(x, []))
-                    component_schema_df["mandatory"] = component_schema_df[schema_checklist]
-                    component_schema_df.set_index(keys="term_name", inplace=True)
-        
-                    #component_schema_df.sort_values(by=['mandatory','term_label'], inplace=True)
-                    component_schema_df.loc[component_schema_df["mandatory"] == "M" , "term_label"] = component_schema_df["term_label"]
-                    component_schema_df.loc[component_schema_df["mandatory"] != "M", "term_label"] = component_schema_df["term_label"] + " (optional)"
-
-                    component_schema_df_transposed = component_schema_df.transpose()
-                    component_schema_df_transposed = component_schema_df_transposed.loc[["term_label", "term_description", "term_example"]]
-                    component_schema_df_transposed.columns = component_schema_df_transposed.iloc[0]
-
-                    component_data_df = pd.DataFrame.from_records(singlecell[component_name])
-                    new_column_name = { name : name.replace(" (optional)", "",-1) for name in df.columns.values.tolist() }
-                    self.new_data[component] = df.rename(columns=new_column_name)    
-                    new_column_name = {item["term_label"] : key for key, item in self.schemas[component].items() }
-                    self.new_data[component].rename(columns=new_column_name, inplace=True)
-                    self.new_data[component] = self.new_data[component].iloc[3:]  # remove the first 3 rows
-
-                    """
-                    if samples is not None:
-                        sample_df = pd.DataFrame.from_records(samples)
-                        df1 = pd.concat([df1, sample_df], axis=0, join="outer")
-                        df1 = df1.fillna("")
-                    """
-
-                    #sheet_name = component_names.get(component_name, {}).get("name", component_name)
-                    #sheet_name = sheet_name[:31]
-                    sheet_name = component_name
-                    component_schema_df_transposed.to_excel(writer, sheet_name=sheet_name, index=False, header=False)
-
-                    last_column_letter = get_column_letter(len(component_schema_df_transposed.columns))
-                    
-                    for index, field in component_schema_df.iterrows():
-                        name = field["term_label"]
-                        description = field.get("term_description", name)
-                        type = field.get("term_type","string")
-                        if name not in component_schema_df_transposed.columns:
-                            continue
-                        column_index = component_schema_df_transposed.columns.get_loc(name)
-
-                        column_length = len(description)
-                        column_length = 50 if column_length > 50 else column_length
-                        cell_format = writer.book.add_format()
-                        if type == ("string"):
-                            cell_format.set_num_format('@')
-                        writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
-
-                        if type == "enum" and "choice" in field:
-                            choice = field["choice"]
-                            column_letter = get_column_letter(column_index + 1)
-                            cell_start_end = '%s5:%s1048576' % (column_letter, column_letter)
-
-                            if len(choice) > 0:
-                                source = ""
-                                number_of_char_for_choice = sum([len(str(x)) for x in choice])
-                                if number_of_char_for_choice <= 255:
-                                    source = choice
-                                else:
-                                    s = pd.Series(choice, name=field["term_label"])
-                                    s.to_frame().to_excel(writer, sheet_name="data_values", index=False, header=True, startrow=0, startcol=data_validation_column_index)
-                                    column_letter = get_column_letter(data_validation_column_index + 1)
-                                    column_length = max(s.astype(str).map(len).max(), len(field["term_label"]))
-                                    writer.sheets["data_values"].set_column(data_validation_column_index, data_validation_column_index, column_length)
-                                    source = "=%s!$%s$2:$%s$%s" % ("data_values", column_letter, column_letter, str(len(choice) + 1))
-                                    data_validation_column_index = data_validation_column_index + 1
-
-                                writer.sheets[sheet_name].data_validation(cell_start_end,
-                                                                        {'validate': 'list',
-                                                                        'source': source})
-                                
-
-                    # Set the conditional format for rows 1
-                    cell_format = writer.book.add_format(title_format)
-                    writer.sheets[sheet_name].conditional_format(f'A1:{last_column_letter}1', {'type': 'no_errors', 'format': cell_format})
-
-                    cell_format = writer.book.add_format(seperator_format)
-                    writer.sheets[sheet_name].write("A4", "FILL OUT INFORMATION BELOW THIS LINE", cell_format)
-
-                    # Set the conditional format for locking rows 2 to 3
-                    cell_format = writer.book.add_format(desc_eg_format)
-                    writer.sheets[sheet_name].conditional_format(f'A2:{last_column_letter}3', {'type': 'no_errors', 'format': cell_format})
-               
-                    # Set all rows below row 4 to unlocked
-                    cell_format = writer.book.add_format(unlocked_format)
-                    for row in range(4, 1004):
-                        writer.sheets[sheet_name].set_row(row, None, cell_format)
-                    
-                    # Protect the worksheet
-                    writer.sheets[sheet_name].protect()
-                    
-                if "data_values" in writer.sheets:
-                    writer.sheets["data_values"].protect()
-                    writer.sheets["data_values"].hide()
-
-                for sheet in writer.sheets.values():
-                    sheet.autofit()
- 

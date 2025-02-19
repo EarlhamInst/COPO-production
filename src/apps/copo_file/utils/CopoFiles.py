@@ -24,7 +24,7 @@ def generate_files_record(user_id=str()):
         return dict(dataSet=data_set,
                     columns=columns,
                     )
-    bucket_name = str(user_id) + "_" + user.username
+    bucket_name = str(user_id) + "-" + user.username
     #bucket_size = 0
     if s3obj.check_for_s3_bucket(bucket_name):
         files = s3obj.list_objects(bucket_name)
