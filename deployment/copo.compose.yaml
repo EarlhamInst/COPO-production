@@ -1,5 +1,65 @@
 version: "3.9"
+
+# Settings and configurations that are common for all containers
+x-minio-common: &minio-common
+  image: quay.io/minio/minio:RELEASE.2025-02-18T16-25-55Z
+  command: server --console-address ":9001" http://minio{1...2}/data{1...2}
+  expose:
+    - "9000"
+    - "9001"
+  # environment:
+    # MINIO_ROOT_USER: minioadmin
+    # MINIO_ROOT_PASSWORD: minioadmin
+  healthcheck:
+    test: ["CMD", "mc", "ready", "local"]
+    interval: 5s
+    timeout: 5s
+    retries:  5
+  environment:
+    - MINIO_ROOT_USER_FILE=/run/secrets/minio_access_key
+    - MINIO_ROOT_PASSWORD_FILE=/run/secrets/minio_secret_key
+  secrets:
+    - minio_access_key
+    - minio_secret_key
+  networks:
+    copo-frontend-network:
+    copo-backend-network:
+  deploy:
+    replicas: 1
+    endpoint_mode: dnsrr
+    restart_policy:
+      condition: any
+    resources:
+      limits:
+        cpus: '2'
+        memory: 2GB
+      reservations:
+        cpus: '0.4'
+        memory: 512mb
+    update_config:
+      parallelism: 1
+      delay: 10s
 services:
+  minio1:
+    <<: *minio-common
+    hostname: minio1
+    volumes:
+      - data1-1:/data1
+      - data1-2:/data2
+    deploy:
+       placement:
+        constraints:
+          - "node.labels.offline-service==true"
+  minio2:
+    <<: *minio-common
+    hostname: minio2
+    volumes:
+      - data2-1:/data1
+      - data2-2:/data2
+    deploy:
+       placement:
+        constraints:
+          - "node.labels.web-service==true"
   web:
     image: copo/copo-new-web:v2.0.34.2
     entrypoint:
@@ -210,10 +270,14 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "9000:9000"
+      - "9001:9001"
     environment:
       - copoweb=copo_web
     depends_on:
       - web
+      - minio1
+      - minio2
     deploy:
       replicas: 1
       restart_policy:
@@ -479,6 +543,10 @@ secrets:
     external: true
   ecs_secret_key:
     external: true
+  minio_access_key:
+    external: true
+  minio_secret_key:
+    external: true
 volumes:
   web-data:
     external: true
@@ -497,4 +565,12 @@ volumes:
   b2drop-permits:
     external: true
   singlecellschemas:
+    external: true
+  minio-data1-1:
+    external: true
+  minio-data1-2:
+    external: true
+  minio-data2-1:
+    external: true
+  minio-data2-2:
     external: true
