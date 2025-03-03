@@ -454,7 +454,12 @@ class Sample(DAComponent):
                 {"$sort": {"time_created": -1}},
 
             ]))
-
+        
+    def get_samples_by_taxon_id(self, taxon_ids):
+        return cursor_to_list(self.get_collection_handle().find(
+            {"TAXON_ID": {"$in": taxon_ids}}
+        ))
+        
     def get_all_dtol_samples(self):
         return cursor_to_list(self.get_collection_handle().find(
             {"sample_type": "dtol"},

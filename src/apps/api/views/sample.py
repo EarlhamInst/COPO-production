@@ -440,6 +440,20 @@ def get_by_field(request, dtol_field, value):
         out = filter_for_API(sample_list, add_all_fields=True)
     return finish_request(out)
 
+def get_samples_by_taxon_id(request, taxon_ids):
+    out = list()
+    # Get sample by taxon id
+    sample_taxon_ids = taxon_ids.split(',')
+    # Strip white space
+    sample_taxon_ids = list(map(lambda x: x.strip(), sample_taxon_ids))
+    # Remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
+    sample_taxon_ids[:] = [x for x in sample_taxon_ids if x]
+    sample_taxon_ids = list(set(sample_taxon_ids))  # Remove duplicates
+    
+    samples = Sample().get_samples_by_taxon_id(sample_taxon_ids)
+    if samples:
+        out = filter_for_API(samples, add_all_fields=True)
+    return finish_request(out)
 
 def get_study_from_sample_accession(request, accessions):
     ids = accessions.split(",")

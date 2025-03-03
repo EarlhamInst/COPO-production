@@ -664,6 +664,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/SampleList'
 
+  /sample/taxon_id/{taxon_ids}:
+    get:
+      tags:
+        - Sample
+      summary: Get sample records by taxon ids
+      description: >
+        Get full sample information for the samples returned from the given {taxon_ids}
+      parameters:
+        - name: taxon_ids
+          in: path
+          required: true
+          description: Format - a single taxon ID for querying one taxon, or a comma-separated list of taxon IDs for querying multiple taxa.
+          schema:
+            type: string
+            minimum: 1
+        - $ref: '#/components/parameters/standard'
+        - $ref: '#/components/parameters/return_type'
+      responses:
+        '200': # status code
+          description: A JSON array sample objects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleList'
+
   /sample/with_submitted_bioimages:
     get:
       tags:
@@ -1543,8 +1568,6 @@ components:
       enum:
         [
           'ASSOCIATED_PROJECT_ACCESSIONS',
-          'ASSOCIATED_TRADITIONAL_KNOWLEDGE_APPLICABLE',
-          'ASSOCIATED_TRADITIONAL_KNOWLEDGE_LABEL',
           'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID',
           'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE',
           'BARCODE_HUB',
@@ -1631,7 +1654,6 @@ components:
           'SPECIMEN_ID',
           'SPECIMEN_IDENTITY_RISK',
           'SYMBIONT',
-          'TAXON_ID',
           'TAXON_REMARKS',
           'TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION',
           'TIME_OF_COLLECTION',

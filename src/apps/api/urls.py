@@ -60,6 +60,8 @@ dtol_api_patterns = [
             name='get_by_dtol_field'),
     re_path(r'^sample/sequencing_centre', s.get_samples_by_sequencing_centre,
             name='get_samples_by_sequencing_centre'),
+    re_path(r'^sample/taxon_id/(?P<taxon_ids>[0-9, ]+)', s.get_samples_by_taxon_id,
+            name='get_samples_by_taxon_id'),
     re_path(r'^sample/dtol/num_samples', s.get_num_dtol_samples,
             name='get_num_dtol_samples'),
     re_path(r'^sample/associated_tol_project/(?P<value>[a-zA-Z-_]+)',

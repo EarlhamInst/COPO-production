@@ -217,7 +217,7 @@ class S3Connection():
         file_not_deleted = []
         status = False
         for key in target_ids:
-            #ok to delete the file if there is no need to tranfer to ENA
+            #ok to delete the file if there is no need to transfer to ENA
             if filestatus_map.get(f"{bucket_name}/{key}", "ena_complete") == "ena_complete":
                 self.s3_client.delete_object(Bucket=bucket_name, Key=key)
                 status = True
