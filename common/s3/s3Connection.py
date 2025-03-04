@@ -7,6 +7,7 @@ from common.utils.logger import Logger
 from boto3.s3.transfer import TransferConfig
 import logging
 from common.dal.copo_da import EnaFileTransfer
+from common.utils.helpers import get_env
 
 
 class S3Connection():
@@ -15,10 +16,11 @@ class S3Connection():
     """
 
     def __init__(self, profile_id=str()):
-        self.ecs_endpoint = s.ECS_ENDPOINT
-        self.ecs_access_key_id = s.ECS_ACCESS_KEY_ID
-        self.ecs_secret_key = s.ECS_SECRET_KEY
-        self.ecs_endpoint_external = s.ECS_ENDPOINT_EXTERNAL
+        # settings for ECS
+        self.ecs_access_key_id = get_env('ECS_ACCESS_KEY_ID')
+        self.ecs_secret_key = get_env('ECS_SECRET_KEY')
+        self.ecs_endpoint = get_env('ECS_ENDPOINT')
+        self.ecs_endpoint_external = get_env('ECS_ENDPOINT_EXTERNAL')
 
         self.expiration = 60 * 60 * 24
         self.path = '/'
