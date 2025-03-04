@@ -215,6 +215,11 @@ class SingleCellSchemasHandler:
                             cell_format = writer.book.add_format({'num_format': '@', 'text_wrap': True, "valign":"top"})  #dosen't work
                             writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
 
+                            if field["mandatory"] == "M":
+                                cell_format = writer.book.add_format(title_format)
+                                writer.sheets[sheet_name].conditional_format(f'{column_letter}1', {'type': 'no_errors', 'format': cell_format})                            
+                                #writer.sheets[sheet_name].write(f"{column_letter}1", name, cell_format)
+                           
                             if type == "string":
                                 pass
 
@@ -249,9 +254,7 @@ class SingleCellSchemasHandler:
                                                                             {'validate': 'list',
                                                                             'source': source})
                                     
-                        # Set the conditional format for rows 1
-                        cell_format = writer.book.add_format(title_format)
-                        writer.sheets[sheet_name].conditional_format(f'A1:{last_column_letter}1', {'type': 'no_errors', 'format': cell_format})
+
 
                         cell_format = writer.book.add_format(seperator_format)
                         writer.sheets[sheet_name].write("A4", "FILL OUT INFORMATION BELOW THIS LINE", cell_format)

@@ -99,6 +99,7 @@ $(document).on('document_ready', function () {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');
       $(element).html(d.message);
+      $('#export_error_button').prop("disabled", false)
       //$("#spinner").fadeOut()
     } else if (d.action === 'make_table') {
  
@@ -264,12 +265,19 @@ $(document).on('document_ready', function () {
     $('#singlecell_spreadsheet_modal').on('show.bs.modal', function (event) {
         var modal = $(this)     
         modal.find('#upload_singlecell_manifest_button').prop("disabled", false)
+        modal.find('#export_error_button').prop("disabled", true)
         modal.find('#save_singlecell_button').prop('disabled', true)   
    
         modal.find('#upload_singlecell_manifest_button')
         .off('click')
         .on('click', function (event) {
           modal.find('#file').click()
+        });
+
+        modal.find('#export_error_button')
+        .off('click')
+        .on('click', function (event) {
+          doDL($("#singlecell_info").html());
         });
 
         modal.find('#save_singlecell_button')
@@ -290,6 +298,7 @@ $(document).on('document_ready', function () {
             return;
           }
           modal.find('#upload_singlecell_manifest_button').prop('disabled', true);
+          modal.find('#export_error_button').prop("disabled", true)
           modal.find('#save_singlecell_button').prop('disabled', "true")
 
           tabs = $('#singlecell-tabs');
@@ -533,3 +542,16 @@ function save_singlecell_data() {
       }
     });
 }
+
+
+function doDL(s){
+  function dataUrl(data) {return "data:x-application/text," + escape(data);}
+  var downloadLink = document.createElement("a");
+  downloadLink.href = dataUrl(s);
+  downloadLink.download = "error.html";
+
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+}
+ 
