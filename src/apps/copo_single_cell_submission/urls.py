@@ -4,8 +4,6 @@ from . import views
 app_name = 'copo_single cell_schemas'
 
 urlpatterns = [
-    path('singlecell_manifest_validate/<profile_id>', views.singlecell_manifest_validate,
-         name="singlecell_manifest_validate"),
 
     path('parse_singlecell_spreadsheet/', views.parse_singlecell_spreadsheet,
          name="parse_singlecell_spreadsheet"),

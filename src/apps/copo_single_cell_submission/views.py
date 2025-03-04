@@ -21,20 +21,6 @@ from common.dal.mongo_util import cursor_to_list
 l = Logger()
 
 @login_required()
-def singlecell_manifest_validate(request, profile_id):
-    request.session["profile_id"] = profile_id
-    checklist_id = request.GET.get("checklist_id")
-    data = {"profile_id": profile_id}
-
-    if checklist_id:
-        checklists = SinglecellSchemas().get_checklists(checklist_id)
-        if checklists:
-            data["checklist_id"] = checklist_id
-            data["checklist_name"] = checklists.get(checklist_id, {}).get("name", "")
-            
-    return render(request, "copo/single_cell_manifest_validate.html", data)
-
-@login_required()
 def parse_singlecell_spreadsheet(request):
     profile_id = request.session["profile_id"]
     notify_singlecell_status(data={"profile_id": profile_id},
