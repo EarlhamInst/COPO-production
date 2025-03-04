@@ -96,8 +96,9 @@ services:
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
       - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
-      - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
-      - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
+      - ECS_ACCESS_KEY_ID_FILE=/run/secrets/ecs_access_key
+      - ECS_ENDPOINT=http://minio:9000
+      - ECS_ENDPOINT_EXTERNAL=https://minio.copodev.cyverseuk.org
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
@@ -144,6 +145,7 @@ services:
       - copo_mail_password
       - copo_bioimage_path
       - ecs_secret_key
+      - ecs_access_key
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
       interval: 2m
@@ -200,8 +202,8 @@ services:
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
       - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
-      - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
-      - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
+      - ECS_ACCESS_KEY_ID_FILE=/run/secrets/ecs_access_key
+      - ECS_ENDPOINT=http://minio:9000
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
@@ -242,8 +244,9 @@ services:
       - copo_mail_password
       - copo_bioimage_path
       - ecs_secret_key
+      - ecs_access_key     
   nginx:
-    image: copo/copo-nginx:1.25.3.3
+    image: copo/copo-nginx-tmp:1.25.3.8
     networks:
       - frontend
     volumes:
@@ -525,6 +528,8 @@ secrets:
     external: true
   ecs_secret_key:
     external: true
+  ecs_access_key:
+    external: true    
   minio_access_key:
     external: true
   minio_secret_key:
