@@ -2,6 +2,7 @@ from common.dal.copo_da import DAComponent
 from common.dal.submission_da import Submission
 from common.dal.mongo_util import cursor_to_list
 from bson.objectid import ObjectId
+from common.dal.copo_da  import DataFile, EnaFileTransfer
 
 class SequenceAnnotation(DAComponent):
     def __init__(self, profile_id=None):
@@ -37,11 +38,21 @@ class SequenceAnnotation(DAComponent):
         if target_id:
             target_ids.append(target_id)
 
+        submission = Submission().get_collection_handle().find_one({"profile_id": self.profile_id, "seq_annotations": {"$in": target_ids}},{"_id": 1})
+        if submission:
+            return dict(status='error', message="One or more sequence annotation record/s have been submitting!")
+        
         seq_annotation_obj_ids = [ObjectId(id) for id in target_ids]
-        result = self.execute_query(
-            {"_id": {"$in": seq_annotation_obj_ids},  "accession": {"$exists": True, "$ne": ""}})
-        if result:
-            return dict(status='error', message="One or more sequence annotation record/s have been accessed!")
+
+        #delete the corresponding file records
+        file_ids = []
+        annotations = self.get_collection_handle().find({"_id": {"$in": seq_annotation_obj_ids}},{"accession":1, "files": 1})
+        for annotation in annotations:
+            if annotation.get("accession",""):
+                return dict(status='error', message="One or more sequence annotation record/s have been accessed!")
+            file_ids.extend(annotation.get('files', []))
+        EnaFileTransfer(profile_id=self.profile_id).get_collection_handle().delete_many({"file_id": {"$in": file_ids}})   
+        DataFile(profile_id=self.profile_id).get_collection_handle().delete_many({"_id": {"$in": [ObjectId(id) for id in file_ids]}})
 
         self.get_collection_handle().delete_many(
             {"_id": {"$in": seq_annotation_obj_ids}})
