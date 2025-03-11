@@ -451,13 +451,13 @@ paths:
         '404':
           description: Invalid project found in request. No sample records exist for the given project.
 
-  /sample/associated_tol_project/{value}:
+  /sample/associated_tol_project:
     get:
       tags:
         - Sample
       summary: Get sample records by associated project type
       parameters:
-        - $ref: '#/components/parameters/associated_tol_project'
+        - $ref: '#/components/parameters/associated_tol_project_multiple'
         - $ref: '#/components/parameters/standard'
         - $ref: '#/components/parameters/return_type'
       responses:
@@ -1010,7 +1010,25 @@ components:
         - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
       required: true
       schema:
-      $ref: '#/components/schemas/AssociatedProjects'
+        $ref: '#/components/schemas/AssociatedProjects'
+
+    associated_tol_project_multiple:
+      name: values
+      in: query
+      description: |
+        Get a list of samples in COPO by associated project type
+
+        To query multiple project types, CTRL + click on the associated project types
+
+        - **BGE** refers to Biodiversity Genomics Europe (BGE)
+        - **BIOBLITZ** refers to BioBlitz
+        - **CBP** refers to Catalan Initiative for the Earth BioGenome Project (CBP)
+        - **ERGA_COMMUNITY** refers to European Reference Genome Atlas - Community (ERGA_COMMUNITY)
+        - **ERGA_PILOT** refers to European Reference Genome Atlas - Pilot (ERGA_PILOT)
+        - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
+      required: true
+      schema:
+        $ref: '#/components/schemas/AssociatedProjects_multiple'
 
     copo_id:
       name: copo_id
@@ -1138,6 +1156,14 @@ components:
       type: string
       enum: [BGE, BIOBLITZ, CBP, ERGA_COMMUNITY, ERGA_PILOT, POP_GENOMICS]
       description: A list of associated projects
+
+    AssociatedProjects_multiple:
+      type: array
+      items:
+        type: string
+        enum: [BGE, BIOBLITZ, CBP, ERGA_COMMUNITY, ERGA_PILOT, POP_GENOMICS]
+      explode: true # Ensures multiple values are passed correctly
+      description: Select one or more associated projects 
 
     AuthBody:
       type: object
@@ -1510,35 +1536,6 @@ components:
           type: string
         ORIGINAL_COLLECTION_DATE:
           type: string
-        public_name:
-          type: string
-        biosampleAccession:
-          type: string
-        time_created:
-          type: string
-          format: date-time
-        submissionAccession:
-          type: string
-        sraAccession:
-          type: string
-        manifest_id:
-          type: string
-          format: uuid
-        manifest_version:
-          type: string
-        time_updated:
-          type: string
-          format: date-time
-        copo_id:
-          type: string
-        sampleDerivedFrom:
-          type: string
-        status:
-          type: string
-        copo_profile_title:
-          type: string
-        associated_tol_project:
-          type: string
         SYMBIONT:
           type: string
         TAXON_ID:
@@ -1559,9 +1556,43 @@ components:
           type: string
         TAXON_REMARKS:
           type: string
-        latest_update:
+        associated_tol_project:
+          type: string
+        biosampleAccession:
+          type: string
+        copo_id:
+          type: string
+        copo_profile_title:
+          type: string
+        last_bioimage_submitted:
+          type: string
+        manifest_id:
+          type: string
+          format: uuid
+        manifest_version:
+          type: string
+        public_name:
+          type: string
+        sampleDerivedFrom:
+          type: string
+        sampleSameAs:
+          type: string
+        sampleSymbiontOf:
+          type: string
+        status:
+          type: string
+        sraAccession:
+          type: string
+        submissionAccession:
+          type: string
+        time_created:
           type: string
           format: date-time
+        time_updated:
+          type: string
+          format: date-time
+        tol_project:
+          type: string
 
     Sample_long2:
       type: string
@@ -1668,11 +1699,7 @@ components:
           'VOUCHER_ID',
           'VOUCHER_INSTITUTION',
           'VOUCHER_LINK',
-          'associated_tol_project',
-          'biosampleAccession',
-          'copo_id',
           'copo_profile_title',
-          'manifest_id',
           'manifest_version',
           'public_name',
           'sampleDerivedFrom',
