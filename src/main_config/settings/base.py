@@ -191,7 +191,7 @@ USE_L10N = True
 USE_TZ = True
 
 CSRF_TRUSTED_ORIGINS = ['https://*.copo-project.org', 'https://copodev.cyverseuk.org', 'https://copo-new.cyverseuk.org',
-                        'http://copodev.cyverseuk.org', 'http://copodev.cyverseuk.org', 'https://copodev.cyverseuk.org','http://127.0.0.1:8000']
+                        'http://copodev.cyverseuk.org', 'http://copodev2.cyverseuk.org', 'https://copodev2.cyverseuk.org','http://127.0.0.1:8000']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
