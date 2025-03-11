@@ -7,7 +7,7 @@ from common.utils.logger import Logger
 from boto3.s3.transfer import TransferConfig
 import logging
 from common.dal.copo_da import EnaFileTransfer
-
+from common.utils.helpers import get_env
 
 class S3Connection():
     """
@@ -16,9 +16,10 @@ class S3Connection():
 
     def __init__(self, profile_id=str()):
         self.profile_id = profile_id
-        self.ecs_endpoint = s.ECS_ENDPOINT
-        self.ecs_access_key_id = s.ECS_ACCESS_KEY_ID
-        self.ecs_secret_key = s.ECS_SECRET_KEY
+        self.ecs_access_key_id = get_env('ECS_ACCESS_KEY_ID')
+        self.ecs_secret_key = get_env('ECS_SECRET_KEY')
+        self.ecs_endpoint = get_env('ECS_ENDPOINT')
+        self.ecs_endpoint_external = get_env('ECS_ENDPOINT_EXTERNAL')
 
         self.expiration = 60 * 60 * 24
         self.path = '/'
@@ -28,6 +29,11 @@ class S3Connection():
                                                     retries={"max_attempts": 10}, s3={'addressing_style': "path"}),
                                       aws_access_key_id=self.ecs_access_key_id,
                                       aws_secret_access_key=self.ecs_secret_key)
+        self.s3_client_external = boto3.client('s3', endpoint_url=self.ecs_endpoint_external, verify=False,  
+                                      config=Config(signature_version='s3v4', connect_timeout=120, read_timeout=240,
+                                                    retries={"max_attempts": 10}, s3={'addressing_style': "path"}),
+                                      aws_access_key_id=self.ecs_access_key_id,
+                                      aws_secret_access_key=self.ecs_secret_key)         
         # self.transport_params = {'client': self.s3_client}
         Logger().debug(
             msg=f"endpoint: {self.ecs_endpoint}, access key: {self.ecs_access_key_id}, secret: {self.ecs_secret_key}")
@@ -102,7 +108,7 @@ class S3Connection():
         :return:
         '''
         try:
-            response = self.s3_client.generate_presigned_url('put_object', Params={'Bucket': bucket, 'Key': key},
+            response = self.s3_client_external.generate_presigned_url('put_object', Params={'Bucket': bucket, 'Key': key},
                                                              ExpiresIn=expires_seconds)
             #response = response.replace("http://", "https://")
         except Exception as e:
