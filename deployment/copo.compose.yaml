@@ -44,7 +44,7 @@ services:
       placement:
         max_replicas_per_node: 1
         constraints:
-          - "node.labels.mongo-service==false"
+          - "node.labels.mongo-service==true"
 
   web:
     image: copo/copo-new-web:v2.0.58.1
@@ -410,7 +410,7 @@ services:
           memory: 512mb
 
   mongo:
-    image: copo/copo-mongo:v7.0.1
+    image: copo/copo-mongo:v8.0.1
     command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
     entrypoint:
        - bash

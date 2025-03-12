@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ENV PYTHONUNBUFFERED 1
 
@@ -27,7 +27,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/lib64:/usr/x86_64-linux-gnu/lib"
 COPY ./requirements/ /tmp/requirements/
-RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt
+RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt --break-system-packages
 
 #RUN mkdir /copo
 #RUN mkdir /code
