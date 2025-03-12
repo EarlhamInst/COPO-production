@@ -13,6 +13,7 @@
         "is_sensitive": false,
         "label": "Tube or Well Identifier",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -53,6 +54,7 @@
         "is_sensitive": false,
         "label": "Specimen Identifier",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -92,6 +94,7 @@
         "is_sensitive": false,
         "label": "Purpose of Specimen",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -138,6 +141,7 @@
         "is_sensitive": false,
         "label": "Sample Coordinator (ERGA Ambassador)",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -176,6 +180,7 @@
         "is_sensitive": false,
         "label": "Sample Coordinator (ERGA Ambassador) Affiliation",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -214,6 +219,7 @@
         "is_sensitive": true,
         "label": "Sample Coordinator (ERGA Ambassador) ORCID Identifier",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -252,6 +258,7 @@
         "is_sensitive": false,
         "label": "Order or Group",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -291,6 +298,7 @@
         "is_sensitive": false,
         "label": "Family",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -330,6 +338,7 @@
         "is_sensitive": false,
         "label": "Genus",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -369,6 +378,7 @@
         "is_sensitive": false,
         "label": "Taxon Identifier",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -408,6 +418,7 @@
         "is_sensitive": false,
         "label": "Scientific Name",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -447,6 +458,7 @@
         "is_sensitive": false,
         "label": "Taxon Remarks",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -486,6 +498,7 @@
         "is_sensitive": false,
         "label": "Infraspecific Epithet",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -525,6 +538,7 @@
         "is_sensitive": false,
         "label": "Culture or Strain Identifier",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -564,6 +578,7 @@
         "is_sensitive": false,
         "label": "Common Name",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -602,6 +617,7 @@
         "is_sensitive": false,
         "label": "Lifestage",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -657,6 +673,7 @@
         "is_sensitive": false,
         "label": "Sex",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -705,6 +722,7 @@
         "is_sensitive": false,
         "label": "Organism Part",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -745,6 +763,7 @@
         "is_sensitive": false,
         "label": "Symbiont",
         "manifest_version": [
+            "2.5.1",
             "2.5"
         ],
         "option_values": [
@@ -785,6 +804,7 @@
         "is_sensitive": false,
         "label": "Relationship",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -824,6 +844,7 @@
         "is_sensitive": false,
         "label": "GAL (Genome Acquisition Laboratory)",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -887,6 +908,7 @@
         "is_sensitive": false,
         "label": "GAL (Genome Acquisition Laboratory) Identifier",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -926,6 +948,7 @@
         "is_sensitive": false,
         "label": "Collector Sample Identifier",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -965,6 +988,7 @@
         "is_sensitive": false,
         "label": "Collected By",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1003,6 +1027,7 @@
         "is_sensitive": false,
         "label": "Collector Affiliation",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1043,6 +1068,7 @@
         "is_sensitive": true,
         "label": "Collector Orcid Identifier",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1082,6 +1108,7 @@
         "is_sensitive": false,
         "label": "Date of Collection",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1120,6 +1147,7 @@
         "is_sensitive": false,
         "label": "Time of Collection",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1159,6 +1187,7 @@
         "is_sensitive": false,
         "label": "Collection Location",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1201,6 +1230,7 @@
         "is_sensitive": false,
         "label": "Decimal Latitude",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1240,6 +1270,7 @@
         "is_sensitive": false,
         "label": "Decimal Longitude",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1280,6 +1311,7 @@
         "is_sensitive": false,
         "label": "Latitude Start",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2"
@@ -1319,6 +1351,7 @@
         "is_sensitive": false,
         "label": "Longitude Start",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2"
@@ -1358,6 +1391,7 @@
         "is_sensitive": false,
         "label": "Latitude End",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2"
@@ -1397,6 +1431,7 @@
         "is_sensitive": false,
         "label": "Longitude End",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2"
@@ -1435,6 +1470,7 @@
         "is_sensitive": false,
         "label": "Habitat remarks",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1474,6 +1510,7 @@
         "is_sensitive": false,
         "label": "Depth (in metres)",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1513,6 +1550,7 @@
         "is_sensitive": false,
         "label": "Elevation (in metres)",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1552,6 +1590,7 @@
         "is_sensitive": false,
         "label": "Original Collection Date",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1590,6 +1629,7 @@
         "is_sensitive": false,
         "label": "Original Geographic Location",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1629,6 +1669,7 @@
         "is_sensitive": false,
         "label": "Original Decimal Latitude",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1669,6 +1710,7 @@
         "is_sensitive": false,
         "label": "Original Decimal Longitude",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1708,6 +1750,7 @@
         "is_sensitive": false,
         "label": "Description of Collection Method",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1747,6 +1790,7 @@
         "is_sensitive": false,
         "label": "Difficult or high priority sample",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1794,6 +1838,7 @@
         "is_sensitive": false,
         "label": "Identified By",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1832,6 +1877,7 @@
         "is_sensitive": false,
         "label": "Identifier Affiliation",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1870,6 +1916,7 @@
         "is_sensitive": false,
         "label": "Species Determination Method",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1909,6 +1956,7 @@
         "is_sensitive": false,
         "label": "Specimen Identity Risk",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1953,6 +2001,7 @@
         "is_sensitive": false,
         "label": "Mixed Sample Risk",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -1996,6 +2045,7 @@
         "is_sensitive": false,
         "label": "Preserved By",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2035,6 +2085,7 @@
         "is_sensitive": false,
         "label": "Preserver Affiliation",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2074,6 +2125,7 @@
         "is_sensitive": false,
         "label": "Preservation Approach",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2113,6 +2165,7 @@
         "is_sensitive": false,
         "label": "Preservative Solution",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2152,6 +2205,7 @@
         "is_sensitive": false,
         "label": "Time Elapsed from Collection to Preservation (in hours)",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2191,6 +2245,7 @@
         "is_sensitive": false,
         "label": "Date of Preservation",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2230,6 +2285,7 @@
         "is_sensitive": false,
         "label": "Size of Tissue in Tube",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2278,6 +2334,7 @@
         "is_sensitive": false,
         "label": "Tissue Removed for Barcoding",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2320,6 +2377,7 @@
         "is_sensitive": false,
         "label": "Tube or Well Identifier for Barcoding",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2358,6 +2416,7 @@
         "is_sensitive": false,
         "label": "Tissue for Barcoding",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2472,6 +2531,7 @@
         "is_sensitive": false,
         "label": "Barcode Plate Preservative",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2510,6 +2570,7 @@
         "is_sensitive": false,
         "label": "Barcoding Status",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2555,6 +2616,7 @@
         "is_sensitive": false,
         "label": "Tissue Removed for Biobanking",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2597,6 +2659,7 @@
         "is_sensitive": false,
         "label": "Tissue Voucher Identifier for Biobanking",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2635,6 +2698,7 @@
         "is_sensitive": false,
         "label": "Proxy Tissue Voucher Identifier for Biobanking",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2"
@@ -2672,6 +2736,7 @@
         "is_sensitive": false,
         "label": "Tissue for Biobanking",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2786,6 +2851,7 @@
         "is_sensitive": false,
         "label": "Biobanked Tissue Preservative",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2"
@@ -2823,6 +2889,7 @@
         "is_sensitive": false,
         "label": "DNA Removed for Biobanking",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2865,6 +2932,7 @@
         "is_sensitive": false,
         "label": "DNA Voucher Identifier for Biobanking",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2903,6 +2971,7 @@
         "is_sensitive": false,
         "label": "Voucher Identifier",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2941,6 +3010,7 @@
         "is_sensitive": false,
         "label": "Proxy Voucher Identifier",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -2980,6 +3050,7 @@
         "is_sensitive": false,
         "label": "Voucher Link",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3019,6 +3090,7 @@
         "is_sensitive": false,
         "label": "Proxy Voucher Link",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3058,6 +3130,7 @@
         "is_sensitive": false,
         "label": "Voucher Institution",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3097,6 +3170,7 @@
         "is_sensitive": false,
         "label": "Regulatory Compliance",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3141,6 +3215,7 @@
         "is_sensitive": false,
         "label": "Associated Traditional Knowledge or Biocultural Rights Applicable",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3179,6 +3254,7 @@
         "is_sensitive": false,
         "label": "Indigenous Rights Definition",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3217,6 +3293,7 @@
         "is_sensitive": false,
         "label": "Associated Traditional Knowledge or Biocultural Project Identifier",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3259,6 +3336,7 @@
         "is_sensitive": true,
         "label": "Associated Traditional Knowledge Contact",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3297,6 +3375,7 @@
         "is_sensitive": false,
         "label": "Ethics Permits Required",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3339,6 +3418,7 @@
         "is_sensitive": false,
         "label": "Ethics Permits Definition",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3377,6 +3457,7 @@
         "is_sensitive": false,
         "label": "Ethics Permits File name",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3"
         ],
@@ -3413,6 +3494,7 @@
         "is_sensitive": false,
         "label": "Sampling Permits Required",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3456,6 +3538,7 @@
         "is_sensitive": false,
         "label": "Sampling Permits Definition",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3494,6 +3577,7 @@
         "is_sensitive": false,
         "label": "Sampling Permits File name",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3"
         ],
@@ -3530,6 +3614,7 @@
         "is_sensitive": false,
         "label": "Nagoya Permits Required",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3572,6 +3657,7 @@
         "is_sensitive": false,
         "label": "Nagoya Permits Definition",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3610,6 +3696,7 @@
         "is_sensitive": false,
         "label": "Nagoya Permits File name",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3"
         ],
@@ -3646,6 +3733,7 @@
         "is_sensitive": false,
         "label": "Hazard Group",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",
@@ -3692,6 +3780,7 @@
         "is_sensitive": false,
         "label": "Primary Biogenome Project",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2"
@@ -3737,6 +3826,7 @@
         "is_sensitive": false,
         "label": "Associated Project Accessions",
         "manifest_version": [
+            "2.5.1",
             "2.5"
         ],
         "order": 90,
@@ -3773,6 +3863,7 @@
         "is_sensitive": false,
         "label": "Other Information",
         "manifest_version": [
+            "2.5.1",
             "2.5",
             "2.4.3",
             "2.4.2",

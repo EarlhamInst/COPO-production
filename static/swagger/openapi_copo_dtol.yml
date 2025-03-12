@@ -1205,7 +1205,7 @@ components:
 
     ManifestVersions:
       type: string
-      enum: ['2.5', '2.4', '2.4.1', '2.4.2', '2.4.3']
+      enum: ['2.5.1', '2.5', '2.4', '2.4.1', '2.4.2', '2.4.3']
 
     Profile:
       type: object
