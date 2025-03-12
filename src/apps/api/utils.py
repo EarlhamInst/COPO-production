@@ -200,7 +200,7 @@ def generate_rocrate_response(samples):
         )
 
         manifest_item['hasPart'] = [
-            {'@id': f'https://copo-project.org/api/sample/copo_id/{x['copo_id']}'}
+            {'@id': f"https://copo-project.org/api/sample/copo_id/{x['copo_id']}"}
             for x in samples
         ]
         manifest_item['taxonomicRange'] = [
@@ -228,7 +228,7 @@ def generate_rocrate_response(samples):
                 else ''
             )
             item['parentTaxon'] = {
-                '@id': f'https://copo-project.org/api/sample_field/ORDER_OR_GROUP/{df[df['TAXON_ID']== x ]['ORDER_OR_GROUP'].unique()[0]}'
+                '@id': f"https://copo-project.org/api/sample_field/ORDER_OR_GROUP/{df[df['TAXON_ID']== x ]['ORDER_OR_GROUP'].unique()[0]}"
             }
             graph_list.append(item)
 
@@ -287,7 +287,7 @@ def generate_rocrate_response(samples):
         for x in samples:
             sample_type = x.get('tol_project', '')
             sample_item = {
-                '@id': f'https://copo-project.org/api/sample/copo_id/{x['copo_id']}',
+                '@id': f"https://copo-project.org/api/sample/copo_id/{x['copo_id']}",
                 '@type': 'BioSample',
             }
             sample_item['additionalProperty'] = []
@@ -296,7 +296,7 @@ def generate_rocrate_response(samples):
             biosampleAccession = x.get('biosampleAccession', '')
 
             if 'TAXON_ID' in x:
-                # sample_item['taxonomicRange'] = {'@id': f'http://identifiers.org/taxonomy:{x['TAXON_ID']}'}
+                # sample_item['taxonomicRange'] = {'@id': "http://identifiers.org/taxonomy:{x['TAXON_ID']}"}
                 # Get index/position to insert new key, value into sample item dictionary
                 index = keys_lst.index('TAXON_ID') + 1
                 # Insert new key, value into dictionary at specified position
@@ -304,7 +304,7 @@ def generate_rocrate_response(samples):
                     x,
                     {
                         'taxonomicRange': {
-                            '@id': f'https://identifiers.org/taxonomy:{x['TAXON_ID']}'
+                            '@id': f"https://identifiers.org/taxonomy:{x['TAXON_ID']}"
                         }
                     },
                     index,
