@@ -1,19 +1,22 @@
 __author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
 
+import bson.json_util as jsonb
+import json
+import pandas as pd
+import shortuuid
+import tempfile
+import uuid
+from .tasks import validate_rocrate_task
+from .views.mapping import get_mapped_result
 from common.dal.profile_da import Profile
 from common.lookup.lookup import API_RETURN_TEMPLATES
 from common.schemas.utils.data_utils import get_export_fields
 from django.http import HttpResponse
 from django_tools.middlewares import ThreadLocal
-from .views.mapping import get_mapped_result
-
-import bson.json_util as jsonb
-import json
-import pandas as pd
-import shortuuid
-import uuid
+from pathlib import Path
 
 
+# Helpers related to template generation
 def get_return_template(type):
     '''
     Method to return a python object representation of the given api template return type
@@ -91,7 +94,7 @@ def generate_rocrate_person_object(
     return person_map
 
 
-def generate_rocrate_response(samples):
+def generate_rocrate_object(request, samples):
     '''
     result_list = []
     manifest_map = dict()
@@ -112,6 +115,7 @@ def generate_rocrate_response(samples):
     manifest_id = samples[0].get('manifest_id', '')
     profile_title = samples[0].get('copo_profile_title', '')
     profile_description = Profile().get_description_by_title(profile_title)
+    uri = request.build_absolute_uri('/')
 
     if not manifest_id:
         rocrate_json['error'] = 'Not Implemented'
@@ -126,12 +130,13 @@ def generate_rocrate_response(samples):
         ]
 
         info_dict = {
-            'dwc': 'http://rs.tdwg.org/dwc/terms/',
-            'dwciri': 'http://rs.tdwg.org/dwc/iri/',
             'BioSample': 'https://bioschemas.org/BioSample',
             'collector': 'https://bioschemas.org/BioSample#collector',
             'custodian': 'https://bioschemas.org/BioSample#custodian',
+            'dwc': 'http://rs.tdwg.org/dwc/terms/',
+            'dwciri': 'http://rs.tdwg.org/dwc/iri/',
             'isControl': 'https://bioschemas.org/BioSample#isControl',
+            'parentTaxon': 'https://schema.org/parentTaxon',
             'samplingAge': 'https://bioschemas.org/BioSample#samplingAge',
             'taxonomicRange': 'http://schema.org/taxonomicRange',
         }
@@ -143,10 +148,8 @@ def generate_rocrate_response(samples):
         # @type: CreativeWork
         creativeWork = {'@id': 'ro-crate-metadata.json', '@type': 'CreativeWork'}
         creativeWork['conformsTo'] = {'@id': 'https://w3id.org/ro/crate/1.1'}
-        # {'@id':f'https://copo-project.org/api/manifest/{key}' }
-        creativeWork['about'] = {
-            '@id': f'https://copo-project.org/api/manifest/{manifest_id}'
-        }
+        # {'@id':f'{uri}api/manifest/{key}' }
+        creativeWork['about'] = {'@id': f'{uri}api/manifest/{manifest_id}/'}
         graph_list.append(creativeWork)
 
         df = pd.DataFrame(samples)
@@ -184,14 +187,14 @@ def generate_rocrate_response(samples):
         )
 
         # @type: Dataset
-        # f'https://copo-project.org/api/manifest/{key}/'
+        # f'{uri}api/manifest/{key}/'
         manifest_item = {
-            '@id': f'https://copo-project.org/api/manifest/{manifest_id}/',
+            '@id': f'{uri}api/manifest/{manifest_id}/',
             '@type': 'Dataset',
             'datePublished': dateCreated,
             'name': profile_title,
             'description': profile_description,
-            'datedModified': dateModified,
+            'dateModified': dateModified,
             'license': {'@id': 'https://creativecommons.org/publicdomain/zero/1.0'},
         }
         manifest_item['contributor'] = []
@@ -200,7 +203,11 @@ def generate_rocrate_response(samples):
         )
 
         manifest_item['hasPart'] = [
-            {'@id': f"https://copo-project.org/api/sample/copo_id/{x['copo_id']}"}
+            (
+                f"http://identifiers.org/biosample:{x.get('biosampleAccession','')}"
+                if x.get('biosampleAccession', '')
+                else f"{uri}api/sample/copo_id/{x['copo_id']}"
+            )
             for x in samples
         ]
         manifest_item['taxonomicRange'] = [
@@ -227,8 +234,10 @@ def generate_rocrate_response(samples):
                 if 'SCIENTIFIC_NAME' in df.columns
                 else ''
             )
+            # The commented code below is not allowed because it is not
+            # present in the context. It is a  URI to be in the context but it is not unique
             item['parentTaxon'] = {
-                '@id': f"https://copo-project.org/api/sample_field/ORDER_OR_GROUP/{df[df['TAXON_ID']== x ]['ORDER_OR_GROUP'].unique()[0]}"
+                '@id': f"{uri}api/sample_field/ORDER_OR_GROUP/{df[df['TAXON_ID']== x ]['ORDER_OR_GROUP'].unique()[0]}"
             }
             graph_list.append(item)
 
@@ -254,7 +263,7 @@ def generate_rocrate_response(samples):
                     if 'DECIMAL_LATITUDE' in df.columns
                     else ''
                 )
-                item['logitude'] = (
+                item['longitude'] = (
                     df[df['COLLECTION_LOCATION'] == value][
                         'DECIMAL_LONGITUDE'
                     ].unique()[0]
@@ -285,15 +294,18 @@ def generate_rocrate_response(samples):
             }
 
         for x in samples:
-            sample_type = x.get('tol_project', '')
-            sample_item = {
-                '@id': f"https://copo-project.org/api/sample/copo_id/{x['copo_id']}",
-                '@type': 'BioSample',
-            }
-            sample_item['additionalProperty'] = []
-
+            sample_type = x.get('tol_project', '').upper()
             keys_lst = list(x.keys())
             biosampleAccession = x.get('biosampleAccession', '')
+
+            sample_item = {
+                '@id': (
+                    f'http://identifiers.org/biosample:{biosampleAccession}'
+                    if biosampleAccession
+                    else f"{uri}api/sample/copo_id/{x['copo_id']}"
+                ),
+                '@type': 'BioSample',
+            }
 
             if 'TAXON_ID' in x:
                 # sample_item['taxonomicRange'] = {'@id': "http://identifiers.org/taxonomy:{x['TAXON_ID']}"}
@@ -311,8 +323,8 @@ def generate_rocrate_response(samples):
                 )
 
             if biosampleAccession:
-                sample_item['identifier'] = {
-                    '@id': f'http://identifiers.org/biosample:{biosampleAccession}'
+                sample_item['sameAs'] = {
+                    '@id': f"{uri}api/sample/copo_id/{x['copo_id']}"
                 }
 
             for p in (
@@ -353,6 +365,7 @@ def generate_rocrate_response(samples):
             }
 
             # Set the rest of the data as additional properties in the sample_item
+            sample_item['additionalProperty'] = []
             for key, value in filtered_x.items():
                 sample_item['additionalProperty'].append(
                     {'@type': 'PropertyValue', 'name': key, 'value': value}
@@ -365,6 +378,31 @@ def generate_rocrate_response(samples):
         rocrate_json['@graph'] = graph_list
         # result_list.append(rocrate_json)
     return rocrate_json
+
+
+# Output responses
+def generate_rocrate_response(request, template):
+    df = pd.DataFrame(template)
+    manifest_ids = df['manifest_id'].unique() if 'manifest_id' in df.columns else []
+
+    if len(manifest_ids) == 1:
+        # Generate the rocrate_objs
+        rocrate_objs = generate_rocrate_object(request, template)
+
+        # Create a temporary file to store the rocrate_objs
+        temp_dir = tempfile.mkdtemp()
+        metadata_path = Path(temp_dir) / 'ro-crate-metadata.json'
+
+        # Save RO-Crate JSON inside the directory
+        with open(metadata_path, 'w', encoding='utf-8') as f:
+            json.dump(rocrate_objs, f)
+
+        # Trigger Celery RO-Crate validation task asynchronously
+        validate_rocrate_task.delay(temp_dir, manifest_ids[0])
+        return HttpResponse(
+            content=json.dumps(rocrate_objs), content_type='application/json'
+        )
+    return HttpResponse(content='Not Implemented')
 
 
 def generate_csv_response(standard, template):
@@ -406,6 +444,7 @@ def generate_wrapper_response(error=None, num_found=None, template=None):
     return wrapper
 
 
+# Main method for API return
 def finish_request(
     template=None, error=None, num_found=None, return_http_response=True
 ):
@@ -419,13 +458,6 @@ def finish_request(
     return_type = request.GET.get('return_type', 'json').lower()
     standard = request.GET.get('standard', 'tol').lower()
 
-    '''
-    if is_csv == 'True' or is_csv == 'true' or is_csv == '1' or is_csv == 1 :
-        is_csv = True
-    else:
-        is_csv = False
-    '''
-
     # Set template with data based on the standard if there is no error and template exists
     if not error and template:
         template = (
@@ -435,29 +467,20 @@ def finish_request(
         )
 
     wrapper = generate_wrapper_response(error, num_found, template)
-
     output = jsonb.dumps(wrapper)
 
     if return_http_response:
         if return_type == 'csv':
             return generate_csv_response(standard, template)
         elif return_type == 'rocrate':
-            df = pd.DataFrame(template)
-            manifest_ids = (
-                df['manifest_id'].unique() if 'manifest_id' in df.columns else []
-            )
-            if len(manifest_ids) == 1:
-                rocrate_objs = generate_rocrate_response(template)
-                return HttpResponse(
-                    content=jsonb.dumps(rocrate_objs), content_type='application/json'
-                )
-            return HttpResponse(content='Not Implemented')
+            return generate_rocrate_response(request, template)
         else:
             return HttpResponse(output, content_type='application/json')
     else:
         return output
 
 
+# Helper for sorting dictionaries
 def sort_dict_list_by_priority(dict_list, export_fields):
     '''
     Sorts a list of dictionaries so that:

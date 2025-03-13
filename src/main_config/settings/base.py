@@ -5,9 +5,11 @@ from django.conf import settings
 from django.contrib.messages import constants as messages
 from datetime import timedelta
 from common.utils import helpers as resolve_env
+from rocrate_validator import services, models
 
-BASE_DIR = os.path.dirname(os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+BASE_DIR = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
 SCHEMA_DIR = os.path.join(BASE_DIR, 'common', 'schemas')
 
@@ -34,8 +36,15 @@ protocol = resolve_env.get_env('http_protocol')
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = protocol.lower() if protocol else 'https'
 
 # ALLOWED_HOSTS = [ gethostname(), gethostbyname(gethostname()), ]
-ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', '.copo-project.org', '.copo-new.cyverseuk.org',
-                 '.demo.copo-project.org', 'localhost', '.copodev.cyverseuk.org']
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    '0.0.0.0',
+    '.copo-project.org',
+    '.copo-new.cyverseuk.org',
+    '.demo.copo-project.org',
+    'localhost',
+    '.copodev.cyverseuk.org',
+]
 ALLOWED_CIDR_NETS = ['10.0.0.0/24']
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
@@ -48,7 +57,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://copodev.cyverseuk.org",
     "http://copodev.cyverseuk.org",
     "https://copo-new.cyverseuk.org",
-    "http://copo-new.cyverseuk.org"
+    "http://copo-new.cyverseuk.org",
 ]
 
 DEBUG_PROPAGATE_EXCEPTIONS = True  #  if it is false, there is no more error log
@@ -101,7 +110,7 @@ PROJECT_APPS = [
     'django_user_agents',
     'corsheaders',
     'crispy_forms',
-    "crispy_bootstrap5"
+    "crispy_bootstrap5",
 ]
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
 ASGI_APPLICATION = 'src.main_config.asgi.application'
@@ -112,9 +121,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 # sass, social accounts...
 sass_exe = '/usr/local/bin/sass'
-COMPRESS_PRECOMPILERS = (
-    ('text/scss', sass_exe + ' --scss  {infile} {outfile}'),
-)
+COMPRESS_PRECOMPILERS = (('text/scss', sass_exe + ' --scss  {infile} {outfile}'),)
 
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -123,10 +130,9 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-SOCIALACCOUNT_PROVIDERS = \
-    {'google':
-     {'SCOPE': ['profile', 'email'],
-      'AUTH_PARAMS': {'access_type': 'online'}}}
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {'SCOPE': ['profile', 'email'], 'AUTH_PARAMS': {'access_type': 'online'}}
+}
 
 MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -142,7 +148,7 @@ MIDDLEWARE = [
     'compression_middleware.middleware.CompressionMiddleware',
     'src.apps.copo_core.middlewares.LocksMiddleware.LocksMiddleware',
     'src.apps.copo_core.middlewares.LogUncaughtExceptions.LogUncaughtExceptions',
-    'allow_cidr.middleware.AllowCIDRMiddleware'
+    'allow_cidr.middleware.AllowCIDRMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -153,13 +159,10 @@ AUTHENTICATION_BACKENDS = (
 )
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated',),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
-
-    )
+    ),
 }
 
 CORS_ORIGIN_WHITELIST = (
@@ -188,8 +191,13 @@ USE_L10N = True
 
 USE_TZ = True
 
-CSRF_TRUSTED_ORIGINS = ['https://*.copo-project.org', 'https://copodev.cyverseuk.org', 'https://copo-new.cyverseuk.org',
-                        'http://copodev.cyverseuk.org', 'http://127.0.0.1:8000']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.copo-project.org',
+    'https://copodev.cyverseuk.org',
+    'https://copo-new.cyverseuk.org',
+    'http://copodev.cyverseuk.org',
+    'http://127.0.0.1:8000',
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
@@ -202,7 +210,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'))
 MEDIA_URL = '/media/'
 
-MANIFEST_PATH = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'), 'assets', 'manifests')
+MANIFEST_PATH = os.path.join(
+    BASE_DIR, resolve_env.get_env('MEDIA_PATH'), 'assets', 'manifests'
+)
 MANIFEST_FILE_NAME = "{0}_MANIFEST_TEMPLATE{1}.xlsx"
 MANIFEST_DOWNLOAD_URL = MEDIA_URL + "assets/manifests/" + MANIFEST_FILE_NAME
 
@@ -253,16 +263,13 @@ MESSAGE_TAGS = {
 }
 
 TEMPLATES = [
-
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             # insert your TEMPLATE_DIRS here
             #
-            os.path.join(BASE_DIR, 'src', 'apps',
-                         'copo_landing_page', 'templates'),
-            os.path.join(BASE_DIR, 'src', 'apps',
-                         'copo_core', 'templates', 'copo'),
+            os.path.join(BASE_DIR, 'src', 'apps', 'copo_landing_page', 'templates'),
+            os.path.join(BASE_DIR, 'src', 'apps', 'copo_core', 'templates', 'copo'),
             os.path.join(BASE_DIR, 'static', 'swagger'),
         ],
         'APP_DIRS': True,
@@ -280,9 +287,9 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.contrib.auth.context_processors.auth',
                 'src.apps.copo_core.custom_context_template.latest_message',
-                'src.apps.copo_core.custom_context_template.copo_context'
+                'src.apps.copo_core.custom_context_template.copo_context',
             ],
-            'debug':  DEBUG,
+            'debug': DEBUG,
         },
     },
 ]
@@ -291,10 +298,12 @@ ROOT_URLCONF = 'src.main_config.urls'
 
 UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads')
 LOCAL_UPLOAD_PATH = os.path.join(BASE_DIR, 'local_uploads')
-STANDARDS_MAP_FILE_PATH = os.path.join(SCHEMA_VERSIONS_DIR, 'isa_mappings', 'standards_map.json')
+STANDARDS_MAP_FILE_PATH = os.path.join(
+    SCHEMA_VERSIONS_DIR, 'isa_mappings', 'standards_map.json'
+)
 
 # Tinymce configuration
-TINYMCE_JS_URL = os.path.join(STATIC_URL, 'copo', 'tinymce','tinymce.min.js')
+TINYMCE_JS_URL = os.path.join(STATIC_URL, 'copo', 'tinymce', 'tinymce.min.js')
 TINYMCE_COMPRESSOR = False
 
 TINYMCE_DEFAULT_CONFIG = {
@@ -302,17 +311,37 @@ TINYMCE_DEFAULT_CONFIG = {
     'height': 500,
     'menubar': 'file edit view insert format tools table help',
     'plugins': [
-        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview', 'anchor',
-        'searchreplace', 'visualblocks', 'code', 'fullscreen', 'insertdatetime', 'media', 'table', 'help', 'wordcount'
+        'advlist',
+        'autolink',
+        'lists',
+        'link',
+        'image',
+        'charmap',
+        'preview',
+        'anchor',
+        'searchreplace',
+        'visualblocks',
+        'code',
+        'fullscreen',
+        'insertdatetime',
+        'media',
+        'table',
+        'help',
+        'wordcount',
     ],
     'theme': 'silver',
     'toolbar': 'undo redo | formatselect | bold italic backcolor | \
                 alignleft aligncenter alignright alignjustify | \
                 bullist numlist outdent indent | removeformat | help',
-    'content_css': [
-        '/static/copo/tinymce/tincymce_default_config_content_css.css'
-    ],
-    'forced_root_block' : 'p',
-    'forced_root_block_attrs': { "class": "news-excerpt"},
-
+    'content_css': ['/static/copo/tinymce/tincymce_default_config_content_css.css'],
+    'forced_root_block': 'p',
+    'forced_root_block_attrs': {"class": "news-excerpt"},
 }
+
+# Ro-crate validator settings
+ROCRATE_SETTINGS = services.ValidationSettings(
+    # Path to the RO-Crate root directory. It will be dynamically set.
+    rocrate_uri='/path/to/ro-crate',
+    profile_identifier='ro-crate-1.1',
+    requirement_severity=models.Severity.REQUIRED,
+)
