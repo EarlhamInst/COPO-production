@@ -6,7 +6,6 @@ import pandas as pd
 import shortuuid
 import tempfile
 import uuid
-from .tasks import validate_rocrate_task
 from .views.mapping import get_mapped_result
 from common.dal.profile_da import Profile
 from common.lookup.lookup import API_RETURN_TEMPLATES
@@ -14,6 +13,7 @@ from common.schemas.utils.data_utils import get_export_fields
 from django.http import HttpResponse
 from django_tools.middlewares import ThreadLocal
 from pathlib import Path
+from src.celery import run_rocrate_validator_task
 
 
 # Helpers related to template generation
@@ -203,11 +203,13 @@ def generate_rocrate_object(request, samples):
         )
 
         manifest_item['hasPart'] = [
-            (
-                f"http://identifiers.org/biosample:{x.get('biosampleAccession','')}"
-                if x.get('biosampleAccession', '')
-                else f"{uri}api/sample/copo_id/{x['copo_id']}"
-            )
+            {
+                '@id': (
+                    f"http://identifiers.org/biosample:{x.get('biosampleAccession','')}"
+                    if x.get('biosampleAccession', '')
+                    else f"{uri}api/sample/copo_id/{x['copo_id']}"
+                )
+            }
             for x in samples
         ]
         manifest_item['taxonomicRange'] = [
@@ -398,7 +400,7 @@ def generate_rocrate_response(request, template):
             json.dump(rocrate_objs, f)
 
         # Trigger Celery RO-Crate validation task asynchronously
-        validate_rocrate_task.delay(temp_dir, manifest_ids[0])
+        run_rocrate_validator_task(temp_dir, manifest_ids[0])
         return HttpResponse(
             content=json.dumps(rocrate_objs), content_type='application/json'
         )

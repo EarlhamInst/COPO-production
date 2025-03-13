@@ -105,10 +105,6 @@ app.conf.beat_schedule = {
         'task': 'src.apps.copo_dtol_submission.tasks.send_fortnightly_pending_manifest_notification',
         'schedule': timedelta(weeks=2),
     },
-    'validate_rocrate_task': {
-        'task': 'src.apps.api.tasks.validate_rocrate_task',
-        'schedule': timedelta(seconds=30),
-    },
 }
 
 app.conf.task_routes = {
@@ -121,3 +117,9 @@ app.conf.task_routes = {
 @app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
+
+
+def run_rocrate_validator_task(dir, manifest_id):
+    from src.apps.api.tasks import validate_rocrate_task
+
+    validate_rocrate_task.delay(dir, manifest_id)

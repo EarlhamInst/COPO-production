@@ -3,8 +3,7 @@ import shutil
 from common.utils.logger import Logger
 from django.conf import settings
 from rocrate_validator import services
-from src.apps.copo_core.tasks import CopoBaseClassForTask
-from src.celery import app
+from celery import shared_task
 
 lg = Logger()
 
@@ -35,8 +34,8 @@ def validate_rocrate_object(dir_path, manifest_id):
     return result.has_issues()
 
 
-@app.task(bind=True, base=CopoBaseClassForTask)
-def validate_rocrate_task(self, temp_dir, manifest_id):
+@shared_task
+def validate_rocrate_task(temp_dir, manifest_id):
     '''Runs RO-Crate validation as a background celery task'''
     try:
         lg.debug('Running validate_rocrate_task')
