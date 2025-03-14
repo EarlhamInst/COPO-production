@@ -4,7 +4,6 @@ import bson.json_util as jsonb
 import json
 import pandas as pd
 import shortuuid
-import tempfile
 import uuid
 from .views.mapping import get_mapped_result
 from common.dal.profile_da import Profile
@@ -12,8 +11,6 @@ from common.lookup.lookup import API_RETURN_TEMPLATES
 from common.schemas.utils.data_utils import get_export_fields
 from django.http import HttpResponse
 from django_tools.middlewares import ThreadLocal
-from pathlib import Path
-from src.celery import run_rocrate_validator_task
 
 
 # Helpers related to template generation
@@ -384,6 +381,13 @@ def generate_rocrate_object(request, samples):
 
 # Output responses
 def generate_rocrate_response(request, template):
+    '''
+        Run Ro-Crate validation using the command line
+        Replace <manifest_id> with the actual manifest_id in the URL below
+        Install the validator using: $ pip3 install roc-validator
+        Validate rocrate: $ rocrate-validator validate <path_to_rocrate>
+        e.g. rocrate-validator validate https://copo-project.org/api/manifest/<manifest_id>?return_type=rocrate
+    '''
     df = pd.DataFrame(template)
     manifest_ids = df['manifest_id'].unique() if 'manifest_id' in df.columns else []
 
@@ -391,16 +395,6 @@ def generate_rocrate_response(request, template):
         # Generate the rocrate_objs
         rocrate_objs = generate_rocrate_object(request, template)
 
-        # Create a temporary file to store the rocrate_objs
-        temp_dir = tempfile.mkdtemp()
-        metadata_path = Path(temp_dir) / 'ro-crate-metadata.json'
-
-        # Save RO-Crate JSON inside the directory
-        with open(metadata_path, 'w', encoding='utf-8') as f:
-            json.dump(rocrate_objs, f)
-
-        # Trigger Celery RO-Crate validation task asynchronously
-        run_rocrate_validator_task(temp_dir, manifest_ids[0])
         return HttpResponse(
             content=json.dumps(rocrate_objs), content_type='application/json'
         )

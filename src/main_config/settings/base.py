@@ -337,11 +337,3 @@ TINYMCE_DEFAULT_CONFIG = {
     'forced_root_block': 'p',
     'forced_root_block_attrs': {"class": "news-excerpt"},
 }
-
-# Ro-crate validator settings
-ROCRATE_SETTINGS = services.ValidationSettings(
-    # Path to the RO-Crate root directory. It will be dynamically set.
-    rocrate_uri='/path/to/ro-crate',
-    profile_identifier='ro-crate-1.1',
-    requirement_severity=models.Severity.REQUIRED,
-)

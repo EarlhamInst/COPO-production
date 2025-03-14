@@ -117,9 +117,3 @@ app.conf.task_routes = {
 @app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
-
-
-def run_rocrate_validator_task(dir, manifest_id):
-    from src.apps.api.tasks import validate_rocrate_task
-
-    validate_rocrate_task.delay(dir, manifest_id)
