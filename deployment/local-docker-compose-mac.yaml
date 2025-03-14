@@ -1,5 +1,22 @@
 #it is for mac, change some of the docker images if you want to use it for linux environment
-#export $(cat .env) > /dev/null 2>&1; docker compose -f local-docker-compose-mac.yaml up -d
+#1. export $(cat .env) > /dev/null 2>&1; docker compose -f local-docker-compose-mac.yaml up -d
+#
+#2. for new deployment with empty db, run the following command
+##python manage.py makemigrations
+##python manage.py makemigrations allauth
+#python manage.py setup_groups
+###python manage.py migrate
+#python manage.py createcachetable
+#python manage.py setup_sequencing_centres
+##python manage.py social_accounts
+##python manage.py setup_schemas
+##python manage.py setup_associated_profile_types
+##python manage.py setup_profile_types
+##python manage.py createsuperuser
+##python manage.py setup_news
+#
+##run rs.initiate() in mongo shell as copo_admin
+
 version: "3.9"
 services:
   copo_web:
