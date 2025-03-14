@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.messages import constants as messages
 from datetime import timedelta
 from common.utils import helpers as resolve_env
-from rocrate_validator import services, models
+
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
