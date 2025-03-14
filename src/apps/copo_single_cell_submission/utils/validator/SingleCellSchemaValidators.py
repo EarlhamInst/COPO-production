@@ -51,7 +51,7 @@ class IncorrectValueValidator(Validator):
                             if regex and pd.notna(regex):
                                 
                                 if not re.match(regex.strip(), str(row)):
-                                    self.errors.append(component + " : Invalid value '" + row + "' in column : '" + field["term_label"] + "' at row " + str(i) + ". Valid value should match: " + str(regex))
+                                    self.errors.append(component + " : Invalid value '" + row + "' in column : '" + field["term_label"] + "' at row " + str(i) + ". " + field.get("term_error_message", "Valid value should match: " + str(regex)))
                                     self.flag = False
                         elif type == "ontology":   
                             reference = field.get("term_reference", "")

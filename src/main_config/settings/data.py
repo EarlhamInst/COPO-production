@@ -110,3 +110,7 @@ ENA_CHECKLIST_URL  = [
     "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/ERT000020?type=sequence",
     "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/*?type=sample"
 ]
+
+SINGLE_CELL_SCHEMAS_URL = {
+   "COPO_SINGLE_CELL" : f"https://github.com/TGAC/SingleCellSchemas/raw/refs/heads/main/schemas/singlecell_schema_main_v{MANIFEST_VERSION["COPO_SINGLE_CELL"]}.xlsx"
+}

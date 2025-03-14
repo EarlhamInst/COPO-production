@@ -220,14 +220,17 @@ class SingleCellSchemasHandler:
                                 writer.sheets[sheet_name].conditional_format(f'{column_letter}1', {'type': 'no_errors', 'format': cell_format})                            
                                 #writer.sheets[sheet_name].write(f"{column_letter}1", name, cell_format)
                            
+
+                            cell_start_end = '%s5:%s1048576' % (column_letter, column_letter)
+
                             if type == "string":
                                 pass
 
-                                """ doesn't work
+                                """ doesn't work 
                                 if field["term_regex"]: 
-                                    for i in range(5, 1000):
-                                        writer.sheets[sheet_name].data_validation(f"{column_letter}{i}", {'validate': 'custom', 
-                                                                                                          'value': f'=REGEXTEST({column_letter}{i}, "{field["term_regex"]}")',
+                                    #for i in range(5, 1000):
+                                    writer.sheets[sheet_name].data_validation(cell_start_end, {'validate': 'custom', 
+                                                                                                          'value': f'=REGEXTEST({column_letter}5, "{field["term_regex"]}")',
                                                                                                           'error_title': 'Invalid value',
                                                                                                           'error_message': f'Invalid value for {name}. The format should match: {field["term_regex"]}',
                                                                                                           'ignore_blank': True})
@@ -236,7 +239,6 @@ class SingleCellSchemasHandler:
                                 choice = field["choice"]
 
                                 if len(choice) > 0:
-                                    cell_start_end = '%s5:%s1048576' % (column_letter, column_letter)
                                     source = ""
                                     number_of_char_for_choice = sum([len(str(x)) for x in choice])
                                     if number_of_char_for_choice <= 255:
@@ -281,16 +283,16 @@ class SingleCellSchemasHandler:
                     """
     
     def updateSchemas(self):
-        name = "COPO_SINGLE_CELL"
-        version = settings.MANIFEST_VERSION.get(name, str())
-        url = f"singlecell_schema_main_v{version}.xlsx"
-        xls = self._loadSchemas(url)
-        singlecell_schema = self._parseSchemas(name,xls)
-        singlecell_schema["version"] = version
-        SinglecellSchemas().get_collection_handle().find_one_and_update({"name": singlecell_schema["name"]},
-                                                                            {"$set": singlecell_schema},
-                                                                            upsert=True)
-        self.write_manifest(singlecell_schema)
+        for name, url in settings.SINGLE_CELL_SCHEMAS_URL.items():
+            version = settings.MANIFEST_VERSION.get(name, str())
+            #url = f"singlecell_schema_main_v{version}.xlsx"
+            xls = self._loadSchemas(url)
+            singlecell_schema = self._parseSchemas(name,xls)
+            singlecell_schema["version"] = version
+            SinglecellSchemas().get_collection_handle().find_one_and_update({"name": singlecell_schema["name"]},
+                                                                                {"$set": singlecell_schema},
+                                                                                upsert=True)
+            self.write_manifest(singlecell_schema)
  
 class SinglecellschemasSpreadsheet:
    def __init__(self, file, checklist_id,  component, validators=[]):
