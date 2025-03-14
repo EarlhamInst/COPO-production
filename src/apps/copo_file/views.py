@@ -25,8 +25,7 @@ def process_urls(request):
                             msg='', action="info",
                             html_id="sample_info", group_name=channels_group_name)
     file_list = json.loads(request.POST["data"])
-    bucket_name = str(request.user.id) + "-" + request.user.username
-    # bucket_name = request.user.username
+    bucket_name = profile_id
 
     s3con = S3Connection()
 
@@ -58,12 +57,12 @@ def upload_ecs_files(request, profile_id):
                                 action="error",
                                 html_id="file_info", group_name=channels_group_name)
 
-    bucket = str(request.user.id) + "-" + request.user.username
+    bucket_name = profile_id
 
     # Upload the file
     s3 = S3Connection()
-    if not s3.check_for_s3_bucket(bucket):
-        s3.make_s3_bucket(bucket)
+    if not s3.check_for_s3_bucket(bucket_name):
+        s3.make_s3_bucket(bucket_name)
     KB = 1024
     MB = KB * KB
 
@@ -71,17 +70,17 @@ def upload_ecs_files(request, profile_id):
         i  = 0
         file = files[f]
         key = file.name.replace(" ", "-")
-        response = s3.s3_client.create_multipart_upload(Bucket=bucket, Key=key)
+        response = s3.s3_client.create_multipart_upload(Bucket=bucket_name, Key=key)
 
         parts = []
         for chunk in file.chunks(chunk_size=50*MB):
             i += 1
-            part = s3.s3_client.upload_part(Body=chunk, Bucket=bucket, Key=key, PartNumber=i, UploadId=response["UploadId"])
+            part = s3.s3_client.upload_part(Body=chunk, Bucket=bucket_name, Key=key, PartNumber=i, UploadId=response["UploadId"])
             parts.append({"PartNumber":i, "ETag":part["ETag"]})
-        s3.s3_client.complete_multipart_upload(Bucket=bucket, Key=key, UploadId=response["UploadId"], MultipartUpload={"Parts":parts})
+        s3.s3_client.complete_multipart_upload(Bucket=bucket_name, Key=key, UploadId=response["UploadId"], MultipartUpload={"Parts":parts})
 
     context = dict()
-    context["table_data"] = generate_files_record(user_id=request.user.id)
+    context["table_data"] = generate_files_record(profile_id=profile_id)
     context["component"] = "files"
     out = jsonpickle.encode(context, unpicklable=False)
     return HttpResponse(status=200, content=out, content_type='application/json')

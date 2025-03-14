@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ENV PYTHONUNBUFFERED 1
 
@@ -22,12 +22,12 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     ln -s /usr/x86_64-linux-gnu/lib /lib/x86_64-linux-gnu && \
     ln -s /lib/aarch64-linux-gnu/libm-2.31.so /lib/libm.so.6 && \
     gem install sass && \
-    pip install --upgrade pip && \ 
+    #pip install --upgrade pip --break-system-packages && \ 
     apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/lib64:/usr/x86_64-linux-gnu/lib"
 COPY ./requirements/ /tmp/requirements/
-RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt
+RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt --break-system-packages
 
 #RUN mkdir /copo
 #RUN mkdir /code

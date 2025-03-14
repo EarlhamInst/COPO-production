@@ -16,7 +16,7 @@ class S3Connection():
     """
 
     def __init__(self, profile_id=str()):
-        # settings for ECS
+        self.profile_id = profile_id
         self.ecs_access_key_id = get_env('ECS_ACCESS_KEY_ID')
         self.ecs_secret_key = get_env('ECS_SECRET_KEY')
         self.ecs_endpoint = get_env('ECS_ENDPOINT')
@@ -111,7 +111,7 @@ class S3Connection():
         '''
         try:
             response = self.s3_client_external.generate_presigned_url('put_object', Params={'Bucket': bucket, 'Key': key},
-                                                             ExpiresIn=expires_seconds)
+                                                              ExpiresIn=expires_seconds)
             #response = response.replace("http://", "https://")
         except Exception as e:
             Logger().exception(e)
@@ -226,8 +226,7 @@ class S3Connection():
             raise e
 
     def validate_and_delete(self, target_id=str(), target_ids=list()):
-        user = get_current_user()
-        bucket_name = str(user.id) + "-" + user.username
+        bucket_name = self.profile_id
         filestatus_map = EnaFileTransfer().get_transfer_status_by_ecs_path(ecs_locations=[ f"{bucket_name}/{key}" for key in target_ids])
         file_not_deleted = []
         status = False

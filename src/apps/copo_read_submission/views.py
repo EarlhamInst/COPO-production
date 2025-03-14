@@ -75,7 +75,7 @@ def parse_ena_spreadsheet(request):
         if ena.validate():
             l.log("About to collect Dtol manifest")
             # check s3 for bucket and files files
-            bucket_name = str(request.user.id) + "-" + request.user.username
+            bucket_name = profile_id
             # bucket_name = request.user.username
             file_names = ena.get_filenames_from_manifest()
 
@@ -136,7 +136,7 @@ def save_ena_records(request):
 
     organism_map = dict()
     source_map = dict()
-    #p = Profile().get_record(profile_id)
+    bucket_name = profile_id
 
     for line in range(1, len(sample_data)):
         is_external_sample = False
@@ -299,7 +299,7 @@ def save_ena_records(request):
         df["file_type"] = "TODO"
         df["type"] = "RAW DATA FILE"
 
-        df["bucket_name"] = str(request.user.id) + "-" + request.user.username
+        df["bucket_name"] = bucket_name
         # df["bucket_name"] = username
 
         # create local location
@@ -310,10 +310,10 @@ def save_ena_records(request):
         if s["Library layout"] == "SINGLE":
             # create single record
             f_name = s["File name"]
-            df["ecs_location"] = uid + "-" + username + "/" + f_name
+            df["ecs_location"] = profile_id + "/" + f_name
             # df["ecs_location"] = username + "/" + f_name   #temp-solution
             df["file_name"] = f_name
-            file_location = join(settings.LOCAL_UPLOAD_PATH, username, "read", f_name)
+            file_location = join(settings.LOCAL_UPLOAD_PATH, profile_id, "read", f_name)
             df["file_location"] = file_location
             df["name"] = f_name
             df["file_id"] = "NA"
@@ -342,9 +342,9 @@ def save_ena_records(request):
             file_names = s["File name"].split(",")
             f_name = file_names[0].strip()
             df["file_name"] = f_name
-            df["ecs_location"] = uid + "-" + username + "/" + f_name
+            df["ecs_location"] = profile_id + "/" + f_name
             # df["ecs_location"] = username + "/" + f_name   #temp-solution
-            file_location = join(settings.LOCAL_UPLOAD_PATH, username, "read", f_name)
+            file_location = join(settings.LOCAL_UPLOAD_PATH, profile_id, "read", f_name)
             df["file_location"] = file_location
             df["name"] = f_name
             df["file_id"] = "NA"
@@ -371,9 +371,9 @@ def save_ena_records(request):
             # df.pop("_id")
             f_name = file_names[1].strip()
             df["file_name"] = f_name
-            df["ecs_location"] = uid + "-" + username + "/" + f_name
+            df["ecs_location"] = profile_id + "/" + f_name
             # df["ecs_location"] = request.user.username + "/" + f_name
-            file_location = join(settings.LOCAL_UPLOAD_PATH, username, "read", f_name)
+            file_location = join(settings.LOCAL_UPLOAD_PATH, profile_id, "read", f_name)
             df["file_location"] = file_location
             df["name"] = f_name
             df["file_id"] = "NA"

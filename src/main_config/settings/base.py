@@ -35,7 +35,7 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = protocol.lower() if protocol else 'https'
 
 # ALLOWED_HOSTS = [ gethostname(), gethostbyname(gethostname()), ]
 ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', '.copo-project.org', '.copo-new.cyverseuk.org',
-                 '.demo.copo-project.org', 'localhost', '.copodev.cyverseuk.org']
+                 '.demo.copo-project.org', 'localhost', '.copodev.cyverseuk.org','.copodev2.cyverseuk.org']
 ALLOWED_CIDR_NETS = ['10.0.0.0/24']
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
@@ -47,6 +47,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://demo.copo-project.org",
     "https://copodev.cyverseuk.org",
     "http://copodev.cyverseuk.org",
+    "https://copodev2.cyverseuk.org",
+    "http://copodev2.cyverseuk.org",
     "https://copo-new.cyverseuk.org",
     "http://copo-new.cyverseuk.org"
 ]
@@ -190,7 +192,7 @@ USE_L10N = True
 USE_TZ = True
 
 CSRF_TRUSTED_ORIGINS = ['https://*.copo-project.org', 'https://copodev.cyverseuk.org', 'https://copo-new.cyverseuk.org',
-                        'http://copodev.cyverseuk.org', 'http://127.0.0.1:8000']
+                        'http://copodev.cyverseuk.org', 'http://copodev2.cyverseuk.org', 'https://copodev2.cyverseuk.org','http://127.0.0.1:8000']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/

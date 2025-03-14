@@ -1,5 +1,5 @@
 #FROM python:3.10.13-bullseye
-FROM python:3.10.15-slim-bookworm
+FROM python:3.12.7-slim-bookworm
 
 ENV PYTHONUNBUFFERED 1
 

@@ -54,7 +54,7 @@ def ena_assembly(request, profile_id, assembly_id=None):
 
     ecs_files = []
     s3obj = S3Connection()
-    bucket_name = str(request.user.id) + "-" + request.user.username
+    bucket_name = profile_id
     if s3obj.check_for_s3_bucket(bucket_name):
         files = s3obj.list_objects(bucket_name)
         if files:

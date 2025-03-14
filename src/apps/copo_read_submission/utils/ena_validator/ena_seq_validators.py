@@ -167,7 +167,7 @@ class DuplicatedDataFile(Validator):
         checklist_id = checklist.get('primary_id',"")  
         user = ThreadLocal.get_current_user()
         file_names = list(self.data["file_name"])
-        samples = Sample(profile_id=self.profile_id).get_collection_handle().find({"$or" : [{"created_by" : str(user.id)}, {"updated_by" : str(user.id)}], "read":{"$exists": True}} ,{"checklist_id":1, "read":1,"name":1, "biosampleAccession":1, "profile_id":1})
+        samples = Sample(profile_id=self.profile_id).get_collection_handle().find({"profile_id":self.profile_id, "read":{"$exists": True}} ,{"checklist_id":1, "read":1,"name":1, "biosampleAccession":1, "profile_id":1})
         fileMap = {}
         for sample in samples:
             for read in sample.get("read", []):

@@ -1,6 +1,8 @@
 from common.dal.copo_da import DAComponent
 from bson.objectid import ObjectId
-
+from common.dal.submission_da import Submission
+from common.dal.copo_da import EnaFileTransfer, DataFile
+ 
 class Assembly(DAComponent):
     def __init__(self, profile_id=None):
         super(Assembly, self).__init__(profile_id, "assembly")
@@ -19,11 +21,23 @@ class Assembly(DAComponent):
             target_ids = []
         if target_id:
             target_ids.append(target_id)
+
+        submission = Submission().get_collection_handle().find_one({"profile_id": self.profile_id, "assemblies": {"$in": target_ids}},{"_id": 1})
+        if submission:
+            return dict(status='error', message="One or more assembly record/s have been submitting!")
+        
         assembly_obj_ids = [ObjectId(id) for id in target_ids]
-        result = self.execute_query(
-            {"_id": {"$in": assembly_obj_ids},  "accession": {"$exists": True, "$ne": ""}})
-        if result:
-            return dict(status='error', message="One or more Assembly has been accessed!")
+        
+        #delete the corresponding file records
+        file_ids = []
+        assemblies = self.get_collection_handle().find({"_id": {"$in": assembly_obj_ids}},{"accession":1, "files": 1})
+        for assembly in assemblies:
+            if assembly.get("accession",""):
+                return dict(status='error', message="One or more assembly record/s have been accessed!")
+            file_ids.extend(assembly.get('files', []))
+        EnaFileTransfer(profile_id=self.profile_id).get_collection_handle().delete_many({"file_id": {"$in": file_ids}})   
+        DataFile(profile_id=self.profile_id).get_collection_handle().delete_many({"_id": {"$in": [ObjectId(id) for id in file_ids]}})
+
 
         self.get_collection_handle().delete_many(
             {"_id": {"$in": assembly_obj_ids}})
