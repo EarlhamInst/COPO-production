@@ -108,8 +108,8 @@ dtol_api_patterns = [
     ),
     re_path(
         r'^sample/associated_tol_project',
-        s.get_project_samples_by_associated_project_type,
-        name='get_project_samples_by_associated_project_type',
+        s.get_by_associated_project_type,
+        name='get_by_associated_project_type',
     ),
     re_path(
         r'^sample/project/manifest_version/fields',

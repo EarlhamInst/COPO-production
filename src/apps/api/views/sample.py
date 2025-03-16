@@ -453,7 +453,7 @@ def get_fields_by_manifest_version(request):
     return HttpResponse(output, content_type='application/json')
 
 
-def get_project_samples_by_associated_project_type(request):
+def get_by_associated_project_type(request):
     excluded_associated_projects = get_excluded_associated_projects()
     # Gets multiple selected values and convert to uppercase
     associated_project_type_list = {
@@ -467,7 +467,7 @@ def get_project_samples_by_associated_project_type(request):
             content=f'Invalid associated project type(s) provided! COPO does not support one or more of the associated project type(s) provided.',
         )
 
-    samples = Sample().get_project_samples_by_associated_project_type(
+    samples = Sample().get_project_samples_by_associated_project(
         associated_project_type_list
     )
 

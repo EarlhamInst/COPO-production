@@ -1,5 +1,6 @@
 import pandas as pd
 import shortuuid
+import re
 
 from .copo_base_da import DAComponent, handle_dict
 from bson.objectid import ObjectId
@@ -596,37 +597,42 @@ class Sample(DAComponent):
             )
         )
 
-    def get_project_samples_by_associated_project_type(self, values):
+    def get_project_samples_by_associated_project(self, values):
+        # Make sure that index is set so that search can be done:
+        # db.Samples().createIndex([("associated_tol_project", "text")])
         if not values:
             return []
 
-        # Convert to uppercase and remove whitespace
+        # Convert values to uppercase and strip whitespace
         value_set = {x.strip().upper() for x in values}
 
-        # Fetch potential matches using regex
-        regex_queries = [
-            {'associated_tol_project': {'$regex': rf'\b{x}\b', '$options': 'i'}}
-            for x in value_set
-        ]
-
-        records = cursor_to_list(
-            self.get_collection_handle().find(
-                {'$and': regex_queries}
-            )  # Ensures all values exist
-        )
-
-        # Ensure all values are present in the document
-        filtered_records = [
-            record
-            for record in records
-            if value_set.issubset(
-                {
-                    x.strip().upper()
-                    for x in record.get('associated_tol_project', '').split('|')
+        # MongoDB aggregation to match unordered exact sets
+        pipeline = [
+            {
+                "$addFields": {
+                    "split_values": {"$split": ["$associated_tol_project", "|"]}
                 }
-            )
+            },
+            {
+                "$addFields": {
+                    "normalized_values": {
+                        "$map": {
+                            "input": "$split_values",
+                            "as": "val",
+                            "in": {"$trim": {"input": {"$toUpper": "$$val"}}},
+                        }
+                    }
+                }
+            },
+            {
+                "$match": {
+                    "$expr": {"$setEquals": ["$normalized_values", list(value_set)]}
+                }
+            },
         ]
-        return filtered_records
+
+        # Execute aggregation pipeline
+        return cursor_to_list(self.get_collection_handle().aggregate(pipeline))
 
     def get_gal_names(self, projects):
         return cursor_to_list(
