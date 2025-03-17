@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   web:
-    image: copo/copo-new-web:v2.0.34
+    image: copo/copo-new-web:v3.0.0
     entrypoint:
       - bash
       - -c
@@ -101,7 +101,7 @@ services:
       retries: 3
       start_period: 30s    
   celery_job:
-    image: copo/copo-new-web:v2.0.34
+    image: copo/copo-new-web:v3.0.0
     entrypoint:
       - bash
       - -c
