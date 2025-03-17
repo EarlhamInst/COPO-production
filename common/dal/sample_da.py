@@ -599,34 +599,50 @@ class Sample(DAComponent):
 
     def get_project_samples_by_associated_project(self, values):
         # Make sure that index is set so that search can be done:
-        # db.Samples().createIndex([("associated_tol_project", "text")])
+        # db.Samples().createIndex([('associated_tol_project', 'text')])
         if not values:
             return []
 
         # Convert values to uppercase and strip whitespace
         value_set = {x.strip().upper() for x in values}
 
+        # Convert value_set to a list
+        value_list = list(value_set)
+
         # MongoDB aggregation to match unordered exact sets
         pipeline = [
+            # Check if 'associated_tol_project' exists and is not null or empty
             {
-                "$addFields": {
-                    "split_values": {"$split": ["$associated_tol_project", "|"]}
+                '$match': {
+                    'associated_tol_project': {'$exists': True, '$ne': None, '$ne': ''}
+                }
+            },
+            #  Split the 'associated_tol_project' into an array
+            {
+                '$addFields': {
+                    'split_values': {'$split': ['$associated_tol_project', '|']}
                 }
             },
             {
-                "$addFields": {
-                    "normalized_values": {
-                        "$map": {
-                            "input": "$split_values",
-                            "as": "val",
-                            "in": {"$trim": {"input": {"$toUpper": "$$val"}}},
+                '$addFields': {
+                    'normalized_values': {
+                        '$map': {
+                            'input': '$split_values',
+                            'as': 'val',
+                            'in': {'$trim': {'input': {'$toUpper': '$$val'}}},
                         }
                     }
                 }
             },
+            #  Match based on set equality, ensuring arrays for comparison
             {
-                "$match": {
-                    "$expr": {"$setEquals": ["$normalized_values", list(value_set)]}
+                '$match': {
+                    '$expr': {
+                        '$setEquals': [
+                            {'$ifNull': ['$normalized_values', []]},
+                            {'$ifNull': [value_list, []]},
+                        ]
+                    }
                 }
             },
         ]
