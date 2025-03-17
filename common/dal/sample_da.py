@@ -620,7 +620,15 @@ class Sample(DAComponent):
             #  Split the 'associated_tol_project' into an array
             {
                 '$addFields': {
-                    'split_values': {'$split': ['$associated_tol_project', '|']}
+                    'split_values': {
+                        '$cond': {
+                            'if': {
+                                '$gt': [{'$strLenCP': '$associated_tol_project'}, 0]
+                            },
+                            'then': {'$split': ['$associated_tol_project', '|']},
+                            'else': [],
+                        }
+                    }
                 }
             },
             {
@@ -639,8 +647,10 @@ class Sample(DAComponent):
                 '$match': {
                     '$expr': {
                         '$setEquals': [
-                            {'$ifNull': ['$normalized_values', []]},
-                            {'$ifNull': [value_list, []]},
+                            {
+                                '$ifNull': ['$normalized_values', []]
+                            },  # Ensure it's always an array
+                            value_list,
                         ]
                     }
                 }
