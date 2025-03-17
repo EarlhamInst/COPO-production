@@ -68,7 +68,7 @@ def generate_rocrate_person_object(
             person_map[name] = item
 
             if orcid_ids and len(orcid_id_list) > index:
-                item['@id'] = 'http://orcid.org/' + orcid_id_list[index].strip()
+                item['@id'] = 'https://orcid.org/' + orcid_id_list[index].strip()
             else:
                 item['@id'] = uuid.uuid4().hex
             item['name'] = name
@@ -92,22 +92,6 @@ def generate_rocrate_person_object(
 
 
 def generate_rocrate_object(request, samples):
-    '''
-    result_list = []
-    manifest_map = dict()
-    for samples in data:
-        if type(samples) != dict or  'manifest_id' not in samples:
-            result_list = ['Not Implemented']
-            return result_list
-        manifest_id = samples.get('manifest_id','')
-        if manifest_id:
-            if manifest_id not in manifest_map:
-                manifest_map[manifest_id] = []
-            manifest_map[manifest_id].append(samples)
-    if len(manifest_map.keys()) > 1:
-        result_list = ['Not Implemented']
-        return result_list
-    '''
     rocrate_json = {}
     manifest_id = samples[0].get('manifest_id', '')
     profile_title = samples[0].get('copo_profile_title', '')
@@ -118,8 +102,6 @@ def generate_rocrate_object(request, samples):
         rocrate_json['error'] = 'Not Implemented'
     else:
         # @type: context
-        # for key, samples in manifest_map.items():
-        # rocrate_json = {}
         context = [
             'https://w3id.org/ro/crate/1.1/context',
             'https://w3id.org/ro/terms/sample',
@@ -130,12 +112,12 @@ def generate_rocrate_object(request, samples):
             'BioSample': 'https://bioschemas.org/BioSample',
             'collector': 'https://bioschemas.org/BioSample#collector',
             'custodian': 'https://bioschemas.org/BioSample#custodian',
-            'dwc': 'http://rs.tdwg.org/dwc/terms/',
-            'dwciri': 'http://rs.tdwg.org/dwc/iri/',
+            'dwc': 'https://rs.tdwg.org/dwc/terms/',
+            'dwciri': 'https://rs.tdwg.org/dwc/iri/',
             'isControl': 'https://bioschemas.org/BioSample#isControl',
             'parentTaxon': 'https://schema.org/parentTaxon',
             'samplingAge': 'https://bioschemas.org/BioSample#samplingAge',
-            'taxonomicRange': 'http://schema.org/taxonomicRange',
+            'taxonomicRange': 'https://schema.org/taxonomicRange',
         }
 
         context.append(info_dict)
@@ -145,7 +127,6 @@ def generate_rocrate_object(request, samples):
         # @type: CreativeWork
         creativeWork = {'@id': 'ro-crate-metadata.json', '@type': 'CreativeWork'}
         creativeWork['conformsTo'] = {'@id': 'https://w3id.org/ro/crate/1.1'}
-        # {'@id':f'{uri}api/manifest/{key}' }
         creativeWork['about'] = {'@id': f'{uri}api/manifest/{manifest_id}/'}
         graph_list.append(creativeWork)
 
@@ -184,7 +165,6 @@ def generate_rocrate_object(request, samples):
         )
 
         # @type: Dataset
-        # f'{uri}api/manifest/{key}/'
         manifest_item = {
             '@id': f'{uri}api/manifest/{manifest_id}/',
             '@type': 'Dataset',
@@ -199,18 +179,8 @@ def generate_rocrate_object(request, samples):
             {'@id': p['@id']} for p in rocrate_person.values()
         )
 
-        manifest_item['hasPart'] = [
-            {
-                '@id': (
-                    f"http://identifiers.org/biosample:{x.get('biosampleAccession','')}"
-                    if x.get('biosampleAccession', '')
-                    else f"{uri}api/sample/copo_id/{x['copo_id']}"
-                )
-            }
-            for x in samples
-        ]
         manifest_item['taxonomicRange'] = [
-            {'@id': f'http://identifiers.org/taxonomy:{x}'}
+            {'@id': f'https://identifiers.org/taxonomy:{x}'}
             for x in df['TAXON_ID'].unique()
         ]
         location_mapping = [
@@ -221,35 +191,35 @@ def generate_rocrate_object(request, samples):
             {'@id': k} for element in location_mapping for k, v in element.items()
         ]
 
+        manifest_item['additionalProperty'] = [
+            {
+                '@id': (
+                    f"https://identifiers.org/biosample:{x['biosampleAccession']}"
+                    if x.get('biosampleAccession', '')
+                    else f"{uri}api/sample/copo_id/{x['copo_id']}"
+                )
+            }
+            for x in samples
+        ]
+
         graph_list.append(manifest_item)
         graph_list.extend(rocrate_person.values())
 
         # @type: Taxon
         for x in df['TAXON_ID'].unique():
-            item = {'@id': f'http://identifiers.org/taxonomy:{x}'}
+            item = {'@id': f'https://identifiers.org/taxonomy:{x}'}
             item['@type'] = 'TAXON'
             item['name'] = (
                 df[df['TAXON_ID'] == x]['SCIENTIFIC_NAME'].unique()[0]
                 if 'SCIENTIFIC_NAME' in df.columns
                 else ''
             )
-            # The commented code below is not allowed because it is not
-            # present in the context. It is a  URI to be in the context but it is not unique
             item['parentTaxon'] = {
                 '@id': f"{uri}api/sample_field/ORDER_OR_GROUP/{df[df['TAXON_ID']== x ]['ORDER_OR_GROUP'].unique()[0]}"
             }
             graph_list.append(item)
 
         # @type: Place
-        lat_prefix = 'LATITUDE'
-        long_prefix = 'LONGITUDE'
-        latLong_startEnd_lst = [
-            f'{lat_prefix}_START',
-            f'{lat_prefix}_END',
-            f'{long_prefix}_START',
-            f'{long_prefix}_END',
-        ]
-
         for element in location_mapping:
             for key, value in element.items():
                 item = {'@id': key}
@@ -270,62 +240,19 @@ def generate_rocrate_object(request, samples):
                     else ''
                 )
 
-                if all(element in df.columns for element in latLong_startEnd_lst):
-                    for i in latLong_startEnd_lst:
-                        item[i] = (
-                            df[df['COLLECTION_LOCATION'] == value][i].unique()[0]
-                            if i in df.columns
-                            else ''
-                        )
-
                 graph_list.append(item)
 
-        # @type: BioSample
-        # Function to insert a key, value pair into a dictionary at a specified position/index
-        def insert(_dict, obj, pos):
-            return {
-                k: v
-                for k, v in (
-                    list(_dict.items())[:pos]
-                    + list(obj.items())
-                    + list(_dict.items())[pos:]
-                )
-            }
-
+        # @type: PropertyValue
         for x in samples:
             sample_type = x.get('tol_project', '').upper()
-            keys_lst = list(x.keys())
-            biosampleAccession = x.get('biosampleAccession', '')
+            sample_id = (
+                f"https://identifiers.org/biosample:{x.get('biosampleAccession', '')}"
+                if x.get('biosampleAccession', '')
+                else f"{uri}api/sample/copo_id/{x['copo_id']}"
+            )
 
-            sample_item = {
-                '@id': (
-                    f'http://identifiers.org/biosample:{biosampleAccession}'
-                    if biosampleAccession
-                    else f"{uri}api/sample/copo_id/{x['copo_id']}"
-                ),
-                '@type': 'BioSample',
-            }
-
-            if 'TAXON_ID' in x:
-                # sample_item['taxonomicRange'] = {'@id': "http://identifiers.org/taxonomy:{x['TAXON_ID']}"}
-                # Get index/position to insert new key, value into sample item dictionary
-                index = keys_lst.index('TAXON_ID') + 1
-                # Insert new key, value into dictionary at specified position
-                x = insert(
-                    x,
-                    {
-                        'taxonomicRange': {
-                            '@id': f"https://identifiers.org/taxonomy:{x['TAXON_ID']}"
-                        }
-                    },
-                    index,
-                )
-
-            if biosampleAccession:
-                sample_item['sameAs'] = {
-                    '@id': f"{uri}api/sample/copo_id/{x['copo_id']}"
-                }
-
+            # Collectors
+            collector_dict = {}
             for p in (
                 'COLLECTOR:COLLECTED_BY',
                 'SAMPLE_COORDINATOR:SAMPLE_COORDINATOR',
@@ -335,58 +262,76 @@ def generate_rocrate_object(request, samples):
                 pp = p.split(':')
                 collectors = x.get(pp[1], '')
                 if collectors:
-                    # sample_item[pp[0].lower()] = []
-                    # Recalculate the list of keys since it has been adjusted since a key, value pair insertion was done
-                    keys_lst = list(x.keys())
-
-                    field = ''
-                    if pp[0].lower() != 'collector':
-                        field = 'custodian'
-                        # Get index/position to insert new key, value pair into sample item dictionary
-                        index = keys_lst.index(f'{pp[0]}_AFFILIATION') + 1
-                    else:
-                        field = pp[0].lower()
-                        # Get index/position to insert new key, value pair into sample item dictionary
-                        index = keys_lst.index(pp[1]) + 1
-
-                    # Insert new key, value into dictionary at specified position
-                    x = insert(x, {field: []}, index)
+                    field = (
+                        'custodian' if pp[0].lower() != 'collector' else pp[0].lower()
+                    )
 
                     for c in collectors.split('|'):
                         collector = rocrate_person.get(c.strip(), dict())
                         if collector:
-                            # sample_item[pp[0].lower()].append({'@id': collector['@id']})
-                            x[field].append({'@id': collector['@id']})
+                            collector_dict.setdefault(pp[1], []).append(
+                                {'biosample_field': field, 'id': collector['@id']}
+                            )
 
+            # Filter the data to only include fields that are exportable
             export_fields = get_export_fields(component='sample', project=sample_type)
             filtered_x = {
                 key: value for key, value in x.items() if key in export_fields
             }
 
-            # Set the rest of the data as additional properties in the sample_item
-            sample_item['additionalProperty'] = []
+            # Set the rest of the key-value pair data as additional properties
             for key, value in filtered_x.items():
-                sample_item['additionalProperty'].append(
-                    {'@type': 'PropertyValue', 'name': key, 'value': value}
-                )
+                sample_item = {
+                    '@id': sample_id,
+                    '@type': 'PropertyValue',
+                    'name': key,
+                    'value': value,
+                }
 
-            # Update sample_item with the filtered item
-            # sample_item.update(filtered_x)
-            graph_list.append(sample_item)
+                # Add additional properties
+                if key == 'biosampleAccession' and value:
+                    sample_item['sameAs'] = f"{uri}api/sample/copo_id/{x['copo_id']}"
+
+                if key == 'TAXON_ID' and value:
+                    sample_item['sameAs'] = (
+                        f"https://identifiers.org/taxonomy:{x['TAXON_ID']}"
+                    )
+
+                if key in collector_dict:
+                    for collector in collector_dict[key]:
+                        sample_item[collector['biosample_field']] = {
+                            '@id': collector['id']
+                        }
+
+                graph_list.append(sample_item)
 
         rocrate_json['@graph'] = graph_list
-        # result_list.append(rocrate_json)
     return rocrate_json
 
 
 # Output responses
 def generate_rocrate_response(request, template):
     '''
-        Run Ro-Crate validation using the command line
-        Replace <manifest_id> with the actual manifest_id in the URL below
-        Install the validator using: $ pip3 install roc-validator
-        Validate rocrate: $ rocrate-validator validate <path_to_rocrate>
-        e.g. rocrate-validator validate https://copo-project.org/api/manifest/<manifest_id>?return_type=rocrate
+    Run RO-Crate validation using the command line.
+
+    1. Generate the RO-Crate:
+        - Replace <manifest_id> with the actual manifest ID to query sample records.
+        - Download the RO-Crate from:
+            https://copo-project.org/api/manifest/<manifest_id>?return_type=rocrate
+        - Save it as `ro-crate-metadata.json` inside a directory named `rocrate`.
+
+    2. Install the RO-Crate validator:
+        $ pip3 install roc-validator
+
+    3. Validate the RO-Crate:
+        $ rocrate-validator validate <path_to_rocrate_directory>
+
+        Example:
+        $ rocrate-validator validate --profile-identifier='ro-crate-1.1' \
+            --requirement-severity='REQUIRED' \
+            --output-file=/rocrate/validation_log.txt /rocrate
+
+        NB: Ensure that `/rocrate` is the correct path to your RO-Crate directory.
     '''
     df = pd.DataFrame(template)
     manifest_ids = df['manifest_id'].unique() if 'manifest_id' in df.columns else []
