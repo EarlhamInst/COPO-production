@@ -1341,7 +1341,7 @@ $(document).on("document_ready", function() {
 
     // View images
     if (task == 'view-images') {
-      // Get URLs of the permit files
+      // Get URLs of the images
       $.ajax({
         url: '/manifests/view_images/',
         type: 'POST',

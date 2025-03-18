@@ -501,7 +501,6 @@ def download_permits(request):
 def view_images(request):
     # Get array from Ajax call
     specimen_ids = json.loads(request.POST.get('specimen_ids', []))
-
     image_filenames = DataFile().get_image_filenames_by_specimen_id(specimen_ids)
 
     if image_filenames is None:
