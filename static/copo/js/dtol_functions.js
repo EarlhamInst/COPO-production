@@ -394,9 +394,11 @@ $(document).on('document_ready', function () {
           .find('.carousel-inner');
 
         $.each(urls, async function (index, url) {
-          let urlArr = url.split('/');
-          let filename = urlArr[urlArr.length - 1];
-          let specimen_id = filename.substring(0, filename.lastIndexOf('-'));
+          let filename = url.split('/').pop(); // Get the last part of the URL
+          let specimen_id = filename.replace(/(_\d+(-\d+)?)\.\w+$/, ''); // Remove '_number' and file extension
+          let associated_field_label = specimen_id.startsWith('SAMEA')
+            ? 'Specimen/Source'
+            : 'SPECIMEN_ID';
 
           if (
             $('.carousel-inner').children().length > urls.length &&
@@ -407,7 +409,7 @@ $(document).on('document_ready', function () {
           }
 
           try {
-            let image_caption = `Image: ${filename}; SPECIMEN_ID: ${specimen_id}`;
+            let image_caption = `Image: ${filename}; ${associated_field_label}: ${specimen_id}`;
 
             let carousel_indicator = $('<li/>', {
               'data-target': '#imageCarousel',
@@ -456,8 +458,8 @@ $(document).on('document_ready', function () {
               carousel_inner_dv.append(carousel_inner_item);
             }
 
-            // Show the image modal
-            $('#imageModal').modal('show');
+            $('#imageCarousel').carousel(); // Re-initialise the carousel
+            $('#imageModal').removeAttr('inert').modal('show'); // Show the image modal
           } catch (err) {
             console.log(err);
           }
@@ -1148,10 +1150,10 @@ function handle_accept_reject(el) {
     action = 'reject';
   }
   var sample_ids = [];
-   $(checked).each(function (idx, row) {
-     sample_ids.push($(checked[idx]).attr('id'));
-     $(row).remove();
-   });
+  $(checked).each(function (idx, row) {
+    sample_ids.push($(checked[idx]).attr('id'));
+    $(row).remove();
+  });
 
   if (sample_ids.length == 0) {
     alert('Please select samples to ' + action);

@@ -204,7 +204,7 @@
 </style>
 
 <!-- Image modal (a carousel inside a modal) -->
-<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-modal="true">
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-modal="true" inert>
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header" style="background-color: #337ab7;">
@@ -243,10 +243,29 @@
 
 <script>
     $(document).ready(function () {
-      // Reset carousel on modal close 
-      $('#imageModal').on('hidden.bs.modal', function () {
-        if($('.carousel-inner').children()) $('.carousel-inner').children().remove();
-        if($('.carousel-indicators').children()) $('.carousel-indicators').children().remove();
-      });
+        $('#imageModal').on('hide.bs.modal', function () {
+            $(this).find(':focus').blur(); // Remove focus from active elements
+            $(this).attr('aria-hidden', 'true'); // Ensure modal is hidden
+        });
+
+        // Reset carousel on modal close 
+        $('#imageModal').on('hidden.bs.modal', function () {
+            // Stop the carousel and reset states
+            $('#imageCarousel').carousel('pause'); // Pause the carousel
+            $('#imageCarousel').removeData('bs.carousel'); // Remove Bootstrap carousel data
+
+            // Clear carousel items
+            if($('.carousel-inner').children()) {
+                $('.carousel-inner').children().remove();
+            }
+
+            if($('.carousel-indicators').children()) {
+                $('.carousel-indicators').children().remove();
+            }
+        });
+
+        $('#imageModal').on('shown.bs.modal', function () {
+            $(this).removeAttr('aria-hidden'); // Ensure modal is accessible
+        });
     });
 </script>

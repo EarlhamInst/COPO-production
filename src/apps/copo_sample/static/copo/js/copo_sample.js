@@ -2,7 +2,7 @@ var wizardMessages;
 var sampleDescriptionToken = '';
 var sampleTableInstance = null;
 
-$(document).on("document_ready", function() {
+$(document).on('document_ready', function () {
   //****************************** Event Handlers Block *************************//
 
   // test begins
@@ -102,10 +102,12 @@ $(document).on("document_ready", function() {
   //var groups = $("#groups").val().split(",")
 
   var profile_type = $('#profile_type').val().toLowerCase();
-  var colour = profile_type_def[profile_type]["widget_colour"];
-  $('#help_add_button').css("color",'white').css("background-color",colour);
-  $('.new-samples-spreadsheet-template').css("color",'white').css("background-color",colour);
-   /*
+  var colour = profile_type_def[profile_type]['widget_colour'];
+  $('#help_add_button').css('color', 'white').css('background-color', colour);
+  $('.new-samples-spreadsheet-template')
+    .css('color', 'white')
+    .css('background-color', colour);
+  /*
   if (
     ['dtol', 'asg'].some((el) =>
       document.getElementById('profile_type').value == el
@@ -1371,9 +1373,11 @@ $(document).on("document_ready", function() {
             .find('.carousel-inner');
 
           $.each(urls, async function (index, url) {
-            let urlArr = url.split('/');
-            let filename = urlArr[urlArr.length - 1];
-            let specimen_id = filename.substring(0, filename.lastIndexOf('-'));
+            let filename = url.split('/').pop(); // Get the last part of the URL
+            let specimen_id = filename.replace(/(_\d+(-\d+)?)\.\w+$/, ''); // Remove '_number' and file extension
+            let associated_field_label = specimen_id.startsWith('SAMEA')
+              ? 'Specimen/Source'
+              : 'SPECIMEN_ID';
 
             if (
               $('.carousel-inner').children().length > urls.length &&
@@ -1384,7 +1388,7 @@ $(document).on("document_ready", function() {
             }
 
             try {
-              let image_caption = `Image: ${filename}; SPECIMEN_ID: ${specimen_id}`;
+              let image_caption = `Image: ${filename}; ${associated_field_label}: ${specimen_id}`;
 
               let carousel_indicator = $('<li/>', {
                 'data-target': '#imageCarousel',
@@ -1433,8 +1437,8 @@ $(document).on("document_ready", function() {
                 carousel_inner_dv.append(carousel_inner_item);
               }
 
-              // Show the image modal
-              $('#imageModal').modal('show');
+              $('#imageCarousel').carousel(); // Re-initialise the carousel
+              $('#imageModal').removeAttr('inert').modal('show'); // Show the image modal
             } catch (err) {
               console.log(err);
             }
@@ -1681,7 +1685,7 @@ $(document).on("document_ready", function() {
 
     return $('<div>').append(attributesPanel).append(loaderObject);
   }
-  
+
   /*
   function get_acronym(txt) {
     // Retrieve the parentheses and the enclosed string from the
