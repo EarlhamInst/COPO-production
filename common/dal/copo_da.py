@@ -1424,10 +1424,15 @@ class DataFile(DAComponent):
         if image_filenames and specimen:
             for x in image_filenames:
                 filename = os.path.basename(x)
+
+                lg.log(f'Checking for BIA image URL for: {filename}')
+
                 bia_image_url = helpers.check_and_save_bia_image_url(
                     f'{bia_image_file_prefix}{filename}'
                 )
                 if bia_image_url and not os.path.exists(x) and bia_image_url != x:
+                    lg.log('BIA image URL found...updating image URL')
+
                     image_filenames[image_filenames.index(x)] = bia_image_url
                     _, _, file_suffix = filename.rpartition('_')
 
@@ -1436,7 +1441,7 @@ class DataFile(DAComponent):
                     )
                     self.get_collection_handle().update_one(
                         filter,
-                        {"$set": {"file_location": bia_image_url}},
+                        {'$set': {'file_location': bia_image_url}},
                     )
 
         # Return a list of image file paths ensuring that it beings with '/'

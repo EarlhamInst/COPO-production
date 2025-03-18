@@ -11,7 +11,12 @@ from channels.layers import get_channel_layer
 from django_tools.middlewares import ThreadLocal
 from django.conf import settings
 from functools import wraps
-
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
 
 def get_class(kls):
     parts = kls.split('.')
@@ -359,15 +364,21 @@ def get_excluded_associated_projects():
     return exclusions
 
 
+@retry(
+    stop=stop_after_attempt(5),  # Retry up to 5 times
+    # Exponential backoff (2s, 4s, 8s, etc.)
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type(requests.RequestException),
+    reraise=True,  # Raise exception if all attempts fail
+)
 def check_and_save_bia_image_url(url):
     try:
-        response = requests.head(url, allow_redirects=True, timeout=5)
+        response = requests.head(url, allow_redirects=True, timeout=10)
         if response.status_code == 200 and 'image' in response.headers.get(
             'Content-Type', ''
         ):
             return url  # URL is valid and leads to an image
     except requests.RequestException as e:
-        l.exception(e)
-        pass  # Handle errors silently
-
+        l.exception(f'Retrying due to error fetching image: {e}')
+        raise  # Raise exception to trigger retry
     return None  # URL does not exist or is not an image

@@ -1,10 +1,14 @@
 import pymongo
-import pymongo.errors as pymongo_errors
 import urllib.parse
 import requests
 import os
-from pymongo import ReturnDocument
 
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
 
 username = urllib.parse.quote_plus('copo_user')
 password = urllib.parse.quote_plus('password')
@@ -31,7 +35,14 @@ bia_image_file_prefix = (
 )
 
 
-def check_and_save_bia_image_url(url):
+@retry(
+    stop=stop_after_attempt(5),  # Retry up to 5 times
+    # Exponential backoff (2s, 4s, 8s etc.)
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type(requests.RequestException),
+    reraise=True,  # Raise exception if all attempts fail
+)
+def check_and_save_bia_image_url(file_id, url):
     try:
         response = requests.head(url, allow_redirects=True, timeout=10)
         if response.status_code == 200 and 'image' in response.headers.get(
@@ -39,9 +50,8 @@ def check_and_save_bia_image_url(url):
         ):
             return url  # URL is valid and leads to an image
     except requests.RequestException as e:
-        print(e)
-        pass  # Handle errors silently
-
+        print(f'Retrying due to error fetching image with ID, {file_id}: {e}')
+        raise  # Raise exception to trigger retry
     return None  # URL does not exist or is not an image
 
 
@@ -92,14 +102,19 @@ for file in cursor:
         )
 
     if sample_type and specimen:
+        print('Checking for BIA image URL for:', file['_id'])
         bia_image_url = check_and_save_bia_image_url(
-            f'{bia_image_file_prefix}{sample_type}/{bioimage_name}'
+            file['_id'], f'{bia_image_file_prefix}{sample_type}/{bioimage_name}'
         )
 
-        if bia_image_url and not os.path.exists(file_location) and bia_image_url != file_location:
+        if (
+            bia_image_url
+            and not os.path.exists(file_location)
+            and bia_image_url != file_location
+        ):
             datafile_collection.update_one(
                 {'_id': file['_id']}, {'$set': {f'file_location': bia_image_url}}
             )
             print(
-                f"Updated image file ({ file['_id']}) location from '{file_location}' to  '{bia_image_url}'"
+                f"Updated image file (with document ID: { file['_id']}) location from '{file_location}' to  '{bia_image_url}'"
             )
