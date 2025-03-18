@@ -33,7 +33,7 @@ bia_image_file_prefix = (
 
 def check_and_save_bia_image_url(url):
     try:
-        response = requests.head(url, allow_redirects=True, timeout=5)
+        response = requests.head(url, allow_redirects=True, timeout=10)
         if response.status_code == 200 and 'image' in response.headers.get(
             'Content-Type', ''
         ):
@@ -96,7 +96,7 @@ for file in cursor:
             f'{bia_image_file_prefix}{sample_type}/{bioimage_name}'
         )
 
-        if bia_image_url and not os.path.exists(file_location):
+        if bia_image_url and not os.path.exists(file_location) and bia_image_url != file_location:
             datafile_collection.update_one(
                 {'_id': file['_id']}, {'$set': {f'file_location': bia_image_url}}
             )

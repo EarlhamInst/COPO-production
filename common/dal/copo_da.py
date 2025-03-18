@@ -1427,7 +1427,7 @@ class DataFile(DAComponent):
                 bia_image_url = helpers.check_and_save_bia_image_url(
                     f'{bia_image_file_prefix}{filename}'
                 )
-                if bia_image_url and not os.path.exists(x):
+                if bia_image_url and not os.path.exists(x) and bia_image_url != x:
                     image_filenames[image_filenames.index(x)] = bia_image_url
                     _, _, file_suffix = filename.rpartition('_')
 
@@ -1438,7 +1438,7 @@ class DataFile(DAComponent):
                         filter,
                         {"$set": {"file_location": bia_image_url}},
                     )
-                    
+
         # Return a list of image file paths ensuring that it beings with '/'
         image_filenames = [
             f'/{x}' if not x.startswith('/') else x for x in image_filenames
