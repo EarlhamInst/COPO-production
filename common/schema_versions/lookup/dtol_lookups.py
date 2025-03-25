@@ -277,7 +277,7 @@ DTOL_ENUMS = {
             'CUBA',
             'CURACAO',
             'CYPRUS',
-            'CZECH REPUBLIC',
+            'CZECHIA',
             'DEMOCRATIC REPUBLIC OF THE CONGO',
             'DENMARK',
             'DJIBOUTI',
