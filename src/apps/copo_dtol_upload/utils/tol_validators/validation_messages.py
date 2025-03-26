@@ -55,12 +55,12 @@ MESSAGES = {
     'validation_msg_future_date': 'Invalid date: <strong>%s</strong> in column <strong>%s</strong> at row '
                                   '<strong>%s</strong>. Date cannot be in the future.',
     'validation_msg_invalid_associated_tol_project': 'Invalid associated profile type for profile, '
-                                                     '<strong>%s</strong>. Expected value should include '
-                                                     '<strong>Population Genomics (POP_GENOMICS)</strong> and '
-                                                     '<strong>Biodiversity Genomics Europe (BGE)</strong> if value of column '
+                                                     '<strong>%s</strong>. Expected value is '
+                                                     '<strong>Population Genomics (POP_GENOMICS)</strong> '
+                                                     'if the value of column '
                                                      '<strong>PURPOSE_OF_SPECIMEN</strong> is '
-                                                     '<strong>RESEQUENCING</strong>. And vice versa. Please update/edit the '
-                                                     'associated profile type for the profile then, reupload the '
+                                                     '<strong>RESEQUENCING</strong> and vice versa. Please update/edit the '
+                                                     'associated profile type then, reupload the '
                                                      'manifest.',
                                     
 
@@ -79,9 +79,8 @@ MESSAGES = {
     'validation_msg_invalid_purpose_of_specimen': 'Invalid data: <strong>%s</strong> in column '
                                                   '<strong>PURPOSE_OF_SPECIMEN</strong> at row <strong>%s</strong>. '
                                                   'Expected value should be <strong>RESEQUENCING</strong> '
-                                                  'since associated profile types are '
-                                                  '<strong>Population Genomics (POP_GENOMICS)</strong> '
-                                                  'and <strong>Biodiversity Genomics Europe (BGE)</strong>.',
+                                                  'since associated profile type is '
+                                                  '<strong>Population Genomics (POP_GENOMICS)</strong>.',
     'tmp_validation_msg_invalid_rank': 'Invalid scientific name or taxon ID: row <strong>%s</strong> - rank of scientific '
                                    'name and taxon id should be species or subspecies.',
     'validation_msg_invalid_rank': 'Invalid scientific name or taxon ID: row <strong>%s</strong> - rank of scientific '
