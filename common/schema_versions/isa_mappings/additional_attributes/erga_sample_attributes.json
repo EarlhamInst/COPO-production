@@ -772,7 +772,7 @@
         ],
         "order": 19,
         "ref": "",
-        "required": "true",
+        "required": "false",
         "show_as_attribute": true,
         "show_in_api": true,
         "show_in_form": true,
