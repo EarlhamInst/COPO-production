@@ -5,6 +5,9 @@ from common.utils.helpers import get_datetime
 from common.dal.profile_da import Profile
 from common.dal.copo_da import  DataFile
 import requests
+from django_tools.middlewares import ThreadLocal
+from common.utils.helpers import get_datetime, get_not_deleted_flag
+from common.dal.submission_da import Submission
 
 l = Logger()
 #https://www.ebi.ac.uk/ols4/api/v2/ontologies/ncbitaxon/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_1224659?includeObsoleteEntities=false
@@ -284,3 +287,22 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
             Singlecell(profile_id=profile_id).get_collection_handle().delete_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id})
  
     return {"status": "success", "message": "Record deleted successfully!"}
+
+
+def submit_singlecell(profile_id, target_ids, target_id,checklist_id, study_id):
+    if target_id:
+        target_ids = [target_id]
+
+    if not target_ids:
+        return dict(status='error', message="Please select one or more records to submit!")
+
+    user = ThreadLocal.get_current_user()
+    dt = get_datetime()
+
+    sub = Submission().get_collection_handle().find_one(
+        {"profile_id": profile_id, "deleted": get_not_deleted_flag()})
+
+    if not sub:
+        return dict(status='error', message="Please contact System Support Error 10211!")
+    
+    return dict(status='error', message="Not Implement.")        

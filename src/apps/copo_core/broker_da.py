@@ -504,9 +504,30 @@ class BrokerDA:
         self.context["action_feedback"] = report_metadata
         if result.get("status","success") == "success":
             self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id, checklist_id=checklist_id)
-            self.context["component"] = "read"
+            self.context["component"] = "singlecell"
         return self.context
 
+
+    def do_submit_singlecell(self):
+        """
+        function handles the delete of a record for those components
+        that have provided a way of first validating (dependencies checks etc.) this action
+        :return:
+        """
+        target_id = self.param_dict.get("target_id", str())
+        target_ids  = self.param_dict.get("target_ids", [])
+        checklist_id = self.request_dict.get("singlecell_checklist_id", str())
+        study_id = self.request_dict.get("study_id", "")
+
+        result = copo_single_cell.submit_singlecell(profile_id=self.profile_id, target_ids=target_ids, target_id=target_id,checklist_id=checklist_id, study_id=study_id)
+        report_metadata = dict()
+        report_metadata["status"] = result.get("status", "success")
+        report_metadata["message"] = result.get("message", "success")
+        self.context["action_feedback"] = report_metadata       
+        if result.get("status","success") == "success":
+            self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id,checklist_id=checklist_id)
+            self.context["component"] = "singlecell"
+        return self.context
 
 class BrokerVisuals:
     def __init__(self, **kwargs):

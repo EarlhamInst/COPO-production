@@ -232,7 +232,7 @@ class SingleCellSchemasHandler:
                                     writer.sheets[sheet_name].data_validation(cell_start_end, {'validate': 'custom', 
                                                                                                           'value': f'=REGEXTEST({column_letter}5, "{field["term_regex"]}")',
                                                                                                           'error_title': 'Invalid value',
-                                                                                                          'error_message': f'Invalid value for {name}. The format should match: {field["term_regex"]}',
+                                                                                                          'error_message': f'Invalid value for {name}. {field["term_error_message"]}',
                                                                                                           'ignore_blank': True})
                                 """
                             elif type == "enum" and "choice" in field:

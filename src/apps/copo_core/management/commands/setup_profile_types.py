@@ -100,6 +100,7 @@ class Command(BaseCommand):
         releasestudy = RecordActionButton().create_record_action_button(name="releasestudy", title="Release Study", label="Release Study", type="single", error_message="", icon_class="fa fa-globe", action="release_study", icon_colour="blue")
         delete_read_multi = RecordActionButton().create_record_action_button(name="delete_read_multi", title="Delete records", label="Delete", type="multi", error_message="Please select one or more records to delete", icon_class="fa fa-trash-can", action="delete_read", icon_colour="red")
         delete_singlecell_multi = RecordActionButton().create_record_action_button(name="delete_singlecell_multi", title="Delete records", label="Delete", type="multi", error_message="Please select one or more records to delete", icon_class="fa fa-trash-can", action="delete_singlecell", icon_colour="red")
+        submit_singlecell_multi = RecordActionButton().create_record_action_button(name="submit_singlecell_multi", title="Submit Single Cell Records", label="Submit", type="multi", error_message="Please select one or more record to submit", icon_class="fa fa-info-circle", action="submit_singlecell", icon_colour="teal")
 
         self.stdout.write("Record Action Button Added")
         records = RecordActionButton.objects.all()
@@ -164,7 +165,7 @@ class Command(BaseCommand):
         read.recordaction_buttons.set([delete_read_multi, submit_read_multi])
         read.title_buttons.set([new_reads_spreadsheet_template, download_blank_manifest_template])
 
-        singlecell.recordaction_buttons.set([delete_singlecell_multi, submit_read_multi,download_singlecell_manifest_single])
+        singlecell.recordaction_buttons.set([delete_singlecell_multi, submit_singlecell_multi,download_singlecell_manifest_single])
         singlecell.title_buttons.set([new_singlecell_spreadsheet_template, download_blank_manifest_template])
 
         sample.recordaction_buttons.set([download_sample_manifest_single, download_permits_multiple, view_images_multiple])
