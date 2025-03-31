@@ -130,12 +130,11 @@ def prefill_manifest_template(request):
     common_values = json_util.loads(request.body)[
         "common_values_list"]
 
-    manifests_dir = os.path.join("static", "assets", "manifests")
-
     # Set the path to the blank manifest template based on the manifest type
     filename = get_manifest_filename(manifest_type)
 
-    manifest_template_path = os.path.join(manifests_dir, filename)
+    manifest_template_path = os.path.join(settings.MANIFEST_PATH, filename)
+
 
     # Duplicate the common field value according to the number of samples desired
     row_values = [[i] * int(number_of_samples) for i in common_values]
@@ -294,7 +293,6 @@ def applyDropdownlist(dataframe, pandas_writer, sheet_name,
     for column_name in dataframe:
         column_length = max(dataframe[column_name].astype(str).map(len).max(), len(column_name))
         column_index = dataframe.columns.get_loc(column_name)
-        pandas_writer.sheets[sheet_name].set_column(column_index, column_index, column_length)
 
         # Check if sheet is 'Metadata Entry' and column name is present amongst
         # the fields that require a dropdownlist
@@ -310,22 +308,26 @@ def applyDropdownlist(dataframe, pandas_writer, sheet_name,
             be pulled from the respective column in the in the "Data Validation" worksheet'''
 
             common_value_dropdownlist = get_common_field_dropdownlist(column_name, manifest_type)
-            common_value_dropdownlist.sort()
+            if common_value_dropdownlist:
+                common_value_dropdownlist.sort()
 
-            number_of_characters = sum(len(i) for i in common_value_dropdownlist)
+                number_of_characters = sum(len(i) for i in common_value_dropdownlist)
+                max_length_str = max(common_value_dropdownlist, key=len)
+                column_length = max(len(max_length_str), len(column_name))
 
-            if number_of_characters >= 255:
-                applyDataValidationToColumn(column_name,
-                                            metadataEntry_worksheet_dataframe, dataValidation_worksheet_dataframe,
-                                            pandas_writer, sheet_name)
-            else:
-                # Get first row to the last row in a column
-                row_start_end = '%s2:%s1048576' % (column_letter, column_letter)
+                if number_of_characters >= 255:
+                    applyDataValidationToColumn(column_name,
+                                                metadataEntry_worksheet_dataframe, dataValidation_worksheet_dataframe,
+                                                pandas_writer, sheet_name)
+                else:
+                    # Get first row to the last row in a column
+                    row_start_end = '%s2:%s1048576' % (column_letter, column_letter)
 
-                pandas_writer.sheets[sheet_name].data_validation(row_start_end,
-                                                                 {'validate': 'list',
-                                                                  'source': common_value_dropdownlist})
+                    pandas_writer.sheets[sheet_name].data_validation(row_start_end,
+                                                                    {'validate': 'list',
+                                                                    'source': common_value_dropdownlist})
 
+        pandas_writer.sheets[sheet_name].set_column(column_index, column_index, column_length)
 
 def get_common_field_dropdownlist(common_field, manifest_type):
     def get_dropdown_items():
@@ -578,7 +580,7 @@ def generate_manifest_template(manifest_type, manifest_template_path, initial_da
                                                 sheet_name='OrganismPartDefinitions')
 
         # Auto-adjust width of each column within the worksheet
-        autoAdjustExcelColumnWidth(metadataEntry_worksheet_concatenation, pandas_writer, 'Metadata Entry')
+        #autoAdjustExcelColumnWidth(metadataEntry_worksheet_concatenation, pandas_writer, 'Metadata Entry')
 
         autoAdjustExcelColumnWidth(dataValidation_worksheet, pandas_writer, 'Data Validation')
 
