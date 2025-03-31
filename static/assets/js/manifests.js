@@ -153,7 +153,7 @@ function get_common_fields_handler() {
 
   $.ajax({
     type: 'GET',
-    url: 'get_manifest_fields/',
+    url: '/manifests/get_manifest_fields/',
     dataType: 'json',
     data: {
       manifest_type: manifest_type,
@@ -245,7 +245,7 @@ function get_common_value_dropdown_list_handler(common_field, commonValueDiv) {
 
   $.ajax({
     type: 'GET',
-    url: 'get_common_value_dropdown_list/',
+    url: '/manifests/get_common_value_dropdown_list/',
     dataType: 'json',
     data: {
       manifest_type: manifest_type,
@@ -486,7 +486,7 @@ function validateCommonValue(e, data) {
         // now that the common value is neither undefined, null or empty i.e. it has a value
         $.ajax({
           type: 'GET',
-          url: 'validate_common_value/',
+          url: '/manifests/validate_common_value/',
           dataType: 'json',
           data: {
             common_field: common_field,
@@ -597,7 +597,7 @@ function generateManifestTemplate(event) {
     common_values_list.push(common_value);
   });
 
-  xhr.open('POST', 'prefill_manifest_template/');
+  xhr.open('POST', '/manifests/prefill_manifest_template/');
   xhr.onreadystatechange = function () {
     if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
       let link = document.createElement('a');
