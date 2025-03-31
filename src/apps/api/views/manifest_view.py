@@ -249,10 +249,19 @@ def applyDataValidationToColumn(column, metadataEntry_worksheet_dataframe,
     dataValidation_worksheet_name = "'Data Validation'"
     dataValidation_worksheet_column_index = dataValidation_worksheet_dataframe.columns.get_loc(column)
     dataValidation_worksheet_column_letter = cell.get_column_letter(dataValidation_worksheet_column_index + 1)
-    organismPart_dataValidationColumn = '=%s!$%s$2:$%s$78'
-    tissueForBarcoding_dataValidationColumn = '=%s!$%s$2:$%s$79'
-    tissueForBiobanking_dataValidationColumn = '=%s!$%s$2:$%s$79'
+    #organismPart_dataValidationColumn = '=%s!$%s$2:$%s$78'
+    #tissueForBarcoding_dataValidationColumn = '=%s!$%s$2:$%s$79'
+    #tissueForBiobanking_dataValidationColumn = '=%s!$%s$2:$%s$79'
+    dataValidationColumn = '=%s!$%s$2:$%s1000'
 
+    data_validation_column = dataValidationColumn % (
+        dataValidation_worksheet_name, dataValidation_worksheet_column_letter,
+        dataValidation_worksheet_column_letter)
+
+    return pandas_writer.sheets[sheet_name].data_validation(
+        row_start_end, {'validate': 'list', 'source': data_validation_column})
+
+    """
     if "ORGANISM_PART" in column:
         # Get dropdownlist from the first to last row of the column from the "Data Validation" worksheet
         data_validation_column = organismPart_dataValidationColumn % (
@@ -278,7 +287,7 @@ def applyDataValidationToColumn(column, metadataEntry_worksheet_dataframe,
 
         return pandas_writer.sheets[sheet_name].data_validation(row_start_end,
                                                                 {'validate': 'list', 'source': data_validation_column})
-
+    """
 
 def applyDropdownlist(dataframe, pandas_writer, sheet_name,
                       metadataEntry_worksheet_dataframe, dataValidation_worksheet_dataframe, manifest_type):
