@@ -103,7 +103,7 @@ const get_browser_id  = async () => {
     {
         const targetPage = page;
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(Password)'),
+            targetPage.locator('::-p-aria(Your ORCID password)'),
             targetPage.locator('#password'),
             targetPage.locator('::-p-xpath(//*[@id=\\"password\\"])'),
             targetPage.locator(':scope >>> #password')
@@ -119,7 +119,7 @@ const get_browser_id  = async () => {
     {
         const targetPage = page;
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(Password)'),
+            targetPage.locator('::-p-aria(Your ORCID password)'),
             targetPage.locator('#password'),
             targetPage.locator('::-p-xpath(//*[@id=\\"password\\"])'),
             targetPage.locator(':scope >>> #password')
@@ -137,7 +137,7 @@ const get_browser_id  = async () => {
             targetPage.locator('app-form-sign-in span.mat-button-wrapper'),
             targetPage.locator('::-p-xpath(//*[@id=\\"signin-button\\"]/span[1])'),
             targetPage.locator(':scope >>> app-form-sign-in span.mat-button-wrapper'),
-            targetPage.locator('::-p-text(SIGN IN)')
+            targetPage.locator('::-p-text(Sign in to ORCID)')
         ])
             .setTimeout(timeout)
             .on('action', () => startWaitingForEvents())
