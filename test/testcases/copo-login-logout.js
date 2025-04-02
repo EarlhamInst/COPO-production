@@ -103,7 +103,7 @@ const get_browser_id  = async () => {
     {
         const targetPage = page;
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(Your ORCID password)'),
+            targetPage.locator('::-p-aria(Password)'),
             targetPage.locator('#password'),
             targetPage.locator('::-p-xpath(//*[@id=\\"password\\"])'),
             targetPage.locator(':scope >>> #password')
@@ -119,7 +119,7 @@ const get_browser_id  = async () => {
     {
         const targetPage = page;
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(Your ORCID password)'),
+            targetPage.locator('::-p-aria(Password)'),
             targetPage.locator('#password'),
             targetPage.locator('::-p-xpath(//*[@id=\\"password\\"])'),
             targetPage.locator(':scope >>> #password')
@@ -137,7 +137,6 @@ const get_browser_id  = async () => {
             targetPage.locator('app-form-sign-in span.mat-button-wrapper'),
             targetPage.locator('::-p-xpath(//*[@id=\\"signin-button\\"]/span[1])'),
             targetPage.locator(':scope >>> app-form-sign-in span.mat-button-wrapper'),
-            targetPage.locator('::-p-text(Sign in to ORCID)')
         ])
             .setTimeout(timeout)
             .on('action', () => startWaitingForEvents())
@@ -149,7 +148,20 @@ const get_browser_id  = async () => {
             });
         await Promise.all(promises);
     }
-
+    {
+        const targetPage = page;
+        await waitForElement({
+            type: 'waitForElement',
+            target: 'main',
+            selectors: [
+                'aria/I agree, dismiss this dialog',
+                '#acceptCookies',
+                'xpath///*[@id="acceptCookies"]',
+                'pierce/#acceptCookies',
+                'text/I agree, dismiss\n'
+            ]
+        }, targetPage, timeout);
+    }
     {
         const targetPage = page;
         await puppeteer.Locator.race([
