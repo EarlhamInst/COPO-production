@@ -190,22 +190,6 @@ def copo_repositories(request):
     user = request.user.id
     return render(request, 'copo/my_repositories.html')
 
-
-"""
-@login_required
-def copo_samples(request, profile_id):
-    request.session["profile_id"] = profile_id
-    profile = Profile().get_record(profile_id)
-    groups = get_group_membership_asString()
-    return render(request, 'copo/copo_sample.html', {'profile_id': profile_id, 'profile': profile, 'groups': groups})
-"""
-
-
-def copo_docs(request):
-    context = dict()
-    return render(request, 'copo/copo_docs.html', {'context': context})
-
-
 def resolve_submission_id(request, submission_id):
     sub = Submission().get_record(submission_id)
     # get all file metadata

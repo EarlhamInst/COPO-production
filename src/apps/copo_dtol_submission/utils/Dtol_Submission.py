@@ -585,6 +585,7 @@ def process_pending_dtol_samples():
                 #                html_id="dtol_sample_info")
                 
                 # if all samples were moved to rejected
+                Submission().update_dtol_sample(sub_id=submission["_id"], next_status='complete')
                 continue
 
             # for update

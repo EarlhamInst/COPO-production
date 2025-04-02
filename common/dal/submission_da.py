@@ -24,7 +24,7 @@ class Submission(DAComponent):
     def dtol_sample_rejected(self, sub_id, sam_ids, submission_id):
         self.update_dtol_sample(sub_id, sam_ids, submission_id, "complete")
 
-    def update_dtol_sample(self, sub_id, sam_ids, submission_id, next_status):
+    def update_dtol_sample(self, sub_id, sam_ids=[], submission_id="", next_status=""):
         # when dtol sample has been processed, pull id from submission and check if there are remaining
         # samples left to go. If not, make submission complete. This will stop celery processing the this submission.
         sub_handle = self.get_collection_handle()
@@ -34,16 +34,16 @@ class Submission(DAComponent):
             action.update( {"$pull": {"submission": {"id": submission_id}}})
         if sam_ids:
             action.update({"$pull": {"dtol_samples": {"$in": sam_ids}}})
-
-        sub_handle.update_one({"_id": ObjectId(sub_id)}, action )
+        if action:
+            sub_handle.update_one({"_id": ObjectId(sub_id)}, action )
      
         sub = sub_handle.find_one({"_id": ObjectId(sub_id)}, {
                                   "submission": 1, "dtol_samples": 1, "profile_id":1})
-        if len(sub["submission"]) < 1 and len(sub["dtol_samples"]) < 1:
+        if not sub.get("submission",[]) and not sub.get("dtol_samples",[]):
             sub_handle.update_one({"_id": ObjectId(sub_id)},
                                   {"$set": {"dtol_status": next_status, "date_modified": helpers.get_datetime()}})
             
-        elif len(sub["dtol_samples"]) > 0:
+        elif sub.get("dtol_samples",[]):
             dtol_samples_ids = [ObjectId(x) for x in sub["dtol_samples"]]
             processing_sample_count = Sample().get_collection_handle().count_documents({"profile_id":sub["profile_id"], "_id": {"$in": dtol_samples_ids}, "status":"processing"})
             if processing_sample_count > 0:
