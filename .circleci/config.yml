@@ -79,9 +79,6 @@ jobs:
             docker exec $copo_browser node -e "$(cat test/testcases/ERGA_permit.js)" ei && \
             echo "running ERGA_approve_samples.js ei" && \
             docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" ei && \        
-
-            #echo "running Genomics_profile.js" && \
-            #docker exec $copo_browser node -e "$(cat test/testcases/genomics_profile.js)"  && \
             echo "done" ) || \
             (docker logs $copo_web && \
             docker exec $copo_web bash -c "less /copo/logs/*.log" && exit 1)
