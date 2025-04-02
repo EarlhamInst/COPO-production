@@ -150,26 +150,10 @@ const get_browser_id  = async () => {
     }
     {
         const targetPage = page;
-        await waitForElement({
-            type: 'waitForElement',
-            target: 'main',
-            selectors: [
-                'aria/I agree, dismiss this dialog',
-                '#acceptCookies',
-                'xpath///*[@id="acceptCookies"]',
-                'pierce/#acceptCookies',
-                'text/I agree, dismiss\n'
-            ]
-        }, targetPage, timeout);
-    }
-    {
-        const targetPage = page;
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(I agree, dismiss this dialog)'),
             targetPage.locator('#acceptCookies'),
             targetPage.locator('::-p-xpath(//*[@id=\\"acceptCookies\\"])'),
             targetPage.locator(':scope >>> #acceptCookies'),
-            targetPage.locator('::-p-text(I agree, dismiss\n)')
         ])
             .setTimeout(timeout)
             .click({
