@@ -281,16 +281,20 @@ class ToENA(threading.Thread):
             Logger().exception(e)
             record_error("error transfering to ENA: " + str(e))
             reset_status_counter(self.tx)
+            return
+        
         # now check if active tasks can be marked False
         mark_complete(self.tx)
-        transfers = EnaFileTransfer().get_collection_handle().find({"profile_id": self.pid})
-        complete = True
         if os.path.exists(self.tx["local_path"]):
             Logger().log("deleting file after check")
-            #os.remove(self.tx["local_path"])  #don't remove file as need resubmission
+            os.remove(self.tx["local_path"])  #don't remove file as need resubmission
+            
+        transfers = EnaFileTransfer().get_collection_handle().find({"profile_id": self.pid})
+        complete = True
         for t in transfers:
             if not t["transfer_status"] == 0:
                 complete = False
+                break
         if complete == True:
             self.ud.active_task = False
             self.ud.save()

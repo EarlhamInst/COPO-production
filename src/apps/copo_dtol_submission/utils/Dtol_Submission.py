@@ -15,7 +15,7 @@ from common.dal.sample_da import Sample, Source
 from common.dal.profile_da import Profile
 from common.dal.submission_da import Submission
 from common.utils.helpers import notify_frontend, get_env, get_datetime
-from common.schema_versions.lookup.dtol_lookups import DTOL_ENA_MAPPINGS, DTOL_UNITS, PERMIT_COLUMN_NAMES_PREFIX, PERMIT_FILENAME_COLUMN_NAMES
+from common.schema_versions.lookup.dtol_lookups import DTOL_ENA_MAPPINGS, DTOL_UNITS, PERMIT_COLUMN_NAMES_PREFIX, PERMIT_FILENAME_COLUMN_NAMES, get_default_data_function
 from common.lookup.lookup import SRA_SETTINGS, SRA_SUBMISSION_TEMPLATE, SRA_SAMPLE_TEMPLATE, SRA_PROJECT_TEMPLATE, DTOL_SAMPLE_COLLECTION_LOCATION_STATEMENT
 from .helpers import query_public_name_service
 from bson import ObjectId
@@ -786,20 +786,16 @@ def update_bundle_sample_xml(sample_list, bundlefile, is_modify=False):
                             continue
                     # exceptional handling of COLLECTION_LOCATION
                     if item[0] == 'COLLECTION_LOCATION':
-                        attribute_name = DTOL_ENA_MAPPINGS['COLLECTION_LOCATION_1']['ena']
-                        sample_attribute = ET.SubElement(
-                            sample_attributes, 'SAMPLE_ATTRIBUTE')
-                        tag = ET.SubElement(sample_attribute, 'TAG')
-                        tag.text = attribute_name
-                        value = ET.SubElement(sample_attribute, 'VALUE')
-                        value.text = str(item[1]).split('|')[0].strip()
-                        attribute_name = DTOL_ENA_MAPPINGS['COLLECTION_LOCATION_2']['ena']
-                        sample_attribute = ET.SubElement(
-                            sample_attributes, 'SAMPLE_ATTRIBUTE')
-                        tag = ET.SubElement(sample_attribute, 'TAG')
-                        tag.text = attribute_name
-                        value = ET.SubElement(sample_attribute, 'VALUE')
-                        value.text = '|'.join(str(item[1]).split('|')[1:])
+                        ena_names = ["COLLECTION_LOCATION_1","COLLECTION_LOCATION_2"]
+                        for ena_name in ena_names:
+                            attribute_name = DTOL_ENA_MAPPINGS[ena_name]['ena']
+                            sample_attribute = ET.SubElement(
+                                sample_attributes, 'SAMPLE_ATTRIBUTE')
+                            tag = ET.SubElement(sample_attribute, 'TAG')
+                            tag.text = attribute_name
+                            value = ET.SubElement(sample_attribute, 'VALUE')
+                            function =  DTOL_ENA_MAPPINGS[ena_name].get('ena_data_function', get_default_data_function)
+                            value.text =  function(item[1])
                           
                     elif item[0] in ["DATE_OF_COLLECTION"]:
                         attribute_name = DTOL_ENA_MAPPINGS[item[0]]['ena']
@@ -837,12 +833,24 @@ def update_bundle_sample_xml(sample_list, bundlefile, is_modify=False):
                         value.text = "spore-bearing structure"
                     else:
                         attribute_name = DTOL_ENA_MAPPINGS[item[0]]['ena']
-                        sample_attribute = ET.SubElement(
-                            sample_attributes, 'SAMPLE_ATTRIBUTE')
-                        tag = ET.SubElement(sample_attribute, 'TAG')
-                        tag.text = attribute_name
-                        value = ET.SubElement(sample_attribute, 'VALUE')
-                        value.text = str(item[1]).replace("_", " ")
+                        ena_split_by = DTOL_ENA_MAPPINGS[item[0]].get('ena_split_by', '')
+                        values = []
+                        if ena_split_by:
+                            values = item[1].split(ena_split_by)
+                        else:
+                            values = [item[1]]
+                        for val_text in values:
+                            sample_attribute = ET.SubElement(
+                                sample_attributes, 'SAMPLE_ATTRIBUTE')
+                            tag = ET.SubElement(sample_attribute, 'TAG')
+                            tag.text = attribute_name
+                            value = ET.SubElement(sample_attribute, 'VALUE')
+                            function =  DTOL_ENA_MAPPINGS[item[0]].get('ena_data_function', '')
+                            if function:
+                                value.text =  function(val_text)
+                            else:
+                                value.text = str(val_text).replace("_", " ")
+
                     # add ena units where necessary
                     if DTOL_UNITS.get(item[0], ""):
                         if DTOL_UNITS[item[0]].get('ena_unit', ""):
@@ -905,20 +913,17 @@ def build_specimen_sample_xml(sample):
                         continue
                 # exceptional handling of COLLECTION_LOCATION
                 if item[0] == 'COLLECTION_LOCATION':
-                    attribute_name = DTOL_ENA_MAPPINGS['COLLECTION_LOCATION_1']['ena']
-                    sample_attribute = ET.SubElement(
-                        sample_attributes, 'SAMPLE_ATTRIBUTE')
-                    tag = ET.SubElement(sample_attribute, 'TAG')
-                    tag.text = attribute_name
-                    value = ET.SubElement(sample_attribute, 'VALUE')
-                    value.text = str(item[1]).split('|')[0].strip()
-                    attribute_name = DTOL_ENA_MAPPINGS['COLLECTION_LOCATION_2']['ena']
-                    sample_attribute = ET.SubElement(
-                        sample_attributes, 'SAMPLE_ATTRIBUTE')
-                    tag = ET.SubElement(sample_attribute, 'TAG')
-                    tag.text = attribute_name
-                    value = ET.SubElement(sample_attribute, 'VALUE')
-                    value.text = '|'.join(str(item[1]).split('|')[1:])
+                    ena_names = ["COLLECTION_LOCATION_1","COLLECTION_LOCATION_2"]
+                    for ena_name in ena_names:
+                        attribute_name = DTOL_ENA_MAPPINGS[ena_name]['ena']
+                        sample_attribute = ET.SubElement(
+                            sample_attributes, 'SAMPLE_ATTRIBUTE')
+                        tag = ET.SubElement(sample_attribute, 'TAG')
+                        tag.text = attribute_name
+                        value = ET.SubElement(sample_attribute, 'VALUE')
+                        function =  DTOL_ENA_MAPPINGS[ena_name].get('ena_data_function', get_default_data_function)
+                        value.text =  function(item[1])
+ 
                 elif item[0] in ["DATE_OF_COLLECTION"]:
                     attribute_name = DTOL_ENA_MAPPINGS[item[0]]['ena']
                     sample_attribute = ET.SubElement(
@@ -953,24 +958,26 @@ def build_specimen_sample_xml(sample):
                     tag.text = attribute_name
                     value = ET.SubElement(sample_attribute, 'VALUE')
                     value.text = "spore-bearing structure"
-                elif item[0] == "VOUCHER_ID" or item[0] == "DNA_VOUCHER_ID_FOR_BIOBANKING":
+                else:
                     attribute_name = DTOL_ENA_MAPPINGS[item[0]]['ena']
-
-                    for val_text in item[1].split('|'):
+                    ena_split_by = DTOL_ENA_MAPPINGS[item[0]].get('ena_split_by', '')
+                    values = []
+                    if ena_split_by:
+                        values = item[1].split(ena_split_by)
+                    else:
+                        values = [item[1]]
+                    for val_text in values:
                         sample_attribute = ET.SubElement(
                             sample_attributes, 'SAMPLE_ATTRIBUTE')
                         tag = ET.SubElement(sample_attribute, 'TAG')
                         tag.text = attribute_name
                         value = ET.SubElement(sample_attribute, 'VALUE')
-                        value.text = val_text.strip()
-                else:
-                    attribute_name = DTOL_ENA_MAPPINGS[item[0]]['ena']
-                    sample_attribute = ET.SubElement(
-                        sample_attributes, 'SAMPLE_ATTRIBUTE')
-                    tag = ET.SubElement(sample_attribute, 'TAG')
-                    tag.text = attribute_name
-                    value = ET.SubElement(sample_attribute, 'VALUE')
-                    value.text = str(item[1]).replace("_", " ")
+                        function =  DTOL_ENA_MAPPINGS[item[0]].get('ena_data_function', '')
+                        if function:
+                            value.text =  function(val_text)
+                        else:
+                            value.text = str(val_text).replace("_", " ")
+
                 # add ena units where necessary
                 if DTOL_UNITS.get(item[0], ""):
                     if DTOL_UNITS[item[0]].get('ena_unit', ""):

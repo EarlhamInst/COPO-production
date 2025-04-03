@@ -213,3 +213,4 @@ zope.interface==6.0
 Pillow==10.3.0
 tzdata==2022.7
 geopy==2.3.0
+titlecase==2.4.1

@@ -2,19 +2,22 @@
 # this module contains lookups and mappings pertaining to DTOL functionality
 # such as validation enumerations and mappings between different field names
 from common.utils import helpers
+from titlecase import titlecase
 
 
-def get_collection_location_1(str):
-    return str.split('|')[0].strip()
+def get_collection_location_1(str=""):
+    return get_titled_data_function(str.split('|')[0])
 
 
-def get_collection_location_2(str):
+def get_collection_location_2(str=""):
     return "|".join(str.split('|')[1:])
 
 
-def get_default_data_function(str):
+def get_default_data_function(str=""):
     return str.lower().replace("_", " ").strip()
 
+def get_titled_data_function(str=""):
+    return titlecase(str.replace("_", " ")).strip()
 
 def exec_function(func=get_default_data_function, str=str()):
     return func(str)
@@ -65,13 +68,15 @@ DTOL_ENA_MAPPINGS = {
         'ena': 'sample collection device or method'
     },
     'DNA_VOUCHER_ID_FOR_BIOBANKING': {
-        'ena': 'bio_material'
+        'ena': 'bio_material',
+        'ena_split_by': '|'
     },
     'ELEVATION': {
         'ena': 'geographic location (elevation)'
     },
     'GAL': {
-        'ena': 'GAL'
+        'ena': 'GAL',
+        'ena_data_function': get_titled_data_function
     },
     'GAL_SAMPLE_ID': {
         'ena': 'GAL_sample_id'
@@ -92,7 +97,8 @@ DTOL_ENA_MAPPINGS = {
         'ena': 'Longitude End'
     },
     'LIFESTAGE': {
-        'ena': 'lifestage'
+        'ena': 'lifestage',
+        'ena_data_function': get_default_data_function
     },
     'LONGITUDE_END': {
         'ena': 'Longitude End'
@@ -122,13 +128,16 @@ DTOL_ENA_MAPPINGS = {
         'ena': 'GAL_sample_id'
     },
     'PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
-        'ena': 'proxy biomaterial'
+        'ena': 'proxy biomaterial',
+        'ena_split_by': '|'
     },
     'PROXY_VOUCHER_ID': {
-        'ena': 'proxy voucher'
+        'ena': 'proxy voucher',
+        'ena_split_by': '|'
     },
     'PROXY_VOUCHER_LINK': {
-        'ena': 'proxy voucher url'
+        'ena': 'proxy voucher url',
+        'ena_split_by': '|'
     },
     'RELATIONSHIP': {
         'ena': 'relationship'
@@ -152,16 +161,19 @@ DTOL_ENA_MAPPINGS = {
     #    'ena': 'time of collection'
     #},
     'TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
-        'ena': 'bio_material'
+        'ena': 'bio_material',
+        'ena_split_by': '|'
     },
     'VOUCHER_ID': {
-        'ena': 'specimen_voucher'
+        'ena': 'specimen_voucher',
+        'ena_split_by': '|'
     },
     'VOUCHER_INSTITUTION': {
         'ena': 'voucher institution url'
     },
     'VOUCHER_LINK': {
-        'ena': 'specimen voucher url'
+        'ena': 'specimen voucher url',
+        'ena_split_by': '|'
     },
     'public_name': {
         'ena': 'tolid'
@@ -984,239 +996,239 @@ DTOL_ENUMS = {
 DTOL_RULES = {
     'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID':
         {
-            "strict_regex": "^[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}$",
+            "strict_regex": r"^[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}$",
             "human_readable": "[ID provided by the local context hub]"
         },
     'CHLOROPHYL_A':
         {
-            "strict_regex": "^\d+$",
+            "strict_regex": r"^\d+$",
             "human_readable": "integer"
         },
     'COLLECTOR_ORCID_ID':
         {
-            "strict_regex": "^((\d{4}-){3}\d{3}(\d|X))(\|(\d{4}-){3}\d{3}(\d|X))*|(^not provided$)|(^not applicable$)",
+            "strict_regex": r"^((\d{4}-){3}\d{3}(\d|X))(\|(\d{4}-){3}\d{3}(\d|X))*|(^not provided$)|(^not applicable$)",
             "human_readable": "16-digit number that is compatible with the ISO Standard (ISO 27729),  if multiple IDs separate with a | and no spaces"
         },
     'DATE_OF_COLLECTION':
         {
-            "ena_regex": "(^[12][0-9]{3}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01])(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?"
+            "ena_regex": r"(^[12][0-9]{3}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01])(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?"
                          "([+-][0-9]{1,2})?)?)?)?(/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?"
                          "([+-][0-9]{1,2})?)?)?)?)?$)|(^not collected$)|(^not provided$)|(^restricted access$) ",
             "human_readable": "YYYY-MM-DD, YYYY-MM, YYYY, NOT_COLLECTED or NOT_PROVIDED"
         },
     'DECIMAL_LATITUDE':
         {
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
             "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED"
         },
     'DECIMAL_LATITUDE_ERGA':
         {
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
             "human_readable": "numeric, or NOT_COLLECTED"
 
         },
     'DECIMAL_LONGITUDE':
         {
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
             "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED"
 
         },
     'DECIMAL_LONGITUDE_ERGA':
         {
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
             "human_readable": "numeric, or NOT_COLLECTED"
 
         },
     'DEPTH':
         {
-            "ena_regex": "(0|((0\.)|([1-9][0-9]*\.?))[0-9]*)([Ee][+-]?[0-9]+)?",
+            "ena_regex": r"(0|((0\.)|([1-9][0-9]*\.?))[0-9]*)([Ee][+-]?[0-9]+)?",
             "human_readable": "numeric, or empty string"
         },
     'DISSOLVED_OXYGEN':
         {
-            "strict_regex": "^\d+$",
+            "strict_regex": r"^\d+$",
             "human_readable": "integer"
         },
     'ELEVATION':
         {
-            "ena_regex": "[+-]?(0|((0\.)|([1-9][0-9]*\.?))[0-9]*)([Ee][+-]?[0-9]+)?",
+            "ena_regex": r"[+-]?(0|((0\.)|([1-9][0-9]*\.?))[0-9]*)([Ee][+-]?[0-9]+)?",
             "human_readable": "numeric, or empty string"
         },
     'ETHICS_PERMITS_FILENAME':
         {
-            "optional_regex": "(^.+\.pdf$)|(^.+\.PDF$)",
+            "optional_regex": r"(^.+\.pdf$)|(^.+\.PDF$)",
             "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
         },
     'LATITUDE_END':
         {
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
             "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED"
         },
     'LATITUDE_END_ERGA':
         {
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
             "human_readable": "numeric, or NOT_COLLECTED"
 
         },
     'LATITUDE_START':
         {
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
             "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED"
 
         },
     'LATITUDE_START_ERGA':
         {
 
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
             "human_readable": "numeric, or NOT_COLLECTED"
 
         },
     'LONGITUDE_END':
         {
 
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
             "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED"
 
         },
     'LONGITUDE_END_ERGA':
         {
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
             "human_readable": "numeric, or NOT_COLLECTED"
 
         },
     'LONGITUDE_START':
         {
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
             "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED"
         },
     'LONGITUDE_START_ERGA':
         {
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
             "human_readable": "numeric, or NOT_COLLECTED"
 
         },
     'NAGOYA_PERMITS_FILENAME':
         {
-            "optional_regex": "(^.+\.pdf$)|(^.+\.PDF$)",
+            "optional_regex": r"(^.+\.pdf$)|(^.+\.PDF$)",
             "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
         },
     'ORIGINAL_COLLECTION_DATE':
         {
-            "ena_regex": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{"
+            "ena_regex": r"^[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{"
                          "4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?)?$",
             "human_readable": "Date as YYYY, YYYY-MM or YYYY-MM-DD"
         },
     'ORIGINAL_DECIMAL_LATITUDE':
         {
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]{0,8}$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]{0,8}$)",
             "human_readable": "numeric with 8 decimal places"
         },
     'ORIGINAL_DECIMAL_LONGITUDE':
         {
-            "ena_regex": "(^[+-]?[0-9]+.?[0-9]{0,8}$)",
+            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]{0,8}$)",
             "human_readable": "numeric with 8 decimal places"
         },
     'RACK_OR_PLATE_ID':
         {
-            "optional_regex": "^[a-zA-Z]{2}\d{8}$"
+            "optional_regex": r"^[a-zA-Z]{2}\d{8}$"
         },
     'SALINITY':
         {
-            "strict_regex": "^\d+$",
+            "strict_regex": r"^\d+$",
             "human_readable": "integer"
         },
     'SAMPLE_COORDINATOR_ORCID_ID':
         {
-            "strict_regex": "^((\d{4}-){3}\d{3}(\d|X))(\|(\d{4}-){3}\d{3}(\d|X))*$",
+            "strict_regex": r"^((\d{4}-){3}\d{3}(\d|X))(\|(\d{4}-){3}\d{3}(\d|X))*$",
             "human_readable": "16-digit number that is compatible with the ISO Standard (ISO 27729), if multiple IDs separate with a | and no spaces"
         },
     'SAMPLE_DERIVED_FROM':
         {
-            "ena_regex": "(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
-                         "11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
-                         "AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
+            "ena_regex": r"(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
+                         r"11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
+                         r"AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
             "human_readable": "Specimen accession"
         },
     'SAMPLE_SAME_AS':
         {
-            "ena_regex": "(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
-                         "11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
-                         "AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
+            "ena_regex": r"(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
+                         r"11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
+                         r"AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
             "human_readable": "Specimen accession"
         },
     'SAMPLE_SYMBIONT_OF':
         {
-            "ena_regex": "(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
-                         "11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
-                         "AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
+            "ena_regex": r"(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
+                         r"11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
+                         r"AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
             "human_readable": "Specimen accession"
         },
     'SAMPLING_PERMITS_FILENAME':
         {
-            "optional_regex": "(^.+\.pdf$)|(^.+\.PDF$)",
+            "optional_regex": r"(^.+\.pdf$)|(^.+\.PDF$)",
             "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
         },
     'SAMPLING_WATER_BODY_DEPTH':
         {
-            "strict_regex": "^\d+$",
+            "strict_regex": r"^\d+$",
             "human_readable": "integer"
         },
     'TEMPERATURE':
         {
-            "strict_regex": "^\d+$",
+            "strict_regex": r"^\d+$",
             "human_readable": "integer"
         },
     'TIME_OF_COLLECTION':
         {
-            "strict_regex": "^([0-1][0-9]|2[0-4]):[0-5]\d$",
+            "strict_regex": r"^([0-1][0-9]|2[0-4]):[0-5]\d$",
             "human_readable": "24-hour format with hours and minutes separated by colon"
         },
     'TUBE_OR_WELL_ID':
         {
-            "optional_regex": "^[a-zA-Z]{2}\d{8}$"
+            "optional_regex": r"^[a-zA-Z]{2}\d{8}$"
         },
     'WATER_SPEED':
         {
-            "strict_regex": "^\d+$",
+            "strict_regex": r"^\d+$",
             "human_readable": "integer"
         },
     'tmp_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
         {
-            "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
+            "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
             "biocollection_qualifier_type": "specimen_voucher",
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
             "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         },
     'tmp_PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
         {
-            "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
+            "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
             "biocollection_qualifier_type": "specimen_voucher",
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
             "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         },
     'tmp_DNA_VOUCHER_ID_FOR_BIOBANKING':
         {
-            "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
+            "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
             "biocollection_qualifier_type": "bio_material",
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
             "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         },
     'tmp_PROXY_VOUCHER_ID':
         {
-            "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
+            "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
             "biocollection_qualifier_type": "specimen_voucher",
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
             "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         },
     'tmp_VOUCHER_ID':
         {
-            "strict_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
+            "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
             #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "biocollection_regex": "((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
+            "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
             "biocollection_qualifier_type": "specimen_voucher",
             "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
         }        
@@ -1366,25 +1378,25 @@ SPECIMEN_PREFIX = {
 SPECIMEN_SUFFIX = {
     "GAL": {
         "dtol": {
-            'EARLHAM INSTITUTE': '\d{5}',
-            'MARINE BIOLOGICAL ASSOCIATION': '-\d{6}-\d{3}[A-Z]',
-            'NATURAL HISTORY MUSEUM': '\d{9}',
-            'ROYAL BOTANIC GARDEN EDINBURGH': '\d{5}',
-            'ROYAL BOTANIC GARDENS KEW': '\d{5}',
-            'SANGER INSTITUTE': '\d{7}',
-            'UNIVERSITY OF OXFORD': '\d{6}'
+            'EARLHAM INSTITUTE': r'\d{5}',
+            'MARINE BIOLOGICAL ASSOCIATION': r'-\d{6}-\d{3}[A-Z]',
+            'NATURAL HISTORY MUSEUM': r'\d{9}',
+            'ROYAL BOTANIC GARDEN EDINBURGH': r'\d{5}',
+            'ROYAL BOTANIC GARDENS KEW': r'\d{5}',
+            'SANGER INSTITUTE': r'\d{7}',
+            'UNIVERSITY OF OXFORD': r'\d{6}'
         },
         "DTOLENV": {
-            'EARLHAM INSTITUTE': '\d{5}',
-            'MARINE BIOLOGICAL ASSOCIATION': '-\d{5}-\d{3}[A-Z]',
-            'NATURAL HISTORY MUSEUM': '\d{9}',
-            'ROYAL BOTANIC GARDEN EDINBURGH': '\d{5}',
-            'ROYAL BOTANIC GARDENS KEW': '\d{5}',
-            'SANGER INSTITUTE': '\d{7}',
-            'UNIVERSITY OF OXFORD': '\d{6}'
+            'EARLHAM INSTITUTE': r'\d{5}',
+            'MARINE BIOLOGICAL ASSOCIATION': r'-\d{5}-\d{3}[A-Z]',
+            'NATURAL HISTORY MUSEUM': r'\d{9}',
+            'ROYAL BOTANIC GARDEN EDINBURGH': r'\d{5}',
+            'ROYAL BOTANIC GARDENS KEW': r'\d{5}',
+            'SANGER INSTITUTE': r'\d{7}',
+            'UNIVERSITY OF OXFORD': r'\d{6}'
         },
         "erga": {
-            "default": "([A-Z]{1,10}_\d{3}(\d|X)_\d{2,3})"
+            "default": r"([A-Z]{1,10}_\d{3}(\d|X)_\d{2,3})"
         }
     }
 }
