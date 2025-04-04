@@ -804,7 +804,7 @@ def update_bundle_sample_xml(sample_list, bundlefile, is_modify=False):
                         tag = ET.SubElement(sample_attribute, 'TAG')
                         tag.text = attribute_name
                         value = ET.SubElement(sample_attribute, 'VALUE')
-                        collection_dates = item[1].split("-")
+                        collection_dates = (item[1].lower().replace("_"," ")).split("-")
                         collection_date =  collection_dates[0]+("-"+ collection_dates[1] if len(collection_dates) >= 2 else "") + ("-"+ collection_dates[2] if len(collection_dates) >= 3 else "")
                         value.text = collection_date
                         if len(collection_dates) >= 3 and sample.get("TIME_OF_COLLECTION",""):
@@ -931,7 +931,7 @@ def build_specimen_sample_xml(sample):
                     tag = ET.SubElement(sample_attribute, 'TAG')
                     tag.text = attribute_name
                     value = ET.SubElement(sample_attribute, 'VALUE')
-                    collection_dates = item[1].split("-")
+                    collection_dates = (item[1].lower().replace("_", " ")).split("-")
                     collection_date =  collection_dates[0]+("-"+ collection_dates[1] if len(collection_dates) >= 2 else "") + ("-"+ collection_dates[2] if len(collection_dates) >= 3 else "")
                     value.text = collection_date
                     if len(collection_dates) >= 3 and sample.get("TIME_OF_COLLECTION",""):
