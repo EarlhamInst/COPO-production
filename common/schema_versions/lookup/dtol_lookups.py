@@ -17,8 +17,7 @@ def get_default_data_function(str=""):
     return str.lower().replace("_", " ").strip()
 
 def get_titled_data_function(str=""):
-    return titlecase(str.replace("_", " ")).strip()
-
+    return titlecase(str.replace("_", " ")).strip().replace(" DE ", " de ").replace("Dna ", "DNA ").replace("Scilifelab", "SciLifeLab").replace("Industry Partner", "industry partner").replace("Other","other")
 def exec_function(func=get_default_data_function, str=str()):
     return func(str)
 
