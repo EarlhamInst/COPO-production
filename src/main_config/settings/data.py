@@ -112,5 +112,5 @@ ENA_CHECKLIST_URL  = [
 ]
 
 SINGLE_CELL_SCHEMAS_URL = {
-   "COPO_SINGLE_CELL" : f"https://github.com/TGAC/SingleCellSchemas/raw/refs/heads/main/schemas/singlecell_schema_main_v{MANIFEST_VERSION["COPO_SINGLE_CELL"]}.xlsx"
+   "COPO_SINGLE_CELL" : f"https://github.com/TGAC/SingleCellSchemas/raw/refs/heads/main/schemas/singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx"
 }
