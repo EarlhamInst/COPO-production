@@ -293,6 +293,7 @@ TEMPLATES = [
 ROOT_URLCONF = 'src.main_config.urls'
 
 UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads')
+UPLOAD_URL = MEDIA_URL + 'uploads'
 LOCAL_UPLOAD_PATH = os.path.join(BASE_DIR, 'local_uploads')
 STANDARDS_MAP_FILE_PATH = os.path.join(SCHEMA_VERSIONS_DIR, 'isa_mappings', 'standards_map.json')
 

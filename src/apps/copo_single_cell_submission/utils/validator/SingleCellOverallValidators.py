@@ -11,9 +11,9 @@ class ForeignKeyValidator(Validator):
         foreignkey_map = {}
         for component, schema in schemas.items():
             for key, field in schema.items():
-                field["item_name"] = key
+                field["term_name"] = key
             schema_df = pd.DataFrame.from_records(list(schema.values()))
-            identifier_df =  schema_df.loc[schema_df['identifier'], 'item_name']
+            identifier_df =  schema_df.loc[schema_df['identifier'], 'term_name']
             if not identifier_df.empty:
                 identifier_map[component]= identifier_df.iloc[0]
 
@@ -22,7 +22,7 @@ class ForeignKeyValidator(Validator):
             for referenced_component in referenced_components:
                 if pd.isna(referenced_component):
                     continue
-                df = schema_df.loc[schema_df["referenced_component"] == referenced_component, 'item_name']
+                df = schema_df.loc[schema_df["referenced_component"] == referenced_component, 'term_name']
                 #it won't happen
                 if df.empty:
                     self.errors.append("Referenced component: '" + referenced_component + "' is missing")

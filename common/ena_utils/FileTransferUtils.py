@@ -8,24 +8,34 @@ from bson import ObjectId
 from common.utils.logger import Logger
 import gzip
 from .generic_helper import transfer_to_ena as to_ena
-from common.utils.helpers import get_env
+from common.utils.helpers import get_env, get_thumbnail_folder
 from datetime import datetime
 from src.apps.copo_core.models import StatusMessage, User
 import threading
 import hashlib
 from pathlib import Path
+from PIL import ImageFile, Image
+from django.conf import settings
 
-def make_transfer_record(file_id, submission_id, no_remote_location=False):
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+Image.MAX_IMAGE_PIXELS = None
+
+def make_transfer_record(file_id, submission_id, remote_location=None, no_remote_location=False):
     # N.B. called from celery
     # make transfer object
+    remote_location = remote_location if remote_location else submission_id + "/reads/"
+
     file = DataFile().get_record(file_id)
     tx = dict()
     if not no_remote_location:
-        tx["remote_path"] = submission_id + "/reads/"
+        tx["remote_path"] = remote_location
+        
     tx["local_path"] = file["file_location"]
     tx["ecs_location"] = file["ecs_location"]
     tx["file_id"] = str(file["_id"])
     tx["profile_id"] = file["profile_id"]
+    tx["file_type"] = file["file_type"]
     # tx["status"] = "pending"
     tx["submission_id"] = submission_id
     # N.B. Transfer Status
@@ -132,11 +142,22 @@ def process_pending_file_transfers():
                 insert_message(message="Transferring file to COPO: " + tx["ecs_location"], user=user)
                 try:
                     get_ecs_file(tx)
+                    #create thumbnail for image file
                     increment_status_counter(tx)
                 except Exception as e:
                     log.exception(e)
                     log.error("error downloading from ecs: " + str(e))
                     reset_status_counter(tx)
+                    continue
+                if tx.get("file_type","") == "image":
+                    filename = os.path.basename(tx["local_path"])
+                    final_dot = filename.rfind(".")
+                    file_extension = filename[final_dot:]                    
+                    thumbnail_path =  get_thumbnail_folder(tx["profile_id"]) + "/" + filename[:final_dot] +  "_thumb"+ file_extension
+                    size = 128, 128
+                    im = Image.open(tx["local_path"])
+                    im.thumbnail(size)
+                    im.save(thumbnail_path)
             elif tx_status == 3:
                 increment_status_counter(tx)
                 continue
@@ -281,13 +302,14 @@ class ToENA(threading.Thread):
             Logger().exception(e)
             record_error("error transfering to ENA: " + str(e))
             reset_status_counter(self.tx)
+            return
         # now check if active tasks can be marked False
         mark_complete(self.tx)
         transfers = EnaFileTransfer().get_collection_handle().find({"profile_id": self.pid})
         complete = True
         if os.path.exists(self.tx["local_path"]):
             Logger().log("deleting file after check")
-            #os.remove(self.tx["local_path"])  #don't remove file as need resubmission
+            os.remove(self.tx["local_path"])  #don't remove file as need resubmission
         for t in transfers:
             if not t["transfer_status"] == 0:
                 complete = False

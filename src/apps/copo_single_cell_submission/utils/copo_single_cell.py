@@ -1,13 +1,17 @@
 from common.utils.logger import Logger
 from .da import SinglecellSchemas, Singlecell
 import pandas as pd
-from common.utils.helpers import get_datetime
+from common.utils.helpers import get_datetime, get_thumbnail_folder
 from common.dal.profile_da import Profile
-from common.dal.copo_da import  DataFile
+from common.dal.copo_da import  DataFile, EnaFileTransfer
 import requests
 from django_tools.middlewares import ThreadLocal
 from common.utils.helpers import get_datetime, get_not_deleted_flag
 from common.dal.submission_da import Submission
+from common.dal.mongo_util import cursor_to_list
+from django.conf import settings
+
+import os
 
 l = Logger()
 #https://www.ebi.ac.uk/ols4/api/v2/ontologies/ncbitaxon/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_1224659?includeObsoleteEntities=false
@@ -42,6 +46,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
     studies = []
     identifier_map = {}
 
+
     profile = Profile().get_record(profile_id)
     if not profile:
         return dict(dataSet=data_set, columns=columns, components=list(columns.keys()))
@@ -61,7 +66,10 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
             #columns[component_name].insert(0, detail_dict)
             columns[component_name].append(dict(data="record_id", visible=False))
             columns[component_name].append(dict(data="DT_RowId", visible=False))
-            columns[component_name].extend([dict(data=item["term_name"], title=item["term_label"], defaultContent='') for item in component_schema])
+            columns[component_name].extend([dict(data=item["term_name"], title=item["term_label"], defaultContent='', 
+                                                    render = "render_thumbnail_image_column_function" if item["term_type"] == "file" else None
+                                                  ) for item in component_schema])
+
             column_keys[component_name] = ([item["term_name"] for item in component_schema])
  
          
@@ -139,8 +147,22 @@ def _delete_datafile(profile_id, to_be_delete_component_data_df, schema):
             filelist.extend(list(filter(None, files))) #remove empty strings
 
         if filelist:
+            fileIdList = cursor_to_list(DataFile().get_collection_handle().find({"profile_id": profile_id, "file_name": {"$in": filelist}}, {"_id": 1}))
+
             #delete the files
-            DataFile().get_collection_handle().delete_many({"profile_id": profile_id, "file_name": {"$in": filelist}})        
+            DataFile().get_collection_handle().delete_many({"profile_id": profile_id, "_id": {"$in": [file["_id"] for file in fileIdList]}})    
+            #delete the files transfer records
+            EnaFileTransfer().get_collection_handle().delete_many({"profile_id": profile_id, "file_id": {"$in": [str(file["_id"]) for file in fileIdList]}})
+            #delete the thumbnail files
+            for filename in filelist:
+                final_dot = filename.rfind(".")
+                if final_dot == -1:
+                    continue
+                file_ext = filename[final_dot:]
+                if file_ext.lower() in settings.IMAGE_FILE_EXTENSIONS:
+                    thumbnail_file = get_thumbnail_folder(profile_id) + '/' + filename[:final_dot] + "_thumb" + file_ext
+                    if os.path.exists(thumbnail_file):
+                        os.remove(thumbnail_file)   
 
 def _delete_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map, schemas):
 

@@ -108,12 +108,13 @@ $(document).on('document_ready', function () {
         tabs.empty();
         tab_content.empty();
         is_first_compoent = true
+        profile_id =  $('#profile_id').val()
         d.data["components"].forEach(component => {
           li = $('<li/>').addClass('nav-item');
           a = $('<a/>').addClass('nav-link')
               .attr('id', component + '-tab')
               .attr('data-toggle', 'tab')
-              .attr('href', '#' + component)
+              .attr('href', '#' + component+"_"+profile_id)
               .attr('role', 'tab')
               .attr('aria-controls', component)
               .attr('aria-selected', 'false')
@@ -126,7 +127,7 @@ $(document).on('document_ready', function () {
           div = $('<div/>')
                 .addClass('tab-pane')
                 .addClass('fade')
-                .attr('id', component)
+                .attr('id', component+"_"+profile_id)
                 .attr('role', 'tabpanel')
                 .attr('aria-labelledby', component + '-tab');
           table = $('<table/>')

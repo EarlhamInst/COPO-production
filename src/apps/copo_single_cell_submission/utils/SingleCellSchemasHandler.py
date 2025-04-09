@@ -54,7 +54,7 @@ class SingleCellSchemasHandler:
 
         component_schemas_dict = {}
         #validate the schema
-        #no duplicate name,label within a component with same version and item_name
+        #no duplicate name,label within a component with same version and term_name
         #check foreign key constraints
         #check valid regex
         
@@ -67,12 +67,12 @@ class SingleCellSchemasHandler:
         schemas_df.drop(columns=["regex_valid"], inplace=True)
 
         for checklist_id in checklist_df.index:
-                #no duplicate name,label within a component with same versio and item_name
+                #no duplicate name,label within a component with same versio and term_name
                 checklist_schema_df = schemas_df.drop(schemas_df[pd.isna(schemas_df[checklist_id])].index)
                 checklist_schema_df.reset_index(inplace=True)
                 for c in checklist_schema_df.groupby(["component_name","term_name"]).size().reset_index().values:
                     if c[2] > 1:
-                        raise Exception(f'Duplicate item_name: "{c[1]}" within a component: "{c[0]}"  with same version: {checklist_id}.')
+                        raise Exception(f'Duplicate term_name: "{c[1]}" within a component: "{c[0]}"  with same version: {checklist_id}.')
 
                 for c in checklist_schema_df.groupby(["component_name","term_label"]).size().reset_index().values:
                     if c[2] > 1:
@@ -334,18 +334,36 @@ class SinglecellschemasSpreadsheet:
 
    def get_filenames_from_manifest(self):
         #return list(self.data["File name"])
-        filelist = []
+        file_map = {}
         msg = ""
         for component, df in self.new_data.items():
             schema = self.schemas[component]        
-            schema_df = pd.DataFrame.from_records(list(schema.values()))
-            schema_file_df = schema_df.loc[schema_df['term_type'] == 'file', "item_name"]
-            if not schema_file_df.empty:
-                file_df = df[schema_file_df.tolist()]
-                file_df = file_df.dropna()
-                fileslist = file_df.values.tolist()
-                for files in fileslist:
-                    filelist.extend(list(filter(None, files))) #remove empty strings
+            schema_df = pd.DataFrame.from_dict(list(schema.values()))
+            schema_file_df = schema_df.loc[schema_df['term_type'] == 'file', ["term_name"]]
+            if schema_file_df.empty:
+                continue
+
+            schema_file_checksum_df = schema_df.loc[schema_df['term_name'].isin([name+"_checksum" for name in schema_file_df["term_name"].tolist()]), ["term_name"]]
+            if not schema_file_checksum_df.empty:
+                schema_file_checksum_df["term_checksum"] = schema_file_checksum_df["term_name"]
+                schema_file_checksum_df["term_name"] = schema_file_checksum_df["term_name"].str.replace("_checksum", "", regex=False)
+                schema_file_df = schema_file_df.merge(schema_file_checksum_df, on="term_name", how="left")
+            else:
+                schema_file_df["term_checksum"] = ""
+
+            for index, row in schema_file_df.iterrows():
+                if row["term_checksum"]:
+                    df2 = df[[row["term_name"], row["term_checksum"]]]  
+                else:
+                    df2 = df[[row["term_name"]]]    
+                df2 = df2.dropna()
+                for index2, row2 in df2.iterrows():
+                    if row["term_checksum"]:
+                        file_map[row2[row["term_name"]]] = row2[row["term_checksum"]]
+                    else:
+                        file_map[row2[row["term_name"]]] = ""
+     
+        filelist =  list(file_map.keys()) 
 
         #find duplicated files
         duplicated_files = [item for item, count in collections.Counter(filelist).items() if count > 1]
@@ -353,8 +371,8 @@ class SinglecellschemasSpreadsheet:
             msg = "Duplicated files: " + ", ".join(duplicated_files) + " in the manifest."
             return False, msg
         else: 
-            self.filenames = filelist            
-        return filelist, msg
+            self.filename_map = file_map            
+        return file_map, msg
 
    def loadManifest(self, m_format):
 
@@ -508,7 +526,7 @@ class SinglecellschemasSpreadsheet:
         # store sample data in the session to be used to create mongo objects
         self.req.session[f"{self.component}_data"] = singlecell_data
         self.req.session["checklist_id"] = self.checklist_id
-        self.req.session["filenames"] = self.filenames
+        self.req.session["filename_map"] = self.filename_map
 
         notify_singlecell_status(data={"profile_id": self.profile_id, "components": list(self.data.keys())}, msg=singlecell_data, action="make_table",
                         html_id=f"{self.component}_parse_table", checklist_id=self.checklist_id)

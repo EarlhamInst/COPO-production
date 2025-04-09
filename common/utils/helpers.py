@@ -303,3 +303,14 @@ def get_excluded_associated_projects():
     exclusions = profile_types | sequencing_centres
 
     return exclusions
+
+def get_thumbnail_folder(profile_id):
+    """
+    This function returns the thumbnail folder for a given profile id
+    :param profile_id:
+    :return:
+    """
+    thumbnail_folder = os.path.join(settings.UPLOAD_PATH, profile_id)
+    if not os.path.exists(thumbnail_folder):
+        os.makedirs(thumbnail_folder)
+    return thumbnail_folder
