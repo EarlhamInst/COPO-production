@@ -69,7 +69,7 @@ for qm in cursor:
         "geographic location (longitude)": qm["DECIMAL_LONGITUDE"],
         "geographic location (region and locality)": qm["COLLECTION_LOCATION"],
         "habitat": qm["HABITAT"],
-        "sample collection device or method": qm["DESCRIPTION_OF_COLLECTION_METHOD"]
+        "sample collection device or method": qm["DESCRIPTION_OF_COLLECTION_METHOD"].replace("\n"," ")
     }
     files.append(file)
 
