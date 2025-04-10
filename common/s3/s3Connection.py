@@ -182,7 +182,8 @@ class S3Connection():
                     found_flag = 0
                     print("Looking for", file)
                     file = file.strip()
-
+                    if not file:
+                        continue
                     notify_read_status(data={"profile_id": profile_id}, msg="Searching for: " + file, action="info",
                                        html_id="sample_info")
                     # time.sleep(2)

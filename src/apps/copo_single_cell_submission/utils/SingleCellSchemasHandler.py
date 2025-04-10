@@ -348,6 +348,7 @@ class SinglecellschemasSpreadsheet:
                 schema_file_checksum_df["term_checksum"] = schema_file_checksum_df["term_name"]
                 schema_file_checksum_df["term_name"] = schema_file_checksum_df["term_name"].str.replace("_checksum", "", regex=False)
                 schema_file_df = schema_file_df.merge(schema_file_checksum_df, on="term_name", how="left")
+                schema_file_df.fillna("", inplace=True)
             else:
                 schema_file_df["term_checksum"] = ""
 
@@ -358,20 +359,28 @@ class SinglecellschemasSpreadsheet:
                     df2 = df[[row["term_name"]]]    
                 df2 = df2.dropna()
                 for index2, row2 in df2.iterrows():
-                    if row["term_checksum"]:
-                        file_map[row2[row["term_name"]]] = row2[row["term_checksum"]]
-                    else:
-                        file_map[row2[row["term_name"]]] = ""
+                    file_name = row2[row["term_name"]]
+                    if file_name:
+                        if row["term_checksum"]:
+                            if row2[row["term_checksum"]]:
+                                file_map[row2[row["term_name"]]] = row2[row["term_checksum"]]
+                            else:
+                                msg = msg + "File name: " + file_name + f' is missing checksum <b>{row["term_checksum"]}</b> in the manifest.<br/>'
+                                
+                        else:
+                            file_map[file_name] = ""
      
         filelist =  list(file_map.keys()) 
 
         #find duplicated files
         duplicated_files = [item for item, count in collections.Counter(filelist).items() if count > 1]
         if duplicated_files:
-            msg = "Duplicated files: " + ", ".join(duplicated_files) + " in the manifest."
+            msg = msg + "Duplicated files: " + ", ".join(duplicated_files) + " in the manifest.<br/>"
+            
+        if msg: 
             return False, msg
-        else: 
-            self.filename_map = file_map            
+        
+        self.filename_map = file_map            
         return file_map, msg
 
    def loadManifest(self, m_format):
