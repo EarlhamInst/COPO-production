@@ -1,9 +1,12 @@
 #download filelist from bia, say "imagelist_downloaded_from_bia.tsv"
 #copy the file to copo container:   
 # 1. at your_local_laptop:   scp imagelist_downloaded_from_bia.tsv {username@copo_server_id:/home/username}
-# 2. at copo_server:  sudo docker cp imagelist_downloaded_from_bia.tsv {container id for copo}:/copo/shared_tools/scripts/
-#python generate_bia_filelist.py imagelist_downloaded_from_bia.tsv
-#output will be ERGA_yyyymmdd.tsv
+# 2. at copo_server:  
+#      sudo docker cp imagelist_downloaded_from_bia.tsv {container id for copo}:/copo/shared_tools/scripts/
+#      in the container:  python generate_bia_filelist.py imagelist_downloaded_from_bia.tsv
+#      output will be ERGA_yyyymmdd.tsv
+#      sudo docker cp {container id for copo}:/copo/shared_tools/scripts/ERGA_yyyymmdd.tsv  .
+#at your_local_laptop:  scp {username@copo_server_id:/home/username}/ERGA_yyyymmdd.tsv .
 #upload file to bia and publish the it
 import pymongo
 import urllib.parse
