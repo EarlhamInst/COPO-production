@@ -49,12 +49,14 @@ def poll_asyn_ena_submission(self):
     Logger().debug("Running poll_asyn_ena_submission")
     dtol.poll_asyn_ena_submission()
     return True
-
+  
+"""
 @app.task(bind=True, base=CopoBaseClassForTask)
 def process_bioimage_housekeeping(self):
     Logger().debug("Running process_bioimage_housekeeping")
     dtol_bioimage.housekeeping_bioimage_archive()
     return True
+"""
 
 @app.task(bind=True, base=CopoBaseClassForTask)
 def send_fortnightly_pending_manifest_notification(self):
