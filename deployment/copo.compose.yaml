@@ -48,7 +48,8 @@ services:
       - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
-      - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk
+      - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
+      - BIOIMAGE_PASSWORD_FILE=/run/secrets/copo_bioimage_password
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
       - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
       - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
@@ -97,6 +98,7 @@ services:
       - copo_public_name_service_api_key
       - copo_mail_password
       - copo_bioimage_path
+      - copo_bioimage_password
       - ecs_secret_key
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
@@ -152,7 +154,8 @@ services:
       - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
-      - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk
+      - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
+      - BIOIMAGE_PASSWORD_FILE=/run/secrets/copo_bioimage_password
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
       - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
       - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
@@ -196,6 +199,7 @@ services:
       - copo_mail_password
       - copo_bioimage_path
       - ecs_secret_key
+      - copo_bioimage_password
   nginx:
     image: copo/copo-nginx:1.25.3.3
     networks:

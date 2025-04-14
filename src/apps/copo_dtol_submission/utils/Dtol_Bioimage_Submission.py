@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from common.utils.helpers import get_env, get_datetime, notify_frontend
 
+BIOIMAGE_UPLOAD_PASSWORD = get_env("BIOIMAGE_PASSWORD")  # "password"
 BIOIMAGE_SERVER = get_env("BIOIMAGE_SERVER")  #  
 BIOIMAGE_UPLOAD_PATH = get_env("BIOIMAGE_PATH")  #  
 BIOIMAGE_LOCAL_ARCHIVE_PARENT_PATH = f"{get_env('MEDIA_PATH')}sample_images/archive"
@@ -29,7 +30,7 @@ BIOIMAGE_SENT = {"asg_specimen" : f"{BIOIMAGE_PATH}/ASG",
                  "copo_specimen" : f"{BIOIMAGE_PATH}/COPO"}
 
 ASPERA_PATH = get_env("ASPERA_PATH")  #"/root/.aspera/cli"
-BIOIMAGE_ASPERA_CMD = f"{ASPERA_PATH}/bin/ascp -P33001 -l50M --move-after-transfer  {BIOIMAGE_ARCHIVE} -i {ASPERA_PATH}/etc/asperaweb_id_dsa.openssh -d {' '.join(BIOIMAGE_SENT.values())} {BIOIMAGE_SERVER}:{BIOIMAGE_UPLOAD_PATH}"
+BIOIMAGE_ASPERA_CMD = f"ASPERA_SCP_PASS={BIOIMAGE_UPLOAD_PASSWORD} {ASPERA_PATH}/bin/ascp -P33001 -l50M --move-after-transfer  {BIOIMAGE_ARCHIVE} -i {ASPERA_PATH}/etc/asperaweb_id_dsa.openssh -d {' '.join(BIOIMAGE_SENT.values())} {BIOIMAGE_SERVER}:{BIOIMAGE_UPLOAD_PATH}"
 
 
 def housekeeping_bioimage_archive():
