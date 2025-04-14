@@ -20,6 +20,7 @@ from common.utils import html_tags_utils as htags
 from .da import Assembly
 import pandas as pd
 from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_project
+from common.dal.mongo_util import cursor_to_list
 
 l = Logger()
 # other types of assemblies (not individualss or cultured isolates):
@@ -226,15 +227,14 @@ def update_assembly_submission_pending():
             if not assembly:
                 Submission().update_assembly_submission(sub_id=str(sub["_id"]), assembly_id= assembly_id)
                 continue
-            for f in assembly["files"]:
-                enaFile = EnaFileTransfer().get_collection_handle().find_one({"file_id": f, "profile_id": sub["profile_id"]})
-                if enaFile:
-                    if enaFile["status"] != "complete":
-                        all_file_uploaded = False
-                        break
-                else:
-                    """it should not happen"""    
-                    Logger().error("file not found " + f )
+
+            enaFiles = cursor_to_list(EnaFileTransfer().get_collection_handle().find({"profile_id": sub["profile_id"], "file_id": {"$in": assembly["files"]}}))
+
+            for enaFile in enaFiles:
+                if tx.get_transfer_status(enaFile) < tx.TransferStatus.DOWNLOADED_TO_LOCAL: 
+                    all_file_uploaded = False
+                    break
+ 
         if all_file_uploaded:
             all_uploaded_sub_ids.append(sub["_id"])
 
@@ -348,7 +348,7 @@ def process_assembly_pending_submission():
 def submit_assembly(profile_id, target_ids=list(),  target_id=str()):
     sub_id = None
     if profile_id:
-        submissions = Submission().get_records_by_field("profile_id", profile_id)
+        submissions = Submission().get_all_records_columns(filter_by={"profile_id":profile_id, "repository" : "ena", "deleted": get_not_deleted_flag()})
         if submissions and len(submissions) > 0:
             sub_id = str(submissions[0]["_id"])
             if not target_ids:
@@ -395,6 +395,6 @@ def generate_additional_columns(profile_id):
                 assession_map = query_ena_file_processing_status_by_project(project_accessions[0].get("accession"), "SEQUENCE_ASSEMBLY")
                 result = [{ "_id": ObjectId(accession_obj["assembly_id"]), "ena_file_processing_status":assession_map.get(accession_obj["accession"], "") } for accession_obj in assembly_accessions if accession_obj.get("accession","") ]     
                 ecs_locations_with_file_archived = [ enaFilesMap[accession_obj["accession"]] for accession_obj in assembly_accessions if accession_obj.get("accession","") and "File archived" in assession_map.get(accession_obj["accession"], "")]
-                EnaFileTransfer().update_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived, status = "ena_complete")        
+                EnaFileTransfer().complete_remote_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived)        
 
     return pd.DataFrame.from_dict(result)
