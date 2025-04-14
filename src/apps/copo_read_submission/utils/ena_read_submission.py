@@ -1029,7 +1029,11 @@ class EnaReads:
         #retrieve file upload status 
 
         file_submit_status_map = EnaFileTransfer().get_transfer_status_by_local_path(profile_id=self.profile_id, local_paths=list(datafiles_df.datafile_location))
-        files_not_in_remote = [ os.path.basename(x) for x in list(datafiles_df.datafile_location) if file_submit_status_map.get(x, 1) != 0 ]
+        files_not_in_remote = []
+        for local_path, enaFile in file_submit_status_map.items():
+            transfer_status = tx.get_transfer_status(enaFile)
+            if transfer_status != tx.TransferStatus.TANSFERED_TO_ENA:
+                files_not_in_remote.append(os.path.basename(local_path))
 
         # retrieve already uploaded files
         #files_in_remote = [x.get('report', dict()).get('fileName', str()) for x in

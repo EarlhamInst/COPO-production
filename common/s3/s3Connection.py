@@ -8,7 +8,7 @@ from boto3.s3.transfer import TransferConfig
 import logging
 from common.dal.copo_da import EnaFileTransfer
 from common.utils.helpers import get_env
-
+import common.ena_utils.FileTransferUtils as tx
 
 class S3Connection():
     """
@@ -233,9 +233,10 @@ class S3Connection():
         status = False
         for key in target_ids:
             #ok to delete the file if there is no need to tranfer to ENA
-            if filestatus_map.get(f"{bucket_name}/{key}", "ena_complete") == "ena_complete":
+            enaFile = filestatus_map.get(f"{bucket_name}/{key}")
+            if enaFile is None or tx.get_transfer_status(enaFile) >= tx.TransferStatus.DOWNLOADED_TO_LOCAL:
+                status = True          
                 self.s3_client.delete_object(Bucket=bucket_name, Key=key)
-                status = True
             else:
                 file_not_deleted.append(key)
                 

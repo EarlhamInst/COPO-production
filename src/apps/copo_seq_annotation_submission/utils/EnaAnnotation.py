@@ -509,6 +509,6 @@ def generate_additional_columns(profile_id):
                 assession_map = query_ena_file_processing_status_by_project(project_accessions[0].get("accession"), "SEQUENCE_ANNOTATION")
                 result = [{ "_id": ObjectId(accession_obj["alias"]), "ena_file_processing_status":assession_map.get(accession_obj["accession"], "") } for accession_obj in seq_annotation_accessions if accession_obj.get("accession","") ]
                 ecs_locations_with_file_archived = [ enaFilesMap[accession_obj["accession"]] for accession_obj in seq_annotation_accessions if accession_obj.get("accession","") and "File archived" in assession_map.get(accession_obj["accession"], "")]
-                EnaFileTransfer().update_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived, status = "ena_complete")        
+                EnaFileTransfer().complete_remote_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived)        
 
     return pd.DataFrame.from_dict(result)

@@ -93,6 +93,20 @@ class SinglecellSchemas(DAComponent):
                 child_map[parent_component][component] = foreignkey["foreign_key"]
         return child_map
 
+    #get all files from the manifest
+    def get_all_files(self, singlecell, schemas=[]):
+        filelist = []
+        for component, df in singlecell.items():
+            schema = schemas[component]        
+            schema_df = pd.DataFrame.from_records(schema)
+            schema_file_df = schema_df.loc[schema_df['term_type'] == 'file', "term_name"]
+            if not schema_file_df.empty:
+                file_df = df[schema_file_df.tolist()]
+                file_df = file_df.dropna()
+                fileslist = file_df.values.tolist()
+                for files in fileslist:
+                    filelist.extend(list(filter(None, files)))
+        return filelist
 
 class Singlecell(DAComponent):
     def __init__(self, profile_id=None):

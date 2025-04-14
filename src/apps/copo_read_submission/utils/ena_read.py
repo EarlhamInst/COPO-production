@@ -343,4 +343,4 @@ class _GET_ENA_FILE_PROCESSING_STATUS(threading.Thread):
                         msg="Refreshing table for file processing status", action="file_processing_status", html_id="sample_info")
             
         if ecs_file_complete:
-            EnaFileTransfer().update_transfer_status_by_ecs_path( ecs_locations=ecs_file_complete,status="ena_complete")
+            EnaFileTransfer().complete_remote_transfer_status_by_ecs_path( ecs_locations=ecs_file_complete)

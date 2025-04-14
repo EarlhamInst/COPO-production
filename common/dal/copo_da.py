@@ -629,17 +629,17 @@ class EnaFileTransfer(DAComponent):
 
     def get_transfer_status_by_local_path(self, profile_id, local_paths):
         #return self.get_collection_handle().find({"profile_id"})
-        result = self.get_collection_handle().find({"local_path": {"$in": local_paths}, "profile_id": profile_id},{"transfer_status":1, "local_path":1})
-        result_map = {x["local_path"] : x["transfer_status"]  for x in list(result)}
+        result = self.get_collection_handle().find({"local_path": {"$in": local_paths}, "profile_id": profile_id},{"transfer_status":1, "local_path":1, "status":1})
+        result_map = {x["local_path"] : x for x in list(result)}
         return result_map
     
     def get_transfer_status_by_ecs_path(self, ecs_locations):
-        result = self.get_collection_handle().find({"ecs_location": {"$in": ecs_locations}},{"transfer_status":1, "ecs_location":1, "status":1})
-        result_map = {x["ecs_location"] : x["status"]  for x in list(result)}
+        result = self.get_collection_handle().find({"ecs_location": {"$in": ecs_locations}},{ "ecs_location":1, "status":1})
+        result_map = {x["ecs_location"] : x  for x in list(result)}
         return result_map
     
-    def update_transfer_status_by_ecs_path(self, ecs_locations, status):
-        self.get_collection_handle().update_many({"ecs_location": {"$in": ecs_locations}, "transfer_status":0},{"$set":{"status": status}})
+    def complete_remote_transfer_status_by_ecs_path(self, ecs_locations):
+        self.get_collection_handle().update_many({"ecs_location": {"$in": ecs_locations, "status":"complete"}},{"$set":{"status": "ena_complete"}})
 
 
 class APIValidationReport(DAComponent):

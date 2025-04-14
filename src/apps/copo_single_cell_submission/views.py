@@ -298,7 +298,7 @@ def save_singlecell_records(request):
             datafile_list.append(file_id)
 
     for f in datafile_list:
-        tx.make_transfer_record(file_id=str(f), submission_id=str(sub["_id"]), remote_location=f"{profile_id}/{study_id}/")
+        tx.make_transfer_record(file_id=str(f), submission_id=str(sub["_id"]), no_remote_location=True)  #remote_location=f"{profile_id}/{study_id}/"
     
 
     """

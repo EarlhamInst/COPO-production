@@ -11,7 +11,8 @@ from bson import ObjectId, json_util
 from django.conf import settings
 from common.schemas.utils.cg_core.cg_schema_generator import CgCoreSchemas
 from datetime import datetime, timedelta
- 
+from django_tools.middlewares import ThreadLocal
+
 lg =  Logger()
 
 class Submission(DAComponent):
@@ -1061,3 +1062,90 @@ class Submission(DAComponent):
         update_data = {"dtol_status": "pending", "date_modified": helpers.get_datetime()}
         self.get_collection_handle().update_many(
             {"type": {"$in": TOL_PROFILE_TYPES}, "dtol_status": "sending", "date_modified": {"$lt": helpers.get_datetime() - timedelta(seconds=refresh_threshold)}},{"$set": update_data})
+        
+    
+    def make_singlecell_submission_downloading(self, profile_id, checklist_id, study_id, repository="zenodo"):
+        sub_handle = self.get_collection_handle()
+        submission = sub_handle.find_one(
+            {"profile_id": profile_id, "repository":"zenodo"}, {"status": 1})
+        if not submission:
+            dt = helpers.get_datetime()
+            user = ThreadLocal.get_current_user() 
+            submission = {"profile_id": profile_id, "deleted": helpers.get_not_deleted_flag(), "repository": repository, "status":"downloading", "created_by": user.id, "date_created": dt, "updated_by": user.id, "date_modified": dt}
+            #create a new submission
+            result = Submission().get_collection_handle().insert_one(submission)
+            submission["_id"] = result.inserted_id
+
+        if submission.get("status", str()) in ["pending", "sending"]:
+            return dict(status='error', message="Submission is in process, please try again later!")
+
+        sub_handle.update_one({"_id": submission["_id"]},
+                              {"$set": {"status": "downloading", "date_modified":dt, "updated_by": user.id},
+                               "$addToSet": {"studies": study_id}})
+            
+        return dict(status='success', message="Submission has been scheduled!")
+
+    def get_submission_downloading(self, respository="zenodo"):
+        subs = self.get_collection_handle().find(
+            {"status": "downloading", "repository": respository, "deleted": helpers.get_not_deleted_flag()},
+            {"studies": 1, "profile_id": 1, "date_modified": 1})
+        return cursor_to_list(subs)
+
+    def update_singlecell_submission(self, sub_id, study_id=str()):
+            sub_handle = self.get_collection_handle()
+            sub = sub_handle.find_one({"_id": ObjectId(sub_id)}, {"studies": 1})
+            if not sub:
+                return dict(status='error', message="System Error! Please contact the administrator.")
+            
+            update_data = {}
+            update_data["$set"] = {}
+
+            if sub["studies"] == [study_id]:
+                update_data["$set"] = {"status": "complete", "studies": []}
+            elif study_id in sub["studies"]:
+                update_data["$pull"] = {"studies": study_id}
+                
+            if update_data.get("$set", None) or update_data.get("$pull", None):
+                update_data["$set"]["date_modified"] = helpers.get_datetime()
+                update_data["$set"]["updated_by"] = "system"
+                sub_handle.update_one({"_id": ObjectId(sub_id)}, update_data)
+
+    def update_submission_pending(self, sub_ids):
+        self.get_collection_handle().update_many({"_id": {"$in": sub_ids}},
+                                                 {"$set": {"status": "pending"}})
+        
+ 
+    def update_submission_accession(self, sub_id, accessions):
+        self.get_collection_handle().update_one({"_id": ObjectId(sub_id)},
+                                                  {"$addToSet": {"accessions.study": {"$each": {accessions}}}})
+
+
+    def get_pending_submission(self, repository="zenodo"):
+        REFRESH_THRESHOLD = 3600  # time in seconds to retry stuck submission
+        # called by celery to get samples the supeprvisor has set to be sent to ENA
+        # those not yet sent should be in pending state. Occasionally there will be
+        # stuck submissions in sending state, so get both types
+        subs = self.get_collection_handle().find(
+            {"status": {"$in": ["sending", "pending"]}, "repository": repository},
+            {"status": 1, "profile_id": 1, "date_modified": 1, "studies": 1})
+        sub = cursor_to_list(subs)
+        out = list()
+        current_time = helpers.get_datetime()
+        for s in sub:
+            # calculate whether a submission is an old one
+            if s.get("status", "") == "sending":
+                recorded_time = s.get("date_modified", current_time)
+                time_difference = current_time - recorded_time
+                if time_difference.total_seconds() > (REFRESH_THRESHOLD):
+                    # submission retry time has elapsed so re-add to list
+                    out.append(s)
+                    self.update_submission_modified_timestamp(s["_id"])
+                    lg.error("ADDING STALLED SUBMISSION " + str(s["_id"]) + "BACK INTO QUEUE - copo_da")
+                    # no need to change status
+            elif s.get("status", "") == "pending":
+                out.append(s)
+                # self.update_submission_modified_timestamp(s["_id"])
+                self.get_collection_handle().update_one({"_id": ObjectId(s["_id"])},
+                                                        {"$set": {"status": "sending",
+                                                                  "date_modified": current_time}})
+        return out

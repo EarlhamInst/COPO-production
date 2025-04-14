@@ -8,7 +8,7 @@ from bson import ObjectId
 from common.utils.logger import Logger
 import gzip
 from .generic_helper import transfer_to_ena as to_ena
-from common.utils.helpers import get_env, get_thumbnail_folder
+from common.utils.helpers import get_env, get_thumbnail_folder, get_datetime
 from datetime import datetime
 from src.apps.copo_core.models import StatusMessage, User
 import threading
@@ -16,11 +16,19 @@ import hashlib
 from pathlib import Path
 from PIL import ImageFile, Image
 from django.conf import settings
+from enum import Enum
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 Image.MAX_IMAGE_PIXELS = None
 
+class TransferStatus(Enum):
+    DOWNLOADING_TO_LOCAL = 0
+    DOWNLOADED_TO_LOCAL = 1
+    TRANSFERRING_TO_ENA = 2
+    TANSFERED_TO_ENA = 3
+    COMPLETED_VALIDATION_IN_ENA = 4
+    
 def make_transfer_record(file_id, submission_id, remote_location=None, no_remote_location=False):
     # N.B. called from celery
     # make transfer object
@@ -47,13 +55,21 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
     # 5 transfer to ENA
     # 10 Error
     # tx["transfer_status"] = 1
-    print(tx)
     ena_file = EnaFileTransfer().get_collection_handle().find_one({"local_path": file["file_location"]})
-    if (not ena_file) or ena_file["status"] != "processing":
-        tx["created"] = datetime.utcnow()
-        tx["last_checked"] = datetime.utcnow()
+    if not ena_file:
+        ena_file = {"status":"pending", "remote_path":remote_location}
+    
+    if ena_file["status"] != "processing":
+
+        if ena_file["remote_path"] != remote_location or get_transfer_status(ena_file) >= TransferStatus.DOWNLOADED_TO_LOCAL:
+            tx["transfer_status"] = 5
+        else:
+            tx["transfer_status"] = 1
+            tx["created"] = get_datetime()
+
+        tx["remote_path"] = remote_location
+        tx["last_checked"] = get_datetime()
         tx["status"] = "pending"
-        tx["transfer_status"] = 1
         EnaFileTransfer().get_collection_handle().update_one({"local_path": file["file_location"]}, {"$set": tx},
                                                              upsert=True)
     else:
@@ -171,16 +187,16 @@ def process_pending_file_transfers():
             elif tx_status == 4:
                 # insert_message(message="Checking MD5: " + tx["ecs_location"], user=user)
                 if True:  # check_md5(tx):
-                    increment_status_counter(tx)
+                    if not tx.get("remote_path",""):
+                        log.log("no ecs location, skipping transfer to ENA")
+                        mark_complete(tx)
+                        continue
+                    else:
+                        increment_status_counter(tx)
                 else:
                     # Todo - need to do something cleverer here
                     reset_status_counter(tx)
             elif tx_status == 5:
-                if not tx.get("remote_path",""):
-                    log.log("no ecs location, skipping transfer to ENA")
-                    mark_complete(tx)
-                    continue 
-
                 #EnaFileTransfer().set_processing(tx["_id"])
                 insert_message(message=f'Transfering to ENA: {tx["local_path"]} to {tx["remote_path"]}', user=user)
                 log.log("transfering to ENA: " + tx["local_path"])
@@ -195,42 +211,49 @@ def record_error(error):
 
 def increment_status_counter(tx):
     tx["transfer_status"] = tx["transfer_status"] + 1
-    tx["last_checked"] = datetime.utcnow()
+    tx["last_checked"] = get_datetime()
     tx["status"] = "pending"
     EnaFileTransfer().get_collection_handle().update_one({"_id": tx["_id"]}, {"$set" : tx})
 
 
 def decrement_status_counter(tx):
     tx["transfer_status"] = tx["transfer_status"] - 1
-    tx["last_checked"] = datetime.utcnow()
+    tx["last_checked"] = get_datetime()
     tx["status"] = "pending"
     EnaFileTransfer().get_collection_handle().update_one({"_id": tx["_id"]}, {"$set" : tx})
 
 
 def mark_error(tx):
     tx["transfer_status"] = 10
-    tx["last_checked"] = datetime.utcnow()
+    tx["last_checked"] = get_datetime()
     tx["status"] = "error"
     EnaFileTransfer().get_collection_handle().update_one({"_id": tx["_id"]}, {"$set" : tx})
 
 
 def mark_complete(tx):
-    tx["transfer_status"] = 0
-    tx["last_checked"] = datetime.utcnow()
+    #tx["transfer_status"] = 0
+    tx["last_checked"] = get_datetime()
     tx["status"] = "complete"
     EnaFileTransfer().get_collection_handle().update_one({"_id": tx["_id"]}, {"$set" : tx})
 
 
 def reset_status_counter(tx):
     Logger().log("resetting: " + tx["local_path"])
-    tx["transfer_status"] = 1
-    tx["last_checked"] = datetime.utcnow()
+    #the file is already downloaded to local, so, just restart the transfer for remote location
+    if tx["transfer_status"] > 2:   
+        # this is a new transfer
+        tx["transfer_status"] = 3
+    #restart the transfer to local
+    elif tx["transfer_status"] == 2:
+        # this is a new transfer
+        tx["transfer_status"] = 1
+    tx["last_checked"] = get_datetime()
     tx["status"] = "pending"
     EnaFileTransfer().get_collection_handle().update_one({"_id": tx["_id"]}, {"$set" : tx})
 
 
 def update_last_checked(tx):
-    tx["last_checked"] = datetime.utcnow()
+    tx["last_checked"] = get_datetime()
     EnaFileTransfer().get_collection_handle().update_one({"_id": tx["_id"]}, {"$set" : tx})
 
 
@@ -280,6 +303,33 @@ def check_md5(tx):
         return False
 
 
+def get_transfer_status(tx): 
+    """
+    :param ena_transfer_record: ena transfer record
+    :return: transfer status
+    """
+    if tx:
+        transfer_status = tx.get("transfer_status", 0)
+        status = tx.get("status", str())
+        if transfer_status == 5 and status == "ena_complete":
+            return TransferStatus.COMPLETED_VALIDATION_IN_ENA
+        elif transfer_status == 5 and status == "complete":
+            return TransferStatus.TANSFERED_TO_ENA
+        elif transfer_status == 5 and status == "pending":
+            return TransferStatus.TRANSFERRING_TO_ENA 
+        elif transfer_status > 2:
+            return TransferStatus.DOWNLOADED_TO_LOCAL
+        elif transfer_status == 2:
+            return TransferStatus.TRANSFERRING_TO_ENA
+        elif transfer_status == 0:  #for compatibility with old records
+            return TransferStatus.TANSFERED_TO_ENA
+        else:
+            # unknown status
+            Logger().error(f"Unknown transfer status: {transfer_status} for file: {tx['local_path']}")
+    else:
+        return False
+
+
 class ToENA(threading.Thread):
     def __init__(self, tx, user_details, pid):
         self.tx = tx
@@ -307,11 +357,11 @@ class ToENA(threading.Thread):
         mark_complete(self.tx)
         transfers = EnaFileTransfer().get_collection_handle().find({"profile_id": self.pid})
         complete = True
-        if os.path.exists(self.tx["local_path"]):
-            Logger().log("deleting file after check")
-            os.remove(self.tx["local_path"])  #don't remove file as need resubmission
+        #if os.path.exists(self.tx["local_path"]):
+            #Logger().log("deleting file after check")
+            #os.remove(self.tx["local_path"])  #don't remove file as need resubmission
         for t in transfers:
-            if not t["transfer_status"] == 0:
+            if not t["status"] == "complete":
                 complete = False
         if complete == True:
             self.ud.active_task = False

@@ -74,6 +74,8 @@ services:
       - DJANGO_SUPERUSER_PASSWORD=admin
       - DJANGO_SUPERUSER_EMAIL=admin@test.com
       - http_protocol=http
+      - ZENODOURL=https://zenodo.org/api
+      - ZENODOTOKEN=${ZENODOTOKEN}    
     depends_on:
       - copo_redis
       - copo_postgres
