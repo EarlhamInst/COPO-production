@@ -35,6 +35,7 @@ from src.apps.api.views.mapping import get_mapped_field_by_standard
 from src.apps.copo_dtol_upload.utils.da import ValidationQueue
 from src.apps.copo_dtol_upload.utils.Dtol_Spreadsheet import DtolSpreadsheet
 
+from ..enums import ReturnTypeEnum
 
 def get(request, id):
     '''
@@ -424,6 +425,7 @@ def get_fields_by_manifest_version(request):
     project = request.GET.get('project', str())
     manifest_version = request.GET.get('manifest_version', str())
 
+    valid_return_types = ReturnTypeEnum.values()
     manifest_versions = Sample().get_available_manifest_versions(project)
     template = None
 
@@ -438,7 +440,7 @@ def get_fields_by_manifest_version(request):
         error = f'No fields exist for the manifest version, {manifest_version}. Available manifest versions are {d_utils.join_list_with_and_as_last_entry(manifest_versions)}.'
         return HttpResponse(status=400, content=error)
 
-    if return_type not in ['json', 'csv']:
+    if return_type not in valid_return_types:
         # Show error if return type is not 'json' or 'csv'
         error = "Invalid return type provided. Please provide either 'json' or 'csv'."
         return HttpResponse(status=400, content=error)
