@@ -95,6 +95,18 @@
             ],
             "django": true,
             "justMyCode": false
+        },
+        {
+        "name": "Python: Validate API enums",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/manage.py",
+        "env": {
+            "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
+        },
+        "args": ["validate_api_enums"],
+        "django": true,
+        "justMyCode": false
         }
     ]
 }
