@@ -543,30 +543,28 @@ DTOL_ENUMS = {
         ],
         'ERGA':
             [
-                'CENTRO NACIONAL DE ANÁLISIS GENÓMICO',
-                'DNA SEQUENCING AND GENOMICS LABORATORY, HELSINKI GENOMICS CORE FACILITY',
-                'DRESDEN-CONCEPT',
-                'EARLHAM INSTITUTE',
-                'FUNCTIONAL GENOMIC CENTER ZURICH',
-                'GENOSCOPE',
-                'GIGA-GENOMICS CORE FACILITY UNIVERSITY OF LIEGE',
-                'HANSEN LAB, DENMARK',
-                'INDUSTRY PARTNER',
-                'LAUSANNE GENOMIC TECHNOLOGIES FACILITY',
-                'LEIBNIZ INSTITUTE FOR THE ANALYSIS OF BIODIVERSITY CHANGE, MUSEUM KOENIG, BONN',
-                'NEUROMICS SUPPORT FACILITY, UANTWERP, VIB',
-                'NGS BERN',
-                'NGS COMPETENCE CENTER TÜBINGEN',
-                'NORWEGIAN SEQUENCING CENTRE',
-                'SANGER INSTITUTE',
-                'SCILIFELAB',
-                'SVARDAL LAB, ANTWERP',
-                'UNIVERSITY OF BARI',
-                'UNIVERSITY OF FLORENCE',
-                'WEST GERMAN GENOME CENTRE',
-                'Other_ERGA_Associated_GAL',
+                'Centro Nacional de Análisis Genómico',
+                'DNA Sequencing and Genomics Laboratory, Helsinki Genomics Core Facility',
+                'Earlham Institute',
+                'Functional Genomics Center Zurich',
+                'Genoscope',
+                'Hansen Lab, Denmark',
+                'Lausanne Genomic Technologies Facility',
+                'Leibniz Institute for the Analysis of Biodiversity Change, Museum Koenig, Bonn',
+                'NGS Bern',
+                'NGS Competence Center Tübingen',
+                'Neuromics Support Facility, UAntwerp, VIB',
+                'Norwegian Sequencing Centre',
+                'Sanger Institute',
+                'SciLifeLab',
+                'Svardal Lab, Antwerp',
+                'University of Bari',
+                'University of Florence',
+                'West German Genome Centre',
+                'industry partner',
+                'other ERGA associated GAL',
                 'NOT_PROVIDED'
-        ]
+            ]
         },
     'HAZARD_GROUP': {
         'DTOL':
@@ -588,8 +586,9 @@ DTOL_ENUMS = {
                 '4'
             ]
         },
-    'LIFESTAGE':
-        [
+    'LIFESTAGE': {
+        'DTOL':
+            [
             'ADULT',
             'EGG',
             'EMBRYO',
@@ -606,6 +605,43 @@ DTOL_ENUMS = {
             'NOT_COLLECTED',
             'NOT_PROVIDED'
             ],
+        'ASG':
+            [
+            'ADULT',
+            'EGG',
+            'EMBRYO',
+            'GAMETOPHYTE',
+            'JUVENILE',
+            'LARVA',
+            'PUPA',
+            'SPORE_BEARING_STRUCTURE',
+            'SPOROPHYTE',
+            'VEGETATIVE_CELL',
+            'VEGETATIVE_STRUCTURE',
+            'ZYGOTE',
+            'NOT_APPLICABLE',
+            'NOT_COLLECTED',
+            'NOT_PROVIDED'
+            ],
+        'ERGA': 
+        [
+            'adult',
+            'juvenile',
+            'pupa',
+            'larva',
+            'zygote',
+            'embryo',
+            'egg',
+            'sporophyte',
+            'gametophyte',
+            'spore-bearing structure',
+            'vegetative structure',
+            'vegetative cell',
+            'not collected',
+            'not applicable',
+            'not provided'
+        ]
+    },
     'MIXED_SAMPLE_RISK':
         [
             'Y',

@@ -109,7 +109,7 @@ def process_bioimage_pending_submission():
 
     if is_sent:
         try:
-            Logger().log(BIOIMAGE_ASPERA_CMD, level=Loglvl.DEBUG)
+            #Logger().log(BIOIMAGE_ASPERA_CMD, level=Loglvl.DEBUG)
             output = subprocess.check_output(BIOIMAGE_ASPERA_CMD, shell=True)
             notify_frontend(data={"profile_id": sub["profile_id"]}, msg="<br>Bioimage has been submitted", action="info",
                             html_id="dtol_sample_info")

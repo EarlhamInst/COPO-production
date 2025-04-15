@@ -44,7 +44,8 @@ services:
       - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH=${vault_copo_bioimage_path}
-      - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk
+      - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
+      - BIOIMAGE_PASSWORD=${vault_copo_bioimage_password}
       - ECS_SECRET_KEY=${vault_ecs_secret_key}
       - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
       - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk

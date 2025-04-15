@@ -1457,7 +1457,7 @@ def create_study(profile_id, collection_id):
 def handle_common_ENA_error(error_to_parse, source_id):
     if "The object being added already exists in the submission account with accession" in error_to_parse:
         # catch alias and accession
-        pattern_accession = "ERS\d{7}"
+        pattern_accession = r"ERS\d{7}"
         accession = re.search(pattern_accession, error_to_parse).group()
     else:
         return False
