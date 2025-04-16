@@ -33,6 +33,10 @@ def cookie_response(request):
     cookie_response = request.POST.get('cookie_response', None)
 
     user_id = str(request.user.id)
+
+    if request.user.is_anonymous:
+        return HttpResponse(json.dumps({'resp': 'user not logged in'}))
+
     user_device = request.user_agent.device.family
     user_browser = f'{request.user_agent.browser.family} version { request.user_agent.browser.version_string}'
     user_operating_system = request.user_agent.os.family
