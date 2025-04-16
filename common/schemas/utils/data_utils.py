@@ -74,15 +74,16 @@ def get_profile_type(profile_type):
     return profile_type.upper()
 
 
-def join_list_with_and_as_last_entry(lst):
-    # Join the list of sequencing centre labels
-    # with commas then, have 'and' as the last entry
-    if len(lst) > 2:
-        return ', '.join(lst[:-1]) + ', and ' + str(lst[-1])
-    elif len(lst) == 2:
-        return ' and '.join(lst)
+def join_with_and(lst, conjunction='and'):
+    # # Handles lists with comma, 'and', 'or'
+    if not lst:
+        return []
     elif len(lst) == 1:
         return lst[0]
+    elif len(lst) == 2:
+        return f' {conjunction} '.join(lst)
+    else:
+        return ', '.join(lst[:-1]) + f', {conjunction} ' + str(lst[-1])
 
 
 def json_to_object(data_object):
@@ -583,7 +584,7 @@ def get_compliant_fields(component, project):
     return compliant_fields
 
 
-def get_export_fields(component, project):
+def get_export_fields(component, project, manifest_version=None):
     # Get fields that are not sensitive and can be exported or displayed via the API
     schema = get_copo_schema(component)
     output = list()
@@ -598,13 +599,24 @@ def get_export_fields(component, project):
 
     for x in schema:
         if x.get('show_in_api', False) and not x.get('is_sensitive', False):
-            if not x.get('specifications', list()) or project.lower() in x.get(
-                'specifications', list()
-            ):
+            specs = x.get('specifications', [])
+
+            # Get fields based on manifest version if provided
+            if not manifest_version:
+                # Get fields not based on manifest version
+                valid_spec = not specs or project.lower() in specs
+            else:
+                valid_spec = not specs or (
+                    project.lower() in specs
+                    and manifest_version in x.get('manifest_version', [])
+                )
+
+            if valid_spec:
                 # Check if the field already exists in the list
                 field = x['id'].split('.')[-1]
                 if field not in output:
                     output.append(field)
+
     # Inputs the additional export fields to the list
     output.extend(addtl_export_fields)
     return output

@@ -1,16 +1,18 @@
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from common.dal.profile_da import  Profile
-from common.dal.submission_da import Submission
-from .utils.da import SequenceAnnotation
-from common.utils.helpers import notify_annotation_status
-from django.http import HttpResponse, JsonResponse
-from .forms import AnnotationFilesForm, AnnotationForm
-from .utils import EnaAnnotation
-from common.s3.s3Connection import S3Connection
 from django.forms import formset_factory
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
 from functools import partial, wraps
+from rest_framework import status
+
+from common.dal.profile_da import Profile
+from common.dal.submission_da import Submission
+from common.s3.s3Connection import S3Connection
+from common.utils.helpers import notify_annotation_status
 from src.apps.copo_core.views import web_page_access_checker
+from .forms import AnnotationFilesForm, AnnotationForm
+from .utils.da import SequenceAnnotation
+from .utils import EnaAnnotation
 
 
 @web_page_access_checker
@@ -18,7 +20,11 @@ from src.apps.copo_core.views import web_page_access_checker
 def copo_seq_annotation(request, profile_id):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
-    return render(request, 'copo/copo_seq_annotation.html', {'profile_id': profile_id, 'profile': profile})
+    return render(
+        request,
+        'copo/copo_seq_annotation.html',
+        {'profile_id': profile_id, 'profile': profile},
+    )
 
 
 @login_required()
@@ -30,7 +36,10 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
     if seq_annotation_id:
         seq_annotation = SequenceAnnotation().get_record(seq_annotation_id)
         if not seq_annotation:
-            return HttpResponse(content="Sequence Annotation not exists", status=400)
+            return HttpResponse(
+                content="Sequence Annotation not exists",
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     study_accession = ""
     sample_accession = []
@@ -56,8 +65,7 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
         if experiments:
             for experiment in experiments:
                 if experiment.get("accession", ""):
-                    experiment_accession.append(
-                        experiment.get("accession", ""))
+                    experiment_accession.append(experiment.get("accession", ""))
         samples = existing_accessions.get("sample", "")
         if samples:
             for sample in samples:
@@ -74,35 +82,51 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
                 ecs_files.append(file["Key"])
 
     AnnotationFilesFormSet = formset_factory(
-        wraps(AnnotationFilesForm)(partial(AnnotationFilesForm, ecs_files=ecs_files)), extra=3)
+        wraps(AnnotationFilesForm)(partial(AnnotationFilesForm, ecs_files=ecs_files)),
+        extra=3,
+    )
     if request.method == 'POST' or request.method == 'PUT':
         # return render(request, "copo/ena_assembly.html", {"profile_id": profile_id, "form": [], "hide_form": False})
-        form = AnnotationForm(request.POST, request.FILES, sample_accession=sample_accession,
-                              study_accession=study_accession, run_accession=run_accession,
-                              experiment_accession=experiment_accession, seq_annotation=seq_annotation)
+        form = AnnotationForm(
+            request.POST,
+            request.FILES,
+            sample_accession=sample_accession,
+            study_accession=study_accession,
+            run_accession=run_accession,
+            experiment_accession=experiment_accession,
+            seq_annotation=seq_annotation,
+        )
         formset = AnnotationFilesFormSet(
-            request.POST, request.FILES, prefix="annotation_files")
+            request.POST, request.FILES, prefix="annotation_files"
+        )
         if form.is_valid() and formset.is_valid():
-            notify_annotation_status(data={"profile_id": profile_id},
-                                     msg="Intitialising Annotation Submission",
-                                     action="info",
-                                     html_id="annotation_info")
+            notify_annotation_status(
+                data={"profile_id": profile_id},
+                msg="Intitialising Annotation Submission",
+                action="info",
+                html_id="annotation_info",
+            )
             # this is a dict
             formdata = form.cleaned_data
             seq_annotation_id = request.POST.get("seq_annotation_id", "")
 
             sub_result = EnaAnnotation.validate_annotation(
-                formdata, formset, profile_id, seq_annotation_id)
+                formdata, formset, profile_id, seq_annotation_id
+            )
             if sub_result.get("error", ""):
-                notify_annotation_status(data={"profile_id": profile_id},
-                                         msg=sub_result.get("error", ""),
-                                         action="error",
-                                         html_id="annotation_info")
+                notify_annotation_status(
+                    data={"profile_id": profile_id},
+                    msg=sub_result.get("error", ""),
+                    action="error",
+                    html_id="annotation_info",
+                )
             else:
-                notify_annotation_status(data={"profile_id": profile_id},
-                                         msg=sub_result.get("success", ""),
-                                         action="info",
-                                         html_id="annotation_info")
+                notify_annotation_status(
+                    data={"profile_id": profile_id},
+                    msg=sub_result.get("success", ""),
+                    action="info",
+                    html_id="annotation_info",
+                )
                 return JsonResponse(status=201, data=sub_result)
 
         else:
@@ -113,28 +137,49 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
                 for f in formset:
                     if f.errors:
                         msg = msg + str(f.errors)
-            notify_annotation_status(data={"profile_id": profile_id},
-                                     msg=msg,
-                                     action="error",
-                                     html_id="annotation_info")
-        return HttpResponse(content="Validation Error", status=400)
+            notify_annotation_status(
+                data={"profile_id": profile_id},
+                msg=msg,
+                action="error",
+                html_id="annotation_info",
+            )
+        return HttpResponse(
+            content="Validation Error", status=status.HTTP_400_BAD_REQUEST
+        )
 
     else:
 
-        form = AnnotationForm(study_accession=study_accession, sample_accession=sample_accession,
-                              run_accession=run_accession, experiment_accession=experiment_accession,
-                              seq_annotation=seq_annotation)
+        form = AnnotationForm(
+            study_accession=study_accession,
+            sample_accession=sample_accession,
+            run_accession=run_accession,
+            experiment_accession=experiment_accession,
+            seq_annotation=seq_annotation,
+        )
         # AnnotationFilesFormSet = formset_factory(AnnotationFilesForm(ecs_files), extra=3 )
         formset = AnnotationFilesFormSet(prefix="annotation_files")
         if seq_annotation:
             filenames = seq_annotation.get("filenames", list())
             filetypes = seq_annotation.get("filetypes", list())
             if filenames and filetypes:
-                formset = AnnotationFilesFormSet(prefix="annotation_files", initial=[
-                                                 {'file': filenames[i], 'type': filetypes[i]} for i in range(len(filenames))])
+                formset = AnnotationFilesFormSet(
+                    prefix="annotation_files",
+                    initial=[
+                        {'file': filenames[i], 'type': filetypes[i]}
+                        for i in range(len(filenames))
+                    ],
+                )
 
-        return render(request, "copo/ena_annotation_form.html",
-                      {"profile_id": profile_id, "form": form, "formset": formset, "hide_form": False})
+        return render(
+            request,
+            "copo/ena_annotation_form.html",
+            {
+                "profile_id": profile_id,
+                "form": form,
+                "formset": formset,
+                "hide_form": False,
+            },
+        )
 
 
 @web_page_access_checker
@@ -142,4 +187,8 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
 def copo_seq_annotation(request, profile_id):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
-    return render(request, 'copo/copo_seq_annotation.html', {'profile_id': profile_id, 'profile': profile})
+    return render(
+        request,
+        'copo/copo_seq_annotation.html',
+        {'profile_id': profile_id, 'profile': profile},
+    )

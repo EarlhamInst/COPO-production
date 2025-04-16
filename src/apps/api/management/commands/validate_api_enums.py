@@ -5,10 +5,14 @@ Swagger YAML file match those defined in the backend code.
 
 To execute run: `python manage.py validate_api_enums`
 '''
+
 import os
 import yaml
+
 from django.conf import settings
 from django.core.management import BaseCommand
+
+import common.schemas.utils.data_utils as d_utils
 from src.apps.api.enums import *
 
 
@@ -17,14 +21,11 @@ class Command(BaseCommand):
     # Show this when the user types help
     help = 'Validate enum values in Swagger against backend enums'
 
-    def __init__(self):
-        super().__init__()
-
     def handle(self, *args, **options):
-        self.stdout.write('Validating enum values in Swagger against backend enums')
+        self.stdout.write('Validating enum values in Swagger API against backend enums...')
         swagger = self.load_swagger_yaml()
 
-        # List of parameters to check
+        # List of Swagger API parameters to check
         parameters_to_check = [
             ('AssociatedProjects', AssociatedProjectEnum),
             ('AssociatedProjects_multiple', AssociatedProjectEnum),
@@ -32,12 +33,17 @@ class Command(BaseCommand):
             ('Projects', ProjectEnum),
             ('Projects_multiple', ProjectEnum),
             ('ReturnTypes', ReturnTypeEnum),
+            ('Sample_long2', SampleFieldsEnum),
             ('SampleTypes', ProjectEnum),
+            ('SequencingCentres', SequencingCentreEnum),
+            ('Standards', StandardsEnum),
         ]
 
         # Loop through the parameters and perform the check
         for param_name, enum_class in parameters_to_check:
-            self.check_enum_in_swagger(swagger, param_name, enum_class)
+            self.check_swagger_enums(swagger, param_name, enum_class)
+
+        self.stdout.write(self.style.SUCCESS('\nValidation complete!'))
 
     def load_swagger_yaml(self):
         # Load the Swagger YAML file
@@ -56,31 +62,52 @@ class Command(BaseCommand):
         return swagger
 
     # Retrieve enum values from the backend
-    def get_enum_values_from_backend(self, enum_class):
-        return set(enum_class.values())
+    def retrieve_backend_enums(self, enum_class, schema_name):
+        values = enum_class.values()
+        if enum_class is ProjectEnum and schema_name != 'SampleTypes':
+            values = [v.upper() for v in values]
+        return set(values)
 
     # Check if enum values match between the backend and Swagger
-    def check_enum_in_swagger(self, swagger_data, schema_name, enum_class):
+    def check_swagger_enums(self, swagger_data, schema_name, enum_class):
         # Iterate over parameters to find matching ones by name
         schemas = swagger_data.get('components', {}).get('schemas', {})
         for key, value in schemas.items():
-            if key == schema_name and ('enum' in value or 'enum' in value.get('items', {})):
+            if schema_name not in schemas:
+                self.style.ERROR(f"Schema '{schema_name}' not found in Swagger.")
+            elif key == schema_name and (
+                'enum' in value or 'enum' in value.get('items', {})
+            ):
                 # Enum values from Swagger
-                swagger_enum = set(value['enum']) if 'enum' in value else set(value['items']['enum'])
+                swagger_enum = (
+                    set(value['enum'])
+                    if 'enum' in value
+                    else set(value['items']['enum'])
+                )
                 # Enum values from backend
-                backend_enum = self.get_enum_values_from_backend(enum_class)
+                backend_enum = self.retrieve_backend_enums(enum_class, schema_name)
 
                 # Check if all the values in the backend enum are present in the Swagger enum
                 if not swagger_enum.issubset(backend_enum):
                     self.stdout.write(
-                        self.style.ERROR(f"Enum mismatch for schema '{schema_name}'!")
+                        self.style.ERROR(
+                            f"\nEnum mismatch for schema '{schema_name}' and enum class '{enum_class.__name__}'!"
+                        )
                     )
-                    self.stdout.write(f'Swagger enum: {swagger_enum}')
-                    self.stdout.write(f'Backend enum: {backend_enum}')
 
-                    # Get items in either swagger_enum or backend_enum but not in both
-                    diff = list(set(swagger_enum).symmetric_difference(backend_enum))
-                    self.stdout.write(f"The difference is '{diff}'")
+                    # Get differences in swagger and backend enums
+                    backend_only = set(backend_enum) - set(swagger_enum)
+                    swagger_only = set(swagger_enum) - set(backend_enum)
+
+                    if backend_only:
+                        backend_only = d_utils.join_with_and(sorted(backend_only))
+                        self.stdout.write(
+                            f"Difference (i.e. items only in backend_enum but not in swagger_enum ): {backend_only}"
+                        )
+
+                    if swagger_only:
+                        swagger_only = d_utils.join_with_and(sorted(swagger_only))
+                        self.stdout.write(
+                            f"Difference (i.e. items only in swagger_enum but not in backend_enum ): {swagger_only}"
+                        )
                 break
-            else:
-                self.style.ERROR(f"Schema '{schema_name}' not found in Swagger.")

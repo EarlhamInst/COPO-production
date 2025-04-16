@@ -11,6 +11,7 @@ from common.dal.mongo_util import (
     cursor_to_list_str,
 )
 from common.schema_versions.lookup.dtol_lookups import (
+    COPO_DATE_FIELDS,
     EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY,
     EXCLUDED_SAMPLE_TYPES,
     GENOMICS_PROJECT_SAMPLE_TYPE_DICT,
@@ -93,14 +94,28 @@ class Source(DAComponent):
                 return cursor_to_list(
                     self.get_collection_handle().find({field: {'$in': value}})
                 )
+            elif field in COPO_DATE_FIELDS and all(
+                isinstance(item, datetime) for item in value
+            ):
+                # Query for multiple values in a list of datetime objects
+                return cursor_to_list(
+                    self.get_collection_handle().find({field: {'$gte': min(value)}})
+                )
             else:
                 # Query for multiple values as a regex string
                 value = '|'.join(map(str, value))
-        return cursor_to_list(
-            self.get_collection_handle().find(
-                {field: {'$regex': value, '$options': 'i'}}
+        elif isinstance(value, datetime):
+            return cursor_to_list(
+                self.get_collection_handle().aggregate(
+                    [{'$match': {field: {'$gte': value}}}]
+                )
             )
-        )
+        else:
+            return cursor_to_list(
+                self.get_collection_handle().find(
+                    {field: {'$regex': value, '$options': 'i'}}
+                )
+            )
 
     def add_fields(self, fieldsdict, oid):
         return self.get_collection_handle().update_one(
@@ -1425,21 +1440,35 @@ class Sample(DAComponent):
             )
         )
 
-    def get_by_field(self, dtol_field, value):
+    def get_by_field(self, field, value):
         if isinstance(value, list):
-            if dtol_field in EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY:
+            if field in EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY:
                 # Query for multiple values in a list
                 return cursor_to_list(
-                    self.get_collection_handle().find({dtol_field: {'$in': value}})
+                    self.get_collection_handle().find({field: {'$in': value}})
+                )
+            elif field in COPO_DATE_FIELDS and all(
+                isinstance(item, datetime) for item in value
+            ):
+                # Query for multiple values in a list of datetime objects
+                return cursor_to_list(
+                    self.get_collection_handle().find({field: {'$gte': min(value)}})
                 )
             else:
                 # Query for multiple values as a regex string
                 value = '|'.join(map(str, value))
-        return cursor_to_list(
-            self.get_collection_handle().find(
-                {dtol_field: {'$regex': value, '$options': 'i'}}
+        elif isinstance(value, datetime):
+            return cursor_to_list(
+                self.get_collection_handle().aggregate(
+                    [{'$match': {field: {'$gte': value}}}]
+                )
             )
-        )
+        else:
+            return cursor_to_list(
+                self.get_collection_handle().find(
+                    {field: {'$regex': value, '$options': 'i'}}
+                )
+            )
 
     def get_specimen_biosample(self, value):
         return cursor_to_list(

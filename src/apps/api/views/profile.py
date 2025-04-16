@@ -1,15 +1,17 @@
+import bson.json_util as jsonb
+from dateutil.parser import parse as parse_date, ParserError
+from django.http import HttpResponse
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+import common.schemas.utils.data_utils as d_utils
 from common.dal.mongo_util import cursor_to_list
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
-from django.http import HttpResponse
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .sample import format_date
-import bson.json_util as jsonb
-from dateutil.parser import parse as parse_date, ParserError
-
 from ..enums import AssociatedProjectEnum, ProjectEnum, ReturnTypeEnum
 from ..utils import generate_csv_response, generate_wrapper_response
+from .sample import format_date
 
 
 class APICreateProfile(APIView):
@@ -77,9 +79,10 @@ def associate_profiles_with_tubes_or_well_ids(request):
 
     # Validate required profile_type
     if profile_type not in valid_profile_types:
+        valid_profile_types = [x.upper() for x in valid_profile_types]
         return HttpResponse(
-            status=400,
-            content=f"Invalid value for profile_type. Must be one of: {valid_profile_types}",
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"Invalid value for profile_type. Must be one of: {d_utils.join_with_and(valid_profile_types, conjunction='or')}",
         )
     filter_dict['type'] = profile_type
 
@@ -87,8 +90,8 @@ def associate_profiles_with_tubes_or_well_ids(request):
     if associated_profile_type:
         if associated_profile_type not in valid_associated_types:
             return HttpResponse(
-                status=400,
-                content=f"Invalid value for 'associated profile type'. Must be one of: {valid_associated_types}",
+                status=status.HTTP_400_BAD_REQUEST,
+                content=f"Invalid value for 'associated profile type'. Must be one of: {d_utils.join_with_and(valid_associated_types,conjunction='or')}",
             )
         filter_dict['associated_type'] = {'$in': [associated_profile_type]}
 
@@ -98,20 +101,22 @@ def associate_profiles_with_tubes_or_well_ids(request):
         d_to = parse_date(request.GET['d_to']) if 'd_to' in request.GET else None
     except (ParserError, ValueError):
         return HttpResponse(
-            status=400,
+            status=status.HTTP_400_BAD_REQUEST,
             content="Invalid date format. 'd_from' and 'd_to' must be in ISO 8601 format.",
         )
 
     # Validate date logic
     if bool(d_from) != bool(d_to):
         return HttpResponse(
-            status=400, content="'from date' and 'to date' must be provided together."
+            status=status.HTTP_400_BAD_REQUEST,
+            content="'from date' and 'to date' must be provided together.",
         )
 
     if d_from and d_to:
         if d_from > d_to:
             return HttpResponse(
-                status=400, content="'from date' must be earlier than 'to date'."
+                status=status.HTTP_400_BAD_REQUEST,
+                content="'from date' must be earlier than 'to date'.",
             )
         # Add date filters
         filter_dict['first_manifest_date_created'] = {'$gte': d_from}
@@ -154,8 +159,8 @@ def associate_profiles_with_tubes_or_well_ids(request):
 
     if return_type not in valid_return_types:
         # Show error if return type is not 'json' or 'csv'
-        error = "Invalid return type provided. Please provide either 'json' or 'csv'."
-        return HttpResponse(status=400, content=error)
+        error = f'Invalid return type provided. Please provide either {d_utils.join_with_and(valid_return_types, conjunction="or")}.'
+        return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=error)
 
     if return_type == 'csv':
         template = []

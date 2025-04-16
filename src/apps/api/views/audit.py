@@ -1,55 +1,71 @@
-import common.schemas.utils.data_utils as d_utils
 import dateutil.parser as parser
 
-from .sample import format_date
 from bson import ObjectId
 from collections import OrderedDict
-from common.dal.copo_da import Audit
-from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from datetime import datetime
 from django.http import HttpResponse
+from rest_framework import status
+
+import common.schemas.utils.data_utils as d_utils
+from common.dal.copo_da import Audit
+from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from src.apps.api.utils import finish_request
+from .sample import format_date
+
 
 def sort_audit_output(audit_entry, default_fields):
     # Separate default fields and remaining fields
     default_part = {k: audit_entry[k] for k in default_fields if k in audit_entry}
-    remaining_part = {k: audit_entry[k] for k in sorted(audit_entry.keys()) if k not in default_fields}
+    remaining_part = {
+        k: audit_entry[k] for k in sorted(audit_entry.keys()) if k not in default_fields
+    }
 
     # Merge into one dictionary with correct order
     sorted_audit_log_data = OrderedDict(**default_part, **remaining_part)
     return sorted_audit_log_data
 
+
 def filter_audits_for_API(audits=[]):
-    default_fields = ['field', 'outdated_value', 'updated_value', 'update_type', 'time_updated']
-    audit_log_types = ['update_log', 'removal_log', 'truncated_log']   
+    default_fields = [
+        'field',
+        'outdated_value',
+        'updated_value',
+        'update_type',
+        'time_updated',
+    ]
+    audit_log_types = ['update_log', 'removal_log', 'truncated_log']
     out = []
     export_fields_map = {}
-        
+
     for audit in audits:
-        export_fields = {}        
+        export_fields = {}
         sample_type = audit.pop('sample_type', None)
         if not sample_type:
             continue
         if sample_type not in export_fields_map:
-            export_fields = d_utils.get_export_fields(component='sample', project=sample_type)
+            export_fields = d_utils.get_export_fields(
+                component='sample', project=sample_type
+            )
             export_fields.extend(default_fields)
-            export_fields_map[sample_type] = list(set(export_fields)) # Remove duplicates
-        else: 
+            export_fields_map[sample_type] = list(
+                set(export_fields)
+            )  # Remove duplicates
+        else:
             export_fields = export_fields_map[sample_type]
-            
+
         audit_data = {}
         audit_log_list = []
         for key, value in audit.items():
             if key in audit_log_types:
-                for element in value:               
+                for element in value:
                     if element.get('field', '') in export_fields:
                         audit_log_data = {}
                         audit_log_data['copo_audit_type'] = key
-                        
+
                         # Replace 'sample_type' with 'tol_project'
                         element.pop('sample_type', None)
                         element['tol_project'] = sample_type.upper()
-                            
+
                         # Process remaining fields
                         for k, v in element.items():
                             if k in export_fields:
@@ -59,8 +75,10 @@ def filter_audits_for_API(audits=[]):
                                     audit_log_data[k] = format_date(v)
                                 else:
                                     audit_log_data[k] = v
-                                    
-                        audit_log_data = sort_audit_output(audit_log_data, default_fields)
+
+                        audit_log_data = sort_audit_output(
+                            audit_log_data, default_fields
+                        )
                         audit_log_list.append(audit_log_data)
             else:
                 audit_data[key] = value
@@ -69,10 +87,11 @@ def filter_audits_for_API(audits=[]):
             out.append(audit_log_data)
     return out
 
+
 def get_sample_updates_by_sample_field_and_value(request, field, field_value):
     '''
     Get sample updates by one of the following fields and their respective value:
-        'RACK_OR_PLATE_ID' field 
+        'RACK_OR_PLATE_ID' field
         'SPECIMEN_ID' field
         'TUBE_OR_WELL_ID' field
         'biosampleAccession' field
@@ -80,11 +99,13 @@ def get_sample_updates_by_sample_field_and_value(request, field, field_value):
         'sraAccession' field
     '''
     sample_updates = Audit().get_sample_update_audits_by_field_and_value(
-        field, field_value)
+        field, field_value
+    )
 
     out = filter_audits_for_API(sample_updates)
 
     return finish_request(out)
+
 
 def get_sample_updates_by_manifest_id(request, manifest_id):
     manifest_id_list = d_utils.convertStringToList(manifest_id)
@@ -94,14 +115,16 @@ def get_sample_updates_by_manifest_id(request, manifest_id):
 
     # Check if the 'manifest_id' provided is valid
     if manifest_id_list and not all(d_utils.is_valid_uuid(x) for x in manifest_id_list):
-        return HttpResponse(status=400, content=f'Invalid \'manifest_id\'(s) provided!')
+        return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=f'Invalid \'manifest_id\'(s) provided!')
 
     sample_updates = Audit().get_sample_update_audits_field_value_lst(
-        manifest_id_list, key='manifest_id')
+        manifest_id_list, key='manifest_id'
+    )
 
     out = filter_audits_for_API(sample_updates)
 
     return finish_request(out)
+
 
 def get_sample_updates(request):
     # NB: 'sample_id' is the 'copo_id' key in DB
@@ -109,38 +132,54 @@ def get_sample_updates(request):
     sample_id_list = []
     updatable_field = request.GET.get('updatable_field', str())
     project = request.GET.get('project', str()).lower()
-    
+
     if sample_id:
         sample_id_list = d_utils.convertStringToList(sample_id)
 
         # Check if the 'sample_id' provided is valid
-        if sample_id_list and not all(d_utils.is_valid_ObjectId(x) for x in sample_id_list):
-            return HttpResponse(status=400, content=f'Invalid \'copo_id\'(s) provided!')
+        if sample_id_list and not all(
+            d_utils.is_valid_ObjectId(x) for x in sample_id_list
+        ):
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=f'Invalid \'copo_id\'(s) provided!')
 
         # Convert each string sample ID to ObjectId sample ID
         sample_id_list = [ObjectId(x) for x in sample_id_list]
-    
+
     sample_updates = Audit().get_sample_update_audits(
-        sample_id_list, updatable_field, project)
+        sample_id_list, updatable_field, project
+    )
 
     out = filter_audits_for_API(sample_updates)
 
     return finish_request(out)
+
 
 def get_sample_updates_by_update_type(request, update_type):
     # Get all sample updates by 'sample_type' and 'update_type'
     # 'update_type' can be 'system' or 'user'
-    sample_type_list = request.GET.getlist('project', []) # Gets multiple selected values
-    sample_type_list = [x.lower() for x in sample_type_list] # Convert to lowercase
-    
-    if len(sample_type_list) > 1 and not all(x in TOL_PROFILE_TYPES for x in sample_type_list) or len(sample_type_list) == 1 and sample_type_list[0] not in TOL_PROFILE_TYPES:
-        return HttpResponse(status=400, content=f'Invalid sample type provided! COPO does not support the sample type(s) provided.')
+    sample_type_list = request.GET.getlist(
+        'project', []
+    )  # Gets multiple selected values
+    sample_type_list = [x.lower() for x in sample_type_list]  # Convert to lowercase
+
+    if (
+        len(sample_type_list) > 1
+        and not all(x in TOL_PROFILE_TYPES for x in sample_type_list)
+        or len(sample_type_list) == 1
+        and sample_type_list[0] not in TOL_PROFILE_TYPES
+    ):
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f'Invalid sample type provided! COPO does not support the sample type(s) provided.',
+        )
 
     sample_updates = Audit().get_sample_update_audits_by_update_type(
-        sample_type_list, update_type)
+        sample_type_list, update_type
+    )
     out = filter_audits_for_API(sample_updates)
 
     return finish_request(out)
+
 
 def get_sample_updates_between_dates(request, d_from, d_to):
     # Get all sample updates between d_from and d_to
@@ -149,9 +188,11 @@ def get_sample_updates_between_dates(request, d_from, d_to):
     d_to = parser.parse(d_to)
 
     if d_from > d_to:
-        return HttpResponse(status=400, content=f'\'from date\' must be earlier than \'to date\'')
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST, content=f'\'from date\' must be earlier than \'to date\''
+        )
 
     sample_updates = Audit().get_sample_update_audits_by_date(d_from, d_to)
     out = filter_audits_for_API(sample_updates)
-    
+
     return finish_request(out)

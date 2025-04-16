@@ -89,9 +89,9 @@ dtol_api_patterns = [
         name='get_by_copo_ids',
     ),
     re_path(
-        r'^sample/sample_field/(?P<dtol_field>[A-Za-z0-9-_]+)/(?P<value>[A-Za-z0-9-_ ,.@]+)',
+        r'^sample/sample_field/(?P<field>[A-Za-z0-9-_]+)/(?P<values>[A-Za-z0-9-_ ,.@]+)',
         s.get_by_field,
-        name='get_by_dtol_field',
+        name='get_by_field',
     ),
     re_path(
         r'^sample/sequencing_centre',

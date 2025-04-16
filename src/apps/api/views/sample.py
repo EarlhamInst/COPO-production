@@ -1,7 +1,6 @@
 __author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
 
 import bson.json_util as jsonb
-import common.schemas.utils.data_utils as d_utils
 import datetime
 import dateutil.parser as parser
 import importlib
@@ -10,6 +9,14 @@ import requests
 import sys
 
 from bson.errors import InvalidId
+from django.conf import settings
+from django.http import HttpResponse
+from io import BytesIO
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+import common.schemas.utils.data_utils as d_utils
 from common.dal.copo_da import APIValidationReport
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample, Source
@@ -18,11 +25,6 @@ from common.lookup.lookup import API_ERRORS
 from common.schema_versions.lookup import dtol_lookups as lookup
 from common.utils.helpers import get_excluded_associated_projects
 from common.utils.logger import Logger
-from django.conf import settings
-from django.http import HttpResponse
-from io import BytesIO
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from src.apps.api.utils import (
     extract_to_template,
     finish_request,
@@ -35,7 +37,8 @@ from src.apps.api.views.mapping import get_mapped_field_by_standard
 from src.apps.copo_dtol_upload.utils.da import ValidationQueue
 from src.apps.copo_dtol_upload.utils.Dtol_Spreadsheet import DtolSpreadsheet
 
-from ..enums import ReturnTypeEnum
+from ..enums import ReturnTypeEnum, AssociatedProjectEnum, ProjectEnum, SampleFieldsEnum
+
 
 def get(request, id):
     '''
@@ -272,18 +275,32 @@ def get_all_manifest_between_dates(request, d_from, d_to):
     d_from = parser.parse(d_from)
     d_to = parser.parse(d_to)
     if d_from > d_to:
-        return HttpResponse(status=400, content="'from' must be earlier than'to'")
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content="'from' must be earlier than'to'",
+        )
     manifest_ids = Sample().get_manifests_by_date(d_from, d_to)
     return finish_request(manifest_ids)
 
 
 def get_project_manifests_between_dates(request, project, d_from, d_to):
-    # get project manifests between d_from and d_to
-    # dates must be ISO 8601 formatted
+    # Get project manifests between d_from and d_to
+    valid_project_types = ProjectEnum.values()
+    if not project or project not in valid_project_types:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"Invalid value for 'project'. Accepted values are: {d_utils.join_with_and(valid_project_types, conjunction='or')}",
+        )
+
+    # Dates must be ISO 8601 formatted
     d_from = parser.parse(d_from)
     d_to = parser.parse(d_to)
     if d_from > d_to:
-        return HttpResponse(status=400, content="'from' must be earlier than'to'")
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content="'from' must be earlier than'to'",
+        )
+
     manifest_ids = Sample().get_manifests_by_date_and_project(project, d_from, d_to)
     return finish_request(manifest_ids)
 
@@ -307,17 +324,20 @@ def get_specimens_with_submitted_images(request):
 
     if d_from and d_to is None:
         return HttpResponse(
-            status=400, content=f"'to date' is required when 'from date' is entered"
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"'to date' is required when 'from date' is entered",
         )
 
     if d_from is None and d_to:
         return HttpResponse(
-            status=400, content=f"'from date' is required when 'to date' is entered"
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"'from date' is required when 'to date' is entered",
         )
 
     if d_from and d_to and d_from > d_to:
         return HttpResponse(
-            status=400, content=f"'from date' must be earlier than 'to date'"
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"'from date' must be earlier than 'to date'",
         )
 
     specimens = Source().get_specimens_with_submitted_images(project, d_from, d_to)
@@ -339,7 +359,8 @@ def get_all_samples_between_dates(request, d_from, d_to):
 
     if d_from > d_to:
         return HttpResponse(
-            status=400, content="'from date' must be earlier than 'to date'"
+            status=status.HTTP_400_BAD_REQUEST,
+            content="'from date' must be earlier than 'to date'",
         )
 
     samples = Sample().get_samples_by_date(d_from, d_to)
@@ -425,11 +446,18 @@ def get_fields_by_manifest_version(request):
     project = request.GET.get('project', str())
     manifest_version = request.GET.get('manifest_version', str())
 
+    valid_profile_types = ProjectEnum.values()
     valid_return_types = ReturnTypeEnum.values()
     manifest_versions = Sample().get_available_manifest_versions(project)
     template = None
 
-    if manifest_version in manifest_versions:
+    if project.lower() not in valid_profile_types:
+        valid_profile_types = [x.upper() for x in valid_profile_types]
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"Invalid value for 'project'. Must be one of: {d_utils.join_with_and(valid_profile_types, conjunction='or')}",
+        )
+    elif manifest_version in manifest_versions:
         # Get fields based on standard
         mapped_field_dict = get_mapped_field_by_standard(
             standard=standard, project=project, manifest_version=manifest_version
@@ -437,36 +465,37 @@ def get_fields_by_manifest_version(request):
         template = list(mapped_field_dict.values())
     else:
         # Show error if manifest version does not exist
-        error = f'No fields exist for the manifest version, {manifest_version}. Available manifest versions are {d_utils.join_list_with_and_as_last_entry(manifest_versions)}.'
-        return HttpResponse(status=400, content=error)
+        error = f'No fields exist for the manifest version, {manifest_version}. Available manifest versions are {d_utils.join_with_and(manifest_versions)}.'
+        return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=error)
 
+    # Determine output response
     if return_type not in valid_return_types:
         # Show error if return type is not 'json' or 'csv'
-        error = "Invalid return type provided. Please provide either 'json' or 'csv'."
-        return HttpResponse(status=400, content=error)
-
-    if return_type == 'csv':
+        error = f"Invalid return type provided. Please provide either  {d_utils.join_with_and(valid_return_types, conjunction='or')}."
+        return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=error)
+    elif return_type == 'csv':
         return generate_csv_response(standard, template)
+    else:
+        # Generate JSON response
+        output = generate_wrapper_response(template=template)
+        output = jsonb.dumps([output])
 
-    # Generate JSON response
-    output = generate_wrapper_response(template=template)
-    output = jsonb.dumps([output])
-
-    return HttpResponse(output, content_type='application/json')
+        return HttpResponse(output, content_type='application/json')
 
 
 def get_by_associated_project_type(request):
-    excluded_associated_projects = get_excluded_associated_projects()
+    valid_associated_types = AssociatedProjectEnum.values()
     # Gets multiple selected values and convert to uppercase
     associated_project_type_list = {
         x.strip().upper() for x in request.GET.getlist('values', []) if x.strip()
     }
-    if associated_project_type_list and any(
-        x in excluded_associated_projects for x in associated_project_type_list
+
+    if not associated_project_type_list or not all(
+        x in valid_associated_types for x in associated_project_type_list
     ):
         return HttpResponse(
-            status=400,
-            content=f'Invalid associated project type(s) provided! COPO does not support one or more of the associated project type(s) provided.',
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f'Invalid associated project type(s) provided! Accepted values are {d_utils.join_with_and(valid_associated_types)}.',
         )
 
     samples = Sample().get_project_samples_by_associated_project(
@@ -492,20 +521,39 @@ def get_by_copo_ids(request, copo_ids):
             out = filter_for_API(samples, add_all_fields=True)
         else:
             return HttpResponse(
-                status=400, content="Invalid 'copo_id' found in request"
+                status=status.HTTP_400_BAD_REQUEST,
+                content="Invalid 'copo_id' found in request",
             )
     return finish_request(out)
 
 
-def get_by_field(request, dtol_field, value):
-    # generic method to return all samples where given 'dtol_field' matches 'value'
-    vals = value.split(',')
+def get_by_field(request, field, values):
+    valid_sample_fields = SampleFieldsEnum.values()
+    if field not in valid_sample_fields:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"Invalid field provided. Please provide either {d_utils.join_with_and(valid_sample_fields, conjunction='or')}.",
+        )
+
+    # generic method to return all samples where given 'field' matches 'value'
+    vals = values.split(',')
     # strip white space
     vals = list(map(lambda x: x.strip(), vals))
     # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
     vals[:] = [x for x in vals if x]
+
+    if field in lookup.COPO_DATE_FIELDS:
+        # Convert date fields from string to datetime
+        try:
+            vals = [parser.parse(x) for x in vals]
+        except Exception as e:
+            return HttpResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                content=f"Invalid date format provided. Error: {e}",
+            )
+
     out = list()
-    sample_list = Sample().get_by_field(dtol_field, vals)
+    sample_list = Sample().get_by_field(field, vals)
     if sample_list:
         out = filter_for_API(sample_list, add_all_fields=True)
     return finish_request(out)
@@ -638,7 +686,7 @@ class APIValidateManifest(APIView):
                 'File format should be either <strong>.xls</strong>, <strong>.xlsx</strong> or <strong>.csv</strong>.'
             )
             Logger().error('Unrecognised file format for sample spreadsheet')
-            return HttpResponse(status=400, content=msg)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=msg)
 
         if dtol.loadManifest(m_format=fmt):
             bytesstring = BytesIO()

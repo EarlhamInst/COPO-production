@@ -1,26 +1,32 @@
-from common.dal.mongo_util import cursor_to_list_str2
-# from dal.broker_da import BrokerDA, BrokerVisuals
-from common.dal.profile_da import Profile, ProfileInfo
-from common.dal.submission_da import Submission
-from src.apps.copo_core.models import SequencingCentre, ProfileType
-from src.apps.copo_core.utils import get_all_profile_types_for_options_for_user
+import json
+import pymongo
+import re
+import requests
+
+from bson import ObjectId
+from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from jsonpickle import encode
-from src.apps.copo_core.models import Banner
+from lxml import etree
+from django.http import HttpResponse
+from rest_framework import status
+
+from common.dal.mongo_util import cursor_to_list_str2
+from common.dal.profile_da import Profile, ProfileInfo
+from common.dal.submission_da import Submission
+from common.ena_utils.generic_helper import get_study_status
+from common.lookup.lookup import SRA_SUBMISSION_MODIFY_TEMPLATE, SRA_SUBMISSION_TEMPLATE
 from common.utils.helpers import get_group_membership_asString, get_datetime, get_env
 from common.utils.logger import Logger
-from datetime import datetime
-import pymongo
-from lxml import etree
-from common.lookup.lookup import SRA_SUBMISSION_MODIFY_TEMPLATE, SRA_SUBMISSION_TEMPLATE
-import requests
-from common.ena_utils.generic_helper import get_study_status
-import json
-from bson import ObjectId
-import re
+
+# from dal.broker_da import BrokerDA, BrokerVisuals
+from src.apps.copo_core.models import Banner
+from src.apps.copo_core.models import SequencingCentre, ProfileType
+from src.apps.copo_core.utils import get_all_profile_types_for_options_for_user
+
 
 l = Logger()
 
@@ -48,54 +54,73 @@ def copo_profile_index(request):
     profile_lst = Profile().get_all_profiles(user=None, id_only=True)
     profiles_length = len(profile_lst)
 
-    shared_profiles_mapping = {p.get("_id", ""): p.get(
-        "shared", False) for p in profile_lst}
+    shared_profiles_mapping = {
+        p.get("_id", ""): p.get("shared", False) for p in profile_lst
+    }
     excluded_shared_profileIDs = list()
 
     # Get/load 8 profiles on downwards scroll
-    existing_profiles_paginated = Profile() \
-        .get_collection_handle() \
-        .aggregate([
-            {"$match": {"_id": {"$in": list(shared_profiles_mapping.keys())}}},
-            {"$addFields": {
-                "submission_profile_id": {
-                    "$convert": {
-                        "input": "$_id",
-                        "to": "string",
-                        "onError": 0
-                    }
-                }
-            }
-            },
-            {"$lookup":
+    existing_profiles_paginated = (
+        Profile()
+        .get_collection_handle()
+        .aggregate(
+            [
+                {"$match": {"_id": {"$in": list(shared_profiles_mapping.keys())}}},
                 {
-                    "from": 'SubmissionCollection',
-                    "localField": "submission_profile_id",
-                    "foreignField": "profile_id",
-                    "as": "submission"
-                }
-             },
-            {"$unwind": {'path': '$submission', "preserveNullAndEmptyArrays": True}},
-            {"$sort":  {"date_created": pymongo.DESCENDING}},
-            {"$skip": db_skip_num},
-            {"$limit": num_of_profiles_per_page},
-            {"$project": {"study_status": "$submission.accessions.project.status", "study_release_date": "$submission.accessions.project.release_date",
-                          "sequencing_centre": 1, "title": 1, "description": 1, "associated_type": 1, "type": 1, "date_created": 1, "date_modified": 1}}
-        ])
+                    "$addFields": {
+                        "submission_profile_id": {
+                            "$convert": {"input": "$_id", "to": "string", "onError": 0}
+                        }
+                    }
+                },
+                {
+                    "$lookup": {
+                        "from": 'SubmissionCollection',
+                        "localField": "submission_profile_id",
+                        "foreignField": "profile_id",
+                        "as": "submission",
+                    }
+                },
+                {
+                    "$unwind": {
+                        'path': '$submission',
+                        "preserveNullAndEmptyArrays": True,
+                    }
+                },
+                {"$sort": {"date_created": pymongo.DESCENDING}},
+                {"$skip": db_skip_num},
+                {"$limit": num_of_profiles_per_page},
+                {
+                    "$project": {
+                        "study_status": "$submission.accessions.project.status",
+                        "study_release_date": "$submission.accessions.project.release_date",
+                        "sequencing_centre": 1,
+                        "title": 1,
+                        "description": 1,
+                        "associated_type": 1,
+                        "type": 1,
+                        "date_created": 1,
+                        "date_modified": 1,
+                    }
+                },
+            ]
+        )
+    )
 
     profile_page = cursor_to_list_str2(
-        existing_profiles_paginated, use_underscore_in_id=False)
+        existing_profiles_paginated, use_underscore_in_id=False
+    )
 
     # Validate user shared profiles if any exists
     for index, item in enumerate(profile_page):
-        if (shared_profiles_mapping.get(ObjectId(item.get("id", "")), "")):
+        if shared_profiles_mapping.get(ObjectId(item.get("id", "")), ""):
             """
             is_parenthesis_in_word = re.search(
                 r'\((.*?)\)', item.get("type", ""))
             type = is_parenthesis_in_word.group(
                 1) if is_parenthesis_in_word else ""
             """
-            profile_type = item.get("type", "")  
+            profile_type = item.get("type", "")
             if ProfileType.objects.get(type=profile_type).is_permission_required:
                 if f'{profile_type}_users' not in member_groups:
                     # Obtain a list of the profile IDs for the shared profiles that users have been added to but
@@ -121,8 +146,11 @@ def copo_profile_index(request):
             """
     # Exclude a shared profile if a user does not belong to the shared profile group type
     if excluded_shared_profileIDs:
-        profile_page = [profile for profile in profile_page if profile.get(
-            "id", "") not in excluded_shared_profileIDs]
+        profile_page = [
+            profile
+            for profile in profile_page
+            if profile.get("id", "") not in excluded_shared_profileIDs
+        ]
         # Reduce the total number of (owned and shared) profiles for the user
         profiles_length -= len(excluded_shared_profileIDs)
 
@@ -130,12 +158,11 @@ def copo_profile_index(request):
     profile_page_length = len(profile_page)
     profile_page_length += profile_page_length
 
-
     schema_map = dict()
     for profile in profile_page:
         profile_type = profile.get("type", "")
         if type not in schema_map:
-            schema = Profile().get_component_schema(profile_type = profile_type )
+            schema = Profile().get_component_schema(profile_type=profile_type)
             schema_map[profile_type] = schema
         schema = schema_map.get(profile_type, dict())
 
@@ -144,14 +171,15 @@ def copo_profile_index(request):
             if f_id in profile and not f.get("show_in_table", False):
                 profile.pop(f_id)
 
-
     if request.headers.get('x-requested-with') != 'XMLHttpRequest':
         # Set up the profile grids that are loaded by default when a user launches the web page
         context['profiles'] = profile_page
         context['profiles_total'] = profiles_length
         context['profiles_visible_length'] = len(profile_page)
         context['profiles_per_page'] = num_of_profiles_per_page
-        context['profile_types'] = get_all_profile_types_for_options_for_user(request.user)
+        context['profile_types'] = get_all_profile_types_for_options_for_user(
+            request.user
+        )
         return render(request, 'copo/profile/copo_profile_index.html', context)
     else:
         # Set up the profile grids that are loaded when a user scrolls down the web page
@@ -159,9 +187,16 @@ def copo_profile_index(request):
         content = ''
 
         for profile in profile_page:
-            content += render_to_string('copo/profile/copo_profile_record.html',
-                                        {'profile': profile,"profile_types":get_all_profile_types_for_options_for_user(request.user)},
-                                    request=request)
+            content += render_to_string(
+                'copo/profile/copo_profile_record.html',
+                {
+                    'profile': profile,
+                    "profile_types": get_all_profile_types_for_options_for_user(
+                        request.user
+                    ),
+                },
+                request=request,
+            )
         output['content'] = content
         output['profiles_total'] = profiles_length
         output['profiles_per_page'] = num_of_profiles_per_page
@@ -268,8 +303,11 @@ def view_copo_profile(request, profile_id):
     profile = Profile().get_record(profile_id)
     if not profile:
         return render(request, 'copo/error_page.html')
-    context = {"p_id": profile_id, 'counts': ProfileInfo(
-        profile_id).get_counts(), "profile": profile}
+    context = {
+        "p_id": profile_id,
+        'counts': ProfileInfo(profile_id).get_counts(),
+        "profile": profile,
+    }
     return render(request, 'copo/copo_profile.html', context)
 
 
@@ -277,7 +315,9 @@ def view_copo_profile(request, profile_id):
 def release_study(request, profile_id):
     submissions = Submission().execute_query({"profile_id": profile_id})
     if not submissions:
-        return HttpResponse(status=400, content="Submission not found")
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST, content="Submission not found"
+        )
 
     submission = submissions[0]
 
@@ -291,27 +331,26 @@ def release_study(request, profile_id):
     if not prj:
         message = f'Project accession not found for project: {profile_id}'
         l.log(message)
-        return HttpResponse(status=400, content=message)
+        return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=message)
 
     project_accession = prj[0].get('accession', str())
 
     # get study status from API
-    project_status = get_study_status(user_token=user_token, pass_word=pass_word,
-                                      project_accession=project_accession)
+    project_status = get_study_status(
+        user_token=user_token, pass_word=pass_word, project_accession=project_accession
+    )
 
     if not project_status:
         message = f'Cannot determine project release status for project: {profile_id}!'
         l.error(message)
-        return HttpResponse(status=400, content=message)
+        return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=message)
 
-    release_status = project_status[0].get(
-        'report', dict()).get('releaseStatus', str())
+    release_status = project_status[0].get('report', dict()).get('releaseStatus', str())
 
     if release_status.upper() == 'PUBLIC':
         # study already released, update the information in the db
 
-        first_public = project_status[0].get(
-            'report', dict()).get('firstPublic', str())
+        first_public = project_status[0].get('report', dict()).get('firstPublic', str())
 
         try:
             first_public = datetime.strptime(first_public, "%Y-%m-%dT%H:%M:%S")
@@ -322,8 +361,8 @@ def release_study(request, profile_id):
         prj[0]['release_date'] = first_public
 
         Submission().get_collection_handle().update_one(
-            {"_id": (submission["_id"])},
-            {'$set': {"accessions.project": prj}})
+            {"_id": (submission["_id"])}, {'$set': {"accessions.project": prj}}
+        )
         # return HttpResponse(status=200, content=f"Project was already released on {first_public}")
         first_public_str = first_public.strftime('%a, %d %b %Y %H:%M')
         return JsonResponse({"study_release_date": first_public_str})
@@ -351,14 +390,20 @@ def release_study(request, profile_id):
             l.log("ENA RECEIPT " + receipt)
         except etree.ParseError as e:
             l.log("Unrecognised response from ENA " + str(e))
-            message = " Unrecognised response from ENA - " + str(
-                receipt) + " Please try again later, if it persists contact admins"
-            return HttpResponse(status=400, content=message)
+            message = (
+                " Unrecognised response from ENA - "
+                + str(receipt)
+                + " Please try again later, if it persists contact admins"
+            )
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=message)
         except Exception as e:
             l.exception(e)
-            message = 'API call error ' + \
-                "Submitting project xml to ENA via CURL. href is: " + ena_service
-            return HttpResponse(status=400, content=message)
+            message = (
+                'API call error '
+                + "Submitting project xml to ENA via CURL. href is: "
+                + ena_service
+            )
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=message)
 
     if receipt:
         root = etree.fromstring(bytes(receipt, 'utf-8'))
@@ -374,17 +419,20 @@ def release_study(request, profile_id):
 
             # log error
             l.error(message)
-            return HttpResponse(status=400, content=message)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=message)
 
         # update submission record with study status
         l.log(
-            "Project successfully released. Updating status in the database :" + profile_id)
+            "Project successfully released. Updating status in the database :"
+            + profile_id
+        )
 
         prj[0]['status'] = 'PUBLIC'
         prj[0]['release_date'] = dt
 
         Submission().get_collection_handle().update_one(
-            {"_id": submission["_id"]}, {'$set': {"accessions.project": prj}})
+            {"_id": submission["_id"]}, {'$set': {"accessions.project": prj}}
+        )
 
         # return HttpResponse(status=200, content="Project release successful.")
         dt_str = dt.strftime('%a, %d %b %Y %H:%M')
