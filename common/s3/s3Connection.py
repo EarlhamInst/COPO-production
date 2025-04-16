@@ -1,14 +1,13 @@
 import boto3
 from botocore.config import Config
 from django.conf import settings as s
-from django_tools.middlewares.ThreadLocal import get_current_request, get_current_user
+from django_tools.middlewares.ThreadLocal import get_current_request
 from common.utils.helpers import notify_read_status
 from common.utils.logger import Logger
 from boto3.s3.transfer import TransferConfig
 import logging
 from common.dal.copo_da import EnaFileTransfer
 from common.utils.helpers import get_env
-import common.ena_utils.FileTransferUtils as tx
 
 class S3Connection():
     """
@@ -227,6 +226,7 @@ class S3Connection():
             raise e
 
     def validate_and_delete(self, target_id=str(), target_ids=list()):
+        from common.ena_utils.FileTransferUtils import get_transfer_status, TransferStatus
         bucket_name = self.profile_id
         filestatus_map = EnaFileTransfer().get_transfer_status_by_ecs_path(ecs_locations=[ f"{bucket_name}/{key}" for key in target_ids])
         file_not_deleted = []
@@ -234,7 +234,7 @@ class S3Connection():
         for key in target_ids:
             #ok to delete the file if there is no need to tranfer to ENA
             enaFile = filestatus_map.get(f"{bucket_name}/{key}")
-            if enaFile is None or tx.get_transfer_status(enaFile) >= tx.TransferStatus.DOWNLOADED_TO_LOCAL:
+            if enaFile is None or get_transfer_status(enaFile) >= TransferStatus.DOWNLOADED_TO_LOCAL:
                 status = True          
                 self.s3_client.delete_object(Bucket=bucket_name, Key=key)
             else:
