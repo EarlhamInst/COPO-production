@@ -834,12 +834,15 @@ def update_bundle_sample_xml(sample_list, bundlefile, is_modify=False):
                     else:
                         attribute_name = DTOL_ENA_MAPPINGS[item[0]]['ena']
                         ena_split_by = DTOL_ENA_MAPPINGS[item[0]].get('ena_split_by', '')
+                        ena_ignore_if_values = DTOL_ENA_MAPPINGS[item[0]].get('ena_ignore_if_values', [])
                         values = []
                         if ena_split_by:
                             values = item[1].split(ena_split_by)
                         else:
                             values = [item[1]]
                         for val_text in values:
+                            if val_text.upper() in ena_ignore_if_values:
+                                continue
                             sample_attribute = ET.SubElement(
                                 sample_attributes, 'SAMPLE_ATTRIBUTE')
                             tag = ET.SubElement(sample_attribute, 'TAG')
@@ -961,12 +964,16 @@ def build_specimen_sample_xml(sample):
                 else:
                     attribute_name = DTOL_ENA_MAPPINGS[item[0]]['ena']
                     ena_split_by = DTOL_ENA_MAPPINGS[item[0]].get('ena_split_by', '')
+                    ena_ignore_if_values = DTOL_ENA_MAPPINGS[item[0]].get('ena_ignore_if_values', [])
                     values = []
                     if ena_split_by:
                         values = item[1].split(ena_split_by)
                     else:
                         values = [item[1]]
                     for val_text in values:
+                        if val_text.upper() in ena_ignore_if_values:
+                            continue
+
                         sample_attribute = ET.SubElement(
                             sample_attributes, 'SAMPLE_ATTRIBUTE')
                         tag = ET.SubElement(sample_attribute, 'TAG')

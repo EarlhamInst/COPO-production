@@ -75,7 +75,8 @@ DTOL_ENA_MAPPINGS = {
     },
     'GAL': {
         'ena': 'GAL',
-        'ena_data_function': get_titled_data_function
+        'ena_data_function': get_titled_data_function,
+        'ena_ignore_if_values': ["NOT_PROVIDED"],
     },
     'GAL_SAMPLE_ID': {
         'ena': 'GAL_sample_id'
@@ -1343,7 +1344,7 @@ POP_GENOMICS_OPTIONAL_COLUMNS_DEFAULT_VALUES_MAPPING = {
     'DIFFICULT_OR_HIGH_PRIORITY_SAMPLE': 'NOT_COLLECTED',
     'DNA_REMOVED_FOR_BIOBANKING': 'N',
     'DNA_VOUCHER_ID_FOR_BIOBANKING': 'NOT_APPLICABLE',
-    'GAL': 'INDUSTRY PARTNER',
+    'GAL': 'industry partner',
     'GAL_SAMPLE_ID': '',  # Default value is value of 'COLLECTOR_SAMPLE_ID' column
     'IDENTIFIED_BY': 'NOT_COLLECTED',
     'IDENTIFIED_HOW': 'NOT_COLLECTED',
@@ -1352,7 +1353,7 @@ POP_GENOMICS_OPTIONAL_COLUMNS_DEFAULT_VALUES_MAPPING = {
     'LATITUDE_END': 'NOT_COLLECTED',
     'LONGITUDE_START': 'NOT_COLLECTED',
     'LONGITUDE_END': 'NOT_COLLECTED',
-    'LIFESTAGE': 'NOT_COLLECTED',
+    'LIFESTAGE': 'not_collected',
     'PRESERVATION_APPROACH': 'NOT_COLLECTED',
     'PRESERVED_BY': 'NOT_COLLECTED',
     'PRESERVER_AFFILIATION': 'NOT_COLLECTED',
