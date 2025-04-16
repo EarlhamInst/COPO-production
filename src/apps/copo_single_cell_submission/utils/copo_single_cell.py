@@ -349,6 +349,7 @@ def submit_singlecell_zenodo(profile_id, target_ids, target_id, checklist_id, st
         return result  
     else:
         user = ThreadLocal.get_current_user()
+        dt = get_datetime()
         #update the status of the singlecell record
         Singlecell().get_collection_handle().update_one({"_id": singlecell["_id"]}, {"$set": {"status.zenodo": "processing", "updated_by": user.id, "date_modified": dt}})
         return dict(status='success', message="Submission has been scheduled.")

@@ -4,36 +4,13 @@ from common.utils.logger import Logger
 from common.dal.copo_da import EnaFileTransfer
 from bson import regex
 import os
-from common.utils.helpers import  notify_singlecell_status, get_not_deleted_flag, get_deleted_flag
+from common.utils.helpers import  notify_singlecell_status, get_not_deleted_flag
 from io import BytesIO
 from SingleCellSchemasHandler import SingleCellSchemasHandler
 from zenodo.deposition import Zenodo_deposition
 import datetime
 
-class ZenodoSubmission:
-    def __init__(self, access_token: str):
-        self.access_token = access_token
 
-    def upload_file(self, file_path: str, metadata: dict) -> str:
-        """
-        Upload a file to Zenodo with the given metadata.
-
-        :param file_path: Path to the file to be uploaded.
-        :param metadata: Metadata for the Zenodo record.
-        :return: URL of the uploaded file.
-        """
-        # Implementation of file upload to Zenodo
-        pass
-
-    def create_record(self, metadata: dict) -> str:
-        """
-        Create a new Zenodo record with the given metadata.
-
-        :param metadata: Metadata for the Zenodo record.
-        :return: URL of the created record.
-        """
-        # Implementation of record creation in Zenodo
-        pass
 
 def update_submission_pending():
     subs = Submission().get_submission_downloading(repository="zenodo")
@@ -87,7 +64,11 @@ def process_pending_submission():
                 action="info",
                 html_id="singlecell_info")
         
-        accessions_map = {}
+        accession_map = {}
+        new_accession_map = {}
+        study_accessions  = sub.get("accessions",{}).get("study", [])
+        for item in study_accessions:
+            accession_map[item["study_id"]] = item 
 
         for study_id in sub["studies"]:
             singlecell = Singlecell().get_all_records_columns(
@@ -124,22 +105,28 @@ def process_pending_submission():
             zenodo_data = {
                 "metadata": {
                     "title":  singlecell.get("study",{}).get("title", study_id),
-                    "upload_type": "image",
-                    "image_type": "photo",
+                    "upload_type": "dataset",
+                    #"image_type": "photo",
                     "access_right": "embargoed",
                     "description": singlecell.get("study",{}).get("description", study_id),
+                    "license": "CC-BY-4.0",
                     "creators":  creators,
                     "embargo_date":  (datetime.datetime.now() + datetime.timedelta(days=2*365)).strftime("%Y-%m-%d")
                 },  "keywords": [study_id, "COPO broker"] 
             }
 
+            accession = accession_map.get(study_id,{})
+            deposition_id = ""
+            if not accession:
+                deposition = Zenodo_deposition().create(deposition=zenodo_data)
+                new_accession_map[study_id] =  {"study_accession":deposition["id"], study_id:study_id, "doi": deposition["doi"], "is_published": deposition["submitted"]}
+                deposition_id = deposition["id"]
+            else:
+                deposition_id = accession["study_accession"]
+                Zenodo_deposition().unlock(_id=deposition_id)   
+                Zenodo_deposition().update(_id=deposition_id, deposition=zenodo_data)
 
-            deposition = Zenodo_deposition().create(deposition=zenodo_data)
-            deposition_id = deposition["id"] 
             Zenodo_deposition().upload_files(_id=deposition_id, files= file_locations, bytesstring=bytesstring.getvalue())
-
-            accessions_map[study_id] = deposition_id
     
 
-
-        Submission().update_submission_accession(sub_id=str(sub["_id"]), accessions=accessions_map)
+        Submission().update_zendodo_submission_accession(sub_id=str(sub["_id"]), accessions=new_accession_map)

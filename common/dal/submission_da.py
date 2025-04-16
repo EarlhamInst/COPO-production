@@ -1068,15 +1068,16 @@ class Submission(DAComponent):
         sub_handle = self.get_collection_handle()
         submission = sub_handle.find_one(
             {"profile_id": profile_id, "repository":"zenodo"}, {"status": 1})
+        dt = helpers.get_datetime()
+        user = ThreadLocal.get_current_user() 
+
         if not submission:
-            dt = helpers.get_datetime()
-            user = ThreadLocal.get_current_user() 
             submission = {"profile_id": profile_id, "deleted": helpers.get_not_deleted_flag(), "repository": repository, "status":"downloading", "created_by": user.id, "date_created": dt, "updated_by": user.id, "date_modified": dt}
             #create a new submission
             result = Submission().get_collection_handle().insert_one(submission)
             submission["_id"] = result.inserted_id
 
-        if submission.get("status", str()) in ["pending", "sending"]:
+        if submission.get("status", str()) in ["sending"]:
             return dict(status='error', message="Submission is in process, please try again later!")
 
         sub_handle.update_one({"_id": submission["_id"]},
@@ -1115,7 +1116,7 @@ class Submission(DAComponent):
                                                  {"$set": {"status": "pending"}})
         
  
-    def update_submission_accession(self, sub_id, accessions):
+    def update_zendodo_submission_accession(self, sub_id, accessions):
         self.get_collection_handle().update_one({"_id": ObjectId(sub_id)},
                                                   {"$addToSet": {"accessions.study": {"$each": {accessions}}}})
 

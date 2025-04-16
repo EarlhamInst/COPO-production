@@ -64,8 +64,10 @@ services:
       - BIOIMAGE_SERVER=bsaspera_w@hx-fasp-1.ebi.ac.uk
       - ECS_SECRET_KEY=${vault_ecs_secret_key}
       - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
-      - ECS_ENDPOINT=http://minio:9000
-      - ECS_ENDPOINT_EXTERNAL=http://minio:9000
+      - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
+      - ECS_ENDPOINT_EXTERNAL=https://ei-copo.obj-data.nbi.ac.uk
+      #- ECS_ENDPOINT=http://minio:9000
+      #- ECS_ENDPOINT_EXTERNAL=http://minio:9000
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - ENA_V1_SAMPLE_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples
