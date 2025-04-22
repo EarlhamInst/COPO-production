@@ -5,12 +5,19 @@ import json
 import pandas as pd
 import shortuuid
 import uuid
-from .views.mapping import get_mapped_result
+
+from django.http import HttpResponse
+from datetime import date, datetime
+from dateutil.parser import parse as parse_date
+from django_tools.middlewares import ThreadLocal
+from rest_framework import status
+
+import common.schemas.utils.data_utils as d_utils
 from common.dal.profile_da import Profile
 from common.lookup.lookup import API_RETURN_TEMPLATES
 from common.schemas.utils.data_utils import get_export_fields
-from django.http import HttpResponse
-from django_tools.middlewares import ThreadLocal
+from .enums import AssociatedProjectEnum, ProjectEnum, StandardEnum, ReturnTypeEnum
+from .views.mapping import get_mapped_result
 
 
 # Helpers related to template generation
@@ -399,6 +406,16 @@ def finish_request(
     return_type = request.GET.get('return_type', 'json').lower()
     standard = request.GET.get('standard', 'tol').lower()
 
+    # Validate optional return_type
+    return_type_issues = validate_return_type(return_type)
+    if return_type_issues:
+        return return_type_issues
+
+    # Validate optional standard
+    standard_issues = validate_standard(standard)
+    if standard_issues:
+        return standard_issues
+
     # Set template with data based on the standard if there is no error and template exists
     if not error and template:
         template = (
@@ -449,5 +466,165 @@ def sort_dict_list_by_priority(dict_list, export_fields):
         sorted_keys = uppercase_keys + lowercase_keys
         return {key: data[key] for key in sorted_keys}
 
-    # Apply sorting to each dictionary in the list
+        # Apply sorting to each dictionary in the list
+
     return [sort_fields_prioritised(d) for d in dict_list]
+
+
+def validate_project(project, field_name='project', optional=False):
+    '''
+    Validate the project against a list of valid project names.
+    '''
+    # If the project is blank and optional, no validation is needed
+    if not project:
+        if optional:
+            return None  # No error for blank value if optional
+        else:
+            return HttpResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                content=f"'{field_name}' is required but not provided.",
+            )
+
+    # Validate when project is not blank
+    # Lowercase project names
+    valid_projects = [x.lower() for x in ProjectEnum.values()]
+    response = HttpResponse(
+        status=status.HTTP_400_BAD_REQUEST,
+        content=f"Invalid value for '{field_name}'. Must be one of: {d_utils.join_with_and([x.upper() for x in valid_projects], conjunction='or')}",
+    )
+
+    if isinstance(project, list):
+        if not all(x.lower() in valid_projects for x in project):
+            return response
+    elif isinstance(project, str):
+        if project.lower() not in valid_projects:
+            return response
+
+    return None  # No issues, validation passed
+
+
+def validate_associated_project(associated_project, optional=False):
+    '''
+    Validate the associated project against a list of valid associated project names.
+    '''
+    # Uppercase associated project names
+    valid_associated_projects = [x.upper() for x in AssociatedProjectEnum.values()]
+
+    # If the associated project is blank and optional, no validation is needed
+    if not associated_project:
+        if optional:
+            return None  # No error for blank value if optional
+        else:
+            return HttpResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                content="Associated project is required but not provided.",
+            )
+
+    # Validate required associated project (when associated project is not blank)
+    if associated_project.upper() not in valid_associated_projects:
+        valid_associated_projects = [x.upper() for x in valid_associated_projects]
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"Invalid value for associated project. Must be one of: {d_utils.join_with_and(valid_associated_projects, conjunction='or')}",
+        )
+
+    return None  # No issues, validation passed
+
+
+def validate_date_from_api(d_from, d_to, optional=False):
+    '''
+    Validate that both dates are present (if required), in ISO format,
+    and that 'from' is not after 'to'.
+    '''
+    # If both dates are blank
+    if not d_from and not d_to:
+        if optional:
+            return None  # No error for blank value if optional
+        else:
+            return HttpResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                content=f"'from' and 'to' date values are required but not provided.",
+            )
+
+    # If one date is missing, the other shouldn't be allowed
+    if not d_from or not d_to:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content="Missing date. Both 'from' and 'to' date values must be provided together.",
+        )
+
+    # Parse dates. Date format must be ISO 8601 format
+    if isinstance(d_from, str):
+        d_from_parsed = parse_date(d_from)
+    elif isinstance(d_from, (date, datetime)):
+        d_from_parsed = d_from
+    else:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST, content="Invalid type for d_from"
+        )
+
+    if isinstance(d_to, str):
+        d_to_parsed = parse_date(d_to)
+    elif isinstance(d_to, (date, datetime)):
+        d_to_parsed = d_to
+    else:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST, content="Invalid type for d_to"
+        )
+
+    # If parse_date returns None (bad string format)
+    if d_from_parsed is None or d_to_parsed is None:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content="Failed to parse one of the dates",
+        )
+
+    # Check if 'from' date is 'before' date
+    if d_from_parsed > d_to_parsed:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content="Invalid date. 'from' date must be earlier than 'to' date.",
+        )
+
+    # No issues, validation has passed. Return parsed dates.
+    return d_from_parsed, d_to_parsed
+
+
+def validate_standard(standard, optional=True):
+    # If the standard is blank and optional, no validation is needed
+    if not standard:
+        if optional:
+            return None  # No error for blank value if optional
+        else:
+            return HttpResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                content=f"'standard' is required but not provided.",
+            )
+
+    valid_standards = StandardEnum.values()
+    if standard not in valid_standards:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"Invalid value for 'standard'. Accepted values are: {', '.join(d_utils.join_with_and(valid_standards, conjunction='and'))}",
+        )
+    return None  # No issues, validation passed
+
+
+def validate_return_type(return_type, optional=True):
+    # If the return_type is blank and optional, no validation is needed
+    if not return_type:
+        if optional:
+            return None  # No error for blank value if optional
+        else:
+            return HttpResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                content=f"'return_type' is required but not provided.",
+            )
+
+    valid_return_types = ReturnTypeEnum.values()
+    if return_type not in valid_return_types:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"Invalid value for 'return_type'. Accepted values are: {', '.join(d_utils.join_with_and(valid_return_types, conjunction='and'))}",
+        )
+    return None  # No issues, validation passed

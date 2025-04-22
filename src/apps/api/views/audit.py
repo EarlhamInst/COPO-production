@@ -1,5 +1,3 @@
-import dateutil.parser as parser
-
 from bson import ObjectId
 from collections import OrderedDict
 from datetime import datetime
@@ -11,6 +9,8 @@ from common.dal.copo_da import Audit
 from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from src.apps.api.utils import finish_request
 from .sample import format_date
+from ..enums import UpdateTypeEnum
+from ..utils import validate_date_from_api, validate_project
 
 
 def sort_audit_output(audit_entry, default_fields):
@@ -115,7 +115,10 @@ def get_sample_updates_by_manifest_id(request, manifest_id):
 
     # Check if the 'manifest_id' provided is valid
     if manifest_id_list and not all(d_utils.is_valid_uuid(x) for x in manifest_id_list):
-        return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=f'Invalid \'manifest_id\'(s) provided!')
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f'Invalid \'manifest_id\'(s) provided!',
+        )
 
     sample_updates = Audit().get_sample_update_audits_field_value_lst(
         manifest_id_list, key='manifest_id'
@@ -133,6 +136,11 @@ def get_sample_updates(request):
     updatable_field = request.GET.get('updatable_field', str())
     project = request.GET.get('project', str()).lower()
 
+    # Validate optional project field
+    issues = validate_project(project, optional=True)
+    if issues:
+        return issues
+
     if sample_id:
         sample_id_list = d_utils.convertStringToList(sample_id)
 
@@ -140,7 +148,10 @@ def get_sample_updates(request):
         if sample_id_list and not all(
             d_utils.is_valid_ObjectId(x) for x in sample_id_list
         ):
-            return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=f'Invalid \'copo_id\'(s) provided!')
+            return HttpResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                content=f'Invalid \'copo_id\'(s) provided!',
+            )
 
         # Convert each string sample ID to ObjectId sample ID
         sample_id_list = [ObjectId(x) for x in sample_id_list]
@@ -162,15 +173,17 @@ def get_sample_updates_by_update_type(request, update_type):
     )  # Gets multiple selected values
     sample_type_list = [x.lower() for x in sample_type_list]  # Convert to lowercase
 
-    if (
-        len(sample_type_list) > 1
-        and not all(x in TOL_PROFILE_TYPES for x in sample_type_list)
-        or len(sample_type_list) == 1
-        and sample_type_list[0] not in TOL_PROFILE_TYPES
-    ):
+    # Validate optional project field
+    issues = validate_project(sample_type_list, optional=True)
+    if issues:
+        return issues
+
+    # Validate required update_type
+    valid_update_types = UpdateTypeEnum.values()
+    if update_type not in valid_update_types:
         return HttpResponse(
             status=status.HTTP_400_BAD_REQUEST,
-            content=f'Invalid sample type provided! COPO does not support the sample type(s) provided.',
+            content=f"Invalid value for 'update_type'. Must be one of: {d_utils.join_with_and(valid_update_types, conjunction='or')}",
         )
 
     sample_updates = Audit().get_sample_update_audits_by_update_type(
@@ -182,17 +195,19 @@ def get_sample_updates_by_update_type(request, update_type):
 
 
 def get_sample_updates_between_dates(request, d_from, d_to):
-    # Get all sample updates between d_from and d_to
-    # Dates must be ISO 8601 formatted
-    d_from = parser.parse(d_from)
-    d_to = parser.parse(d_to)
+    # Validate required date fields
+    result = validate_date_from_api(d_from, d_to)
 
-    if d_from > d_to:
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST, content=f'\'from date\' must be earlier than \'to date\''
-        )
+    # Return response if result is an error
+    if isinstance(result, HttpResponse):
+        return result
 
-    sample_updates = Audit().get_sample_update_audits_by_date(d_from, d_to)
+    # Unpack parsed date values from the result
+    d_from_parsed, d_to_parsed = result
+
+    sample_updates = Audit().get_sample_update_audits_by_date(
+        d_from_parsed, d_to_parsed
+    )
     out = filter_audits_for_API(sample_updates)
 
     return finish_request(out)

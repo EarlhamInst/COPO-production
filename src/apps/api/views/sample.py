@@ -2,7 +2,6 @@ __author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
 
 import bson.json_util as jsonb
 import datetime
-import dateutil.parser as parser
 import importlib
 import json
 import requests
@@ -11,6 +10,7 @@ import sys
 from bson.errors import InvalidId
 from django.conf import settings
 from django.http import HttpResponse
+from dateutil.parser import parse as parse_date
 from io import BytesIO
 from rest_framework import status
 from rest_framework.response import Response
@@ -23,7 +23,6 @@ from common.dal.sample_da import Sample, Source
 from common.dal.submission_da import Submission
 from common.lookup.lookup import API_ERRORS
 from common.schema_versions.lookup import dtol_lookups as lookup
-from common.utils.helpers import get_excluded_associated_projects
 from common.utils.logger import Logger
 from src.apps.api.utils import (
     extract_to_template,
@@ -37,7 +36,12 @@ from src.apps.api.views.mapping import get_mapped_field_by_standard
 from src.apps.copo_dtol_upload.utils.da import ValidationQueue
 from src.apps.copo_dtol_upload.utils.Dtol_Spreadsheet import DtolSpreadsheet
 
-from ..enums import ReturnTypeEnum, AssociatedProjectEnum, ProjectEnum, SampleFieldsEnum
+from ..enums import (
+    AssociatedProjectEnum,
+    SampleFieldsEnum,
+    SequencingCentreEnum,
+)
+from ..utils import validate_date_from_api, validate_project, validate_return_type
 
 
 def get(request, id):
@@ -236,6 +240,14 @@ def get_manifests(request):
 
 def get_manifests_by_sequencing_centre(request):
     sequencing_centre = request.GET.get('sequencing_centre', str())
+
+    valid_sequencing_centres = SequencingCentreEnum.values()
+    if sequencing_centre not in valid_sequencing_centres:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"Invalid value for 'sequencing_centre'. Accepted values are: {d_utils.join_with_and(valid_sequencing_centres, conjunction='and')}",
+        )
+
     manifest_ids = Sample().get_by_sequencing_centre(
         sequencing_centre, isQueryByManifestLevel=True
     )
@@ -245,6 +257,11 @@ def get_manifests_by_sequencing_centre(request):
 def get_current_manifest_version(request):
     manifest_type = request.GET.get('manifest_type', str()).upper()
     out = list()
+
+    # Validate optional manifest type field
+    issues = validate_project(manifest_type, field_name='manifest_type', optional=True)
+    if issues:
+        return issues
 
     if manifest_type:
         manifest_version = {
@@ -270,38 +287,45 @@ def query_local_contexts_hub(project_id):
 
 
 def get_all_manifest_between_dates(request, d_from, d_to):
-    # get all manifests between d_from and d_to
-    # dates must be ISO 8601 formatted
-    d_from = parser.parse(d_from)
-    d_to = parser.parse(d_to)
-    if d_from > d_to:
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST,
-            content="'from' must be earlier than'to'",
-        )
-    manifest_ids = Sample().get_manifests_by_date(d_from, d_to)
+    # Validate required date fields
+    result = validate_date_from_api(d_from, d_to)
+
+    # Return response if result is an error
+    if isinstance(result, HttpResponse):
+        return result
+
+    # Unpack parsed date values from the result
+    d_from_parsed, d_to_parsed = result
+
+    manifest_ids = Sample().get_manifests_by_date(d_from_parsed, d_to_parsed)
     return finish_request(manifest_ids)
 
 
 def get_project_manifests_between_dates(request, project, d_from, d_to):
-    # Get project manifests between d_from and d_to
-    valid_project_types = ProjectEnum.values()
-    if not project or project not in valid_project_types:
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST,
-            content=f"Invalid value for 'project'. Accepted values are: {d_utils.join_with_and(valid_project_types, conjunction='or')}",
-        )
+    # Validate required project field
+    project_issues = validate_project(project)
+    if project_issues:
+        return project_issues
 
-    # Dates must be ISO 8601 formatted
-    d_from = parser.parse(d_from)
-    d_to = parser.parse(d_to)
-    if d_from > d_to:
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST,
-            content="'from' must be earlier than'to'",
-        )
+    # Validate required date fields
+    result = validate_date_from_api(d_from, d_to)
 
-    manifest_ids = Sample().get_manifests_by_date_and_project(project, d_from, d_to)
+    # Return response if result is an error
+    if isinstance(result, HttpResponse):
+        return result
+
+    # Unpack parsed date values from the result
+    d_from_parsed, d_to_parsed = result
+
+    lst = project.split(',')
+    projects = list(map(lambda x: x.strip(), lst))
+    # Remove any empty elements in the list (e.g. where 2 or more comas have been typed in error)
+    projects[:] = [x for x in projects if x]
+
+    manifest_ids = Sample().get_manifests_by_date_and_project(
+        projects, d_from_parsed, d_to_parsed
+    )
+
     return finish_request(manifest_ids)
 
 
@@ -309,38 +333,28 @@ def get_specimens_with_submitted_images(request):
     # Fetch all specimens i.e. sources with submitted
     # sample images by sample type/project type and
     # between 'from' date and 'to' date if provided
-    # Dates must be ISO 8601 formatted
+
+    # Validate required project field
     project = request.GET.get('project', str()).lower()
+    project_issues = validate_project(project)
+    if project_issues:
+        return project_issues
 
-    try:
-        d_from = parser.parse(request.GET.get('d_from', None))
-    except TypeError:
-        d_from = None
+    # Validate optional date fields
+    d_from = request.GET.get('d_from', None)
+    d_to = request.GET.get('d_to', None)
+    result = validate_date_from_api(d_from, d_to, optional=True)
 
-    try:
-        d_to = parser.parse(request.GET.get('d_to', None))
-    except TypeError:
-        d_to = None
+    # Return response if result is an error
+    if isinstance(result, HttpResponse):
+        return result
 
-    if d_from and d_to is None:
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST,
-            content=f"'to date' is required when 'from date' is entered",
-        )
+    # Unpack parsed date values from the result
+    d_from_parsed, d_to_parsed = result
 
-    if d_from is None and d_to:
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST,
-            content=f"'from date' is required when 'to date' is entered",
-        )
-
-    if d_from and d_to and d_from > d_to:
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST,
-            content=f"'from date' must be earlier than 'to date'",
-        )
-
-    specimens = Source().get_specimens_with_submitted_images(project, d_from, d_to)
+    specimens = Source().get_specimens_with_submitted_images(
+        project, d_from_parsed, d_to_parsed
+    )
 
     out = list()
     if specimens:
@@ -352,18 +366,17 @@ def get_specimens_with_submitted_images(request):
 
 
 def get_all_samples_between_dates(request, d_from, d_to):
-    # get all samples between d_from and d_to
-    # dates must be ISO 8601 formatted
-    d_from = parser.parse(d_from)
-    d_to = parser.parse(d_to)
+    # Validate required date fields
+    result = validate_date_from_api(d_from, d_to)
 
-    if d_from > d_to:
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST,
-            content="'from date' must be earlier than 'to date'",
-        )
+    # Return response if result is an error
+    if isinstance(result, HttpResponse):
+        return result
 
-    samples = Sample().get_samples_by_date(d_from, d_to)
+    # Unpack parsed date values from the result
+    d_from_parsed, d_to_parsed = result
+
+    samples = Sample().get_samples_by_date(d_from_parsed, d_to_parsed)
     out = list()
 
     if samples:
@@ -431,6 +444,11 @@ def get_samples_by_sequencing_centre(request):
 
 def get_updatable_fields_by_project(request):
     project = request.GET.get('project', str()).lower()
+    # Validate required project field
+    project_issues = validate_project(project)
+    if project_issues:
+        return project_issues
+
     non_compliant_fields = d_utils.get_non_compliant_fields(
         component='sample', project=project
     )
@@ -445,19 +463,15 @@ def get_fields_by_manifest_version(request):
     standard = request.GET.get('standard', 'tol').lower()
     project = request.GET.get('project', str())
     manifest_version = request.GET.get('manifest_version', str())
-
-    valid_profile_types = ProjectEnum.values()
-    valid_return_types = ReturnTypeEnum.values()
-    manifest_versions = Sample().get_available_manifest_versions(project)
     template = None
 
-    if project.lower() not in valid_profile_types:
-        valid_profile_types = [x.upper() for x in valid_profile_types]
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST,
-            content=f"Invalid value for 'project'. Must be one of: {d_utils.join_with_and(valid_profile_types, conjunction='or')}",
-        )
-    elif manifest_version in manifest_versions:
+    # Validate required project field
+    project_issues = validate_project(project)
+    if project_issues:
+        return project_issues
+
+    manifest_versions = Sample().get_available_manifest_versions(project)
+    if manifest_version in manifest_versions:
         # Get fields based on standard
         mapped_field_dict = get_mapped_field_by_standard(
             standard=standard, project=project, manifest_version=manifest_version
@@ -469,10 +483,10 @@ def get_fields_by_manifest_version(request):
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=error)
 
     # Determine output response
-    if return_type not in valid_return_types:
+    return_type_issues = validate_return_type(return_type)
+    if return_type_issues:
         # Show error if return type is not 'json' or 'csv'
-        error = f"Invalid return type provided. Please provide either  {d_utils.join_with_and(valid_return_types, conjunction='or')}."
-        return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=error)
+        return return_type_issues
     elif return_type == 'csv':
         return generate_csv_response(standard, template)
     else:
@@ -545,7 +559,7 @@ def get_by_field(request, field, values):
     if field in lookup.COPO_DATE_FIELDS:
         # Convert date fields from string to datetime
         try:
-            vals = [parser.parse(x) for x in vals]
+            vals = [parse_date(x) for x in vals]
         except Exception as e:
             return HttpResponse(
                 status=status.HTTP_400_BAD_REQUEST,

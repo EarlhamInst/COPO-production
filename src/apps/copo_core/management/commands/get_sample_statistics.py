@@ -1,4 +1,3 @@
-import dateutil.parser as parser
 import os
 import pandas as pd
 import pymongo
@@ -7,7 +6,10 @@ import urllib.parse
 from datetime import datetime, timezone
 from django.contrib.auth.models import User
 from django.core.management import BaseCommand
+from django.http import HttpResponse
 from tabulate import tabulate
+
+from src.apps.api.utils import validate_date_from_api
 
 # The class must be named Command, and subclass BaseCommand
 class Command(BaseCommand):
@@ -16,7 +18,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('Running statistics...')
-        
+
         self.setup_mongodb_connection()
         self.get_profile_statistics()
         self.get_specimen_statistics()
@@ -24,9 +26,9 @@ class Command(BaseCommand):
         self.get_distinct_items()
         self.get_sample_statistics_between_dates()
         self.rank_genomic_profiles_and_get_owner_email()
-        
-    #_______________________
-    
+
+    # _______________________
+
     # MongoDB Connection
     def setup_mongodb_connection(self):
         username = urllib.parse.quote_plus('copo_user')
@@ -44,8 +46,8 @@ class Command(BaseCommand):
         self.profile_collection = mydb['Profiles']
         self.sample_collection = mydb['SampleCollection']
         self.source_collection = mydb['SourceCollection']
-    #______________________________________
-    
+    # ______________________________________
+
     # Count the number of profile records
     def get_profile_statistics(self):
         profile_types = list(self.non_tol_sample_types.values()) + self.tol_sample_types
@@ -58,9 +60,9 @@ class Command(BaseCommand):
         print(f'Total number of profiles: {count}')
 
         print('\n________________________________________\n')
-    
-    #______________________________________
-    
+
+    # ______________________________________
+
     # Count the number of sources/specimens records
     def get_specimen_statistics(self):
         count = self.source_collection.count_documents({'sample_type': {'$nin': self.tol_specimen_types}})
@@ -70,8 +72,8 @@ class Command(BaseCommand):
             print(f'{x.upper()} specimens: {count}')
         print('\n________________________________________\n')
 
-    #______________________________________
-    
+    # ______________________________________
+
     # Count the number of samples based on sample type and status
     def get_sample_statistics(self):
         x = self.sample_collection.count_documents({})
@@ -90,7 +92,7 @@ class Command(BaseCommand):
 
         print('________________________________________\n')
 
-    #______________________________________
+    # ______________________________________
 
     # Get distinct items from records
     def get_distinct_items(self):
@@ -99,10 +101,10 @@ class Command(BaseCommand):
         for x in self.tol_sample_types:
             output = self.sample_collection.distinct('SCIENTIFIC_NAME', {'sample_type': x})
             print(f'   {len(output)} distinct {x.upper()} scientific names')
-            
+
         print('\n________________________________________\n')
 
-    #______________________________________
+    # ______________________________________
 
     # Custom queries
     # Get number of samples brokered between certain dates
@@ -111,14 +113,22 @@ class Command(BaseCommand):
         # Replace the date strings with the desired date range
         # Date period: between April 2017 and March 2023
         d_from_str = '2017-04-01T00:00:00+00:00'  # Earliest possible date e.g.: datetime.min.isoformat()
-        d_from = parser.parse(d_from_str)
-        d_from_mm_yyyy = d_from.strftime('%B %Y')
-
         d_to_str = '2023-04-01T00:00:00+00:00' # Current UTC datetime e.g.: datetime.now(timezone.utc).isoformat()
-        d_to = parser.parse(d_to_str)
-        d_to_mm_yyyy = d_to.strftime('%B %Y')
 
-        query = {'time_created': {'$gte': d_from, '$lt': d_to}}
+        # Validate required date fields
+        result = validate_date_from_api(d_from_str, d_to_str)
+
+        # Return error if result is an error
+        if isinstance(result, HttpResponse):
+            print('Error in date values provided. Please check the date format.')
+            return
+
+        # Unpack parsed date values from the result
+        d_from_parsed, d_to_parsed = result
+        d_from_mm_yyyy = d_from_parsed.strftime('%B %Y')
+        d_to_mm_yyyy = d_to_parsed.strftime('%B %Y')
+
+        query = {'time_created': {'$gte': d_from_parsed, '$lt': d_to_parsed}}
 
         print(f'Number of samples brokered between {d_from_mm_yyyy} and {d_to_mm_yyyy}:')
         for t in self.sample_types:
@@ -131,9 +141,9 @@ class Command(BaseCommand):
         count = self.sample_collection.count_documents(query)
         sample_types_str = ', '.join(self.sample_types).replace('isasample', 'genomics').upper()
         print(f'\n   Total number of {sample_types_str} samples: {count}')
-    
-    #______________________________________
-    
+
+    # ______________________________________
+
     # Group and rank samples by Genomic profile and fetch owner's email address
     ''' 
     NB: This function uses the 'tabulate' library to display the table in the terminal.
@@ -167,7 +177,7 @@ class Command(BaseCommand):
         user_ids = list(set(profile['user_id'] for profile in genomic_profiles if 'user_id' in profile)) # Extract unique user IDs from profiles
         users = User.objects.filter(id__in=user_ids).values('id', 'email') # Fetch all user emails in a single query
         user_email_map = {user['id']: user['email'] for user in users} # Convert to a dictionary {user_id: email}
-        
+
         # Define table headers and data
         table_data = []
         table_headers = ['Genomic profile', 'Sample count', 'Owner email address']
@@ -180,10 +190,10 @@ class Command(BaseCommand):
             # print(f"  - Profile: {profile['title']}, {profile['sample_count']} samples, Owner: {profile['owner_email']}")
             # print('\n')
             table_data.append([profile['title'], profile['sample_count'], profile['owner_email']])
-            
+
         # Print the table using the 'tabulate' library
         print(tabulate(table_data, headers=table_headers, tablefmt='grid'))
-        
+
         # Uncomment the code below to generate an Excel file from the table data
         # Create a DataFrame from the table data
         # df = pd.DataFrame(table_data, columns=['Profile', 'Sample Count', 'Owner Email'])
@@ -193,7 +203,7 @@ class Command(BaseCommand):
 
         # Check if the file exists and remove it if it does
         # if os.path.exists(file_path):
-            # os.remove(file_path)
+        # os.remove(file_path)
         # df.to_excel(file_path, index=False)
         # print(f'   Excel file \'{file_path}\' has been created.')
 

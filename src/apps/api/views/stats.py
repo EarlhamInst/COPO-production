@@ -1,4 +1,3 @@
-import dateutil.parser as parser
 import pandas
 import pymongo
 
@@ -12,7 +11,7 @@ from common.dal.sample_da import Sample
 from common.dal.mongo_util import cursor_to_list
 from common.utils.helpers import get_excluded_associated_projects
 from src.apps.copo_core.models import AssociatedProfileType, ProfileType
-from ..utils import finish_request
+from ..utils import finish_request, validate_date_from_api, validate_project
 
 
 def get_number_of_users(request):
@@ -22,41 +21,30 @@ def get_number_of_users(request):
 
 
 def get_number_of_samples_by_sample_type(request, sample_type):
-    # Dates must be ISO 8601 formatted
-    try:
-        d_from = parser.parse(request.GET.get('d_from', None))
-    except TypeError:
-        d_from = None
+    d_from = request.GET.get('d_from', None)
+    d_to = request.GET.get('d_to', None)
 
-    try:
-        d_to = parser.parse(request.GET.get('d_to', None))
-    except TypeError:
-        d_to = None
+    # Validate optional date fields
+    result = validate_date_from_api(d_from, d_to, optional=True)
 
-    if d_from and d_to is None:
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST,
-            content=f'\'to date\' is required when \'from date\' is entered',
-        )
+    # Return response if result is an error
+    if isinstance(result, HttpResponse):
+        return result
 
-    if d_from is None and d_to:
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST,
-            content=f'\'from date\' is required when \'to date\' is entered',
-        )
-
-    if d_from and d_to and d_from > d_to:
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST,
-            content=f'\'from date\' must be earlier than \'to date\'',
-        )
+    # Unpack parsed date values from the result
+    d_from_parsed, d_to_parsed = result
 
     # Strange Swagger API bug where sample_type is being passed
     # as a comma instead of an empty string if it is not specified/provided
     sample_type = str() if sample_type == ',' else sample_type
 
+    # Validate optional sample type field
+    project_issues = validate_project(sample_type, field_name='sample_type', optional=True)
+    if project_issues:
+        return project_issues
+
     number = Sample().get_number_of_samples_by_sample_type(
-        sample_type.lower(), d_from, d_to
+        sample_type.lower(), d_from_parsed, d_to_parsed
     )
     return HttpResponse(number)
 

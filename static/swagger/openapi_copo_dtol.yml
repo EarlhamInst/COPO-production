@@ -311,7 +311,7 @@ paths:
         - name: project
           in: path
           required: true
-          description: a comma separate list of supported EBP projects in lower case (dtol|asg|dtolenv|erga)
+          description: A comma-separated list of supported Earth BioGenome Project (EBP) projects in lowercase (e.g. dtol, asg, dtolenv, erga)
           schema:
             type: string
         - name: from

@@ -1482,8 +1482,6 @@ SPECIES_LIST_FIELDS = ["SYMBIONT", "TAXON_ID", "ORDER_OR_GROUP", "FAMILY", "GENU
 
 GENOMICS_PROJECT_SAMPLE_TYPE_DICT = {"isasample":"genomics"}
 
-STANDARDS = ["dwc", "ena", "mixs", "tol"]
-
 SYMBIONT_FIELDS = ["ORDER_OR_GROUP", "FAMILY", "GENUS", "TAXON_ID", "SCIENTIFIC_NAME", "TAXON_REMARKS",
                    "INFRASPECIFIC_EPITHET", "CULTURE_OR_STRAIN_ID", "COMMON_NAME", "LIFESTAGE", "SEX", "SYMBIONT",
                    "species_list", "characteristics", "profile_id", "manifest_id", "sample_type", "biosampleAccession",

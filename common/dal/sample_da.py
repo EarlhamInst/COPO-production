@@ -1462,7 +1462,7 @@ class Sample(DAComponent):
             else:
                 # Query for multiple values as a regex string
                 value = '|'.join(map(str, value))
-                
+
                 return cursor_to_list(
                     self.get_collection_handle().find(
                         {field: {'$regex': value, '$options': 'i'}}
@@ -1551,16 +1551,12 @@ class Sample(DAComponent):
         out = cursor_to_list_no_ids(ids)
         return out
 
-    def get_manifests_by_date_and_project(self, project, d_from, d_to):
-        projectlist = project.split(',')
-        projectlist = list(map(lambda x: x.strip(), projectlist))
-        # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
-        projectlist[:] = [x for x in projectlist if x]
+    def get_manifests_by_date_and_project(self, projects, d_from, d_to):
         ids = self.get_collection_handle().aggregate(
             [
                 {
                     '$match': {
-                        'sample_type': {'$in': projectlist},
+                        'sample_type': {'$in': projects},
                         'time_created': {'$gte': d_from, '$lt': d_to},
                     }
                 },

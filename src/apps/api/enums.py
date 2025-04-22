@@ -104,7 +104,7 @@ class SampleFieldsEnum(str, Enum):
         return sorted(fields)
 
 
-class StandardsEnum(str, Enum):
+class StandardEnum(str, Enum):
     @classmethod
     def values(cls):
         schema = Sample().get_component_schema()
@@ -120,3 +120,12 @@ class StandardsEnum(str, Enum):
             },
         )
         return standards
+
+
+class UpdateTypeEnum(str, Enum):
+    SYSTEM = 'system'
+    USER = 'user'
+
+    @classmethod
+    def values(cls):
+        return [e.value for e in cls]
