@@ -134,6 +134,10 @@ def associate_profiles_with_tubes_or_well_ids(request):
         # Fetch samples associated with the profile
         samples = Sample().get_by_field('profile_id', [str(profile['_id'])])
 
+        if not samples:
+            # If no samples are found, continue to the next profile
+            continue
+        
         # Gather the TUBE_OR_WELL_IDs from the associated samples
         tube_or_well_ids = [
             sample['TUBE_OR_WELL_ID']

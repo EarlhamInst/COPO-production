@@ -104,6 +104,11 @@ class Source(DAComponent):
             else:
                 # Query for multiple values as a regex string
                 value = '|'.join(map(str, value))
+                return cursor_to_list(
+                    self.get_collection_handle().find(
+                        {field: {'$regex': value, '$options': 'i'}}
+                    )
+                )
         elif isinstance(value, datetime):
             return cursor_to_list(
                 self.get_collection_handle().aggregate(
@@ -1457,6 +1462,12 @@ class Sample(DAComponent):
             else:
                 # Query for multiple values as a regex string
                 value = '|'.join(map(str, value))
+                
+                return cursor_to_list(
+                    self.get_collection_handle().find(
+                        {field: {'$regex': value, '$options': 'i'}}
+                    )
+                )
         elif isinstance(value, datetime):
             return cursor_to_list(
                 self.get_collection_handle().aggregate(
