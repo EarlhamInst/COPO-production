@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
 <html lang="en">
 {% load compress %}
 {% load static %}
@@ -9,6 +8,8 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=10">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Collaborative OPen Omics (COPO) project team">
+    <meta name="description" content="{% block meta_description %}COPO supports members of the life sciences community in brokering, managing, and submitting omics data and metadata to public repositories.{% endblock %}">
     <title>{% block title %}{% endblock %} | COPO</title>
 
     <!-- Bootstrap -->
@@ -293,7 +294,7 @@
             </li>
             <li class="dropdown" title="Analytics">
                 <a id="analyticsDropdown" href="#" class="dropdown-toggle " data-toggle="dropdown" role="button" aria-haspopup="true"
-                    aria-expanded="false">
+                    aria-expanded="false" aria-label="Analytics dropdown menu">
                    <i class="fa fa-chart-line" aria-hidden="true"></i>
                     <ul class="dropdown-menu" role="menu" aria-labelledby="analyticsDropdown">
                         <li>

@@ -63,8 +63,17 @@ hr {
     height: 24px;
 }
 
-.p_orcid a{
+.about_link,
+.p_orcid a,
+#former_members_contributors_ul li a {
     color: mediumblue;
+    text-decoration: underline;
+}
+
+.about_link:visited,
+.p_orcid a:visited,
+#former_members_contributors_ul li a:visited {
+    color: #800080;
 }
 
 .header_font_weight{

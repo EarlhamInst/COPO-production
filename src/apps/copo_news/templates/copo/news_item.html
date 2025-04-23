@@ -76,7 +76,7 @@
                         {% if previousNews %}
                             <div class="nav-previous">
                                 <a href="{% url 'news:news_item' previousNews.id %}"
-                                    rel="prev">
+                                    rel="prev" aria-label="Previous article: {{ previousNews.title|truncatechars:110 }}">
                                     <i id="leftIcon" class="fa fa-arrow-left"></i>
                                     <span>{{ previousNews.title|truncatechars:110 }}</span>
                                 </a>
@@ -85,7 +85,8 @@
                         {% if nextNews %}
                         <div class="nav-next">
                             <a href="{% url 'news:news_item' nextNews.id %}"
-                                rel="next"><span>{{ nextNews.title|truncatechars:110 }}</span>
+                                rel="next" aria-label="Next article: {{ nextNews.title|truncatechars:110 }}">
+                                <span>{{ nextNews.title|truncatechars:110 }}</span>
                                 <i id="rightIcon" class="fa fa-arrow-right"></i>
                             </a>
                             

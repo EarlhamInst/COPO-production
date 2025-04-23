@@ -6,7 +6,7 @@
 {% block title %}Accept/Reject Samples{% endblock %}
 
 {% block stylesheet_block %}
-  <link rel="stylesheet" href="https://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
+  <link rel="stylesheet" href="{% static 'copo/css/copo/blueimp-gallery.min.css' %}">
 
   <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
   <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload.css' %}">
@@ -19,8 +19,8 @@
   <link rel="stylesheet" href="{% static 'copo/css/copo/copo_wizard.css' %}">
   <link rel="stylesheet" href="{% static 'copo_dtol_submission/css/copo_sample_accept_reject.css' %}">
   <link rel="stylesheet" href="{% static 'copo/css/copo/sample.css' %}">
-  <link rel="stylesheet" href="{% static 'copo/bootstrap-treeview-1.2.0/dist/bootstrap-treeview.min.css' %}">
-  <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.4.0/css/fixedHeader.dataTables.min.css">
+  <link rel="stylesheet" href="{% static 'copo/treeview/bootstrap-treeview.min.css' %}">
+  <link rel="stylesheet" href="{% static 'copo/datatables/css/fixedHeader.dataTables.min.css' %}">
 
   <style>
     .highlight_user_approved_already {
@@ -58,8 +58,9 @@
 <div class="row padding-top-20">
   <div class="col-lg-9 col-sm-9 col-md-9">
     <h3 class="h3">
-      Choose to Accept or Reject&emsp;&nbsp;<select
-        id="group_id"
+      <label class="no-bold" for="manifest_type_id">Choose to Accept or Reject&emsp;&nbsp;</label>
+      <select
+        id="manifest_type_id"
         class="form-control"
         style="display: inline-block; width: fit-content"
         name="group"
@@ -248,9 +249,9 @@
   <script src="{% static 'copo/js/filesaver.js' %}"></script>
   <script src="{% static 'copo/js/jszip-utils.min.js' %}"></script>
   <script src="{% static 'copo/js/jszip.min.js' %}"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-  <script src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
-  <script src="https://cdn.datatables.net/fixedheader/3.4.0/js/dataTables.fixedHeader.min.js"></script>
+  <script src="{% static 'copo/js/moment.min.js' %}"></script>
+  <script src="{% static 'copo/datatables/js/datetime-moment.js' %}"></script>
+  <script src="{% static 'copo/datatables/js/dataTables.fixedHeader.min.js' %}"></script>
   <script src="{% static 'copo_dtol_submission/js/copo_sample_accept_reject.js' %}"></script>
   <script> socket = undefined; </script>
 {% endblock %}
