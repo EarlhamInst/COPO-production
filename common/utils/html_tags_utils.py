@@ -385,7 +385,7 @@ def generate_server_side_table_records(profile_id=str(), da_object=None, request
         # get all active bundles in the profile
         existing_bundles = Description().get_all_records_columns(projection=dict(_id=1),
                                                                  filter_by=dict(profile_id=profile_id,
-                                                                                component=component))
+                                                                                component=da_object.component))
         existing_bundles = [str(x["_id"]) for x in existing_bundles]
         records_total = da_object.get_collection_handle().count_documents({"$and": [
             {"profile_id": profile_id, 'deleted': helpers.get_not_deleted_flag()},

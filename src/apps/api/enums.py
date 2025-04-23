@@ -1,5 +1,4 @@
 from enum import Enum
-from itertools import chain
 from django.conf import settings
 
 import common.schemas.utils.data_utils as d_utils
