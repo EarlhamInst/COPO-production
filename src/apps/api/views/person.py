@@ -1,4 +1,3 @@
-__author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
 import sys
 
 from bson.errors import InvalidId
@@ -28,8 +27,7 @@ def get(request, id):
     except:
         return finish_request(error="Unexpected error:" + sys.exc_info()[0])
 
-
-    #get return template
+    # get return template
     t = get_return_template('PERSON')
 
     out_list = []
@@ -57,7 +55,6 @@ def get_all(request):
     except:
         return finish_request(error="Unexpected error:" + sys.exc_info()[0])
 
-
     # get return template
     t = get_return_template('PERSON')
 
@@ -65,6 +62,5 @@ def get_all(request):
 
     for p in people_list:
         out_list.append(extract_to_template(object=p, template=t))
-
 
     return finish_request(out_list)

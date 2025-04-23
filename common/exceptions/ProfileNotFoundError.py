@@ -1,6 +1,3 @@
-__author__ = 'felix.shaw@tgac.ac.uk - 24/03/2016'
-
-
 class ProfileNotFoundError(RuntimeError):
 
     def __init__(self, message):

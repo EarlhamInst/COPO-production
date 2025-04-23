@@ -1,5 +1,3 @@
-__author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
-
 from django.urls import path, re_path
 
 # from web.apps.web_copo import ajax_handlers

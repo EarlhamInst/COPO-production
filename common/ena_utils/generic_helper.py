@@ -1,8 +1,3 @@
-"""module contains simple and generic functions to facilitate data submission"""
-
-__author__ = 'etuka'
-__date__ = '25 September 2019'
-
 import os
 import pexpect
 import requests
@@ -14,11 +9,12 @@ from channels.layers import get_channel_layer
 from common.lookup.copo_enums import Loglvl, Logtype
 from common.utils import helpers
 from common.utils.logger import Logger
+
 lg = Logger()
 from common.utils.helpers import get_env
 
 BASE_DIR = settings.BASE_DIR
-#REPOSITORIES = settings.REPOSITORIES
+# REPOSITORIES = settings.REPOSITORIES
 
 
 def get_submission_handle():  # this can be safely called by forked process
@@ -34,6 +30,7 @@ def get_submission_queue_handle():  # this can be safely called by forked proces
 
     return collection_handle
 
+
 '''  deprecated
 def get_filetransfer_queue_handle():  # this can be safely called by forked process
     mongo_client = mutil.get_mongo_client()
@@ -41,6 +38,7 @@ def get_filetransfer_queue_handle():  # this can be safely called by forked proc
 
     return collection_handle
 '''
+
 
 def get_description_handle():  # this can be safely called by forked process
     mongo_client = mutil.get_mongo_client()
@@ -85,7 +83,11 @@ def logging_info(message=str(), submission_id=str()):
     :return:
     """
 
-    lg.log('[Submission: ' + submission_id + '] ' + message, level=Loglvl.INFO, type=Logtype.FILE)
+    lg.log(
+        '[Submission: ' + submission_id + '] ' + message,
+        level=Loglvl.INFO,
+        type=Logtype.FILE,
+    )
 
     return True
 
@@ -99,14 +101,20 @@ def logging_error(message=str(), submission_id=str()):
     """
 
     try:
-        lg.log('[Submission: ' + submission_id + '] ' + message, level=Loglvl.ERROR, type=Logtype.FILE)
+        lg.log(
+            '[Submission: ' + submission_id + '] ' + message,
+            level=Loglvl.ERROR,
+            type=Logtype.FILE,
+        )
     except Exception as e:
         return False
 
     return True
 
+
 def logging_exception(exception):
     lg.exception(exception)
+
 
 def log_general_info(message):
     """
@@ -134,7 +142,9 @@ def log_general_error(message):
     return True
 
 
-def update_submission_status(status=str(), message=str(), submission_id=str(), notify=True):
+def update_submission_status(
+    status=str(), message=str(), submission_id=str(), notify=True
+):
     """
     function updates status of submission
     :param status:
@@ -148,8 +158,9 @@ def update_submission_status(status=str(), message=str(), submission_id=str(), n
         return False
 
     collection_handle = get_submission_handle()
-    doc = collection_handle.find_one({"_id": ObjectId(submission_id)},
-                                     {"transcript": 1, "profile_id": 1})
+    doc = collection_handle.find_one(
+        {"_id": ObjectId(submission_id)}, {"transcript": 1, "profile_id": 1}
+    )
 
     if not doc:
         return False
@@ -167,11 +178,15 @@ def update_submission_status(status=str(), message=str(), submission_id=str(), n
 
     collection_handle.update_one(
         {"_id": ObjectId(str(submission_record.pop('_id')))},
-        {'$set': submission_record})
+        {'$set': submission_record},
+    )
 
     # notify client agent on status change
     if notify:
-        notify_status_change(profile_id=submission_record.get("profile_id", str()), submission_id=submission_id)
+        notify_status_change(
+            profile_id=submission_record.get("profile_id", str()),
+            submission_id=submission_id,
+        )
 
     return True
 
@@ -191,97 +206,131 @@ def notify_status_change(profile_id=str(), submission_id=str()):
         group_name = 'submission_status_%s' % profile_id
 
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            group_name,
-            event
-        )
+        async_to_sync(channel_layer.group_send)(group_name, event)
 
     return True
 
 
-def notify_sample_status(profile_id=str(), action="message", msg=str(), data={}, html_id=""):
+def notify_sample_status(
+    profile_id=str(), action="message", msg=str(), data={}, html_id=""
+):
     """
-        function notifies client changes in Sample creation status
-        :param profile_id:
-        :param action:
-        :param msg:
-        :return:
+    function notifies client changes in Sample creation status
+    :param profile_id:
+    :param action:
+    :param msg:
+    :return:
     """
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
     group_name = 'sample_status_%s' % profile_id
-    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    event = {
+        "type": "msg",
+        "action": action,
+        "message": msg,
+        "data": data,
+        "html_id": html_id,
+    }
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        event
-    )
+    async_to_sync(channel_layer.group_send)(group_name, event)
     return True
 
 
-def notify_frontend(action="message", msg=str(), data={}, html_id="", profile_id="", group_name='dtol_status'):
+def notify_frontend(
+    action="message",
+    msg=str(),
+    data={},
+    html_id="",
+    profile_id="",
+    group_name='dtol_status',
+):
     """
-        function notifies client changes in Sample creation status
-        :param profile_id:
-        :param action:
-        :param msg:
-        :return:
+    function notifies client changes in Sample creation status
+    :param profile_id:
+    :param action:
+    :param msg:
+    :return:
     """
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
-    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    event = {
+        "type": "msg",
+        "action": action,
+        "message": msg,
+        "data": data,
+        "html_id": html_id,
+    }
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        event
-    )
+    async_to_sync(channel_layer.group_send)(group_name, event)
     return True
 
-def notify_assembly_status(action="message", msg=str(), data={}, html_id="", profile_id=""):
+
+def notify_assembly_status(
+    action="message", msg=str(), data={}, html_id="", profile_id=""
+):
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
-    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    event = {
+        "type": "msg",
+        "action": action,
+        "message": msg,
+        "data": data,
+        "html_id": html_id,
+    }
     channel_layer = get_channel_layer()
     group_name = 'assembly_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        event
-    )
+    async_to_sync(channel_layer.group_send)(group_name, event)
     return True
+
 
 def notify_read_status(action="message", msg=str(), data={}, html_id="", profile_id=""):
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
-    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    event = {
+        "type": "msg",
+        "action": action,
+        "message": msg,
+        "data": data,
+        "html_id": html_id,
+    }
     channel_layer = get_channel_layer()
     group_name = 'read_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        event
-    )
+    async_to_sync(channel_layer.group_send)(group_name, event)
     return True
 
-def notify_tagged_seq_status(action="message", msg=str(), data={}, html_id="", profile_id=""):
+
+def notify_tagged_seq_status(
+    action="message", msg=str(), data={}, html_id="", profile_id=""
+):
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
-    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    event = {
+        "type": "msg",
+        "action": action,
+        "message": msg,
+        "data": data,
+        "html_id": html_id,
+    }
     channel_layer = get_channel_layer()
     group_name = 'tagged_seq_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        event
-    )
+    async_to_sync(channel_layer.group_send)(group_name, event)
     return True
 
 
-def notify_ena_object_status(action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()):
+def notify_ena_object_status(
+    action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()
+):
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
     if checklist_id.startswith("ERC"):
         group_name = 'read_status_%s' % data["profile_id"]
     else:
         group_name = 'tagged_seq_status_%s' % data["profile_id"]
-    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    event = {
+        "type": "msg",
+        "action": action,
+        "message": msg,
+        "data": data,
+        "html_id": html_id,
+    }
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        event
-    )
+    async_to_sync(channel_layer.group_send)(group_name, event)
     return True
+
 
 def notify_transfer_status(profile_id=str(), submission_id=str(), status_message=str()):
     """
@@ -300,12 +349,10 @@ def notify_transfer_status(profile_id=str(), submission_id=str(), status_message
         group_name = 'submission_status_%s' % profile_id
 
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            group_name,
-            event
-        )
+        async_to_sync(channel_layer.group_send)(group_name, event)
 
     return True
+
 
 '''  deprecated
 def schedule_file_transfer(submission_id=str(), remote_location=str()):
@@ -381,6 +428,7 @@ def get_ena_remote_files(user_token=str(), pass_word=str()):
     return response.json()
 '''
 
+
 def get_study_status(user_token=str(), pass_word=str(), project_accession=str()):
     """
     function returns the status of a study from ENA
@@ -400,10 +448,12 @@ def get_study_status(user_token=str(), pass_word=str(), project_accession=str())
     )
 
     try:
-        response = requests.get(f"{get_env('ENA_ENDPOINT_REPORT')}projects/{project_accession}",
-                                headers=headers,
-                                params=params,
-                                auth=(user_token, pass_word))
+        response = requests.get(
+            f"{get_env('ENA_ENDPOINT_REPORT')}projects/{project_accession}",
+            headers=headers,
+            params=params,
+            auth=(user_token, pass_word),
+        )
     except Exception as e:
         log_general_error('API call error ' + str(e))
         return list()
@@ -444,11 +494,13 @@ def transfer_to_ena(webin_user, pass_word, remote_path, file_paths=list(), **kwa
     """
 
     submission_id = kwargs.get("submission_id", str())
-    #transfer_queue_id = kwargs.get("transfer_queue_id", str())  # set to True to enable status reporting  deprecated
-    report_status = kwargs.get("report_status", False)  # if status message should be sent via channels layer
+    # transfer_queue_id = kwargs.get("transfer_queue_id", str())  # set to True to enable status reporting  deprecated
+    report_status = kwargs.get(
+        "report_status", False
+    )  # if status message should be sent via channels layer
 
     submission_collection_handle = get_submission_handle()
-    #transfer_collection_handle = get_filetransfer_queue_handle() deprecated
+    # transfer_collection_handle = get_filetransfer_queue_handle() deprecated
 
     if not file_paths:
         return True
@@ -456,8 +508,8 @@ def transfer_to_ena(webin_user, pass_word, remote_path, file_paths=list(), **kwa
     message = f'Commencing transfer of {len(file_paths)} data files to ENA. Progress will be reported.'
     logging_info(message, submission_id)
 
-    #resource_path = os.path.join(BASE_DIR, REPOSITORIES.get('ASPERA', dict()).get('resource_path', str()))
-    #os.chdir(resource_path)
+    # resource_path = os.path.join(BASE_DIR, REPOSITORIES.get('ASPERA', dict()).get('resource_path', str()))
+    # os.chdir(resource_path)
 
     local_paths = ' '.join(file_paths)
     aspera_cmd = f'ascp -d -Q -l50M -L- {local_paths} {webin_user}:{remote_path}'
@@ -473,12 +525,21 @@ def transfer_to_ena(webin_user, pass_word, remote_path, file_paths=list(), **kwa
         while True:
             i = thread.expect_list(cpl, timeout=None)
             if i == 0:  # signals end of transfer
-                message = '[Submission: ' + submission_id + '] ' + "Updated remote path " + remote_path
+                message = (
+                    '[Submission: '
+                    + submission_id
+                    + '] '
+                    + "Updated remote path "
+                    + remote_path
+                )
                 lg.log(message, level=Loglvl.INFO, type=Logtype.FILE)
                 break
             elif i == 1:
                 pexp_match = thread.match.group(1)
-                tokens_to_match = ["LOG ======= end File Transfer statistics =======", "status=success"]
+                tokens_to_match = [
+                    "LOG ======= end File Transfer statistics =======",
+                    "status=success",
+                ]
 
                 if any(tm in pexp_match.decode("utf-8") for tm in tokens_to_match):
                     tokens = pexp_match.decode("utf-8")
@@ -530,19 +591,28 @@ def transfer_to_ena(webin_user, pass_word, remote_path, file_paths=list(), **kwa
                     '''
 
                     if 'LOG ======= end File Transfer statistics =======' in tokens:
-                        message = '[Submission: ' + submission_id + '] ' \
-                                  + "Transfer to remote location " \
-                                  + remote_path + " completed."
+                        message = (
+                            '[Submission: '
+                            + submission_id
+                            + '] '
+                            + "Transfer to remote location "
+                            + remote_path
+                            + " completed."
+                        )
                         lg.log(message, level=Loglvl.INFO, type=Logtype.FILE)
 
         thread.close()
         return True
     except Exception as e:
-        message = '[Submission: ' + submission_id + '] ' + 'File transfer error ' + str(e)
+        message = (
+            '[Submission: ' + submission_id + '] ' + 'File transfer error ' + str(e)
+        )
         lg.log(message, level=Loglvl.ERROR, type=Logtype.FILE)
         raise e
 
 
 def delete_submisison_bundle(submission_id):
-    #submission = get_submission_handle().find_one({"_id": ObjectId(submission_id)})
-    get_submission_handle().update_one({"_id": ObjectId(submission_id)}, {"$set": {"bundle": []}})
+    # submission = get_submission_handle().find_one({"_id": ObjectId(submission_id)})
+    get_submission_handle().update_one(
+        {"_id": ObjectId(submission_id)}, {"$set": {"bundle": []}}
+    )

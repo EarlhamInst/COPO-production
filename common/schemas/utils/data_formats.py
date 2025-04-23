@@ -1,5 +1,3 @@
-__author__ = 'etuka'
-
 import json
 import os
 import re
@@ -19,7 +17,9 @@ class DataFormats:
         self.schema = schema.upper()
 
         self.path_to_mappings = lkup.UI_CONFIG_MAPPINGS
-        self.path_to_mappings_based_on_schema_version = lkup.UI_CONFIG_MAPPINGS_BASED_ON_SCHEMA_VERSION
+        self.path_to_mappings_based_on_schema_version = (
+            lkup.UI_CONFIG_MAPPINGS_BASED_ON_SCHEMA_VERSION
+        )
 
         '''
         NB: lkup.UI_CONFIG_MAPPINGS is the path to user interface (UI) schemas.
@@ -38,7 +38,7 @@ class DataFormats:
         self.dispatch = {
             'isa_xml': self.isa_xml_mapping,
             'isa_json': self.isa_json_mapping,
-            'copo_json': self.copo_json_mapping
+            'copo_json': self.copo_json_mapping,
         }
 
     # generates template for UI rendering
@@ -50,14 +50,17 @@ class DataFormats:
         json_files_handle = self.get_mapping_files()
 
         for file_name in json_files_handle:
-            file_dict = helpers.json_to_pytype(
-                file_name, compatibility_mode=False)
+            file_dict = helpers.json_to_pytype(file_name, compatibility_mode=False)
             self.resource_objects.append(
-                dict(file_handle=file_name, file_dict=file_dict))
+                dict(file_handle=file_name, file_dict=file_dict)
+            )
 
-            if (isinstance(file_dict, dict)):
+            if isinstance(file_dict, dict):
                 mapped_list = self.dispatch[
-                    file_dict['configuration']['provider'] + "_" + file_dict['configuration']['type']](file_dict)
+                    file_dict['configuration']['provider']
+                    + "_"
+                    + file_dict['configuration']['type']
+                ](file_dict)
             else:
                 continue
 
@@ -84,8 +87,11 @@ class DataFormats:
             out_dict = {"status": "success", "data": out_dict}
         else:
             out_dict = {}
-            out_dict = {"status": "failed",
-                        "messages": self.error_messages, "data": out_dict}
+            out_dict = {
+                "status": "failed",
+                "messages": self.error_messages,
+                "data": out_dict,
+            }
 
         return out_dict
 
@@ -95,8 +101,7 @@ class DataFormats:
         new_list = arg_dict['properties']
         current_list = arg_dict['properties']
 
-        output_dict = d_utils.get_isa_schema_xml(
-            arg_dict['configuration']['ref'])
+        output_dict = d_utils.get_isa_schema_xml(arg_dict['configuration']['ref'])
 
         if output_dict.get("status", str()) == "error":
             self.error_messages.append(output_dict.get("content"))
@@ -143,9 +148,14 @@ class DataFormats:
                             if not new_list[indx][k]:
                                 new_list[indx][k] = f.get(v)
 
-                                if v == "data-type" and f.get(v) in lkup.CONTROL_MAPPINGS["isa_xml"].keys():
-                                    new_list[indx][k] = lkup.CONTROL_MAPPINGS["isa_xml"][f.get(
-                                        v)]
+                                if (
+                                    v == "data-type"
+                                    and f.get(v)
+                                    in lkup.CONTROL_MAPPINGS["isa_xml"].keys()
+                                ):
+                                    new_list[indx][k] = lkup.CONTROL_MAPPINGS[
+                                        "isa_xml"
+                                    ][f.get(v)]
 
             # clean up controls
             for elem_dict in new_list:
@@ -183,8 +193,7 @@ class DataFormats:
             key_split = elem_dict["id"].split(".")
 
             if len(key_split) >= 2:
-                out_dict = self.set_model_fields(
-                    out_dict, key_split[:-1], elem_dict)
+                out_dict = self.set_model_fields(out_dict, key_split[:-1], elem_dict)
 
         return out_dict
 
@@ -238,15 +247,27 @@ class DataFormats:
 
     def set_ontologies(self):
         for elem_dict in self.generated_controls:
-            if elem_dict.get("control", str()).lower() == "ontology term" and "ontology_names" not in elem_dict:
+            if (
+                elem_dict.get("control", str()).lower() == "ontology term"
+                and "ontology_names" not in elem_dict
+            ):
                 elem_dict["ontology_names"] = list()
 
     def set_option_values(self):
         for elem_dict in self.generated_controls:
-            if elem_dict.get("control", str()).lower() in ['copo-lookup', 'copo-multi-select', 'copo-select2',
-                                                           'copo-lookup2',
-                                                           'copo-button-list', 'copo-single-select',
-                                                           'copo-multi-select2'] and "option_values" not in elem_dict:
+            if (
+                elem_dict.get("control", str()).lower()
+                in [
+                    'copo-lookup',
+                    'copo-multi-select',
+                    'copo-select2',
+                    'copo-lookup2',
+                    'copo-button-list',
+                    'copo-single-select',
+                    'copo-multi-select2',
+                ]
+                and "option_values" not in elem_dict
+            ):
                 elem_dict["option_values"] = list()
 
     def update_original_resource(self):
@@ -258,7 +279,12 @@ class DataFormats:
             prop_dict = list()
             for p in ro["file_dict"]["properties"]:
                 prop_dict.append(
-                    [elem_dict for elem_dict in self.generated_controls if elem_dict['id'] == p['id']][0])
+                    [
+                        elem_dict
+                        for elem_dict in self.generated_controls
+                        if elem_dict['id'] == p['id']
+                    ][0]
+                )
 
             ro["file_dict"]["properties"] = prop_dict
 
@@ -289,24 +315,35 @@ class DataFormats:
 
         exclude = set(['additional_attributes'])
 
-        def populate_files_list(mappings_path, is_mapping_based_on_schema_version=False):
+        def populate_files_list(
+            mappings_path, is_mapping_based_on_schema_version=False
+        ):
             for root, dirs, files in os.walk(mappings_path):
                 dirs[:] = [d for d in dirs if d not in exclude]
                 for name in files:
                     # Get .json file based on schema version
-                    if is_mapping_based_on_schema_version and name in settings.SCHEMA_VERSIONS_FILE_LIST:
-                        json_files.append(
-                            os.path.join(mappings_path, name))
+                    if (
+                        is_mapping_based_on_schema_version
+                        and name in settings.SCHEMA_VERSIONS_FILE_LIST
+                    ):
+                        json_files.append(os.path.join(mappings_path, name))
 
                     # Get other .json files that are not based on schema version
-                    if name.endswith(".json") and name not in settings.SCHEMA_VERSIONS_FILE_LIST and not is_mapping_based_on_schema_version:
+                    if (
+                        name.endswith(".json")
+                        and name not in settings.SCHEMA_VERSIONS_FILE_LIST
+                        and not is_mapping_based_on_schema_version
+                    ):
                         json_files.append(os.path.join(root, name))
 
         populate_files_list(
-            self.path_to_mappings, is_mapping_based_on_schema_version=False)
+            self.path_to_mappings, is_mapping_based_on_schema_version=False
+        )
 
         populate_files_list(
-            self.path_to_mappings_based_on_schema_version, is_mapping_based_on_schema_version=True)
+            self.path_to_mappings_based_on_schema_version,
+            is_mapping_based_on_schema_version=True,
+        )
 
         return json_files
 

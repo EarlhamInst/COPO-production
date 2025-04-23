@@ -1,7 +1,3 @@
-""" module generates schemas and lookups used in dropdowns """
-__author__ = 'etuka'
-__updated__ = 'fshaw'
-
 import glob
 import json
 import os
@@ -34,7 +30,7 @@ class Command(BaseCommand):
         self.generate_lookup_datasource()
 
         DataSchemas.refresh()
-        
+
         self.stdout.write(self.style.SUCCESS('Successfully generated schemas'))
 
     def generate_ui_schemas(self):
@@ -43,7 +39,7 @@ class Command(BaseCommand):
         :return:
         """
         # instantiate data schema
-        #data_schema = DataSchemas("COPO")
+        # data_schema = DataSchemas("COPO")
 
         # generate core schemas
         temp_dict = DataFormats("COPO").generate_ui_template()
@@ -63,18 +59,27 @@ class Command(BaseCommand):
         try:
             df = pd.read_csv(os.path.join(drop_downs_pth, 'crp_list.csv'))
         except Exception as e:
-            self.stdout.write(self.style.ERROR('Error retrieving schema resource: ' + str(e)))
+            self.stdout.write(
+                self.style.ERROR('Error retrieving schema resource: ' + str(e))
+            )
             return False
 
         # ﻿'Platform_no', 'Operating_name', 'Official_name', 'Standard_reference', 'Lead_center', 'Class'
         df.columns = [x.lower() for x in df.columns]
         df['label'] = df['official_name']
         df['value'] = df['operating_name']
-        df['description'] = "<div>Platform number: " + df['platform_no'].astype(str) + \
-                            "</div><div>Standard reference: " + df['standard_reference'].astype(str) + \
-                            "</div><div>Operating name: " + df['operating_name'].astype(str) + \
-                            "</div><div>Lead center: " + df['lead_center'].astype(str) + \
-                            "</div>Class: " + df['class'].astype(str)
+        df['description'] = (
+            "<div>Platform number: "
+            + df['platform_no'].astype(str)
+            + "</div><div>Standard reference: "
+            + df['standard_reference'].astype(str)
+            + "</div><div>Operating name: "
+            + df['operating_name'].astype(str)
+            + "</div><div>Lead center: "
+            + df['lead_center'].astype(str)
+            + "</div>Class: "
+            + df['class'].astype(str)
+        )
 
         df = df[['label', 'value', 'description']]
         result = df.to_dict('records')
@@ -83,7 +88,9 @@ class Command(BaseCommand):
             with open(os.path.join(drop_downs_pth, 'crp_list.json'), 'w') as fout:
                 json.dump(result, fout)
         except Exception as e:
-            self.stdout.write(self.style.ERROR('Error writing crp_list.json: ' + str(e)))
+            self.stdout.write(
+                self.style.ERROR('Error writing crp_list.json: ' + str(e))
+            )
             return False
 
         return True
@@ -94,7 +101,7 @@ class Command(BaseCommand):
             'agrovoclabels': self.agrovoc_datasource,
             'countrieslist': self.countrieslist_datasource,
             'mediatypelabels': self.mediatype_datasource,
-            'fundingbodies': self.fundingbodies_datasource
+            'fundingbodies': self.fundingbodies_datasource,
         }
 
         for k in dispatcher.keys():
@@ -103,7 +110,9 @@ class Command(BaseCommand):
             try:
                 result_df = dispatcher[k]()
                 result_df['type'] = k
-                result_df = result_df[['accession', 'label', 'description', 'type', 'tags']]
+                result_df = result_df[
+                    ['accession', 'label', 'description', 'type', 'tags']
+                ]
                 Lookups.insert_many(result_df.to_dict('records'))
             except Exception as e:
                 print(e)
@@ -114,13 +123,20 @@ class Command(BaseCommand):
         :return:
         """
 
-        data = d_utils.json_to_pytype(os.path.join(drop_downs_pth, 'agrovocLabels.json'))["bindings"]
+        data = d_utils.json_to_pytype(
+            os.path.join(drop_downs_pth, 'agrovocLabels.json')
+        )["bindings"]
         data_df = pd.DataFrame(data)
 
         data_df['accession'] = data_df['uri'].apply(lambda x: x.get('value', str()))
         data_df['label'] = data_df['label'].apply(lambda x: x.get('value', str()))
-        data_df['description'] = '<table style="width:100%"><tr><td>Label</td><td>' + data_df[
-            'label'] + '</td></tr><tr><td>Accession</td><td>' + data_df['accession'] + '</td></table>'
+        data_df['description'] = (
+            '<table style="width:100%"><tr><td>Label</td><td>'
+            + data_df['label']
+            + '</td></tr><tr><td>Accession</td><td>'
+            + data_df['accession']
+            + '</td></table>'
+        )
         data_df['tags'] = [''] * len(data_df)
 
         return data_df
@@ -131,16 +147,23 @@ class Command(BaseCommand):
         :return:
         """
 
-        data = d_utils.json_to_pytype(os.path.join(drop_downs_pth, 'countries.json'))["bindings"]
+        data = d_utils.json_to_pytype(os.path.join(drop_downs_pth, 'countries.json'))[
+            "bindings"
+        ]
         data_df = pd.DataFrame(data)
 
         data_df['accession'] = data_df['name']
         data_df['label'] = data_df['name']
 
-        data_df['description'] = '<table style="width:100%"><tr><td>Code</td><td>' + data_df[
-            'country-code'] + '</td></tr><tr><td>Region</td><td>' + data_df[
-                                     'region'] + '</td></tr><tr><td>Sub-region</td><td>' + data_df[
-                                     'sub-region'] + '</td></tr></table>'
+        data_df['description'] = (
+            '<table style="width:100%"><tr><td>Code</td><td>'
+            + data_df['country-code']
+            + '</td></tr><tr><td>Region</td><td>'
+            + data_df['region']
+            + '</td></tr><tr><td>Sub-region</td><td>'
+            + data_df['sub-region']
+            + '</td></tr></table>'
+        )
 
         data_df['tags'] = [''] * len(data_df)
 
@@ -171,8 +194,11 @@ class Command(BaseCommand):
         data_df = pd.DataFrame(all_list)
         data_df['accession'] = data_df['Template']
         data_df['label'] = data_df['Template']
-        data_df['description'] = '<table style="width:100%"><tr><td>Category</td><td>' + data_df[
-            'type'] + '</td></tr></table>'
+        data_df['description'] = (
+            '<table style="width:100%"><tr><td>Category</td><td>'
+            + data_df['type']
+            + '</td></tr></table>'
+        )
 
         data_df['tags'] = [''] * len(data_df)
 
@@ -189,16 +215,21 @@ class Command(BaseCommand):
         tree = ET.parse(xml_pth)
         root = tree.getroot()
 
-        namespaces = {'skos': 'http://www.w3.org/2004/02/skos/core#',
-                      'skosxl': 'http://www.w3.org/2008/05/skos-xl#',
-                      'svf': 'http://data.crossref.org/fundingdata/xml/schema/grant/grant-1.2/'}
+        namespaces = {
+            'skos': 'http://www.w3.org/2004/02/skos/core#',
+            'skosxl': 'http://www.w3.org/2008/05/skos-xl#',
+            'svf': 'http://data.crossref.org/fundingdata/xml/schema/grant/grant-1.2/',
+        }
 
         tags = []
 
         for child in root.findall('skos:Concept', namespaces):
-            label = child.find('skosxl:prefLabel', namespaces).find('skosxl:Label', namespaces).find(
-                'skosxl:literalForm',
-                namespaces).text
+            label = (
+                child.find('skosxl:prefLabel', namespaces)
+                .find('skosxl:Label', namespaces)
+                .find('skosxl:literalForm', namespaces)
+                .text
+            )
             accession = list(child.attrib.values())[0]
             fundingBodyType = child.find('svf:fundingBodyType', namespaces).text
             fundingBodySubType = child.find('svf:fundingBodySubType', namespaces).text
@@ -206,17 +237,33 @@ class Command(BaseCommand):
             altLabels = list()
 
             for altLabel in child.findall('skosxl:altLabel', namespaces):
-                altlabel = altLabel.find('skosxl:Label', namespaces).find('skosxl:literalForm', namespaces).text
+                altlabel = (
+                    altLabel.find('skosxl:Label', namespaces)
+                    .find('skosxl:literalForm', namespaces)
+                    .text
+                )
                 altLabels.append(altlabel)
 
-            tags.append(dict(label=label, accession=accession, fundingBodyType=fundingBodyType,
-                             fundingBodySubType=fundingBodySubType, altLabels=altLabels))
+            tags.append(
+                dict(
+                    label=label,
+                    accession=accession,
+                    fundingBodyType=fundingBodyType,
+                    fundingBodySubType=fundingBodySubType,
+                    altLabels=altLabels,
+                )
+            )
 
         data_df = pd.DataFrame(tags)
 
         data_df['tags'] = data_df['altLabels']
 
-        data_df['description'] = '<table style="width:100%"><tr><td>Funding body type:</td><td><div>' + data_df[
-            'fundingBodyType'] + '</div><div>' + data_df['fundingBodySubType'] + '</div></td></tr></table>'
+        data_df['description'] = (
+            '<table style="width:100%"><tr><td>Funding body type:</td><td><div>'
+            + data_df['fundingBodyType']
+            + '</div><div>'
+            + data_df['fundingBodySubType']
+            + '</div></td></tr></table>'
+        )
 
         return data_df

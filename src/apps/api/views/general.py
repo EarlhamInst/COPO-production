@@ -1,5 +1,3 @@
-__author__ = 'felix.shaw@tgac.ac.uk - 14/05/15'
-
 from common.schemas.utils.data_formats import DataFormats
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -22,8 +20,10 @@ def forward_to_swagger(request):
 
 def check_orcid_credentials(request):
     # TODO - here we check if the orcid tokens are valid
-    out = {'exists': False,
-           'authorise_url': settings['REPOSITORIES']['ORCID']['urls']['authorise_url']}
+    out = {
+        'exists': False,
+        'authorise_url': settings['REPOSITORIES']['ORCID']['urls']['authorise_url'],
+    }
     return HttpResponse(jsonpickle.encode(out))
 
 
@@ -38,18 +38,24 @@ def numbers(request):
     samples = number_of_samples()
     users = number_of_users()
     datafiles = number_of_datafiles()
-    out = {"profiles": profiles, "samples": samples,
-           "users": users, "datafiles": datafiles}
+    out = {
+        "profiles": profiles,
+        "samples": samples,
+        "users": users,
+        "datafiles": datafiles,
+    }
     return HttpResponse(json.dumps(out))
 
 
 def number_of_profiles():
     from common.dal.profile_da import Profile
+
     return Profile().get_number()
 
 
 def number_of_samples():
     from common.dal.sample_da import Sample
+
     # get total number of sample records in COPO instance
     return Sample().get_number()
 
@@ -60,22 +66,22 @@ def number_of_users():
 
 def number_of_datafiles():
     from common.dal.copo_da import DataFile
+
     return DataFile().get_number()
 
 
 class CustomAuthToken(ObtainAuthToken):
 
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
+        serializer = self.serializer_class(
+            data=request.data, context={'request': request}
+        )
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
-        return Response({
-            'token': "Token " + token.key,
-            'user_id': user.pk,
-            'email': user.email
-        })
+        return Response(
+            {'token': "Token " + token.key, 'user_id': user.pk, 'email': user.email}
+        )
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):

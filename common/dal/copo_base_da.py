@@ -1,11 +1,8 @@
-__author__ = 'felixshaw'
-
 from .mongo_util import get_collection_ref
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 from common.utils import helpers
 from common.dal.mongo_util import cursor_to_list
-
 
 
 class DataSchemas:
@@ -15,10 +12,12 @@ class DataSchemas:
     @classmethod
     def get_ui_template(cls, schema):
         if schema not in cls.ui_template_schemas:
-            data = cls.schemas_collection_handler.find_one({"schemaName": schema.upper(), "schemaType": "UI"})
+            data = cls.schemas_collection_handler.find_one(
+                {"schemaName": schema.upper(), "schemaType": "UI"}
+            )
             if data:
-                cls.ui_template_schemas[schema]= data.get("data", dict())
-        return cls.ui_template_schemas.get(schema.upper(),[])
+                cls.ui_template_schemas[schema] = data.get("data", dict())
+        return cls.ui_template_schemas.get(schema.upper(), [])
 
     @classmethod
     def add_ui_template(cls, schema, template):
@@ -29,7 +28,9 @@ class DataSchemas:
 
     @classmethod
     def delete_ui_template(cls, schema):
-        cls.schemas_collection_handler.delete_one({"schemaName": schema, "schemaType": "UI"})
+        cls.schemas_collection_handler.delete_one(
+            {"schemaName": schema, "schemaType": "UI"}
+        )
 
     """
     @classmethod
@@ -47,11 +48,15 @@ class DataSchemas:
     @classmethod
     def get_ui_template_node(cls, schema, identifier):
         doc = cls.get_ui_template(schema)
-        #doc = {k.lower(): v for k, v in doc.items() if k.lower() == 'copo'}
-        #doc = {k.lower(): v for k, v in doc.get("copo", dict()).items() if k.lower() == identifier.lower()}
-        #return doc.get(identifier.lower(), dict()).get("fields", list())
-        return  doc.get(schema.lower(), dict()).get(identifier.lower(),dict()).get("fields",[])
-    
+        # doc = {k.lower(): v for k, v in doc.items() if k.lower() == 'copo'}
+        # doc = {k.lower(): v for k, v in doc.get("copo", dict()).items() if k.lower() == identifier.lower()}
+        # return doc.get(identifier.lower(), dict()).get("fields", list())
+        return (
+            doc.get(schema.lower(), dict())
+            .get(identifier.lower(), dict())
+            .get("fields", [])
+        )
+
     @classmethod
     def refresh(cls):
         cls.ui_template_schemas = dict()
@@ -88,38 +93,35 @@ TaggedSequenceCollection = "TagSequenceCollection"
 EnaChecklistCollection = "EnaChecklistCollection"
 ReadObjectCollection = "SampleCollection"
 
-handle_dict = dict(audit=get_collection_ref(AuditCollection),
-                   publication=get_collection_ref(PubCollection),
-                   person=get_collection_ref(PersonCollection),
-                   sample=get_collection_ref(SampleCollection),
-                   accessions=get_collection_ref(SampleCollection),
-                   source=get_collection_ref(SourceCollection),
-                   profile=get_collection_ref(ProfileCollection),
-                   submission=get_collection_ref(SubmissionCollection),
-                   datafile=get_collection_ref(DataFileCollection),
-                   annotation=get_collection_ref(AnnotationReference),
-                   group=get_collection_ref(GroupCollection),
-                   repository=get_collection_ref(RepositoryCollection),
-                   cgcore=get_collection_ref(CGCoreCollection),
-                   textannotation=get_collection_ref(TextAnnotationCollection),
-                   metadata_template=get_collection_ref(
-                       MetadataTemplateCollection),
-                   stats=get_collection_ref(StatsCollection),
-                   test=get_collection_ref(TestCollection),
-                   barcode=get_collection_ref(BarcodeCollection),
-                   validationQueue=get_collection_ref(
-                       ValidationQueueCollection),
-                   enaFileTransfer=get_collection_ref(
-                       EnaFileTransferCollection),
-                   apiValidationReport=get_collection_ref(APIValidationReport),
-                   assembly=get_collection_ref(AssemblyCollection),
-                   seqannotation=get_collection_ref(AnnotationCollection),
-                   submissionQueue=get_collection_ref(
-                       SubmissionQueueCollection),
-                   taggedseq=get_collection_ref(TaggedSequenceCollection),
-                   enaChecklist=get_collection_ref(EnaChecklistCollection),
-                   read=get_collection_ref(ReadObjectCollection)
-                   )
+handle_dict = dict(
+    audit=get_collection_ref(AuditCollection),
+    publication=get_collection_ref(PubCollection),
+    person=get_collection_ref(PersonCollection),
+    sample=get_collection_ref(SampleCollection),
+    accessions=get_collection_ref(SampleCollection),
+    source=get_collection_ref(SourceCollection),
+    profile=get_collection_ref(ProfileCollection),
+    submission=get_collection_ref(SubmissionCollection),
+    datafile=get_collection_ref(DataFileCollection),
+    annotation=get_collection_ref(AnnotationReference),
+    group=get_collection_ref(GroupCollection),
+    repository=get_collection_ref(RepositoryCollection),
+    cgcore=get_collection_ref(CGCoreCollection),
+    textannotation=get_collection_ref(TextAnnotationCollection),
+    metadata_template=get_collection_ref(MetadataTemplateCollection),
+    stats=get_collection_ref(StatsCollection),
+    test=get_collection_ref(TestCollection),
+    barcode=get_collection_ref(BarcodeCollection),
+    validationQueue=get_collection_ref(ValidationQueueCollection),
+    enaFileTransfer=get_collection_ref(EnaFileTransferCollection),
+    apiValidationReport=get_collection_ref(APIValidationReport),
+    assembly=get_collection_ref(AssemblyCollection),
+    seqannotation=get_collection_ref(AnnotationCollection),
+    submissionQueue=get_collection_ref(SubmissionQueueCollection),
+    taggedseq=get_collection_ref(TaggedSequenceCollection),
+    enaChecklist=get_collection_ref(EnaChecklistCollection),
+    read=get_collection_ref(ReadObjectCollection),
+)
 
 
 class DAComponent:
@@ -139,8 +141,7 @@ class DAComponent:
         handler = self.get_collection_handle()
         if handler is not None:
             try:
-                doc = handler.find_one(
-                    {"_id": ObjectId(oid)})
+                doc = handler.find_one({"_id": ObjectId(oid)})
             except InvalidId as e:
                 return e
         if not doc:
@@ -168,7 +169,11 @@ class DAComponent:
         count = 0
         if self.get_collection_handle():
             count = self.get_collection_handle().count_documents(
-                {'profile_id': self.profile_id, 'deleted': helpers.get_not_deleted_flag()})
+                {
+                    'profile_id': self.profile_id,
+                    'deleted': helpers.get_not_deleted_flag(),
+                }
+            )
 
         return count
 
@@ -203,7 +208,9 @@ class DAComponent:
         return self.get_id_base() + "." + elem
 
     def get_schema(self, **kwargs):
-        return dict(schema_dict=DataSchemas.get_ui_template_node("COPO", self.component))
+        return dict(
+            schema_dict=DataSchemas.get_ui_template_node("COPO", self.component)
+        )
 
     def get_component_schema(self, **kwargs):
         return DataSchemas.get_ui_template_node("COPO", self.component)
@@ -218,8 +225,10 @@ class DAComponent:
         :return:  validation_result["status"]: "success", "error", "warning", validation_result["message"]
         """
 
-        local_result = dict(status=validation_result.get("status", "success"),
-                            message=validation_result.get("message", str()))
+        local_result = dict(
+            status=validation_result.get("status", "success"),
+            message=validation_result.get("message", str()),
+        )
 
         return local_result
 
@@ -232,15 +241,15 @@ class DAComponent:
         # set auto fields
         if auto_fields:
             fields = data_utils.DecoupleFormSubmission(
-                auto_fields, schema).get_schema_fields_updated_dict()
+                auto_fields, schema
+            ).get_schema_fields_updated_dict()
 
         # should have target_id for updates and return empty string for inserts
         target_id = kwargs.pop("target_id", str())
 
         # set system fields
         system_fields = dict(
-            date_modified=helpers.get_datetime(),
-            deleted=helpers.get_not_deleted_flag()
+            date_modified=helpers.get_datetime(), deleted=helpers.get_not_deleted_flag()
         )
 
         if not target_id:
@@ -277,8 +286,8 @@ class DAComponent:
         else:
             if target_id:
                 self.get_collection_handle().update_one(
-                    {"_id": ObjectId(target_id)},
-                    {'$set': fields})
+                    {"_id": ObjectId(target_id)}, {'$set': fields}
+                )
             else:
                 doc = self.get_collection_handle().insert_one(fields)
                 target_id = str(doc.inserted_id)
@@ -289,27 +298,43 @@ class DAComponent:
             return rec
 
     def update_profile_modified(self, profile_id):
-        handle_dict["profile"].update_one({"_id": ObjectId(profile_id)}, {
-                                          "$set": {"date_modified": helpers.get_datetime()}})
+        handle_dict["profile"].update_one(
+            {"_id": ObjectId(profile_id)},
+            {"$set": {"date_modified": helpers.get_datetime()}},
+        )
 
     def get_all_records(self, sort_by='_id', sort_direction=-1, **kwargs):
         doc = dict(deleted=helpers.get_not_deleted_flag())
         if self.profile_id:
             doc["profile_id"] = self.profile_id
 
-        return cursor_to_list(self.get_collection_handle().find(doc).sort([[sort_by, sort_direction]]))
+        return cursor_to_list(
+            self.get_collection_handle().find(doc).sort([[sort_by, sort_direction]])
+        )
 
-    def get_all_records_columns(self, sort_by='_id', sort_direction=-1, projection=dict(), filter_by=dict()):
+    def get_all_records_columns(
+        self, sort_by='_id', sort_direction=-1, projection=dict(), filter_by=dict()
+    ):
         filter_by["deleted"] = helpers.get_not_deleted_flag()
         if self.profile_id:
             filter_by["profile_id"] = self.profile_id
 
         return cursor_to_list(
-            self.get_collection_handle().find(filter_by, projection).sort([[sort_by, sort_direction]]))
+            self.get_collection_handle()
+            .find(filter_by, projection)
+            .sort([[sort_by, sort_direction]])
+        )
 
-    def get_all_records_columns_server(self, sort_by='_id', sort_direction=-1, projection=dict(), filter_by=dict(),
-                                       search_term=str(),
-                                       limit=0, skip=0):
+    def get_all_records_columns_server(
+        self,
+        sort_by='_id',
+        sort_direction=-1,
+        projection=dict(),
+        filter_by=dict(),
+        search_term=str(),
+        limit=0,
+        skip=0,
+    ):
 
         filter_by["deleted"] = helpers.get_not_deleted_flag()
 
@@ -320,11 +345,20 @@ class DAComponent:
             filter_by["profile_id"] = self.profile_id
 
         if skip > 0:
-            records = self.get_collection_handle().find(filter_by, projection).sort([[sort_by, sort_direction]]).skip(
-                skip).limit(limit)
+            records = (
+                self.get_collection_handle()
+                .find(filter_by, projection)
+                .sort([[sort_by, sort_direction]])
+                .skip(skip)
+                .limit(limit)
+            )
         else:
-            records = self.get_collection_handle().find(filter_by, projection).sort([[sort_by, sort_direction]]).limit(
-                limit)
+            records = (
+                self.get_collection_handle()
+                .find(filter_by, projection)
+                .sort([[sort_by, sort_direction]])
+                .limit(limit)
+            )
 
         return cursor_to_list(records)
 

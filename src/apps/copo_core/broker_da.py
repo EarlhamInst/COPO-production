@@ -1,6 +1,3 @@
-__author__ = 'etuka'
-__date__ = '13 May 2016'
-
 import json
 from bson import ObjectId
 from django.contrib.auth.models import User
@@ -11,7 +8,7 @@ from src.apps.copo_seq_annotation_submission.utils import EnaAnnotation
 from src.apps.copo_file.utils import CopoFiles as copo_file
 from common.utils import html_tags_utils as htags
 from common.utils.copo_lookup_service import COPOLookup
-from common.dal.copo_base_da import   DAComponent
+from common.dal.copo_base_da import DAComponent
 from common.dal.profile_da import Profile
 from common.dal.submission_da import Submission
 from common.schemas.utils import data_utils
@@ -19,6 +16,7 @@ from common.utils import helpers
 from src.apps.copo_barcoding_submission.utils.EnaTaggedSequence import EnaTaggedSequence
 from src.apps.copo_read_submission.utils.ena_read_submission import EnaReads
 from .models import ProfileType
+
 
 class BrokerDA:
     def __init__(self, **kwargs):
@@ -29,7 +27,9 @@ class BrokerDA:
         self.profile_id = self.param_dict.get("profile_id", str())
         self.auto_fields = self.param_dict.get("auto_fields", dict())
         self.request_dict = self.param_dict.get("request_dict", dict())
-        self.da_object = self.param_dict.get("da_object", DAComponent(self.profile_id, self.component))
+        self.da_object = self.param_dict.get(
+            "da_object", DAComponent(self.profile_id, self.component)
+        )
 
         if self.auto_fields and isinstance(self.auto_fields, str):
             self.auto_fields = json.loads(self.auto_fields)
@@ -70,21 +70,30 @@ class BrokerDA:
             action_message = "updating"
 
         # validate record
-        validation_result = self.da_object.validate_record(auto_fields=self.auto_fields, **kwargs)
+        validation_result = self.da_object.validate_record(
+            auto_fields=self.auto_fields, **kwargs
+        )
 
         status = validation_result.get("status", "success")
 
         if status == "error":
             report_metadata["status"] = "error"
-            report_metadata["message"] = validation_result.get("message",
-                                                               "There was a problem " + action_message
-                                                               + " the " + self.component + " record!")
+            report_metadata["message"] = validation_result.get(
+                "message",
+                "There was a problem "
+                + action_message
+                + " the "
+                + self.component
+                + " record!",
+            )
             self.context["action_feedback"] = report_metadata
             return self.context
 
             # check users are not changing the type of an existing profile
         # save record
-        record_object = self.da_object.save_record(auto_fields=self.auto_fields, **kwargs)
+        record_object = self.da_object.save_record(
+            auto_fields=self.auto_fields, **kwargs
+        )
 
         if action_type == "edit":
             report_metadata["message"] += " Record updated!"
@@ -105,9 +114,14 @@ class BrokerDA:
                                 status = "warning"
             """
         else:
-            report_metadata["message"] += " New " + self.component + " record created! " + validation_result.get ("message","")
+            report_metadata["message"] += (
+                " New "
+                + self.component
+                + " record created! "
+                + validation_result.get("message", "")
+            )
 
-        status = record_object.get("status", "success")  
+        status = record_object.get("status", "success")
         report_metadata["message"] += " " + record_object.get("message", "")
 
         report_metadata["status"] = status
@@ -117,14 +131,19 @@ class BrokerDA:
 
         # set extra parameters which will be passed along to the visualize object
         self.broker_visuals.set_extra_params(
-            dict(record_object=record_object, data_source=self.param_dict.get("data_source", str())))
+            dict(
+                record_object=record_object,
+                data_source=self.param_dict.get("data_source", str()),
+            )
+        )
 
         # build dictionary of executable tasks/functions
-        visualize_dict = dict(profiles_counts=self.broker_visuals.do_profiles_counts,
-                              created_component_json=self.broker_visuals.get_created_component_json,
-                              last_record=self.broker_visuals.get_last_record,
-                              get_profile_count=self.broker_visuals.get_profile_count
-                              )
+        visualize_dict = dict(
+            profiles_counts=self.broker_visuals.do_profiles_counts,
+            created_component_json=self.broker_visuals.get_created_component_json,
+            last_record=self.broker_visuals.get_last_record,
+            get_profile_count=self.broker_visuals.get_profile_count,
+        )
 
         if self.visualize in visualize_dict:
             self.context = visualize_dict[self.visualize]()
@@ -152,12 +171,14 @@ class BrokerDA:
 
         target_id = self.param_dict.get("target_id", str())
         target_ids = self.param_dict.get("target_ids", [])
-        result = self.da_object.validate_and_delete(target_id=target_id, target_ids=target_ids)
+        result = self.da_object.validate_and_delete(
+            target_id=target_id, target_ids=target_ids
+        )
         if result.get("status", "") == "success":
             self.context = self.broker_visuals.do_table_data()
         self.context["action_feedback"] = result
         return self.context
-    
+
     def do_delete(self):
         target_ids = [ObjectId(i) for i in self.param_dict.get("target_ids")]
 
@@ -177,14 +198,16 @@ class BrokerDA:
 
     """  need to move to copo_read_submission
     """
+
     def do_lift_submission_embargo(self):
         '''
         function brokers the release of a submission
         :return:
         '''
 
-        return Submission().lift_embargo(submission_id=self.param_dict.get("target_id", str()))
-   
+        return Submission().lift_embargo(
+            submission_id=self.param_dict.get("target_id", str())
+        )
 
     def do_form(self):
         target_id = self.param_dict.get("target_id")
@@ -200,8 +223,14 @@ class BrokerDA:
         kwargs.pop("component", None)
         kwargs.pop("profile_id", None)
 
-        self.context["form"] = htags.generate_copo_form(self.da_object, target_id, component_dict, message_dict,
-                                                        self.profile_id, **kwargs)
+        self.context["form"] = htags.generate_copo_form(
+            self.da_object,
+            target_id,
+            component_dict,
+            message_dict,
+            self.profile_id,
+            **kwargs
+        )
         self.context["form"]["visualize"] = self.param_dict.get("visualize")
         return self.context
 
@@ -214,10 +243,12 @@ class BrokerDA:
         kwargs["referenced_type"] = self.param_dict.get("referenced_type", str())
 
         self.context = self.do_form()
-        self.context["component_records"] = htags.generate_component_records(self.component, self.profile_id, **kwargs)
+        self.context["component_records"] = htags.generate_component_records(
+            self.component, self.profile_id, **kwargs
+        )
 
         return self.context
-    
+
     """
     def do_doi(self):
         id_handle = self.param_dict.get("id_handle")
@@ -232,10 +263,12 @@ class BrokerDA:
 
         return self.do_form()
     """
-    
+
     def do_initiate_submission(self):
         kwarg = dict(datafile_ids=self.param_dict.get("datafile_ids", list()))
-        self.context["submission_token"] = str(self.da_object.save_record(dict(), **kwarg).get("_id", str()))
+        self.context["submission_token"] = str(
+            self.da_object.save_record(dict(), **kwarg).get("_id", str())
+        )
         return self.context
 
     def do_user_email(self):
@@ -249,7 +282,9 @@ class BrokerDA:
         return self.context
 
     def do_component_record(self):
-        self.context["component_record"] = self.da_object.get_record(self.param_dict.get("target_id"))
+        self.context["component_record"] = self.da_object.get_record(
+            self.param_dict.get("target_id")
+        )
 
         return self.context
 
@@ -263,8 +298,14 @@ class BrokerDA:
         kwargs["referenced_type"] = self.param_dict.get("referenced_type", str())
         kwargs["action_type"] = self.param_dict.get("action_type", str())
 
-        form_value = htags.generate_copo_form(self.da_object, target_id, component_dict, message_dict,
-                                              self.profile_id, **kwargs)
+        form_value = htags.generate_copo_form(
+            self.da_object,
+            target_id,
+            component_dict,
+            message_dict,
+            self.profile_id,
+            **kwargs
+        )
 
         self.context["component_record"] = form_value["form_value"]
         self.context["component_schema"] = form_value["form_schema"]
@@ -398,15 +439,17 @@ class BrokerDA:
         '''
         target_id = self.param_dict.get("target_id", str())
         target_ids = self.param_dict.get("target_ids", [])
-        result = EnaAssembly.submit_assembly(profile_id=self.profile_id,  target_id=target_id, target_ids=target_ids)
-    
+        result = EnaAssembly.submit_assembly(
+            profile_id=self.profile_id, target_id=target_id, target_ids=target_ids
+        )
+
         report_metadata = dict()
         report_metadata["status"] = result.get("status", "success")
         report_metadata["message"] = result.get("message", "success")
         self.context["action_feedback"] = report_metadata
 
         return self.context
-    
+
     def do_submit_annotation(self):
         """
         function handles the delete of a record for those components
@@ -417,8 +460,9 @@ class BrokerDA:
         target_id = self.param_dict.get("target_id", str())
         target_ids = self.param_dict.get("target_ids", [])
 
-        result = EnaAnnotation.submit_seq_annotation(profile_id=self.profile_id, target_ids=target_ids,
-                                                     target_id=target_id)
+        result = EnaAnnotation.submit_seq_annotation(
+            profile_id=self.profile_id, target_ids=target_ids, target_id=target_id
+        )
         report_metadata = dict()
         report_metadata["status"] = result.get("status", "success")
         report_metadata["message"] = result.get("message", "success")
@@ -434,16 +478,23 @@ class BrokerDA:
         """
 
         target_id = self.param_dict.get("target_id", str())
-        target_ids  = self.param_dict.get("target_ids", [])
+        target_ids = self.param_dict.get("target_ids", [])
         sample_checklist_id = self.request_dict.get("sample_checklist_id", str())
 
-        result = ena_read.submit_read(profile_id=self.profile_id, target_ids=target_ids, target_id=target_id,checklist_id=sample_checklist_id)
+        result = ena_read.submit_read(
+            profile_id=self.profile_id,
+            target_ids=target_ids,
+            target_id=target_id,
+            checklist_id=sample_checklist_id,
+        )
         report_metadata = dict()
         report_metadata["status"] = result.get("status", "success")
         report_metadata["message"] = result.get("message", "success")
-        self.context["action_feedback"] = report_metadata       
-        if result.get("status","success") == "success":
-            self.context["table_data"] = ena_read.generate_read_record(profile_id=self.profile_id,checklist_id=sample_checklist_id)
+        self.context["action_feedback"] = report_metadata
+        if result.get("status", "success") == "success":
+            self.context["table_data"] = ena_read.generate_read_record(
+                profile_id=self.profile_id, checklist_id=sample_checklist_id
+            )
             self.context["component"] = "read"
         return self.context
 
@@ -455,34 +506,47 @@ class BrokerDA:
         """
 
         target_id = self.param_dict.get("target_id", str())
-        target_ids  = self.param_dict.get("target_ids", [])
-        sample_checklist_id  = self.request_dict.get("sample_checklist_id", [])
+        target_ids = self.param_dict.get("target_ids", [])
+        sample_checklist_id = self.request_dict.get("sample_checklist_id", [])
 
-        result = ena_read.delete_ena_records(profile_id=self.profile_id, target_ids=target_ids,
-                                                        target_id=target_id)
+        result = ena_read.delete_ena_records(
+            profile_id=self.profile_id, target_ids=target_ids, target_id=target_id
+        )
         report_metadata = dict()
         report_metadata["status"] = result.get("status", "success")
         report_metadata["message"] = result.get("message", "success")
         self.context["action_feedback"] = report_metadata
-        if result.get("status","success") == "success":
-            self.context["table_data"] = ena_read.generate_read_record(profile_id=self.profile_id, checklist_id=sample_checklist_id)
+        if result.get("status", "success") == "success":
+            self.context["table_data"] = ena_read.generate_read_record(
+                profile_id=self.profile_id, checklist_id=sample_checklist_id
+            )
             self.context["component"] = "read"
         return self.context
 
     def do_submit_tagged_seq(self):
         target_id = self.param_dict.get("target_id", str())
-        target_ids  = self.param_dict.get("target_ids", [])
-        tagged_seq_checklist_id = self.request_dict.get("tagged_seq_checklist_id", str())
-        result = EnaTaggedSequence().submit_tagged_seq(profile_id=self.profile_id, checklist_id=tagged_seq_checklist_id, target_ids=target_ids, target_id=target_id)
+        target_ids = self.param_dict.get("target_ids", [])
+        tagged_seq_checklist_id = self.request_dict.get(
+            "tagged_seq_checklist_id", str()
+        )
+        result = EnaTaggedSequence().submit_tagged_seq(
+            profile_id=self.profile_id,
+            checklist_id=tagged_seq_checklist_id,
+            target_ids=target_ids,
+            target_id=target_id,
+        )
         report_metadata = dict()
-        report_metadata["status"] = result.get("status","success")
+        report_metadata["status"] = result.get("status", "success")
         report_metadata["message"] = result.get("message", "success")
         self.context["action_feedback"] = report_metadata
-        if result.get("status","success") == "success":
-            self.context["table_data"] = EnaTaggedSequence().generate_taggedseq_record(profile_id=self.profile_id, checklist_id=tagged_seq_checklist_id)
+        if result.get("status", "success") == "success":
+            self.context["table_data"] = EnaTaggedSequence().generate_taggedseq_record(
+                profile_id=self.profile_id, checklist_id=tagged_seq_checklist_id
+            )
             self.context["component"] = "taggedseq"
         return self.context
-    
+
+
 class BrokerVisuals:
     def __init__(self, **kwargs):
         self.param_dict = kwargs
@@ -491,7 +555,9 @@ class BrokerVisuals:
         self.user_id = self.param_dict.get("user_id", str())
         self.context = self.param_dict.get("context", dict())
         self.request_dict = self.param_dict.get("request_dict", dict())
-        self.da_object = self.param_dict.get("da_object", DAComponent(self.profile_id, self.component)) 
+        self.da_object = self.param_dict.get(
+            "da_object", DAComponent(self.profile_id, self.component)
+        )
 
     def set_extra_params(self, extra_param):
         for k, v in extra_param.items():
@@ -499,21 +565,62 @@ class BrokerVisuals:
 
     def do_table_data(self):
         table_data_dict = dict(
-            #annotation=(htags.generate_copo_table_data, dict(profile_id=self.profile_id, component=self.component)),
-            #publication=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            #person=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            #datafile=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            sample=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
-            #source=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            #repository=(htags.generate_repositories_records, dict(component=self.component)),
-            metadata_template=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
-            profile=(htags.generate_copo_profiles_data, dict(profiles=Profile().get_all_profiles())),
-            #submission=(htags.generate_submissions_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
-            seqannotation=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object, additional_columns=EnaAnnotation.generate_additional_columns(self.profile_id)) ),
-            assembly=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object, additional_columns=EnaAssembly.generate_additional_columns(self.profile_id) ) ),
-            read = (ena_read.generate_read_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("sample_checklist_id", str()))),
-            files = (copo_file.generate_files_record, dict(user_id=self.user_id)),
-            taggedseq = (EnaTaggedSequence().generate_taggedseq_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("tagged_seq_checklist_id", str()))),
+            # annotation=(htags.generate_copo_table_data, dict(profile_id=self.profile_id, component=self.component)),
+            # publication=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            # person=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            # datafile=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            sample=(
+                htags.generate_table_records,
+                dict(profile_id=self.profile_id, da_object=self.da_object),
+            ),
+            # source=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            # repository=(htags.generate_repositories_records, dict(component=self.component)),
+            metadata_template=(
+                htags.generate_table_records,
+                dict(profile_id=self.profile_id, da_object=self.da_object),
+            ),
+            profile=(
+                htags.generate_copo_profiles_data,
+                dict(profiles=Profile().get_all_profiles()),
+            ),
+            # submission=(htags.generate_submissions_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
+            seqannotation=(
+                htags.generate_table_records,
+                dict(
+                    profile_id=self.profile_id,
+                    da_object=self.da_object,
+                    additional_columns=EnaAnnotation.generate_additional_columns(
+                        self.profile_id
+                    ),
+                ),
+            ),
+            assembly=(
+                htags.generate_table_records,
+                dict(
+                    profile_id=self.profile_id,
+                    da_object=self.da_object,
+                    additional_columns=EnaAssembly.generate_additional_columns(
+                        self.profile_id
+                    ),
+                ),
+            ),
+            read=(
+                ena_read.generate_read_record,
+                dict(
+                    profile_id=self.profile_id,
+                    checklist_id=self.request_dict.get("sample_checklist_id", str()),
+                ),
+            ),
+            files=(copo_file.generate_files_record, dict(user_id=self.user_id)),
+            taggedseq=(
+                EnaTaggedSequence().generate_taggedseq_record,
+                dict(
+                    profile_id=self.profile_id,
+                    checklist_id=self.request_dict.get(
+                        "tagged_seq_checklist_id", str()
+                    ),
+                ),
+            ),
         )
 
         # NB: in table_data_dict, use an empty dictionary as a parameter for listed functions that define zero arguments
@@ -547,20 +654,25 @@ class BrokerVisuals:
         self.context["result"] = htags.get_submission_meta_repo(submission_id=target_id, user_id=self.user_id)
         return self.context
     '''
+
     def do_view_submission_remote(self):
         """
         function brokers the generation of resource url/identifier to a submission in its remote location
         :return:
         """
 
-        self.context = htags.get_submission_remote_url(submission_id=self.param_dict.get("target_id", str()))
+        self.context = htags.get_submission_remote_url(
+            submission_id=self.param_dict.get("target_id", str())
+        )
         return self.context
 
     def do_server_side_table_data(self):
         self.context["component"] = self.component
         request_dict = self.param_dict.get("request_dict", dict())
 
-        data = htags.generate_server_side_table_records(self.profile_id, component=self.component, request=request_dict)
+        data = htags.generate_server_side_table_records(
+            self.profile_id, component=self.component, request=request_dict
+        )
         self.context["draw"] = data["draw"]
         self.context["records_total"] = data["records_total"]
         self.context["records_filtered"] = data["records_filtered"]
@@ -574,12 +686,27 @@ class BrokerVisuals:
         target_id = record_object.get("_id", str())
 
         table_data_dict = dict(
-            publication=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
-            person=(htags.generate_table_records, dict(profile_id=self.profile_id,  da_object=self.da_object)),
-            sample=(htags.generate_table_records, dict(profile_id=self.profile_id,  da_object=self.da_object)),
-            profile=(htags.generate_copo_profiles_data, dict(profiles=Profile().get_for_user())),
-            datafile=(htags.generate_table_records, dict(profile_id=self.profile_id,  da_object=self.da_object)),
-            #repository=(htags.generate_repositories_records, dict(component=self.component)),
+            publication=(
+                htags.generate_table_records,
+                dict(profile_id=self.profile_id, da_object=self.da_object),
+            ),
+            person=(
+                htags.generate_table_records,
+                dict(profile_id=self.profile_id, da_object=self.da_object),
+            ),
+            sample=(
+                htags.generate_table_records,
+                dict(profile_id=self.profile_id, da_object=self.da_object),
+            ),
+            profile=(
+                htags.generate_copo_profiles_data,
+                dict(profiles=Profile().get_for_user()),
+            ),
+            datafile=(
+                htags.generate_table_records,
+                dict(profile_id=self.profile_id, da_object=self.da_object),
+            ),
+            # repository=(htags.generate_repositories_records, dict(component=self.component)),
         )
 
         # NB: in table_data_dict, use an empty dictionary as a parameter to functions that define zero arguments
@@ -593,12 +720,16 @@ class BrokerVisuals:
 
     def do_get_submission_accessions(self):
         target_id = self.param_dict.get("target_id", str())
-        self.context["submission_accessions"] = htags.generate_submission_accessions_data(submission_id=target_id)
+        self.context["submission_accessions"] = (
+            htags.generate_submission_accessions_data(submission_id=target_id)
+        )
         return self.context
 
     def do_get_submission_datafiles(self):
         target_id = self.param_dict.get("target_id", str())
-        self.context["table_data"] = htags.generate_submission_datafiles_data(submission_id=target_id)
+        self.context["table_data"] = htags.generate_submission_datafiles_data(
+            submission_id=target_id
+        )
         return self.context
 
     '''
@@ -611,17 +742,22 @@ class BrokerVisuals:
         self.context["result"] = htags.get_destination_repo(submission_id=target_id)
         return self.context
     '''
+
     # do_get_repo_stats
     def do_get_repo_stats(self):
         """
         function brokers statistics for the target repository
         :return:
         """
-        self.context["result"] = htags.get_repo_stats(repository_id=self.param_dict.get("target_id", str()))
+        self.context["result"] = htags.get_repo_stats(
+            repository_id=self.param_dict.get("target_id", str())
+        )
         return self.context
 
     def do_profiles_counts(self):
-        self.context["profiles_counts"] = htags.generate_copo_profiles_counts(Profile().get_all_profiles())
+        self.context["profiles_counts"] = htags.generate_copo_profiles_counts(
+            Profile().get_all_profiles()
+        )
         return self.context
 
     def get_profile_count(self):
@@ -636,8 +772,11 @@ class BrokerVisuals:
         option_values = list()
 
         if data_source:
-            option_values = COPOLookup(accession=[target_id],
-                                       data_source=data_source, profile_id=self.profile_id).broker_component_search()['result']
+            option_values = COPOLookup(
+                accession=[target_id],
+                data_source=data_source,
+                profile_id=self.profile_id,
+            ).broker_component_search()['result']
 
         self.context["option_values"] = option_values
         self.context["created_record_id"] = target_id
@@ -682,10 +821,15 @@ class BrokerVisuals:
 
         return self.context
     '''
+
     def do_attributes_display(self):
-        target_id = self.param_dict.get("target_id", str())        
-        self.context['component_attributes'] = htags.generate_attributes(self.da_object, target_id)
-        self.context['component_label'] = htags.get_labels().get(self.component, dict()).get("label", str())
+        target_id = self.param_dict.get("target_id", str())
+        self.context['component_attributes'] = htags.generate_attributes(
+            self.da_object, target_id
+        )
+        self.context['component_label'] = (
+            htags.get_labels().get(self.component, dict()).get("label", str())
+        )
 
         return self.context
 
@@ -696,13 +840,21 @@ class BrokerVisuals:
         paths_dict = lkup.MESSAGES_LKUPS['HELP_MESSAGES']
 
         if self.component in paths_dict:
-            self.context['help_messages'] = data_utils.json_to_pytype(lkup.MESSAGES_LKUPS['HELP_MESSAGES'][self.component])
+            self.context['help_messages'] = data_utils.json_to_pytype(
+                lkup.MESSAGES_LKUPS['HELP_MESSAGES'][self.component]
+            )
 
         # context help, relevant to the current component (e.g., datafile)
         if "context_help" in paths_dict:
-            help_dict = data_utils.json_to_pytype(lkup.MESSAGES_LKUPS['HELP_MESSAGES']["context_help"])
+            help_dict = data_utils.json_to_pytype(
+                lkup.MESSAGES_LKUPS['HELP_MESSAGES']["context_help"]
+            )
             properties_temp = help_dict['properties']
-            v = [x for x in properties_temp if len(x['context']) > 0 and x['context'][0] == self.component]
+            v = [
+                x
+                for x in properties_temp
+                if len(x['context']) > 0 and x['context'][0] == self.component
+            ]
             if v:
                 help_dict['properties'] = v
             self.context['context_help'] = help_dict
@@ -737,7 +889,9 @@ class BrokerVisuals:
     def do_get_component_info(self):
         target_id = self.param_dict.get("target_id", str())
         da_object = DAComponent(target_id, self.component)
-        self.context["component_info"] = "welcome to " + str(da_object.get_component_count())
+        self.context["component_info"] = "welcome to " + str(
+            da_object.get_component_count()
+        )
 
         return self.context
 

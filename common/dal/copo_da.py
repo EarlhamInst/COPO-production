@@ -1,5 +1,3 @@
-__author__ = 'felix.shaw@tgac.ac.uk - 22/10/15'
-
 import os
 from datetime import datetime, date
 

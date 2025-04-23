@@ -1,5 +1,3 @@
-__author__ = 'felixshaw'
-
 import pymongo
 from bson import ObjectId
 
@@ -11,9 +9,13 @@ def get_collection_ref(collection_name):
 
 
 def get_mongo_client():
-    MONGO_CLIENT = pymongo.MongoClient(host=settings.MONGO_HOST, username=settings.MONGO_USER,password=settings.MONGO_USER_PASSWORD, maxPoolSize=settings.MONGO_MAX_POOL_SIZE, )[
-        settings.MONGO_DB]
-    #MONGO_CLIENT.authenticate(settings.MONGO_USER, settings.MONGO_USER_PASSWORD, source='admin')
+    MONGO_CLIENT = pymongo.MongoClient(
+        host=settings.MONGO_HOST,
+        username=settings.MONGO_USER,
+        password=settings.MONGO_USER_PASSWORD,
+        maxPoolSize=settings.MONGO_MAX_POOL_SIZE,
+    )[settings.MONGO_DB]
+    # MONGO_CLIENT.authenticate(settings.MONGO_USER, settings.MONGO_USER_PASSWORD, source='admin')
     return MONGO_CLIENT
 
 
@@ -92,6 +94,7 @@ def change_mongo_id_format_to_standard(cursor):
         r['id'] = r.pop('_id')
     return l
 
+
 def cursor_to_list_str2(cursor, use_underscore_in_id=True):
     # method to return pymongo cursor into standard python list
     # with IDs as strings instead than ObjectIds
@@ -107,6 +110,7 @@ def cursor_to_list_str2(cursor, use_underscore_in_id=True):
         r["date_created"] = r['date_created'].strftime('%a, %d %b %Y %H:%M')
         r["date_modified"] = r['date_modified'].strftime('%a, %d %b %Y %H:%M')
     return records
+
 
 def convert_text(data):
     # change text to shortform :=: iri

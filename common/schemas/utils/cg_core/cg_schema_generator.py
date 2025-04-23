@@ -1,5 +1,3 @@
-__author__ = 'etuka'
-
 import os
 import json
 import numpy as np
@@ -11,15 +9,24 @@ import common.lookup.lookup as lkup
 from common.lookup.resolver import RESOLVER
 from common.utils import helpers
 
+
 class CgCoreSchemas:
     def __init__(self):
         self.resource_path = RESOLVER['cg_core_schemas']
         self.schemas_utils_paths = RESOLVER["cg_core_utils"]
         self.path_to_json = os.path.join(self.resource_path, 'cg_core.json')
-        self.type_field_status_path = os.path.join(self.schemas_utils_paths, 'type_field_STATUS.csv')
-        self.map_type_subtype_path = os.path.join(self.schemas_utils_paths, 'cg_types.csv')
-        self.copo_schema_spec_path = os.path.join(self.schemas_utils_paths, 'copo_schema.csv')
-        self.cg_wizard_stages = os.path.join(self.schemas_utils_paths, 'cg_wizard_stages.csv')
+        self.type_field_status_path = os.path.join(
+            self.schemas_utils_paths, 'type_field_STATUS.csv'
+        )
+        self.map_type_subtype_path = os.path.join(
+            self.schemas_utils_paths, 'cg_types.csv'
+        )
+        self.copo_schema_spec_path = os.path.join(
+            self.schemas_utils_paths, 'copo_schema.csv'
+        )
+        self.cg_wizard_stages = os.path.join(
+            self.schemas_utils_paths, 'cg_wizard_stages.csv'
+        )
 
     def retrieve_schema_specs(self, path_to_spec):
         """
@@ -71,7 +78,13 @@ class CgCoreSchemas:
         df = df.replace('required if applicable', 'required-if-applicable')
 
         # drop noisy columns - that do not define any constraint
-        constraints = ['required', 'recommended', 'optional', 'not applicable', 'required-if-applicable']
+        constraints = [
+            'required',
+            'recommended',
+            'optional',
+            'not applicable',
+            'required-if-applicable',
+        ]
 
         # filter out noisy columns
         df = df.T
@@ -92,6 +105,7 @@ class CgCoreSchemas:
         """
 
         from dal.copo_base_da import DataSchemas
+
         schema_fields = DataSchemas.get_ui_template_node('COPO', 'cgCore')
 
         df = self.resolve_field_constraint(schema=schema_fields, type_name=type_name)
@@ -120,7 +134,13 @@ class CgCoreSchemas:
         schemas_df.loc[schemas_df.index, 'field_constraint'] = df_type_series
 
         schemas_df["required"] = schemas_df["required"].replace(
-            {'required': True, 'recommended': False, 'optional': False, 'required-if-applicable': False})
+            {
+                'required': True,
+                'recommended': False,
+                'optional': False,
+                'required-if-applicable': False,
+            }
+        )
 
         # rank fields by constraints
         constraint_to_rank = self.get_constraint_ranking()
@@ -128,7 +148,9 @@ class CgCoreSchemas:
         lowered = schemas_df['field_constraint'].str.lower()
         schemas_df['field_constraint_rank'] = lowered.map(constraint_to_rank)
 
-        schemas_df['cg_type_name'] = type_name  # needed for resolving dependency constraints
+        schemas_df['cg_type_name'] = (
+            type_name  # needed for resolving dependency constraints
+        )
 
         return schemas_df
 
@@ -137,7 +159,7 @@ class CgCoreSchemas:
             'required': 1,
             'required-if-applicable': 2,
             'recommended': 3,
-            'optional': 4
+            'optional': 4,
         }
 
     def get_cg_subtypes(self, type_name):
@@ -155,14 +177,20 @@ class CgCoreSchemas:
 
         all_types_index = self.get_type_field_matrix().index
 
-        df_series = pd.Series(list(df['type'].str.strip().str.lower().dropna().unique()))
+        df_series = pd.Series(
+            list(df['type'].str.strip().str.lower().dropna().unique())
+        )
         all_types_series = pd.Series(all_types_index.str.strip().str.lower())
 
         qualified_types = list(df_series[df_series.isin(all_types_series)])
 
         all_types_series = pd.Series(all_types_index)
 
-        qualified_types = list(all_types_series[all_types_series.str.strip().str.lower().isin(qualified_types)])
+        qualified_types = list(
+            all_types_series[
+                all_types_series.str.strip().str.lower().isin(qualified_types)
+            ]
+        )
 
         return qualified_types
 
@@ -180,14 +208,20 @@ class CgCoreSchemas:
 
         all_types_index = self.get_type_field_matrix().index
 
-        df_series = pd.Series(list(df['type'].str.strip().str.lower().dropna().unique()))
+        df_series = pd.Series(
+            list(df['type'].str.strip().str.lower().dropna().unique())
+        )
         all_types_series = pd.Series(all_types_index.str.strip().str.lower())
 
         qualified_types = list(df_series[df_series.isin(all_types_series)])
 
         all_types_series = pd.Series(all_types_index)
 
-        qualified_types = list(all_types_series[all_types_series.str.strip().str.lower().isin(qualified_types)])
+        qualified_types = list(
+            all_types_series[
+                all_types_series.str.strip().str.lower().isin(qualified_types)
+            ]
+        )
 
         return qualified_types
 
@@ -206,20 +240,25 @@ class CgCoreSchemas:
             return list()
 
         repo_type_option = lkup.DROP_DOWNS["REPO_TYPE_OPTIONS"]
-        repo_type_option = [x for x in repo_type_option if x["value"].lower() == repo.lower()]
+        repo_type_option = [
+            x for x in repo_type_option if x["value"].lower() == repo.lower()
+        ]
 
         if not repo_type_option:
             return list()
 
         repo_type_option = repo_type_option[0]
 
-        cg_schema = DataSchemas.get_ui_template_node('COPO','cgCore')
+        cg_schema = DataSchemas.get_ui_template_node('COPO', 'cgCore')
 
         # filter schema items by repo
-        cg_schema = [x for x in cg_schema if
-                     x.get("target_repo", str()).strip() != str() and
-                     repo_type_option.get("abbreviation", str()) in [y.strip() for y in
-                                                                     x.get("target_repo").split(',')]]
+        cg_schema = [
+            x
+            for x in cg_schema
+            if x.get("target_repo", str()).strip() != str()
+            and repo_type_option.get("abbreviation", str())
+            in [y.strip() for y in x.get("target_repo").split(',')]
+        ]
 
         record = DataFile().get_record(datafile_id)
         description = record.get("description", dict())
@@ -238,8 +277,12 @@ class CgCoreSchemas:
 
         # filter stage items - stage items should conform to specifications of the repo
         schema_ids = list(schema_df.id)
-        items = {item.get("id", str()).lower().split(".")[-1]: st.get("ref", "").lower() for st in stages for item in
-                 st.get("items", list()) if item.get("id", str()).lower().split(".")[-1] in schema_ids}
+        items = {
+            item.get("id", str()).lower().split(".")[-1]: st.get("ref", "").lower()
+            for st in stages
+            for item in st.get("items", list())
+            if item.get("id", str()).lower().split(".")[-1] in schema_ids
+        }
 
         # ...also, account for any filtering performed by client agents (e.g., dependencies in COPO Wizard),
         # within the context of the target repo
@@ -261,13 +304,21 @@ class CgCoreSchemas:
         schema_df = schema_df[['ref', 'id', 'vals', 'prefix', 'label']]
 
         # get composite attributes
-        composite_attrib = [x for x in all_items if x["id"] in list(schema_df.id) and x.get("create_new_item", False)]
+        composite_attrib = [
+            x
+            for x in all_items
+            if x["id"] in list(schema_df.id) and x.get("create_new_item", False)
+        ]
 
         # expand composite attributes
         for cattrib in composite_attrib:
             comp_series = schema_df.loc[cattrib["id"]]
             schema_df = schema_df[~schema_df.id.isin([cattrib["id"]])]
-            children_schemas = [x for x in cg_schema if x.get("dependency", str()).lower() == comp_series.ref.lower()]
+            children_schemas = [
+                x
+                for x in cg_schema
+                if x.get("dependency", str()).lower() == comp_series.ref.lower()
+            ]
 
             accessions = comp_series.vals
             if isinstance(accessions, str):
@@ -277,12 +328,19 @@ class CgCoreSchemas:
 
             records = list()
             if len(object_ids):
-                records = cursor_to_list(CGCore().get_collection_handle().find({"_id": {"$in": object_ids}}))
+                records = cursor_to_list(
+                    CGCore().get_collection_handle().find({"_id": {"$in": object_ids}})
+                )
 
             attr_list = list()
             for child in children_schemas:
-                child_dict = dict(ref=child["ref"], id=child["id"].split(".")[-1], prefix=child["prefix"], vals=[],
-                                  label=child["label"])
+                child_dict = dict(
+                    ref=child["ref"],
+                    id=child["id"].split(".")[-1],
+                    prefix=child["prefix"],
+                    vals=[],
+                    label=child["label"],
+                )
                 attr_list.append(child_dict)
                 for rec in records:
                     child_dict["vals"].append(rec.get(child_dict["id"], str()))
@@ -292,7 +350,9 @@ class CgCoreSchemas:
                 attr_df.index = attr_df.id
                 schema_df = pd.concat([schema_df, attr_df], sort=False)
 
-        schema_df.rename(index=str, columns={"ref": "dc", "id": "copo_id"}, inplace=True)
+        schema_df.rename(
+            index=str, columns={"ref": "dc", "id": "copo_id"}, inplace=True
+        )
 
         dc_list = schema_df.to_dict('records')
 
@@ -319,7 +379,9 @@ class CgCoreSchemas:
         # filter out columns not found in type-field matrix
         df_spec_col_series = pd.Series(df.columns)
         type_field_series = pd.Series(self.get_type_field_matrix().columns)
-        spec_qualified_cols = df_spec_col_series[df_spec_col_series.isin(type_field_series)]
+        spec_qualified_cols = df_spec_col_series[
+            df_spec_col_series.isin(type_field_series)
+        ]
 
         df = df[spec_qualified_cols]
 
@@ -372,16 +434,45 @@ class CgCoreSchemas:
 
         # set data source for relevant controls
         df['data_source'] = np.where(
-            df['control'].isin(['copo-lookup2', 'copo-multi-select2', 'copo-button-list', 'copo-single-select']),
+            df['control'].isin(
+                [
+                    'copo-lookup2',
+                    'copo-multi-select2',
+                    'copo-button-list',
+                    'copo-single-select',
+                ]
+            ),
             df['COPO_DATA_SOURCE'],
-            '')
+            '',
+        )
 
         # reset 'type' to string for select2 controls
-        temp_df_1 = df[df['control'].isin(['copo-lookup2', 'copo-multi-select2', 'copo-single-select', 'copo-select2'])]
+        temp_df_1 = df[
+            df['control'].isin(
+                [
+                    'copo-lookup2',
+                    'copo-multi-select2',
+                    'copo-single-select',
+                    'copo-select2',
+                ]
+            )
+        ]
         df.loc[temp_df_1.index, 'type'] = 'string'
 
-        filtered_columns = ["ref", "id", "label", "help_tip", "control", "type", "stage_id", "data_source",
-                            "data_maxItems", "dependency", "target_repo", "prefix"]
+        filtered_columns = [
+            "ref",
+            "id",
+            "label",
+            "help_tip",
+            "control",
+            "type",
+            "stage_id",
+            "data_source",
+            "data_maxItems",
+            "dependency",
+            "target_repo",
+            "prefix",
+        ]
 
         df = df.loc[:, filtered_columns]
 

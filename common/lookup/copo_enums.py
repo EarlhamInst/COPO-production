@@ -1,5 +1,3 @@
-__author__ = 'felix.shaw@tgac.ac.uk - 01/08/2016'
-
 from enum import Enum
 
 

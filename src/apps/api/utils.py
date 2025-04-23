@@ -1,5 +1,3 @@
-__author__ = 'felix.shaw@tgac.ac.uk - 20/01/2016'
-
 import bson.json_util as jsonb
 import json
 import pandas as pd

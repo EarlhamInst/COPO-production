@@ -1,4 +1,3 @@
-__author__ = 'tonietuk'
 from django import template
 from allauth.socialaccount import providers
 
@@ -20,4 +19,4 @@ def get_providers_orcid_first():
         if p.id == 'orcid':
             o = p_list.pop(idx)
     result = [o] + p_list
-    return [{"id":o.id, "name":o.name} for o in result]
+    return [{"id": o.id, "name": o.name} for o in result]

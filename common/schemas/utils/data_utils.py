@@ -1,5 +1,3 @@
-__author__ = 'etuka'
-
 import copy
 import json
 import os

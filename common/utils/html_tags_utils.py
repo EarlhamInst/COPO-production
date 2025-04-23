@@ -1,5 +1,3 @@
-__author__ = 'tonietuk'
-
 import time
 import json
 import pandas as pd

@@ -1,7 +1,3 @@
-__author__ = 'felix.shaw@tgac.ac.uk - 28/07/2016'
-
-# from web.apps.web_copo.schemas.utils.data_utils import json_to_pytype, get_datetime
-# from web.apps.web_copo.lookup.lookup import MESSAGES_LKUPS
 from datetime import datetime
 import os
 from common.lookup.copo_enums import Loglvl,Logtype, bcolors

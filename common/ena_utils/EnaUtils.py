@@ -1,15 +1,15 @@
-__author__ = 'fshaw'
 import re
 import os
 
 import PyPDF2
 from datetime import time
-#from dal.ena_da import EnaCollection
+
+# from dal.ena_da import EnaCollection
 import requests
 from common.utils.helpers import get_env
 from common.utils.logger import Logger
 
-l = Logger() 
+l = Logger()
 
 """   deprecated
 def get_sample_html_from_details_id(details_id):
@@ -28,6 +28,7 @@ def get_sample_html_from_details_id(details_id):
         out += '<tr><td>' + '<a rest_url="' + reverse('rest:get_sample_html', args=[str(s["_id"])]) + '" href="">' + s['Source_Name'] + '</a>' + '</td><td>' + s['Sample_Name'] + '</td><td>' + s['Individual_Name'] + '</td><td>' + s['Description'] + '</td></tr>'
     return out
 """
+
 
 def handle_uploaded_file(f):
     # get timestamp
@@ -74,7 +75,7 @@ def is_fastq_file(file_name):
                     return False
             else:
                 if len(li) != second_line_length:
-                    print ('line lengths not equal' + li)
+                    print('line lengths not equal' + li)
                     # if length of 2nd and 4th lines is not equal, return false
                     return False
 
@@ -87,7 +88,8 @@ def is_sam_file(file_name):
         li = f.readline().strip()
         regex1 = "^@[A-Za-z][A-Za-z](\t[A-Za-z][A-Za-z0-9]:[ -~]+)+$"
         regex2 = "^@CO\t.*"
-        return (re.match(regex1, li) is not None or re.match(regex2, li) is not None)
+        return re.match(regex1, li) is not None or re.match(regex2, li) is not None
+
 
 '''
 def is_bam_file(file_name):
@@ -98,30 +100,34 @@ def is_bam_file(file_name):
     except(Exception) as inst:
         return False
 '''
+
+
 def is_cram_file(file_name):
     pass
 
 
 def is_gzipped(file_name):
     # try opening the file in gzip and reading the first few chars
-    #if this produces an IOError, it probably isn't gzipped
+    # if this produces an IOError, it probably isn't gzipped
     import gzip
 
     try:
         f = gzip.open(file_name, 'rb')
         r = f.read(5)
         return True
-    except(IOError) as inst:
+    except IOError as inst:
         return False
     finally:
         f.close()
 
+
 def filesize_toString(f_size):
     import math
-    KB = math.pow(10,3)
-    MB = math.pow(10,6)
-    GB = math.pow(10,9)
-    TB = math.pow(10,12)
+
+    KB = math.pow(10, 3)
+    MB = math.pow(10, 6)
+    GB = math.pow(10, 9)
+    TB = math.pow(10, 12)
 
     if 0 <= f_size < KB:
         out = "%.2f" % f_size + ' B'
@@ -153,13 +159,19 @@ def query_ena_file_processing_status_by_project(project_accession, type):
             if response.status_code == requests.codes.ok:
                 response_body = response.json()
                 for r in response_body:
-                    report = r.get("report",{})
-                    if report and report["analysisType"]==type:
-                        result = result_map.get(report["id"],"")
+                    report = r.get("report", {})
+                    if report and report["analysisType"] == type:
+                        result = result_map.get(report["id"], "")
                         if result:
                             result += "<br/>"
-                        result += report.get("fileName") + " : " + report.get("archiveStatus") + " : " + report.get("releaseStatus")            
-                        result_map[report["id"]] = result 
+                        result += (
+                            report.get("fileName")
+                            + " : "
+                            + report.get("archiveStatus")
+                            + " : "
+                            + report.get("releaseStatus")
+                        )
+                        result_map[report["id"]] = result
             else:
                 result = "Cannot get file processing result from ENA"
                 l.error(str(response.status_code) + ":" + response.text)

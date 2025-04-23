@@ -1,5 +1,3 @@
-__author__ = 'etuka'
-
 import pandas as pd
 from bson import ObjectId
 from common.dal.mongo_util import cursor_to_list, get_collection_ref
