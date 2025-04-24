@@ -483,6 +483,8 @@ secrets:
     external: true
   ecs_secret_key:
     external: true
+  copo_bioimage_password:
+    external: true
 volumes:
   web-data:
     external: true
