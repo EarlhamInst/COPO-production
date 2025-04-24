@@ -33,12 +33,14 @@ paths:
                   type: string
                   format: password
       responses:
-        200:
+        '200':
           description: Username and Password
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthBody'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   # Section: Audit
   /audit/samples:
@@ -56,12 +58,14 @@ paths:
         - $ref: '#/components/parameters/updatable_field'
         - $ref: '#/components/parameters/return_type'
       responses:
-        200:
+        '200':
           description: A JSON array of update audits by given project type, updatable field and copo_id (if provided)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SampleAudit_update_log'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /audit/sample/{from}/{to}:
     get:
@@ -92,11 +96,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SampleAudit_update_log'
+                type: array
+                items:
+                  $ref: '#/components/schemas/SampleAudit_update_log'
         '400':
           description: \'from\' must be earlier than \'to\'
         '500':
-          description: No audits found
+          $ref: '#/components/responses/RangeError'
 
   /audit/sample/manifest_id/{manifest_id}:
     get:
@@ -122,6 +128,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SampleAudit_update_log'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /audit/sample/update_type/{update_type}:
     get:
@@ -140,7 +148,9 @@ paths:
           description: The type of person who performed the audit
           schema:
             type: string
-            enum: [system, user]
+            enum:
+              - system
+              - user
         - $ref: '#/components/parameters/return_type'
       responses:
         '200': # status code
@@ -151,6 +161,8 @@ paths:
                 $ref: '#/components/schemas/SampleAudit_update_log'
         '400':
           description: Invalid sample type found in request
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /audit/sample/{field}/{field_value}:
     get:
@@ -185,6 +197,8 @@ paths:
                 $ref: '#/components/schemas/SampleAudit_update_log'
         '400':
           description: Invalid value found in request
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   # Section: Manifest
   /manifest:
@@ -197,12 +211,14 @@ paths:
       parameters:
         - $ref: '#/components/parameters/return_type'
       responses:
-        200:
+        '200':
           description: A JSON array sample objects
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ManifestList'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /manifest/sequencing_centre:
     get:
@@ -215,12 +231,14 @@ paths:
         - $ref: '#/components/parameters/sequencing_centre'
         - $ref: '#/components/parameters/return_type'
       responses:
-        200:
+        '200':
           description: A JSON array sample objects
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ManifestList'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /manifest/current_version:
     get:
@@ -233,8 +251,10 @@ paths:
         - $ref: '#/components/parameters/manifest_type'
         - $ref: '#/components/parameters/return_type'
       responses:
-        200:
+        '200':
           description: A JSON array of the latest manifest version for a given project type
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /manifest/{manifest_id}:
     get:
@@ -266,6 +286,8 @@ paths:
                 $ref: '#/components/schemas/SampleList'
         '400':
           description: invalid manifest_id
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /manifest/{from}/{to}:
     get:
@@ -299,6 +321,8 @@ paths:
                 $ref: '#/components/schemas/ManifestList'
         '400':
           description: \'from\' must be earlier than \'to\'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /manifest/{project}/{from}/{to}:
     get:
@@ -338,6 +362,8 @@ paths:
                 $ref: '#/components/schemas/ManifestList'
         '400':
           description: \'from\' must be earlier than \'to\ and project must be in the list of supported projects'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /manifest/{manifest_id}/sample_status:
     get:
@@ -364,6 +390,8 @@ paths:
                 $ref: '#/components/schemas/SampleStatus'
         '400':
           description: invalid manifest_id
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /manifest/validate:
     post:
@@ -388,6 +416,8 @@ paths:
       responses:
         '200':
           description: id of queued validation report to be queried
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /manifest/validate/report:
     post:
@@ -410,6 +440,8 @@ paths:
       responses:
         '200':
           description: status and/or validation errors for given manifest validation
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /manifest/validations:
     post:
@@ -420,6 +452,8 @@ paths:
       responses:
         '200':
           description: validations for authorised user
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   # Section: Sample
   /sample/{project}:
@@ -450,6 +484,8 @@ paths:
 
         '404':
           description: Invalid project found in request. No sample records exist for the given project.
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /sample/associated_tol_project:
     get:
@@ -472,6 +508,8 @@ paths:
 
         '404':
           description: Invalid associated project type found in request. No sample records exist for the given associated project.
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /sample/project/manifest_version/fields:
     get:
@@ -504,6 +542,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SampleListByManifestVersionError'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /sample/{from}/{to}:
     get:
@@ -538,6 +578,8 @@ paths:
                 $ref: '#/components/schemas/SampleList'
         '400':
           description: \'from\' must be earlier than \'to\'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /sample/updatable_fields:
     get:
@@ -553,15 +595,12 @@ paths:
       responses:
         '200': # status code
           description: A JSON array of updatable sample fields
-
         '400':
           description: Invalid project found in request
-
         '401':
           description: No updatable fields found for given project
-
         '500':
-          description: No samples exist for given project(s)
+          $ref: '#/components/responses/RangeError'
 
   /sample/copo_id/{copo_ids}:
     get:
@@ -589,6 +628,8 @@ paths:
                 $ref: '#/components/schemas/SampleList'
         '400':
           description: InvalidId found in request
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /sample/biosampleAccession/{biosampleAccessions}:
     get:
@@ -614,6 +655,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SampleList'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /sample/sample_field/{field}/{values}:
     get:
@@ -645,6 +688,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SampleList'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /sample/sequencing_centre:
     get:
@@ -663,6 +708,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SampleList'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /sample/taxon_id/{taxon_ids}:
     get:
@@ -688,6 +735,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SampleList'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /sample/with_submitted_bioimages:
     get:
@@ -720,6 +769,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SamplesWithSubmittedBioimages'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /sample/StudyFromSampleAccession/{sample_ids}:
     get:
@@ -746,6 +797,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccessionListShort'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /sample/SampleFromStudyAccession/{biostudyAccessions}:
     get:
@@ -770,6 +823,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SampleAccessionList'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   # Section: Profile
   /profile/make_profile:
@@ -811,6 +866,8 @@ paths:
       responses:
         '200':
           description: representation of the created profile
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /profile/get_for_user:
     post:
@@ -824,6 +881,8 @@ paths:
       responses:
         '200':
           description: representation of the created profile
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /profile/tube_or_well_ids:
     get:
@@ -873,6 +932,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProfileTubeOrWellIDAssociationList'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   # Section: Statistics
   /stats/number_of_users:
@@ -887,6 +948,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatsNumber'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /stats/number_of_samples/{sample_type}:
     get:
@@ -921,6 +984,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatsNumber'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /stats/tol_projects:
     get:
@@ -934,6 +999,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GenericOutputSchema'
+        '500':
+          $ref: '#/components/responses/RangeError'
 
   /stats/associated_tol_projects:
     get:
@@ -949,9 +1016,8 @@ paths:
                 $ref: '#/components/schemas/GenericOutputSchema'
         '400':
           description: Invalid project found in request
-
         '500':
-          description: No samples exist for given project(s)
+          $ref: '#/components/responses/RangeError'
 
   # Section: TOL Mapping
   /mapping:
@@ -975,9 +1041,8 @@ paths:
                 $ref: '#/components/schemas/GenericOutputSchema'
         '400':
           description: Invalid request
-
         '500':
-          description: No mapping exist
+          $ref: '#/components/responses/RangeError'
 
 components:
   parameters:
@@ -1130,6 +1195,19 @@ components:
         A list of fields that can be updated by resubmitting a manifest for a project
       schema:
         $ref: '#/components/schemas/UpdatableFields'
+  
+  responses:
+    RangeError:
+      description: Call stack size exceeded - occurs only in Swagger UI. Try direct request.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "RangeError: Maximum call stack size exceeded. Please run the API URL directly in the browser: https://copo-project.org/api/some-path. Replace 'some-path' with the actual path and parameter(s) (if applicable) you were trying to access."
 
   securitySchemes:
     app_id:

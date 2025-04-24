@@ -201,7 +201,7 @@ def get_sample_updates_between_dates(request, d_from, d_to):
     # Return response if result is an error
     if isinstance(result, HttpResponse):
         return result
-
+   
     # Unpack parsed date values from the result
     d_from_parsed, d_to_parsed = result
 

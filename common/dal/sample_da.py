@@ -221,12 +221,14 @@ class Source(DAComponent):
         }
 
         # Add conditions to 'last_bioimage_submitted' field if 'd_from' or 'd_to' is not None
-        if d_from is not None or d_to is not None:
-            filter['$match']['last_bioimage_submitted'] = {}
-            if d_from is not None:
-                filter['$match']['last_bioimage_submitted']['$gte'] = d_from
-            if d_to is not None:
-                filter['$match']['last_bioimage_submitted']['$lt'] = d_to
+        if d_from or d_to:
+            filter['$match']['last_bioimage_submitted'] = {
+                '$gte': d_from if d_from else None,
+                '$lt': d_to if d_to else None
+            }
+
+            # Remove any 'None' values from the filter
+            filter['$match']['last_bioimage_submitted'] = {key: value for key, value in filter['$match']['last_bioimage_submitted'].items() if value is not None}
 
         # Query for specimens with submitted bioimages
         specimens = cursor_to_list(
@@ -698,8 +700,18 @@ class Sample(DAComponent):
         if sample_type:
             filter['sample_type'] = sample_type
 
-        if d_from and d_to:
-            filter['time_created'] = {'$gte': d_from, '$lt': d_to}
+        if d_from or d_to:
+            filter['$match']['time_created'] = {
+                '$gte': d_from if d_from else None,
+                '$lt': d_to if d_to else None
+            }
+
+            # Remove any 'None' values from the filter
+            filter['$match']['time_created'] = {
+                key: value
+                for key, value in filter['$match']['time_created'].items()
+                if value is not None
+            }
 
         if not sample_type and d_from is None and d_to is None:
             return self.get_number_of_samples()

@@ -346,7 +346,7 @@ def get_specimens_with_submitted_images(request):
     # Return response if result is an error
     if isinstance(result, HttpResponse):
         return result
-
+    
     # Unpack parsed date values from the result
     d_from_parsed, d_to_parsed = result
 

@@ -537,7 +537,7 @@ def validate_date_from_api(d_from, d_to, optional=False):
     # If both dates are blank
     if not d_from and not d_to:
         if optional:
-            return None  # No error for blank value if optional
+            return None, None  # No error for blank value if optional
         else:
             return HttpResponse(
                 status=status.HTTP_400_BAD_REQUEST,

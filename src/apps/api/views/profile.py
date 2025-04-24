@@ -106,10 +106,13 @@ def associate_profiles_with_tubes_or_well_ids(request):
 
     # Unpack parsed date values from the result
     d_from_parsed, d_to_parsed = result
-
+    
     # Add date filters
-    filter_dict['first_manifest_date_created'] = {'$gte': d_from_parsed}
-    filter_dict['last_manifest_date_modified'] = {'$lt': d_to_parsed}
+    if d_from_parsed is not None:
+        filter_dict['first_manifest_date_created'] = {'$gte': d_from_parsed}
+
+    if d_to_parsed is not None:
+        filter_dict['last_manifest_date_modified'] = {'$lt': d_to_parsed}
 
     profiles = cursor_to_list(
         Profile().get_collection_handle().find(filter_dict, projection)
