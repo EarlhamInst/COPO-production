@@ -429,11 +429,7 @@ secrets:
     external: true
   copo_mail_password:
     external: true
-  copo_postgres_user_password:
-    external: true
   copo_mongo_initdb_root_password:
-    external: true
-  copo_mongo_user_password:
     external: true
   copo-project.crt:
     external: true
