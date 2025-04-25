@@ -2,8 +2,8 @@ from common.dal.copo_da import DAComponent, EnaChecklist
 from bson.objectid import ObjectId
 
 class TaggedSequence(DAComponent):
-    def __init__(self, profile_id=None):
-        super(TaggedSequence, self).__init__(profile_id, "taggedseq")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(TaggedSequence, self).__init__(profile_id, "taggedseq", subcomponent=subcomponent)
 
     def get_schema(self, target_id=str()):
         if not target_id:

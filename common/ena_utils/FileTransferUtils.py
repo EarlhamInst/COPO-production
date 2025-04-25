@@ -16,13 +16,14 @@ import hashlib
 from pathlib import Path
 from PIL import ImageFile, Image
 from django.conf import settings
-from enum import Enum
+from enum import IntEnum
+from common.utils.helpers import get_not_deleted_flag
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 Image.MAX_IMAGE_PIXELS = None
 
-class TransferStatus(Enum):
+class TransferStatus(IntEnum):
     DOWNLOADING_TO_LOCAL = 0
     DOWNLOADED_TO_LOCAL = 1
     TRANSFERRING_TO_ENA = 2
@@ -32,11 +33,11 @@ class TransferStatus(Enum):
 def make_transfer_record(file_id, submission_id, remote_location=None, no_remote_location=False):
     # N.B. called from celery
     # make transfer object
-    remote_location = remote_location if remote_location else submission_id + "/reads/"
 
     file = DataFile().get_record(file_id)
     tx = dict()
     if not no_remote_location:
+        remote_location = remote_location if remote_location else submission_id + "/reads/"
         tx["remote_path"] = remote_location
         
     tx["local_path"] = file["file_location"]
@@ -46,6 +47,7 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
     tx["file_type"] = file["file_type"]
     # tx["status"] = "pending"
     tx["submission_id"] = submission_id
+    tx["deleted"] = get_not_deleted_flag()
     # N.B. Transfer Status
     # 0 transfer complete
     # 1 check for presences of file on ecs
@@ -60,8 +62,7 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
         ena_file = {"status":"pending", "remote_path":remote_location}
     
     if ena_file["status"] != "processing":
-
-        if ena_file["remote_path"] != remote_location or get_transfer_status(ena_file) >= TransferStatus.DOWNLOADED_TO_LOCAL:
+        if remote_location and ena_file["remote_path"] != remote_location or get_transfer_status(ena_file) >= TransferStatus.DOWNLOADED_TO_LOCAL:
             tx["transfer_status"] = 5
         else:
             tx["transfer_status"] = 1

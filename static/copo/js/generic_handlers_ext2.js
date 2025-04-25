@@ -943,6 +943,15 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
         tr.removeClass('showing');
         tr.removeClass('shown');
       } else {
+        component = componentMeta.component;
+        idx = component.indexOf('#');
+        if (idx > -1) {
+          component = component.substring(0, idx);
+          subcomponent = componentMeta.component.substring(idx + 1);
+        } else {
+          component = componentMeta.component;
+          subcomponent = "";
+        }
         $.ajax({
           url: copoVisualsURL,
           type: 'POST',
@@ -951,7 +960,8 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
           },
           data: {
             task: 'attributes_display',
-            component: componentMeta.component,
+            component: component,
+            subcomponent: subcomponent,
             target_id: row.data().record_id,
           },
           success: function (data) {

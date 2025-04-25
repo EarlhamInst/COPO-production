@@ -5,7 +5,7 @@ import pandas as pd
 import os
 from django.conf import settings
 from openpyxl.utils.cell import get_column_letter
-from common.utils.helpers import notify_singlecell_status
+from common.utils.helpers import notify_singlecell_status, get_datetime
 from django_tools.middlewares import ThreadLocal
 import inspect
 import math
@@ -17,7 +17,7 @@ from openpyxl.utils import get_column_letter
 from common.dal.profile_da import Profile
 import re
 import collections
-
+ 
 l = Logger()
 
 class SingleCellSchemasHandler:
@@ -113,6 +113,7 @@ class SingleCellSchemasHandler:
         singlecell_dict["checklists"]= checklist_df.to_dict("index")
         singlecell_dict["name"] = schema_name
         singlecell_dict["deleted"] = 0
+        singlecell_dict["date_modified"] = get_datetime()
 
         return singlecell_dict
 

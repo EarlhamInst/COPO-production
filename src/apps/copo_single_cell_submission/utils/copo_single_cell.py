@@ -1,5 +1,5 @@
 from common.utils.logger import Logger
-from .da import SinglecellSchemas, Singlecell
+from .da import SinglecellSchemas, Singlecell, ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE
 import pandas as pd
 from common.utils.helpers import get_datetime, get_thumbnail_folder
 from common.dal.profile_da import Profile
@@ -63,14 +63,21 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
 
             detail_dict = dict(className='summary-details-control detail-hover-message', orderable=False, data=None,
                            title='', defaultContent='', width="5%")
-            #columns[component_name].insert(0, detail_dict)
+            columns[component_name].insert(0, detail_dict)
             columns[component_name].append(dict(data="record_id", visible=False))
             columns[component_name].append(dict(data="DT_RowId", visible=False))
             columns[component_name].extend([dict(data=item["term_name"], title=item["term_label"], defaultContent='', 
                                                     render = "render_thumbnail_image_column_function" if item["term_type"] == "file" else None
                                                   ) for item in component_schema])
-
+            
             column_keys[component_name] = ([item["term_name"] for item in component_schema])
+
+            submission_repository = SinglecellSchemas().get_submission_repositiory(schema_name, checklist_id)
+            for repository in submission_repository:
+                for prefix, value in list(ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE.items()):
+                    columns[component_name].append(dict(data=f"{prefix}_{repository}", title=f"{prefix} for {repository}", defaultContent= value)) # render = "render_accession_column_function"
+                    column_keys[component_name].append(f"{prefix}_{repository}")
+
  
          
         studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"schema_name": schema_name, "checklist_id": checklist_id}, projection={"study_id": 1, "components.study": 1})
@@ -99,6 +106,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
             
             for column in component_data_df.columns:
                 if column not in column_keys.get(component_name, []):
+
                     component_data_df.drop(column, axis=1, inplace=True)
 
             #set the identifier to DT_RowId
@@ -106,7 +114,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
                     
             component_data_df["DT_RowId"] = component_name + ( "_"+ study_id if component_name != 'study' else "")  + "_" + component_data_df.get(identifier_map.get(component_name,""), "")
             component_data_df["record_id"] = component_data_df["DT_RowId"]
-
+            component_data_df.fillna("", inplace=True)
             data_set[component_name] = component_data_df.to_dict(orient="records")
 
     return_dict = dict(dataSet=data_set,
@@ -336,22 +344,24 @@ def submit_singlecell_zenodo(profile_id, target_ids, target_id, checklist_id, st
 
     if not target_ids:
         return dict(status='error', message="Please select one or more records to submit!")
-
+    
+    repository = "zenodo"
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
     if not singlecell:
         return dict(status='error', message="No record found.")
     #check if the submission is in progress
-    if singlecell.get("status", {}).get("zenodo", "") == "processing":
+    studies = singlecell.get("components",{}).get("study",[])
+    if studies[0].get(f"status_{repository}", "") == "processing":
         return dict(status='error', message="Submission is in progress, please wait until it is completed!")
 
-    result =  Submission().make_singlecell_submission_downloading(profile_id, checklist_id, study_id, repository="zenodo")
+    result =  Submission().make_singlecell_submission_downloading(profile_id, checklist_id, study_id, repository=repository)
     if result.get("status","") == "error":
         return result  
     else:
         user = ThreadLocal.get_current_user()
         dt = get_datetime()
         #update the status of the singlecell record
-        Singlecell().get_collection_handle().update_one({"_id": singlecell["_id"]}, {"$set": {"status.zenodo": "processing", "updated_by": user.id, "date_modified": dt}})
+        Singlecell().get_collection_handle().update_one({"_id": singlecell["_id"]}, {"$set": {f"components.study.status_{repository}": "processing", "updated_by": user.id, "date_modified": dt, f"components.study.error_{repository}": ""}})
         return dict(status='success', message="Submission has been scheduled.")
 
     """

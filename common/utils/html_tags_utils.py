@@ -251,6 +251,7 @@ def get_labels():
                       metadata_template=dict(label="Metadata Template"),
                       repository=dict(label="Repository"),
                       taggedseq=dict(label="Tagged Sequence"),
+                      singlecell=dict(label="Single Cell"),
                       )
 
     return label_dict
@@ -1299,57 +1300,61 @@ def generate_attributes(da_object, target_id):
     #    target_id = target_id.split("_")[0]
 
     # get and filter schema elements based on displayable columns
-    schema = [x for x in da_object.get_schema(target_id=target_id).get(
-        "schema_dict") if x.get("show_as_attribute", False)]
+    if da_object.subcomponent:
+        schema, record = da_object.get_table_attributes(target_id=target_id)
 
-    # build db column projection
-    projection = [(x["id"].split(".")[-1], 1) for x in schema]
+    else:
+        schema = [x for x in da_object.get_schema(target_id=target_id).get(
+            "schema_dict") if x.get("show_as_attribute", False)]
 
-    # account for description metadata in datafiles
-    if da_object.component == "datafile":
-        projection.append(('description', 1))
+        # build db column projection
+        projection = [(x["id"].split(".")[-1], 1) for x in schema]
 
-    filter_by = dict(_id=ObjectId(target_id))
-    record = da_object.get_all_records_columns(
-        projection=dict(projection), filter_by=filter_by)
-
-    result = dict()
-
-    if len(record):
-        record = record[0]
-
-        if da_object.component == "sample":  # filter based on sample type
-            sample_types = [s_t['value'] for s_t in COPOLookup(
-                data_source='sample_type_options').broker_data_source()]
-            sample_type = record.get("sample_type", str())
-            schema = [x for x in schema if sample_type in x.get(
-                "specifications", sample_types)]
-
-        for x in schema:
-            x['id'] = x["id"].split(".")[-1]
-
+        # account for description metadata in datafiles
         if da_object.component == "datafile":
-            key_split = "___0___"
-            attributes = record.get("description", dict()).get(
-                "attributes", dict())
-            stages = record.get("description", dict()).get("stages", list())
+            projection.append(('description', 1))
 
-            datafile_attributes = dict()
-            datafile_items = list()
+        filter_by = dict(_id=ObjectId(target_id))
+        record = da_object.get_all_records_columns(
+            projection=dict(projection), filter_by=filter_by)
 
-            for st in stages:
-                for item in st.get("items", list()):
-                    if str(item.get("hidden", False)).lower() == "false":
-                        atrib_val = attributes.get(
-                            st["ref"], dict()).get(item["id"], str())
-                        item["id"] = st["ref"] + key_split + item["id"]
-                        datafile_attributes[item["id"]] = atrib_val
-                        datafile_items.append(item)
+        result = dict()
 
-            record.update(datafile_attributes)
-            schema = schema + datafile_items
+        if len(record):
+            record = record[0]
 
-        result = resolve_display_data(schema, record)
+            if da_object.component == "sample":  # filter based on sample type
+                sample_types = [s_t['value'] for s_t in COPOLookup(
+                    data_source='sample_type_options').broker_data_source()]
+                sample_type = record.get("sample_type", str())
+                schema = [x for x in schema if sample_type in x.get(
+                    "specifications", sample_types)]
+
+            for x in schema:
+                x['id'] = x["id"].split(".")[-1]
+
+            if da_object.component == "datafile":
+                key_split = "___0___"
+                attributes = record.get("description", dict()).get(
+                    "attributes", dict())
+                stages = record.get("description", dict()).get("stages", list())
+
+                datafile_attributes = dict()
+                datafile_items = list()
+
+                for st in stages:
+                    for item in st.get("items", list()):
+                        if str(item.get("hidden", False)).lower() == "false":
+                            atrib_val = attributes.get(
+                                st["ref"], dict()).get(item["id"], str())
+                            item["id"] = st["ref"] + key_split + item["id"]
+                            datafile_attributes[item["id"]] = atrib_val
+                            datafile_items.append(item)
+
+                record.update(datafile_attributes)
+                schema = schema + datafile_items
+
+    result = resolve_display_data(schema, record)
 
     return result
 
@@ -1497,7 +1502,7 @@ def resolve_display_data(datafile_items, datafile_attributes):
                         data.append({class_name: o_row[subitem]})
         else:
             # account for array types
-            if row["type"] == "array":
+            if row.get("type","") == "array":
                 for tt_indx, tt_val in enumerate(resolved_data):
                     shown_keys = (row["id"], str(tt_indx))
                     class_name = key_split.join(shown_keys)

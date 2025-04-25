@@ -20,8 +20,8 @@ from .copo_base_da import DAComponent, handle_dict
 lg = settings.LOGGER
 
 class Audit(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Audit, self).__init__(profile_id, 'audit')
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Audit, self).__init__(profile_id, 'audit',subcomponent)
         self.filter = {'action': 'update','collection_name': 'SampleCollection'}
         self.projection = {}
         self.doc_included_field_lst = ['copo_id', 'manifest_id','sample_type', 'RACK_OR_PLATE_ID', 'TUBE_OR_WELL_ID']
@@ -207,19 +207,19 @@ class Audit(DAComponent):
         return out
 
 class TestObjectType(DAComponent):
-    def __init__(self, profile_id=None):
-        super(TestObjectType, self).__init__(profile_id=profile_id, component="test")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(TestObjectType, self).__init__(profile_id=profile_id, component="test", subcomponent=subcomponent)
 
 
 
 class Publication(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Publication, self).__init__(profile_id, "publication")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Publication, self).__init__(profile_id, "publication", subcomponent=subcomponent)
 
 
 class TextAnnotation(DAComponent):
-    def __init__(self, profile_id=None):
-        super(TextAnnotation, self).__init__(profile_id, "textannotation")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(TextAnnotation, self).__init__(profile_id, "textannotation", subcomponent=subcomponent)
 
     def add_term(self, data):
         data["file_id"] = ObjectId(data["file_id"])
@@ -249,8 +249,8 @@ class TextAnnotation(DAComponent):
 
 
 class MetadataTemplate(DAComponent):
-    def __init__(self, profile_id=None):
-        super(MetadataTemplate, self).__init__(profile_id, "metadata_template")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(MetadataTemplate, self).__init__(profile_id, "metadata_template", subcomponent=subcomponent)
 
     def update_name(self, template_name, template_id):
         record = self.get_collection_handle().update_one({"_id": ObjectId(template_id)},
@@ -274,8 +274,8 @@ class MetadataTemplate(DAComponent):
 
 
 class Annotation(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Annotation, self).__init__(profile_id, "annotation")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Annotation, self).__init__(profile_id, "annotation", subcomponent=subcomponent)
 
     def add_or_increment_term(self, data):
         # check if annotation is already present
@@ -320,8 +320,8 @@ class Annotation(DAComponent):
 
 
 class Person(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Person, self).__init__(profile_id, "person")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Person, self).__init__(profile_id, "person", subcomponent=subcomponent)
 
     def get_people_for_profile(self):
         docs = self.get_collection_handle().find(
@@ -368,8 +368,8 @@ class Person(DAComponent):
 
 
 class CGCore(DAComponent):
-    def __init__(self, profile_id=None):
-        super(CGCore, self).__init__(profile_id, "cgcore")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(CGCore, self).__init__(profile_id, "cgcore", subcomponent=subcomponent)
 
     def get_component_schema(self, **kwargs):
         """
@@ -491,8 +491,8 @@ class CGCore(DAComponent):
 
 
 class Stats(DAComponent):
-    def __init__(self, profile=None):
-        super(Stats, self).__init__(profile, "stats")
+    def __init__(self, profile=None, subcomponent=None):
+        super(Stats, self).__init__(profile, "stats", subcomponent=subcomponent)
 
     def update_stats(self):
         datafiles = DataFile().get_collection_handle().count_documents({})
@@ -505,8 +505,8 @@ class Stats(DAComponent):
 
 
 class Description(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Description, self).__init__(profile_id, "description")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Description, self).__init__(profile_id, "description", subcomponent=subcomponent)
         self.DescriptionCollection = self.get_collection_handle()
 
     def GET(self, id):
@@ -578,8 +578,8 @@ class Description(DAComponent):
 
 
 class Barcode(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Barcode, self).__init__(profile_id, "barcode")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Barcode, self).__init__(profile_id, "barcode", subcomponent=subcomponent)
 
     def add_sample_id(self, specimen_id, sample_id):
         self.get_collection_handle().update_many({"specimen_id": specimen_id},
@@ -589,8 +589,8 @@ class Barcode(DAComponent):
 
 
 class EnaFileTransfer(DAComponent):
-    def __init__(self, profile_id=None):
-        super(EnaFileTransfer, self).__init__(profile_id, "enaFileTransfer")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(EnaFileTransfer, self).__init__(profile_id, "enaFileTransfer", subcomponent=subcomponent)
         self.profile_id = profile_id
         # self.component = str()
 
@@ -639,13 +639,13 @@ class EnaFileTransfer(DAComponent):
         return result_map
     
     def complete_remote_transfer_status_by_ecs_path(self, ecs_locations):
-        self.get_collection_handle().update_many({"ecs_location": {"$in": ecs_locations, "status":"complete"}},{"$set":{"status": "ena_complete"}})
+                self.get_collection_handle().update_many({"ecs_location": {"$in": ecs_locations}, "status":"complete"},{"$set":{"status": "ena_complete"}})
 
 
 class APIValidationReport(DAComponent):
-    def __init__(self, profile_id=None):
+    def __init__(self, profile_id=None, subcomponent=None):
         super(APIValidationReport, self).__init__(
-            profile_id, "apiValidationReport")
+            profile_id, "apiValidationReport", subcomponent=subcomponent)
 
     def setComplete(self, report_id):
         self.get_collection_handle().update_one({"_id": ObjectId(report_id)}, {
@@ -697,7 +697,7 @@ class TaggedSequenceChecklist(DAComponent):
 
 class CopoGroup(DAComponent):
     def __init__(self):
-        super(CopoGroup, self).__init__(None, "group")
+        super(CopoGroup, self).__init__(None, "group", subcomponent=None)
         self.Group = self.get_collection_handle()
 
     def get_by_owner(self, owner_id):
@@ -873,7 +873,7 @@ class CopoGroup(DAComponent):
 
 class DataFile(DAComponent):
     def __init__(self, profile_id=None):
-        super(DataFile, self).__init__(profile_id=profile_id, component="datafile" )
+        super(DataFile, self).__init__(profile_id=profile_id, component="datafile", subcomponent=None)
 
     def get_for_profile(self, profile_id):
         docs = self.get_collection_handle().find({
@@ -1029,8 +1029,8 @@ class DataFile(DAComponent):
 
 
 class EnaChecklist(DAComponent):
-    def __init__(self, profile_id=None):
-        super(EnaChecklist, self).__init__(profile_id=profile_id, component="enaChecklist")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(EnaChecklist, self).__init__(profile_id=profile_id, component="enaChecklist", subcomponent=subcomponent)
 
     def get_checklist(self, checklist_id):
         checklists = self.execute_query({"primary_id": checklist_id})

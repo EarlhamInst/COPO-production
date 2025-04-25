@@ -1086,9 +1086,9 @@ class Submission(DAComponent):
             
         return dict(status='success', message="Submission has been scheduled!")
 
-    def get_submission_downloading(self, respository="zenodo"):
+    def get_submission_downloading(self, repository="zenodo"):
         subs = self.get_collection_handle().find(
-            {"status": "downloading", "repository": respository, "deleted": helpers.get_not_deleted_flag()},
+            {"status": "downloading", "repository": repository, "deleted": helpers.get_not_deleted_flag()},
             {"studies": 1, "profile_id": 1, "date_modified": 1})
         return cursor_to_list(subs)
 
@@ -1116,19 +1116,18 @@ class Submission(DAComponent):
                                                  {"$set": {"status": "pending"}})
         
  
-    def update_zendodo_submission_accession(self, sub_id, accessions):
+    def add_zendodo_submission_accession(self, sub_id, accessions=[]):
         self.get_collection_handle().update_one({"_id": ObjectId(sub_id)},
-                                                  {"$addToSet": {"accessions.study": {"$each": {accessions}}}})
-
+                                                  {"$addToSet": {"accessions.study": {"$each": accessions}}})
 
     def get_pending_submission(self, repository="zenodo"):
-        REFRESH_THRESHOLD = 3600  # time in seconds to retry stuck submission
-        # called by celery to get samples the supeprvisor has set to be sent to ENA
+        REFRESH_THRESHOLD = 600  # time in seconds to retry stuck submission
+        # called by celery to get samples the supeprvisor has set to be sent to Zenodo
         # those not yet sent should be in pending state. Occasionally there will be
         # stuck submissions in sending state, so get both types
         subs = self.get_collection_handle().find(
             {"status": {"$in": ["sending", "pending"]}, "repository": repository},
-            {"status": 1, "profile_id": 1, "date_modified": 1, "studies": 1})
+            {"status": 1, "profile_id": 1, "date_modified": 1, "studies": 1, "accessions":1})
         sub = cursor_to_list(subs)
         out = list()
         current_time = helpers.get_datetime()

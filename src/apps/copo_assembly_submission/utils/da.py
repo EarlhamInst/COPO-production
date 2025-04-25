@@ -4,8 +4,8 @@ from common.dal.submission_da import Submission
 from common.dal.copo_da import EnaFileTransfer, DataFile
  
 class Assembly(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Assembly, self).__init__(profile_id, "assembly")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Assembly, self).__init__(profile_id, "assembly", subcomponent=subcomponent)
 
     def add_accession(self, id, accession):
         self.get_collection_handle().update_one({"_id": ObjectId(id)},

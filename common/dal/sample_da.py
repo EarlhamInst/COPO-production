@@ -18,8 +18,8 @@ import pandas as pd
 lg = settings.LOGGER
 
 class Source(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Source, self).__init__(profile_id, "source")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Source, self).__init__(profile_id, "source", subcomponent=subcomponent)
 
     def get_from_profile_id(self, profile_id):
         return self.get_collection_handle().find({'profile_id': profile_id})
@@ -148,8 +148,8 @@ class Source(DAComponent):
 
 
 class Sample(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Sample, self).__init__(profile_id, "sample")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Sample, self).__init__(profile_id, "sample", subcomponent=subcomponent)
 
     def get_sample_by_specimen_id(self, specimen_id):
         return self.get_collection_handle().find({"SPECIMEN_ID": specimen_id})

@@ -5,8 +5,8 @@ from bson.objectid import ObjectId
 from common.dal.copo_da  import DataFile, EnaFileTransfer
 
 class SequenceAnnotation(DAComponent):
-    def __init__(self, profile_id=None):
-        super(SequenceAnnotation, self).__init__(profile_id, "seqannotation")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(SequenceAnnotation, self).__init__(profile_id, "seqannotation", subcomponent=subcomponent)
 
 
     def add_accession(self, id, accession):

@@ -25,12 +25,15 @@ class BrokerDA:
     def __init__(self, **kwargs):
         self.param_dict = kwargs
         self.context = self.param_dict.get("context", dict())
-        self.component = self.param_dict.get("component", str())
+        component = self.param_dict.get("component", str()).split("#")
+        #parameter "component"  = component#subcomponent
+        self.component = component[0]
+        self.subcomponent = component[1] if len(component) > 1 else str()
         self.visualize = self.param_dict.get("visualize", str())
         self.profile_id = self.param_dict.get("profile_id", str())
         self.auto_fields = self.param_dict.get("auto_fields", dict())
         self.request_dict = self.param_dict.get("request_dict", dict())
-        self.da_object = self.param_dict.get("da_object", DAComponent(self.profile_id, self.component))
+        self.da_object = self.param_dict.get("da_object", DAComponent(self.profile_id, self.component, self.subcomponent))
 
         if self.auto_fields and isinstance(self.auto_fields, str):
             self.auto_fields = json.loads(self.auto_fields)
@@ -540,12 +543,16 @@ class BrokerDA:
 class BrokerVisuals:
     def __init__(self, **kwargs):
         self.param_dict = kwargs
-        self.component = self.param_dict.get("component", str())
+        #parameter "component"  = component#subcomponent
+        components = self.param_dict.get("component", str()).split("#")
+        self.component = components[0]
+        self.subcomponent = components[1] if len(components) > 1 else str()
+
         self.profile_id = self.param_dict.get("profile_id", str())
         self.user_id = self.param_dict.get("user_id", str())
         self.context = self.param_dict.get("context", dict())
         self.request_dict = self.param_dict.get("request_dict", dict())
-        self.da_object = self.param_dict.get("da_object", DAComponent(self.profile_id, self.component)) 
+        self.da_object = self.param_dict.get("da_object", DAComponent(self.profile_id, self.component, self.subcomponent)) 
 
     def set_extra_params(self, extra_param):
         for k, v in extra_param.items():

@@ -64,8 +64,8 @@ class ProfileInfo:
       
 
 class Profile(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Profile, self).__init__(None, "profile")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Profile, self).__init__(None, "profile", subcomponent=subcomponent)
 
     def get_num(self):
         return self.get_collection_handle().count_documents({})

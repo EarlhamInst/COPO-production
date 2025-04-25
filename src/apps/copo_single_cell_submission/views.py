@@ -4,7 +4,7 @@ from common.dal.submission_da import Submission
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from .utils.copo_single_cell import generate_singlecell_record
-from .utils.da import SinglecellSchemas, Singlecell
+from .utils.da import SinglecellSchemas, Singlecell, ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE
 from common.utils.helpers import get_datetime, notify_singlecell_status, get_not_deleted_flag, get_deleted_flag
 from .utils.SingleCellSchemasHandler import SinglecellschemasSpreadsheet, SingleCellSchemasHandler
 from common.s3.s3Connection import S3Connection as s3
@@ -117,7 +117,15 @@ def save_singlecell_records(request):
     checklist_id = request.session["checklist_id"]
     schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
     identifier_map, _ = SinglecellSchemas().get_key_map(schemas)
-    additional_fields_default_value_map = {"status":"pending", "accession" :"", "error":""}
+    #submission_repository = ["ena", "zenodo"]
+    submission_repository = SinglecellSchemas().get_submission_repositiory(schema_name, checklist_id)
+
+    additional_columns_prefix_default_value = ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE
+    additional_fields_default_value_map = {}
+    for repository in submission_repository:
+        for prefix in list(additional_columns_prefix_default_value.keys()):
+            additional_fields_default_value_map[f"{prefix}_{repository}"] = additional_columns_prefix_default_value[prefix]
+
     additional_fields = list(additional_fields_default_value_map.keys())
 
     singlecell_record = dict()
@@ -156,12 +164,18 @@ def save_singlecell_records(request):
             if not existing_component_data_df.empty:
                 identifier = identifier_map.get(component_name, "")
                 if identifier:
-                    if "status" not in existing_component_data_df.columns:
-                        existing_component_data_df["status"] = "pending"
-                    if "accession" not in existing_component_data_df.columns:
-                        existing_component_data_df["accession"] = ""
-                    existing_component_data_cannnot_delete_df = existing_component_data_df.drop(existing_component_data_df[(existing_component_data_df["status"] == "pending") & (existing_component_data_df["accession"] =="")].index)
-                    existing_component_data_cannnot_update_df = existing_component_data_df.drop(existing_component_data_df[(existing_component_data_df["status"] != "processing")].index)
+                    for respository in submission_repository:
+                        if f"{identifier}_{respository}" not in existing_component_data_df.columns:
+                            existing_component_data_df[f"{identifier}_{respository}"] = additional_columns_prefix_default_value[identifier]
+
+                    existing_component_data_cannnot_delete_df = existing_component_data_df.drop(existing_component_data_df[
+                        #(existing_component_data_df["status"] == "pending") & (existing_component_data_df["accession"] =="")
+                        existing_component_data_df.apply(lambda row:  all(row[f"{identifier}_{respository}"] == additional_columns_prefix_default_value[prefix] for prefix in list(additional_columns_prefix_default_value.keys()) for respository in submission_repository ), axis=1)].index)
+                    
+                    existing_component_data_cannnot_update_df = existing_component_data_df.drop(existing_component_data_df[
+                        #(existing_component_data_df["status"] != "processing")
+                        existing_component_data_df.apply(lambda row:  all(row[f"status_{respository}"] == "processing" for respository in submission_repository ), axis=1)].index)
+
                     if not component_data_df.empty:
                         existing_component_data_cannnot_delete_df.drop(existing_component_data_cannnot_delete_df[existing_component_data_cannnot_delete_df[identifier].isin(component_data_df[identifier])].index, inplace=True)
                     if not existing_component_data_cannnot_delete_df.empty:
@@ -173,7 +187,6 @@ def save_singlecell_records(request):
                     if is_error:
                         continue
 
-
                     #if the data has been changed, set the status to pending
                     common_columns = list(set(existing_component_data_df.columns) & set(component_data_df.columns))
 
@@ -184,13 +197,16 @@ def save_singlecell_records(request):
                         component_sorted_data_df = component_data_df.sort_index(axis=1)
 
                         for index, row in existing_component_data_df.iterrows():
-                            if row["status"] != "pending":
+                            if all(row[f"status_{repository}"] != additional_columns_prefix_default_value["status"] for repository in submission_repository):
                                 tmp_data = component_sorted_data_df.loc[component_sorted_data_df[identifier] == row[identifier]].sort_index(axis=1)
                          
                                 if not tmp_data.iloc[0].compare(existing_component_common_columns_df.loc[(existing_component_common_columns_df[identifier] == row[identifier])].iloc[0]).empty:
-                                    existing_component_data_df.loc[(existing_component_data_df[identifier] == row[identifier]), "status"] = "pending"
+                                    for respository in submission_repository:
+                                        existing_component_data_df.loc[(existing_component_data_df[identifier] == row[identifier]), f"status_{repository}"] = additional_columns_prefix_default_value["status"]
                     else:
-                        existing_component_data_df["status"] = "pending"
+                        for repository in submission_repository:
+                            existing_component_data_df[f"status_{repository}"] = additional_columns_prefix_default_value["status"]
+
 
                     componnet_additional_fields = list(set(additional_fields) & set(existing_component_data_df.columns))
                     if componnet_additional_fields:

@@ -127,9 +127,10 @@ handle_dict = dict(audit=get_collection_ref(AuditCollection),
 
 
 class DAComponent:
-    def __init__(self, profile_id=None, component=str()):
+    def __init__(self, profile_id=None, component=str(), subcomponent=str()):
         self.profile_id = profile_id
         self.component = component
+        self.subcomponent =  subcomponent
 
     def get_number(self):
         return self.get_collection_handle().count_documents({})
