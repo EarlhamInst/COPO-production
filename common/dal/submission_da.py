@@ -935,7 +935,7 @@ class Submission(DAComponent):
                     profile_title = ""
                 
                 # Reorder the list of accessions types
-                reordered_accessions_dict = {k: i.get("accessions", "").get(k, "") for k in
+                reordered_accessions_dict = {k: i.get("accessions", {}).get(k, "") for k in
                                             NON_SAMPLE_ACCESSION_TYPES if i.get("accessions", {}).get(k, "")}
 
                 for key, value in reordered_accessions_dict.items():
