@@ -1092,7 +1092,7 @@ class Submission(DAComponent):
             {"studies": 1, "profile_id": 1, "date_modified": 1})
         return cursor_to_list(subs)
 
-    def update_singlecell_submission(self, sub_id, study_id=str()):
+    def remove_study_from_singlecell_submission(self, sub_id, study_id=str()):
             sub_handle = self.get_collection_handle()
             sub = sub_handle.find_one({"_id": ObjectId(sub_id)}, {"studies": 1})
             if not sub:

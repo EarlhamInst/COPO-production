@@ -309,7 +309,7 @@ def copo_forms(request):
         request.session["profile_id"] = profile_id
 
     component = request.POST.get("component", str())
-    da_object = DAComponent(profile_id=profile_id, component=request.POST.get("component", str()))
+    da_object = DAComponent(profile_id=profile_id, component=component)
     if component in da_dict:
         da_object = da_dict[component](profile_id=profile_id)
 

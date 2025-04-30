@@ -168,7 +168,7 @@ class Command(BaseCommand):
         read.recordaction_buttons.set([delete_read_multi, submit_read_multi])
         read.title_buttons.set([new_reads_spreadsheet_template, download_blank_manifest_template])
 
-        singlecell.recordaction_buttons.set([delete_singlecell_multi, submit_singlecell_multi_ena, submit_singlecell_multi_zenodo, download_singlecell_manifest_single])
+        singlecell.recordaction_buttons.set([delete_singlecell_multi, download_singlecell_manifest_single])
         singlecell.title_buttons.set([new_singlecell_spreadsheet_template, download_blank_manifest_template])
 
         sample.recordaction_buttons.set([download_sample_manifest_single, download_permits_multiple, view_images_multiple])

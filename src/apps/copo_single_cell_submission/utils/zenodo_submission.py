@@ -19,13 +19,12 @@ def update_submission_pending():
     for sub in subs:
         all_file_downloaded = True
         for study_id in sub["studies"]:
-            singlecells = Singlecell().get_all_records_columns(
-                filter_by={"profile_id":sub["profile_id"], "study_id":study_id,"deleted":get_not_deleted_flag()},
-                projection={"schema_name":1,"checklist_id":1, "components":1})
-            if not singlecells:
-                Submission().update_singlecell_submission(sub_id=str(sub["_id"]), study_id= study_id)
+            singlecell = Singlecell().get_collection_handle().find_one(
+                 {"profile_id":sub["profile_id"], "study_id":study_id,"deleted":get_not_deleted_flag()},
+                 {"schema_name":1,"checklist_id":1, "components":1})
+            if not singlecell:
+                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id= study_id)
                 continue
-            singlecell = singlecells[0]
             schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], target_id=singlecell["checklist_id"])
             files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
 
@@ -74,11 +73,33 @@ def process_pending_submission():
                 action="info",
                 html_id="singlecell_submission_info")
         
-            singlecells = Singlecell().get_all_records_columns(
-                filter_by={"profile_id":sub["profile_id"], "study_id":study_id,"deleted": get_not_deleted_flag()},
-                projection={"schema_name":1,"checklist_id":1, "components":1})
+            singlecell = Singlecell().get_collection_handle().find_one(
+                 {"profile_id":sub["profile_id"], "study_id":study_id,"deleted": get_not_deleted_flag()},
+                 {"schema_name":1,"checklist_id":1, "components":1})
             #generate the manifest for submission
-            singlecell = singlecells[0]
+            if not singlecell:
+                msg = f"Missing singlecell for study: {study_id}"
+                Logger().error(msg)
+                notify_singlecell_status(data={"profile_id": sub["profile_id"]},
+                    msg=msg,
+                    action="error",
+                    html_id="singlecell_submission_info")
+                continue
+
+            singlecell_components = singlecell.get("components",{})
+
+            studies = singlecell_components.get("study",[])
+            if not studies:
+                msg = f"Missing study for singlecell: {study_id}"
+                Logger().error(msg)
+                notify_singlecell_status(data={"profile_id": sub["profile_id"]},
+                    msg=msg,
+                    action="error",
+                    html_id="singlecell_submission_info")
+                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                continue
+            study = studies[0]
+
             schemas = SinglecellSchemas().get_collection_handle().find_one({"name":singlecell["schema_name"]})
             bytesstring = BytesIO()
             #bytesstring.getvalue()
@@ -98,7 +119,6 @@ def process_pending_submission():
             file_locations_map = {os.path.basename(enaFile["local_path"]) : enaFile["local_path"] for enaFile in enaFiles }
             file_hash_map = {datafile["file_name"]: datafile["file_hash"] for datafile in datafiles}
 
-            singlecell_components = singlecell.get("components",{})
 
             creators = [{"name": "COPO", "affiliation": "EI"}]
             for person in singlecell_components.get("person",[]):
@@ -111,16 +131,7 @@ def process_pending_submission():
                 else:
                     Logger().error(f"Missing first name or last name for person: {person}")
 
-            studys = singlecell_components.get("study",[])
-            if not studys:
-                msg = f"Missing study for singlecell: {study_id}"
-                Logger().error(msg)
-                notify_singlecell_status(data={"profile_id": sub["profile_id"]},
-                    msg=msg,
-                    action="error",
-                    html_id="singlecell_submission_info")
-                continue
-            study = studys[0]
+ 
             zenodo_data = {
                 "metadata": {
                     "title":  study.get("title", study_id),
@@ -167,8 +178,8 @@ def process_pending_submission():
                     html_id="singlecell_submission_info")
                 continue
 
-            Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository="zenodo", additional_columns_value={"status": "accepted", "state" : deposition["state"],  "accession" : deposition.get("doi",""), "error": "", "embargo_date":deposition.get("metadata",{}).get("embargo_date","")})  
-            Submission().update_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+            Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository="zenodo", status_column_value={"status": "accepted", "state" : deposition["state"],  "accession": str(deposition["id"]), "doi" : deposition.get("doi",""), "error": "", "embargo_date":deposition.get("metadata",{}).get("embargo_date","")})  
+            Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
 
             notify_singlecell_status(data={"profile_id": sub["profile_id"]},
                     msg=f"{study_id} has been submitted to Zenodo.",

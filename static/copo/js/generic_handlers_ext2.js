@@ -72,6 +72,20 @@ function place_task_buttons(componentMeta) {
     is_custom_buttons_needed = true;
   }
 
+  if (componentMeta.submission_repository != undefined && componentMeta.submission_repository.length) {
+      componentMeta.submission_repository.forEach(function (item) {
+      action_button_name = "submit_singlecell_multi_" + item;
+      if ( action_button_name in record_action_button_def  ) {
+          button_str = record_action_button_def[action_button_name].template;
+          var actionBTN = $(button_str);
+          //actionBTN.removeClass(item);
+          actionBTN.attr('data-table', componentMeta.tableID);
+          customButtons.append(actionBTN);
+          is_custom_buttons_needed = true;
+      }
+    });
+  }
+
   $('.components_custom_templates')
     .find('.record-action-custom-template')
     .each(function () {
@@ -683,6 +697,7 @@ function do_render_component_table_tabs(data, componentMeta, columnDefs = null) 
     var component = data.table_data.components[i];
     var tableTitle = component.replace(/_/g, ' ').toUpperCase();
     var dataSet = data.table_data.dataSet[component];
+    var submission_repository = data.table_data.submission_repository[component];
 
     if (typeof dataSet == 'undefined') {
       dataSet = [];
@@ -748,6 +763,7 @@ function do_render_component_table_tabs(data, componentMeta, columnDefs = null) 
     new_componentMeta["tableID"]= tableID
     new_componentMeta["component"] = componentMeta.component + "#" + component;
     new_componentMeta["title"] = tableTitle;
+    new_componentMeta["submission_repository"] = submission_repository;
     do_render_component_table(tab_data, new_componentMeta, columnDefs);
   }
 

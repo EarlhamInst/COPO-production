@@ -1,6 +1,7 @@
 from common.dal.copo_da import DAComponent
 import pandas as pd
-from common.utils.helpers import get_not_deleted_flag
+from common.utils.helpers import get_datetime, get_not_deleted_flag
+from django_tools.middlewares import ThreadLocal
 
 ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE = {"status":"pending", "accession":"", "error":""}
 
@@ -8,6 +9,7 @@ class SinglecellSchemas(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
         super(SinglecellSchemas, self).__init__(profile_id, "singlecellSchemas", subcomponent=subcomponent)
 
+    """
     def get_submission_repositiory(self, schema_name, checklist_id=str()):
         if not checklist_id:
             return []
@@ -15,6 +17,7 @@ class SinglecellSchemas(DAComponent):
         if checklist:
             repositories = checklist.get(checklist_id).get("submission_repository", "ena,zenodo")
             return repositories.split(",")
+    """
 
     def get_checklists(self, schema_name, checklist_id=str()):
         
@@ -28,6 +31,26 @@ class SinglecellSchemas(DAComponent):
             return checklists.get("checklists", {})
         else:
             return {}
+
+    def get_submission_repositiory(self, schema_name):
+        #get all the components from the schema
+        """
+        the result is
+        index    ena              zenodo
+        study    study            study  
+        file     read             
+        """
+        singlecell = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name},{"components":1})
+        if singlecell:
+            components = singlecell["components"]
+            component_df = pd.DataFrame.from_dict(components, orient='index')
+            #component_df = component_df.set_index("key", inplace=True)
+            not_repositiory_columns = [column for column in component_df.columns if not column.startswith("repository_")]
+            component_df.drop(not_repositiory_columns, axis=1, inplace=True)
+            component_df.dropna(how="all", inplace=True)
+            component_df.rename(columns=lambda x: x.replace("repository_", ""), inplace=True)
+            component_df.fillna("", inplace=True)
+            return component_df
 
     #target_id is the checklist_id
     def get_schema(self, schema_name, target_id=str()) :
@@ -162,7 +185,7 @@ class Singlecell(DAComponent):
         if not subcomponent_identifioer:
             return fields, data
 
-        repositiories = SinglecellSchemas().get_submission_repositiory(schema_name=singlecell["schema_name"], checklist_id=singlecell["checklist_id"])
+        repositiories = SinglecellSchemas().get_submission_repositiory(schema_name=singlecell["schema_name"])
         component_data = singlecell["components"].get(self.subcomponent, [])
 
         for row in component_data:
@@ -175,13 +198,22 @@ class Singlecell(DAComponent):
                         field = {}
                         field["id"] = key
                         field["show_as_attribute"] = True
-                        field["label"] = key[:index] + " for " + key[index+1:]
+                        field["label"] = key[:index].replace("_"," ") + " for " + key[index+1:]
                         field["control"] = "text"
                         fields.append(field)
                 data[key] = value
 
         return fields, data
 
-    def update_component_status(self, id, component="study", identifier="study_id", identifier_value=str(), repository="ena", additional_columns_value={}):
+    def update_component_status(self, id, component="study", identifier="study_id", identifier_value=str(), repository="ena", status_column_value={}):
+        username = "system"
+        user = ThreadLocal.get_current_user()
+        if user:
+            username = user.id
+        dt = get_datetime()
+        
+        update_element_values = {f"components.{component}.$.{key}_{repository}": value for key, value in status_column_value.items()}
+        update_element_values.update({"updated_by": username, "date_modified": dt})
+
         self.get_collection_handle().update_one({"_id": id, "deleted": get_not_deleted_flag(), f"components.{component}.{identifier}": identifier_value},
-                            {"$set": {f"components.{component}.$.{key}_{repository}": value for key, value in additional_columns_value.items()}})
+                            {"$set": update_element_values})

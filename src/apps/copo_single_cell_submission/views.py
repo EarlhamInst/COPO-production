@@ -18,10 +18,12 @@ from common.dal.copo_da import  DataFile
 import common.ena_utils.FileTransferUtils as tx
 from common.dal.mongo_util import cursor_to_list
 import common.ena_utils.FileTransferUtils as tx
+from src.apps.copo_core.views import web_page_access_checker
 
 l = Logger()
 
 @login_required()
+@web_page_access_checker
 def parse_singlecell_spreadsheet(request):
     profile_id = request.session["profile_id"]
     notify_singlecell_status(data={"profile_id": profile_id},
@@ -104,6 +106,7 @@ def is_image_file(filename):
     return any(filename.lower().endswith(ext) for ext in settings.IMAGE_FILE_EXTENSIONS)
  
 @login_required()
+@web_page_access_checker
 def save_singlecell_records(request):
     # create mongo sample objects from info parsed from manifest and saved to session variable
     singlecell_data = request.session.get("singlecell_data")
@@ -117,16 +120,24 @@ def save_singlecell_records(request):
     checklist_id = request.session["checklist_id"]
     schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
     identifier_map, _ = SinglecellSchemas().get_key_map(schemas)
-    #submission_repository = ["ena", "zenodo"]
-    submission_repository = SinglecellSchemas().get_submission_repositiory(schema_name, checklist_id)
+    submission_repository = {}
+    submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name)
+    submisison_repository_component_map = submission_repository_df.to_dict('index')
 
     additional_columns_prefix_default_value = ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE
     additional_fields_default_value_map = {}
-    for repository in submission_repository:
+    for repository in list(submission_repository_df.columns.values):
         for prefix in list(additional_columns_prefix_default_value.keys()):
             additional_fields_default_value_map[f"{prefix}_{repository}"] = additional_columns_prefix_default_value[prefix]
 
-    additional_fields = list(additional_fields_default_value_map.keys())
+    
+    additional_fields_map = {}
+    for component, respositories in submisison_repository_component_map.items():
+        submission_repository[component] = [repository for repository, value in respositories.items() if value]
+        additional_fields_map[component] = [f"{prefix}_{repository}" for repository, value in respositories.items() if value for prefix in list(additional_columns_prefix_default_value.keys())]
+ 
+
+    #additional_fields = list(additional_fields_default_value_map.keys())
 
     singlecell_record = dict()
     singlecell_record["components"] = dict()
@@ -158,23 +169,29 @@ def save_singlecell_records(request):
             return HttpResponse(status=400, content=f'Study already exists with different checklist: {existing_record["checklist_id"]}')
         
         for component_name, existing_component_data in existing_record["components"].items():
+
+            #additional_fields = additional_fields_map.get(component_name,[])
             component_data_df = singlecell_record["components"].get(component_name,pd.DataFrame())
             existing_component_data_df = pd.DataFrame.from_records(existing_component_data)
             is_error = False
             if not existing_component_data_df.empty:
                 identifier = identifier_map.get(component_name, "")
                 if identifier:
-                    for respository in submission_repository:
-                        if f"{identifier}_{respository}" not in existing_component_data_df.columns:
-                            existing_component_data_df[f"{identifier}_{respository}"] = additional_columns_prefix_default_value[identifier]
+                    respositories = submission_repository.get(component_name, [])
+                    if not respositories:
+                        continue
+                    for respository in respositories:
+                        for prefix in list(additional_columns_prefix_default_value.keys()):
+                            if f"{prefix}_{respository}" not in existing_component_data_df.columns:
+                                existing_component_data_df[f"{prefix}_{respository}"] = additional_columns_prefix_default_value[prefix]
 
                     existing_component_data_cannnot_delete_df = existing_component_data_df.drop(existing_component_data_df[
                         #(existing_component_data_df["status"] == "pending") & (existing_component_data_df["accession"] =="")
-                        existing_component_data_df.apply(lambda row:  all(row[f"{identifier}_{respository}"] == additional_columns_prefix_default_value[prefix] for prefix in list(additional_columns_prefix_default_value.keys()) for respository in submission_repository ), axis=1)].index)
+                        existing_component_data_df.apply(lambda row:  all(row[f"{prefix}_{respository}"] == additional_columns_prefix_default_value[prefix] for prefix in list(additional_columns_prefix_default_value.keys()) for respository in respositories ), axis=1)].index)
                     
                     existing_component_data_cannnot_update_df = existing_component_data_df.drop(existing_component_data_df[
                         #(existing_component_data_df["status"] != "processing")
-                        existing_component_data_df.apply(lambda row:  all(row[f"status_{respository}"] == "processing" for respository in submission_repository ), axis=1)].index)
+                        existing_component_data_df.apply(lambda row:  all(row[f"status_{respository}"] != "processing" for respository in respositories ), axis=1)].index)
 
                     if not component_data_df.empty:
                         existing_component_data_cannnot_delete_df.drop(existing_component_data_cannnot_delete_df[existing_component_data_cannnot_delete_df[identifier].isin(component_data_df[identifier])].index, inplace=True)
@@ -182,7 +199,7 @@ def save_singlecell_records(request):
                         errors.append( component_name + ": Cannot delete records with status not \"pending\" or with accession number : " + existing_component_data_cannnot_delete_df[identifier].to_string(index=False))
                         is_error = True
                     if not existing_component_data_cannnot_update_df.empty:
-                        errors.append( component_name + ": Cannot update records with status \"processing\" : " + existing_component_data_cannnot_update_df[identifier].to_string(index=False))
+                        errors.append( component_name + ": Cannot update record with status \"processing\" : " + existing_component_data_cannnot_update_df[identifier].to_string(index=False))
                         is_error = True
                     if is_error:
                         continue
@@ -197,18 +214,18 @@ def save_singlecell_records(request):
                         component_sorted_data_df = component_data_df.sort_index(axis=1)
 
                         for index, row in existing_component_data_df.iterrows():
-                            if all(row[f"status_{repository}"] != additional_columns_prefix_default_value["status"] for repository in submission_repository):
+                            if all(row[f"status_{repository}"] != additional_columns_prefix_default_value["status"] for repository in respositories):
                                 tmp_data = component_sorted_data_df.loc[component_sorted_data_df[identifier] == row[identifier]].sort_index(axis=1)
                          
                                 if not tmp_data.iloc[0].compare(existing_component_common_columns_df.loc[(existing_component_common_columns_df[identifier] == row[identifier])].iloc[0]).empty:
-                                    for respository in submission_repository:
+                                    for respository in respositories:
                                         existing_component_data_df.loc[(existing_component_data_df[identifier] == row[identifier]), f"status_{repository}"] = additional_columns_prefix_default_value["status"]
                     else:
-                        for repository in submission_repository:
+                        for repository in respositories:
                             existing_component_data_df[f"status_{repository}"] = additional_columns_prefix_default_value["status"]
 
 
-                    componnet_additional_fields = list(set(additional_fields) & set(existing_component_data_df.columns))
+                    componnet_additional_fields = list(set(additional_fields_map[component_name]) & set(existing_component_data_df.columns))
                     if componnet_additional_fields:
                         existing_component_additional_fields_df = existing_component_data_df[[identifier]+ componnet_additional_fields]
                         singlecell_record["components"][component_name] = component_data_df.merge(existing_component_additional_fields_df, on=identifier, how="left" ) 
@@ -217,7 +234,7 @@ def save_singlecell_records(request):
         return HttpResponse(status=400, content="\n"+"\n".join(errors))
 
     for component_name, component_data_df in singlecell_record["components"].items():
-        for field in additional_fields:
+        for field in additional_fields_map.get(component_name,[]):
             if field not in component_data_df.columns:
                 component_data_df[field] = additional_fields_default_value_map[field]
             else:
@@ -239,7 +256,7 @@ def save_singlecell_records(request):
     singlecell_record["checklist_id"] = checklist_id
     singlecell_record["schema_name"] = schema_name
 
-
+    
     sub = dict()
     sub["complete"] = "false"
     sub["updated_by"] = uid
@@ -397,6 +414,7 @@ def save_singlecell_records(request):
     result = {"table_data": table_data, "component": "singlecell"}
     return JsonResponse(status=200, data=result)
 
+@web_page_access_checker
 @login_required
 def copo_singlecell(request, profile_id):
     request.session["profile_id"] = profile_id
@@ -416,6 +434,7 @@ def copo_singlecell(request, profile_id):
 
 
 @login_required
+@web_page_access_checker
 def download_manifest(request, profile_id, study_id):
 
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "study_id": study_id})

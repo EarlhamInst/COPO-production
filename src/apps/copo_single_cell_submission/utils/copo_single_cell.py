@@ -4,9 +4,9 @@ import pandas as pd
 from common.utils.helpers import get_datetime, get_thumbnail_folder
 from common.dal.profile_da import Profile
 from common.dal.copo_da import  DataFile, EnaFileTransfer
+from common.utils.helpers import get_not_deleted_flag
 import requests
 from django_tools.middlewares import ThreadLocal
-from common.utils.helpers import get_datetime, get_not_deleted_flag
 from common.dal.submission_da import Submission
 from common.dal.mongo_util import cursor_to_list
 from django.conf import settings
@@ -54,6 +54,16 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
     if checklist_id:
         schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
 
+        submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name)
+        submisison_repository_component_map = submission_repository_df.to_dict('index')
+        additional_columns_prefix_default_value = ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE
+        submission_repository = {}
+        additional_fields_map = {}
+        for component, respositories in submisison_repository_component_map.items():
+            submission_repository[component] = [repository for repository, value in respositories.items() if value]
+            additional_fields_map[component] = [f"{prefix}_{repository}" for repository, value in respositories.items() if value for prefix in list(additional_columns_prefix_default_value.keys())]
+    
+
         for component_name, component_schema in schemas.items():
             columns[component_name] = []
             component_schema_df = pd.DataFrame.from_records(component_schema)
@@ -61,9 +71,12 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
             if not identifier_df.empty:
                 identifier_map[component_name]= identifier_df.iloc[0]
 
-            detail_dict = dict(className='summary-details-control detail-hover-message', orderable=False, data=None,
-                           title='', defaultContent='', width="5%")
-            columns[component_name].insert(0, detail_dict)
+            #no details button for component with no submission button
+            if submission_repository.get(component_name, []):
+                detail_dict = dict(className='summary-details-control detail-hover-message', orderable=False, data=None,
+                            title='', defaultContent='', width="5%")
+                columns[component_name].insert(0, detail_dict)
+
             columns[component_name].append(dict(data="record_id", visible=False))
             columns[component_name].append(dict(data="DT_RowId", visible=False))
             columns[component_name].extend([dict(data=item["term_name"], title=item["term_label"], defaultContent='', 
@@ -72,14 +85,11 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
             
             column_keys[component_name] = ([item["term_name"] for item in component_schema])
 
-            submission_repository = SinglecellSchemas().get_submission_repositiory(schema_name, checklist_id)
-            for repository in submission_repository:
-                for prefix, value in list(ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE.items()):
-                    columns[component_name].append(dict(data=f"{prefix}_{repository}", title=f"{prefix} for {repository}", defaultContent= value)) # render = "render_accession_column_function"
-                    column_keys[component_name].append(f"{prefix}_{repository}")
-
+            for name in additional_fields_map.get(component_name, []):  
+                    prefix = name.split("_")[0]
+                    columns[component_name].append(dict(data=name, title=name.replace("_", " for "), defaultContent= additional_columns_prefix_default_value[prefix])) # render = "render_accession_column_function"
+                    column_keys[component_name].append(name)
  
-         
         studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"schema_name": schema_name, "checklist_id": checklist_id}, projection={"study_id": 1, "components.study": 1})
         if not studies:
             return dict(dataSet=data_set, columns=columns, components=list(columns.keys()))
@@ -119,6 +129,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
 
     return_dict = dict(dataSet=data_set,
                        columns=columns,
+                       submission_repository=submission_repository,
                        components=list(columns.keys()),
                        study_id = study_id,
                        #bucket_size_in_GB=round(bucket_size/1024/1024/1024,2),  
@@ -135,7 +146,12 @@ def _check_child_component_data(singlecell_data, component_name, identifiers, id
 
         if not child_component_data_df.empty:
             children_df = child_component_data_df.loc[child_component_data_df[foreign_key].isin(identifiers)]
-            children_has_accession_df = children_df.loc[children_df["accession"]!="",child_identifier_key]
+            accession_columns = child_component_data_df.columns[child_component_data_df.columns.str.startswith("accession_")].tolist()
+            if not accession_columns:
+                continue
+            
+            children_has_accession_df = children_df.loc[children_df.apply(lambda x:  all(x[accession_columns] != ""), axis=1), child_identifier_key]
+            #children_has_accession_df = children_df.loc[children_df["accession"]!="" ,    child_identifier_key]
             if not children_has_accession_df.empty:
                 return False,  f'{child_component_name}:{children_has_accession_df.tolist()} : record with accession number'
             _check_child_component_data(singlecell_data, child_component_name, children_df[child_identifier_key].tolist(),  identifier_map, child_map)
@@ -182,9 +198,10 @@ def _delete_child_component_data(singlecell_data, component_name, identifiers, i
         
         if not child_component_data_df.empty:
             to_be_delete_child_component_data_df = child_component_data_df.loc[child_component_data_df[foreign_key].isin(identifiers)]
-            if not to_be_delete_child_component_data_df.empty:        
-                _delete_child_component_data(singlecell_data, child_component_name, to_be_delete_child_component_data_df[child_component_identifier_key].tolist(), identifier_map, child_map, schemas)
-
+            if not to_be_delete_child_component_data_df.empty: 
+                #no identifier key, no child component
+                if child_component_identifier_key:
+                    _delete_child_component_data(singlecell_data, child_component_name, to_be_delete_child_component_data_df[child_component_identifier_key].tolist(), identifier_map, child_map, schemas)
                 #delete the datafiles
                 _delete_datafile(singlecell_data["profile_id"], to_be_delete_child_component_data_df, child_schema)
                 '''
@@ -275,9 +292,15 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
 
         #delete the record if both of it and its child records have no accession number
         component_data_df = pd.DataFrame.from_records(singlecell_data["components"][component_name])
-        component_data_has_accession_df  = component_data_df.loc[(component_data_df[identifier_key].isin(identifiers)) & (component_data_df["accession"] !=""), identifier_key]
+        component_data_has_accession_df = component_data_df.loc[component_data_df.apply(lambda x: x[identifier_key] in identifiers and any(x[accession_column] != "" for accession_column in list(component_data_df.columns.values) if accession_column.startswith("accession_")), axis=1), identifier_key]
+
+
+        #component_data_has_accession_df  = component_data_df.loc[(component_data_df[identifier_key].isin(identifiers)) & (component_data_df["accession"] !=""), identifier_key]
         if not component_data_has_accession_df.empty:
-            message= f'{component_name}:{component_data_has_accession_df.tolist()}: record with accession number'
+            if component_name == "study":
+                message= ' record with accession number'
+            else:
+                message= f'{component_name}:{component_data_has_accession_df.tolist()}: record with accession number'
             study_messag_map[study_id] = message
             continue
 
@@ -288,7 +311,7 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
     if study_messag_map:
         message = "Record deleted failed!"
         for key, msg in study_messag_map.items():
-            message += f"<br/>study:'{key}'|{msg}"
+            message += f"<br/>study:'{key}'| {msg}"
         return dict(status='error', message=message)
 
     #get the schema for the file type item
@@ -358,10 +381,8 @@ def submit_singlecell_zenodo(profile_id, target_ids, target_id, checklist_id, st
     if result.get("status","") == "error":
         return result  
     else:
-        user = ThreadLocal.get_current_user()
-        dt = get_datetime()
         #update the status of the singlecell record
-        Singlecell().get_collection_handle().update_one({"_id": singlecell["_id"]}, {"$set": {f"components.study.status_{repository}": "processing", "updated_by": user.id, "date_modified": dt, f"components.study.error_{repository}": ""}})
+        Singlecell().update_component_status(singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository="zenodo", status_column_value={"status":"processing"})
         return dict(status='success', message="Submission has been scheduled.")
 
     """
