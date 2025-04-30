@@ -239,6 +239,11 @@ def save_singlecell_records(request):
                 component_data_df[field] = additional_fields_default_value_map[field]
             else:
                 component_data_df[field].fillna(additional_fields_default_value_map[field], inplace=True)
+                
+        #update status = "pending" for all submission repository
+        for repository in submission_repository.get(component_name, []):
+            component_data_df[f"status_{repository}"] = additional_columns_prefix_default_value["status"]
+
 
         singlecell_record["components"][component_name] = component_data_df.to_dict(orient="records")
 
