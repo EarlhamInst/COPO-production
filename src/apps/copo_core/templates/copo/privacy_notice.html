@@ -1,7 +1,9 @@
 {% extends 'copo/base2.html' %}
 
 {% load static %}
+
 {% block title %}Privacy Notice{% endblock %}
+{% block meta_description %}Find out how we collect, use, store, and protect your personal information in accordance with data protection laws.{% endblock %}
 
 {% block stylesheet_block %}
 <style>
@@ -52,6 +54,10 @@
            stores and uses personal information in operating the website, in accordance with the General Data Protection
            Regulation (GDPR).
         </p>
+        <p>For the purpose of the Data Protection Act 2018 (the Act), the data controller is Earlham Institute (EI), 
+            based at Norwich Research Park, Colney, Norwich, NR4 7UZ.
+        </p>
+
         <p> Please view our <a class="pn-atag" href="/about/terms_of_use" target="_parent">Terms of Use</a> regarding the rules 
             and requirements for the use of the service.
         </p>
@@ -59,7 +65,15 @@
         <br>
 
         <h2>Lawful basis for processing your data</h2>
-        <p>COPO has a legitimate interest in processing personal data to facilitate the sharing and brokering of 
+        <p>Under UK data protection law, we must have a 'lawful basis' for collecting and using your personal information. 
+           There is a list of possible lawful bases in the UK GDPR. You can find out more about lawful bases on the 
+           <a class="pn-atag" target="_blank"
+           href="https://ico.org.uk/for-organisations/advice-for-small-organisations/key-data-protection-terms-you-need-to-know/#lawfulbasis"> 
+           Information Commissioner's Office website</a>.
+        </p>
+
+        <p>
+           COPO has a legitimate interest in processing personal data to facilitate the sharing and brokering of 
            scientific data, particularly in genomics and related fields. By enabling researchers to collaborate, 
            store, and manage datasets more effectively, COPO supports the advancement of scientific research. 
            This aligns with its mission to enhance data accessibility and reproducibility, while balancing 
@@ -76,7 +90,7 @@
             credentials and metadata provided on our service.
         </p>
 
-        <h3>Information collected:</h3>
+        <h3>Information collected</h3>
         <ul class="pn-ul">
             <li>Internet Protocol (IP) address</li>
             <li>Operating system</li>
@@ -94,7 +108,7 @@
             </li>
         </ul>
 
-        <h3>Usage of information collected:</h3>
+        <h3>Usage of information collected</h3>
         <ul class="pn-ul">
             <li>To utilise Google Fonts, an interactive web directory via Cascading Style Sheets (CSS), 
                 which is embedded in the service
@@ -161,27 +175,87 @@
         <br>
 
         <h2>Your Rights</h2>
-        <p>You have the right to request a copy of the information we hold about you, to request a correction and to request that
-            your personal data is deleted. In some cases, we may not be able to agree to your request, however if this is the 
-            case, we will tell you the reason and your right to complain to the Information Commissioner if you are unhappy with our
-            decision. You have a range of other rights under the GDPR.
+        <p>Which lawful basis we rely on may affect your data protection rights which are set out in brief below. 
+            You can find out more about your data protection rights and the exemptions which may apply on the 
+            Information Commissioner's Office's (ICO's) website:
         </p>
-        <p>If you would like more information, please see the 
-           <a class="pn-atag" href="https://ico.org.uk" target="_blank">Information Commissioner's Office (ICO) website</a> 
-           (see <b>For the public</b>).
+
+        <ul class="pn-ul">
+            <li><b>Your right of access</b> - You have the right to ask us for copies of your personal information. You can 
+                request other information such as details about where we get personal information from and who we 
+                share personal information with. There are some exemptions which means you may not receive all the 
+                information you ask for. 
+                <a class="pn-atag"  target="_blank" title="Learn more about your right of access on the ICO website"
+                href="https://ico.org.uk/for-organisations/advice-for-small-organisations/create-your-own-privacy-notice/your-data-protection-rights/#roa">
+                You can read more about this right on the ICO website
+                </a>.
+            </li>
+
+            <li><b>Your right to rectification</b> - You have the right to ask us to correct or delete personal information 
+                you think is inaccurate or incomplete. <a class="pn-atag"  target="_blank" title="Learn more about your right to rectification on the ICO website"
+                href="https://ico.org.uk/for-organisations/advice-for-small-organisations/create-your-own-privacy-notice/your-data-protection-rights/#rtr">
+                You can read more about this right on the ICO website</a>.
+            </li>
+
+            <li><b>Your right to erasure</b> - You have the right to ask us to delete your personal information. 
+                <a class="pn-atag"  target="_blank" title="Learn more about your right to erasure on the ICO website"
+                href="https://ico.org.uk/for-organisations/advice-for-small-organisations/create-your-own-privacy-notice/your-data-protection-rights/#rte">
+                You can read more about this right on the ICO website</a>.
+            </li>
+
+            <li>
+                <b>Your right to restriction of processing</b> - You have the right to ask us to limit how we can use your 
+                personal information. <a class="pn-atag"  target="_blank" title="Learn more about your right to restriction of processing on the ICO website"
+                href="https://ico.org.uk/for-organisations/advice-for-small-organisations/create-your-own-privacy-notice/your-data-protection-rights/#rtrop">
+                You can read more about this right on the ICO website</a>.
+            </li>
+
+            <li><b>Your right to object to processing</b> - You have the right to object to the processing of your personal 
+                data. <a class="pn-atag"  target="_blank" title="Learn more about your right of object to processing on the ICO website"
+                href="https://ico.org.uk/for-organisations/advice-for-small-organisations/create-your-own-privacy-notice/your-data-protection-rights/#rto">
+                You can read more about this right on the ICO website</a>.
+            </li>
+
+            <li><b>Your right to data portability</b> - You have the right to ask that we transfer the personal information 
+                you gave us to another organisation, or to you. 
+                <a class="pn-atag"  target="_blank" title="Learn more about your right to data portability on the ICO website"
+                href="https://ico.org.uk/for-organisations/advice-for-small-organisations/create-your-own-privacy-notice/your-data-protection-rights/#rtdp">
+                You can read more about this right on the ICO website</a>.
+            </li>
+            
+            <li><b>Your right to withdraw consent</b> - If we use consent as our lawful basis you have the right to withdraw 
+                your consent at any time. <a class="pn-atag"  target="_blank" title="Learn more about your right to withdraw consent on the ICO website"
+                href="https://ico.org.uk/for-organisations/advice-for-small-organisations/create-your-own-privacy-notice/your-data-protection-rights/#rtwc">
+                You can read more about this right on the ICO website</a>.
+                Please note that some rights may not apply in all situations. If we cannot comply with your request, 
+                we will explain why and inform you of your right to complain to the Information Commissioner's Office 
+                if you are not satisfied with our response.
+            </li>
+        </ul>
+        <br>
+        <p>
+           For more information about your rights, visit the ICO's website: <a class="pn-atag"  target="_blank" 
+           href="https://ico.org.uk/for-the-public">https://ico.org.uk/for-the-public</a>. 
+           If you make a request, we must respond to you without undue delay and in any event within one month.
+           To make a data protection rights request, please contact us using the contact details at the bottom 
+           of this privacy notice.
         </p>
 
         <br>
 
         <h2>Questions</h2>
-        <p>If you have any questions about how your personal information is used, or wish to exercise any of your rights, you can
-            do so by <a class="pn-atag" href="/contact" target="_parent">contacting us</a>.
+        <p>If you have any questions about how your personal information is used, or wish to exercise any of 
+            your rights, you can do so by <a class="pn-atag" href="/contact" target="_parent">contacting us</a>.
+        </p>
+
+        <p>For the Earlham Institute, the person with responsibility for advising on compliance with data 
+            protection legislation is Sarah Cossey, contact: <a href="mailto:dpa@earlham.ac.uk">dpa@earlham.ac.uk</a>.
         </p>
 
         <br><br>
 
         <p><b>Published on: 28-10-2023</b></p>
-        <p><b>Last updated: 24-09-2024</b></p>
+        <p><b>Last updated: 07-05-2025</b></p>
     </div>
 </div>
 {% endblock content%}
