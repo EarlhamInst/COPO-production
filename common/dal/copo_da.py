@@ -166,6 +166,7 @@ class Audit(DAComponent):
         # and merge the 'update_log' with 'audit_addtl_info'
         out = []
         for _, row in merged_df.iterrows():
+            logs = row.get('update_log') or []
             sample_type = row.get('sample_type_audit', '')
 
             # Fetch the corresponding audit_addtl_info for the row's copo_id
@@ -179,7 +180,7 @@ class Audit(DAComponent):
                     if updatable_field and log.get('field', '') == updatable_field
                     else log | audit_info
                 )
-                for log in row.get('update_log', [])
+                for log in logs
             ]
 
             # If merged data exists, append to the output list
@@ -208,6 +209,7 @@ class Audit(DAComponent):
         # and merge the 'update_log' with 'audit_addtl_info'
         out = []
         for _, row in merged_df.iterrows():
+            logs = row.get('update_log') or []
             sample_type = row.get('sample_type_audit', '')
 
             # Fetch the corresponding audit_addtl_info for the row's copo_id
@@ -215,7 +217,7 @@ class Audit(DAComponent):
             audit_info = audit_addtl_info.get(copo_id, {})
 
             # Merge each log entry in the 'update_log_sample' with the corresponding 'audit_info'
-            update_log = [log | audit_info for log in row.get('update_log', [])]
+            update_log = [log | audit_info for log in logs]
 
             if update_log:
                 out.append({'sample_type': sample_type, 'update_log': update_log})
@@ -265,7 +267,8 @@ class Audit(DAComponent):
 
             # Merge each log entry in the 'update_log_sample' with the corresponding 'audit_info'
             update_log = []
-            for x in row.get('update_log', []):
+            logs = row.get('update_log') or []
+            for x in logs:
                 x |= audit_info
 
                 if (
@@ -302,6 +305,7 @@ class Audit(DAComponent):
         # and merge the 'update_log' with 'audit_addtl_info'
         out = []
         for _, row in merged_df.iterrows():
+            logs = row.get('update_log') or []
             sample_type = row.get('sample_type_audit', '')
 
             # Fetch the corresponding audit_addtl_info for the row's copo_id
@@ -310,8 +314,8 @@ class Audit(DAComponent):
 
             update_log = [
                 log | audit_info
-                for log in row.get('update_log', [])
-                if log.get('update_type') == update_type
+                for log in logs
+                if log.get('update_type', '') == update_type
             ]
 
             # If merged data exists, append to the output list
@@ -342,6 +346,7 @@ class Audit(DAComponent):
         # and merge the 'update_log' with 'audit_addtl_info'
         out = []
         for _, row in merged_df.iterrows():
+            logs = row.get('update_log') or []
             sample_type = row.get('sample_type_audit', '')
 
             # Fetch the corresponding audit_addtl_info for the row's copo_id
@@ -349,7 +354,7 @@ class Audit(DAComponent):
             audit_info = audit_addtl_info.get(copo_id, {})
 
             # Merge each log entry in the 'update_log_sample' with the corresponding 'audit_info'
-            update_log = [log | audit_info for log in row.get('update_log', [])]
+            update_log = [log | audit_info for log in logs]
 
             if update_log:
                 out.append({'sample_type': sample_type, 'update_log': update_log})
