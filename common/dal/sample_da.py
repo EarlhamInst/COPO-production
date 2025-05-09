@@ -1369,6 +1369,9 @@ class Sample(DAComponent):
         # Get the value of the sequencing centre based on the label
         sequencing_centre = SequencingCentre.objects.get(label=sequencing_centre)
 
+        if not sequencing_centre:
+            return[]
+        
         # Get the profile id based on the sequencing centre
         profile_ids_based_on_profile = cursor_to_list_no_ids(
             Profile().get_profile_by_sequencing_centre(
