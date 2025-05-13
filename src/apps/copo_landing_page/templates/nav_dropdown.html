@@ -1,7 +1,6 @@
 {% load web_tags %}
 {% load static %}
-<nav id="frontpage-navbar-outer" class="navbar navbar-default navbar-fixed-top navbar-fixed-left" style="height: 10px !important; min-height: 59px;"
-     role="navigation">
+<nav id="frontpage-navbar-outer" class="navbar navbar-default navbar-fixed-top navbar-fixed-left {% if banner %}has-margin-top-neg-12{% endif %}" role="navigation">
     <div class="container-fluid {% if banner %}display-flex{% else %}display-block{% endif %}">
         <div class="navbar-header">
             <a class="navbar-brand"
@@ -10,6 +9,12 @@
                      src="{% static 'assets/img/COPO-logo-full-CMYK-black.png' %}"
                      alt="COPO logo">
             </a>
+            <button type='button' class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="sr-only">Toggle Navigation</span>
+            </button>
         </div>
 
         <!-- Banner -->

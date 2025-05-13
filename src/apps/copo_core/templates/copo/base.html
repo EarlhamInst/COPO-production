@@ -240,7 +240,7 @@
     </style>
 </head>
 
-<body>
+<body class="{% if banner %}has-banner{% endif %}">
 <!-- hidden fields -->
 <input type="hidden" id="elastic_search_ajax" value="{# url 'copo:ajax_search_ontology' ontology_names='999' #}"/>
 <input type="hidden" id="ajax_search_copo_local" value="{# url 'copo:ajax_search_copo_local' data_source='999' #}"/>
@@ -261,7 +261,7 @@
     <b>{{ latest_message }}</b>
 </div>
 
-<nav id="copo-global-nav" class="navbar navbar-default navbar-fixed-top">
+<nav id="copo-global-nav" class="navbar navbar-default navbar-fixed-top {% if banner %}has-margin-top-neg-12{% endif %}" role="navigation">
     <div class="container-fluid {% if banner %}display-flex{% else %}display-block{% endif %}">
         <div class="navbar-header">
             <a class="navbar-brand" href="{% if user.is_authenticated %} {% url 'copo_profile_index:index' %} {% else %}/{% endif %}">

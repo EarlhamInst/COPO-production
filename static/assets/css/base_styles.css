@@ -164,6 +164,24 @@ body {
   text-align: left;
 }
 
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus {
+  background-color: black !important;
+}
+
+.navbar-default .navbar-toggle .icon-bar {
+  background-color: black !important;
+}
+
+.navbar-default .navbar-toggle:hover .icon-bar,
+.navbar-default .navbar-toggle:focus .icon-bar {
+  background-color: white !important;
+}
+
+#frontpage-navbar-inner.navbar-collapse.in  {
+  background-color: #f7f6f6;
+}
+
 #copo-icon {
   width: 1000px;
   margin: 0 auto;
