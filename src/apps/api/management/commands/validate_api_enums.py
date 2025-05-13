@@ -22,7 +22,9 @@ class Command(BaseCommand):
     help = 'Validate enum values in Swagger against backend enums'
 
     def handle(self, *args, **options):
-        self.stdout.write('Validating enum values in Swagger API against backend enums...')
+        self.stdout.write(
+            'Validating enum values in Swagger API against backend enums...'
+        )
         swagger = self.load_swagger_yaml()
 
         # List of Swagger API parameters to check
@@ -36,7 +38,8 @@ class Command(BaseCommand):
             ('Sample_long2', SampleFieldsEnum),
             ('SampleTypes', ProjectEnum),
             ('SequencingCentres', SequencingCentreEnum),
-            ('Standards', StandardsEnum),
+            ('Standards', StandardEnum),
+            ('SampleAudit_field_query_options', UpdateAuditFieldEnum),
         ]
 
         # Loop through the parameters and perform the check

@@ -121,6 +121,19 @@ class StandardEnum(str, Enum):
         return standards
 
 
+class UpdateAuditFieldEnum(str, Enum):
+    RACK_OR_PLATE_ID = "RACK_OR_PLATE_ID"
+    SPECIMEN_ID = "SPECIMEN_ID"
+    TUBE_OR_WELL_ID = "TUBE_OR_WELL_ID"
+    BIOSAMPLE_ACCESSION = "biosampleAccession"
+    PUBLIC_NAME = "public_name"
+    SRA_ACCESSION = "sraAccession"
+
+    @classmethod
+    def values(cls):
+        return [e.value for e in cls]
+
+
 class UpdateTypeEnum(str, Enum):
     SYSTEM = 'system'
     USER = 'user'

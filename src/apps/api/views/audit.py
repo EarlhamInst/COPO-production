@@ -9,7 +9,7 @@ from common.dal.copo_da import Audit
 from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from src.apps.api.utils import finish_request
 from .sample import format_date
-from ..enums import UpdateTypeEnum
+from ..enums import UpdateTypeEnum, UpdateAuditFieldEnum
 from ..utils import validate_date_from_api, validate_project
 
 
@@ -98,6 +98,14 @@ def get_sample_updates_by_sample_field_and_value(request, field, field_value):
         'public_name' field
         'sraAccession' field
     '''
+    # Check if the 'field' provided is valid
+    valid_update_filter_fields = UpdateAuditFieldEnum.values()
+    if field not in valid_update_filter_fields:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f'Invalid \'field\' provided! Must be one of: {d_utils.join_with_and(valid_update_filter_fields, conjunction="or")}',
+        )
+
     sample_updates = Audit().get_sample_update_audits_by_field_and_value(
         field, field_value
     )
