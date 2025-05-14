@@ -67,6 +67,7 @@ DTOL_ENA_MAPPINGS = {
         'ena': 'sample collection device or method'
     },
     'DNA_VOUCHER_ID_FOR_BIOBANKING': {
+        'ena_ignore_if_values': ["NOT_APPLICABLE","“NOT_PROVIDED”,"NOT_COLLECTED"],
         'ena': 'bio_material',
         'ena_split_by': '|'
     },
@@ -161,6 +162,7 @@ DTOL_ENA_MAPPINGS = {
     #    'ena': 'time of collection'
     #},
     'TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
+        'ena_ignore_if_values': ["NOT_APPLICABLE","“NOT_PROVIDED”,"NOT_COLLECTED"],
         'ena': 'bio_material',
         'ena_split_by': '|'
     },
