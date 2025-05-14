@@ -346,7 +346,7 @@ def get_specimens_with_submitted_images(request):
     # Return response if result is an error
     if isinstance(result, HttpResponse):
         return result
-    
+
     # Unpack parsed date values from the result
     d_from_parsed, d_to_parsed = result
 
@@ -561,7 +561,7 @@ def get_by_field(request, field, values):
         except Exception as e:
             return HttpResponse(
                 status=status.HTTP_400_BAD_REQUEST,
-                content=f"Invalid date format provided. Error: {e}",
+                content=f'Invalid date format provided. Error: {e}',
             )
 
     out = list()
@@ -587,48 +587,50 @@ def get_samples_by_taxon_id(request, taxon_ids):
     return finish_request(out)
 
 
-def get_study_from_sample_accession(request, accessions):
-    ids = accessions.split(',')
-    # strip white space
-    ids = list(map(lambda x: x.strip(), ids))
-    # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
-    ids[:] = [x for x in ids if x]
-    # try to get sample from either sra or biosample id
-    samples = Sample().get_by_field(dtol_field='sraAccession', value=ids)
-    if not samples:
-        samples = Sample().get_by_field(dtol_field='biosampleAccession', value=ids)
-        if not samples:
-            return finish_request([])
-    # if record found, find associated submission record
-    out = []
-    for s in samples:
-        sub = Submission().get_submission_from_sample_id(str(s['_id']))
-        d = sub[0]['accessions']['study_accessions']
-        d['sample_biosampleId'] = s['biosampleAccession']
-        out.append(d)
-    return finish_request(out)
+# def get_study_from_sample_accession(request, accessions):
+#     ids = accessions.split(',')
+#     # strip white space
+#     ids = list(map(lambda x: x.strip(), ids))
+#     # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
+#     ids[:] = [x for x in ids if x]
+#     # try to get sample from either sra or biosample id
+#     samples = Sample().get_by_field(field='sraAccession', value=ids)
+#     if not samples:
+#         samples = Sample().get_by_field(field='biosampleAccession', value=ids)
+#         if not samples:
+#             return finish_request([])
+#     # if record found, find associated submission record
+#     out = []
+#     for s in samples:
+#         sub = Submission().get_submission_from_sample_id(str(s['_id']))
+#         if not sub:
+#             continue
+#         d = sub[0]['accessions']['project']
+#         d['sample_biosampleId'] = s['biosampleAccession']
+#         out.append(d)
+#     return finish_request(out)
 
 
-def get_samples_from_study_accessions(request, accessions):
-    ids = accessions.split(',')
-    # strip white space
-    ids = list(map(lambda x: x.strip(), ids))
-    # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
-    ids[:] = [x for x in ids if x]
-    subs = Submission().get_dtol_samples_in_biostudy(ids)
-    to_finish = list()
-    sample_count = 0
-    for s in subs:
-        out = dict()
-        out['study_accessions'] = s['accessions']['study_accessions']
-        out['sample_accessions'] = []
-        for sa in s['accessions']['sample_accessions']:
-            sample_count += 1
-            smpl_accessions = s['accessions']['sample_accessions'][sa]
-            smpl_accessions['copo_sample_id'] = sa
-            out['sample_accessions'].append(smpl_accessions)
-        to_finish.append(out)
-    return finish_request(to_finish, num_found=sample_count)
+# def get_samples_from_study_accessions(request, accessions):
+#     ids = accessions.split(',')
+#     # strip white space
+#     ids = list(map(lambda x: x.strip(), ids))
+#     # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
+#     ids[:] = [x for x in ids if x]
+#     subs = Submission().get_dtol_samples_in_biostudy(ids)
+#     to_finish = list()
+#     sample_count = 0
+#     for s in subs:
+#         out = dict()
+#         out['study_accessions'] = s['accessions']['study_accessions']
+#         out['sample_accessions'] = []
+#         for sa in s['accessions']['sample_accessions']:
+#             sample_count += 1
+#             smpl_accessions = s['accessions']['sample_accessions'][sa]
+#             smpl_accessions['copo_sample_id'] = sa
+#             out['sample_accessions'].append(smpl_accessions)
+#         to_finish.append(out)
+#     return finish_request(to_finish, num_found=sample_count)
 
 
 def query_local_contexts_hub(project_id):

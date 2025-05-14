@@ -51,7 +51,7 @@ class Command(BaseCommand):
     def load_swagger_yaml(self):
         # Load the Swagger YAML file
         api_file_path = os.path.join(
-            settings.STATIC_ROOT, 'swagger', 'openapi_copo_dtol.yml'
+            settings.STATIC_ROOT, 'swagger', 'openapi_copo.yml'
         )
 
         if not os.path.exists(api_file_path):

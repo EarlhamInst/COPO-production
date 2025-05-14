@@ -772,59 +772,59 @@ paths:
         '500':
           $ref: '#/components/responses/RangeError'
 
-  /sample/StudyFromSampleAccession/{sample_ids}:
-    get:
-      tags:
-        - Sample
-      summary: Get study records by sample accessions
-      description: >
-        Get study information for the samples returned from the given {sample_ids}
-      parameters:
-        - name: sample_ids
-          in: path
-          required: true
-          description: Format - a comma separated list of biosample accessions or European Nucleotide Archive (ENA)/sraAccessions
-          schema:
-            type: string
-            minimum: 1
-            maximum: 1
-        - $ref: '#/components/parameters/standard'
-        - $ref: '#/components/parameters/return_type'
-      responses:
-        '200': # status code
-          description: A JSON array sample objects
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccessionListShort'
-        '500':
-          $ref: '#/components/responses/RangeError'
+  # /sample/StudyFromSampleAccession/{sample_ids}:
+  #   get:
+  #     tags:
+  #       - Sample
+  #     summary: Get study records by sample accessions
+  #     description: >
+  #       Get study information for the samples returned from the given {sample_ids}
+  #     parameters:
+  #       - name: sample_ids
+  #         in: path
+  #         required: true
+  #         description: Format - a comma separated list of biosample accessions or European Nucleotide Archive (ENA)/sraAccessions
+  #         schema:
+  #           type: string
+  #           minimum: 1
+  #           maximum: 1
+  #       - $ref: '#/components/parameters/standard'
+  #       - $ref: '#/components/parameters/return_type'
+  #     responses:
+  #       '200': # status code
+  #         description: A JSON array sample objects
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/AccessionListShort'
+  #       '500':
+  #         $ref: '#/components/responses/RangeError'
 
-  /sample/SampleFromStudyAccession/{biostudyAccessions}:
-    get:
-      tags:
-        - Sample
-      summary: Get samples by biostudyAccessions
-      description: >
-        Get accession information for the samples returned from the given {biostudyAccessions}
-      parameters:
-        - name: biostudyAccessions
-          in: path
-          required: true
-          description: Format - a comma separated list of biostudy accessions
-          schema:
-            type: string
-        - $ref: '#/components/parameters/standard'
-        - $ref: '#/components/parameters/return_type'
-      responses:
-        '200': # status code
-          description: A JSON array sample objects
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SampleAccessionList'
-        '500':
-          $ref: '#/components/responses/RangeError'
+  # /sample/SampleFromStudyAccession/{biostudyAccessions}:
+  #   get:
+  #     tags:
+  #       - Sample
+  #     summary: Get samples by biostudyAccessions
+  #     description: >
+  #       Get accession information for the samples returned from the given {biostudyAccessions}
+  #     parameters:
+  #       - name: biostudyAccessions
+  #         in: path
+  #         required: true
+  #         description: Format - a comma separated list of biostudy accessions
+  #         schema:
+  #           type: string
+  #       - $ref: '#/components/parameters/standard'
+  #       - $ref: '#/components/parameters/return_type'
+  #     responses:
+  #       '200': # status code
+  #         description: A JSON array sample objects
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/SampleAccessionList'
+  #       '500':
+  #         $ref: '#/components/responses/RangeError'
 
   # Section: Profile
   /profile/make_profile:

@@ -114,16 +114,16 @@ dtol_api_patterns = [
         s.get_fields_by_manifest_version,
         name='get_fields_by_manifest_version',
     ),
-    re_path(
-        r'^sample/SampleFromStudyAccession/(?P<accessions>[A-Za-z0-9, ]+)',
-        s.get_samples_from_study_accessions,
-        name='get_samples_from_study_accession',
-    ),
-    re_path(
-        r'^sample/StudyFromSampleAccession/(?P<accessions>[A-Za-z0-9, ]+)',
-        s.get_study_from_sample_accession,
-        name='get_study_from_sample_accession',
-    ),
+    # re_path(
+    #     r'^sample/SampleFromStudyAccession/(?P<accessions>[A-Za-z0-9, ]+)',
+    #     s.get_samples_from_study_accessions,
+    #     name='get_samples_from_study_accession',
+    # ),
+    # re_path(
+    #     r'^sample/StudyFromSampleAccession/(?P<accessions>[A-Za-z0-9, ]+)',
+    #     s.get_study_from_sample_accession,
+    #     name='get_study_from_sample_accession',
+    # ),
     re_path(
         r'^sample/updatable_fields',
         s.get_updatable_fields_by_project,
@@ -232,37 +232,37 @@ manifest_patterns = [
     path(
         'index/get_latest_manifest_versions',
         manifest_view.get_latest_manifest_versions,
-        name="get_latest_manifest_versions",
+        name='get_latest_manifest_versions',
     ),
     path(
         'get_manifest_fields/',
         manifest_view.get_manifest_fields,
-        name="get_manifest_fields",
+        name='get_manifest_fields',
     ),
     path(
         'get_common_value_dropdown_list/',
         manifest_view.get_common_value_dropdown_list,
-        name="get_common_value_dropdown_list",
+        name='get_common_value_dropdown_list',
     ),
     path(
         'prefill_manifest_template/',
         manifest_view.prefill_manifest_template,
-        name="prefill_manifest_template",
+        name='prefill_manifest_template',
     ),
     re_path(
         r'^download_manifest/(?P<manifest_id>[A-Z0-9a-f-]+)',
         manifest_view.download_manifest,
-        name="download_manifest",
+        name='download_manifest',
     ),
-    path('download_permits/', manifest_view.download_permits, name="download_permits"),
-    path('view_images/', manifest_view.view_images, name="view_images"),
+    path('download_permits/', manifest_view.download_permits, name='download_permits'),
+    path('view_images/', manifest_view.view_images, name='view_images'),
     path(
         'validate_common_value/',
         manifest_view.validate_common_value,
-        name="validate_common_value",
+        name='validate_common_value',
     ),
     path(
-        'index/', TemplateView.as_view(template_name="manifests.html"), name='manifests'
+        'index/', TemplateView.as_view(template_name='manifests.html'), name='manifests'
     ),
 ]
 
