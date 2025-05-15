@@ -1,13 +1,15 @@
+import re
 from django import template
 from django.contrib.auth.models import Group
 from django.conf import settings
 from datetime import datetime
+
+import common.schemas.utils.data_utils as d_utils
 from src.apps.copo_core.models import (
     SequencingCentre,
     AssociatedProfileType,
     ProfileType,
 )
-import re
 
 register = template.Library()
 
@@ -106,6 +108,11 @@ def is_list_empty(value):
         return True
     else:
         return False
+
+
+@register.filter(is_safe=True, name="format_list_with_and")
+def format_list_with_and(lst):
+    return d_utils.join_with_and(lst)
 
 
 @register.filter(is_safe=True, name="get_sequencing_centre_label")

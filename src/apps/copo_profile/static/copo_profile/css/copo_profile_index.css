@@ -218,6 +218,7 @@
 }
 
 /* Associated types*/
+.shared_owner_info_icon,
 .associated_type_info_icon {
     position: relative;
     left: 2px;
@@ -235,8 +236,6 @@ ul.associated_type_ulTag {
 .associated_type_ulTag li {
     padding-bottom: 10px;
 }
-
-/*CSS styles for profile records with no associated types assigned*/
 
 /*CSS styles for profile records with associated types assigned*/
 .associated_type_div_value{

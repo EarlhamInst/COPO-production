@@ -38,7 +38,7 @@ def copo_profile_index(request):
     banner = Banner.objects.filter(active=True)
 
     if len(banner) > 0:
-        context = {'user': request.user, "banner": banner[0]}
+        context = {'user': request.user, 'banner': banner[0]}
     else:
         context = {'user': request.user}
     context['groups'] = member_groups
@@ -55,7 +55,7 @@ def copo_profile_index(request):
     profiles_length = len(profile_lst)
 
     shared_profiles_mapping = {
-        p.get("_id", ""): p.get("shared", False) for p in profile_lst
+        p.get('_id', ''): p.get('shared', False) for p in profile_lst
     }
     excluded_shared_profileIDs = list()
 
@@ -65,42 +65,42 @@ def copo_profile_index(request):
         .get_collection_handle()
         .aggregate(
             [
-                {"$match": {"_id": {"$in": list(shared_profiles_mapping.keys())}}},
+                {'$match': {'_id': {'$in': list(shared_profiles_mapping.keys())}}},
                 {
-                    "$addFields": {
-                        "submission_profile_id": {
-                            "$convert": {"input": "$_id", "to": "string", "onError": 0}
+                    '$addFields': {
+                        'submission_profile_id': {
+                            '$convert': {'input': '$_id', 'to': 'string', 'onError': 0}
                         }
                     }
                 },
                 {
-                    "$lookup": {
-                        "from": 'SubmissionCollection',
-                        "localField": "submission_profile_id",
-                        "foreignField": "profile_id",
-                        "as": "submission",
+                    '$lookup': {
+                        'from': 'SubmissionCollection',
+                        'localField': 'submission_profile_id',
+                        'foreignField': 'profile_id',
+                        'as': 'submission',
                     }
                 },
                 {
-                    "$unwind": {
+                    '$unwind': {
                         'path': '$submission',
-                        "preserveNullAndEmptyArrays": True,
+                        'preserveNullAndEmptyArrays': True,
                     }
                 },
-                {"$sort": {"date_created": pymongo.DESCENDING}},
-                {"$skip": db_skip_num},
-                {"$limit": num_of_profiles_per_page},
+                {'$sort': {'date_created': pymongo.DESCENDING}},
+                {'$skip': db_skip_num},
+                {'$limit': num_of_profiles_per_page},
                 {
-                    "$project": {
-                        "study_status": "$submission.accessions.project.status",
-                        "study_release_date": "$submission.accessions.project.release_date",
-                        "sequencing_centre": 1,
-                        "title": 1,
-                        "description": 1,
-                        "associated_type": 1,
-                        "type": 1,
-                        "date_created": 1,
-                        "date_modified": 1,
+                    '$project': {
+                        'study_status': '$submission.accessions.project.status',
+                        'study_release_date': '$submission.accessions.project.release_date',
+                        'sequencing_centre': 1,
+                        'title': 1,
+                        'description': 1,
+                        'associated_type': 1,
+                        'type': 1,
+                        'date_created': 1,
+                        'date_modified': 1,
                     }
                 },
             ]
@@ -113,43 +113,30 @@ def copo_profile_index(request):
 
     # Validate user shared profiles if any exists
     for index, item in enumerate(profile_page):
-        if shared_profiles_mapping.get(ObjectId(item.get("id", "")), ""):
-            """
-            is_parenthesis_in_word = re.search(
-                r'\((.*?)\)', item.get("type", ""))
-            type = is_parenthesis_in_word.group(
-                1) if is_parenthesis_in_word else ""
-            """
-            profile_type = item.get("type", "")
+        profile_id = item.get('id', '')
+        profile_page[index]['owner_name'] = Profile().get_user_full_name_by_id(
+            profile_id
+        )
+
+        if shared_profiles_mapping.get(ObjectId(profile_id), ''):
+            profile_page[index][
+                'shared_owner_name'
+            ] = Profile().get_user_full_name_by_id(profile_id, is_shared=True)
+            profile_type = item.get('type', '')
             if ProfileType.objects.get(type=profile_type).is_permission_required:
                 if f'{profile_type}_users' not in member_groups:
-                    # Obtain a list of the profile IDs for the shared profiles that users have been added to but
-                    # they do not belong to that profile group type
-                    excluded_shared_profileIDs.append(item.get("id", ""))
+                    # Obtain a list of the profile IDs for the shared profiles that users
+                    # have been added to but they do not belong to that profile group type
+                    excluded_shared_profileIDs.append(item.get('id', ''))
             item['shared_type'] = profile_type
             del item['type']
-            """
-            if (item.get("type", "") == 'Stand-alone'):
-                # Remove 'type' key so that "Shared with me" profile grid
-                # label is displayed on the profile grid
-                item['shared_type'] = item['type']
-                del item['type']
-            elif f'{type.lower()}_users' in member_groups:
-                # Remove 'type' key so that "Shared with me" profile grid
-                # label is displayed on the profile grid
-                item['shared_type'] = item['type']
-                del item['type']
-            else:
-                # Obtain a list of the profile IDs for the shared profiles that users have been added to but
-                # they do not belong to that profile group type
-                excluded_shared_profileIDs.append(item.get("id", ""))
-            """
+
     # Exclude a shared profile if a user does not belong to the shared profile group type
     if excluded_shared_profileIDs:
         profile_page = [
             profile
             for profile in profile_page
-            if profile.get("id", "") not in excluded_shared_profileIDs
+            if profile.get('id', '') not in excluded_shared_profileIDs
         ]
         # Reduce the total number of (owned and shared) profiles for the user
         profiles_length -= len(excluded_shared_profileIDs)
@@ -160,15 +147,15 @@ def copo_profile_index(request):
 
     schema_map = dict()
     for profile in profile_page:
-        profile_type = profile.get("type", "")
+        profile_type = profile.get('type', '')
         if type not in schema_map:
             schema = Profile().get_component_schema(profile_type=profile_type)
             schema_map[profile_type] = schema
         schema = schema_map.get(profile_type, dict())
 
         for f in schema:
-            f_id = f["id"].split(".")[-1]
-            if f_id in profile and not f.get("show_in_table", False):
+            f_id = f['id'].split('.')[-1]
+            if f_id in profile and not f.get('show_in_table', False):
                 profile.pop(f_id)
 
     if request.headers.get('x-requested-with') != 'XMLHttpRequest':
@@ -191,7 +178,7 @@ def copo_profile_index(request):
                 'copo/profile/copo_profile_record.html',
                 {
                     'profile': profile,
-                    "profile_types": get_all_profile_types_for_options_for_user(
+                    'profile_types': get_all_profile_types_for_options_for_user(
                         request.user
                     ),
                 },

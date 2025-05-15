@@ -32,7 +32,7 @@
                             <div class="boldText" style="margin-top: 10px;">Description:</div>
                             <div class="showEllipsisFor2TextLines profileDescription">{{ profile.description }}</div>
                             
-                            {% if profile.study_status or profile.associated_type or profile.sequencing_centre|is_list_empty %}
+                            {% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status%}
                                 <a id="showMoreProfileInfoBtn" class="btn {% if profile.description.strip|length < 56 %}showMoreProfileInfoBtn_margin{% elif profile.description.strip|length >= 56 %}showMoreProfileInfoBtn_2LineDescriptionText{% endif %}" href="#" rel="popover"
                                     data-popover-content="#showMoreProfileInfoContent" data-placement="right">View more...</a>                         
                             {% endif %}
@@ -41,13 +41,25 @@
                             <div id="showMoreProfileInfoContent" class="hidden">
                                 <div class="popover-heading"></div>
                                 <div class="popover-content showMoreProfileInfoPopover-content-div">
-                                    {% if profile.study_status %}
-                                        <div class="studyStatusDiv" style="margin-top: 10px;">
-                                            <span class="boldText">Release Status: </span> 
-                                            <span id="study_status_{{profile.id}}">{{ profile.study_status | get_first_value_from_array}}</span>
+                                    {% if profile.owner_name %}
+                                        <div class="ownerDiv" style="margin-top: 10px;">
+                                            <span class="boldText">Owner: </span> 
+                                            <span id="ownerID">{{ profile.owner_name }}</span>
                                         </div>
-                                        <div style="margin-top: 10px;"><span class="boldText">Release Date: </span>    
-                                            <span id="study_release_date_{{profile.id}}">{{ profile.study_release_date | get_first_value_from_array}}</span>
+                                    {% endif %}
+                                    {% if profile.shared_owner_name %}
+                                        <div class="sharedOwnerDiv" style="margin-top: 10px;">
+                                            <span class="boldText">Collaborator(s): </span> 
+                                            {% with profile.shared_owner_name as shared_owners %}
+                                                <span id="sharedOwnerID">
+                                                    {% if shared_owners|length > 3 %}
+                                                    {{ shared_owners|slice:":3"|join:", " }}&hellip;
+                                                        <i class="fa fa-info-circle shared_owner_info_icon" title="{{ shared_owners|format_list_with_and }}"></i>
+                                                    {% else %}
+                                                        {{ shared_owners|format_list_with_and }}
+                                                    {% endif %}
+                                                </span>
+                                            {% endwith %}
                                         </div>
                                     {% endif %}
                                     {% if profile.associated_type %}
@@ -79,13 +91,22 @@
                                             </ul>
                                         </div>
                                     {% endif %}
+                                    {% if profile.study_status %}
+                                        <div class="studyStatusDiv">
+                                            <span class="boldText">Release Status: </span> 
+                                            <span id="study_status_{{profile.id}}">{{ profile.study_status | get_first_value_from_array}}</span>
+                                        </div>
+                                        <div><span class="boldText">Release Date: </span>    
+                                            <span id="study_release_date_{{profile.id}}">{{ profile.study_release_date | get_first_value_from_array}}</span>
+                                        </div>
+                                    {% endif %}
                                 
                                 </div>
                             </div>                  
                         </div>
                         <!--Panel expanding menu -->
                         <!-- Row: Profile menu-->
-                        <div class="{% if profile.study_status or profile.associated_type or profile.sequencing_centre|is_list_empty %}menu-row{% else %}menu-no-addtl-info-row{% endif %}">
+                        <div class="{% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status %}menu-row{% else %}menu-no-addtl-info-row{% endif %}">
                             <span class="ui compact menu expanding_menu" id="expanding_menu">
                                 <div class="ui up pointing dropdown link item" tabindex="0">
                                     Components

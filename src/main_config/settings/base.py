@@ -221,7 +221,9 @@ SOP_FILE_NAME = "{0}_MANIFEST_SOP{1}.pdf"
 SOP_DOWNLOAD_URL = "/static/assets/sops/" + SOP_FILE_NAME
 
 ELASTIC_SEARCH_URL = 'http://localhost:9200/ontologies/plant_ontology/_search'
-BIA_IMAGE_URL_PREFIX = 'https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/012/S-BIAD1012/Files/'
+BIA_IMAGE_URL_PREFIX = (
+    'https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/012/S-BIAD1012/Files/'
+)
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 48 * 60 * 60  #

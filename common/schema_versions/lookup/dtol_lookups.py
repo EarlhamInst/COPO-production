@@ -16,187 +16,104 @@ def get_collection_location_2(str=""):
 def get_default_data_function(str=""):
     return str.lower().replace("_", " ").strip()
 
+
 def get_titled_data_function(str=""):
-    return titlecase(str.replace("_", " ")).strip().replace(" De ", " de ").replace("Dna ", "DNA ").replace("Scilifelab", "SciLifeLab").replace("Industry Partner", "industry partner").replace("Other ","other ").replace(" Vib ", " VIB ")
+    return (
+        titlecase(str.replace("_", " "))
+        .strip()
+        .replace(" De ", " de ")
+        .replace("Dna ", "DNA ")
+        .replace("Scilifelab", "SciLifeLab")
+        .replace("Industry Partner", "industry partner")
+        .replace("Other ", "other ")
+        .replace(" Vib ", " VIB ")
+    )
+
+
 def exec_function(func=get_default_data_function, str=str()):
     return func(str)
 
 
 DTOL_ENA_MAPPINGS = {
-    'ASSOCIATED_BIOGENOME_PROJECTS': {
-        'ena': 'associated biogenome projects'
-    },
-    'BARCODE_HUB': {
-        'ena': 'barcoding center'
-    },
-    'COLLECTED_BY': {
-        'ena': 'collected_by'
-    },
+    'ASSOCIATED_BIOGENOME_PROJECTS': {'ena': 'associated biogenome projects'},
+    'BARCODE_HUB': {'ena': 'barcoding center'},
+    'COLLECTED_BY': {'ena': 'collected_by'},
     'COLLECTION_LOCATION_1': {
         'info': "split COLLECTION_LOCATION on first '|' and put left hand side here (should be country)",
         'ena': 'geographic location (country and/or sea)',
-        'ena_data_function': get_collection_location_1
+        'ena_data_function': get_collection_location_1,
     },
     'COLLECTION_LOCATION_2': {
         'info': "split COLLECTION_LOCATION on first '|' and put right hand side here (should be a list of '|' separated locations)",
         'ena': 'geographic location (region and locality)',
-        'ena_data_function': get_collection_location_2
+        'ena_data_function': get_collection_location_2,
     },
-    'COLLECTOR_AFFILIATION': {
-        'ena': 'collecting institution'
-    },
-    'COLLECTOR_ORCID_ID': {
-        'ena': 'collector ORCID ID'
-    },
-    'CULTURE_OR_STRAIN_ID': {
-        'ena': 'culture_or_strain_id'
-    },
-    'DATE_OF_COLLECTION': {
-        'ena': 'collection date'
-    },
-    'DECIMAL_LATITUDE': {
-        'ena': 'geographic location (latitude)'
-    },
-    'DECIMAL_LONGITUDE': {
-        'ena': 'geographic location (longitude)'
-    },
-    'DEPTH': {
-        'ena': 'geographic location (depth)'
-    },
-    'DESCRIPTION_OF_COLLECTION_METHOD': {
-        'ena': 'sample collection device or method'
-    },
+    'COLLECTOR_AFFILIATION': {'ena': 'collecting institution'},
+    'COLLECTOR_ORCID_ID': {'ena': 'collector ORCID ID'},
+    'CULTURE_OR_STRAIN_ID': {'ena': 'culture_or_strain_id'},
+    'DATE_OF_COLLECTION': {'ena': 'collection date'},
+    'DECIMAL_LATITUDE': {'ena': 'geographic location (latitude)'},
+    'DECIMAL_LONGITUDE': {'ena': 'geographic location (longitude)'},
+    'DEPTH': {'ena': 'geographic location (depth)'},
+    'DESCRIPTION_OF_COLLECTION_METHOD': {'ena': 'sample collection device or method'},
     'DNA_VOUCHER_ID_FOR_BIOBANKING': {
-        'ena_ignore_if_values': ["NOT_APPLICABLE","NOT_PROVIDED","NOT_COLLECTED"],
+        'ena_ignore_if_values': ["NOT_APPLICABLE", "NOT_PROVIDED", "NOT_COLLECTED"],
         'ena': 'bio_material',
-        'ena_split_by': '|'
+        'ena_split_by': '|',
     },
-    'ELEVATION': {
-        'ena': 'geographic location (elevation)'
-    },
+    'ELEVATION': {'ena': 'geographic location (elevation)'},
     'GAL': {
         'ena': 'GAL',
         'ena_data_function': get_titled_data_function,
         'ena_ignore_if_values': ["NOT_PROVIDED"],
     },
-    'GAL_SAMPLE_ID': {
-        'ena': 'GAL_sample_id'
-    },
-    'HABITAT': {
-        'ena': 'habitat'
-    },
-    'IDENTIFIED_BY': {
-        'ena': 'identified_by'
-    },
-    'IDENTIFIER_AFFILIATION': {
-        'ena': 'identifier_affiliation'
-    },
-    'LATITUDE_END': {
-        'ena': 'Latitude End'
-    },
-    'LATITUDE_START': {
-        'ena': 'Longitude End'
-    },
-    'LIFESTAGE': {
-        'ena': 'lifestage',
-        'ena_data_function': get_default_data_function
-    },
-    'LONGITUDE_END': {
-        'ena': 'Longitude End'
-    },
-    'LONGITUDE_START': {
-        'ena': 'Longitude Start'
-    },
-    'ORGANISM_PART': {
-        'ena': 'organism part'
-    },
-    'ORIGINAL_COLLECTION_DATE': {
-        'ena': 'original collection date'
-    },
-    'ORIGINAL_DECIMAL_LATITUDE': {
-        'ena': 'original geographic location (latitude)'
-    },
-    'ORIGINAL_DECIMAL_LONGITUDE': {
-        'ena': 'original geographic location (longitude)'
-    },
-    'ORIGINAL_GEOGRAPHIC_LOCATION': {
-        'ena': 'original geographic location'
-    },
-    'PARTNER': {
-        'ena': 'GAL'
-    },
-    'PARTNER_SAMPLE_ID': {
-        'ena': 'GAL_sample_id'
-    },
+    'GAL_SAMPLE_ID': {'ena': 'GAL_sample_id'},
+    'HABITAT': {'ena': 'habitat'},
+    'IDENTIFIED_BY': {'ena': 'identified_by'},
+    'IDENTIFIER_AFFILIATION': {'ena': 'identifier_affiliation'},
+    'LATITUDE_END': {'ena': 'Latitude End'},
+    'LATITUDE_START': {'ena': 'Longitude End'},
+    'LIFESTAGE': {'ena': 'lifestage', 'ena_data_function': get_default_data_function},
+    'LONGITUDE_END': {'ena': 'Longitude End'},
+    'LONGITUDE_START': {'ena': 'Longitude Start'},
+    'ORGANISM_PART': {'ena': 'organism part'},
+    'ORIGINAL_COLLECTION_DATE': {'ena': 'original collection date'},
+    'ORIGINAL_DECIMAL_LATITUDE': {'ena': 'original geographic location (latitude)'},
+    'ORIGINAL_DECIMAL_LONGITUDE': {'ena': 'original geographic location (longitude)'},
+    'ORIGINAL_GEOGRAPHIC_LOCATION': {'ena': 'original geographic location'},
+    'PARTNER': {'ena': 'GAL'},
+    'PARTNER_SAMPLE_ID': {'ena': 'GAL_sample_id'},
     'PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
         'ena': 'proxy biomaterial',
-        'ena_split_by': '|'
+        'ena_split_by': '|',
     },
-    'PROXY_VOUCHER_ID': {
-        'ena': 'proxy voucher',
-        'ena_split_by': '|'
-    },
-    'PROXY_VOUCHER_LINK': {
-        'ena': 'proxy voucher url',
-        'ena_split_by': '|'
-    },
-    'RELATIONSHIP': {
-        'ena': 'relationship'
-    },
-    'SAMPLE_COORDINATOR': {
-        'ena': 'sample coordinator'
-    },
-    'SAMPLE_COORDINATOR_AFFILIATION': {
-        'ena': 'sample coordinator affiliation'
-    },
-    'SAMPLE_COORDINATOR_ORCID_ID': {
-        'ena': 'sample coordinator ORCID ID'
-    },
-    'SEX': {
-        'ena': 'sex'
-    },
-    'SPECIMEN_ID': {
-        'ena': 'specimen_id'
-    },
+    'PROXY_VOUCHER_ID': {'ena': 'proxy voucher', 'ena_split_by': '|'},
+    'PROXY_VOUCHER_LINK': {'ena': 'proxy voucher url', 'ena_split_by': '|'},
+    'RELATIONSHIP': {'ena': 'relationship'},
+    'SAMPLE_COORDINATOR': {'ena': 'sample coordinator'},
+    'SAMPLE_COORDINATOR_AFFILIATION': {'ena': 'sample coordinator affiliation'},
+    'SAMPLE_COORDINATOR_ORCID_ID': {'ena': 'sample coordinator ORCID ID'},
+    'SEX': {'ena': 'sex'},
+    'SPECIMEN_ID': {'ena': 'specimen_id'},
     #'TIME_OF_COLLECTION': {
     #    'ena': 'time of collection'
-    #},
+    # },
     'TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
-        'ena_ignore_if_values': ["NOT_APPLICABLE","NOT_PROVIDED","NOT_COLLECTED"],
+        'ena_ignore_if_values': ["NOT_APPLICABLE", "NOT_PROVIDED", "NOT_COLLECTED"],
         'ena': 'bio_material',
-        'ena_split_by': '|'
+        'ena_split_by': '|',
     },
-    'VOUCHER_ID': {
-        'ena': 'specimen_voucher',
-        'ena_split_by': '|'
-    },
-    'VOUCHER_INSTITUTION': {
-        'ena': 'voucher institution url'
-    },
-    'VOUCHER_LINK': {
-        'ena': 'specimen voucher url',
-        'ena_split_by': '|'
-    },
-    'public_name': {
-        'ena': 'tolid'
-    },
-    'sampleDerivedFrom': {
-        'ena': 'sample derived from'
-    },
-    'sampleSameAs': {
-        'ena': 'sample same as'
-    },
-    'sampleSymbiontOf': {
-        'ena': 'sample symbiont of'
-    }
+    'VOUCHER_ID': {'ena': 'specimen_voucher', 'ena_split_by': '|'},
+    'VOUCHER_INSTITUTION': {'ena': 'voucher institution url'},
+    'VOUCHER_LINK': {'ena': 'specimen voucher url', 'ena_split_by': '|'},
+    'public_name': {'ena': 'tolid'},
+    'sampleDerivedFrom': {'ena': 'sample derived from'},
+    'sampleSameAs': {'ena': 'sample same as'},
+    'sampleSymbiontOf': {'ena': 'sample symbiont of'},
 }
 
 DTOL_ENUMS = {
-    'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE':
-        [
-            'Y',
-            'N'
-        ],
+    'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_RIGHTS_APPLICABLE': ['Y', 'N'],
     'BARCODE_HUB': [
         'MARINE BIOLOGICAL ASSOCIATION',
         'NATURAL HISTORY MUSEUM',
@@ -204,15 +121,15 @@ DTOL_ENUMS = {
         'ROYAL BOTANIC GARDENS KEW/NATURAL HISTORY MUSEUM',
         'UNIVERSITY OF OXFORD',
         'NOT_COLLECTED',
-        'NOT_PROVIDED'
-        ],
+        'NOT_PROVIDED',
+    ],
     'BARCODING_STATUS': [
         'DNA_BARCODING_COMPLETED',
         'DNA_BARCODE_EXEMPT',
         'DNA_BARCODING_FAILED',
         'DNA_BARCODING_TO_BE_PERFORMED_GAL',
-        'DNA_BARCODING_VIA_WSI_PROCESS'
-        ],
+        'DNA_BARCODING_VIA_WSI_PROCESS',
+    ],
     'CELL_NUMBER': [
         '1',
         '2-10',
@@ -223,308 +140,298 @@ DTOL_ENUMS = {
         '50001-100000',
         '100001-500000',
         '500001-1000000',
-        '1000000+'
-        ],
-    'COLLECTION_LOCATION':
-        [
-            'AFGHANISTAN',
-            'ALBANIA',
-            'ALGERIA',
-            'AMERICAN SAMOA',
-            'ANDORRA',
-            'ANGOLA',
-            'ANGUILLA',
-            'ANTARCTICA',
-            'ANTIGUA AND BARBUDA',
-            'ARCTIC OCEAN',
-            'ARGENTINA',
-            'ARMENIA',
-            'ARUBA',
-            'ASHMORE AND CARTIER ISLANDS',
-            'ATLANTIC OCEAN',
-            'AUSTRALIA',
-            'AUSTRIA',
-            'AZERBAIJAN',
-            'BAHAMAS',
-            'BAHRAIN',
-            'BAKER ISLAND',
-            'BALTIC SEA',
-            'BANGLADESH',
-            'BARBADOS',
-            'BASSAS DA INDIA',
-            'BELARUS',
-            'BELGIUM',
-            'BELIZE',
-            'BENIN',
-            'BERMUDA',
-            'BHUTAN',
-            'BOLIVIA',
-            'BORNEO',
-            'BOSNIA AND HERZEGOVINA',
-            'BOTSWANA',
-            'BOUVET ISLAND',
-            'BRAZIL',
-            'BRITISH VIRGIN ISLANDS',
-            'BRUNEI',
-            'BULGARIA',
-            'BURKINA FASO',
-            'BURUNDI',
-            'CAMBODIA',
-            'CAMEROON',
-            'CANADA',
-            'CAPE VERDE',
-            'CAYMAN ISLANDS',
-            'CENTRAL AFRICAN REPUBLIC',
-            'CHAD',
-            'CHILE',
-            'CHINA',
-            'CHRISTMAS ISLAND',
-            'CLIPPERTON ISLAND',
-            'COCOS ISLANDS',
-            'COLOMBIA',
-            'COMOROS',
-            'COOK ISLANDS',
-            'CORAL SEA ISLANDS',
-            'COSTA RICA',
-            "COTE D'IVOIRE",
-            'CROATIA',
-            'CUBA',
-            'CURACAO',
-            'CYPRUS',
-            'CZECHIA',
-            'DEMOCRATIC REPUBLIC OF THE CONGO',
-            'DENMARK',
-            'DJIBOUTI',
-            'DOMINICA',
-            'DOMINICAN REPUBLIC',
-            'EAST TIMOR',
-            'ECUADOR',
-            'EGYPT',
-            'EL SALVADOR',
-            'EQUATORIAL GUINEA',
-            'ERITREA',
-            'ESTONIA',
-            'ETHIOPIA',
-            'EUROPA ISLAND',
-            'FALKLAND ISLANDS (ISLAS MALVINAS)',
-            'FAROE ISLANDS',
-            'FIJI',
-            'FINLAND',
-            'FRANCE',
-            'FRENCH GUIANA',
-            'FRENCH POLYNESIA',
-            'FRENCH SOUTHERN AND ANTARCTIC LANDS',
-            'GABON',
-            'GAMBIA',
-            'GAZA STRIP',
-            'GEORGIA',
-            'GERMANY',
-            'GHANA',
-            'GIBRALTAR',
-            'GLORIOSO ISLANDS',
-            'GREECE',
-            'GREENLAND',
-            'GRENADA',
-            'GUADELOUPE',
-            'GUAM',
-            'GUATEMALA',
-            'GUERNSEY',
-            'GUINEA',
-            'GUINEA-BISSAU',
-            'GUYANA',
-            'HAITI',
-            'HEARD ISLAND AND MCDONALD ISLANDS',
-            'HONDURAS',
-            'HONG KONG',
-            'HOWLAND ISLAND',
-            'HUNGARY',
-            'ICELAND',
-            'INDIA',
-            'INDIAN OCEAN',
-            'INDONESIA',
-            'IRAN',
-            'IRAQ',
-            'IRELAND',
-            'ISLE OF MAN',
-            'ISRAEL',
-            'ITALY',
-            'JAMAICA',
-            'JAN MAYEN',
-            'JAPAN',
-            'JARVIS ISLAND',
-            'JERSEY',
-            'JOHNSTON ATOLL',
-            'JORDAN',
-            'JUAN DE NOVA ISLAND',
-            'KAZAKHSTAN',
-            'KENYA',
-            'KERGUELEN ARCHIPELAGO',
-            'KINGMAN REEF',
-            'KIRIBATI',
-            'KOSOVO',
-            'KUWAIT',
-            'KYRGYZSTAN',
-            'LAOS',
-            'LATVIA',
-            'LEBANON',
-            'LESOTHO',
-            'LIBERIA',
-            'LIBYA',
-            'LIECHTENSTEIN',
-            'LITHUANIA',
-            'LUXEMBOURG',
-            'MACAU',
-            'MACEDONIA',
-            'MADAGASCAR',
-            'MALAWI',
-            'MALAYSIA',
-            'MALDIVES',
-            'MALI',
-            'MALTA',
-            'MARSHALL ISLANDS',
-            'MARTINIQUE',
-            'MAURITANIA',
-            'MAURITIUS',
-            'MAYOTTE',
-            'MEDITERRANEAN SEA',
-            'MEXICO',
-            'MICRONESIA',
-            'MIDWAY ISLANDS',
-            'MOLDOVA',
-            'MONACO',
-            'MONGOLIA',
-            'MONTENEGRO',
-            'MONTSERRAT',
-            'MOROCCO',
-            'MOZAMBIQUE',
-            'MYANMAR',
-            'NAMIBIA',
-            'NAURU',
-            'NAVASSA ISLAND',
-            'NEPAL',
-            'NETHERLANDS',
-            'NEW CALEDONIA',
-            'NEW ZEALAND',
-            'NICARAGUA',
-            'NIGER',
-            'NIGERIA',
-            'NIUE',
-            'NORFOLK ISLAND',
-            'NORTH KOREA',
-            'NORTH SEA',
-            'NORTHERN MARIANA ISLANDS',
-            'NORWAY',
-            'OMAN',
-            'PACIFIC OCEAN',
-            'PAKISTAN',
-            'PALAU',
-            'PALMYRA ATOLL',
-            'PANAMA',
-            'PAPUA NEW GUINEA',
-            'PARACEL ISLANDS',
-            'PARAGUAY',
-            'PERU',
-            'PHILIPPINES',
-            'PITCAIRN ISLANDS',
-            'POLAND',
-            'PORTUGAL',
-            'PUERTO RICO',
-            'QATAR',
-            'REPUBLIC OF THE CONGO',
-            'REUNION',
-            'ROMANIA',
-            'ROSS SEA',
-            'RUSSIA',
-            'RWANDA',
-            'SAINT HELENA',
-            'SAINT KITTS AND NEVIS',
-            'SAINT LUCIA',
-            'SAINT PIERRE AND MIQUELON',
-            'SAINT VINCENT AND THE GRENADINES',
-            'SAMOA',
-            'SAN MARINO',
-            'SAO TOME AND PRINCIPE',
-            'SAUDI ARABIA',
-            'SENEGAL',
-            'SERBIA',
-            'SEYCHELLES',
-            'SIERRA LEONE',
-            'SINGAPORE',
-            'SINT MAARTEN',
-            'SLOVAKIA',
-            'SLOVENIA',
-            'SOLOMON ISLANDS',
-            'SOMALIA',
-            'SOUTH AFRICA',
-            'SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS',
-            'SOUTH KOREA',
-            'SOUTHERN OCEAN',
-            'SPAIN',
-            'SPRATLY ISLANDS',
-            'SRI LANKA',
-            'SUDAN',
-            'SURINAME',
-            'SVALBARD',
-            'SWAZILAND',
-            'SWEDEN',
-            'SWITZERLAND',
-            'SYRIA',
-            'TAIWAN',
-            'TAJIKISTAN',
-            'TANZANIA',
-            'TASMAN SEA',
-            'THAILAND',
-            'TOGO',
-            'TOKELAU',
-            'TONGA',
-            'TRINIDAD AND TOBAGO',
-            'TROMELIN ISLAND',
-            'TUNISIA',
-            'TURKEY',
-            'TURKMENISTAN',
-            'TURKS AND CAICOS ISLANDS',
-            'TUVALU',
-            'UGANDA',
-            'UKRAINE',
-            'UNITED ARAB EMIRATES',
-            'UNITED KINGDOM',
-            'URUGUAY',
-            'USA',
-            'UZBEKISTAN',
-            'VANUATU',
-            'VENEZUELA',
-            'VIETNAM',
-            'VIRGIN ISLANDS',
-            'WAKE ISLAND',
-            'WALLIS AND FUTUNA',
-            'WEST BANK',
-            'WESTERN SAHARA',
-            'YEMEN',
-            'ZAMBIA',
-            'ZIMBABWE',
-            'NOT APPLICABLE',
-            'NOT COLLECTED',
-            'NOT PROVIDED'
-            ],
-    'DIFFICULT_OR_HIGH_PRIORITY_SAMPLE':
-        [
-            'DIFFICULT',
-            'FULL_CURATION',
-            'HIGH_PRIORITY',
-            'NOT_APPLICABLE',
-            'NOT_COLLECTED',
-            'NOT_PROVIDED'
-            ],
-    'DNA_REMOVED_FOR_BIOBANKING':
-        [
-            'Y',
-            'N'
-            ],
-    'ETHICS_PERMIT_REQUIRED':
-        [
-            'Y',
-            'N'
-            ],
+        '1000000+',
+    ],
+    'COLLECTION_LOCATION': [
+        'AFGHANISTAN',
+        'ALBANIA',
+        'ALGERIA',
+        'AMERICAN SAMOA',
+        'ANDORRA',
+        'ANGOLA',
+        'ANGUILLA',
+        'ANTARCTICA',
+        'ANTIGUA AND BARBUDA',
+        'ARCTIC OCEAN',
+        'ARGENTINA',
+        'ARMENIA',
+        'ARUBA',
+        'ASHMORE AND CARTIER ISLANDS',
+        'ATLANTIC OCEAN',
+        'AUSTRALIA',
+        'AUSTRIA',
+        'AZERBAIJAN',
+        'BAHAMAS',
+        'BAHRAIN',
+        'BAKER ISLAND',
+        'BALTIC SEA',
+        'BANGLADESH',
+        'BARBADOS',
+        'BASSAS DA INDIA',
+        'BELARUS',
+        'BELGIUM',
+        'BELIZE',
+        'BENIN',
+        'BERMUDA',
+        'BHUTAN',
+        'BOLIVIA',
+        'BORNEO',
+        'BOSNIA AND HERZEGOVINA',
+        'BOTSWANA',
+        'BOUVET ISLAND',
+        'BRAZIL',
+        'BRITISH VIRGIN ISLANDS',
+        'BRUNEI',
+        'BULGARIA',
+        'BURKINA FASO',
+        'BURUNDI',
+        'CAMBODIA',
+        'CAMEROON',
+        'CANADA',
+        'CAPE VERDE',
+        'CAYMAN ISLANDS',
+        'CENTRAL AFRICAN REPUBLIC',
+        'CHAD',
+        'CHILE',
+        'CHINA',
+        'CHRISTMAS ISLAND',
+        'CLIPPERTON ISLAND',
+        'COCOS ISLANDS',
+        'COLOMBIA',
+        'COMOROS',
+        'COOK ISLANDS',
+        'CORAL SEA ISLANDS',
+        'COSTA RICA',
+        "COTE D'IVOIRE",
+        'CROATIA',
+        'CUBA',
+        'CURACAO',
+        'CYPRUS',
+        'CZECHIA',
+        'DEMOCRATIC REPUBLIC OF THE CONGO',
+        'DENMARK',
+        'DJIBOUTI',
+        'DOMINICA',
+        'DOMINICAN REPUBLIC',
+        'EAST TIMOR',
+        'ECUADOR',
+        'EGYPT',
+        'EL SALVADOR',
+        'EQUATORIAL GUINEA',
+        'ERITREA',
+        'ESTONIA',
+        'ETHIOPIA',
+        'EUROPA ISLAND',
+        'FALKLAND ISLANDS (ISLAS MALVINAS)',
+        'FAROE ISLANDS',
+        'FIJI',
+        'FINLAND',
+        'FRANCE',
+        'FRENCH GUIANA',
+        'FRENCH POLYNESIA',
+        'FRENCH SOUTHERN AND ANTARCTIC LANDS',
+        'GABON',
+        'GAMBIA',
+        'GAZA STRIP',
+        'GEORGIA',
+        'GERMANY',
+        'GHANA',
+        'GIBRALTAR',
+        'GLORIOSO ISLANDS',
+        'GREECE',
+        'GREENLAND',
+        'GRENADA',
+        'GUADELOUPE',
+        'GUAM',
+        'GUATEMALA',
+        'GUERNSEY',
+        'GUINEA',
+        'GUINEA-BISSAU',
+        'GUYANA',
+        'HAITI',
+        'HEARD ISLAND AND MCDONALD ISLANDS',
+        'HONDURAS',
+        'HONG KONG',
+        'HOWLAND ISLAND',
+        'HUNGARY',
+        'ICELAND',
+        'INDIA',
+        'INDIAN OCEAN',
+        'INDONESIA',
+        'IRAN',
+        'IRAQ',
+        'IRELAND',
+        'ISLE OF MAN',
+        'ISRAEL',
+        'ITALY',
+        'JAMAICA',
+        'JAN MAYEN',
+        'JAPAN',
+        'JARVIS ISLAND',
+        'JERSEY',
+        'JOHNSTON ATOLL',
+        'JORDAN',
+        'JUAN DE NOVA ISLAND',
+        'KAZAKHSTAN',
+        'KENYA',
+        'KERGUELEN ARCHIPELAGO',
+        'KINGMAN REEF',
+        'KIRIBATI',
+        'KOSOVO',
+        'KUWAIT',
+        'KYRGYZSTAN',
+        'LAOS',
+        'LATVIA',
+        'LEBANON',
+        'LESOTHO',
+        'LIBERIA',
+        'LIBYA',
+        'LIECHTENSTEIN',
+        'LITHUANIA',
+        'LUXEMBOURG',
+        'MACAU',
+        'MACEDONIA',
+        'MADAGASCAR',
+        'MALAWI',
+        'MALAYSIA',
+        'MALDIVES',
+        'MALI',
+        'MALTA',
+        'MARSHALL ISLANDS',
+        'MARTINIQUE',
+        'MAURITANIA',
+        'MAURITIUS',
+        'MAYOTTE',
+        'MEDITERRANEAN SEA',
+        'MEXICO',
+        'MICRONESIA',
+        'MIDWAY ISLANDS',
+        'MOLDOVA',
+        'MONACO',
+        'MONGOLIA',
+        'MONTENEGRO',
+        'MONTSERRAT',
+        'MOROCCO',
+        'MOZAMBIQUE',
+        'MYANMAR',
+        'NAMIBIA',
+        'NAURU',
+        'NAVASSA ISLAND',
+        'NEPAL',
+        'NETHERLANDS',
+        'NEW CALEDONIA',
+        'NEW ZEALAND',
+        'NICARAGUA',
+        'NIGER',
+        'NIGERIA',
+        'NIUE',
+        'NORFOLK ISLAND',
+        'NORTH KOREA',
+        'NORTH SEA',
+        'NORTHERN MARIANA ISLANDS',
+        'NORWAY',
+        'OMAN',
+        'PACIFIC OCEAN',
+        'PAKISTAN',
+        'PALAU',
+        'PALMYRA ATOLL',
+        'PANAMA',
+        'PAPUA NEW GUINEA',
+        'PARACEL ISLANDS',
+        'PARAGUAY',
+        'PERU',
+        'PHILIPPINES',
+        'PITCAIRN ISLANDS',
+        'POLAND',
+        'PORTUGAL',
+        'PUERTO RICO',
+        'QATAR',
+        'REPUBLIC OF THE CONGO',
+        'REUNION',
+        'ROMANIA',
+        'ROSS SEA',
+        'RUSSIA',
+        'RWANDA',
+        'SAINT HELENA',
+        'SAINT KITTS AND NEVIS',
+        'SAINT LUCIA',
+        'SAINT PIERRE AND MIQUELON',
+        'SAINT VINCENT AND THE GRENADINES',
+        'SAMOA',
+        'SAN MARINO',
+        'SAO TOME AND PRINCIPE',
+        'SAUDI ARABIA',
+        'SENEGAL',
+        'SERBIA',
+        'SEYCHELLES',
+        'SIERRA LEONE',
+        'SINGAPORE',
+        'SINT MAARTEN',
+        'SLOVAKIA',
+        'SLOVENIA',
+        'SOLOMON ISLANDS',
+        'SOMALIA',
+        'SOUTH AFRICA',
+        'SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS',
+        'SOUTH KOREA',
+        'SOUTHERN OCEAN',
+        'SPAIN',
+        'SPRATLY ISLANDS',
+        'SRI LANKA',
+        'SUDAN',
+        'SURINAME',
+        'SVALBARD',
+        'SWAZILAND',
+        'SWEDEN',
+        'SWITZERLAND',
+        'SYRIA',
+        'TAIWAN',
+        'TAJIKISTAN',
+        'TANZANIA',
+        'TASMAN SEA',
+        'THAILAND',
+        'TOGO',
+        'TOKELAU',
+        'TONGA',
+        'TRINIDAD AND TOBAGO',
+        'TROMELIN ISLAND',
+        'TUNISIA',
+        'TURKEY',
+        'TURKMENISTAN',
+        'TURKS AND CAICOS ISLANDS',
+        'TUVALU',
+        'UGANDA',
+        'UKRAINE',
+        'UNITED ARAB EMIRATES',
+        'UNITED KINGDOM',
+        'URUGUAY',
+        'USA',
+        'UZBEKISTAN',
+        'VANUATU',
+        'VENEZUELA',
+        'VIETNAM',
+        'VIRGIN ISLANDS',
+        'WAKE ISLAND',
+        'WALLIS AND FUTUNA',
+        'WEST BANK',
+        'WESTERN SAHARA',
+        'YEMEN',
+        'ZAMBIA',
+        'ZIMBABWE',
+        'NOT APPLICABLE',
+        'NOT COLLECTED',
+        'NOT PROVIDED',
+    ],
+    'DIFFICULT_OR_HIGH_PRIORITY_SAMPLE': [
+        'DIFFICULT',
+        'FULL_CURATION',
+        'HIGH_PRIORITY',
+        'NOT_APPLICABLE',
+        'NOT_COLLECTED',
+        'NOT_PROVIDED',
+    ],
+    'DNA_REMOVED_FOR_BIOBANKING': ['Y', 'N'],
+    'ETHICS_PERMIT_REQUIRED': ['Y', 'N'],
     'GAL': {
         'DTOL': [
             'EARLHAM INSTITUTE',
@@ -533,7 +440,7 @@ DTOL_ENUMS = {
             'ROYAL BOTANIC GARDEN EDINBURGH',
             'ROYAL BOTANIC GARDENS KEW',
             'SANGER INSTITUTE',
-            'UNIVERSITY OF OXFORD'
+            'UNIVERSITY OF OXFORD',
         ],
         'DTOLENV': [
             'EARLHAM INSTITUTE',
@@ -542,56 +449,39 @@ DTOL_ENUMS = {
             'ROYAL BOTANIC GARDEN EDINBURGH',
             'ROYAL BOTANIC GARDENS KEW',
             'SANGER INSTITUTE',
-            'UNIVERSITY OF OXFORD'
+            'UNIVERSITY OF OXFORD',
         ],
-        'ERGA':
-            [
-                'Centro Nacional de Análisis Genómico',
-                'DNA Sequencing and Genomics Laboratory, Helsinki Genomics Core Facility',
-                'Earlham Institute',
-                'Functional Genomics Center Zurich',
-                'Genoscope',
-                'Hansen Lab, Denmark',
-                'Lausanne Genomic Technologies Facility',
-                'Leibniz Institute for the Analysis of Biodiversity Change, Museum Koenig, Bonn',
-                'NGS Bern',
-                'NGS Competence Center Tübingen',
-                'Neuromics Support Facility, UAntwerp, VIB',
-                'Norwegian Sequencing Centre',
-                'Sanger Institute',
-                'SciLifeLab',
-                'Svardal Lab, Antwerp',
-                'University of Bari',
-                'University of Florence',
-                'West German Genome Centre',
-                'industry partner',
-                'other ERGA associated GAL',
-                'NOT_PROVIDED'
-            ]
-        },
+        'ERGA': [
+            'Centro Nacional de Análisis Genómico',
+            'DNA Sequencing and Genomics Laboratory, Helsinki Genomics Core Facility',
+            'Earlham Institute',
+            'Functional Genomics Center Zurich',
+            'Genoscope',
+            'Hansen Lab, Denmark',
+            'Lausanne Genomic Technologies Facility',
+            'Leibniz Institute for the Analysis of Biodiversity Change, Museum Koenig, Bonn',
+            'NGS Bern',
+            'NGS Competence Center Tübingen',
+            'Neuromics Support Facility, UAntwerp, VIB',
+            'Norwegian Sequencing Centre',
+            'Sanger Institute',
+            'SciLifeLab',
+            'Svardal Lab, Antwerp',
+            'University of Bari',
+            'University of Florence',
+            'West German Genome Centre',
+            'industry partner',
+            'other ERGA associated GAL',
+            'NOT_PROVIDED',
+        ],
+    },
     'HAZARD_GROUP': {
-        'DTOL':
-            [
-                'HG1',
-                'HG2',
-                'HG3'
-            ],
-        'ASG':
-            [
-                'HG1',
-                'HG2',
-                'HG3'],
-        'ERGA':
-            [
-                '1',
-                '2',
-                '3',
-                '4'
-            ]
-        },
+        'DTOL': ['HG1', 'HG2', 'HG3'],
+        'ASG': ['HG1', 'HG2', 'HG3'],
+        'ERGA': ['1', '2', '3', '4'],
+    },
     'LIFESTAGE': {
-        'DTOL':
-            [
+        'DTOL': [
             'ADULT',
             'EGG',
             'EMBRYO',
@@ -606,10 +496,9 @@ DTOL_ENUMS = {
             'ZYGOTE',
             'NOT_APPLICABLE',
             'NOT_COLLECTED',
-            'NOT_PROVIDED'
-            ],
-        'ASG':
-            [
+            'NOT_PROVIDED',
+        ],
+        'ASG': [
             'ADULT',
             'EGG',
             'EMBRYO',
@@ -624,10 +513,9 @@ DTOL_ENUMS = {
             'ZYGOTE',
             'NOT_APPLICABLE',
             'NOT_COLLECTED',
-            'NOT_PROVIDED'
-            ],
-        'ERGA': 
-        [
+            'NOT_PROVIDED',
+        ],
+        'ERGA': [
             'adult',
             'juvenile',
             'pupa',
@@ -642,285 +530,243 @@ DTOL_ENUMS = {
             'vegetative cell',
             'not collected',
             'not applicable',
-            'not provided'
-        ]
+            'not provided',
+        ],
     },
-    'MIXED_SAMPLE_RISK':
-        [
-            'Y',
-            'N'
-            ],
-    'NAGOYA_PERMITS_REQUIRED':
-        [
-            'Y',
-            'N'
-            ],
-    'ORGANISM_PART':
-        [
-            '**OTHER_FUNGAL_TISSUE**',
-            '**OTHER_PLANT_TISSUE**',
-            '**OTHER_REPRODUCTIVE_ANIMAL_TISSUE**',
-            '**OTHER_SOMATIC_ANIMAL_TISSUE**',
-            'ABDOMEN',
-            'ANTERIOR_BODY',
-            'BLADE',
-            'BLOOD',
-            'BODYWALL',
-            'BRACT',
-            'BRAIN',
-            'BUD',
-            'CAP',
-            'CEPHALOTHORAX',
-            'EGG',
-            'EGGSHELL',
-            'ENDOCRINE_TISSUE',
-            'EYE',
-            'FAT_BODY',
-            'FIN',
-            'FLOWER',
-            'GILL_ANIMAL',
-            'GILL_FUNGI',
-            'GONAD',
-            'HAIR',
-            'HEAD',
-            'HEART',
-            'HEPATOPANCREAS',
-            'HOLDFAST_FUNGI',
-            'INTESTINE',
-            'KIDNEY',
-            'LEAF',
-            'LEG',
-            'LIVER',
-            'LUNG',
-            'MID_BODY',
-            'MODULAR_COLONY',
-            'MOLLUSC_FOOT',
-            'MULTICELLULAR_ORGANISMS_IN_CULTURE',
-            'MUSCLE',
-            'MYCELIUM',
-            'MYCORRHIZA',
-            'OVARY_ANIMAL',
-            'OVIDUCT',
-            'PANCREAS',
-            'PETIOLE',
-            'POSTERIOR_BODY',
-            'ROOT',
-            'SCALES',
-            'SCAT',
-            'SEED',
-            'SEEDLING',
-            'SHOOT',
-            'SKIN',
-            'SPERM_SEMINAL_FLUID',
-            'SPLEEN',
-            'SPORE',
-            'SPORE_BEARING_STRUCTURE',
-            'STEM',
-            'STIPE',
-            'STOMACH',
-            'TENTACLE',
-            'TERMINAL_BODY',
-            'TESTIS',
-            'THALLUS_FUNGI',
-            'THALLUS_PLANT',
-            'THORAX',
-            'UNICELLULAR_ORGANISMS_IN_CULTURE',
-            'WHOLE_ORGANISM',
-            'WHOLE_PLANT',
-            'NOT_APPLICABLE',
-            'NOT_COLLECTED',
-            'NOT_PROVIDED'
-            ],
-    'PARTNER':
-        [
-            'DALHOUSIE UNIVERSITY',
-            'GEOMAR HELMHOLTZ CENTRE',
-            'NOVA SOUTHEASTERN UNIVERSITY',
-            'PORTLAND STATE UNIVERSITY',
-            'QUEEN MARY UNIVERSITY OF LONDON',
-            'SENCKENBERG RESEARCH INSTITUTE',
-            'THE SAINSBURY LABORATORY',
-            'UNIVERSITY OF BRITISH COLUMBIA',
-            'UNIVERSITY OF CALIFORNIA',
-            'UNIVERSITY OF DERBY',
-            'UNIVERSITY OF ORGEON',
-            'UNIVERSITY OF RHODE ISLAND',
-            'UNIVERSITY OF VIENNA (CEPHALOPOD)',
-            'UNIVERSITY OF VIENNA (MOLLUSC)'
-            ],
+    'MIXED_SAMPLE_RISK': ['Y', 'N'],
+    'NAGOYA_PERMITS_REQUIRED': ['Y', 'N'],
+    'ORGANISM_PART': [
+        '**OTHER_FUNGAL_TISSUE**',
+        '**OTHER_PLANT_TISSUE**',
+        '**OTHER_REPRODUCTIVE_ANIMAL_TISSUE**',
+        '**OTHER_SOMATIC_ANIMAL_TISSUE**',
+        'ABDOMEN',
+        'ANTERIOR_BODY',
+        'BLADE',
+        'BLOOD',
+        'BODYWALL',
+        'BRACT',
+        'BRAIN',
+        'BUD',
+        'CAP',
+        'CEPHALOTHORAX',
+        'EGG',
+        'EGGSHELL',
+        'ENDOCRINE_TISSUE',
+        'EYE',
+        'FAT_BODY',
+        'FIN',
+        'FLOWER',
+        'GILL_ANIMAL',
+        'GILL_FUNGI',
+        'GONAD',
+        'HAIR',
+        'HEAD',
+        'HEART',
+        'HEPATOPANCREAS',
+        'HOLDFAST_FUNGI',
+        'INTESTINE',
+        'KIDNEY',
+        'LEAF',
+        'LEG',
+        'LIVER',
+        'LUNG',
+        'MID_BODY',
+        'MODULAR_COLONY',
+        'MOLLUSC_FOOT',
+        'MULTICELLULAR_ORGANISMS_IN_CULTURE',
+        'MUSCLE',
+        'MYCELIUM',
+        'MYCORRHIZA',
+        'OVARY_ANIMAL',
+        'OVIDUCT',
+        'PANCREAS',
+        'PETIOLE',
+        'POSTERIOR_BODY',
+        'ROOT',
+        'SCALES',
+        'SCAT',
+        'SEED',
+        'SEEDLING',
+        'SHOOT',
+        'SKIN',
+        'SPERM_SEMINAL_FLUID',
+        'SPLEEN',
+        'SPORE',
+        'SPORE_BEARING_STRUCTURE',
+        'STEM',
+        'STIPE',
+        'STOMACH',
+        'TENTACLE',
+        'TERMINAL_BODY',
+        'TESTIS',
+        'THALLUS_FUNGI',
+        'THALLUS_PLANT',
+        'THORAX',
+        'UNICELLULAR_ORGANISMS_IN_CULTURE',
+        'WHOLE_ORGANISM',
+        'WHOLE_PLANT',
+        'NOT_APPLICABLE',
+        'NOT_COLLECTED',
+        'NOT_PROVIDED',
+    ],
+    'PARTNER': [
+        'DALHOUSIE UNIVERSITY',
+        'GEOMAR HELMHOLTZ CENTRE',
+        'NOVA SOUTHEASTERN UNIVERSITY',
+        'PORTLAND STATE UNIVERSITY',
+        'QUEEN MARY UNIVERSITY OF LONDON',
+        'SENCKENBERG RESEARCH INSTITUTE',
+        'THE SAINSBURY LABORATORY',
+        'UNIVERSITY OF BRITISH COLUMBIA',
+        'UNIVERSITY OF CALIFORNIA',
+        'UNIVERSITY OF DERBY',
+        'UNIVERSITY OF ORGEON',
+        'UNIVERSITY OF RHODE ISLAND',
+        'UNIVERSITY OF VIENNA (CEPHALOPOD)',
+        'UNIVERSITY OF VIENNA (MOLLUSC)',
+    ],
     'PRIMARY_BIOGENOME_PROJECT': [
         'ERGA-associated',
         'ERGA-BGE',
         'ERGA-Pilot',
-        'ERGA-Community'
-        ],
+        'ERGA-Community',
+    ],
     'PURPOSE_OF_SPECIMEN': {
-        'ASG':
-            [
-                'REFERENCE_GENOME',
-                'RESEQUENCING',
-                'DNA_BARCODING_ONLY',
-                'RNA_SEQUENCING',
-                'R&D',
-                'NOT_PROVIDED'
-            ],
-        'DTOL':
-            [
-                'REFERENCE_GENOME',
-                'RESEQUENCING',
-                'DNA_BARCODING_ONLY',
-                'RNA_SEQUENCING',
-                'R&D',
-                'NOT_PROVIDED'
-            ],
-
-        'ERGA':
-            [
-                'REFERENCE_GENOME',
-                'RESEQUENCING',
-                'DNA_BARCODING_ONLY',
-                'RNA_SEQUENCING',
-                'R&D',
-                'NOT_PROVIDED'
-            ]
-        },
-    'REGULATORY_COMPLIANCE':
-        [
-            'Y',
-            'N',
-            'NOT_APPLICABLE'
-            ],
+        'ASG': [
+            'REFERENCE_GENOME',
+            'RESEQUENCING',
+            'DNA_BARCODING_ONLY',
+            'RNA_SEQUENCING',
+            'R&D',
+            'NOT_PROVIDED',
+        ],
+        'DTOL': [
+            'REFERENCE_GENOME',
+            'RESEQUENCING',
+            'DNA_BARCODING_ONLY',
+            'RNA_SEQUENCING',
+            'R&D',
+            'NOT_PROVIDED',
+        ],
+        'ERGA': [
+            'REFERENCE_GENOME',
+            'RESEQUENCING',
+            'DNA_BARCODING_ONLY',
+            'RNA_SEQUENCING',
+            'R&D',
+            'NOT_PROVIDED',
+        ],
+    },
+    'REGULATORY_COMPLIANCE': ['Y', 'N', 'NOT_APPLICABLE'],
     'SAMPLE_FORMAT': [
         'DNA',
         'RNA',
         'biological sample/tissue from non-infectious organism',
         'inactivated biological sample from infectious organism'
-        'live biological sample from infectious organism'
-        ],
-    'SAMPLING_PERMITS_REQUIRED':
-        [
-            'Y',
-            'N'
-            ],
-    'SEQUENCING_CENTRE':
-        [
-            'EARLHAM INSTITUTE',
-            'SANGER INSTITUTE'
-        ],
-    'SEX':
-        [
-            'ASEXUAL_MORPH',
-            'HERMAPHRODITE_MONOECIOUS',
-            'FEMALE',
-            'MALE',
-            'NOT_APPLICABLE',
-            'NOT_COLLECTED',
-            'NOT_PROVIDED',
-            'SEXUAL_MORPH'
-            ],
-    'SIZE_OF_TISSUE_IN_TUBE':
-        [
-            'VS',
-            'S',
-            'M',
-            'L',
-            'SINGLE_CELL',
-            'NOT_APPLICABLE',
-            'NOT_COLLECTED',
-            'NOT_PROVIDED'
-            ],
-    'SORTER_AFFILIATION':
-        [
-            'EARLHAM INSTITUTE',
-            'UNIVERSITY OF OXFORD'
-            ],
-    'SPECIMEN_IDENTITY_RISK':
-        [
-            'Y',
-            'N'
-            ],
-    'SYMBIONT':
-        [
-            'TARGET',
-            'SYMBIONT'
-            ],
-    'TISSUE_FOR_BARCODING':
-        [
-            '**OTHER_FUNGAL_TISSUE**',
-            '**OTHER_PLANT_TISSUE**',
-            '**OTHER_REPRODUCTIVE_ANIMAL_TISSUE**',
-            '**OTHER_SOMATIC_ANIMAL_TISSUE**',
-            'ABDOMEN',
-            'ANTERIOR_BODY',
-            'BLADE',
-            'BLOOD',
-            'BODYWALL',
-            'BRACT',
-            'BRAIN',
-            'BUD',
-            'CAP',
-            'CEPHALOTHORAX',
-            'DNA_EXTRACT',
-            'EGG',
-            'EGGSHELL',
-            'ENDOCRINE_TISSUE',
-            'EYE',
-            'FAT_BODY',
-            'FIN',
-            'FLOWER',
-            'GILL_ANIMAL',
-            'GILL_FUNGI',
-            'GONAD',
-            'HAIR',
-            'HEAD',
-            'HEART',
-            'HEPATOPANCREAS',
-            'HOLDFAST_FUNGI',
-            'INTESTINE',
-            'KIDNEY',
-            'LEAF',
-            'LEG',
-            'LIVER',
-            'LUNG',
-            'MID_BODY',
-            'MODULAR_COLONY',
-            'MOLLUSC_FOOT',
-            'MULTICELLULAR_ORGANISMS_IN_CULTURE',
-            'MUSCLE',
-            'MYCELIUM',
-            'MYCORRHIZA',
-            'NOT_APPLICABLE',
-            'NOT_COLLECTED',
-            'NOT_PROVIDED',
-            'OVARY_ANIMAL',
-            'OVIDUCT',
-            'PANCREAS',
-            'PETIOLE',
-            'POSTERIOR_BODY',
-            'ROOT',
-            'SCALES',
-            'SCAT',
-            'SEED',
-            'SEEDLING',
-            'SHOOT',
-            'SKIN',
-            'SPERM_SEMINAL_FLUID',
-            'SPLEEN',
-            'SPORE',
-            'SPORE_BEARING_STRUCTURE',
-            'STEM',
-            'STIPE',
-            'STOMACH',
-            'TENTACLE',
-            'TERMINAL_BODY',
-            'TESTIS',
-            'THALLUS_FUNGI',
-            'THALLUS_PLANT',
-            'THORAX',
-            'UNICELLULAR_ORGANISMS_IN_CULTURE',
-            'WHOLE_ORGANISM',
-            'WHOLE_PLANT'
-            ],
+        'live biological sample from infectious organism',
+    ],
+    'SAMPLING_PERMITS_REQUIRED': ['Y', 'N'],
+    'SEQUENCING_CENTRE': ['EARLHAM INSTITUTE', 'SANGER INSTITUTE'],
+    'SEX': [
+        'ASEXUAL_MORPH',
+        'HERMAPHRODITE_MONOECIOUS',
+        'FEMALE',
+        'MALE',
+        'NOT_APPLICABLE',
+        'NOT_COLLECTED',
+        'NOT_PROVIDED',
+        'SEXUAL_MORPH',
+    ],
+    'SIZE_OF_TISSUE_IN_TUBE': [
+        'VS',
+        'S',
+        'M',
+        'L',
+        'SINGLE_CELL',
+        'NOT_APPLICABLE',
+        'NOT_COLLECTED',
+        'NOT_PROVIDED',
+    ],
+    'SORTER_AFFILIATION': ['EARLHAM INSTITUTE', 'UNIVERSITY OF OXFORD'],
+    'SPECIMEN_IDENTITY_RISK': ['Y', 'N'],
+    'SYMBIONT': ['TARGET', 'SYMBIONT'],
+    'TISSUE_FOR_BARCODING': [
+        '**OTHER_FUNGAL_TISSUE**',
+        '**OTHER_PLANT_TISSUE**',
+        '**OTHER_REPRODUCTIVE_ANIMAL_TISSUE**',
+        '**OTHER_SOMATIC_ANIMAL_TISSUE**',
+        'ABDOMEN',
+        'ANTERIOR_BODY',
+        'BLADE',
+        'BLOOD',
+        'BODYWALL',
+        'BRACT',
+        'BRAIN',
+        'BUD',
+        'CAP',
+        'CEPHALOTHORAX',
+        'DNA_EXTRACT',
+        'EGG',
+        'EGGSHELL',
+        'ENDOCRINE_TISSUE',
+        'EYE',
+        'FAT_BODY',
+        'FIN',
+        'FLOWER',
+        'GILL_ANIMAL',
+        'GILL_FUNGI',
+        'GONAD',
+        'HAIR',
+        'HEAD',
+        'HEART',
+        'HEPATOPANCREAS',
+        'HOLDFAST_FUNGI',
+        'INTESTINE',
+        'KIDNEY',
+        'LEAF',
+        'LEG',
+        'LIVER',
+        'LUNG',
+        'MID_BODY',
+        'MODULAR_COLONY',
+        'MOLLUSC_FOOT',
+        'MULTICELLULAR_ORGANISMS_IN_CULTURE',
+        'MUSCLE',
+        'MYCELIUM',
+        'MYCORRHIZA',
+        'NOT_APPLICABLE',
+        'NOT_COLLECTED',
+        'NOT_PROVIDED',
+        'OVARY_ANIMAL',
+        'OVIDUCT',
+        'PANCREAS',
+        'PETIOLE',
+        'POSTERIOR_BODY',
+        'ROOT',
+        'SCALES',
+        'SCAT',
+        'SEED',
+        'SEEDLING',
+        'SHOOT',
+        'SKIN',
+        'SPERM_SEMINAL_FLUID',
+        'SPLEEN',
+        'SPORE',
+        'SPORE_BEARING_STRUCTURE',
+        'STEM',
+        'STIPE',
+        'STOMACH',
+        'TENTACLE',
+        'TERMINAL_BODY',
+        'TESTIS',
+        'THALLUS_FUNGI',
+        'THALLUS_PLANT',
+        'THORAX',
+        'UNICELLULAR_ORGANISMS_IN_CULTURE',
+        'WHOLE_ORGANISM',
+        'WHOLE_PLANT',
+    ],
     'TISSUE_FOR_BIOBANKING': [
         '**OTHER_FUNGAL_TISSUE**',
         '**OTHER_PLANT_TISSUE**',
@@ -995,281 +841,195 @@ DTOL_ENUMS = {
         'NOT_APPLICABLE',
         'NOT_COLLECTED',
         'NOT_PROVIDED',
-        ],
-    'TISSUE_REMOVED_FOR_BARCODING':
-        [
-            'Y',
-            'N'
-            ],
-    'TISSUE_REMOVED_FOR_BIOBANKING':
-        [
-            'Y',
-            'N'
-            ],
-    'TO_BE_USED_FOR':
-        [
-            'BARCODING ONLY',
-            'REFERENCE GENOME',
-            'RESEQUENCING(POPGEN)',
-            'RNAseq'
-            ],
-    'WATER_BODY_TYPE':
-        [
-            'COASTAL',
-            'ESTUARY',
-            'LAKE',
-            'OPEN SEA',
-            'POND',
-            'RIVER',
-            'STREAM'
-            ],
-    'WATER_TYPE':
-        [
-            'BRACKISH_WATER',
-            'FRESH_WATER',
-            'SALT_WATER'
-            ]
+    ],
+    'TISSUE_REMOVED_FOR_BARCODING': ['Y', 'N'],
+    'TISSUE_REMOVED_FOR_BIOBANKING': ['Y', 'N'],
+    'TO_BE_USED_FOR': [
+        'BARCODING ONLY',
+        'REFERENCE GENOME',
+        'RESEQUENCING(POPGEN)',
+        'RNAseq',
+    ],
+    'WATER_BODY_TYPE': [
+        'COASTAL',
+        'ESTUARY',
+        'LAKE',
+        'OPEN SEA',
+        'POND',
+        'RIVER',
+        'STREAM',
+    ],
+    'WATER_TYPE': ['BRACKISH_WATER', 'FRESH_WATER', 'SALT_WATER'],
 }
 
 DTOL_RULES = {
-    'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID':
-        {
-            "strict_regex": r"^[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}$",
-            "human_readable": "[ID provided by the local context hub]"
-        },
-    'CHLOROPHYL_A':
-        {
-            "strict_regex": r"^\d+$",
-            "human_readable": "integer"
-        },
-    'COLLECTOR_ORCID_ID':
-        {
-            "strict_regex": r"^((\d{4}-){3}\d{3}(\d|X))(\|(\d{4}-){3}\d{3}(\d|X))*|(^not provided$)|(^not applicable$)",
-            "human_readable": "16-digit number that is compatible with the ISO Standard (ISO 27729),  if multiple IDs separate with a | and no spaces"
-        },
-    'DATE_OF_COLLECTION':
-        {
-            "ena_regex": r"(^[12][0-9]{3}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01])(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?"
-                         "([+-][0-9]{1,2})?)?)?)?(/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?"
-                         "([+-][0-9]{1,2})?)?)?)?)?$)|(^not collected$)|(^not provided$)|(^restricted access$) ",
-            "human_readable": "YYYY-MM-DD, YYYY-MM, YYYY, NOT_COLLECTED or NOT_PROVIDED"
-        },
-    'DECIMAL_LATITUDE':
-        {
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
-            "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED"
-        },
-    'DECIMAL_LATITUDE_ERGA':
-        {
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
-            "human_readable": "numeric, or NOT_COLLECTED"
-
-        },
-    'DECIMAL_LONGITUDE':
-        {
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
-            "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED"
-
-        },
-    'DECIMAL_LONGITUDE_ERGA':
-        {
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
-            "human_readable": "numeric, or NOT_COLLECTED"
-
-        },
-    'DEPTH':
-        {
-            "ena_regex": r"(0|((0\.)|([1-9][0-9]*\.?))[0-9]*)([Ee][+-]?[0-9]+)?",
-            "human_readable": "numeric, or empty string"
-        },
-    'DISSOLVED_OXYGEN':
-        {
-            "strict_regex": r"^\d+$",
-            "human_readable": "integer"
-        },
-    'ELEVATION':
-        {
-            "ena_regex": r"[+-]?(0|((0\.)|([1-9][0-9]*\.?))[0-9]*)([Ee][+-]?[0-9]+)?",
-            "human_readable": "numeric, or empty string"
-        },
-    'ETHICS_PERMITS_FILENAME':
-        {
-            "optional_regex": r"(^.+\.pdf$)|(^.+\.PDF$)",
-            "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
-        },
-    'LATITUDE_END':
-        {
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
-            "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED"
-        },
-    'LATITUDE_END_ERGA':
-        {
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
-            "human_readable": "numeric, or NOT_COLLECTED"
-
-        },
-    'LATITUDE_START':
-        {
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
-            "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED"
-
-        },
-    'LATITUDE_START_ERGA':
-        {
-
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
-            "human_readable": "numeric, or NOT_COLLECTED"
-
-        },
-    'LONGITUDE_END':
-        {
-
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
-            "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED"
-
-        },
-    'LONGITUDE_END_ERGA':
-        {
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
-            "human_readable": "numeric, or NOT_COLLECTED"
-
-        },
-    'LONGITUDE_START':
-        {
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
-            "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED"
-        },
-    'LONGITUDE_START_ERGA':
-        {
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
-            "human_readable": "numeric, or NOT_COLLECTED"
-
-        },
-    'NAGOYA_PERMITS_FILENAME':
-        {
-            "optional_regex": r"(^.+\.pdf$)|(^.+\.PDF$)",
-            "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
-        },
-    'ORIGINAL_COLLECTION_DATE':
-        {
-            "ena_regex": r"^[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{"
-                         "4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?)?$",
-            "human_readable": "Date as YYYY, YYYY-MM or YYYY-MM-DD"
-        },
-    'ORIGINAL_DECIMAL_LATITUDE':
-        {
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]{0,8}$)",
-            "human_readable": "numeric with 8 decimal places"
-        },
-    'ORIGINAL_DECIMAL_LONGITUDE':
-        {
-            "ena_regex": r"(^[+-]?[0-9]+.?[0-9]{0,8}$)",
-            "human_readable": "numeric with 8 decimal places"
-        },
-    'RACK_OR_PLATE_ID':
-        {
-            "optional_regex": r"^[a-zA-Z]{2}\d{8}$"
-        },
-    'SALINITY':
-        {
-            "strict_regex": r"^\d+$",
-            "human_readable": "integer"
-        },
-    'SAMPLE_COORDINATOR_ORCID_ID':
-        {
-            "strict_regex": r"^((\d{4}-){3}\d{3}(\d|X))(\|(\d{4}-){3}\d{3}(\d|X))*$",
-            "human_readable": "16-digit number that is compatible with the ISO Standard (ISO 27729), if multiple IDs separate with a | and no spaces"
-        },
-    'SAMPLE_DERIVED_FROM':
-        {
-            "ena_regex": r"(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
-                         r"11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
-                         r"AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
-            "human_readable": "Specimen accession"
-        },
-    'SAMPLE_SAME_AS':
-        {
-            "ena_regex": r"(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
-                         r"11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
-                         r"AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
-            "human_readable": "Specimen accession"
-        },
-    'SAMPLE_SYMBIONT_OF':
-        {
-            "ena_regex": r"(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
-                         r"11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
-                         r"AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
-            "human_readable": "Specimen accession"
-        },
-    'SAMPLING_PERMITS_FILENAME':
-        {
-            "optional_regex": r"(^.+\.pdf$)|(^.+\.PDF$)",
-            "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required"
-        },
-    'SAMPLING_WATER_BODY_DEPTH':
-        {
-            "strict_regex": r"^\d+$",
-            "human_readable": "integer"
-        },
-    'TEMPERATURE':
-        {
-            "strict_regex": r"^\d+$",
-            "human_readable": "integer"
-        },
-    'TIME_OF_COLLECTION':
-        {
-            "strict_regex": r"^([0-1][0-9]|2[0-4]):[0-5]\d$",
-            "human_readable": "24-hour format with hours and minutes separated by colon"
-        },
-    'TUBE_OR_WELL_ID':
-        {
-            "optional_regex": r"^[a-zA-Z]{2}\d{8}$"
-        },
-    'WATER_SPEED':
-        {
-            "strict_regex": r"^\d+$",
-            "human_readable": "integer"
-        },
-    'tmp_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
-        {
-            "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
-            "biocollection_qualifier_type": "specimen_voucher",
-            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
-        },
-    'tmp_PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING':
-        {
-            "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
-            "biocollection_qualifier_type": "specimen_voucher",
-            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
-        },
-    'tmp_DNA_VOUCHER_ID_FOR_BIOBANKING':
-        {
-            "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
-            "biocollection_qualifier_type": "bio_material",
-            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
-        },
-    'tmp_PROXY_VOUCHER_ID':
-        {
-            "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
-            "biocollection_qualifier_type": "specimen_voucher",
-            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
-        },
-    'tmp_VOUCHER_ID':
-        {
-            "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$", 
-            #every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-            "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
-            "biocollection_qualifier_type": "specimen_voucher",
-            "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already."
-        }        
+    'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID': {
+        "strict_regex": r"^[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}$",
+        "human_readable": "[ID provided by the local context hub]",
+    },
+    'CHLOROPHYL_A': {"strict_regex": r"^\d+$", "human_readable": "integer"},
+    'COLLECTOR_ORCID_ID': {
+        "strict_regex": r"^((\d{4}-){3}\d{3}(\d|X))(\|(\d{4}-){3}\d{3}(\d|X))*|(^not provided$)|(^not applicable$)",
+        "human_readable": "16-digit number that is compatible with the ISO Standard (ISO 27729),  if multiple IDs separate with a | and no spaces",
+    },
+    'DATE_OF_COLLECTION': {
+        "ena_regex": r"(^[12][0-9]{3}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01])(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?"
+        "([+-][0-9]{1,2})?)?)?)?(/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?"
+        "([+-][0-9]{1,2})?)?)?)?)?$)|(^not collected$)|(^not provided$)|(^restricted access$) ",
+        "human_readable": "YYYY-MM-DD, YYYY-MM, YYYY, NOT_COLLECTED or NOT_PROVIDED",
+    },
+    'DECIMAL_LATITUDE': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+        "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED",
+    },
+    'DECIMAL_LATITUDE_ERGA': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
+        "human_readable": "numeric, or NOT_COLLECTED",
+    },
+    'DECIMAL_LONGITUDE': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+        "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED",
+    },
+    'DECIMAL_LONGITUDE_ERGA': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
+        "human_readable": "numeric, or NOT_COLLECTED",
+    },
+    'DEPTH': {
+        "ena_regex": r"(0|((0\.)|([1-9][0-9]*\.?))[0-9]*)([Ee][+-]?[0-9]+)?",
+        "human_readable": "numeric, or empty string",
+    },
+    'DISSOLVED_OXYGEN': {"strict_regex": r"^\d+$", "human_readable": "integer"},
+    'ELEVATION': {
+        "ena_regex": r"[+-]?(0|((0\.)|([1-9][0-9]*\.?))[0-9]*)([Ee][+-]?[0-9]+)?",
+        "human_readable": "numeric, or empty string",
+    },
+    'ETHICS_PERMITS_FILENAME': {
+        "optional_regex": r"(^.+\.pdf$)|(^.+\.PDF$)",
+        "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required",
+    },
+    'LATITUDE_END': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+        "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED",
+    },
+    'LATITUDE_END_ERGA': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
+        "human_readable": "numeric, or NOT_COLLECTED",
+    },
+    'LATITUDE_START': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+        "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED",
+    },
+    'LATITUDE_START_ERGA': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
+        "human_readable": "numeric, or NOT_COLLECTED",
+    },
+    'LONGITUDE_END': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+        "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED",
+    },
+    'LONGITUDE_END_ERGA': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
+        "human_readable": "numeric, or NOT_COLLECTED",
+    },
+    'LONGITUDE_START': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+        "human_readable": "numeric, NOT_COLLECTED or NOT_PROVIDED",
+    },
+    'LONGITUDE_START_ERGA': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)",
+        "human_readable": "numeric, or NOT_COLLECTED",
+    },
+    'NAGOYA_PERMITS_FILENAME': {
+        "optional_regex": r"(^.+\.pdf$)|(^.+\.PDF$)",
+        "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required",
+    },
+    'ORIGINAL_COLLECTION_DATE': {
+        "ena_regex": r"^[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{"
+        "4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?)?$",
+        "human_readable": "Date as YYYY, YYYY-MM or YYYY-MM-DD",
+    },
+    'ORIGINAL_DECIMAL_LATITUDE': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]{0,8}$)",
+        "human_readable": "numeric with 8 decimal places",
+    },
+    'ORIGINAL_DECIMAL_LONGITUDE': {
+        "ena_regex": r"(^[+-]?[0-9]+.?[0-9]{0,8}$)",
+        "human_readable": "numeric with 8 decimal places",
+    },
+    'RACK_OR_PLATE_ID': {"optional_regex": r"^[a-zA-Z]{2}\d{8}$"},
+    'SALINITY': {"strict_regex": r"^\d+$", "human_readable": "integer"},
+    'SAMPLE_COORDINATOR_ORCID_ID': {
+        "strict_regex": r"^((\d{4}-){3}\d{3}(\d|X))(\|(\d{4}-){3}\d{3}(\d|X))*$",
+        "human_readable": "16-digit number that is compatible with the ISO Standard (ISO 27729), if multiple IDs separate with a | and no spaces",
+    },
+    'SAMPLE_DERIVED_FROM': {
+        "ena_regex": r"(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
+        r"11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
+        r"AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
+        "human_readable": "Specimen accession",
+    },
+    'SAMPLE_SAME_AS': {
+        "ena_regex": r"(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
+        r"11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
+        r"AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
+        "human_readable": "Specimen accession",
+    },
+    'SAMPLE_SYMBIONT_OF': {
+        "ena_regex": r"(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
+        r"11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
+        r"AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
+        "human_readable": "Specimen accession",
+    },
+    'SAMPLING_PERMITS_FILENAME': {
+        "optional_regex": r"(^.+\.pdf$)|(^.+\.PDF$)",
+        "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required",
+    },
+    'SAMPLING_WATER_BODY_DEPTH': {
+        "strict_regex": r"^\d+$",
+        "human_readable": "integer",
+    },
+    'TEMPERATURE': {"strict_regex": r"^\d+$", "human_readable": "integer"},
+    'TIME_OF_COLLECTION': {
+        "strict_regex": r"^([0-1][0-9]|2[0-4]):[0-5]\d$",
+        "human_readable": "24-hour format with hours and minutes separated by colon",
+    },
+    'TUBE_OR_WELL_ID': {"optional_regex": r"^[a-zA-Z]{2}\d{8}$"},
+    'WATER_SPEED': {"strict_regex": r"^\d+$", "human_readable": "integer"},
+    'tmp_TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
+        "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$",
+        "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
+        "biocollection_qualifier_type": "specimen_voucher",
+        # every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
+        "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already.",
+    },
+    'tmp_PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
+        "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$",
+        "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
+        "biocollection_qualifier_type": "specimen_voucher",
+        # every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
+        "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already.",
+    },
+    'tmp_DNA_VOUCHER_ID_FOR_BIOBANKING': {
+        "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$",
+        "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
+        "biocollection_qualifier_type": "bio_material",
+        # every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
+        "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already.",
+    },
+    'tmp_PROXY_VOUCHER_ID': {
+        "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$",
+        "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
+        "biocollection_qualifier_type": "specimen_voucher",
+        # every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
+        "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already.",
+    },
+    'tmp_VOUCHER_ID': {
+        "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$",
+        # every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
+        "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
+        "biocollection_qualifier_type": "specimen_voucher",
+        "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already.",
+    },
 }
 
 DTOL_UNITS = {
@@ -1282,56 +1042,165 @@ DTOL_UNITS = {
     'LONGITUDE_END': {'ena_unit': 'DD'},
     'LONGITUDE_START': {'ena_unit': 'DD'},
     'ORIGINAL_DECIMAL_LATITUDE': {'ena_unit': 'DD'},
-    'ORIGINAL_DECIMAL_LONGITUDE': {'ena_unit': 'DD'}
+    'ORIGINAL_DECIMAL_LONGITUDE': {'ena_unit': 'DD'},
 }
 
 GAL_MAP_LOCATION_COORDINATES = {
-    "CENTRO NACIONAL DE ANÁLISIS GENÓMICO": {"latitude": 41.29322842500072, "longitude": 2.112447951213345},
-    "DNA SEQUENCING AND GENOMICS LABORATORY": {"latitude": 52.604080415603875, "longitude": 1.322325116120334},
-    "HELSINKI GENOMICS CORE FACILITY": {"latitude": 60.17217434637327, "longitude": 24.76174956537578},
-    "DRESDEN-CONCEPT": {"latitude": 50.953555072066706, "longitude": 13.765873443664715},
-    "EARLHAM INSTITUTE": {"latitude": 52.62318280716785, "longitude": 1.2555952213587074},
-    "FUNCTIONAL GENOMIC CENTER ZURICH": {"latitude": 47.29317744028429, "longitude": 8.630075015560141},
+    "CENTRO NACIONAL DE ANÁLISIS GENÓMICO": {
+        "latitude": 41.29322842500072,
+        "longitude": 2.112447951213345,
+    },
+    "DNA SEQUENCING AND GENOMICS LABORATORY": {
+        "latitude": 52.604080415603875,
+        "longitude": 1.322325116120334,
+    },
+    "HELSINKI GENOMICS CORE FACILITY": {
+        "latitude": 60.17217434637327,
+        "longitude": 24.76174956537578,
+    },
+    "DRESDEN-CONCEPT": {
+        "latitude": 50.953555072066706,
+        "longitude": 13.765873443664715,
+    },
+    "EARLHAM INSTITUTE": {
+        "latitude": 52.62318280716785,
+        "longitude": 1.2555952213587074,
+    },
+    "FUNCTIONAL GENOMIC CENTER ZURICH": {
+        "latitude": 47.29317744028429,
+        "longitude": 8.630075015560141,
+    },
     "GENOSCOPE": {"latitude": 48.57242945075802, "longitude": 2.440779473998219},
-    "GIGA-GENOMICS CORE FACILITY UNIVERSITY OF LIEGE": {"latitude": 50.49505310219335,
-                                                        "longitude": 5.469583675188101},
-    "HANSEN LAB, DENMARK": {"latitude": 55.85342233870096, "longitude": 12.580689191025195},
-    "INDUSTRY PARTNER": {"latitude": 53.415313884089315, "longitude": 14.621839848348806},
-    "LAUSANNE GENOMIC TECHNOLOGIES FACILITY": {"latitude": 46.43785938836717, "longitude": 6.720611497418699},
-    "LEIBNIZ INSTITUTE FOR THE ANALYSIS OF BIODIVERSITY CHANGE, MUSEUM KOENIG, BONN": {"latitude": 50.662300290436946,
-                                                                                       "longitude": 7.1815164845562895},
-    "MARINE BIOLOGICAL ASSOCIATION": {"latitude": 50.24306793085285, "longitude": -4.077733915519119},
+    "GIGA-GENOMICS CORE FACILITY UNIVERSITY OF LIEGE": {
+        "latitude": 50.49505310219335,
+        "longitude": 5.469583675188101,
+    },
+    "HANSEN LAB, DENMARK": {
+        "latitude": 55.85342233870096,
+        "longitude": 12.580689191025195,
+    },
+    "INDUSTRY PARTNER": {
+        "latitude": 53.415313884089315,
+        "longitude": 14.621839848348806,
+    },
+    "LAUSANNE GENOMIC TECHNOLOGIES FACILITY": {
+        "latitude": 46.43785938836717,
+        "longitude": 6.720611497418699,
+    },
+    "LEIBNIZ INSTITUTE FOR THE ANALYSIS OF BIODIVERSITY CHANGE, MUSEUM KOENIG, BONN": {
+        "latitude": 50.662300290436946,
+        "longitude": 7.1815164845562895,
+    },
+    "MARINE BIOLOGICAL ASSOCIATION": {
+        "latitude": 50.24306793085285,
+        "longitude": -4.077733915519119,
+    },
     "NGS BERN": {"latitude": 46.79965448973021, "longitude": 7.576577902102794},
-    "NGS COMPETENCE CENTER TÜBINGEN": {"latitude": 48.48522057082666, "longitude": 9.090980002697727},
-    "NATURAL HISTORY MUSEUM": {"latitude": 51.4486310061879, "longitude": -0.06127617046297753},
-    "NEUROMICS SUPPORT FACILITY, UANTWERP, VIB": {"latitude": 51.11917170838246, "longitude": 4.416086561730746},
-    "NORWEGIAN SEQUENCING CENTRE": {"latitude": 63.43527653315388, "longitude": 10.605382103292664},
-    "ROYAL BOTANIC GARDEN EDINBURGH": {"latitude": 55.96501818957333, "longitude": -3.209092180629166},
-    "ROYAL BOTANIC GARDENS KEW": {"latitude": 51.478500987462645, "longitude": -0.2952321886064486},
-    "SANGER INSTITUTE": {"latitude": 52.078851760344094, "longitude": 0.1833635227184019},
+    "NGS COMPETENCE CENTER TÜBINGEN": {
+        "latitude": 48.48522057082666,
+        "longitude": 9.090980002697727,
+    },
+    "NATURAL HISTORY MUSEUM": {
+        "latitude": 51.4486310061879,
+        "longitude": -0.06127617046297753,
+    },
+    "NEUROMICS SUPPORT FACILITY, UANTWERP, VIB": {
+        "latitude": 51.11917170838246,
+        "longitude": 4.416086561730746,
+    },
+    "NORWEGIAN SEQUENCING CENTRE": {
+        "latitude": 63.43527653315388,
+        "longitude": 10.605382103292664,
+    },
+    "ROYAL BOTANIC GARDEN EDINBURGH": {
+        "latitude": 55.96501818957333,
+        "longitude": -3.209092180629166,
+    },
+    "ROYAL BOTANIC GARDENS KEW": {
+        "latitude": 51.478500987462645,
+        "longitude": -0.2952321886064486,
+    },
+    "SANGER INSTITUTE": {
+        "latitude": 52.078851760344094,
+        "longitude": 0.1833635227184019,
+    },
     "SCILIFELAB": {"latitude": 59.35025588644969, "longitude": 18.02342940480995},
-    "SVARDAL LAB, ANTWERP": {"latitude": 51.204388155984645, "longitude": 4.383337520422855},
-    "UNIVERSITY OF BARI": {"latitude": 41.09506928572348, "longitude": 16.88037847340563},
-    "UNIVERSITY OF FLORENCE": {"latitude": 43.7443574368754, "longitude": 11.222120017904818},
-    "UNIVERSITY OF OXFORD": {"latitude": 51.75111553102938, "longitude": -1.242828944684545},
-    "WEST GERMAN GENOME CENTRE": {"latitude": 51.51577076977291, "longitude": -0.058774328461889375},
+    "SVARDAL LAB, ANTWERP": {
+        "latitude": 51.204388155984645,
+        "longitude": 4.383337520422855,
+    },
+    "UNIVERSITY OF BARI": {
+        "latitude": 41.09506928572348,
+        "longitude": 16.88037847340563,
+    },
+    "UNIVERSITY OF FLORENCE": {
+        "latitude": 43.7443574368754,
+        "longitude": 11.222120017904818,
+    },
+    "UNIVERSITY OF OXFORD": {
+        "latitude": 51.75111553102938,
+        "longitude": -1.242828944684545,
+    },
+    "WEST GERMAN GENOME CENTRE": {
+        "latitude": 51.51577076977291,
+        "longitude": -0.058774328461889375,
+    },
 }
 
 PARTNER_MAP_LOCATION_COORDINATES = {
     "DALHOUSIE UNIVERSITY": {"latitude": 44.6356351, "longitude": -63.5977486},
-    "GEOMAR HELMHOLTZ CENTRE": {"latitude": 54.31473535017579, "longitude": 10.202507477880662},
-    "NOVA SOUTHEASTERN UNIVERSITY": {"latitude": 25.9036859889384, "longitude": -80.08505409832087},
-    "PORTLAND STATE UNIVERSITY": {"latitude": 45.06625034918671, "longitude": -122.26178879087954},
-    "QUEEN MARY UNIVERSITY OF LONDON": {"latitude": 51.52408461103592, "longitude": -0.040097483705069534},
-    "SENCKENBERG RESEARCH INSTITUTE": {"latitude": 50.980247934669954, "longitude": 11.319421517872232},
-    "THE SAINSBURY LABORATORY": {"latitude": 52.62229597053812, "longitude": 1.2228178153758562},
-    "UNIVERSITY OF BRITISH COLUMBIA": {"latitude": 49.10593106507127, "longitude": -123.55137019649796},
-    "UNIVERSITY OF CALIFORNIA": {"latitude": 32.59728946736694, "longitude": -117.16274620316563},
-    "UNIVERSITY OF DERBY": {"latitude": 52.937887605383885, "longitude": -1.4956414943590064},
-    "UNIVERSITY OF ORGEON": {"latitude": 44.19293642050486, "longitude": -122.7208166347002},
-    "UNIVERSITY OF RHODE ISLAND": {"latitude": 41.30562478960331, "longitude": -71.55357021967731},
-    "UNIVERSITY OF VIENNA (CEPHALOPOD)": {"latitude": 48.213401869226296, "longitude": 16.364048156381596},
-    "UNIVERSITY OF VIENNA (MOLLUSC)": {"latitude": 48.21189890585992, "longitude": 16.364341481491362},
+    "GEOMAR HELMHOLTZ CENTRE": {
+        "latitude": 54.31473535017579,
+        "longitude": 10.202507477880662,
+    },
+    "NOVA SOUTHEASTERN UNIVERSITY": {
+        "latitude": 25.9036859889384,
+        "longitude": -80.08505409832087,
+    },
+    "PORTLAND STATE UNIVERSITY": {
+        "latitude": 45.06625034918671,
+        "longitude": -122.26178879087954,
+    },
+    "QUEEN MARY UNIVERSITY OF LONDON": {
+        "latitude": 51.52408461103592,
+        "longitude": -0.040097483705069534,
+    },
+    "SENCKENBERG RESEARCH INSTITUTE": {
+        "latitude": 50.980247934669954,
+        "longitude": 11.319421517872232,
+    },
+    "THE SAINSBURY LABORATORY": {
+        "latitude": 52.62229597053812,
+        "longitude": 1.2228178153758562,
+    },
+    "UNIVERSITY OF BRITISH COLUMBIA": {
+        "latitude": 49.10593106507127,
+        "longitude": -123.55137019649796,
+    },
+    "UNIVERSITY OF CALIFORNIA": {
+        "latitude": 32.59728946736694,
+        "longitude": -117.16274620316563,
+    },
+    "UNIVERSITY OF DERBY": {
+        "latitude": 52.937887605383885,
+        "longitude": -1.4956414943590064,
+    },
+    "UNIVERSITY OF ORGEON": {
+        "latitude": 44.19293642050486,
+        "longitude": -122.7208166347002,
+    },
+    "UNIVERSITY OF RHODE ISLAND": {
+        "latitude": 41.30562478960331,
+        "longitude": -71.55357021967731,
+    },
+    "UNIVERSITY OF VIENNA (CEPHALOPOD)": {
+        "latitude": 48.213401869226296,
+        "longitude": 16.364048156381596,
+    },
+    "UNIVERSITY OF VIENNA (MOLLUSC)": {
+        "latitude": 48.21189890585992,
+        "longitude": 16.364341481491362,
+    },
 }
 
 # Default values for columns that are mandatory in ERGA manifests but are
@@ -1368,7 +1237,7 @@ POP_GENOMICS_OPTIONAL_COLUMNS_DEFAULT_VALUES_MAPPING = {
     'TISSUE_REMOVED_FOR_BIOBANKING': 'N',
     'TISSUE_VOUCHER_ID_FOR_BIOBANKING': 'NOT_APPLICABLE',
     'TUBE_OR_WELL_ID_FOR_BARCODING': 'NOT_APPLICABLE',
-    'VOUCHER_ID': 'NOT_PROVIDED'
+    'VOUCHER_ID': 'NOT_PROVIDED',
 }
 
 SPECIMEN_PREFIX = {
@@ -1380,11 +1249,9 @@ SPECIMEN_PREFIX = {
             'ROYAL BOTANIC GARDEN EDINBURGH': 'EDTOL',
             'ROYAL BOTANIC GARDENS KEW': 'KDTOL',
             'SANGER INSTITUTE': 'SAN',
-            'UNIVERSITY OF OXFORD': 'Ox'
+            'UNIVERSITY OF OXFORD': 'Ox',
         },
-        'erga': {
-            'default': 'ERGA_'
-        },
+        'erga': {'default': 'ERGA_'},
         'dtolenv': {
             'EARLHAM INSTITUTE': 'EI_',
             'MARINE BIOLOGICAL ASSOCIATION': 'MBA',
@@ -1392,8 +1259,8 @@ SPECIMEN_PREFIX = {
             'ROYAL BOTANIC GARDEN EDINBURGH': 'EDTOL',
             'ROYAL BOTANIC GARDENS KEW': 'KDTOL',
             'SANGER INSTITUTE': 'SAN',
-            'UNIVERSITY OF OXFORD': 'Ox'
-        }
+            'UNIVERSITY OF OXFORD': 'Ox',
+        },
     },
     'PARTNER': {
         'DALHOUSIE UNIVERSITY': 'DU',
@@ -1409,8 +1276,8 @@ SPECIMEN_PREFIX = {
         'UNIVERSITY OF OREGON': 'UOREG',
         'UNIVERSITY OF RHODE ISLAND': 'URI',
         'UNIVERSITY OF VIENNA (CEPHALOPOD)': 'VIEC',
-        'UNIVERSITY OF VIENNA (MOLLUSC)': 'VIEM'
-    }
+        'UNIVERSITY OF VIENNA (MOLLUSC)': 'VIEM',
+    },
 }
 
 SPECIMEN_SUFFIX = {
@@ -1422,7 +1289,7 @@ SPECIMEN_SUFFIX = {
             'ROYAL BOTANIC GARDEN EDINBURGH': r'\d{5}',
             'ROYAL BOTANIC GARDENS KEW': r'\d{5}',
             'SANGER INSTITUTE': r'\d{7}',
-            'UNIVERSITY OF OXFORD': r'\d{6}'
+            'UNIVERSITY OF OXFORD': r'\d{6}',
         },
         "DTOLENV": {
             'EARLHAM INSTITUTE': r'\d{5}',
@@ -1431,11 +1298,9 @@ SPECIMEN_SUFFIX = {
             'ROYAL BOTANIC GARDEN EDINBURGH': r'\d{5}',
             'ROYAL BOTANIC GARDENS KEW': r'\d{5}',
             'SANGER INSTITUTE': r'\d{7}',
-            'UNIVERSITY OF OXFORD': r'\d{6}'
+            'UNIVERSITY OF OXFORD': r'\d{6}',
         },
-        "erga": {
-            "default": r"([A-Z]{1,10}_\d{3}(\d|X)_\d{2,3})"
-        }
+        "erga": {"default": r"([A-Z]{1,10}_\d{3}(\d|X)_\d{2,3})"},
     }
 }
 
@@ -1452,43 +1317,121 @@ EXCLUDED_FIELDS_FOR_GET_BY_FIELD_QUERY = ["_id"]
 
 EXCLUDED_SAMPLE_TYPES = ['biosample']
 
-NA_VALS = ['#N/A', '#N/A N/A', '#NA', '-1.#IND', '-1.#QNAN', '-NaN', '-nan', '1.#IND', '1.#QNAN', '<NA>', 'N/A', 'NULL',
-           'NaN', 'n/a', 'nan', 'NaT', 'null', 'NIL', 'nil', 'NA', 'na', 'NAN', 'Nan', 'NA']
+NA_VALS = [
+    '#N/A',
+    '#N/A N/A',
+    '#NA',
+    '-1.#IND',
+    '-1.#QNAN',
+    '-NaN',
+    '-nan',
+    '1.#IND',
+    '1.#QNAN',
+    '<NA>',
+    'N/A',
+    'NULL',
+    'NaN',
+    'n/a',
+    'nan',
+    'NaT',
+    'null',
+    'NIL',
+    'nil',
+    'NA',
+    'na',
+    'NAN',
+    'Nan',
+    'NA',
+]
 
 NIH_API_KEY = helpers.get_env("NIH_API_KEY")
 
 # 'sample' is excluded from the list
-NON_SAMPLE_ACCESSION_TYPES = ["project", "assembly", "seq_annotation", "experiment", "run"]
+NON_SAMPLE_ACCESSION_TYPES = [
+    "project",
+    "assembly",
+    "seq_annotation",
+    "experiment",
+    "run",
+]
 
-PERMIT_FILENAME_COLUMN_NAMES = ["SAMPLING_PERMITS_FILENAME", "ETHICS_PERMITS_FILENAME",
-                                "NAGOYA_PERMITS_FILENAME"]
+PERMIT_FILENAME_COLUMN_NAMES = [
+    "SAMPLING_PERMITS_FILENAME",
+    "ETHICS_PERMITS_FILENAME",
+    "NAGOYA_PERMITS_FILENAME",
+]
 
-PERMIT_REQUIRED_COLUMN_NAMES = ["SAMPLING_PERMITS_REQUIRED", "ETHICS_PERMITS_REQUIRED",
-                                "NAGOYA_PERMITS_REQUIRED"]
+PERMIT_REQUIRED_COLUMN_NAMES = [
+    "SAMPLING_PERMITS_REQUIRED",
+    "ETHICS_PERMITS_REQUIRED",
+    "NAGOYA_PERMITS_REQUIRED",
+]
 
-PERMIT_COLUMN_NAMES_PREFIX = [
-    "SAMPLING_PERMITS", "ETHICS_PERMITS", "NAGOYA_PERMITS"]
+PERMIT_COLUMN_NAMES_PREFIX = ["SAMPLING_PERMITS", "ETHICS_PERMITS", "NAGOYA_PERMITS"]
 
-REQUIRED_MEMBER_GROUPS = ['bge_checkers','dtol_users', 'dtol_sample_managers', 'dtolenv_users', 'dtolenv_sample_managers',
-                          'erga_users', 'erga_sample_managers']
+REQUIRED_MEMBER_GROUPS = [
+    'bge_checkers',
+    'dtol_users',
+    'dtol_sample_managers',
+    'dtolenv_users',
+    'dtolenv_sample_managers',
+    'erga_users',
+    'erga_sample_managers',
+]
 
 # A list of web pages that can be accessed by both COPO users and sample managers
-SAMPLE_MANAGERS_ACCESSIBLE_WEB_PAGES = ['dtol_submission', "copo_sample", "dtol_manifest"]
+SAMPLE_MANAGERS_ACCESSIBLE_WEB_PAGES = [
+    'dtol_submission',
+    "copo_sample",
+    "dtol_manifest",
+]
 
 SANGER_TOL_PROFILE_TYPES = ["asg", "dtol", "dtolenv", "erga"]
 
 SLASHES_LIST = ["/", "\\"]
 
-SPECIES_LIST_FIELDS = ["SYMBIONT", "TAXON_ID", "ORDER_OR_GROUP", "FAMILY", "GENUS", "SCIENTIFIC_NAME",
-                       "INFRASPECIFIC_EPITHET", "CULTURE_OR_STRAIN", "COMMON_NAME", "TAXON_REMARKS"]
+SPECIES_LIST_FIELDS = [
+    "SYMBIONT",
+    "TAXON_ID",
+    "ORDER_OR_GROUP",
+    "FAMILY",
+    "GENUS",
+    "SCIENTIFIC_NAME",
+    "INFRASPECIFIC_EPITHET",
+    "CULTURE_OR_STRAIN",
+    "COMMON_NAME",
+    "TAXON_REMARKS",
+]
 
-GENOMICS_PROJECT_SAMPLE_TYPE_DICT = {"isasample":"genomics"}
+GENOMICS_PROJECT_SAMPLE_TYPE_DICT = {"isasample": "genomics"}
 
-SYMBIONT_FIELDS = ["ORDER_OR_GROUP", "FAMILY", "GENUS", "TAXON_ID", "SCIENTIFIC_NAME", "TAXON_REMARKS",
-                   "INFRASPECIFIC_EPITHET", "CULTURE_OR_STRAIN_ID", "COMMON_NAME", "LIFESTAGE", "SEX", "SYMBIONT",
-                   "species_list", "characteristics", "profile_id", "manifest_id", "sample_type", "biosampleAccession",
-                   "sraAccession", "submissionAccession", "status", "tol_project", "manifest_version", "public_name",
-                   "factorValues"]
+SYMBIONT_FIELDS = [
+    "ORDER_OR_GROUP",
+    "FAMILY",
+    "GENUS",
+    "TAXON_ID",
+    "SCIENTIFIC_NAME",
+    "TAXON_REMARKS",
+    "INFRASPECIFIC_EPITHET",
+    "CULTURE_OR_STRAIN_ID",
+    "COMMON_NAME",
+    "LIFESTAGE",
+    "SEX",
+    "SYMBIONT",
+    "species_list",
+    "characteristics",
+    "profile_id",
+    "manifest_id",
+    "sample_type",
+    "biosampleAccession",
+    "sraAccession",
+    "submissionAccession",
+    "status",
+    "tol_project",
+    "manifest_version",
+    "public_name",
+    "factorValues",
+]
 
 SYMBIONT_VALS = ["TARGET", "SYMBIONT"]
 

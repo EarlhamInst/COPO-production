@@ -1,6 +1,6 @@
 # settings for services e.g. postgres, mongo, redis, irods...
 
-#from django.conf import settings
+# from django.conf import settings
 from . import base
 from pymongo import MongoClient
 from common.utils.helpers import get_env
@@ -10,7 +10,9 @@ import os
 # this value tells COPO whether we are in Development or Production environment
 ENVIRONMENT_TYPE = get_env('ENVIRONMENT_TYPE')
 if ENVIRONMENT_TYPE == "":
-    sys.exit('ENVIRONMENT_TYPE environment variable not set. Value should be either "prod" or "dev"')
+    sys.exit(
+        'ENVIRONMENT_TYPE environment variable not set. Value should be either "prod" or "dev"'
+    )
 
 # settings for postgres
 DATABASES = {
@@ -20,7 +22,7 @@ DATABASES = {
         'USER': get_env('POSTGRES_USER'),
         'PASSWORD': get_env('POSTGRES_PASSWORD'),
         'HOST': get_env('POSTGRES_SERVICE'),
-        'PORT': get_env('POSTGRES_PORT')
+        'PORT': get_env('POSTGRES_PORT'),
     }
 }
 
@@ -35,10 +37,15 @@ MONGO_DB_TEST = "test_copo_mongo"
 
 # this is the global DB connection, either use get_collection_ref in dal.mongo_util.py or refer to this setting
 # If unit testing is being done use the Mongo test database instead of the production/actual Mongo database
- 
-MONGO_CLIENT = MongoClient(host=MONGO_HOST, username=MONGO_USER, password=MONGO_USER_PASSWORD, maxPoolSize=MONGO_MAX_POOL_SIZE)[MONGO_DB]
 
-#MONGO_CLIENT.authenticate(MONGO_USER, MONGO_USER_PASSWORD, source='admin')
+MONGO_CLIENT = MongoClient(
+    host=MONGO_HOST,
+    username=MONGO_USER,
+    password=MONGO_USER_PASSWORD,
+    maxPoolSize=MONGO_MAX_POOL_SIZE,
+)[MONGO_DB]
+
+# MONGO_CLIENT.authenticate(MONGO_USER, MONGO_USER_PASSWORD, source='admin')
 
 # settings for redis
 SESSION_ENGINE = 'redis_sessions.session'
@@ -52,8 +59,8 @@ SESSION_REDIS = {
     #'password': 'password',
     'prefix': 'session',
     'socket_timeout': 1,
-    'retry_on_timeout': False
-    }
+    'retry_on_timeout': False,
+}
 
 
 # django channels settings
@@ -89,25 +96,25 @@ ECS_ENDPOINT = get_env('ECS_ENDPOINT')
 
 # settings for manifest
 MANIFEST_VERSION = {
-    "ASG":  "2.5",
+    "ASG": "2.5",
     "DTOL": "2.5",
     "DTOLENV": "2.4",
     "DTOL_EI": "2.4",
     "ERGA": "2.5.1",
     "DTOL_BARCODE": "",
 }
-                                      
+
 BARCODING_CHECKLIST = ["ERT000002", "ERT000020"]
 
 ENA_CHECKLIST_CONFIG = {
-    "ERT000002" : {"skip": ["STRAIN","LAB_HOST"]},
-    "ERT000020" : {"skip": ["STRAIN","SPECVOUCH", "VARIETY", "IDBY"]}
+    "ERT000002": {"skip": ["STRAIN", "LAB_HOST"]},
+    "ERT000020": {"skip": ["STRAIN", "SPECVOUCH", "VARIETY", "IDBY"]},
 }
 
-ENA_CHECKLIST_URL  = [
+ENA_CHECKLIST_URL = [
     "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/ERT000002?type=sequence",
     "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/ERT000020?type=sequence",
-    "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/*?type=sample"
+    "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/*?type=sample",
 ]
 
 SANGER_SEQUENCING_CENTRE = "SANGER"

@@ -587,7 +587,7 @@ function deleteProfileRecord(profileRecordID) {
               });
 
               // Add an event listener that will reload a particular div to
-              // reflect the changes made after a record is deleted
+              // reflect the changes made after a record has been deleted
               // This ensures that the 'gridCount' is updated
               var event = jQuery.Event('refreshtable2');
               $('#copo-sidebar-info #page_alert_panel').trigger(event);
@@ -595,8 +595,8 @@ function deleteProfileRecord(profileRecordID) {
               // Decrement the total number of profile records displayed
               $('#grid-total').text(profilesTotal - 1);
 
-              // Update the profile type legend after 
-              // a profile record is deleted
+              // Update the profile type legend after
+              // a profile record has been deleted
               updateProfileTypesLegend();
 
               // Refresh the web page when no profile records exist
@@ -1012,22 +1012,19 @@ function profileInfoPopover(grids) {
         $('#showMoreProfileInfoBtn[rel="popover"]').not(this).popover('hide');
         e.stopPropagation();
 
-        // Initialise the tooltip for the associated type info icon
-        // if the profile has associated types to display
-        if (
-          $(this).popover().is(':visible') &&
-          $(this).popover().find('.associated_type_info_icon')
-        ) {
-          $('.associated_type_info_icon').tooltip();
-        }
+        // Initialise tooltips for relevant info icons if popover is visible
+        const tooltipClasses = [
+          'shared_owner_info_icon',
+          'associated_type_info_icon',
+          'sequencing_centre_info_icon',
+        ];
 
-        // Initialise the tooltip for the sequencing centre info icon
-        // if the profile has sequencing centres to display
-        if (
-          $(this).popover().is(':visible') &&
-          $(this).popover().find('.sequencing_centre_info_icon')
-        ) {
-          $('.sequencing_centre_info_icon').tooltip();
+        if ($(this).popover().is(':visible')) {
+          tooltipClasses.forEach((cls) => {
+            if ($(this).popover().find(`.${cls}`).length) {
+              $(`.${cls}`).tooltip();
+            }
+          });
         }
       });
   });

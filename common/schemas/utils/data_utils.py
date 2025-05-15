@@ -73,7 +73,7 @@ def get_profile_type(profile_type):
 
 
 def join_with_and(lst, conjunction='and'):
-    # # Handles lists with comma, 'and', 'or'
+    # Handles lists with comma, 'and', 'or'
     if not lst:
         return []
     elif len(lst) == 1:
@@ -81,7 +81,7 @@ def join_with_and(lst, conjunction='and'):
     elif len(lst) == 2:
         return f' {conjunction} '.join(lst)
     else:
-        return ', '.join(lst[:-1]) + f', {conjunction} ' + str(lst[-1])
+        return ', '.join(lst[:-1]) + f' {conjunction} ' + str(lst[-1])
 
 
 def json_to_object(data_object):
