@@ -25,7 +25,7 @@ from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreadsheet
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 import numpy as np
-
+from common.ena_utils.ena_helper import EnaSubmissionHelper
 
 l = Logger()
 
@@ -249,11 +249,12 @@ class EnaTaggedSequence:
 
         return dict(status='error', message="System error. Biocoding manifest submission has NOT been scheduled! Please contact system administrator.")        
 
+    """
     def _get_submission_xml(self):
-        """
+        '''
         function creates and return submission xml path
         :return:
-        """
+        '''
 
         # create submission xml
         l.log("Creating submission xml...")
@@ -277,7 +278,7 @@ class EnaTaggedSequence:
 
         # set user contacts
         sra_map = {"inform_on_error": "SRA Inform On Error", "inform_on_status": "SRA Inform On Status"}
-        user_contacts = self.submission_helper.get_sra_contacts()
+        user_contacts = get_sra_contacts(self.profile_id)
         for k, v in user_contacts.items():
             user_sra_roles = [x for x in sra_map.keys() if sra_map[x].lower() in v]
             if user_sra_roles:
@@ -305,14 +306,14 @@ class EnaTaggedSequence:
             action_type = ET.SubElement(action, 'RELEASE')
         '''
         return self._write_xml_file(xml_object=root, file_name="submission.xml")
+    """
 
-
-
+    """
     def _get_edit_submission_xml(self,submission_xml_path=str()):
-        """
+        '''
         function creates and return submission xml path
         :return:
-        """
+        '''
         # create submission xml
         l.log("Creating submission xml for edit....")
 
@@ -326,6 +327,7 @@ class EnaTaggedSequence:
         modify = ET.SubElement(action, 'MODIFY')
 
         return self._write_xml_file(xml_object=root, file_name="submission_edit.xml")
+    """
 
     def _write_xml_file(self, location=str(), xml_object=None, file_name=str()):
             """
@@ -376,16 +378,18 @@ class EnaTaggedSequence:
                     action="info",
                     html_id="tagged_seq_info")
             
-            self.submission_helper = SubmissionHelper(submission_id=str(sub["_id"]))
+            enaSubmissionHelper = EnaSubmissionHelper(submission_id=str(sub["_id"]), profile_id=sub["profile_id"])
+            #self.submission_helper = SubmissionHelper(submission_id=str(sub["_id"]))
             self.the_submission = os.path.join(self.submission_path, sub["profile_id"]) 
             try:
                 if not os.path.exists(self.the_submission ):
                     os.makedirs(self.the_submission )
 
-                context = self._get_submission_xml()
+                #context = self._get_submission_xml()
+                context = enaSubmissionHelper.get_submission_xml()
                 submission_xml_path = context['value']
 
-                context = self._get_edit_submission_xml(submission_xml_path) 
+                context = enaSubmissionHelper.get_edit_submission_xml(submission_xml_path) 
                 modify_submission_xml_path = context['value']
 
  

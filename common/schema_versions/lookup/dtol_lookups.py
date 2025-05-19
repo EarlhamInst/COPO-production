@@ -65,6 +65,7 @@ DTOL_ENA_MAPPINGS = {
         'ena': 'sample collection device or method'
     },
     'DNA_VOUCHER_ID_FOR_BIOBANKING': {
+        'ena_ignore': 'NOT_APPLICABLE',
         'ena': 'bio_material'
     },
     'ELEVATION': {
@@ -152,6 +153,7 @@ DTOL_ENA_MAPPINGS = {
     #    'ena': 'time of collection'
     #},
     'TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
+        'ena_ignore': 'NOT_APPLICABLE',
         'ena': 'bio_material'
     },
     'VOUCHER_ID': {

@@ -29,8 +29,8 @@ class SinglePairedValuesValidator(Validator):
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
 
+"""
 class TaxonValidator(Validator):
-
     def validate(self):
         if "organism" not in self.data.columns:
             return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
@@ -52,7 +52,6 @@ class TaxonValidator(Validator):
                     self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
-"""
 class GzipValidator(Validator):
 
     def validate(self):

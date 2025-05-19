@@ -93,7 +93,7 @@ def validate_assembly(form, profile_id, assembly_id):
     file_ids = []
 
 
-    sub = Submission().get_collection_handle().find_one({"profile_id": profile_id, "deleted": {"$ne": get_deleted_flag()}})
+    sub = Submission().get_collection_handle().find_one({"profile_id": profile_id, "repository":"ena", "deleted":  get_not_deleted_flag()})
  
     if not sub:
         sub = dict()

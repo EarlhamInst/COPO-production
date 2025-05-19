@@ -122,6 +122,11 @@ app.conf.beat_schedule = {
         'task': 'src.apps.copo_single_cell_submission.tasks.update_zenodo_submission_pending',
         'schedule': timedelta(seconds=10)
     },
+
+    'process_pending_sample_submission': {
+        'task': 'src.apps.copo_sample.tasks.process_pending_sample_submission',
+        'schedule': timedelta(seconds=10)
+    },
 }
 
 app.conf.task_routes = {

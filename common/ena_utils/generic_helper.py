@@ -85,7 +85,20 @@ def logging_info(message=str(), submission_id=str()):
     :return:
     """
 
-    lg.log('[Submission: ' + submission_id + '] ' + message, level=Loglvl.INFO, type=Logtype.FILE)
+    lg.log('[Submission: ' + submission_id + '] ' + message)
+
+    return True
+
+
+def logging_debug(message=str(), submission_id=str()):
+    """
+    function provides a consistent way of logging submission status/information
+    :param message:
+    :param submission_id:
+    :return:
+    """
+
+    lg.debug('[Submission: ' + submission_id + '] ' + message)
 
     return True
 
@@ -97,12 +110,8 @@ def logging_error(message=str(), submission_id=str()):
     :param submission_id:
     :return:
     """
-
-    try:
-        lg.log('[Submission: ' + submission_id + '] ' + message, level=Loglvl.ERROR, type=Logtype.FILE)
-    except Exception as e:
-        return False
-
+    lg.error('[Submission: ' + submission_id + '] ' + message)
+ 
     return True
 
 def logging_exception(exception):

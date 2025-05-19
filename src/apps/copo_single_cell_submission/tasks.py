@@ -14,14 +14,14 @@ def update_singlecell_schema(self):
 
  
 @app.task(bind=True, base=CopoBaseClassForTask)
-@only_one(key="process_assembly_submission", timeout=5)
+@only_one(key="process_zenodo_submission", timeout=5)
 def process_zenodo_submission(self):
     Logger().debug("Running process_zenodo_submission")
     process_pending_submission()
     return True
 
 @app.task(bind=True, base=CopoBaseClassForTask)
-@only_one(key="process_update_assembly_submission_pending", timeout=5)
+@only_one(key="process_update_zenodo_submission_pending", timeout=5)
 def update_zenodo_submission_pending(self):
     Logger().debug("Running update_zenodo_submission_pending")
     update_submission_pending()

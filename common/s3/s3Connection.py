@@ -14,7 +14,7 @@ class S3Connection():
     Class to handle interations with ECS cloud storage via s3 service
     """
 
-    def __init__(self, profile_id=str()):
+    def __init__(self, profile_id=str(), subcomponent=None):
         self.profile_id = profile_id
         self.ecs_access_key_id = get_env('ECS_ACCESS_KEY_ID')
         self.ecs_secret_key = get_env('ECS_SECRET_KEY')

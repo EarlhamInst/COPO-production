@@ -8,7 +8,6 @@ from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample, Source
 from common.utils import helpers 
 from django.http import HttpResponse, JsonResponse
-import datetime
 from common.s3.s3Connection import S3Connection as s3
 from pymongo import ReturnDocument
 import common.ena_utils.FileTransferUtils as tx
@@ -31,6 +30,7 @@ from src.apps.copo_core.models import ProfileType
 
 l = Logger()
 
+@web_page_access_checker
 @login_required()
 def ena_read_manifest_validate(request, profile_id):
     request.session["profile_id"] = profile_id
@@ -44,7 +44,7 @@ def ena_read_manifest_validate(request, profile_id):
             
     return render(request, "copo/ena_read_manifest_validate.html", data)
 
-
+@web_page_access_checker
 @login_required()
 def parse_ena_spreadsheet(request):
     profile_id = request.session["profile_id"]
@@ -63,7 +63,7 @@ def parse_ena_spreadsheet(request):
         if inspect.isclass(element) and issubclass(element, Validator) and not element.__name__ == "Validator":
             required_validators.append(element)
 
-    ena = EnaCheckListSpreadsheet(file=file, checklist_id=checklist_id, component="sample", validators=required_validators)
+    ena = EnaCheckListSpreadsheet(file=file, with_sample=(False if checklist_id=='read' else True),  checklist_id=checklist_id, component="sample", validators=required_validators)
     s3obj = s3()
     if name.endswith("xlsx") or name.endswith("xls"):
         fmt = 'xls'
@@ -105,15 +105,18 @@ def parse_ena_spreadsheet(request):
         return HttpResponse(status=400)
     return HttpResponse(status=400)
 
+@web_page_access_checker
 @login_required()
 def save_ena_records(request):
     # create mongo sample objects from info parsed from manifest and saved to session variable
     sample_data = request.session.get("sample_data")
     profile_id = request.session["profile_id"]
-    #profile_name = Profile().get_name(profile_id)
+    profile = Profile().get_record(profile_id)
+    profile_name = profile["title"]
+    profile_type = ProfileType.objects.get(type=profile["type"])
+    
     uid = str(request.user.id)
-    username = request.user.username
-    checklist = EnaChecklist().get_collection_handle().find_one({"primary_id": request.session["checklist_id"]})
+    checklist = EnaChecklist().get_checklist(checklist_id=request.session["checklist_id"], with_read=True, for_dtol=profile_type.is_dtol_profile)
     column_name_mapping = { field["name"].upper() : key  for key, field in checklist["fields"].items() if not field.get("read_field", False) }
     #checklist_read = EnaChecklist().get_collection_handle().find_one({"primary_id": "read"})
     column_name_mapping_read = { field["name"].upper() : key  for key, field in checklist["fields"].items() if field.get("read_field", False) }
@@ -125,7 +128,7 @@ def save_ena_records(request):
     #existing_bundle = list()
     #existing_bundle_meta = list()
     sub = Submission().get_collection_handle().find_one(
-        {"profile_id": profile_id, "deleted": get_not_deleted_flag()})
+        {"profile_id": profile_id, "repository":"ena", "deleted": get_not_deleted_flag()})
     # override the bundle files for every manifest upload
     # if sub:
     #    existing_bundle = sub["bundle"]
@@ -184,16 +187,17 @@ def save_ena_records(request):
                     sample = dict()
 
                 source = dict()
-                taxinfo = organism_map.get(s["Organism"], None)
+                tax_id = organism_map.get(s["Organism"], None)
                 source_id = source_map.get(s["Organism"], None)
-                if not taxinfo:
+                if not tax_id:
                     curl_cmd = "curl " + \
                             "https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/" + s["Organism"].replace(" ", "%20")
                     receipt = subprocess.check_output(curl_cmd, shell=True)
                     # ToDo - exit if species not found
                     print(receipt)
                     taxinfo = json.loads(receipt.decode("utf-8"))
-                    organism_map[s["Organism"]] = taxinfo
+                    tax_id = taxinfo[0]["taxId"]
+                    organism_map[s["Organism"]] = tax_id
 
                     # create source from organism
                     termAccession = "http://purl.obolibrary.org/obo/NCBITaxon_" + str(taxinfo[0]["taxId"])
@@ -228,7 +232,6 @@ def save_ena_records(request):
                 insert_record["status"] = "accepted"
                 insert_record["biosampleAccession"] = s["biosampleAccession"]
                 insert_record["is_external"] = "1"
-                insert_record["TAXON_ID"] = s["TAXON_ID"]
                 insert_record["profile_id"] = profile_id    
 
             sample["name"] = s["biosampleAccession"]
@@ -240,14 +243,13 @@ def save_ena_records(request):
         sample.pop("status", None) 
         sample.pop("profile_id", None)
         sample.pop("sample_type", None)
-        sample.pop("TAXON_ID", None)
         sample.pop("biosampleAccession", None)
         sample.pop("is_external", None)
         sample["date_modified"] = dt 
         sample["deleted"] = get_not_deleted_flag()           
         sample["updated_by"] = uid
-
-        #sample["checklist_id"] = request.session["checklist_id"]
+        sample["checklist_id"] = request.session["checklist_id"]
+        sample["taxon_id"] = organism_map.get(s["Organism"], None)
 
             
         for key, value in s.items():
@@ -293,7 +295,7 @@ def save_ena_records(request):
         attributes["study_samples"] = [sample_id] 
 
         df["description"] = {"attributes": attributes}
-        df["title"] = p["title"]
+        df["title"] = profile_name
         # df["date_created"] = dt
         df["profile_id"] = str(profile_id)
         df["file_type"] = "TODO"
@@ -332,7 +334,7 @@ def save_ena_records(request):
                 file_id = str(result.upserted_id)
             if file_changed:
                 datafile_list.append(file_id)
-            f_meta = {"file_id": file_id, "file_name": f_name, "status": "pending", "checklist_id": request.session["checklist_id"]}
+            f_meta = {"file_id": file_id, "file_name": f_name, "status": "pending"}
             # Sample(profile_id=profile_id).get_collection_handle().update_one({"_id": ObjectId(sample_id)}, {"$addToSet": {"read": f_meta}})
         else:
             file_id1 = None
@@ -394,7 +396,7 @@ def save_ena_records(request):
                 datafile_list.append(file_id)
 
             file_id2 = file_id
-            f_meta = {"file_id": f"{file_id1},{file_id2}", "file_name": s["File name"], "status": "pending", "checklist_id": request.session["checklist_id"]}
+            f_meta = {"file_id": f"{file_id1},{file_id2}", "file_name": s["File name"], "status": "pending"}
             tmp_pairing["_id2"] = file_id
             pairing.append(tmp_pairing)
             # Sample(profile_id=profile_id).get_collection_handle().update_one({"_id": ObjectId(sample_id)}, {"$addToSet": {"read": f_meta }} )
@@ -451,7 +453,7 @@ def save_ena_records(request):
     result = {"table_data": table_data, "component": "read"}
     return JsonResponse(status=200, data=result)
 
-
+@web_page_access_checker
 @login_required()
 def get_manifest_submission_list(request):
     profile_id = request.session["profile_id"]
@@ -602,10 +604,13 @@ def copo_reads(request, profile_id):
 @login_required
 def download_initial_read_manifest(request, profile_id):
     request.session["profile_id"] = profile_id
-    samples = Sample().get_all_records_columns(filter_by={"profile_id": profile_id}, projection={"_id":0, "biosampleAccession":1, "TAXON_ID":1, "SPECIMEN_ID":1})
-    checklist = EnaChecklist().get_collection_handle().find_one({"primary_id": "read"})
+    profile = Profile().get_record(profile_id)
+    samples = Sample().get_all_records_columns(filter_by={"profile_id": profile_id})
+    profile_type = ProfileType.objects.get(type=profile["type"])
+    checklist = EnaChecklist().get_checklist(checklist_id="read", with_read=True, for_dtol=profile_type.is_dtol_profile, with_sample=False)
     bytesstring = BytesIO()
-    write_manifest(checklist=checklist, samples=samples, for_dtol=True, file_path=bytesstring)
+    write_manifest(checklist=checklist, samples=samples, for_dtol=profile_type.is_dtol_profile, with_sample=False, file_path=bytesstring)
+            
     response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response['Content-Disposition'] = f"attachment; filename=read_manifest_{profile_id}.xlsx"
     return response

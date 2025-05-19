@@ -13,10 +13,11 @@ from common.schemas.utils.cg_core.cg_schema_generator import CgCoreSchemas
 from datetime import datetime, timedelta
 from django_tools.middlewares import ThreadLocal
 
+
 lg =  Logger()
 
 class Submission(DAComponent):
-    def __init__(self, profile_id=None):
+    def __init__(self, profile_id=None, subcomponent=None):
         super(Submission, self).__init__(profile_id, "submission")
 
     def dtol_sample_processed(self, sub_id, submission_id):
@@ -142,6 +143,23 @@ class Submission(DAComponent):
                 self.get_collection_handle().update_one({"_id": ObjectId(s["_id"])}, {
                     "$set": {"dtol_status": "sending"}})
         return out
+
+    def get_pending_samples(self, repositiory="ena"):
+        current_time = helpers.get_datetime()
+        sub = self.get_collection_handle().find(
+            {"repository": repositiory,
+                "sample_status": {"$in": ["pending"]}},
+            {"samples": 1, "sample_status": 1, "profile_id": 1,
+             "date_modified": 1}).limit(1)
+        sub = cursor_to_list(sub)
+        out = list()
+
+        for s in sub:
+            out.append(s)
+            self.update_submission_modified_timestamp(s["_id"])
+            self.get_collection_handle().update_one({"_id": ObjectId(s["_id"])}, {
+                "$set": {"sample_status": "sending", "date_modified": current_time}})
+        return out        
 
     def get_records_by_field(self, field, value):
         sub = self.get_collection_handle().find({
@@ -1063,26 +1081,26 @@ class Submission(DAComponent):
         self.get_collection_handle().update_many(
             {"type": {"$in": TOL_PROFILE_TYPES}, "dtol_status": "sending", "date_modified": {"$lt": helpers.get_datetime() - timedelta(seconds=refresh_threshold)}},{"$set": update_data})
         
-    
-    def make_singlecell_submission_downloading(self, profile_id, checklist_id, study_id, repository="zenodo"):
+                
+    def make_submission_downloading(self, profile_id, component, component_id, repository="zenodo"):
         sub_handle = self.get_collection_handle()
         submission = sub_handle.find_one(
-            {"profile_id": profile_id, "repository":"zenodo"}, {"status": 1})
+            {"profile_id": profile_id, "repository":"zenodo"}, {f"{component}_status": 1})
         dt = helpers.get_datetime()
         user = ThreadLocal.get_current_user() 
 
         if not submission:
-            submission = {"profile_id": profile_id, "deleted": helpers.get_not_deleted_flag(), "repository": repository, "status":"downloading", "created_by": user.id, "date_created": dt, "updated_by": user.id, "date_modified": dt}
+            submission = {"profile_id": profile_id, "deleted": helpers.get_not_deleted_flag(), "repository": repository, f"{component}_status":"downloading", "created_by": user.id, "date_created": dt, "updated_by": user.id, "date_modified": dt}
             #create a new submission
             result = Submission().get_collection_handle().insert_one(submission)
             submission["_id"] = result.inserted_id
 
-        if submission.get("status", str()) in ["sending"]:
+        if submission.get(f"{component}_status", str()) in ["sending"]:
             return dict(status='error', message="Submission is in process, please try again later!")
 
         sub_handle.update_one({"_id": submission["_id"]},
-                              {"$set": {"status": "downloading", "date_modified":dt, "updated_by": user.id},
-                               "$addToSet": {"studies": study_id}})
+                              {"$set": {f"{component}_status": "downloading", "date_modified":dt, "updated_by": user.id},
+                               "$addToSet": {component: component_id}})
             
         return dict(status='success', message="Submission has been scheduled!")
 
@@ -1092,19 +1110,20 @@ class Submission(DAComponent):
             {"studies": 1, "profile_id": 1, "date_modified": 1})
         return cursor_to_list(subs)
 
-    def remove_study_from_singlecell_submission(self, sub_id, study_id=str()):
+    def remove_component_from_submission(self, sub_id, component="study", component_ids=[]):
             sub_handle = self.get_collection_handle()
-            sub = sub_handle.find_one({"_id": ObjectId(sub_id)}, {"studies": 1})
+            sub = sub_handle.find_one({"_id": ObjectId(sub_id)}, {component: 1})
             if not sub:
                 return dict(status='error', message="System Error! Please contact the administrator.")
             
             update_data = {}
             update_data["$set"] = {}
 
-            if sub["studies"] == [study_id]:
-                update_data["$set"] = {"status": "complete", "studies": []}
-            elif study_id in sub["studies"]:
-                update_data["$pull"] = {"studies": study_id}
+            sub[component] = list(set(sub[component]) - set(component_ids))
+            if len(sub[component]) == 0:
+                update_data["$set"] = {f"{component}_status": "complete", component: []}
+            else:
+                update_data["$pull"] = {component: {"$each": component_ids}}
                 
             if update_data.get("$set", None) or update_data.get("$pull", None):
                 update_data["$set"]["date_modified"] = helpers.get_datetime()
@@ -1116,24 +1135,24 @@ class Submission(DAComponent):
                                                  {"$set": {"status": "pending"}})
         
  
-    def add_zendodo_submission_accession(self, sub_id, accessions=[]):
+    def add_component_submission_accession(self, sub_id, accessions=[], component="study"):
         self.get_collection_handle().update_one({"_id": ObjectId(sub_id)},
-                                                  {"$addToSet": {"accessions.study": {"$each": accessions}}})
+                                                  {"$addToSet": {f"accessions.{component}": {"$each": accessions}}})
 
-    def get_pending_submission(self, repository="zenodo"):
+    def get_pending_submission(self, repository="zenodo", component="study"):
         REFRESH_THRESHOLD = 600  # time in seconds to retry stuck submission
         # called by celery to get samples the supeprvisor has set to be sent to Zenodo
         # those not yet sent should be in pending state. Occasionally there will be
         # stuck submissions in sending state, so get both types
         subs = self.get_collection_handle().find(
-            {"status": {"$in": ["sending", "pending"]}, "repository": repository},
-            {"status": 1, "profile_id": 1, "date_modified": 1, "studies": 1, "accessions":1})
+            {f"{component}_status": {"$in": ["sending", "pending"]}, "repository": repository},
+            {f"{component}_status": 1, "profile_id": 1, "date_modified": 1, component: 1, "accessions":1})
         sub = cursor_to_list(subs)
         out = list()
         current_time = helpers.get_datetime()
         for s in sub:
             # calculate whether a submission is an old one
-            if s.get("status", "") == "sending":
+            if s.get(f"{component}_status", "") == "sending":
                 recorded_time = s.get("date_modified", current_time)
                 time_difference = current_time - recorded_time
                 if time_difference.total_seconds() > (REFRESH_THRESHOLD):
@@ -1142,10 +1161,10 @@ class Submission(DAComponent):
                     self.update_submission_modified_timestamp(s["_id"])
                     lg.error("ADDING STALLED SUBMISSION " + str(s["_id"]) + "BACK INTO QUEUE - copo_da")
                     # no need to change status
-            elif s.get("status", "") == "pending":
+            elif s.get(f"{component}_status", "") == "pending":
                 out.append(s)
                 # self.update_submission_modified_timestamp(s["_id"])
                 self.get_collection_handle().update_one({"_id": ObjectId(s["_id"])},
-                                                        {"$set": {"status": "sending",
+                                                        {"$set": {f"{component}_status": "sending",
                                                                   "date_modified": current_time}})
         return out

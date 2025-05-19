@@ -672,29 +672,6 @@ class APIValidationReport(DAComponent):
                                                 {"$set": {"status": "failed", "content": msg}})
 
 
-
-
-
-
-
-
-
-'''
-
-class TaggedSequenceChecklist(DAComponent):
-    def __init__(self, profile_id=None):
-        super(TaggedSequenceChecklist, self).__init__(
-            profile_id, "taggedSequenceChecklist")
-
-    def get_checklist(self, checklist_id):
-        return self.execute_query({"primary_id": checklist_id})
-
-    def get_checklists(self):
-        return self.get_all_records_columns(projection={"primary_id": 1, "name": 1, "description": 1})
-'''
-
-
-
 class CopoGroup(DAComponent):
     def __init__(self):
         super(CopoGroup, self).__init__(None, "group", subcomponent=None)
@@ -1032,24 +1009,46 @@ class EnaChecklist(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
         super(EnaChecklist, self).__init__(profile_id=profile_id, component="enaChecklist", subcomponent=subcomponent)
 
-    def get_checklist(self, checklist_id):
+    def get_checklist(self, checklist_id, with_read=True, for_dtol=False, with_sample=True):
         checklists = self.execute_query({"primary_id": checklist_id})
         if checklists:
-            if checklist_id == 'read':
-                fields = checklists[0].get("fields", {})
-                fields = {k: v for k, v in fields.items()
-                          if v.get("for_dtol", True)}
-                checklist = checklists[0]
-                checklist["fields"] = fields
-                return checklist
+            checklist = checklists[0]
+            if checklist_id != 'read' and with_read:
+                checklists = self.execute_query({"primary_id": "read"})
+                if checklists:
+                    read_checklist = checklists[0]
+                    fields = read_checklist.get("fields", {})
+                    fields.update(checklist["fields"])
+                    checklist["fields"] = fields
+            
+            df = pd.DataFrame.from_dict(checklist["fields"], orient='index')
+            
+            if "read_field" in df.columns:
+                df["read_field"] = df["read_field"].fillna(False)
 
-            return checklists[0]
+            if for_dtol:
+                df["for_dtol"] = df["for_dtol"].fillna(True)
+                df = df.loc[df["for_dtol"] == True]
+            else:
+                if "for_dtol" in df.columns:
+                    df["for_dtol"] = df["for_dtol"].fillna(False)
+                    df = df.loc[df["for_dtol"] == False]
+
+            if with_sample and with_read:
+                df = df.loc[(df["shown_when_no_sample"] == False) | (df["shown_when_no_sample"].isnull())]
+            #df.set_index("name", drop=False, inplace=True)
+            checklist["fields"] = df.to_dict('index')
+            return checklist
 
     def get_barcoding_checklists_no_fields(self):
         return self.get_all_records_columns(filter_by={"primary_id": {"$in": settings.BARCODING_CHECKLIST}},  projection={"primary_id": 1, "name": 1, "description": 1})
 
     def get_sample_checklists_no_fields(self):
         return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^(ERC|read)"}},  projection={"primary_id": 1, "name": 1, "description": 1})
+
+    def get_general_sample_checklists_no_fields(self):
+        return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^(ERC|COPO)"}},  projection={"primary_id": 1, "name": 1, "description": 1})
+
 
 '''
 class EnaObject(DAComponent):

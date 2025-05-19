@@ -92,7 +92,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
  
         studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"schema_name": schema_name, "checklist_id": checklist_id}, projection={"study_id": 1, "components.study": 1})
         if not studies:
-            return dict(dataSet=data_set, columns=columns, components=list(columns.keys()))
+            return dict(dataSet=data_set, columns=columns, submission_repository=submission_repository, components=list(columns.keys()))
         
         if not study_id:
             study_id = studies[0]["study_id"]
@@ -377,66 +377,10 @@ def submit_singlecell_zenodo(profile_id, target_ids, target_id, checklist_id, st
     if studies[0].get(f"status_{repository}", "") == "processing":
         return dict(status='error', message="Submission is in progress, please wait until it is completed!")
 
-    result =  Submission().make_singlecell_submission_downloading(profile_id, checklist_id, study_id, repository=repository)
+    result =  Submission().make_submission_downloading(profile_id=profile_id, component="study", component_id=study_id, repository=repository)
     if result.get("status","") == "error":
         return result  
     else:
         #update the status of the singlecell record
         Singlecell().update_component_status(singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository="zenodo", status_column_value={"status":"processing"})
         return dict(status='success', message="Submission has been scheduled.")
-
-    """
-    sub = Submission().get_collection_handle().find_one(
-        {"profile_id": profile_id, "deleted": get_not_deleted_flag(), "repository": "zenodo"})
-
-    if not sub:
-        sub = {"profile_id": profile_id, "deleted": get_not_deleted_flag(), "repository": "zenodo", "status":"downloading", "created_by": user.id, "date_created": dt, "updated_by": user.id, "date_modified": dt}
-        #create a new submission
-        result = Submission().get_collection_handle().insert_one(sub)
-        
-    status = sub.get("status", "completed")
-    if status == "processing":
-        return dict(status='error', message="Submission is in progress, please wait until it is completed!")
-    
-    elif status == "completed":
-        Submission().get_collection_handle().update_one({"_id": sub["_id"]}, {"$set": {"status": "downloading", "updated_by": user.id, "date_modified": dt}})
-
-    elif status == "downloading":
-        return dict(status='error', message="Submission is downloading, please wait until it is completed!")
-
-    Singlecell().get_collection_handle().update_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id": study_id}, {"$set": {"status.zenodo": "pending", "updated_by": user.id, "date_modified": dt}})
-    return dict(status='success', message="Submission has been scheduled.")        
-    """
-    """
-    singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "study_id": study_id})
-    if not singlecell:
-        return dict(status='error', message="No record found.") 
-
-    #generate the manifest for submission
-    schemas = SinglecellSchemas().get_collection_handle().find_one({"name":singlecell["schema_name"]})
-    bytesstring = BytesIO()
-    SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=checklist_id, singlecell=singlecell, file_path=bytesstring)
-    #bytesstring.getvalue()
-
-    #file all files from the manifest
-    filelist = []
-    for component, df in singlecell.items():
-        schema = schemas["schemas"][component]        
-        schema_df = pd.DataFrame.from_records(schema)
-        schema_file_df = schema_df.loc[schema_df['term_type'] == 'file', "term_name"]
-        if not schema_file_df.empty:
-            file_df = df[schema_file_df.tolist()]
-            file_df = file_df.dropna()
-            fileslist = file_df.values.tolist()
-            for files in fileslist:
-                filelist.extend(list(filter(None, files)))
-
-
-
-
-    zenodo_record_id = sub.get("zenodo_record_id", "")
-    if not zenodo_record_id:
-
-
-    return dict(status='error', message="Not Implement.")        
-    """

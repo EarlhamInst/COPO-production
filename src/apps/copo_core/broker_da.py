@@ -6,6 +6,7 @@ from bson import ObjectId
 from django.contrib.auth.models import User
 import common.lookup.lookup as lkup
 from src.apps.copo_read_submission.utils import ena_read
+from src.apps.copo_sample.utils import copo_sample
 from src.apps.copo_assembly_submission.utils import EnaAssembly
 from src.apps.copo_seq_annotation_submission.utils import EnaAnnotation
 from src.apps.copo_file.utils import CopoFiles as copo_file
@@ -17,8 +18,6 @@ from common.dal.submission_da import Submission
 from common.schemas.utils import data_utils
 from common.utils import helpers
 from src.apps.copo_barcoding_submission.utils.EnaTaggedSequence import EnaTaggedSequence
-from src.apps.copo_read_submission.utils.ena_read_submission import EnaReads
-from .models import ProfileType
 from src.apps.copo_single_cell_submission.utils import copo_single_cell
 
 class BrokerDA:
@@ -451,6 +450,37 @@ class BrokerDA:
             self.context["component"] = "read"
         return self.context
 
+    def do_submit_sample(self):
+        target_id = self.param_dict.get("target_id", str())
+        target_ids  = self.param_dict.get("target_ids", [])
+        sample_checklist_id = self.request_dict.get("sample_checklist_id", str())
+
+        result = copo_sample.submit_sample(profile_id=self.profile_id, target_ids=target_ids, target_id=target_id, checklist_id=sample_checklist_id)
+        report_metadata = dict()
+        report_metadata["status"] = result.get("status", "success")
+        report_metadata["message"] = result.get("message", "success")
+        self.context["action_feedback"] = report_metadata       
+        if result.get("status","success") == "success":
+            self.context["table_data"] = copo_sample.generate_table_records(profile_id=self.profile_id, checklist_id=sample_checklist_id)
+            self.context["component"] = "read"
+        return self.context
+
+    def do_delete_sample(self):
+        target_id = self.param_dict.get("target_id", str())
+        target_ids  = self.param_dict.get("target_ids", [])
+        sample_checklist_id  = self.request_dict.get("sample_checklist_id", [])
+
+        result = copo_sample.delete_sample_records(profile_id=self.profile_id, target_ids=target_ids,
+                                                        target_id=target_id)
+        report_metadata = dict()
+        report_metadata["status"] = result.get("status", "success")
+        report_metadata["message"] = result.get("message", "success")
+        self.context["action_feedback"] = report_metadata
+        if result.get("status","success") == "success":
+            self.context["table_data"] = copo_sample.generate_table_records(profile_id=self.profile_id, checklist_id=sample_checklist_id)
+            self.context["component"] = "read"
+        return self.context
+
     def do_delete_read(self):
         """
         function handles the delete of a record for those components
@@ -573,6 +603,7 @@ class BrokerVisuals:
             seqannotation=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object, additional_columns=EnaAnnotation.generate_additional_columns(self.profile_id)) ),
             assembly=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object, additional_columns=EnaAssembly.generate_additional_columns(self.profile_id) ) ),
             read = (ena_read.generate_read_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("sample_checklist_id", str()))),
+            general_sample = (copo_sample.generate_table_records, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("sample_checklist_id", str()))),
             files = (copo_file.generate_files_record, dict(profile_id=self.profile_id)),
             taggedseq = (EnaTaggedSequence().generate_taggedseq_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("tagged_seq_checklist_id", str()))),
             singlecell = (copo_single_cell.generate_singlecell_record, dict(profile_id=self.profile_id, study_id=self.request_dict.get("study_id", str()),  checklist_id=self.request_dict.get("singlecell_checklist_id", str()))),

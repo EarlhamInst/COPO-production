@@ -55,7 +55,7 @@ def update_submission_pending():
 
 
 def process_pending_submission():
-    submissions = Submission().get_pending_submission(repository="zenodo")
+    submissions = Submission().get_pending_submission(repository="zenodo", component="study")
     if not submissions:
         return
     
@@ -67,7 +67,7 @@ def process_pending_submission():
         for item in study_accessions:
             accession_map[item["study_id"]] = item 
 
-        for study_id in sub["studies"]:
+        for study_id in sub["study"]:
             notify_singlecell_status(data={"profile_id": sub["profile_id"]},
                 msg=f"Submitting {study_id} to zenodo...",
                 action="info",
@@ -179,11 +179,11 @@ def process_pending_submission():
                 continue
 
             Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository="zenodo", status_column_value={"status": "accepted", "state" : deposition["state"],  "accession": str(deposition["id"]), "doi" : deposition.get("doi",""), "error": "", "embargo_date":deposition.get("metadata",{}).get("embargo_date","")})  
-            Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+            Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
 
             notify_singlecell_status(data={"profile_id": sub["profile_id"]},
                     msg=f"{study_id} has been submitted to Zenodo.",
                     action="info",
                     html_id="singlecell_submission_info")
 
-        Submission().add_zendodo_submission_accession(sub_id=str(sub["_id"]), accessions=new_accessions)
+        Submission().add_component_submission_accession(sub_id=str(sub["_id"]), component="study", accessions=new_accessions)
