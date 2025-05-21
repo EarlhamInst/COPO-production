@@ -70,11 +70,11 @@ dtol_api_patterns = [
         name='get_sample_status_for_manifest',
     ),
     re_path(
-        r'^manifest/(?P<manifest_id>[A-Z0-9a-f-]+)',
+        r'^manifest/(?P<manifest_id>[A-Z0-9a-f-]+)$',
         s.get_samples_in_manifest,
         name='get_for_manifest',
     ),
-    re_path(r'^manifest/', s.get_manifests, name='get_manifests'),
+    re_path(r'^manifest$', s.get_manifests, name='get_manifests'),
     re_path(r'^sample/get/(?P<id>[A-Za-z0-9]+)', s.get, name='sample/get'),
     re_path(
         r'^sample/biosampleAccession/(?P<biosampleAccessions>[A-Z0-9, ]+)',

@@ -14,7 +14,13 @@ import common.schemas.utils.data_utils as d_utils
 from common.dal.profile_da import Profile
 from common.lookup.lookup import API_RETURN_TEMPLATES
 from common.schemas.utils.data_utils import get_export_fields
-from .enums import AssociatedProjectEnum, ProjectEnum, StandardEnum, ReturnTypeEnum
+from .enums import (
+    AssociatedProjectEnum,
+    ProjectEnum,
+    StandardEnum,
+    ReturnTypeEnum,
+    ReturnTypeWithRocrateEnum,
+)
 from .views.mapping import get_mapped_result
 
 
@@ -348,7 +354,10 @@ def generate_rocrate_response(request, template):
         return HttpResponse(
             content=json.dumps(rocrate_objs), content_type='application/json'
         )
-    return HttpResponse(content='Not Implemented')
+    return HttpResponse(
+        status=status.HTTP_400_BAD_REQUEST,
+        content="Only one 'manifest_id' can be processed at a time.",
+    )
 
 
 def generate_csv_response(standard, template):
@@ -392,7 +401,11 @@ def generate_wrapper_response(error=None, num_found=None, template=None):
 
 # Main method for API return
 def finish_request(
-    template=None, error=None, num_found=None, return_http_response=True
+    template=None,
+    error=None,
+    num_found=None,
+    return_http_response=True,
+    return_rocrate_output=False,
 ):
     '''
     Method to tidy up data before returning API caller
@@ -405,7 +418,9 @@ def finish_request(
     standard = request.GET.get('standard', 'tol').lower()
 
     # Validate optional return_type
-    return_type_issues = validate_return_type(return_type)
+    return_type_issues = validate_return_type(
+        return_type, return_rocrate_output=return_rocrate_output
+    )
     if return_type_issues:
         return return_type_issues
 
@@ -603,12 +618,12 @@ def validate_standard(standard, optional=True):
     if standard not in valid_standards:
         return HttpResponse(
             status=status.HTTP_400_BAD_REQUEST,
-            content=f"Invalid value for 'standard'. Accepted values are: {', '.join(d_utils.join_with_and(valid_standards, conjunction='and'))}",
+            content=f"Invalid value for 'standard'. Accepted values are: {d_utils.join_with_and(valid_standards, conjunction='and')}",
         )
     return None  # No issues, validation passed
 
 
-def validate_return_type(return_type, optional=True):
+def validate_return_type(return_type, optional=True, return_rocrate_output=False):
     # If the return_type is blank and optional, no validation is needed
     if not return_type:
         if optional:
@@ -619,10 +634,51 @@ def validate_return_type(return_type, optional=True):
                 content=f"'return_type' is required but not provided.",
             )
 
-    valid_return_types = ReturnTypeEnum.values()
+    valid_return_types = (
+        ReturnTypeWithRocrateEnum.values()
+        if return_rocrate_output
+        else ReturnTypeEnum.values()
+    )
     if return_type not in valid_return_types:
         return HttpResponse(
             status=status.HTTP_400_BAD_REQUEST,
-            content=f"Invalid value for 'return_type'. Accepted values are: {', '.join(d_utils.join_with_and(valid_return_types, conjunction='and'))}",
+            content=f"Invalid value for 'return_type'. Accepted values are: {d_utils.join_with_and(valid_return_types, conjunction='and')}",
         )
+    return None  # No issues, validation passed
+
+
+def validate_manifest_id(manifest_id, optional=False):
+    # If the manifest_id is blank and optional, no validation is needed
+    if not manifest_id:
+        if optional:
+            return None  # No error for blank value if optional
+        else:
+            return HttpResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                content=f"'manifest_id' is required but not provided.",
+            )
+
+    if not isinstance(manifest_id, str) or len(manifest_id) != 36:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"Invalid value for 'manifest_id'. Must be a string UUID of length 36 (including hyphens).",
+        )
+    
+    if manifest_id.startswith('MANIFEST-ID-VIRTUAL-'):
+        return None  # No issues, validation passed, virtual manifest ID is valid
+    
+    try:
+        val = uuid.UUID(manifest_id, version=4)
+    except ValueError:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"Invalid value for 'manifest_id'. Must be a valid UUID.",
+        )
+
+    if str(val) != manifest_id:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"Invalid value for 'manifest_id'. Malformed UUID format.",
+        )
+
     return None  # No issues, validation passed

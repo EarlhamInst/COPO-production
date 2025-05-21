@@ -39,7 +39,12 @@ from ..enums import (
     SampleFieldsEnum,
     SequencingCentreEnum,
 )
-from ..utils import validate_date_from_api, validate_project, validate_return_type
+from ..utils import (
+    validate_date_from_api,
+    validate_manifest_id,
+    validate_project,
+    validate_return_type,
+)
 
 
 def get(request, id):
@@ -384,12 +389,22 @@ def get_all_samples_between_dates(request, d_from, d_to):
 
 def get_samples_in_manifest(request, manifest_id):
     # get all samples tagged with the given manifest_id
+    # Validate required 'manifest_id' field
+    manifest_id_issues = validate_manifest_id(manifest_id)
+    if manifest_id_issues:
+        return manifest_id_issues
+
     sample_list = Sample().get_by_manifest_id(manifest_id)
     out = filter_for_API(sample_list, add_all_fields=True)
-    return finish_request(out)
+    return finish_request(out, return_rocrate_output=True)
 
 
 def get_sample_status_for_manifest(request, manifest_id):
+    # Validate required 'manifest_id' field
+    manifest_id_issues = validate_manifest_id(manifest_id)
+    if manifest_id_issues:
+        return manifest_id_issues
+
     sample_list = Sample().get_status_by_manifest_id(manifest_id)
     out = filter_for_API(sample_list, add_all_fields=False)
     return finish_request(out)

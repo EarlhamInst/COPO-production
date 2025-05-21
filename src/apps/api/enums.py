@@ -10,6 +10,12 @@ from src.apps.copo_core.models import (
 )
 
 
+class BaseStrEnum(str, Enum):
+    @classmethod
+    def values(cls):
+        return [e.value for e in cls]
+
+
 class AssociatedProjectEnum(str, Enum):
     # ERGA associated profile types excluding SANGER
     @classmethod
@@ -53,13 +59,15 @@ class ProjectVersionsEnum(str, Enum):
         return manifest_versions
 
 
-class ReturnTypeEnum(str, Enum):
+class ReturnTypeWithRocrateEnum(BaseStrEnum):
     JSON = 'json'
     CSV = 'csv'
+    ROCRATE = 'rocrate'
 
-    @classmethod
-    def values(cls):
-        return [e.value for e in cls]
+
+class ReturnTypeEnum(BaseStrEnum):
+    JSON = 'json'
+    CSV = 'csv'
 
 
 class SequencingCentreEnum(str, Enum):
@@ -121,7 +129,7 @@ class StandardEnum(str, Enum):
         return standards
 
 
-class UpdateAuditFieldEnum(str, Enum):
+class UpdateAuditFieldEnum(BaseStrEnum):
     RACK_OR_PLATE_ID = "RACK_OR_PLATE_ID"
     SPECIMEN_ID = "SPECIMEN_ID"
     TUBE_OR_WELL_ID = "TUBE_OR_WELL_ID"
@@ -129,15 +137,7 @@ class UpdateAuditFieldEnum(str, Enum):
     PUBLIC_NAME = "public_name"
     SRA_ACCESSION = "sraAccession"
 
-    @classmethod
-    def values(cls):
-        return [e.value for e in cls]
 
-
-class UpdateTypeEnum(str, Enum):
+class UpdateTypeEnum(BaseStrEnum):
     SYSTEM = 'system'
     USER = 'user'
-
-    @classmethod
-    def values(cls):
-        return [e.value for e in cls]
