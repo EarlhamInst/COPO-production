@@ -83,7 +83,7 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
         return {"error": msg}
 
 
-    sub = Submission().get_collection_handle().find_one({"profile_id": profile_id, "deleted": {"$ne": get_deleted_flag()}})
+    sub = Submission().get_collection_handle().find_one({"profile_id": profile_id, "repository":"ena", "deleted": {"$ne": get_deleted_flag()}})
  
     if not sub:
         sub = dict()
@@ -467,7 +467,7 @@ def update_seq_annotation_submission_pending():
 def submit_seq_annotation(profile_id, target_ids,  target_id):
     sub_id = None
     if profile_id:
-        submissions = Submission().get_records_by_field("profile_id", profile_id)
+        submissions = Submission().get_all_records_columns(filter_by={"profile_id": profile_id, "repository": "ena", "deleted": {"$ne": get_deleted_flag()}})
         if submissions and len(submissions) > 0:
             sub_id = str(submissions[0]["_id"])
             if target_ids:

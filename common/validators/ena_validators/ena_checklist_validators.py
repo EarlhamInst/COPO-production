@@ -114,7 +114,7 @@ class IncorrectValueValidator(Validator):
                                     self.flag = False
 
                             else:
-                                for key, field in biosampleAccession_ext_field_map:
+                                for key, field in biosampleAccession_ext_field_map.items():
                                     value = self.data.iloc[i-2].get(key,"")
                                     #specimen_id = self.data.iloc[i-2].get("SPECIMEN_ID","")
                                     #taxon_id = self.data.iloc[i-2].get("TAXON_ID","")

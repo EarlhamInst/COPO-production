@@ -36,7 +36,7 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
     sample_accession = []
     run_accession = []
     experiment_accession = []
-    existing_sub = Submission().get_records_by_field("profile_id", profile_id)
+    existing_sub = Submission().get_all_records_columns(filter_by={"profile_id": profile_id, "repository": "ena"} )
     existing_accessions = ""
     if existing_sub:
         existing_accessions = existing_sub[0].get("accessions", "")

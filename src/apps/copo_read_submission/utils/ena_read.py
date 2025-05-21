@@ -58,7 +58,7 @@ def submit_read(profile_id,  target_ids=list(), target_id=None, checklist_id=Non
     paired_file_ids = [id.split("_")[1] for id in target_ids]
 
     sub = Submission().get_collection_handle().find_one(
-        {"profile_id": profile_id, "deleted": get_not_deleted_flag()})
+        {"profile_id": profile_id, "repository":"ena", "deleted": get_not_deleted_flag()})
 
     if not sub:
         return dict(status='error', message="Please contact System Support Error 10211!")
@@ -172,7 +172,7 @@ def delete_ena_records(profile_id, target_ids=list(), target_id=None):
 
     if delete_samples:
         Sample(profile_id=profile_id).get_collection_handle().delete_many({"_id": {"$in": delete_samples}})
-        Submission().get_collection_handle().update_one({"profile_id": profile_id}, {"$pull": {"accessions.sample": {"sample_id": {"$in": [str(id) for id in delete_samples]}}}})
+        Submission().get_collection_handle().update_one({"profile_id": profile_id, "repository":"ena"}, {"$pull": {"accessions.sample": {"sample_id": {"$in": [str(id) for id in delete_samples]}}}})
 
     return dict(status='success', message="Read record/s have been deleted!")
 
@@ -197,7 +197,7 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
     fields = checklist["fields"]
 
     label = [ x for x in fields.keys() if fields[x]["type"] != "TEXT_AREA_FIELD"]
-    default_label = ["ena_file_upload_status", "study_accession", "bioSampleAccession", "sraAccession", "status",  "run_accession", "experiment_accession", "ena_file_processing_status"]
+    default_label = ["ena_file_upload_status", "study_accession", "biosampleAccession", "sraAccession", "status",  "run_accession", "experiment_accession", "ena_file_processing_status"]
 
     read_label =  [ x for x in fields.keys() if fields[x]["type"] != "TEXT_AREA_FIELD" and fields[x].get("read_field", False) ] 
 

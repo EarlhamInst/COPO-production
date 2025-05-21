@@ -68,7 +68,7 @@ class Submission(DAComponent):
 
     def get_async_submission(self):
         sub_handle = self.get_collection_handle()
-        sub = sub_handle.find({"submission": {"$exists": True, "$ne": []}},
+        sub = sub_handle.find({"submission": {"$exists": True, "$ne": []}, "repository": "ena", "deleted": helpers.get_not_deleted_flag()  },
                               {"_id": 1, "submission": 1, "profile_id": 1, "dtol_specimen": 1})
         return cursor_to_list(sub)
 
@@ -85,7 +85,7 @@ class Submission(DAComponent):
         # those not yet sent should be in pending state. Occasionally there will be
         # stuck submissions in sending state, so get both types
         sub = self.get_collection_handle().find(
-            {"type": {"$in": TOL_PROFILE_TYPES}, "dtol_status": {
+            {"type": {"$in": TOL_PROFILE_TYPES}, "repository":"ena", "dtol_status": {
                 "$in": ["bioimage_sending", "bioimage_pending"]}},
             {"dtol_specimen": 1, "dtol_status": 1, "profile_id": 1, "dtol_samples":1,
              "date_modified": 1, "type": 1})
@@ -119,7 +119,7 @@ class Submission(DAComponent):
         current_time = helpers.get_datetime()
 
         sub = self.get_collection_handle().find(
-            {"type": {"$in": TOL_PROFILE_TYPES},
+            {"type": {"$in": TOL_PROFILE_TYPES}, "repository": "ena",
                 "dtol_status": {"$in": ["pending"]}},
             {"dtol_samples": 1, "dtol_status": 1, "profile_id": 1,
              "date_modified": 1, "type": 1, "dtol_specimen": 1}).limit(1)
@@ -169,7 +169,7 @@ class Submission(DAComponent):
 
     def get_awaiting_tolids(self):
         sub = self.get_collection_handle().find(
-            {"type": {"$in": TOL_PROFILE_TYPES},
+            {"type": {"$in": TOL_PROFILE_TYPES}, "repository": "ena",
                 "dtol_status": {"$in": ["awaiting_tolids"]}},
             {"dtol_samples": 1, "dtol_status": 1, "profile_id": 1,
              "date_modified": 1})
@@ -636,7 +636,7 @@ class Submission(DAComponent):
 
     def get_dtol_submission_for_profile(self, profile_id):
         return self.get_collection_handle().find_one({
-            "profile_id": profile_id, "type": {"$in": TOL_PROFILE_TYPES}
+            "profile_id": profile_id, "type": {"$in": TOL_PROFILE_TYPES}, "repository": "ena",
         })
 
     def add_accession(self, biosample_accession, sra_accession, submission_accession, oid, collection_id):
@@ -752,7 +752,7 @@ class Submission(DAComponent):
         # those not yet sent should be in pending state. Occasionally there will be
         # stuck submissions in sending state, so get both types
         subs = self.get_collection_handle().find(
-            {"seq_annotation_status": {"$in": ["sending", "pending"]}},
+            {"repository":"ena","seq_annotation_status": {"$in": ["sending", "pending"]}},
             {"seq_annotation_status": 1, "profile_id": 1, "date_modified": 1, "seq_annotations": 1})
         sub = cursor_to_list(subs)
         out = list()
@@ -783,7 +783,7 @@ class Submission(DAComponent):
 
     def get_seq_annotation_file_uploading(self):
         subs = self.get_collection_handle().find(
-            {"seq_annotation_status": "uploading"},
+            {"repository":"ena","seq_annotation_status": "uploading"},
             {"seq_annotations": 1, "profile_id": 1, "date_modified": 1})
         return cursor_to_list(subs)
 
@@ -798,7 +798,7 @@ class Submission(DAComponent):
 
     def get_async_seq_annotation_submission(self):
         sub_handle = self.get_collection_handle()
-        subs = sub_handle.find({"seq_annotation_submission": {"$exists": True, "$ne": []}},
+        subs = sub_handle.find({"repository":"ena","seq_annotation_submission": {"$exists": True, "$ne": []}},
                                {"_id": 1, "seq_annotation_submission": 1, "profile_id": 1})
         return cursor_to_list(subs)
 
@@ -1041,7 +1041,7 @@ class Submission(DAComponent):
         # those not yet sent should be in pending state. Occasionally there will be
         # stuck submissions in sending state, so get both types
         subs = self.get_collection_handle().find(
-            {"assembly_status": {"$in": ["sending", "pending"]}},
+            {"repository":"ena", "assembly_status": {"$in": ["sending", "pending"]}},
             {"assembly_status": 1, "profile_id": 1, "date_modified": 1, "assemblies": 1})
         sub = cursor_to_list(subs)
         out = list()
@@ -1067,7 +1067,7 @@ class Submission(DAComponent):
 
     def get_assembly_file_uploading(self):
         subs = self.get_collection_handle().find(
-            {"assembly_status": "uploading"},
+            {"repository":"ena", "assembly_status": "uploading"},
             {"assemblies": 1, "profile_id": 1, "date_modified": 1})
         return cursor_to_list(subs)
 
@@ -1077,9 +1077,9 @@ class Submission(DAComponent):
 
 
     def process_stale_dtol_submissions(self, refresh_threshold=3600):
-        update_data = {"dtol_status": "pending", "date_modified": helpers.get_datetime()}
+        update_data = {"dtol_status": "pending", "repository":"ena", "date_modified": helpers.get_datetime()}
         self.get_collection_handle().update_many(
-            {"type": {"$in": TOL_PROFILE_TYPES}, "dtol_status": "sending", "date_modified": {"$lt": helpers.get_datetime() - timedelta(seconds=refresh_threshold)}},{"$set": update_data})
+            {"type": {"$in": TOL_PROFILE_TYPES}, "repository":"ena", "dtol_status": "sending", "date_modified": {"$lt": helpers.get_datetime() - timedelta(seconds=refresh_threshold)}},{"$set": update_data})
         
                 
     def make_submission_downloading(self, profile_id, component, component_id, repository="zenodo"):

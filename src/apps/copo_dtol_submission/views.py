@@ -151,7 +151,7 @@ def add_sample_to_dtol_submission(request):
  
         if not sub:
             sub = Submission(profile_id).save_record(
-                                dict(), **{"type": type_sub.lower()})          
+                                dict(), **{"type": type_sub.lower(), "repository": "ena"})          
             sub["dtol_status"] = "pending"
         elif sub["dtol_status"] == "complete":
             sub["dtol_status"] = "pending"

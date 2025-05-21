@@ -72,6 +72,10 @@ def copo_profile_index(request):
                     "from": 'SubmissionCollection',
                     "localField": "submission_profile_id",
                     "foreignField": "profile_id",
+                    "pipeline": [
+                        { "$match" : 
+                         {"$expr": { "$eq": [ "ena", "$repository" ] }}
+                        } ],
                     "as": "submission"
                 }
              },

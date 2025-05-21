@@ -44,7 +44,7 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
     tx["ecs_location"] = file["ecs_location"]
     tx["file_id"] = str(file["_id"])
     tx["profile_id"] = file["profile_id"]
-    tx["file_type"] = file["file_type"]
+    tx["file_type"] = file["type"]
     # tx["status"] = "pending"
     tx["submission_id"] = submission_id
     tx["deleted"] = get_not_deleted_flag()
@@ -68,7 +68,8 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
             tx["transfer_status"] = 1
             tx["created"] = get_datetime()
 
-        tx["remote_path"] = remote_location
+        if not no_remote_location and remote_location:
+            tx["remote_path"] = remote_location
         tx["last_checked"] = get_datetime()
         tx["status"] = "pending"
         EnaFileTransfer().get_collection_handle().update_one({"local_path": file["file_location"]}, {"$set": tx},

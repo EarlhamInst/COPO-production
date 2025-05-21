@@ -249,7 +249,9 @@ def save_ena_records(request):
         sample["deleted"] = get_not_deleted_flag()           
         sample["updated_by"] = uid
         sample["checklist_id"] = request.session["checklist_id"]
-        sample["taxon_id"] = organism_map.get(s["Organism"], None)
+        
+        if "Organism" in s:
+            sample["taxon_id"] = organism_map.get(s["Organism"], None)
 
             
         for key, value in s.items():

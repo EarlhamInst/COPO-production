@@ -458,8 +458,12 @@ class ReadChecklistHandler:
                                 field["type"] = "TEXT_CHOICE_FIELD"
                                 field["choice"] = field_elm["value_choice"]
                             field["read_field"] = True
+                            #don't want to have "sample" in the read checklist for DTOL profile
+                            if field_elm["name"] == "sample":
+                                field["for_dtol"] = False
                             checklist["fields"][field_elm["name"]] = field
 
+                        """
                         field = {}
                         field['name'] = "Organism"
                         field['description'] = "Scientific Name"
@@ -470,7 +474,7 @@ class ReadChecklistHandler:
                         field["shown_when_no_sample"] = True
                         field["read_field"] = True
                         checklist['fields']["organism"] = field
-
+                        """
                         field = {}
                         field['name'] = "biosampleAccession"
                         field['description'] = "Biosample Accession"

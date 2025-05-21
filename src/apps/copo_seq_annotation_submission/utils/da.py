@@ -38,7 +38,7 @@ class SequenceAnnotation(DAComponent):
         if target_id:
             target_ids.append(target_id)
 
-        submission = Submission().get_collection_handle().find_one({"profile_id": self.profile_id, "seq_annotations": {"$in": target_ids}},{"_id": 1})
+        submission = Submission().get_collection_handle().find_one({"profile_id": self.profile_id, "repository":"ena", "seq_annotations": {"$in": target_ids}},{"_id": 1})
         if submission:
             return dict(status='error', message="One or more sequence annotation record/s have been submitting!")
         
