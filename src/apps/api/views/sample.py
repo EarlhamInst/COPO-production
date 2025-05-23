@@ -36,6 +36,7 @@ from src.apps.copo_dtol_upload.utils.Dtol_Spreadsheet import DtolSpreadsheet
 
 from ..enums import (
     AssociatedProjectEnum,
+    ProjectEnum,
     SampleFieldsEnum,
     SequencingCentreEnum,
 )
@@ -432,11 +433,17 @@ def get_num_dtol_samples(request):
 
 
 def get_project_samples(request, project):
-    projectlist = project.split(',')
-    projectlist = list(map(lambda x: x.strip().lower(), projectlist))
-    # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
-    projectlist[:] = [x for x in projectlist if x]
-    samples = Sample().get_project_samples(projectlist)
+    # Validate required project field
+    valid_projects = ProjectEnum.values()
+    projects = d_utils.convertStringToList(project)
+
+    if not projects or not all(x in valid_projects for x in projects):
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f'Invalid project(s) provided! Accepted values are {d_utils.join_with_and(valid_projects)}.',
+        )
+
+    samples = Sample().get_project_samples(projects)
     out = list()
     if samples:
         out = filter_for_API(samples)

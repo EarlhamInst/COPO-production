@@ -467,7 +467,14 @@ paths:
         - name: project
           in: path
           required: true
-          description: Format - a comma separated list of supported projects. Supported projects - ASG, DTOL, ERGA
+          description: |
+            To query multiple projects, separate them with a comma.
+            
+            Projects:
+            - **ASG** - Aquatic Symbiosis Genomics (ASG)
+            - **DTOL** - Darwin Tree of Life (DTOL)
+            - **DTOLENV** - Darwin Tree of Life Environmental Samples (DTOLENV)
+            - **ERGA** - European Reference Genome Atlas (ERGA)
           schema:
             type: string
             minimum: 1
@@ -663,8 +670,12 @@ paths:
       tags:
         - Sample
       summary: Get sample records by field and value(s)
-      description: >
-        Get full sample information for the samples returned from the given {field} / {values}
+      description: |
+        Get full sample information for the samples returned from the given *{field}* and *{values}*
+
+        **Note**: Some records may match multiple values for the *{field}*, depending on the *{values}* input.
+        This happens because *{values}* are treated as substring matches — so results may include records where your input appears within a longer string.
+        You may need to further filter the results to narrow them down precisely.
       parameters:
         - name: field
           in: path
@@ -1052,12 +1063,12 @@ components:
       description: |
         Get a list of samples in COPO by associated profile type
 
-        - **BGE** refers to Biodiversity Genomics Europe (BGE)
-        - **BIOBLITZ** refers to BioBlitz
-        - **CBP** refers to Catalan Initiative for the Earth BioGenome Project (CBP)
-        - **ERGA_COMMUNITY** refers to European Reference Genome Atlas - Community (ERGA_COMMUNITY)
-        - **ERGA_PILOT** refers to European Reference Genome Atlas - Pilot (ERGA_PILOT)
-        - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
+        - **BGE** - Biodiversity Genomics Europe (BGE)
+        - **BIOBLITZ** - BioBlitz
+        - **CBP** - Catalan Initiative for the Earth BioGenome Project (CBP)
+        - **ERGA_COMMUNITY** - European Reference Genome Atlas - Community (ERGA_COMMUNITY)
+        - **ERGA_PILOT** - European Reference Genome Atlas - Pilot (ERGA_PILOT)
+        - **POP_GENOMICS** - Population Genomics (POP_GENOMICS)
       schema:
         $ref: '#/components/schemas/AssociatedProjects'
 
@@ -1067,12 +1078,13 @@ components:
       description: |
         Get a list of samples in COPO by associated project type
 
-        - **BGE** refers to Biodiversity Genomics Europe (BGE)
-        - **BIOBLITZ** refers to BioBlitz
-        - **CBP** refers to Catalan Initiative for the Earth BioGenome Project (CBP)
-        - **ERGA_COMMUNITY** refers to European Reference Genome Atlas - Community (ERGA_COMMUNITY)
-        - **ERGA_PILOT** refers to European Reference Genome Atlas - Pilot (ERGA_PILOT)
-        - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
+        Associated project types:
+        - **BGE** - Biodiversity Genomics Europe (BGE)
+        - **BIOBLITZ** - BioBlitz
+        - **CBP** - Catalan Initiative for the Earth BioGenome Project (CBP)
+        - **ERGA_COMMUNITY** - European Reference Genome Atlas - Community (ERGA_COMMUNITY)
+        - **ERGA_PILOT** - European Reference Genome Atlas - Pilot (ERGA_PILOT)
+        - **POP_GENOMICS** - Population Genomics (POP_GENOMICS)
       required: true
       schema:
         $ref: '#/components/schemas/AssociatedProjects'
@@ -1083,14 +1095,21 @@ components:
       description: |
         Get a list of samples in COPO by associated project type
 
-        To query multiple project types, CTRL + click on the associated project types
+        To query by multiple associated projects, hold **Ctrl** on Windows/Linux or 
+        **Command** (⌘) (sometimes shown as **Cmd**) on Mac and click the desired 
+        associated project type
 
-        - **BGE** refers to Biodiversity Genomics Europe (BGE)
-        - **BIOBLITZ** refers to BioBlitz
-        - **CBP** refers to Catalan Initiative for the Earth BioGenome Project (CBP)
-        - **ERGA_COMMUNITY** refers to European Reference Genome Atlas - Community (ERGA_COMMUNITY)
-        - **ERGA_PILOT** refers to European Reference Genome Atlas - Pilot (ERGA_PILOT)
-        - **POP_GENOMICS** refers to Population Genomics (POP_GENOMICS)
+        **Note**: A few records might match multiple associated projects even if  
+        have entered just one. This is because the input is treated as a substring match, so 
+        results could include records linked to more than one associated project.
+
+        Associated project types:
+        - **BGE** - Biodiversity Genomics Europe (BGE)
+        - **BIOBLITZ** - BioBlitz
+        - **CBP** - Catalan Initiative for the Earth BioGenome Project (CBP)
+        - **ERGA_COMMUNITY** - European Reference Genome Atlas - Community (ERGA_COMMUNITY)
+        - **ERGA_PILOT** - European Reference Genome Atlas - Pilot (ERGA_PILOT)
+        - **POP_GENOMICS** - Population Genomics (POP_GENOMICS)
       required: true
       schema:
         $ref: '#/components/schemas/AssociatedProjects_multiple'
@@ -1106,10 +1125,10 @@ components:
       name: project
       in: query
       description: |
-        - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
-        - **DTOL** refers to Darwin Tree of Life (DTOL)
-        - **DTOLENV** refers to Darwin Tree of Life Environmental Samples (DTOLENV)
-        - **ERGA** refers to European Reference Genome Atlas (ERGA)
+        - **ASG** - Aquatic Symbiosis Genomics (ASG)
+        - **DTOL** - Darwin Tree of Life (DTOL)
+        - **DTOLENV** - Darwin Tree of Life Environmental Samples (DTOLENV)
+        - **ERGA** - European Reference Genome Atlas (ERGA)
       schema:
         $ref: '#/components/schemas/Projects'
 
@@ -1117,12 +1136,29 @@ components:
       name: project
       in: query
       description: |
-        To query multiple project types, CTRL + click on the project types
+        To query by multiple project types, hold **Ctrl** on Windows/Linux or 
+        **Command** (⌘) (sometimes shown as **Cmd**) on Mac and click the 
+        desired project type
 
-        - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
-        - **DTOL** refers to Darwin Tree of Life (DTOL)
-        - **DTOLENV** refers to Darwin Tree of Life Environmental Samples (DTOLENV)
-        - **ERGA** refers to European Reference Genome Atlas (ERGA)
+        - **ASG** - Aquatic Symbiosis Genomics (ASG)
+        - **DTOL** - Darwin Tree of Life (DTOL)
+        - **DTOLENV** - Darwin Tree of Life Environmental Samples (DTOLENV)
+        - **ERGA** - European Reference Genome Atlas (ERGA)
+      schema:
+        $ref: '#/components/schemas/Projects_multiple'
+
+    project_multiple_required:
+      name: project
+      in: query
+      description: |
+        To query by multiple project types, hold **Ctrl** on Windows/Linux or 
+        **Command** (⌘) (sometimes shown as **Cmd**) on Mac and click the 
+        desired project type
+
+        - **ASG** - Aquatic Symbiosis Genomics (ASG)
+        - **DTOL** - Darwin Tree of Life (DTOL)
+        - **DTOLENV** - Darwin Tree of Life Environmental Samples (DTOLENV)
+        - **ERGA** - European Reference Genome Atlas (ERGA)
       schema:
         $ref: '#/components/schemas/Projects_multiple'
 
@@ -1131,10 +1167,10 @@ components:
       in: query
       required: true
       description: |
-        - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
-        - **DTOL** refers to Darwin Tree of Life (DTOL)
-        - **DTOLENV** refers to Darwin Tree of Life Environmental Samples (DTOLENV)
-        - **ERGA** refers to European Reference Genome Atlas (ERGA)
+        - **ASG** - Aquatic Symbiosis Genomics (ASG)
+        - **DTOL** - Darwin Tree of Life (DTOL)
+        - **DTOLENV** - Darwin Tree of Life Environmental Samples (DTOLENV)
+        - **ERGA** - European Reference Genome Atlas (ERGA)
       schema:
         $ref: '#/components/schemas/Projects'
 
@@ -1143,10 +1179,10 @@ components:
       in: query
       required: true
       description: |
-        - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
-        - **DTOL** refers to Darwin Tree of Life (DTOL)
-        - **DTOLENV** refers to Darwin Tree of Life Environmental Samples (DTOLENV)
-        - **ERGA** refers to European Reference Genome Atlas (ERGA)
+        - **ASG** - Aquatic Symbiosis Genomics (ASG)
+        - **DTOL** - Darwin Tree of Life (DTOL)
+        - **DTOLENV** - Darwin Tree of Life Environmental Samples (DTOLENV)
+        - **ERGA** - European Reference Genome Atlas (ERGA)
       schema:
         $ref: '#/components/schemas/Projects'
 
@@ -1155,10 +1191,10 @@ components:
       in: query
       description: |
         Manifest types:
-        - **ASG** refers to Aquatic Symbiosis Genomics (ASG)
-        - **DTOL** refers to Darwin Tree of Life (DTOL)
-        - **DTOLENV** refers to Darwin Tree of Life Environmental Samples (DTOLENV)
-        - **ERGA** refers to European Reference Genome Atlas (ERGA)
+        - **ASG** - Aquatic Symbiosis Genomics (ASG)
+        - **DTOL** - Darwin Tree of Life (DTOL)
+        - **DTOLENV** - Darwin Tree of Life Environmental Samples (DTOLENV)
+        - **ERGA** - European Reference Genome Atlas (ERGA)
       schema:
         $ref: '#/components/schemas/Projects'
 
@@ -1166,10 +1202,10 @@ components:
       name: standard
       in: query
       description: |
-        - **dwc** refers to Darwin Core (DWC)
-        - **ena** refers to European Nucleotide Archive (ENA)
-        - **mixs** refers to Minimum Information about any (x) Sequence (MIxS)
-        - **tol** refers to Tree of Life (ToL)
+        - **dwc** - Darwin Core (DWC)
+        - **ena** - European Nucleotide Archive (ENA)
+        - **mixs** - Minimum Information about any (x) Sequence (MIxS)
+        - **tol** - Tree of Life (ToL)
       schema:
         $ref: '#/components/schemas/Standards'
 

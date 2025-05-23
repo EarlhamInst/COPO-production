@@ -636,6 +636,45 @@ class Sample(DAComponent):
         value_list = list(value_set)
 
         # MongoDB aggregation to match unordered exact sets
+        # If there are multiple input values, return results that
+        # contain exactly all of them in any order
+        if len(value_list) > 1:
+            match_stage = {
+                '$match': {
+                    '$expr': {
+                        '$setIsSubset': [
+                            value_list,
+                            {'$ifNull': ['$normalized_values', []]},
+                        ]
+                    }
+                }
+            }
+        else:
+            # If there is only one input value, return results that
+            # contain that value
+            match_stage = {
+                '$match': {
+                    '$expr': {
+                        '$anyElementTrue': [
+                            {
+                                '$map': {
+                                    'input': value_list,
+                                    'as': 'val',
+                                    'in': {
+                                        '$in': [
+                                            '$$val',
+                                            {
+                                                '$ifNull': ['$normalized_values', []]
+                                            },  # Ensure it's always an array
+                                        ]
+                                    },
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+
         pipeline = [
             # Check if 'associated_tol_project' exists and is not null or empty
             {
@@ -669,18 +708,7 @@ class Sample(DAComponent):
                 }
             },
             #  Match based on set equality, ensuring arrays for comparison
-            {
-                '$match': {
-                    '$expr': {
-                        '$setEquals': [
-                            {
-                                '$ifNull': ['$normalized_values', []]
-                            },  # Ensure it's always an array
-                            value_list,
-                        ]
-                    }
-                }
-            },
+            match_stage,
         ]
 
         # Execute aggregation pipeline
