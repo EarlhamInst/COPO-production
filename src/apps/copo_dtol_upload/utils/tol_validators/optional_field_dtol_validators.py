@@ -238,13 +238,13 @@ class DtolEnumerationValidator(Validator):
                     optional_regex = ""
                     biocollection_regex = ""
                     biocollection_qualifier_type = ""
+                    
                 cellcount = 0
                 for c in cells:
                     cellcount += 1
-
                     c_value = c
-
                     do_biocollection_checking = False
+                    
                     # reformat time of collection to handle excel format
                     if header == "TIME_OF_COLLECTION":
                         csplit = c.split(":")
@@ -253,6 +253,9 @@ class DtolEnumerationValidator(Validator):
                             self.data.at[cellcount - 1, "TIME_OF_COLLECTION"] = c
 
                     if allowed_vals:
+                        allowed_vals_normalised_lookup = {
+                            d_utils.normalise(val): val for val in allowed_vals
+                        }
                         # extra handling of barcode hubs for ASG
                         # todo move this in lookups and re-structure, this is in interest of time
                         if header == "BARCODE_HUB" and "ASG" == p_type:
@@ -263,18 +266,40 @@ class DtolEnumerationValidator(Validator):
                             header == "COLLECTION_LOCATION"
                             or header == "ORIGINAL_FIELD_COLLECTION_LOCATION"
                         ):
-                            # special check for COLLETION_LOCATION as this needs invalid list error for feedback
-                            c_value = str(c).split('|')[0].strip()
-                            location_2part = str(c).split('|')[1:]
-                            if (
-                                c_value.upper() not in allowed_vals
-                                or not location_2part
-                            ):
-                                self.errors.append(
-                                    msg["validation_msg_invalid_list"]
-                                    % (c_value, header, str(cellcount + 1))
-                                )
-                                self.flag = False
+                            # special check for COLLECTION_LOCATION as this needs invalid list error for feedback
+                            c_value_parts = str(c).split('|')
+                            c_value = c_value_parts[0].strip()
+                            location_2part = c_value_parts[1:]
+
+                            if c_value not in allowed_vals or not location_2part:
+                                c_value_normalised = d_utils.normalise(c_value)
+                                if c_value_normalised in allowed_vals_normalised_lookup:
+                                    # Display warning for field values that exist in the allowed
+                                    # values list but are in the wrong case or format
+                                    valid_value = allowed_vals_normalised_lookup[
+                                        c_value_normalised
+                                    ]
+                                    c_value_parts[0] = valid_value
+                                    self.data.at[cellcount - 1, header] = ' | '.join(
+                                        part.strip() for part in c_value_parts
+                                    )
+                                    self.warnings.append(
+                                        msg[
+                                            'validation_msg_warning_different_format_or_case'
+                                        ]
+                                        % (
+                                            c_value,
+                                            str(cellcount + 1),
+                                            header,
+                                            valid_value,
+                                        )
+                                    )
+                                else:
+                                    self.errors.append(
+                                        msg["validation_msg_invalid_list"]
+                                        % (c_value, header, str(cellcount + 1))
+                                    )
+                                    self.flag = False
                         elif header == "ORGANISM_PART":
                             # special check for piped values
                             for part in str(c).split('|'):
@@ -290,12 +315,10 @@ class DtolEnumerationValidator(Validator):
                                     )
                                     self.flag = False
                         elif c_value.strip() not in allowed_vals:
-                            allowed_vals_normalised_lookup = {
-                                d_utils.normalise(val): val for val in allowed_vals
-                            }
                             c_value_normalised = d_utils.normalise(c_value.strip())
 
-                            # extra handling for empty SYMBIONT in 'ASG', 'DTOL' and 'ERGA' manifests, which means 'TARGET'
+                            # extra handling for empty SYMBIONT in 'ASG', 'DTOL' 
+                            # and 'ERGA' manifests, which means 'TARGET'
                             if (
                                 not c_value.strip()
                                 and header == "SYMBIONT"
@@ -614,7 +637,7 @@ class DtolEnumerationValidator(Validator):
                                     "DNA_VOUCHER_ID_FOR_BIOBANKING",
                                 )
                             )
-                    # if original collection date is provided so must be the orginal geographic collection
+                    # if original collection date is provided so must be the original geographic collection
                     elif header == "ORIGINAL_COLLECTION_DATE" and c.strip():
                         if not self.data.at[
                             cellcount - 1, "ORIGINAL_GEOGRAPHIC_LOCATION"
