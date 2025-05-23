@@ -147,6 +147,8 @@ MESSAGES = {
     'validation_msg_warning_barcoding': 'Warning: Overwriting PLATE_ID_FOR_BARCODING, TUBE_OR_WELL_ID_FOR_BARCODING, '
                                         'TISSUE_FOR_BARCODING and BARCODE_PLATE_PRESERVATIVE at row <strong>%s</strong> '
                                         'because TISSUE_REMOVED_FOR_BARCODING is <strong>%s</strong>',
+    'validation_msg_warning_different_format_or_case': 'Case/Format warning: Value <strong>%s</strong> in row <strong>%s</strong> for field <strong>%s</strong> matches an allowed value but differs in case or format. '
+                                            'COPO will substitute with expected format, <strong>%s</strong>.',
     'validation_msg_warning_na_value_voucher': "Warning: <strong>%s</strong> in column <strong>%s</strong> at row "
                                                "<strong>%s</strong>. ERGA requires to voucher your sample, if you "
                                                "don't, be aware the sequencing may not continue until you have provided "

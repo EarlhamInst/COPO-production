@@ -656,6 +656,8 @@ def get_sensitive_fields(component):
 def get_unqualified_id(qual):
     return qual.split('.')[-1]
 
+def normalise(val):
+    return val.strip().replace('_', ' ').lower()
 
 class DecoupleFormSubmission:
     def __init__(self, auto_fields, schema):

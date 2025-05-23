@@ -1,5 +1,6 @@
 import re
 
+import common.schemas.utils.data_utils as d_utils
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
 from common.utils.helpers import notify_frontend
@@ -12,59 +13,114 @@ import validators
 
 
 class PermitColumnsValidator(Validator):
-    def check_permit_filename_value(self, permit_filename_column_name, permit_required_column_name, index, row):
+    def check_permit_filename_value(
+        self, permit_filename_column_name, permit_required_column_name, index, row
+    ):
         header_rules = lookup.DTOL_RULES.get(permit_filename_column_name, "")
         optional_regex = header_rules.get("optional_regex", "")
         regex_human_readable = header_rules.get("human_readable", "")
 
-        if row.get(permit_required_column_name, "").strip() == "Y" \
-                and row.get(permit_filename_column_name, "").strip().replace(" ", "_").upper() == "NOT_APPLICABLE":
-            self.errors.append(msg["validation_msg_invalid_permit_filename"] % (
-                row.get(permit_filename_column_name,
-                        ""), permit_filename_column_name, str(index + 1),
-                regex_human_readable))
+        if (
+            row.get(permit_required_column_name, "").strip() == "Y"
+            and row.get(permit_filename_column_name, "")
+            .strip()
+            .replace(" ", "_")
+            .upper()
+            == "NOT_APPLICABLE"
+        ):
+            self.errors.append(
+                msg["validation_msg_invalid_permit_filename"]
+                % (
+                    row.get(permit_filename_column_name, ""),
+                    permit_filename_column_name,
+                    str(index + 1),
+                    regex_human_readable,
+                )
+            )
             self.flag = False
 
-        if row.get(permit_required_column_name, "").strip() == "Y" \
-            and row.get(permit_filename_column_name, "") \
+        if (
+            row.get(permit_required_column_name, "").strip() == "Y"
+            and row.get(permit_filename_column_name, "")
             and not re.match(
-                optional_regex, row.get(permit_filename_column_name, "").strip().replace(" ", "_"), re.IGNORECASE):
-            self.errors.append(msg["validation_msg_invalid_permit_filename"] % (
-                row.get(permit_filename_column_name,
-                        ""), permit_filename_column_name, str(index + 1),
-                regex_human_readable))
+                optional_regex,
+                row.get(permit_filename_column_name, "").strip().replace(" ", "_"),
+                re.IGNORECASE,
+            )
+        ):
+            self.errors.append(
+                msg["validation_msg_invalid_permit_filename"]
+                % (
+                    row.get(permit_filename_column_name, ""),
+                    permit_filename_column_name,
+                    str(index + 1),
+                    regex_human_readable,
+                )
+            )
             self.flag = False
 
-        if row.get(permit_required_column_name, "").strip() == "N" and row.get(permit_filename_column_name,
-                                                                               "").strip().replace(" ",
-                                                                                                   "_").upper() != "NOT_APPLICABLE":
-            self.errors.append(msg["validation_msg_invalid_permit_filename"] % (
-                row.get(permit_filename_column_name,
-                        ""), permit_filename_column_name, str(index + 1),
-                regex_human_readable))
+        if (
+            row.get(permit_required_column_name, "").strip() == "N"
+            and row.get(permit_filename_column_name, "")
+            .strip()
+            .replace(" ", "_")
+            .upper()
+            != "NOT_APPLICABLE"
+        ):
+            self.errors.append(
+                msg["validation_msg_invalid_permit_filename"]
+                % (
+                    row.get(permit_filename_column_name, ""),
+                    permit_filename_column_name,
+                    str(index + 1),
+                    regex_human_readable,
+                )
+            )
             self.flag = False
 
-    def check_multiple_permit_filenames_with_same_specimen_id(self, data, permit_column_prefix):
+    def check_multiple_permit_filenames_with_same_specimen_id(
+        self, data, permit_column_prefix
+    ):
         for specimen_id, permit_filename in data.items():
             # Convert numpy array to list
             permit_filename_lst = list(permit_filename)
             if len(permit_filename_lst) > 1:
                 # Display an error message for each row that has the same SPECIMEN_ID but different filename
                 for filename in permit_filename_lst:
-                    self.errors.append(msg["validation_msg_multiple_permit_filenames_with_same_specimen_id"] % (
-                        filename, f"{permit_column_prefix}_REQUIRED", f"{permit_column_prefix}_FILENAME", specimen_id))
+                    self.errors.append(
+                        msg[
+                            "validation_msg_multiple_permit_filenames_with_same_specimen_id"
+                        ]
+                        % (
+                            filename,
+                            f"{permit_column_prefix}_REQUIRED",
+                            f"{permit_column_prefix}_FILENAME",
+                            specimen_id,
+                        )
+                    )
                     self.flag = False
 
             # If there is only 1 filename, check if it is valid in relation to the value in the REQUIRED permit column
             if len(permit_filename_lst) == 1:
                 if permit_filename_lst[0] == "N|NOT_APPLICABLE":
                     pass
-                elif permit_filename_lst[0].startswith("Y|") and (permit_filename_lst[0].endswith(".pdf") or permit_filename_lst[0].endswith(".PDF")):
+                elif permit_filename_lst[0].startswith("Y|") and (
+                    permit_filename_lst[0].endswith(".pdf")
+                    or permit_filename_lst[0].endswith(".PDF")
+                ):
                     pass
                 else:
-                    self.errors.append(msg["validation_msg_multiple_permit_filenames_with_same_specimen_id"] % (
-                        permit_filename_lst[0], f"{permit_column_prefix}_REQUIRED", f"{permit_column_prefix}_FILENAME",
-                        specimen_id))
+                    self.errors.append(
+                        msg[
+                            "validation_msg_multiple_permit_filenames_with_same_specimen_id"
+                        ]
+                        % (
+                            permit_filename_lst[0],
+                            f"{permit_column_prefix}_REQUIRED",
+                            f"{permit_column_prefix}_FILENAME",
+                            specimen_id,
+                        )
+                    )
                     self.flag = False
 
     def validate(self):
@@ -80,23 +136,31 @@ class PermitColumnsValidator(Validator):
             for index, row in self.data.iterrows():
                 for i, item in enumerate(permit_filename_column_names):
                     self.check_permit_filename_value(
-                        item, permit_required_column_names[i], index, row)
+                        item, permit_required_column_names[i], index, row
+                    )
 
             # Check if more than 1 specimenID is the same and check if the permit file name is also the same
             for prefix in permit_column_names:
                 # Check if the columns exist in the data columns
-                if f"{prefix}_FILENAME" not in self.data.columns or f"{prefix}_REQUIRED" not in self.data.columns:
+                if (
+                    f"{prefix}_FILENAME" not in self.data.columns
+                    or f"{prefix}_REQUIRED" not in self.data.columns
+                ):
                     continue
                 # Create a new column that combines the permit column name prefix with "_REQUIRED" and
                 # "_FILENAME" columns each
-                self.data[f"{prefix}"] = self.data[f"{prefix}_REQUIRED"] + \
-                    "|" + self.data[f"{prefix}_FILENAME"]
+                self.data[f"{prefix}"] = (
+                    self.data[f"{prefix}_REQUIRED"]
+                    + "|"
+                    + self.data[f"{prefix}_FILENAME"]
+                )
 
                 # Group the data by SPECIMEN_ID and combine the values in the new column into a numpy array
                 result = self.data.groupby('SPECIMEN_ID')[f"{prefix}"].unique()
 
                 self.check_multiple_permit_filenames_with_same_specimen_id(
-                    result, prefix)
+                    result, prefix
+                )
                 # Drop the column created
                 self.data.drop(columns=[f"{prefix}"], inplace=True)
 
@@ -120,17 +184,24 @@ class DtolEnumerationValidator(Validator):
             p_type = "DTOL"
         elif "ASG" in p_type:
             p_type = "ASG"
-        """    
-        barcoding_fields = ["PLATE_ID_FOR_BARCODING", "TUBE_OR_WELL_ID_FOR_BARCODING",
-                            "TISSUE_FOR_BARCODING", "BARCODE_PLATE_PRESERVATIVE"]
+        """
+        barcoding_fields = [
+            "PLATE_ID_FOR_BARCODING",
+            "TUBE_OR_WELL_ID_FOR_BARCODING",
+            "TISSUE_FOR_BARCODING",
+            "BARCODE_PLATE_PRESERVATIVE",
+        ]
         # erga manifest doesn't have plate_id_for_barcoding
         if p_type == "ERGA":
             barcoding_fields.pop(0)
 
-        notify_frontend(data={"profile_id": self.profile_id}, msg="Validating headers",
-                action="info",
-                html_id="sample_info")
-            
+        notify_frontend(
+            data={"profile_id": self.profile_id},
+            msg="Validating headers",
+            action="info",
+            html_id="sample_info",
+        )
+
         for header, cells in self.data.items():
             if header in self.fields:
                 # check if there is an enum for this header specific to the project
@@ -156,11 +227,12 @@ class DtolEnumerationValidator(Validator):
                         regex_rule = header_rules.get("strict_regex", "")
                     else:
                         regex_rule = header_rules.get("ena_regex", "")
-                    regex_human_readable = header_rules.get(
-                        "human_readable", "")
+                    regex_human_readable = header_rules.get("human_readable", "")
                     optional_regex = header_rules.get("optional_regex", "")
                     biocollection_regex = header_rules.get("biocollection_regex", "")
-                    biocollection_qualifier_type = header_rules.get("biocollection_qualifier_type", "specimen_voucher")
+                    biocollection_qualifier_type = header_rules.get(
+                        "biocollection_qualifier_type", "specimen_voucher"
+                    )
                 else:
                     regex_rule = ""
                     optional_regex = ""
@@ -178,97 +250,167 @@ class DtolEnumerationValidator(Validator):
                         csplit = c.split(":")
                         if len(csplit) == 3 and csplit[2] == "00":
                             c = ":".join(csplit[0:2])
-                            self.data.at[cellcount - 1,
-                                         "TIME_OF_COLLECTION"] = c
+                            self.data.at[cellcount - 1, "TIME_OF_COLLECTION"] = c
 
                     if allowed_vals:
                         # extra handling of barcode hubs for ASG
                         # todo move this in lookups and re-structure, this is in interest of time
                         if header == "BARCODE_HUB" and "ASG" == p_type:
-                            allowed_vals = lookup.DTOL_ENUMS.get(
-                                "PARTNER", "") + ["NOT_PROVIDED"]
-                        if header == "COLLECTION_LOCATION" or header == "ORIGINAL_FIELD_COLLECTION_LOCATION":
+                            allowed_vals = lookup.DTOL_ENUMS.get("PARTNER", "") + [
+                                "NOT_PROVIDED"
+                            ]
+                        if (
+                            header == "COLLECTION_LOCATION"
+                            or header == "ORIGINAL_FIELD_COLLECTION_LOCATION"
+                        ):
                             # special check for COLLETION_LOCATION as this needs invalid list error for feedback
                             c_value = str(c).split('|')[0].strip()
                             location_2part = str(c).split('|')[1:]
-                            if c_value.upper() not in allowed_vals or not location_2part:
-                                self.errors.append(msg["validation_msg_invalid_list"] % (
-                                    c_value, header, str(cellcount + 1)))
+                            if (
+                                c_value.upper() not in allowed_vals
+                                or not location_2part
+                            ):
+                                self.errors.append(
+                                    msg["validation_msg_invalid_list"]
+                                    % (c_value, header, str(cellcount + 1))
+                                )
                                 self.flag = False
                         elif header == "ORGANISM_PART":
                             # special check for piped values
                             for part in str(c).split('|'):
                                 if part.strip() not in allowed_vals:
-                                    self.errors.append(msg["validation_msg_invalid_data"] % (
-                                        part, header, str(
-                                            cellcount + 1), allowed_vals
-                                    ))
+                                    self.errors.append(
+                                        msg["validation_msg_invalid_data"]
+                                        % (
+                                            part,
+                                            header,
+                                            str(cellcount + 1),
+                                            allowed_vals,
+                                        )
+                                    )
                                     self.flag = False
                         elif c_value.strip() not in allowed_vals:
-                            # extra handling for empty SYMBIONT in "ASG", DTOL and ERGA manifests, which means TARGET
-                            if not c_value.strip() and header == "SYMBIONT" and p_type in ["ASG","DTOL", "ERGA"]:
-                                self.data.at[cellcount - 1,
-                                             "SYMBIONT"] = "TARGET"
+                            allowed_vals_normalised_lookup = {
+                                d_utils.normalise(val): val for val in allowed_vals
+                            }
+                            c_value_normalised = d_utils.normalise(c_value.strip())
 
-                            # check value is in allowed enum
+                            # extra handling for empty SYMBIONT in 'ASG', 'DTOL' and 'ERGA' manifests, which means 'TARGET'
+                            if (
+                                not c_value.strip()
+                                and header == "SYMBIONT"
+                                and p_type in ["ASG", "DTOL", "ERGA"]
+                            ):
+                                self.data.at[cellcount - 1, "SYMBIONT"] = "TARGET"
+                            elif c_value_normalised in allowed_vals_normalised_lookup:
+                                # Display warning for field values that exist in the allowed
+                                # values list but are in the wrong case or format
+                                valid_value = allowed_vals_normalised_lookup[
+                                    c_value_normalised
+                                ]
+                                self.data.at[cellcount - 1, header] = valid_value
+                                self.warnings.append(
+                                    msg[
+                                        'validation_msg_warning_different_format_or_case'
+                                    ]
+                                    % (
+                                        c_value,
+                                        str(cellcount + 1),
+                                        header,
+                                        valid_value,
+                                    )
+                                )
                             else:
-                                self.errors.append(msg["validation_msg_invalid_data"] % (
-                                    c_value, header, str(cellcount + 1), allowed_vals))
+                                self.errors.append(
+                                    msg["validation_msg_invalid_data"]
+                                    % (
+                                        c_value,
+                                        header,
+                                        str(cellcount + 1),
+                                        allowed_vals,
+                                    )
+                                )
                                 self.flag = False
 
-                        if header == "ORGANISM_PART" and c_value.strip() == "WHOLE_ORGANISM":
+                        if (
+                            header == "ORGANISM_PART"
+                            and c_value.strip() == "WHOLE_ORGANISM"
+                        ):
                             # send specimen in used whole specimens set
-                            current_specimen = self.data.at[cellcount -
-                                                            1, "SPECIMEN_ID"]
+                            current_specimen = self.data.at[
+                                cellcount - 1, "SPECIMEN_ID"
+                            ]
                             if current_specimen in whole_used_specimens:
                                 self.errors.append(
-                                    msg["validation_msg_used_whole_organism"] % current_specimen)
+                                    msg["validation_msg_used_whole_organism"]
+                                    % current_specimen
+                                )
                                 self.flag = False
                             else:
                                 whole_used_specimens.add(current_specimen)
                     if regex_rule:
                         # handle any regular expressions provided for validation
-                        if c and not re.match(regex_rule, c.replace("_", " "), re.IGNORECASE):
-                            self.errors.append(msg["validation_msg_invalid_data"] % (
-                                c, header, str(cellcount + 1), regex_human_readable))
+                        if c and not re.match(
+                            regex_rule, c.replace("_", " "), re.IGNORECASE
+                        ):
+                            self.errors.append(
+                                msg["validation_msg_invalid_data"]
+                                % (c, header, str(cellcount + 1), regex_human_readable)
+                            )
                             self.flag = False
                     if optional_regex:
                         # handle regular expression that will only trigger a warning exclude ERGA from this warning
                         # ignore if 'NOT_APPLICABLE' is set as a value for the PERMIT_FILENAME_COLUMN_NAMES
                         # for ERGA manifests
-                        if c and not re.match(optional_regex, c.replace("_", " "), re.IGNORECASE) \
-                                and header not in lookup.PERMIT_FILENAME_COLUMN_NAMES:
-                            if header in ['RACK_OR_PLATE_ID', 'TUBE_OR_WELL_ID'] and p_type == "ERGA":
-                                self.warnings.append(msg["validation_msg_warning_racktube_format"] % (
-                                    c, header, str(cellcount + 1)))
+                        if (
+                            c
+                            and not re.match(
+                                optional_regex, c.replace("_", " "), re.IGNORECASE
+                            )
+                            and header not in lookup.PERMIT_FILENAME_COLUMN_NAMES
+                        ):
+                            if (
+                                header in ['RACK_OR_PLATE_ID', 'TUBE_OR_WELL_ID']
+                                and p_type == "ERGA"
+                            ):
+                                self.warnings.append(
+                                    msg["validation_msg_warning_racktube_format"]
+                                    % (c, header, str(cellcount + 1))
+                                )
                             else:  # not in use atm, here in case we add more optional validations
-                                self.warnings.append(msg["validation_msg_warning_racktube_format"] % (
-                                    c, header, str(cellcount + 1)))
+                                self.warnings.append(
+                                    msg["validation_msg_warning_racktube_format"]
+                                    % (c, header, str(cellcount + 1))
+                                )
                     if biocollection_regex:
                         if c and re.match(biocollection_regex, c):
                             do_biocollection_checking = True
                     # validate link fields
                     if header == "VOUCHER_INSTITUTION":
                         if c.strip() and not validators.url(c.strip()):
-                            self.errors.append(msg["validation_msg_invalid_link"] % (
-                                c, header, str(cellcount + 1)
-                            ))
-                            self.flag = False                    
-                    elif header.endswith('_LINK') :
+                            self.errors.append(
+                                msg["validation_msg_invalid_link"]
+                                % (c, header, str(cellcount + 1))
+                            )
+                            self.flag = False
+                    elif header.endswith('_LINK'):
                         urls = c.strip().split("|")
                         for url in urls:
                             if url.strip() and not validators.url(url.strip()):
-                                self.errors.append(msg["validation_msg_invalid_link"] % (
-                                    url, header, str(cellcount + 1)
-                                ))
+                                self.errors.append(
+                                    msg["validation_msg_invalid_link"]
+                                    % (url, header, str(cellcount + 1))
+                                )
                                 self.flag = False
                     # validation checks for SERIES
                     elif header == "SERIES":
                         try:
                             int(c)
                         except ValueError:
-                            self.errors.append(msg["validation_msg_invalid_data"] % (
-                                c, header, str(cellcount + 1), "integers"))
+                            self.errors.append(
+                                msg["validation_msg_invalid_data"]
+                                % (c, header, str(cellcount + 1), "integers")
+                            )
                             self.flag = False
                     elif header == "TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION":
                         # check this is either a NOT_* or an integer
@@ -276,11 +418,15 @@ class DtolEnumerationValidator(Validator):
                             try:
                                 float(c_value)
                             except ValueError:
-                                self.errors.append(msg["validation_msg_invalid_data"] % (
-                                    c_value, header, str(cellcount + 1),
-                                    "integer or " +
-                                    ", ".join(lookup.BLANK_VALS)
-                                ))
+                                self.errors.append(
+                                    msg["validation_msg_invalid_data"]
+                                    % (
+                                        c_value,
+                                        header,
+                                        str(cellcount + 1),
+                                        "integer or " + ", ".join(lookup.BLANK_VALS),
+                                    )
+                                )
                                 self.flag = False
                     # check SPECIMEN_ID has the right prefix
                     elif header == "SPECIMEN_ID":
@@ -288,143 +434,243 @@ class DtolEnumerationValidator(Validator):
                         if p_type in ["DTOL", "DTOLENV"]:
                             current_gal = self.data.at[cellcount - 1, "GAL"]
                             specimen_regex = re.compile(
-                                lookup.SPECIMEN_PREFIX["GAL"][p_type.lower()].get(current_gal,
-                                                                                  "") +
-                                lookup.SPECIMEN_SUFFIX["GAL"][p_type.lower()].get(current_gal,
-                                                                                  ''))
+                                lookup.SPECIMEN_PREFIX["GAL"][p_type.lower()].get(
+                                    current_gal, ""
+                                )
+                                + lookup.SPECIMEN_SUFFIX["GAL"][p_type.lower()].get(
+                                    current_gal, ''
+                                )
+                            )
                             if not re.match(specimen_regex, c.strip()):
-                                self.errors.append(msg["validation_msg_error_specimen_regex_dtol"] % (
-                                    c, header, str(
-                                        cellcount + 1), "GAL", current_gal,
-                                    lookup.SPECIMEN_PREFIX["GAL"][p_type.lower()].get(
-                                        current_gal, "XXX"),
-                                    lookup.SPECIMEN_SUFFIX["GAL"][p_type.lower()].get(
-                                        current_gal, "XXX")
-                                ))
+                                self.errors.append(
+                                    msg["validation_msg_error_specimen_regex_dtol"]
+                                    % (
+                                        c,
+                                        header,
+                                        str(cellcount + 1),
+                                        "GAL",
+                                        current_gal,
+                                        lookup.SPECIMEN_PREFIX["GAL"][
+                                            p_type.lower()
+                                        ].get(current_gal, "XXX"),
+                                        lookup.SPECIMEN_SUFFIX["GAL"][
+                                            p_type.lower()
+                                        ].get(current_gal, "XXX"),
+                                    )
+                                )
                                 self.flag = False
                         elif "ERGA" == p_type:
-                            specimen_regex = re.compile(lookup.SPECIMEN_PREFIX["GAL"][p_type.lower()].get("default",
-                                                                                                          "") +
-                                                        lookup.SPECIMEN_SUFFIX["GAL"][p_type.lower()].get("default",
-                                                                                                          ''))
+                            specimen_regex = re.compile(
+                                lookup.SPECIMEN_PREFIX["GAL"][p_type.lower()].get(
+                                    "default", ""
+                                )
+                                + lookup.SPECIMEN_SUFFIX["GAL"][p_type.lower()].get(
+                                    "default", ''
+                                )
+                            )
                             if not re.match(specimen_regex, c.strip()):
-                                self.errors.append(msg["validation_msg_error_specimen_regex_dtol"] % (
-                                    c, header, str(
-                                        cellcount + 1), "GAL", "XXX",
-                                    lookup.SPECIMEN_PREFIX["GAL"][p_type.lower()].get(
-                                        "default", "XXX"),
-                                    lookup.SPECIMEN_SUFFIX["GAL"][p_type.lower()].get(
-                                        "default", "XXX")
-                                ))
+                                self.errors.append(
+                                    msg["validation_msg_error_specimen_regex_dtol"]
+                                    % (
+                                        c,
+                                        header,
+                                        str(cellcount + 1),
+                                        "GAL",
+                                        "XXX",
+                                        lookup.SPECIMEN_PREFIX["GAL"][
+                                            p_type.lower()
+                                        ].get("default", "XXX"),
+                                        lookup.SPECIMEN_SUFFIX["GAL"][
+                                            p_type.lower()
+                                        ].get("default", "XXX"),
+                                    )
+                                )
                                 self.flag = False
                         elif "ASG" == p_type:
                             current_partner = self.data.at[cellcount - 1, "PARTNER"]
                             specimen_regex = re.compile(
-                                lookup.SPECIMEN_PREFIX["PARTNER"].get(current_partner, "") + r'\d{7}')
+                                lookup.SPECIMEN_PREFIX["PARTNER"].get(
+                                    current_partner, ""
+                                )
+                                + r'\d{7}'
+                            )
                             if not re.match(specimen_regex, c.strip()):
-                                self.errors.append(msg["validation_msg_error_specimen_regex"] % (
-                                    c, header, str(
-                                        cellcount + 1), "PARTNER", current_partner,
-                                    lookup.SPECIMEN_PREFIX["PARTNER"].get(
-                                        current_partner, "XXX")
-                                ))
+                                self.errors.append(
+                                    msg["validation_msg_error_specimen_regex"]
+                                    % (
+                                        c,
+                                        header,
+                                        str(cellcount + 1),
+                                        "PARTNER",
+                                        current_partner,
+                                        lookup.SPECIMEN_PREFIX["PARTNER"].get(
+                                            current_partner, "XXX"
+                                        ),
+                                    )
+                                )
                                 self.flag = False
                         # only do this if this is target
-                        if self.data.at[cellcount - 1, "SYMBIONT"].strip().upper() != "SYMBIONT":
+                        if (
+                            self.data.at[cellcount - 1, "SYMBIONT"].strip().upper()
+                            != "SYMBIONT"
+                        ):
                             # check if SPECIMEN_ID in db, if it is check it refers to the same TAXON_ID if target
-                            existing_samples = Sample().get_target_by_specimen_id(c.strip())
+                            existing_samples = Sample().get_target_by_specimen_id(
+                                c.strip()
+                            )
                             if existing_samples:
                                 for exsam in existing_samples:
-                                    if exsam["species_list"][0]["TAXON_ID"] != self.data.at[
-                                            cellcount - 1, "TAXON_ID"]:
-                                        self.errors.append(msg["validation_message_wrong_specimen_taxon_pair"] % (
-                                            str(cellcount + 1), c.strip(
-                                            ), exsam["species_list"][0]["TAXON_ID"]
-                                        ))
+                                    if (
+                                        exsam["species_list"][0]["TAXON_ID"]
+                                        != self.data.at[cellcount - 1, "TAXON_ID"]
+                                    ):
+                                        self.errors.append(
+                                            msg[
+                                                "validation_message_wrong_specimen_taxon_pair"
+                                            ]
+                                            % (
+                                                str(cellcount + 1),
+                                                c.strip(),
+                                                exsam["species_list"][0]["TAXON_ID"],
+                                            )
+                                        )
                                         self.flag = False
                                         break
                             # check the same in spreadsheet
                             if c.strip() in manifest_specimen_taxon_pairs:
-                                if manifest_specimen_taxon_pairs[c.strip()] != self.data.at[
-                                        cellcount - 1, "TAXON_ID"]:
-                                    self.errors.append(msg["validation_message_wrong_specimen_taxon_pair"] % (
-                                        str(cellcount + 1), c.strip(), manifest_specimen_taxon_pairs[c.strip()] +
-                                        " in this manifest"
-                                    ))
+                                if (
+                                    manifest_specimen_taxon_pairs[c.strip()]
+                                    != self.data.at[cellcount - 1, "TAXON_ID"]
+                                ):
+                                    self.errors.append(
+                                        msg[
+                                            "validation_message_wrong_specimen_taxon_pair"
+                                        ]
+                                        % (
+                                            str(cellcount + 1),
+                                            c.strip(),
+                                            manifest_specimen_taxon_pairs[c.strip()]
+                                            + " in this manifest",
+                                        )
+                                    )
                                     self.flag = False
                             else:
-                                manifest_specimen_taxon_pairs[c.strip(
-                                )] = self.data.at[cellcount - 1, "TAXON_ID"]
+                                manifest_specimen_taxon_pairs[c.strip()] = self.data.at[
+                                    cellcount - 1, "TAXON_ID"
+                                ]
                         else:
                             flag_symbiont = True
                     # if TISSUE_REMOVED_FOR_BARCODING is not YES, the barcoding columns will be overwritten
                     elif header == "TISSUE_REMOVED_FOR_BARCODING" and c.strip() != "Y":
                         barcoding_flag = True
                         for barfield in barcoding_fields:
-                            if self.data.at[cellcount - 1, barfield] != "NOT_APPLICABLE":
-                                self.data.at[cellcount - 1,
-                                             barfield] = "NOT_APPLICABLE"
+                            if (
+                                self.data.at[cellcount - 1, barfield]
+                                != "NOT_APPLICABLE"
+                            ):
+                                self.data.at[cellcount - 1, barfield] = "NOT_APPLICABLE"
                                 barcoding_flag = False
                         if barcoding_flag == False:
-                            self.warnings.append(msg["validation_msg_warning_barcoding"] % (
-                                str(cellcount + 1), c
-                            ))
+                            self.warnings.append(
+                                msg["validation_msg_warning_barcoding"]
+                                % (str(cellcount + 1), c)
+                            )
                     # if tissue removed for biobanking warning that voucher should be present
                     elif header == "TISSUE_REMOVED_FOR_BIOBANKING" and c.strip() == "Y":
-                        if self.data.at[
-                                cellcount - 1, "TISSUE_VOUCHER_ID_FOR_BIOBANKING"].strip() in lookup.BLANK_VALS:
-                            self.warnings.append(msg["validation_msg_warning_na_value_voucher"] % (
-                                self.data.at[cellcount - 1,
-                                             "TISSUE_VOUCHER_ID_FOR_BIOBANKING"].strip(),
-                                "TISSUE_VOUCHER_ID_FOR_BIOBANKING", str(
-                                    cellcount + 1),
-                                "TISSUE_VOUCHER_ID_FOR_BIOBANKING"
-                            ))
+                        if (
+                            self.data.at[
+                                cellcount - 1, "TISSUE_VOUCHER_ID_FOR_BIOBANKING"
+                            ].strip()
+                            in lookup.BLANK_VALS
+                        ):
+                            self.warnings.append(
+                                msg["validation_msg_warning_na_value_voucher"]
+                                % (
+                                    self.data.at[
+                                        cellcount - 1,
+                                        "TISSUE_VOUCHER_ID_FOR_BIOBANKING",
+                                    ].strip(),
+                                    "TISSUE_VOUCHER_ID_FOR_BIOBANKING",
+                                    str(cellcount + 1),
+                                    "TISSUE_VOUCHER_ID_FOR_BIOBANKING",
+                                )
+                            )
                     # if dna removed for biobanking warning that voucher should be present
                     elif header == "DNA_REMOVED_FOR_BIOBANKING" and c.strip() == "Y":
-                        if self.data.at[
-                                cellcount - 1, "DNA_VOUCHER_ID_FOR_BIOBANKING"].strip() in lookup.BLANK_VALS:
-                            self.warnings.append(msg["validation_msg_warning_na_value_voucher"] % (
-                                self.data.at[cellcount - 1,
-                                             "DNA_VOUCHER_ID_FOR_BIOBANKING"].strip(),
-                                "DNA_VOUCHER_ID_FOR_BIOBANKING", str(
-                                    cellcount + 1), "DNA_VOUCHER_ID_FOR_BIOBANKING"
-                            ))
+                        if (
+                            self.data.at[
+                                cellcount - 1, "DNA_VOUCHER_ID_FOR_BIOBANKING"
+                            ].strip()
+                            in lookup.BLANK_VALS
+                        ):
+                            self.warnings.append(
+                                msg["validation_msg_warning_na_value_voucher"]
+                                % (
+                                    self.data.at[
+                                        cellcount - 1, "DNA_VOUCHER_ID_FOR_BIOBANKING"
+                                    ].strip(),
+                                    "DNA_VOUCHER_ID_FOR_BIOBANKING",
+                                    str(cellcount + 1),
+                                    "DNA_VOUCHER_ID_FOR_BIOBANKING",
+                                )
+                            )
                     # if original collection date is provided so must be the orginal geographic collection
                     elif header == "ORIGINAL_COLLECTION_DATE" and c.strip():
-                        if not self.data.at[cellcount - 1, "ORIGINAL_GEOGRAPHIC_LOCATION"]:
-                            self.errors.append(msg["validation_msg_original_field_missing"] % (
-                                str(cellcount + 1)
-                            ))
+                        if not self.data.at[
+                            cellcount - 1, "ORIGINAL_GEOGRAPHIC_LOCATION"
+                        ]:
+                            self.errors.append(
+                                msg["validation_msg_original_field_missing"]
+                                % (str(cellcount + 1))
+                            )
                             self.flag = False
                         # validation checks for date types
-                    if header in lookup.DATE_FIELDS and c_value.strip() not in lookup.BLANK_VALS:
+                    if (
+                        header in lookup.DATE_FIELDS
+                        and c_value.strip() not in lookup.BLANK_VALS
+                    ):
                         try:
                             validate_date(c)
                         except ValueError as e:
                             self.errors.append(
-                                msg["validation_msg_invalid_date"] % (c, header, str(cellcount + 1)))
+                                msg["validation_msg_invalid_date"]
+                                % (c, header, str(cellcount + 1))
+                            )
                             self.flag = False
                         except AssertionError as e:
                             self.errors.append(
-                                msg["validation_msg_future_date"] % (c, header, str(cellcount + 1)))
+                                msg["validation_msg_future_date"]
+                                % (c, header, str(cellcount + 1))
+                            )
                             self.flag = False
-        
+
                     if do_biocollection_checking:
                         ids = c_value.strip().split("|")
                         for id in ids:
-                            #check the id against the ENA API
-                            if not check_biocollection(id, biocollection_qualifier_type):
-                                self.errors.append(msg["validation_msg_invalid_data"] % (
-                                c, header, str(cellcount + 1), regex_human_readable))
+                            # check the id against the ENA API
+                            if not check_biocollection(
+                                id, biocollection_qualifier_type
+                            ):
+                                self.errors.append(
+                                    msg["validation_msg_invalid_data"]
+                                    % (
+                                        c,
+                                        header,
+                                        str(cellcount + 1),
+                                        regex_human_readable,
+                                    )
+                                )
                                 self.flag = False
                                 break
 
-        notify_frontend(data={"profile_id": self.profile_id}, msg="Validating headers: Finished",
+        notify_frontend(
+            data={"profile_id": self.profile_id},
+            msg="Validating headers: Finished",
             action="info",
             max_ellipsis_length=0,
-            html_id="sample_info")
-        
+            html_id="sample_info",
+        )
+
         if flag_symbiont:
             self.warnings.insert(0, msg["validation_msg_overwrite_symbionts"])
         return self.errors, self.warnings, self.flag
