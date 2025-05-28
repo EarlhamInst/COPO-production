@@ -446,7 +446,7 @@ def get_project_samples(request, project):
     samples = Sample().get_project_samples(projects)
     out = list()
     if samples:
-        out = filter_for_API(samples)
+        out = [str(s['_id']) for s in samples]
     return finish_request(out)
 
 
