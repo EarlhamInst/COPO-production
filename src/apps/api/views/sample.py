@@ -542,22 +542,26 @@ def get_by_associated_project_type(request):
 
 
 def get_by_copo_ids(request, copo_ids):
-    # get sample by COPO id if known
-    ids = copo_ids.split(',')
-    # strip white space
-    ids = list(map(lambda x: x.strip(), ids))
-    # remove any empty elements in the list (e.g. where 2 or more comas have been typed in error
-    ids[:] = [x for x in ids if x]
-    samples = Sample().get_records(ids)
-    out = list()
-    if samples:
-        if not type(samples) == InvalidId:
-            out = filter_for_API(samples, add_all_fields=True)
-        else:
-            return HttpResponse(
-                status=status.HTTP_400_BAD_REQUEST,
-                content="Invalid 'copo_id' found in request",
-            )
+    # Retrieve sample records by COPO IDs i.e. sample IDs
+    ids = d_utils.convertStringToList(copo_ids)
+
+    # Validate ObjectIds
+    invalid_ids = [x for x in ids if not d_utils.is_valid_ObjectId(x)]
+    if invalid_ids:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content=f"Invalid 'copo_id' value(s): {d_utils.join_with_and(invalid_ids)}",
+        )
+
+    try:
+        samples = Sample().get_records(ids)
+        out = filter_for_API(samples, add_all_fields=True) if samples else []
+    except InvalidId:
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            content="Could not retrieve sample records for the provided 'copo_id' value(s).",
+        )
+
     return finish_request(out)
 
 
