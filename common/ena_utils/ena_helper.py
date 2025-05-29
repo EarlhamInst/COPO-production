@@ -338,7 +338,7 @@ class EnaSubmissionHelper:
             etree.SubElement(sample_node, 'TITLE').text = sample_alias
             sample_name_node = etree.SubElement(sample_node, 'SAMPLE_NAME')
             etree.SubElement(sample_name_node, 'TAXON_ID').text = sample.get("taxon_id", str())
-            etree.SubElement(sample_name_node, 'SCIENTIFIC_NAME').text = sample.get("organism", str())
+            etree.SubElement(sample_name_node, 'SCIENTIFIC_NAME').text = sample.get("scientific_name", str())
 
             # add sample attributes
             sample_attributes_node = etree.SubElement(sample_node, 'SAMPLE_ATTRIBUTES')
@@ -346,11 +346,10 @@ class EnaSubmissionHelper:
             checklist_id = sample.get("checklist_id",str())
             if checklist_id is not None:
                 sample_attribute_node = etree.SubElement(sample_attributes_node, 'SAMPLE_ATTRIBUTE')
-                etree.SubElement(sample_attribute_node, 'TAG').text = "ENA-CHECKLIST"
-                etree.SubElement(sample_attribute_node, 'VALUE').text = checklist_id
-
                 checklist = EnaChecklist().get_collection_handle().find_one({"primary_id": checklist_id})
                 if checklist:
+                    etree.SubElement(sample_attribute_node, 'TAG').text = "ENA-CHECKLIST"
+                    etree.SubElement(sample_attribute_node, 'VALUE').text = checklist.get("ena_checklist_id", checklist_id)
                     fields = checklist["fields"]
                     key_mapping = { key :  value["synonym"] if "synonym" in value.keys() else value["name"] for key, value in fields.items() }
                     unit_mapping = { key :  value["unit"] if "unit" in value.keys() else "" for key, value in fields.items() }

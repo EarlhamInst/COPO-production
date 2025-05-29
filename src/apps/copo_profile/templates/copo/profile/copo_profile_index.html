@@ -22,19 +22,19 @@
     <div hidden id="hidden_attrs">
         <!-- hidden attributes  -->
         <input type="hidden" id="nav_component_name" value="profile"/>
-        <input type="hidden" value="{% url 'copo_sample:copo_samples' profile_id='999' %}" name="sample_url"
+        <input type="hidden" value="{ % url 'copo_sample:copo_samples' profile_id='999' %}" name="sample_url"
                id="sample_url"/>
-        <input type="hidden" value="{% url 'copo_accession:copo_accessions' profile_id='999' %}" name="accessions_url"
+        <input type="hidden" value="{ % url 'copo_accession:copo_accessions' profile_id='999' %}" name="accessions_url"
                id="accessions_url"/>
-        <input type="hidden" value="{% url 'copo_seq_annotation_submission:copo_seq_annotation' profile_id='999' %}" name="seqannotation_url"
+        <input type="hidden" value="{ % url 'copo_seq_annotation_submission:copo_seq_annotation' profile_id='999' %}" name="seqannotation_url"
                id="seqannotation_url"/>
-        <input type="hidden" value="{% url 'copo_assembly_submission:copo_assembly' profile_id='999' %}" name="assembly_url"
+        <input type="hidden" value="{ % url 'copo_assembly_submission:copo_assembly' profile_id='999' %}" name="assembly_url"
                id="assembly_url"/>
-        <input type="hidden" value="{% url 'copo_read_submission:copo_reads' profile_id='999' %}" name="read_url"
+        <input type="hidden" value="{ % url 'copo_read_submission:copo_reads' profile_id='999' %}" name="read_url"
                id="read_url"/>
-        <input type="hidden" value="{% url 'copo_file:copo_files' profile_id='999' %}" name="files_url"
+        <input type="hidden" value="{ % url 'copo_file:copo_files' profile_id='999' %}" name="files_url"
                id="files_url"/>
-        <input type="hidden" value="{% url 'copo_barcoding_submission:copo_taggedseq' profile_id='999' %}" name="taggedseq_url"
+        <input type="hidden" value="{ % url 'copo_barcoding_submission:copo_taggedseq' profile_id='999' %}" name="taggedseq_url"
         id="taggedseq_url"/>    
         <input
         type="hidden"

@@ -528,9 +528,10 @@ class BrokerDA:
         target_ids  = self.param_dict.get("target_ids", [])
         checklist_id  = self.request_dict.get("singlecell_checklist_id", [])
         study_id = self.request_dict.get("study_id", "")
+        schema_name = self.request_dict.get("schema_name", str())
 
         result = copo_single_cell.delete_singlecell_records(profile_id=self.profile_id, checklist_id=checklist_id, target_ids=target_ids,
-                                                        target_id=target_id, study_id=study_id)
+                                                        target_id=target_id, study_id=study_id, schema_name=schema_name)
         report_metadata = dict()
         report_metadata["status"] = result.get("status", "success")
         report_metadata["message"] = result.get("message", "success")
@@ -606,7 +607,7 @@ class BrokerVisuals:
             general_sample = (copo_sample.generate_table_records, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("sample_checklist_id", str()))),
             files = (copo_file.generate_files_record, dict(profile_id=self.profile_id)),
             taggedseq = (EnaTaggedSequence().generate_taggedseq_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("tagged_seq_checklist_id", str()))),
-            singlecell = (copo_single_cell.generate_singlecell_record, dict(profile_id=self.profile_id, study_id=self.request_dict.get("study_id", str()),  checklist_id=self.request_dict.get("singlecell_checklist_id", str()))),
+            singlecell = (copo_single_cell.generate_singlecell_record, dict(profile_id=self.profile_id, study_id=self.request_dict.get("study_id", str()),  checklist_id=self.request_dict.get("singlecell_checklist_id", str())))
         )
 
         # NB: in table_data_dict, use an empty dictionary as a parameter for listed functions that define zero arguments

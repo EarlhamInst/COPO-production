@@ -590,7 +590,7 @@ def get_read_accessions(request, sample_accession):
 
 @web_page_access_checker
 @login_required
-def copo_reads(request, profile_id):
+def copo_reads(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
     checklists = EnaChecklist().get_sample_checklists_no_fields()
@@ -600,7 +600,7 @@ def copo_reads(request, profile_id):
     profile_type = ProfileType.objects.get(type=profile["type"])
     if profile_type.is_dtol_profile:
         checklists = [x for x in checklists if x["primary_id"] == "read"]
-    return render(request, 'copo/copo_read.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids})
+    return render(request, 'copo/copo_read.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids, "ui_component": ui_component})
 
 
 @login_required

@@ -10,11 +10,11 @@ import json
 
 
 @login_required()
-def copo_files(request, profile_id):
+def copo_files(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile_type = Profile().get_type(profile_id)
     profile_title = Profile().get_name(profile_id)
-    return render(request, "copo/copo_files.html", {"profile_id": profile_id, "profile_title": profile_title, "profile_type": profile_type})
+    return render(request, "copo/copo_files.html", {"profile_id": profile_id, "profile_title": profile_title, "profile_type": profile_type, "ui_component": ui_component})
 
 
 @login_required()

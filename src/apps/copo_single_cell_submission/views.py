@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from common.dal.profile_da import Profile
+from common.dal.sample_da import Sample
 from common.dal.submission_da import Submission
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
@@ -24,8 +25,8 @@ l = Logger()
 
 @login_required()
 @web_page_access_checker
-def parse_singlecell_spreadsheet(request):
-    profile_id = request.session["profile_id"]
+def parse_singlecell_spreadsheet(request, profile_id, schema_name):
+    #profile_id = request.session["profile_id"]
     notify_singlecell_status(data={"profile_id": profile_id},
                        msg='', action="info",
                        html_id="singlecell_info")
@@ -43,7 +44,7 @@ def parse_singlecell_spreadsheet(request):
         if inspect.isclass(element) and issubclass(element, Validator) and not element.__name__ == "Validator":
             required_validators.append(element)
     '''
-    singlecell = SinglecellschemasSpreadsheet(file=file, checklist_id=checklist_id, component="singlecell", validators=required_validators)
+    singlecell = SinglecellschemasSpreadsheet(file=file, profile_id=profile_id, schema_name=schema_name,  checklist_id=checklist_id, component="singlecell", validators=required_validators)
     s3obj = s3()
     if name.endswith("xlsx") or name.endswith("xls"):
         fmt = 'xls'
@@ -107,13 +108,13 @@ def is_image_file(filename):
  
 @login_required()
 @web_page_access_checker
-def save_singlecell_records(request):
+def save_singlecell_records(request, profile_id, schema_name):
     # create mongo sample objects from info parsed from manifest and saved to session variable
     singlecell_data = request.session.get("singlecell_data")
     filename_map = request.session.get("filename_map")
-    profile_id = request.session["profile_id"]
+    #profile_id = request.session["profile_id"]
     profile = Profile().get_record(profile_id)
-    schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
+    #schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
 
     uid = str(request.user.id)
     username = request.user.username
@@ -421,11 +422,11 @@ def save_singlecell_records(request):
 
 @web_page_access_checker
 @login_required
-def copo_singlecell(request, profile_id):
+def copo_singlecell(request, schema_name, profile_id, ui_component):
     request.session["profile_id"] = profile_id
 
     profile = Profile().get_record(profile_id)
-    schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
+    #schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
     singlecell_checklists = SinglecellSchemas().get_checklists(schema_name=schema_name, checklist_id="")
     profile_checklist_ids = Singlecell().get_collection_handle().distinct("checklist_id", {"profile_id": profile_id, "schema_name" : schema_name})
 
@@ -435,19 +436,52 @@ def copo_singlecell(request, profile_id):
             checklist = {"primary_id": key, "name": item.get("name", ""), "description": item.get("description", "")}
             checklists.append(checklist)
 
-    return render(request, 'copo/copo_single_cell.html', {'profile_id': profile_id, 'profile': profile, 'schema_name':schema_name, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids})
+    return render(request, 'copo/copo_single_cell.html', {'profile_id': profile_id, 'schema_name': schema_name, 'profile': profile, 'schema_name':schema_name, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids, "ui_component":ui_component.lower() if ui_component else "singlecell"})
 
 
 @login_required
 @web_page_access_checker
-def download_manifest(request, profile_id, study_id):
+def download_manifest(request, schema_name, profile_id, study_id):
 
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "study_id": study_id})
     if not singlecell:
         return HttpResponse(status=404, content="No record found")
-    schemas = SinglecellSchemas().get_collection_handle().find_one({"name":singlecell["schema_name"]})
+    schemas = SinglecellSchemas().get_collection_handle().find_one({"name": schema_name})
     bytesstring = BytesIO()
     SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=singlecell["checklist_id"], singlecell=singlecell, file_path=bytesstring)
     response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response['Content-Disposition'] = f"attachment; filename=singlecell_manifest_{study_id}.xlsx"
     return response
+
+
+@login_required
+@web_page_access_checker
+def download_init_blank_manifest(request, schema_name, profile_id,  checklist_id):
+      
+    schemas = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name})
+    schema = SinglecellSchemas().get_schema(schema_name, checklist_id)
+    sample_schema = schema.get("sample", [])
+
+
+    samples = Sample().execute_query({"profile_id": profile_id, "deleted": get_not_deleted_flag(),
+                                                     "biosampleAccession": {"$ne": ""}})
+    
+    identifier_map = SinglecellSchemas().get_identifier_map(schemas=schema)
+    identifier = identifier_map.get("sample", "")
+
+    sample_component = []
+    for sample in samples:
+        sample_dict = {}
+        for field in sample_schema:
+            sample_dict[field["term_name"]] = sample.get(field["term_name"], "")
+        sample_dict[identifier] = sample.get("name", "")
+        sample_component.append(sample_dict)
+
+    singlecell =  {"components":{"sample": sample_component}}
+    bytesstring = BytesIO()
+    SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=checklist_id, singlecell=singlecell, file_path=bytesstring)
+    response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response['Content-Disposition'] = f"attachment; filename=singlecell_manifest_{checklist_id}.xlsx"
+    return response
+
+

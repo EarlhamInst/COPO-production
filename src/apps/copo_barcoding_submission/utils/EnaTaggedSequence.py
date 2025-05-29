@@ -190,7 +190,7 @@ class EnaTaggedSequence:
         profile_id = request.session["profile_id"]
         uid = str(request.user.id)
         checklist = EnaChecklist().get_collection_handle().find_one({"primary_id": request.session["checklist_id"]})
-        column_name_mapping = { field["name"].upper() : key  for key, field in checklist["fields"].items()  }
+        column_name_mapping = { field["label"].upper() : key  for key, field in checklist["fields"].items()  }
         fields = checklist["fields"]
         if tagged_seq_data:
             for p in range(1, len(tagged_seq_data)):

@@ -2602,7 +2602,7 @@ function get_component_meta(componentName) {
   var componentMeta = null;
   //var components = get_profile_components();
 
-  componentMeta = component_def[componentName];
+  componentMeta = component_def[componentName.toLowerCase()];
   /*
   components.forEach(function (comp) {
     if (comp.component == component) {
@@ -3085,7 +3085,9 @@ function generate_component_control(componentName, profile_type) {
       pcomponentHTML.append(newAnchor);
 
       newAnchor.attr('title', 'Navigate to ' + comp.title);
-      newAnchor.attr('href', comp.url.replace('999', profile_id));
+      component_link = comp.url.replace('999', profile_id)
+      newAnchor.attr('href', component_link);
+
       //newAnchor.attr('href', $('#' + comp.component + '_url').val());
       newAnchor.find('i').addClass(comp.color).addClass(comp.semanticIcon);
       //}

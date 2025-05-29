@@ -14,11 +14,12 @@ import requests
 
 
 def update_submission_pending():
-    subs = Submission().get_submission_downloading(repository="zenodo")
+    component = "study"
+    subs = Submission().get_submission_downloading(repository="zenodo", component=component)
     all_downloaded_sub_ids = []
     for sub in subs:
         all_file_downloaded = True
-        for study_id in sub["studies"]:
+        for study_id in sub[component]:
             singlecell = Singlecell().get_collection_handle().find_one(
                  {"profile_id":sub["profile_id"], "study_id":study_id,"deleted":get_not_deleted_flag()},
                  {"schema_name":1,"checklist_id":1, "components":1})
@@ -36,7 +37,11 @@ def update_submission_pending():
         
             enaFiles = EnaFileTransfer().get_all_records_columns(filter_by=filter, projection=projection)
  
-            if len(files) > len(enaFiles):
+            if not files and not enaFiles:
+                # No files to download, continue to the next study
+                continue
+
+            elif len(files) > len(enaFiles):
                 all_file_downloaded = False
                 # Log the missing files
                 missing_files = set(files) - {os.path.basename(enaFile["file_location"]) for enaFile in enaFiles}
@@ -51,7 +56,7 @@ def update_submission_pending():
             all_downloaded_sub_ids.append(sub["_id"])
 
     if all_downloaded_sub_ids:
-        Submission().update_submission_pending(all_downloaded_sub_ids)
+        Submission().update_submission_pending(all_downloaded_sub_ids, component="study")
 
 
 def process_pending_submission():

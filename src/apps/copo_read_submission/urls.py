@@ -19,7 +19,7 @@ urlpatterns = [
          name="get_submission_status"),
     re_path(r'^(?P<sample_accession>[A-Z0-9]+)/get_read_accessions', views.get_read_accessions,
          name='get_read_accessions'),
-    re_path(r'^(?P<profile_id>[a-z0-9]+)/view', views.copo_reads,
+    re_path(r'^view/(?P<profile_id>[a-z0-9]+)/(?P<ui_component>\w+)', views.copo_reads,
          name='copo_reads'),
     re_path(r'^(?P<profile_id>[a-z0-9]+)/download_initial_read_manifest', views.download_initial_read_manifest, name='download_initial_manifest'),     
          

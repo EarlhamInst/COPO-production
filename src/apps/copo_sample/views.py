@@ -21,22 +21,22 @@ l = Logger()
 
 @web_page_access_checker
 @login_required
-def copo_samples(request, profile_id):
+def copo_samples(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
     groups = get_group_membership_asString()
-    return render(request, 'copo/copo_sample.html', {'profile_id': profile_id, 'profile': profile, 'groups': groups})
+    return render(request, 'copo/copo_sample.html', {'profile_id': profile_id, 'profile': profile, 'groups': groups, 'ui_component': ui_component})
 
 @web_page_access_checker
 @login_required
-def copo_general_samples(request, profile_id):
+def copo_general_samples(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
     checklists = EnaChecklist().get_general_sample_checklists_no_fields()
     profile_checklist_ids = Sample().get_distinct_checklist(profile_id)
     if not profile_checklist_ids:
         profile_checklist_ids = []
-    return render(request, 'copo/copo_general_sample.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids})
+    return render(request, 'copo/copo_general_sample.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids, 'ui_component': ui_component})
 
 @web_page_access_checker
 @login_required()
@@ -102,9 +102,11 @@ def save_sample_records(request):
     #profile_name = Profile().get_name(profile_id)
     uid = str(request.user.id)
     checklist = EnaChecklist().get_collection_handle().find_one({"primary_id": request.session["checklist_id"]})
-    column_name_mapping = { field["name"].upper() : key  for key, field in checklist["fields"].items() if not field.get("read_field", False) or key in [ "sample", "organism"] }
-
+    column_name_mapping = { field["label"].upper() : key  for key, field in checklist["fields"].items()}
     
+    #add taxon_id column
+    column_name_mapping["TAXON_ID"] = "taxon_id"
+    column_name_mapping["SCIENTIFIC_NAME"] = "scientific_name"
     dt = get_datetime()
 
     organism_map = dict()
@@ -131,16 +133,30 @@ def save_sample_records(request):
             return HttpResponse(status=400)
  
         insert_record = {}
-        insert_record["created_by"] = uid
-        insert_record["time_created"] = get_datetime()
-        insert_record["date_created"] = dt
-        insert_record["profile_id"] = profile_id
-        insert_record["checklist_id"] = request.session["checklist_id"]
+        if not sample:
+            sample = dict()
+            insert_record["created_by"] = uid
+            insert_record["time_created"] = get_datetime()
+            insert_record["date_created"] = dt
+            insert_record["profile_id"] = profile_id
+            insert_record["sample_type"] = "isasample"
+            insert_record["status"] = "pending"
+            insert_record["deleted"] = get_not_deleted_flag()
+        else:
+            if sample["status"] in ["accepted", "rejected"]:
+                sample["status"] = "pending"
+            sample.pop("created_by", None)
+            sample.pop("time_created", None)
+            sample.pop("date_created", None)
+            sample.pop("profile_id", None)
+            sample.pop("sample_type", None)
+        sample["checklist_id"] = request.session["checklist_id"]
+        sample["date_modified"] = dt 
+        sample["updated_by"] = uid
+        sample["error"] = ""
 
+        """
         if not sample or sample.get("organism","") != s["Organism"]:
-            if not sample:
-                sample = dict()
-
             source = dict()
             tax_id = organism_map.get(s["Organism"], None)
             source_id = source_map.get(s["Organism"], None)
@@ -156,21 +172,7 @@ def save_sample_records(request):
                 
             sample["taxon_id"] = tax_id
             # create associated sample
-            insert_record["sample_type"] = "isasample"
-            insert_record["status"] = "pending"
-
-        sample.pop("created_by", None)
-        sample.pop("time_created", None)
-        sample.pop("date_created", None)
-        sample.pop("profile_id", None)
-        sample.pop("sample_type", None)
-        sample.pop("checklist_id", None)
-        sample["date_modified"] = dt 
-        sample["deleted"] = get_not_deleted_flag()           
-        sample["updated_by"] = uid
-        sample["error"] = ""
-        if sample["status"] in ["accepted", "rejected"]:
-            sample["status"] = "pending"
+        """
 
         #sample["checklist_id"] = request.session["checklist_id"]
             
@@ -181,10 +183,7 @@ def save_sample_records(request):
             if upper_key in column_name_mapping:
                 sample[column_name_mapping[upper_key]] = value
 
-        condition = {"profile_id": profile_id}
-        condition["name"] = s["Sample"]
-        sample.pop("profile_id", None)
-        sample.pop("sample_type", None)
+        condition = {"profile_id": profile_id, "deleted": get_not_deleted_flag(), "name": s["Sample"]}
 
         sample = Sample().get_collection_handle().find_one_and_update(condition,
                                                                 {"$set": sample, "$setOnInsert": insert_record},

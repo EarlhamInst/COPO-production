@@ -15,10 +15,10 @@ from src.apps.copo_core.views import web_page_access_checker
 
 @web_page_access_checker
 @login_required
-def copo_seq_annotation(request, profile_id):
+def copo_seq_annotation(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
-    return render(request, 'copo/copo_seq_annotation.html', {'profile_id': profile_id, 'profile': profile})
+    return render(request, 'copo/copo_seq_annotation.html', {'profile_id': profile_id, 'profile': profile, "ui_component": ui_component})
 
 
 @login_required()

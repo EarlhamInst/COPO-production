@@ -1,11 +1,7 @@
 from common.validators.validator import Validator
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
-from common.schema_versions.lookup import dtol_lookups as lookup
-from common.utils.helpers import notify_frontend
-from common.validators.helpers import check_taxon_ena_submittable
 from .validation_messages import MESSAGES as msg
-from Bio import Entrez
 from django_tools.middlewares import ThreadLocal
 import os
 
@@ -29,43 +25,6 @@ class SinglePairedValuesValidator(Validator):
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
 
-"""
-class TaxonValidator(Validator):
-    def validate(self):
-        if "organism" not in self.data.columns:
-            return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
-        
-        Entrez.api_key = lookup.NIH_API_KEY
-        # build dictioanry of species in this manifest  max 200 IDs per query
-        taxon_id_set = set([x for x in self.data['organism'].tolist() if x])
-        notify_frontend(data={"profile_id": self.profile_id},
-                        msg="Querying NCBI for TAXON_IDs in manifest",
-                        action="info",
-                        html_id="sample_info")
-        taxon_id_list = list(taxon_id_set)
-        if any(x for x in taxon_id_list):
-            for taxon in taxon_id_list:
-                # check if taxon is submittable
-                ena_taxon_errors = check_taxon_ena_submittable(taxon, by="binomial")
-                if ena_taxon_errors:
-                    self.errors += ena_taxon_errors
-                    self.flag = False
-        return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
-
-class GzipValidator(Validator):
-
-    def validate(self):
-        for row in self.data.iterrows():
-            file_names = row[1]["file_name"]
-            if file_names.strip() == "":
-                continue
-            for f in file_names.split(","):
-                if not f.strip().endswith(".gz"):
-                    error_str = f + ": File not gzipped. All files must be gzipped and end in '.gz'"
-                    self.errors.append(error_str)
-                    self.flag = False
-        return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
-"""
 
 class FileSuffixValidator(Validator):
     def validate(self):
@@ -119,20 +78,7 @@ class ReadNotInSubmissionQueueValidator(Validator):
                         self.flag = False 
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
-'''    
-class DuplicatedSample(Validator):
-    def validate(self):
-        if "biosampleAccession" in self.data.columns:
-            samples = list(self.data["biosampleAccession"])
-        elif "sample" in self.data.columns:
-            samples = list(self.data["sample"])
-        if samples:
-            sample = [ x for x in samples if samples.count(x) > 1]
-            for s in set(sample):
-                self.errors.append("Sample " + s + " is duplicated in manifest")
-                self.flag = False
-        return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")        
-'''
+ 
     
 class DuplicatedDataFile(Validator):
     def _extract_ref_parts(self, ref_string):

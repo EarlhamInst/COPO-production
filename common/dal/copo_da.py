@@ -1022,6 +1022,7 @@ class EnaChecklist(DAComponent):
                     checklist["fields"] = fields
             
             df = pd.DataFrame.from_dict(checklist["fields"], orient='index')
+            df.fillna("", inplace=True)
             
             if "read_field" in df.columns:
                 df["read_field"] = df["read_field"].fillna(False)

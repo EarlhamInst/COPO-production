@@ -16,7 +16,7 @@ import os
 l = Logger()
 #https://www.ebi.ac.uk/ols4/api/v2/ontologies/ncbitaxon/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_1224659?includeObsoleteEntities=false
 #https://www.ebi.ac.uk/ols4/api/v2/entities?search=infant+stage&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId=uberon
-def checkTopologyTerm(ontology_id, ancestor, term):
+def _checkTopologyTerm(ontology_id, ancestor, term):
     url = f"https://www.ebi.ac.uk/ols4/api/v2/entities?search={term}&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId={ontology_id}"
     response = requests.get(url)
     if response.status_code == 200:
@@ -28,7 +28,7 @@ def checkTopologyTerm(ontology_id, ancestor, term):
                         return True
     return False
 
-def checkNCBITaxonTerm(term):
+def _checkNCBITaxonTerm(term):
     url = f"https://www.ebi.ac.uk/ols4/api/v2/ontologies/ncbitaxon/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_{term}?includeObsoleteEntities=false"
     response = requests.get(url)
     if response.status_code == 200:
@@ -222,7 +222,7 @@ def _delete_child_component_data(singlecell_data, component_name, identifiers, i
                 else:
                     singlecell_data["components"].pop(child_component_name, None)
 
-def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id="", study_id=""):
+def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id="", study_id="", schema_name=""):
     if target_id:
         target_ids = [target_id]
 
@@ -240,7 +240,7 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
     profile = Profile().get_record(profile_id)
     if not profile:
         return dict(status='error', message="Profile not found!")
-    schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
+    #schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
     schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
     identifier_map, foreignkey_map = SinglecellSchemas().get_key_map(schemas)
     child_map = SinglecellSchemas().get_child_map(foreignkey_map)

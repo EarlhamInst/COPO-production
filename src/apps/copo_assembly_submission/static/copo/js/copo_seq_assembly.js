@@ -1,7 +1,8 @@
 $(document).ready(function () {
-  var uid = document.location.href;
-  uid = uid.split('/');
-  uid = uid[uid.length - 2];
+  //var uid = document.location.href;
+  profile_id = $('#profile_id').val();
+  //uid = uid.split('/');
+  //uid = uid[uid.length - 2];
   var wsprotocol = 'ws://';
   var s3socket;
 
@@ -33,7 +34,7 @@ $(document).ready(function () {
   if (window.location.protocol === 'https:') {
     wsprotocol = 'wss://';
   }
-  var wsurl = wsprotocol + window.location.host + '/ws/assembly_status/' + uid;
+  var wsurl = wsprotocol + window.location.host + '/ws/assembly_status/' + profile_id;
 
   s3socket = new WebSocket(wsurl);
 
@@ -190,7 +191,7 @@ $(document).ready(function () {
   //get component metadata
   var componentMeta = get_component_meta(component);
   var args_dict = {};
-  args_dict['profile_id'] = $('#profile_id').val(),
+  args_dict['profile_id'] = profile_id,
   load_records(componentMeta, args_dict); // call to load component records
 
   //register_resolvers_event(); //register event for publication resolvers
@@ -210,7 +211,7 @@ $(document).ready(function () {
 
   //add new component button
   $(document).on('click', '.new-component-template', function (event) {
-    url = '/copo/copo_assembly/' + uid;
+    url = '/copo/copo_assembly/' + profile_id;
     handle_add_n_edit(url);
   });
 
@@ -349,13 +350,13 @@ $(document).ready(function () {
       // Set Bootstrap dialog title
       dialog.setTitle(`Add  ${toTitleCase(component)}`);
 
-      url = '/copo/copo_assembly/' + uid;
+      url = '/copo/copo_assembly/' + profile_id;
       handle_add_n_edit(url, task);
     } else if (task == 'edit') {
       // Set Bootstrap dialog title
       dialog.setTitle(`Edit ${toTitleCase(component)}`);
 
-      url = '/copo/copo_assembly/' + uid + '/' + records[0].record_id;
+      url = '/copo/copo_assembly/' + profile_id + '/' + records[0].record_id;
       handle_add_n_edit(url, task);
     } else {
       form_generic_task(component, task, records);

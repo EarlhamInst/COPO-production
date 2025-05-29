@@ -1,4 +1,5 @@
 var current_study_id = '';
+var schema_name = $("#schema_name").val();
 
 function get_checklist_id() {
   if ($('#checklist_id').length > 0) {
@@ -43,16 +44,17 @@ function reset_value() {
 var columnDefs = [];
 
 $(document).on('document_ready', function () {
-  var uid = document.location.href;
-  uid = uid.split('/');
-  uid = uid[uid.length - 2];
+  profile_id = $('#profile_id').val();
+  //var uid = document.location.href;
+  //uid = uid.split('/');
+  //uid = uid[uid.length - 2];
   var wsprotocol = 'ws://';
   var s3socket;
  
   if (window.location.protocol === 'https:') {
     wsprotocol = 'wss://';
   }
-  var wsurl = wsprotocol + window.location.host + '/ws/singlecell_status/' + uid;
+  var wsurl = wsprotocol + window.location.host + '/ws/singlecell_status/' + profile_id;
 
   s3socket = new WebSocket(wsurl);
 
@@ -207,7 +209,7 @@ $(document).on('document_ready', function () {
   });
 
   //******************************Event Handlers Block*************************//
-  var component = 'singlecell';
+  var component = $("#nav_component_name").val();
   var copoFormsURL = '/copo/copo_forms/';
   //var copoVisualsURL = "/copo/copo_visuals/";
   var csrftoken = $.cookie('csrftoken');
@@ -219,7 +221,7 @@ $(document).on('document_ready', function () {
   //load_records(componentMeta); // call to load component records
 
   initialise_checklist_id();
-  var args_dict = { singlecell_checklist_id: get_checklist_id() };
+  var args_dict = { singlecell_checklist_id: get_checklist_id(), schema_name: schema_name };
   $('.download-blank-manifest-template').attr(
     'href',
     $('#blank_manifest_url_' + get_checklist_id()).val()
@@ -348,6 +350,7 @@ $(document).on('document_ready', function () {
     var task = event.task.toLowerCase(); //action to be performed e.g., 'Edit', 'Delete'
     var tableID = event.tableID; //get target table
     var profile_id = $('#profile_id').val(); //get profile id
+    var schema_name = $('#schema_name').val(); //get schema name
 
     //retrieve target records and execute task
     var table = $('#' + tableID).DataTable();
@@ -356,13 +359,13 @@ $(document).on('document_ready', function () {
       records.push(item);
     });
 
-    var args_dict = { singlecell_checklist_id: get_checklist_id()};
+    var args_dict = { singlecell_checklist_id: get_checklist_id(), schema_name: schema_name };
 
     // Download sample manifest
     if (task == 'download-singlecell-manifest') {
       $('#download-singlecell-manifest-link').attr(
         'href',
-        '/copo/copo_single_cell/download_manifest/' + profile_id + "/" + records[0].study_id
+        '/copo/copo_single_cell/download_manifest/'+ profile_id  + '/' + schema_name + "/" + records[0].study_id
       );
       $('#download-singlecell-manifest-link span').trigger('click');
       return;
@@ -474,7 +477,7 @@ function upload_spreadsheet(file) {
   var percent = $('.percent');
   jQuery
     .ajax({
-      url: '/copo/copo_single_cell/parse_singlecell_spreadsheet/',
+      url: '/copo/copo_single_cell/parse_singlecell_spreadsheet/'+ $("#profile_id").val()+ '/' +  $("#schema_name").val()+ '/',
       data: form,
       cache: false,
       contentType: false,
@@ -516,7 +519,7 @@ function upload_spreadsheet(file) {
 
 function save_singlecell_data() {
   $.ajax({
-    url: '/copo/copo_single_cell/save_singlecell_records',
+    url: '/copo/copo_single_cell/save_singlecell_records/'+ $("#profile_id").val() + '/' + $("#schema_name").val() + '/',
   })
     .fail(function (data) {
       $('#singlecell_spreadsheet_modal').find('#upload_singlecell_manifest_button').prop("disabled", false)

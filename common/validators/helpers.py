@@ -65,20 +65,14 @@ def check_taxon_ena_submittable(taxon, by="id"):
                 "ENA returned no results for Scientific Name " + taxon + ". This could mean that the taxon id is incorrect, or ENA maybe down.")
             return errors
         taxinfo = json.loads(receipt.decode("utf-8"))
-        if by == "id":
-            if taxinfo["submittable"] != 'true':
-                errors.append("TAXON_ID " + taxon + " is not submittable to ENA")
-            if taxinfo["rank"] not in ["species", "subspecies"]:
-                errors.append("TAXON_ID " + taxon + " is not a 'species' or 'subspecies' level entity.")
-            if taxinfo["binomial"] == "false":  
-                errors.append(MESSAGE['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))    
-        elif by == "binomial":
-            if taxinfo[0]["submittable"] != 'true':
-                errors.append("TAXON_ID " + taxon + " is not submittable to ENA")
-            if taxinfo[0]["rank"] not in ["species", "subspecies"]:
-                errors.append("TAXON_ID " + taxon + " is not a 'species' or 'subspecies' level entity.")
-            if taxinfo[0]["binomial"] == "false":
-                errors.append(MESSAGE['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))    
+        if by == "binomial":
+            taxinfo = taxinfo[0]
+        if taxinfo["submittable"] != 'true':
+            errors.append("TAXON_ID " + taxon + " is not submittable to ENA")
+        if taxinfo["rank"] not in ["species", "subspecies"]:
+            errors.append("TAXON_ID " + taxon + " is not a 'species' or 'subspecies' level entity.")
+        if taxinfo["binomial"] == "false":  
+            errors.append(MESSAGE['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))    
     except Exception as e:
         l.exception(e)
         if receipt:
@@ -94,4 +88,26 @@ def check_taxon_ena_submittable(taxon, by="id"):
                         "ENA returned - " + receipt.decode("utf-8") + " - for TAXON_ID " + taxon)
         else:
             errors.append(MESSAGE['validation_msg_not_submittable_taxon'] % (taxon))
-    return errors
+    return errors, taxinfo
+
+def checkOntologyTerm(ontology_id, ancestor, term):
+    url = f"https://www.ebi.ac.uk/ols4/api/v2/entities?search={term}&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId={ontology_id}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        for elm in data.get("elements",[]):
+            if term in elm.get("label",[]) or any( synonym.get("value") == term for synonym in elm.get("synonym",[])) :
+                for ancestor_uri in elm.get("hierarchicalAncestor",[]):
+                    if ancestor_uri.endswith(f"{ontology_id.upper()}_{ancestor}"):
+                        return True
+    return False
+
+def checkNCBITaxonTerm(term):
+    url = f"https://www.ebi.ac.uk/ols4/api/v2/ontologies/ncbitaxon/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_{term}?includeObsoleteEntities=false"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        curie = data.get("curie","")
+        if curie == f"NCBITaxon:{term}":
+            return True
+    return False

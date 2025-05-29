@@ -1104,10 +1104,10 @@ class Submission(DAComponent):
             
         return dict(status='success', message="Submission has been scheduled!")
 
-    def get_submission_downloading(self, repository="zenodo"):
+    def get_submission_downloading(self, repository="zenodo", component="study"):
         subs = self.get_collection_handle().find(
-            {"status": "downloading", "repository": repository, "deleted": helpers.get_not_deleted_flag()},
-            {"studies": 1, "profile_id": 1, "date_modified": 1})
+            {f"{component}_status": "downloading", "repository": repository, "deleted": helpers.get_not_deleted_flag()},
+            {component: 1, "profile_id": 1, "date_modified": 1})
         return cursor_to_list(subs)
 
     def remove_component_from_submission(self, sub_id, component="study", component_ids=[]):
@@ -1130,9 +1130,9 @@ class Submission(DAComponent):
                 update_data["$set"]["updated_by"] = "system"
                 sub_handle.update_one({"_id": ObjectId(sub_id)}, update_data)
 
-    def update_submission_pending(self, sub_ids):
+    def update_submission_pending(self, sub_ids, component="study"):
         self.get_collection_handle().update_many({"_id": {"$in": sub_ids}},
-                                                 {"$set": {"status": "pending"}})
+                                                 {"$set": {f"{component}_status": "pending"}})
         
  
     def add_component_submission_accession(self, sub_id, accessions=[], component="study"):

@@ -296,10 +296,11 @@ class SingleCellSchemasHandler:
             self.write_manifest(singlecell_schema)
  
 class SinglecellschemasSpreadsheet:
-   def __init__(self, file, checklist_id,  component, validators=[]):
+   def __init__(self, file, profile_id, schema_name, checklist_id,  component, validators=[]):
         self.req = ThreadLocal.get_current_request()
-        self.profile_id = self.req.session.get("profile_id", None)
+        self.profile_id = profile_id
         self.checklist_id = checklist_id
+        self.schema_name = schema_name
         self.data = {}
         self.new_data = {}
         self.component = component
@@ -407,8 +408,8 @@ class SinglecellschemasSpreadsheet:
                 
                 #if self.data.empty:
                 #    raise Exception("Empty file")
-                profile = Profile().get_record(self.profile_id)
-                schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
+                #profile = Profile().get_record(self.profile_id)
+                #schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
 
                 for key, df in self.data.items():  
                     #df = df.iloc[3:]  # remove the first 3 rows                  
@@ -417,7 +418,7 @@ class SinglecellschemasSpreadsheet:
                     df = df.apply(lambda x: x.str.strip())
                     #self.data.columns = self.data.columns.str.replace(" ", "")
                    
-                singlecell = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name},{"schemas":1, "enums":1})
+                singlecell = SinglecellSchemas().get_collection_handle().find_one({"name":self.schema_name},{"schemas":1, "enums":1})
                 self.schemas = singlecell["schemas"]
 
                 if self.schemas:
