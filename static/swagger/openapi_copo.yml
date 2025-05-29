@@ -485,7 +485,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SampleListShort'
+                $ref: '#/components/schemas/GenericOutputSchema'
         '400':
           description: InvalidId found in request
 
