@@ -464,6 +464,8 @@ def get_samples_by_sequencing_centre(request):
 
 def get_updatable_fields_by_project(request):
     project = request.GET.get('project', str()).lower()
+    standard = request.GET.get('standard', 'tol').lower()
+
     # Validate required project field
     project_issues = validate_project(project)
     if project_issues:
@@ -475,7 +477,15 @@ def get_updatable_fields_by_project(request):
 
     # Return non-compliant fields i.e. fields that user can update
     non_compliant_fields.sort()
-    return finish_request(non_compliant_fields)
+
+    # Get mapped fields by standard
+    mapped_fields = get_mapped_field_by_standard(standard, project)
+    result = (
+        non_compliant_fields
+        if standard == 'tol'
+        else [mapped_fields[x] for x in non_compliant_fields if x in mapped_fields]
+    )
+    return finish_request(result)
 
 
 def get_fields_by_manifest_version(request):

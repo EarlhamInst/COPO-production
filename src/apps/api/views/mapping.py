@@ -32,6 +32,10 @@ def get_mapped_data_from_sample_data(standard, sample_data):
     copo_defined_fields = Sample().get_custom_sample_fields()
     output_list = list()
 
+    if not isinstance(sample_data, dict):
+        # 'sample_data' is most likely a list, return as is
+        return sample_data
+
     for sample in sample_data:
         output_dict = dict()
         sample_type = sample.get('tol_project', str()).lower()
@@ -52,6 +56,7 @@ def get_mapped_data_from_sample_data(standard, sample_data):
                     else:
                         output_dict[f'copo_{field}'] = value
         output_list.append(output_dict)
+
     return output_list
 
 
