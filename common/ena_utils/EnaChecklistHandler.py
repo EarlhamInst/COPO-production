@@ -272,7 +272,7 @@ class ChecklistHandler:
 
     def updateCheckList(self):
         urls = settings.ENA_CHECKLIST_URL
-        #urls.extend(settings.COPO_SAMPLE_CHECKLIST_URL)
+        urls.extend(settings.COPO_SAMPLE_CHECKLIST_URL)
 
         checklist_set = []
 
@@ -280,12 +280,14 @@ class ChecklistHandler:
             xmlstr = self._loadCheckList(url)
             checklist_set.extend(self._parseCheckList(xmlstr))
 
+        """
         xmlstr = self._loadChecklist_local("sample_checklist_dwc.xml")    
         checklist_set.extend(self._parseCheckList(xmlstr))
 
         xmlstr = self._loadChecklist_local("sample_checklist_faang.xml")
         checklist_set.extend(self._parseCheckList(xmlstr))
-
+        """
+        
         reads = EnaChecklist().execute_query({"primary_id": "read", "deleted": get_not_deleted_flag()})
         read = None
         if reads:
