@@ -549,11 +549,8 @@ class BrokerDA:
         checklist_id = self.request_dict.get("singlecell_checklist_id", str())
         study_id = self.request_dict.get("study_id", "")
 
-        if repository == "ena":
-            result = copo_single_cell.submit_singlecell_ena(profile_id=self.profile_id, target_ids=target_ids, target_id=target_id,checklist_id=checklist_id, study_id=study_id)
-        elif repository == "zenodo":
-            result = copo_single_cell.submit_singlecell_zenodo(profile_id=self.profile_id, target_ids=target_ids, target_id=target_id,checklist_id=checklist_id, study_id=study_id)
-        
+        result = copo_single_cell.submit_singlecell(profile_id=self.profile_id, target_ids=target_ids, target_id=target_id,checklist_id=checklist_id, study_id=study_id, repository=repository)
+
         report_metadata = dict()
         report_metadata["status"] = result.get("status", "success")
         report_metadata["message"] = result.get("message", "success")

@@ -10,33 +10,10 @@ from django_tools.middlewares import ThreadLocal
 from common.dal.submission_da import Submission
 from common.dal.mongo_util import cursor_to_list
 from django.conf import settings
-
+from bson import regex
 import os
 
 l = Logger()
-#https://www.ebi.ac.uk/ols4/api/v2/ontologies/ncbitaxon/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_1224659?includeObsoleteEntities=false
-#https://www.ebi.ac.uk/ols4/api/v2/entities?search=infant+stage&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId=uberon
-def _checkTopologyTerm(ontology_id, ancestor, term):
-    url = f"https://www.ebi.ac.uk/ols4/api/v2/entities?search={term}&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId={ontology_id}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        for elm in data.get("elements",[]):
-            if term in elm.get("label",[]):
-                for ancestor_uri in elm.get("hierarchicalAncestor",[]):
-                    if ancestor_uri.endswith(f"{ontology_id.upper()}_{ancestor}"):
-                        return True
-    return False
-
-def _checkNCBITaxonTerm(term):
-    url = f"https://www.ebi.ac.uk/ols4/api/v2/ontologies/ncbitaxon/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_{term}?includeObsoleteEntities=false"
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        curie = data.get("curie","")
-        if curie == f"NCBITaxon:{term}":
-            return True
-    return False
 
 def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
 
@@ -342,6 +319,7 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
     return {"status": "success", "message": "Record deleted successfully!"}
 
 
+"""
 def submit_singlecell_ena(profile_id, target_ids, target_id,checklist_id, study_id):
     if target_id:
         target_ids = [target_id]
@@ -359,16 +337,15 @@ def submit_singlecell_ena(profile_id, target_ids, target_id,checklist_id, study_
         return dict(status='error', message="Please contact System Support Error 10211!")
     
     return dict(status='error', message="Not Implement.")        
+"""
 
-
-def submit_singlecell_zenodo(profile_id, target_ids, target_id, checklist_id, study_id):
+def submit_singlecell(profile_id, target_ids, target_id, checklist_id, study_id, repository="ena"):
     if target_id:
         target_ids = [target_id]
 
     if not target_ids:
         return dict(status='error', message="Please select one or more records to submit!")
     
-    repository = "zenodo"
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
     if not singlecell:
         return dict(status='error', message="No record found.")
@@ -382,5 +359,51 @@ def submit_singlecell_zenodo(profile_id, target_ids, target_id, checklist_id, st
         return result  
     else:
         #update the status of the singlecell record
-        Singlecell().update_component_status(singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository="zenodo", status_column_value={"status":"processing"})
+        Singlecell().update_component_status(singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository=repository, status_column_value={"status":"processing"})
         return dict(status='success', message="Submission has been scheduled.")
+
+
+def update_submission_pending():
+    component = "study"
+    subs = Submission().get_submission_downloading(component=component)
+    all_downloaded_sub_ids = []
+    for sub in subs:
+        all_file_downloaded = True
+        for study_id in sub[component]:
+            singlecell = Singlecell().get_collection_handle().find_one(
+                 {"profile_id":sub["profile_id"], "study_id":study_id,"deleted":get_not_deleted_flag()},
+                 {"schema_name":1,"checklist_id":1, "components":1})
+            if not singlecell:
+                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id= study_id)
+                continue
+            schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], target_id=singlecell["checklist_id"])
+            files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
+
+            local_path = [regex.Regex(f'{x}$') for x in files]
+            projection = {'_id':0, 'file_location':1, 'status':1}
+            filter = dict()
+            filter['local_path'] = {'$in': local_path}
+            filter['profile_id'] = sub["profile_id"]
+        
+            enaFiles = EnaFileTransfer().get_all_records_columns(filter_by=filter, projection=projection)
+ 
+            if not files and not enaFiles:
+                # No files to download, continue to the next study
+                continue
+
+            elif len(files) > len(enaFiles):
+                all_file_downloaded = False
+                # Log the missing files
+                missing_files = set(files) - {os.path.basename(enaFile["file_location"]) for enaFile in enaFiles}
+                Logger().error(f"Files not uploaded for submission {sub['_id']} : study {study_id} : {missing_files} ") 
+                break
+
+            elif not all( enaFile["status" ] == "complete" for enaFile in enaFiles):
+                all_file_downloaded = False
+                break
+
+        if all_file_downloaded:
+            all_downloaded_sub_ids.append(sub["_id"])
+
+    if all_downloaded_sub_ids:
+        Submission().update_submission_pending(all_downloaded_sub_ids, component="study")

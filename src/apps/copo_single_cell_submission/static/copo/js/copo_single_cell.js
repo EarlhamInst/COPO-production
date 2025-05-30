@@ -55,8 +55,50 @@ $(document).on('document_ready', function () {
     wsprotocol = 'wss://';
   }
   var wsurl = wsprotocol + window.location.host + '/ws/singlecell_status/' + profile_id;
+  var submission_wsurl =  wsprotocol + window.location.host + '/ws/submission_status/' + profile_id;
 
   s3socket = new WebSocket(wsurl);
+  submissionSocket = new WebSocket(submission_wsurl);
+  submissionSocket.onclose = function (e) {
+    console.log('submissionSocket closing ', e);
+  };
+  submissionSocket.onopen = function (e) {
+    console.log('submissionSocket opened ', e);
+  };
+
+  submissionSocket.onmessage = function (e) {
+    d = JSON.parse(e.data);
+    var element = '';
+
+    if (d.html_id != '') {
+      element = element = $('#' + d.html_id);
+ 
+      if (!d && !$(element).is(':hidden')) {
+        $(element).fadeOut('50');
+      } else if (d && d.message && $(element).is(':hidden')) {
+        $(element).fadeIn('50');
+      }
+    }
+    //$("#" + d.html_id).html(d.message)
+    if (d.action === 'info') {
+      // show something on the info div
+      // check info div is visible
+      $(element).removeClass('alert-danger').addClass('alert-info');
+      $(element).html(d.message);
+      //$("#spinner").fadeOut()
+    } else if (d.action === 'warning') {
+      // show something on the info div
+      // check info div is visible
+      $(element).removeClass('alert-danger').addClass('alert-warning');
+      $(element).html(d.message);
+      //$("#spinner").fadeOut()
+    } else if (d.action === 'error') {
+      // check info div is visible
+      $(element).removeClass('alert-info').addClass('alert-danger');
+      $(element).html(d.message);
+      //$("#spinner").fadeOut()
+    }
+};
 
   s3socket.onclose = function (e) {
     console.log('s3socket closing ', e);

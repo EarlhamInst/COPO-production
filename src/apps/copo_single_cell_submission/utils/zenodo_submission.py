@@ -12,7 +12,7 @@ import datetime
 import requests
 
 
-
+"""
 def update_submission_pending():
     component = "study"
     subs = Submission().get_submission_downloading(repository="zenodo", component=component)
@@ -57,9 +57,9 @@ def update_submission_pending():
 
     if all_downloaded_sub_ids:
         Submission().update_submission_pending(all_downloaded_sub_ids, component="study")
+"""
 
-
-def process_pending_submission():
+def process_pending_submission_zendo():
     submissions = Submission().get_pending_submission(repository="zenodo", component="study")
     if not submissions:
         return
@@ -76,7 +76,7 @@ def process_pending_submission():
             notify_singlecell_status(data={"profile_id": sub["profile_id"]},
                 msg=f"Submitting {study_id} to zenodo...",
                 action="info",
-                html_id="singlecell_submission_info")
+                html_id="submission_info")
         
             singlecell = Singlecell().get_collection_handle().find_one(
                  {"profile_id":sub["profile_id"], "study_id":study_id,"deleted": get_not_deleted_flag()},
@@ -88,7 +88,8 @@ def process_pending_submission():
                 notify_singlecell_status(data={"profile_id": sub["profile_id"]},
                     msg=msg,
                     action="error",
-                    html_id="singlecell_submission_info")
+                    html_id="submission_info")
+                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
                 continue
 
             singlecell_components = singlecell.get("components",{})
@@ -100,7 +101,7 @@ def process_pending_submission():
                 notify_singlecell_status(data={"profile_id": sub["profile_id"]},
                     msg=msg,
                     action="error",
-                    html_id="singlecell_submission_info")
+                    html_id="submission_info")
                 Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
                 continue
             study = studies[0]
@@ -180,7 +181,7 @@ def process_pending_submission():
                 notify_singlecell_status(data={"profile_id": sub["profile_id"]},
                     msg=f"Connection problem to zenodo: {str(e)}",
                     action="error",
-                    html_id="singlecell_submission_info")
+                    html_id="submission_info")
                 continue
 
             Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository="zenodo", status_column_value={"status": "accepted", "state" : deposition["state"],  "accession": str(deposition["id"]), "doi" : deposition.get("doi",""), "error": "", "embargo_date":deposition.get("metadata",{}).get("embargo_date","")})  
@@ -189,6 +190,6 @@ def process_pending_submission():
             notify_singlecell_status(data={"profile_id": sub["profile_id"]},
                     msg=f"{study_id} has been submitted to Zenodo.",
                     action="info",
-                    html_id="singlecell_submission_info")
+                    html_id="submission_info")
 
         Submission().add_component_submission_accession(sub_id=str(sub["_id"]), component="study", accessions=new_accessions)

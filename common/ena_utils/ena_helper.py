@@ -16,7 +16,7 @@ from common.schemas.utils.data_utils import simple_utc
 from common.lookup.lookup import SRA_SETTINGS
 from common.utils.helpers import notify_submission_status, get_datetime, get_env, json_to_pytype
 from lxml import etree
-from common.lookup.lookup import SRA_SAMPLE_TEMPLATE
+from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE
 from common.lookup.lookup import SRA_SETTINGS
 import pandas as pd
 import subprocess
@@ -25,6 +25,7 @@ import tempfile
 from common.dal.submission_da import Submission
 from common.dal.copo_da import EnaChecklist
 from common.dal.sample_da import Sample
+from src.apps.copo_single_cell_submission.utils.da import Singlecell 
 
 __author__ = 'etuka'
 __date__ = '02 April 2019'
@@ -40,6 +41,7 @@ class EnaSubmissionHelper:
     def __init__(self, submission_id=str(), profile_id=str()):
         self.submission_id = submission_id
         self.profile_id = profile_id
+        self.profile = Profile().get_record(self.profile_id)
 
     def logging_debug(self, message=str()):
         ghlper.logging_debug(message, self.submission_id)
@@ -73,7 +75,7 @@ class EnaSubmissionHelper:
         sra_settings = helpers.json_to_pytype(SRA_SETTINGS).get("properties", dict())
 
         # create submission xml
-        ghlper.logging_info("Creating submission xml...", self.submission_id)
+        self.logging_info("Creating submission xml..." )
 
         parser = etree.XMLParser(remove_blank_text=True)
         root = etree.parse(SRA_SUBMISSION_TEMPLATE, parser).getroot()
@@ -115,7 +117,7 @@ class EnaSubmissionHelper:
         :return:
         """
         # create submission xml
-        ghlper.logging_info("Creating submission xml for edit....", self.submission_id)
+        self.logging_info("Creating submission xml for edit....")
 
         parser = etree.XMLParser(remove_blank_text=True)
         root = etree.parse(submission_xml_path, parser).getroot()
@@ -149,15 +151,15 @@ class EnaSubmissionHelper:
             try:
                 tree.write(xml_file_path, encoding="utf8", xml_declaration=True, pretty_print=True)
             except Exception as e:
+                ghlper.logging_exception(e)
                 message = 'Error writing xml file ' + file_name + ": " + str(e)
-                ghlper.logging_error(message, self.submission_id)
+                self.logging_error(message)
                 result['message'] = message
                 result['status'] = False
-
-                return result
+                raise e
 
             message = file_name + ' successfully written to  ' + xml_file_path
-            ghlper.logging_info(message, self.submission_id)
+            self.logging_info(message)
 
             result['value'] = xml_file_path
 
@@ -215,7 +217,7 @@ class EnaSubmissionHelper:
             self.logging_debug(message, self.submission_id)
             result['message'] = message
             result['status'] = False
-            return result
+            raise e
 
         root = etree.fromstring(receipt)
 
@@ -255,10 +257,9 @@ class EnaSubmissionHelper:
             
         if is_new:
             submission_handler = Submission().get_collection_handle()
-            doc = submission_handler.find_one({"_id": ObjectId(self.submission_id)}, {"accessions": 1})
+            submission_record = submission_handler.find_one({"_id": ObjectId(self.submission_id)}, {"accessions": 1})
 
-            if doc:
-                submission_record = doc
+            if submission_record:
                 accessions = submission_record.get("accessions", dict())
                 previous = accessions.get('sample', list())
                 previous.extend(sample_accessions)
@@ -399,6 +400,172 @@ class EnaSubmissionHelper:
         return result
 
 
+
+
+    def register_project(self, submission_xml_path=str(), modify_submission_xml_path=str(), singlecell=None):
+        """
+        function creates and submits project (study) xml
+        :return:
+        """
+
+        # create project xml
+        log_message = "Registering project..."
+        #ghlper.logging_info(log_message, self.submission_id)
+        #ghlper.update_submission_status(status='info', message=log_message, submission_id=self.submission_id)
+        self.logging_info(log_message)
+
+        parser = etree.XMLParser(remove_blank_text=True)
+        root = etree.parse(SRA_PROJECT_TEMPLATE, parser).getroot()
+
+        # set SRA contacts
+        project = root.find('PROJECT')
+        sra_settings = helpers.json_to_pytype(SRA_SETTINGS).get("properties", dict())
+
+        # set project descriptors
+        study = singlecell.get("components", {}).get("study", [{}])[0]
+        project.set("alias", self.submission_id+":"+ study["study_id"])
+        project.set("center_name", sra_settings["sra_center"])
+
+        project_title = study.get("title", str())
+        project_description = study.get("description", str())
+
+        if project_title:
+            etree.SubElement(project, 'NAME').text = project_title 
+            etree.SubElement(project, 'TITLE').text = project_title
+        if project_description:
+            etree.SubElement(project, 'DESCRIPTION').text = project_description
+
+        # set project type - sequencing project
+        submission_project = etree.SubElement(project, 'SUBMISSION_PROJECT')
+        sequencing_project = etree.SubElement(submission_project, 'SEQUENCING_PROJECT')
+
+        locus_tags = study.get("ena_locus_tags","")
+        if locus_tags:
+            for tag in locus_tags.split(","):
+                etree.SubElement(sequencing_project, 'LOCUS_TAG_PREFIX').text = tag.strip()
+
+        output_location = tempfile.gettempdir()
+
+        # do it for modify
+        if study.get("accession_ena"):
+            result = self.process_project(output_location, root, modify_submission_xml_path, singlecell )
+        else:
+            result = self.process_project(output_location, root, submission_xml_path, singlecell)
+
+        Submission().remove_component_from_submission(sub_id=str(self.submission_id), component="study", component_ids=[singlecell["study_id"]])
+
+        if result['status'] is False:
+            message = "Study not registered."
+            self.logging_error(message)
+        else:        
+            message = f"Study {study["study_id"]} has been registered successfully to ENA."
+            self.logging_info(message)
+
+        #Submission().add_component_submission_accession(sub_id=str(self.submission_id), component="study", accessions=new_accessions)
+
+        return result
+
+ 
+    def process_project(self, output_location, root, submission_xml_path, singlecell):
+        """
+        function processes study xml
+        :param output_location:
+        :param root:
+        :param submission_xml_path:
+        :param sra_df:
+        :param is_new:
+        :return:
+        """
+        dt = get_datetime()
+
+        result = self.write_xml_file(output_location=output_location, xml_object=root, file_name="study.xml")
+        if result['status'] is False:
+            return result
+
+        study_xml_path = result['value']
+
+        result = dict(status=True, value='')
+
+        # register study to the ENA service
+        curl_cmd = 'curl -u "' + user_token + ':' + pass_word \
+                    + '" -F "SUBMISSION=@' \
+                    + submission_xml_path \
+                    + '" -F "PROJECT=@' \
+                    + study_xml_path \
+                    + '" "' + ena_service \
+                    + '"'
+        self.logging_debug(
+            "CURL command to submit study xml to ENA: " + curl_cmd.replace(pass_word, "xxxxxx"))
+
+        try:
+            receipt = subprocess.check_output(curl_cmd, shell=True)
+        except Exception as e:
+            ghlper.logging_exception(e)
+            message = 'API call error ' + str(e).replace(pass_word, "xxxxxx"),
+            self.logging_debug(message, self.submission_id)
+            raise e
+
+        root = etree.fromstring(receipt)
+
+        if root.get('success') == 'false':
+            result['status'] = False
+            result['message'] = "Couldn't register STUDY due to the following errors: "
+            errors = root.findall('.//ERROR')
+            if errors:
+                error_text = str()
+                for e in errors:
+                    error_text = error_text + " \n" + e.text
+
+                result['message'] = result['message'] + error_text
+
+            # log error
+            Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=singlecell["study_id"], repository="ena", status_column_value={"status": "rejected",  "error": result['message'] })  
+            self.logging_debug("Error in submitting study to ENA via CURL: " + str(result['message']))
+            return result
+
+
+         # save project accession
+        self.write_xml_file(output_location=output_location, xml_object=root, file_name="project_receipt.xml")
+        self.logging_info("Saving project accessions to the database")
+        project_accessions = list()
+        for accession_sec in root.findall('PROJECT'):
+            accession=accession_sec.get('accession', default=str()),
+            alias=accession_sec.get('alias', default=str()),
+            status=accession_sec.get('status', default=str()),
+            release_date=accession_sec.get('holdUntilDate', default=str()),
+            study_id=accession_sec.get('alias', default=str()).split(":")[-1]  # assuming study_id is the last part of the alias
+            project_accessions.append(
+                dict(
+                    accession=accession,
+                    alias=alias,
+                    status=status,
+                    release_date=release_date,
+                    study_id=study_id  # assuming study_id is the last part of the alias
+                )
+            )
+            Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=singlecell["study_id"], repository="ena", status_column_value={"status": "accepted", "state": status,  "accession": accession, "release_date": release_date, "error": ""})  
+
+        submission_record = Submission().get_collection_handle().find_one({"_id": ObjectId(self.submission_id)}, {"accessions.project": 1})
+
+        if submission_record:
+            updated_project_accessions = submission_record.get("accessions",{}).get('project',[])
+            if not updated_project_accessions:
+                updated_project_accessions = project_accessions
+            else:
+                for accession in updated_project_accessions:
+                    if accession.get('study_id',"") == singlecell["study_id"]:
+                        accession.update(project_accessions[0])
+                        break
+ 
+            Submission().get_collection_handle().update_one(
+                {"_id": ObjectId(str(submission_record.pop('_id')))},
+                {'$set': {"accessions.project": updated_project_accessions, "date_modified": dt}})
+
+            # update submission status
+            status_message = "Project successfully registered, and accessions saved."
+            self.logging_info (status_message)
+        return dict(status=True, value='')
+         
 class SubmissionHelper:
     def __init__(self, submission_id=str()):
         self.submission_id = submission_id

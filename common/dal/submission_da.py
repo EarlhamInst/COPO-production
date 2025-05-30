@@ -1085,7 +1085,7 @@ class Submission(DAComponent):
     def make_submission_downloading(self, profile_id, component, component_id, repository="zenodo"):
         sub_handle = self.get_collection_handle()
         submission = sub_handle.find_one(
-            {"profile_id": profile_id, "repository":"zenodo"}, {f"{component}_status": 1})
+            {"profile_id": profile_id, "repository":repository}, {f"{component}_status": 1})
         dt = helpers.get_datetime()
         user = ThreadLocal.get_current_user() 
 
@@ -1104,9 +1104,9 @@ class Submission(DAComponent):
             
         return dict(status='success', message="Submission has been scheduled!")
 
-    def get_submission_downloading(self, repository="zenodo", component="study"):
+    def get_submission_downloading(self, component="study"):
         subs = self.get_collection_handle().find(
-            {f"{component}_status": "downloading", "repository": repository, "deleted": helpers.get_not_deleted_flag()},
+            {f"{component}_status": "downloading", "deleted": helpers.get_not_deleted_flag()},
             {component: 1, "profile_id": 1, "date_modified": 1})
         return cursor_to_list(subs)
 
