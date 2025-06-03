@@ -246,7 +246,7 @@ paths:
         - Manifest
       summary: Get current manifest version
       description: >
-        If no manifest type is provided, COPO will return a list of projects brokered with the latest manifest version of each project.
+        If no manifest type is provided, COPO returns a list of project names along with the latest manifest version associated with each.
       parameters:
         - $ref: '#/components/parameters/manifest_type'
         - $ref: '#/components/parameters/return_type'
