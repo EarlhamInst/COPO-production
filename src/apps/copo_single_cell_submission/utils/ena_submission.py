@@ -10,6 +10,9 @@ from .SingleCellSchemasHandler import SingleCellSchemasHandler
 from .zenodo.deposition import Zenodo_deposition
 from common.ena_utils.ena_helper import EnaSubmissionHelper
 import tempfile
+from .da import SinglecellSchemas
+import pandas as pd
+
 
 def process_pending_submission_ena():
     submissions = Submission().get_pending_submission(repository="ena", component="study")
@@ -41,7 +44,7 @@ def process_pending_submission_ena():
                 ena_submission_helper.logging_error(msg)
                 Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
                 continue
-            
+
             output_location = tempfile.mkdtemp()
 
             context = ena_submission_helper.get_submission_xml(output_location)
@@ -60,4 +63,56 @@ def process_pending_submission_ena():
             modify_submission_xml_path = context['value']
 
              #submit study to ena 
-            return ena_submission_helper.register_project(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, singlecell=singlecell)   
+            context = ena_submission_helper.register_project(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, singlecell=singlecell)   
+            if context['status']:
+                _register_file(singlecell=singlecell)
+
+def _register_file(singlecell):
+    checklist_id = singlecell.get("checklist_id", "")
+    schema_name = singlecell.get("schema_name", "")
+    components = singlecell.get("components", {})
+
+    schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
+    identifier_map, foreign_key_map = SinglecellSchemas().get_key_map(schemas=schemas)
+    parent_map = SinglecellSchemas().get_parent_map(foreign_key_map)
+    file_component_data = components.get("file", [])
+    if not file_component_data:
+        return
+    file_component_df = pd.DataFrame.from_records(file_component_data)
+    file_component_schema = schemas.get("file", {})
+    if not file_component_schema:
+        Logger().error(f"Missing schema for file component in singlecell submission: {singlecell.get('study_id', 'Unknown')}")
+        return
+    file_component_schema_df = pd.DataFrame.from_records(file_component_schema)
+    file_component_schema_df["term_name"].tolist()
+    schema_columns = file_component_df.columns[file_component_df.columns.isin(file_component_schema_df["term_name"].tolist())]
+    file_component_df = file_component_df[schema_columns]
+    component_df = _merge_paranent_data(component_df=file_component_df, identifier_map=identifier_map, component_name="file", parent_map=parent_map, singlecell=singlecell, schemas=schemas)
+    component_df.drop(columns=[identifier_map["file"]], inplace=True, errors='ignore')
+    component_df
+    
+def _merge_paranent_data(component_df, identifier_map, component_name, parent_map, singlecell, schemas=None):
+    for referenced_component, foreign_key in parent_map[component_name].items():
+        if referenced_component in ["study", "sample"]:
+            continue
+        referenced_component_data = singlecell["components"].get(referenced_component, [])
+        if not referenced_component_data:
+            continue 
+        referenced_component_df = pd.DataFrame.from_records(referenced_component_data)
+        referenced_component_df.drop(columns=["study_id"], inplace=True, errors='ignore')
+        
+        referenced_component_schema = schemas.get(referenced_component, {})
+        if not referenced_component_schema:
+            continue
+        referenced_component_schema_df = pd.DataFrame.from_records(referenced_component_schema)
+        referenced_component_schema_df["term_name"].tolist()
+
+        schema_columns = referenced_component_df.columns[referenced_component_df.columns.isin(referenced_component_schema_df["term_name"].tolist())]
+        
+        component_df = component_df.merge(
+            referenced_component_df[schema_columns],
+            left_on=foreign_key,
+            right_on=identifier_map[referenced_component])
+        component_df = _merge_paranent_data(component_df, identifier_map, referenced_component, parent_map, singlecell, schemas)
+        component_df.drop(columns=[identifier_map[referenced_component]], inplace=True, errors='ignore')
+    return component_df

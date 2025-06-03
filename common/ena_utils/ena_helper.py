@@ -13,11 +13,8 @@ from common.utils import helpers
 from lxml import etree
 from common.lookup.lookup import SRA_SUBMISSION_TEMPLATE
 from common.schemas.utils.data_utils import simple_utc
-from common.lookup.lookup import SRA_SETTINGS
 from common.utils.helpers import notify_submission_status, get_datetime, get_env, json_to_pytype
-from lxml import etree
-from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE
-from common.lookup.lookup import SRA_SETTINGS
+from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SETTINGS
 import pandas as pd
 import subprocess
 import os
@@ -285,8 +282,6 @@ class EnaSubmissionHelper:
 
         return dict(status=True, value='')
 
-
-
     def register_samples(self, submission_xml_path=str(), modify_submission_xml_path=str(), samples=list()):    
         """
         function creates and submits sample xml
@@ -399,9 +394,6 @@ class EnaSubmissionHelper:
             self.logging_info(message)
         return result
 
-
-
-
     def register_project(self, submission_xml_path=str(), modify_submission_xml_path=str(), singlecell=None):
         """
         function creates and submits project (study) xml
@@ -465,7 +457,6 @@ class EnaSubmissionHelper:
 
         return result
 
- 
     def process_project(self, output_location, root, submission_xml_path, singlecell):
         """
         function processes study xml
@@ -501,8 +492,9 @@ class EnaSubmissionHelper:
             receipt = subprocess.check_output(curl_cmd, shell=True)
         except Exception as e:
             ghlper.logging_exception(e)
-            message = 'API call error ' + str(e).replace(pass_word, "xxxxxx"),
-            self.logging_debug(message, self.submission_id)
+            message = 'API call error ' + str(e).replace(pass_word, "xxxxxx")
+            self.logging_debug(message)
+            self.logging_error('API call error, please try it later')
             raise e
 
         root = etree.fromstring(receipt)
@@ -527,36 +519,35 @@ class EnaSubmissionHelper:
          # save project accession
         self.write_xml_file(output_location=output_location, xml_object=root, file_name="project_receipt.xml")
         self.logging_info("Saving project accessions to the database")
-        project_accessions = list()
+        project_accessions = dict()
         for accession_sec in root.findall('PROJECT'):
-            accession=accession_sec.get('accession', default=str()),
-            alias=accession_sec.get('alias', default=str()),
-            status=accession_sec.get('status', default=str()),
-            release_date=accession_sec.get('holdUntilDate', default=str()),
+            accession=accession_sec.get('accession', default=str())
+            alias=accession_sec.get('alias', default=str())
+            status=accession_sec.get('status', default=str())
+            release_date=accession_sec.get('holdUntilDate', default=str())
             study_id=accession_sec.get('alias', default=str()).split(":")[-1]  # assuming study_id is the last part of the alias
-            project_accessions.append(
-                dict(
+            project_accessions[study_id]= dict(
                     accession=accession,
                     alias=alias,
                     status=status,
                     release_date=release_date,
                     study_id=study_id  # assuming study_id is the last part of the alias
                 )
-            )
+            
             Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=singlecell["study_id"], repository="ena", status_column_value={"status": "accepted", "state": status,  "accession": accession, "release_date": release_date, "error": ""})  
 
         submission_record = Submission().get_collection_handle().find_one({"_id": ObjectId(self.submission_id)}, {"accessions.project": 1})
 
         if submission_record:
             updated_project_accessions = submission_record.get("accessions",{}).get('project',[])
-            if not updated_project_accessions:
-                updated_project_accessions = project_accessions
-            else:
-                for accession in updated_project_accessions:
-                    if accession.get('study_id',"") == singlecell["study_id"]:
-                        accession.update(project_accessions[0])
-                        break
- 
+            study_found = False
+            for accession in updated_project_accessions:
+                if accession.get('study_id',"") == singlecell["study_id"]:
+                    accession.update(project_accessions[singlecell["study_id"]])
+                    study_found = True
+                    break
+            if not study_found:
+                updated_project_accessions.append(project_accessions[singlecell["study_id"]])
             Submission().get_collection_handle().update_one(
                 {"_id": ObjectId(str(submission_record.pop('_id')))},
                 {'$set': {"accessions.project": updated_project_accessions, "date_modified": dt}})
@@ -565,7 +556,8 @@ class EnaSubmissionHelper:
             status_message = "Project successfully registered, and accessions saved."
             self.logging_info (status_message)
         return dict(status=True, value='')
-         
+
+
 class SubmissionHelper:
     def __init__(self, submission_id=str()):
         self.submission_id = submission_id

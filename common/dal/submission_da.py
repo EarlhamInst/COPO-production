@@ -4,7 +4,7 @@ from common.schema_versions.lookup.dtol_lookups import NON_SAMPLE_ACCESSION_TYPE
 from common.utils import helpers
 from common.utils.logger import Logger
 from .sample_da import Sample
-from .copo_da import DataFile
+from .copo_da import DataFile, EnaFileTransfer
 from .copo_base_da import DAComponent
 import pymongo.errors as pymongo_errors
 from bson import ObjectId, json_util

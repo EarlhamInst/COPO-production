@@ -250,7 +250,7 @@ def save_singlecell_records(request, profile_id, schema_name):
 
 
     singlecell_record["updated_by"] = uid
-    singlecell_record["date_updated"] = now
+    singlecell_record["date_modified"] = now
     singlecell_record["deleted"] = get_not_deleted_flag()
 
 
@@ -264,10 +264,10 @@ def save_singlecell_records(request, profile_id, schema_name):
 
     
     sub = dict()
-    sub["complete"] = "false"
-    sub["updated_by"] = uid
-    sub["deleted"] = get_not_deleted_flag()
-    sub["date_updated"] = now
+    #sub["complete"] = "false"
+    #sub["updated_by"] = uid
+    #sub["deleted"] = get_not_deleted_flag()
+    
 
     insert_sub = dict()
     insert_sub["date_created"] = now
@@ -275,7 +275,8 @@ def save_singlecell_records(request, profile_id, schema_name):
     insert_sub["repository"] = "ena"
     insert_sub["accessions"] = dict()
     insert_sub["profile_id"] = profile_id
-    
+    insert_sub["date_modified"] = now
+
     sub = Submission().get_collection_handle().find_one_and_update({"profile_id": profile_id}, {"$set": sub,                                                             
                                                              "$setOnInsert": insert_sub},
                                                              upsert=True,

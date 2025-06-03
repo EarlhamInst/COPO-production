@@ -12,6 +12,7 @@ from common.dal.mongo_util import cursor_to_list
 from django.conf import settings
 from bson import regex
 import os
+import common.ena_utils.FileTransferUtils as tx
 
 l = Logger()
 
@@ -354,6 +355,15 @@ def submit_singlecell(profile_id, target_ids, target_id, checklist_id, study_id,
     if studies[0].get(f"status_{repository}", "") == "processing":
         return dict(status='error', message="Submission is in progress, please wait until it is completed!")
 
+    submissions = Submission().execute_query({"profile_id": profile_id, "repository": repository, "deleted": get_not_deleted_flag()})
+    schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get("schema_name", singlecell["schema_name"]), target_id=singlecell["checklist_id"])
+    files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
+    if files:
+        if repository == "ena":
+            datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name": {"$in": files}}, projection={"_id": 1})
+            for file in datafiles:
+                tx.make_transfer_record(file["_id"], str(submissions[0]["_id"] ))
+            
     result =  Submission().make_submission_downloading(profile_id=profile_id, component="study", component_id=study_id, repository=repository)
     if result.get("status","") == "error":
         return result  

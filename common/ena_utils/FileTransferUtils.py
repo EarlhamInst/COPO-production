@@ -62,7 +62,7 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
         ena_file = {"status":"pending", "remote_path":remote_location}
     
     if ena_file["status"] != "processing":
-        if remote_location and ena_file["remote_path"] != remote_location or get_transfer_status(ena_file) >= TransferStatus.DOWNLOADED_TO_LOCAL:
+        if remote_location and ena_file.get("remote_path","") != remote_location or get_transfer_status(ena_file) >= TransferStatus.DOWNLOADED_TO_LOCAL:
             tx["transfer_status"] = 5
         else:
             tx["transfer_status"] = 1
