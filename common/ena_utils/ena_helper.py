@@ -449,7 +449,7 @@ class EnaSubmissionHelper:
             message = "Study not registered."
             self.logging_error(message)
         else:        
-            message = f"Study {study["study_id"]} has been registered successfully to ENA."
+            message = f"Study {study['study_id']} has been registered successfully to ENA."
             self.logging_info(message)
 
         #Submission().add_component_submission_accession(sub_id=str(self.submission_id), component="study", accessions=new_accessions)
