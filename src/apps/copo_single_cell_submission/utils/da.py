@@ -52,6 +52,13 @@ class SinglecellSchemas(DAComponent):
             component_df.fillna("", inplace=True)
             return component_df
 
+    def get_term_mapping(self, schema_name):
+        #get all the components from the schema
+        singlecell = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name},{"term_mapping":1})
+        if singlecell:
+            return singlecell["term_mapping"]
+        return {}
+
     #target_id is the checklist_id
     def get_schema(self, schema_name, target_id=str()) :
         schemas = {}

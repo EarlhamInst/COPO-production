@@ -14,7 +14,7 @@ from lxml import etree
 from common.lookup.lookup import SRA_SUBMISSION_TEMPLATE
 from common.schemas.utils.data_utils import simple_utc
 from common.utils.helpers import notify_submission_status, get_datetime, get_env, json_to_pytype
-from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SETTINGS
+from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SETTINGS, SRA_RUN_TEMPLATE,SRA_EXPERIMENT_TEMPLATE
 import pandas as pd
 import subprocess
 import os
@@ -23,6 +23,7 @@ from common.dal.submission_da import Submission
 from common.dal.copo_da import EnaChecklist
 from common.dal.sample_da import Sample
 from src.apps.copo_single_cell_submission.utils.da import Singlecell 
+from common.utils.copo_lookup_service import COPOLookup
 
 __author__ = 'etuka'
 __date__ = '02 April 2019'
@@ -39,6 +40,7 @@ class EnaSubmissionHelper:
         self.submission_id = submission_id
         self.profile_id = profile_id
         self.profile = Profile().get_record(self.profile_id)
+        self.sra_settings = json_to_pytype(SRA_SETTINGS).get("properties", dict())
 
     def logging_debug(self, message=str()):
         ghlper.logging_debug(message, self.submission_id)
@@ -69,7 +71,6 @@ class EnaSubmissionHelper:
         function creates and return submission xml path
         :return:
         """
-        sra_settings = helpers.json_to_pytype(SRA_SETTINGS).get("properties", dict())
 
         # create submission xml
         self.logging_info("Creating submission xml..." )
@@ -78,8 +79,8 @@ class EnaSubmissionHelper:
         root = etree.parse(SRA_SUBMISSION_TEMPLATE, parser).getroot()
 
         # set submission attributes
-        root.set("broker_name", sra_settings["sra_broker"])
-        root.set("center_name", sra_settings["sra_center"])
+        root.set("broker_name", self.sra_settings["sra_broker"])
+        root.set("center_name", self.sra_settings["sra_center"])
         root.set("submission_date", datetime.utcnow().replace(tzinfo=simple_utc()).isoformat())
 
         # set SRA contacts
@@ -87,9 +88,9 @@ class EnaSubmissionHelper:
 
         # set copo sra contacts
         copo_contact = etree.SubElement(contacts, 'CONTACT')
-        copo_contact.set("name", sra_settings["sra_broker_contact_name"])
-        copo_contact.set("inform_on_error", sra_settings["sra_broker_inform_on_error"])
-        copo_contact.set("inform_on_status", sra_settings["sra_broker_inform_on_status"])
+        copo_contact.set("name", self.sra_settings["sra_broker_contact_name"])
+        copo_contact.set("inform_on_error", self.sra_settings["sra_broker_inform_on_error"])
+        copo_contact.set("inform_on_status", self.sra_settings["sra_broker_inform_on_status"])
 
         # set user contacts
         sra_map = {"inform_on_error": "SRA Inform On Error", "inform_on_status": "SRA Inform On Status"}
@@ -289,7 +290,6 @@ class EnaSubmissionHelper:
         """
         output_location = tempfile.gettempdir() 
 
-        sra_settings = json_to_pytype(SRA_SETTINGS).get("properties", dict())
         result = dict(status=True, value='')
         dt = get_datetime()
 
@@ -328,8 +328,8 @@ class EnaSubmissionHelper:
             sra_samples.append(dict(sample_id=str(sample['_id']), sample_alias=sample_alias))
             sample_node = etree.SubElement(root, 'SAMPLE')
             sample_node.set("alias", sample_alias)
-            sample_node.set("center_name", sra_settings["sra_center"])
-            sample_node.set("broker_name", sra_settings["sra_broker"])
+            sample_node.set("center_name", self.sra_settings["sra_center"])
+            sample_node.set("broker_name", self.sra_settings["sra_broker"])
 
             etree.SubElement(sample_node, 'TITLE').text = sample_alias
             sample_name_node = etree.SubElement(sample_node, 'SAMPLE_NAME')
@@ -411,12 +411,11 @@ class EnaSubmissionHelper:
 
         # set SRA contacts
         project = root.find('PROJECT')
-        sra_settings = helpers.json_to_pytype(SRA_SETTINGS).get("properties", dict())
 
         # set project descriptors
         study = singlecell.get("components", {}).get("study", [{}])[0]
         project.set("alias", self.submission_id+":"+ study["study_id"])
-        project.set("center_name", sra_settings["sra_center"])
+        project.set("center_name", self.sra_settings["sra_center"])
 
         project_title = study.get("title", str())
         project_description = study.get("description", str())
@@ -444,7 +443,7 @@ class EnaSubmissionHelper:
         else:
             result = self.process_project(output_location, root, submission_xml_path, singlecell)
 
-        Submission().remove_component_from_submission(sub_id=str(self.submission_id), component="study", component_ids=[singlecell["study_id"]])
+        #Submission().remove_component_from_submission(sub_id=str(self.submission_id), component="study", component_ids=[singlecell["study_id"]])
 
         if result['status'] is False:
             message = "Study not registered."
@@ -557,6 +556,219 @@ class EnaSubmissionHelper:
             self.logging_info (status_message)
         return dict(status=True, value='')
 
+
+    def register_files(self, submission_xml_path=str(), modify_submission_xml_path=str(), component_df=pd.DataFrame(), identifier_map={}, singlecell=None):   
+        """
+        function creates and submits datafile xml
+        :return:
+        """
+        instruments = COPOLookup(data_source='sequencing_instrument').broker_data_source()
+        output_location = tempfile.gettempdir()
+        non_attribute_names =[]
+
+        study = singlecell.get("components", {}).get("study", [{}])[0]
+        project_accession = study.get("accession_ena", str())
+
+        samples = singlecell.get("components", {}).get("sample", [])
+        sample_accession_map = {sample[identifier_map["sample"]]: sample['biosampleAccession'] for sample in samples  }
+        errors = []
+        file_identifier = identifier_map["file"]
+        for index, row in component_df.iterrows():
+
+            # create datafile xml
+            log_message = f"Registering {row[file_identifier]} ..."
+            self.logging_info(log_message)
+            #ghlper.logging_info(log_message, self.submission_id)
+            #notify_submission_status(data={"profile_id": self.profile_id}, msg=log_message, action="info", html_id="datafile_info")
+
+            parser = etree.XMLParser(remove_blank_text=True)
+            experiment_root = etree.parse(SRA_EXPERIMENT_TEMPLATE, parser).getroot()
+            run_root = etree.parse(SRA_RUN_TEMPLATE, parser).getroot()
+
+            column_name = "study_id"
+            non_attribute_names.append(column_name)
+            non_attribute_names.append(file_identifier)
+            submission_name = str(self.submission_id) + "_reads_" + row[column_name] + row[file_identifier]
+            # add experiment node to experiment set
+            experiment_node = etree.SubElement(experiment_root, 'EXPERIMENT')
+            experiment_alias = "copo-reads-" + submission_name
+            experiment_node.set("alias", experiment_alias)
+            experiment_node.set("center_name", self.sra_settings["sra_center"])
+
+            etree.SubElement(experiment_node, 'TITLE').text = submission_name
+            etree.SubElement(experiment_node, 'STUDY_REF').set("accession", project_accession)
+
+            # design
+            experiment_design_node = etree.SubElement(experiment_node, 'DESIGN')
+            column_name = "design_description"
+            non_attribute_names.append(column_name)
+            etree.SubElement(experiment_design_node, 'DESIGN_DESCRIPTION').text = row.get(column_name, str())
+            etree.SubElement(experiment_design_node, 'SAMPLE_DESCRIPTOR').set("accession", sample_accession_map[row["sample_id"]])
+
+            # descriptor
+            experiment_library_descriptor_node = etree.SubElement(experiment_design_node, 'LIBRARY_DESCRIPTOR')
+
+            for name in ["library_name", "library_strategy", "library_source", "library_selection"]:
+                non_attribute_names.append(name)
+                etree.SubElement(experiment_library_descriptor_node, name.upper()).text = row.get(name, str())
+
+            column_name = "library_layout"
+            non_attribute_names.append(column_name)
+            experiment_library_layout_node = etree.SubElement(experiment_library_descriptor_node, column_name.upper()) 
+            etree.SubElement(experiment_library_layout_node, row.get("library_layout"))
+
+            # platform
+            column_name = "sequencing_instrument_model"
+            non_attribute_names.append(column_name)
+            sequencing_instrument = row.get(column_name, str())
+            inst_plat = [inst['platform'] for inst in instruments if inst['value'] == sequencing_instrument]
+
+            if len(inst_plat):
+                experiment_platform_node = etree.SubElement(experiment_node, 'PLATFORM')
+                experiment_platform_type_node = etree.SubElement(experiment_platform_node, inst_plat[0])
+                etree.SubElement(experiment_platform_type_node, 'INSTRUMENT_MODEL').text = sequencing_instrument
+
+            experiment_attributes = etree.SubElement(experiment_node, 'EXPERIMENT_ATTRIBUTES')
+
+            for key, items in row.items():
+                if key not in non_attribute_names:
+                    experiment_attribute = etree.SubElement(experiment_attributes, 'EXPERIMENT_ATTRIBUTE')
+                    etree.SubElement(experiment_attribute, 'TAG').text = key
+                    etree.SubElement(experiment_attribute, 'VALUE').text = str(items)
+
+            submission_location = os.path.join(output_location, self.profile_id,row["study_id"],row[file_identifier])
+            os.makedirs(submission_location, exist_ok=True)
+
+            # write experiement xml
+            result = self.write_xml_file(output_location=submission_location, xml_object=experiment_root,
+                                            file_name="experiment.xml")
+            
+
+            if result['status'] is False:
+                errors.append(result['message'])
+                continue
+
+            experiement_xml_path = result['value']
+
+            # add run node to run set
+            run_node = etree.SubElement(run_root, 'RUN')
+            run_node.set("alias", experiment_alias)
+            run_node.set("center_name", self.sra_settings["sra_center"])
+            etree.SubElement(run_node, 'TITLE').text = submission_name
+            etree.SubElement(run_node, 'EXPERIMENT_REF').set("refname", experiment_alias)
+
+            run_data_block_node = etree.SubElement(run_node, 'DATA_BLOCK')
+            run_files_node = etree.SubElement(run_data_block_node, 'FILES')
+
+            for name in ["read_1_file", "read_2_file"]:
+                if row[name] is None or row[name] == "":
+                    continue
+
+                run_file_node = etree.SubElement(run_files_node, 'FILE')
+                run_file_node.set("filename", os.path.join(self.remote_location, row[name])) #TBC for remote_location
+                
+                _, file_extension = os.path.splitext(row[name])
+                if file_extension in [".cram", ".bam"]:
+                    run_file_node.set("filetype", file_extension[1:]) 
+                else :
+                    run_file_node.set("filetype", "fastq")  # todo: what about BAM, CRAM files?
+                run_file_node.set("checksum", row[name+"_checksum"])  # todo: is this correct as submission time?
+                run_file_node.set("checksum_method", "MD5")
+
+            # write run xml
+            result = self.write_xml_file(output_location=submission_location, xml_object=run_root,
+                                         file_name="run.xml")
+
+            if result['status'] is False:
+                errors.append(result['message'])
+                continue
+
+            run_xml_path = result['value']
+
+            is_new = True
+            if row["accession_ena"]:
+                is_new = False
+                final_submission_xml_path = modify_submission_xml_path
+            else:
+                final_submission_xml_path = submission_xml_path
+
+            curl_cmd = 'curl -u "' + self.user_token + ':' + self.pass_word \
+                       + '" -F "SUBMISSION=@' \
+                       + final_submission_xml_path \
+                       + '" -F "EXPERIMENT=@' \
+                       + experiement_xml_path \
+                       + '" -F "RUN=@' \
+                       + run_xml_path \
+                       + '" "' + self.ena_service \
+                       + '"'
+
+            self.logging_debug(
+                "Submitting EXPERIMENT and RUN XMLs for " +  
+                    row[identifier] + " using CURL. CURL command is: " + curl_cmd.replace(self.pass_word,
+                                                                                                 "xxxxxx"),
+                self.submission_id)
+
+            try:
+                receipt = subprocess.check_output(curl_cmd, shell=True)
+            except Exception as e:
+                ghlper.logging_exception(e)
+                message = 'API call error ' + str(e).replace(self.pass_word, "xxxxxx"),
+                self.logging_error(message, self.submission_id)
+                errors.append(message)
+                raise e
+
+            receipt_root = etree.fromstring(receipt)
+
+            if receipt_root.get('success') == 'false':
+                result['status'] = False
+                result['message'] = "Submission error for datafiles: " + row[identifier] + " due to the following errors: "
+                errors = receipt_root.findall('.//ERROR')
+                if errors:
+                    error_text = str()
+                    for e in errors:
+                        error_text = error_text + " \n" + e.text
+
+                    result['message'] = result['message'] + error_text
+
+                # log error
+                ghlper.logging_error(result['message'], self.submission_id)
+
+                errors.append(result['message'])
+                continue
+
+            # retrieve and save accessions
+            self.write_xml_file(location=submission_location, xml_object=receipt_root, file_name="receipt.xml")
+            self.logging_info("Saving EXPERIMENT and RUN accessions to the database")
+            run_dict = dict(
+                accession=receipt_root.find('RUN').get('accession', default=str()),
+                alias=receipt_root.find('RUN').get('alias', default=str()),
+                project_accession=project_accession
+            )
+
+            experiment_dict = dict(
+                accession=receipt_root.find('EXPERIMENT').get('accession', default=str()),
+                alias=receipt_root.find('EXPERIMENT').get('alias', default=str()),
+                project_accession=project_accession
+            )
+
+            if is_new:
+                submission_record = Submission().get_collection_handle().updateOne({"_id": ObjectId(self.submission_id)},
+                                                            {"$addToSet": {"accessions.run": run_dict, "accessions.experiment": experiment_dict}})
+                
+                Singlecell().update_component_status(id=singlecell["_id"], component="file", identifier=identifier, identifier_value=row[identifier], repository="ena", status_column_value={"status": "accepted", "accession": run_dict["accession"], 'run_accession':run_dict["accession"],'experiment_accession': experiment_dict["accession"], "error": ""})
+
+        if errors:
+            message = "Datafiles not registered due to the following errors: " + ", ".join(errors)
+            self.logging_error(message)
+            result['status'] = False
+            result['message'] = message
+        else:
+            message = "Datafiles registered successfully."
+            self.logging_info(message)
+            result['status'] = True
+            result['message'] = message
+
+        return result
 
 class SubmissionHelper:
     def __init__(self, submission_id=str()):

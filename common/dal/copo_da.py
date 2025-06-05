@@ -1022,7 +1022,7 @@ class EnaChecklist(DAComponent):
                     checklist["fields"] = fields
             
             df = pd.DataFrame.from_dict(checklist["fields"], orient='index')
-            df.fillna("", inplace=True)
+            
             
             if "read_field" in df.columns:
                 df["read_field"] = df["read_field"].fillna(False)
@@ -1038,6 +1038,7 @@ class EnaChecklist(DAComponent):
             if with_sample and with_read:
                 df = df.loc[(df["shown_when_no_sample"] == False) | (df["shown_when_no_sample"].isnull())]
             #df.set_index("name", drop=False, inplace=True)
+            df.fillna("", inplace=True)
             checklist["fields"] = df.to_dict('index')
             return checklist
 

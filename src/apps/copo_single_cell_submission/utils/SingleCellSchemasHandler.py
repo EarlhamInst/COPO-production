@@ -44,6 +44,7 @@ class SingleCellSchemasHandler:
         compoents_df = pd.read_excel(xls, "components", index_col="key")
         standards_df = pd.read_excel(xls, "standards", index_col="key")
         technology_df = pd.read_excel(xls, "technologies", index_col="key")
+        term_mapping_df = pd.read_excel(xls, "term_mapping", index_col="copo_name")
         checklist_df = pd.read_excel(xls, "checklists", index_col="key")
         schemas_df = pd.read_excel(xls, "data")
 
@@ -111,6 +112,7 @@ class SingleCellSchemasHandler:
         singlecell_dict["technologies"]= technology_df.to_dict("index")
         singlecell_dict["components"]= compoents_df.to_dict("index")
         singlecell_dict["checklists"]= checklist_df.to_dict("index")
+        singlecell_dict["term_mapping"] = term_mapping_df.to_dict("index")
         singlecell_dict["name"] = schema_name
         singlecell_dict["deleted"] = 0
         singlecell_dict["date_modified"] = get_datetime()
@@ -186,7 +188,7 @@ class SingleCellSchemasHandler:
                         if singlecell is not None:
                             component_data_df = pd.DataFrame.from_records(singlecell["components"].get(component_name, []))
                             if not component_data_df.empty:
-                                new_column_name = { field["term_name"] : field["term_label" ]+ (" (optional)" if  field[schema_checklist] != 'M' else "") for field in schema }
+                                new_column_name = { field["term_name"] : field["term_label" ]+ (" (optional)" if  field[schema_checklist] != 'M' else "") for field in schema if field[schema_checklist] in ["M","O"] }
                                 component_data_df.drop(columns=list(set(component_data_df.columns) - set(new_column_name.keys())), inplace=True)
                                 component_data_df.rename(columns=new_column_name, inplace=True)
 
