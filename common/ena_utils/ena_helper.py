@@ -592,7 +592,7 @@ class EnaSubmissionHelper:
             column_name = "study_id"
             non_attribute_names.append(column_name)
             non_attribute_names.append(file_identifier)
-            submission_name = str(self.submission_id) + "_" + row[column_name] + + "_"+ row[file_identifier]
+            submission_name = str(self.submission_id) + "_" + row[column_name] +  "_"+ row[file_identifier]
             # add experiment node to experiment set
             experiment_node = etree.SubElement(experiment_root, 'EXPERIMENT')
             experiment_alias = "copo-reads-" + submission_name
