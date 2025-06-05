@@ -437,7 +437,7 @@ def copo_singlecell(request, schema_name, profile_id, ui_component):
             checklist = {"primary_id": key, "name": item.get("name", ""), "description": item.get("description", "")}
             checklists.append(checklist)
 
-    return render(request, 'copo/copo_single_cell.html', {'profile_id': profile_id, 'schema_name': schema_name, 'profile': profile, 'schema_name':schema_name, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids, "ui_component":ui_component.lower() if ui_component else "singlecell"})
+    return render(request, 'copo/copo_single_cell.html', {'profile_id': profile_id, 'profile': profile, 'schema_name':schema_name, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids, "ui_component":ui_component.lower() if ui_component else "singlecell"})
 
 
 @login_required
