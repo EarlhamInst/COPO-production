@@ -40,7 +40,7 @@ $(document).ready(function () {
 
   // Set text colour according to the current theme on the 'Contact' web page
   let contact_form_label = $('#email_form').find('label');
-  if ($('.gray-theme').is(':visible') && $('#contact-sec').is(':visible')) {
+  if ($('.grey-theme').is(':visible') && $('#contact-sec').is(':visible')) {
     contact_form_label.addClass('white-text');
   } else {
     contact_form_label.removeClass('white-text');

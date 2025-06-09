@@ -5,7 +5,7 @@
 
 {% block topbanner %}
     Manifests
-    <span id="spinner_div" class="pull-right" style="font-size:12px; font-weight:normal">
+    <span id="spinner_div" class="pull-right hidden" style="font-size:12px; font-weight:normal">
             <h4 class="h4" style="font-weight:bold">Status</h4>
             <div class="alert alert-info" style="min-width: 400px; min-height: 55px;" role="alert">
                 <span id="spinner" style="margin-top:10px" class="pull-right ui tiny active inline loader"></span>
@@ -17,31 +17,94 @@
 {% endblock %}
 
 {% block content %}
-    <p style="  display: inline-block;vertical-align: middle;margin: 10px 0;">
-        Current Tree of Life Manifests </p>
-
-    <div style="margin-left: 40px">
-        <table class="ui padded table" style="text-align: center">
+    <div>
+        {#  Search box #}
+        <div class="manifest-filter-div">
+            <i class="fas fa-filter manifest-filter-icon"></i>
+            <input type="text" id="manifestFilter" placeholder="Filter by keyword...">
+        </div>
+        {#  Table #}
+        <table id="manifestTable" class="ui padded table" style="text-align: center">
             <thead>
             <tr>
-                <th>Manifest Type</th>
-                <th>Version</th>
+                <th></th>
+                <th>Manifest (Checklist) Type</th>
+                <th>Current Version</th>
                 <th></th>
             </tr>
             </thead>
-            <tbody>
+            {% for row in manifest_rows %}
             <tr>
-                <td>ASG (Aquatic Symbiosis Genomics)</td>
-                <td id="current_asg_version"></td>
+              <td class="table-header">
+                {% if row.title %}
+                  <span class="text-hover" data-toggle="tooltip" title="{{ row.title }}">{{ row.label_prefix }}</span>&nbsp;{{ row.label_suffix }}
+                {% else %}
+                  {{ row.label_prefix }}&nbsp;{{ row.label_suffix }}
+                {% endif %}
+              </td>
+              <td id="{{ row.prefix }}ManifestOptions"></td>
+              <td id="{{ row.prefix }}ManifestVersion"></td>
+              <td id="{{ row.prefix }}DownloadOptions"></td>
+            </tr>
+          {% endfor %}
+            <!-- <tbody>
+                <tr>
+                    <td class="table-header">
+                        <span class="text-hover" title="Collaborative OPen Omics">COPO</span> samples
+                    </td>
+                    <td id="copoSamplesManifestOptions"></td>
+                    <td id="copoSamplesManifestVersion"></td>
+                    <td id="copoSamplesDownloadMenu"></td>
+                </tr>
+                <tr>
+                    <td class="table-header">
+                        <span class="text-hover" title="European Nucleotide Archive">ENA</span> samples</td>
+                        <td id="enaSamplesManifestOptions"></td>
+                        <td id="enaSamplesManifestVersion"></td>
+                        <td id="enaSamplesDownloadMenu"></td>
+                    </tr>
+                <tr>
+                    <td class="table-header">
+                        <span class="text-hover" title="European Nucleotide Archive">ENA</span> barcode</td>
+                        <td id="enaBarcodeManifestOptions"></td>
+                        <td id="enaBarcodeSamplesManifestVersion"></td>
+                        <td id="enaBarcodeDownloadMenu"></td>
+                    </tr>
+                <tr>
+                    <td class="table-header">
+                    <span class="text-hover" title="European Nucleotide Archive">ENA</span> read</td>
+                    <td id="enaReadManifestOptions"></td>
+                    <td id="enaReadManifestVersion"></td>
+                    <td id="enaReadDownloadMenu"></td>
+                </tr>
+                <tr>
+                    <td class="table-header">
+                    <span class="text-hover" title="Tree of Life">ToL</span> samples</td>
+                    <td id="tolSamplesManifestOptions"></td>
+                    <td id="tolSamplesManifestVersion"></td>
+                    <td id="tolSamplesDownloadMenu"></td>
+                </tr>
+                <tr>
+                    <td class="table-header">Single-cell</td>
+                    <td id="singleCellManifestOptions"></td>
+                    <td id="singleCellManifestVersion"></td>
+                    <td id="singleCellDownloadMenu"></td>
+                </tr>
+            </tbody> -->
+            <!-- <tbody>
+            <tr>
+                <td>Samples</td>
+                <td>ASG - Aquatic Symbiosis Genomics</td>
+                <td id="asg_current_version"></td>
                 <td>
                     <div class="dropdown">
-                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu2"
+                        <button class="btn btn-default dropdown-toggle" type="button" id="asgDropdownMenu"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                             Download
                             <span class="caret"></span>
                         </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                            <li><a href="{{ 'ASG'|get_blank_manifest_url  }}">
+                        <ul class="dropdown-menu" aria-labelledby="asgDropdownMenu">
+                            <li><a href="{{ 'ASG'| get_blank_manifest_url  }}">
                                 Blank template</a></li>
                             <li role="separator" class="divider"></li>
                             <li><a id="asg_prefilled_template_option" class="wizard-link" href="javascript:"
@@ -56,17 +119,37 @@
                 </td>
             </tr>
             <tr>
-                <td>DTOL (Darwin Tree of Life)</td>
-                <td id="current_dtol_version"></td>
+                <td>Barcoding</td>
+                <td>1.0</td>
                 <td>
                     <div class="dropdown">
-                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1"
+                        <button class="btn btn-default dropdown-toggle" type="button" id="barcodingDropdownMenu"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                             Download
                             <span class="caret"></span>
                         </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                            <li><a href="{{  'DTOL'|get_blank_manifest_url  }}">
+                        <ul class="dropdown-menu" aria-labelledby="barcodingDropdownMenu">
+                            <li><a href="{% static 'assets/manifests/BARCODING_MANIFEST_TOL_TEMPLATE.xlsx' %}">
+                                Blank template</a>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Samples</td>
+                <td>DToL - Darwin Tree of Life</td>
+                <td id="dtol_current_version"></td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-default dropdown-toggle" type="button" id="dtolDropdownMenu"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            Download
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dtolDropdownMenu">
+                            <li><a href="{{  'DTOL'| get_blank_manifest_url  }}">
                                 Blank template</a></li>
                             <li role="separator" class="divider"></li>
                             <li><a id="dtol_prefilled_template_option" class="wizard-link" href="javascript:"
@@ -80,8 +163,8 @@
                 </td>
             </tr>
             <tr>
-                <td>ERGA (European Reference Genome Atlas)</td>
-                <td id="current_erga_version"></td>
+                <td>ERGA - European Reference Genome Atlas</td>
+                <td id="erga_current_version"></td>
                 <td>
                     <div class="dropdown">
                         <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu3"
@@ -90,7 +173,7 @@
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenu3">
-                            <li><a href="{{'ERGA'|get_blank_manifest_url }}">
+                            <li><a href="{{'ERGA'| get_blank_manifest_url }}">
                                 Blank template</a></li>
                             <li role="separator" class="divider"></li>
                             <li><a id="erga_prefilled_template_option" class="wizard-link" href="javascript:"
@@ -104,21 +187,62 @@
                 </td>
             </tr>
             <tr>
-                <td>Barcoding</td>
-                <td>1.0</td>
-                <td><a href="{% static 'assets/manifests/BARCODING_MANIFEST_TOL_TEMPLATE.xlsx' %}">BARCODING_MANIFEST_TOL_TEMPLATE.xlsx</a>
+                <td>DwC - Darwin Core samples</td>
+                <td id="dwc_current_version"></td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-default dropdown-toggle" type="button" id="dwcDropdownMenu"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            Download
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dwcDropdownMenu">
+                            <li><a href="{% static 'assets/manifests/READS_MANIFEST_TOL_TEMPLATE.xlsx' %}">
+                                Blank template</a>
+                            </li>
+                        </ul>
+                    </div>
                 </td>
                 <td></td>
             </tr>
             <tr>
+                <td>FAANG - Functional Annotation of Animal Genomes</td>
+                <td id="faang_current_version"></td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-default dropdown-toggle" type="button" id="faangDropdownMenu"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            Download
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="faangDropdownMenu">
+                            <li><a href="{{'FAANG'| get_blank_manifest_url }}">
+                                Blank template</a>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+            <tr>
                 <td>Reads</td>
                 <td>1.0</td>
-                <td><a
-                        href="{% static 'assets/manifests/READS_MANIFEST_TOL_TEMPLATE.xlsx' %}">READS_MANIFEST_TOL_TEMPLATE.xlsx</a>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuReads"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            Download
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuReads">
+                            <li><a href="{% static 'assets/manifests/READS_MANIFEST_TOL_TEMPLATE.xlsx' %}">
+                                Blank template</a>
+                            </li>
+                        </ul>
+                    </div>
                 </td>
                 <td></td>
             </tr>
-            </tbody>
+            </tbody> -->
         </table>
     </div>
     {#  Modal wizard starts #}
@@ -238,6 +362,28 @@
         </div>
     </div>
     {#  Modal wizard ends #}
+
+    <!-- Dropdown menu template for manifest dropdown -->
+    <div id="manifestDropdownTemplate" class="dropdown manifest-dropdown-wrapper hidden">
+        <button id="manifestDropdownMenu" class="btn btn-default dropdown-toggle" type="button" 
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Manifest Options <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu manifest-options-menu" aria-labelledby="manifestDropdownTemplate">
+            <!-- Populated dynamically -->
+        </ul>
+    </div>
+
+    <!-- Dropdown menu template for download menu -->
+    <div id="downloadDropdownTemplate" class="dropdown hidden">
+        <button id="" class="btn btn-default dropdown-toggle" type="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Download <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu download-options-menu" aria-labelledby="downloadDropdownTemplate">
+            <!-- <li><a href="#" class="blank-template-link">Blank template</a></li>
+            <li><a id="" href="javascript:" class="wizard-link prefilled-template-option"  onclick="">Prefilled template</a></li>
+            <li><a href="#" class="sop-link">Standard Operating Procedure (SOP)</a></li> -->
+        </ul>
+    </div>
 {% endblock %}
 
 {% block headblock %}

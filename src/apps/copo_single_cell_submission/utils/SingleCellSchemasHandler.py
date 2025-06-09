@@ -158,7 +158,7 @@ class SingleCellSchemasHandler:
                 schema_checklist = checklist
 
                 if not checklist_id or file_path is None: 
-                    file_path = os.path.join(settings.MANIFEST_PATH, settings.MANIFEST_FILE_NAME.format(schema_name +"_" + checklist, version)  )            
+                    file_path = os.path.join(settings.MANIFEST_PATH, settings.MANIFEST_FILE_NAME.format(schema_name +"_" + checklist, '', version)  )            
  
                 data_validation_column_index = 0
 

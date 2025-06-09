@@ -35,7 +35,7 @@
   <input
     type="hidden"
     id="blank_manifest_url"
-    value="{{  'read'|get_blank_manifest_url  }}"
+    value="{{  'READ'| get_blank_manifest_url  }}"
   />
   
   <!--input
@@ -47,7 +47,7 @@
     <input
       type="hidden"
       id="blank_manifest_url_{{checklist.primary_id}}"
-      value="{{ checklist.primary_id |add:'_sample'  | get_blank_manifest_url  }}"
+      value="{{ checklist.primary_id | add:'_sample'  | get_blank_manifest_url  }}"
     />
   {% endfor %}
   <input
