@@ -20,7 +20,7 @@ import subprocess
 import os
 import tempfile
 from common.dal.submission_da import Submission
-from common.dal.copo_da import EnaChecklist
+from common.dal.copo_da import EnaChecklist, EnaFileTransfer, DataFile
 from common.dal.sample_da import Sample
 from src.apps.copo_single_cell_submission.utils.da import Singlecell 
 from common.utils.copo_lookup_service import COPOLookup
@@ -430,7 +430,7 @@ class EnaSubmissionHelper:
         submission_project = etree.SubElement(project, 'SUBMISSION_PROJECT')
         sequencing_project = etree.SubElement(submission_project, 'SEQUENCING_PROJECT')
 
-        locus_tags = study.get("ena_locus_tags","")
+        locus_tags = study.get("ena_locus_tags","")  #TBC add locus tags to study
         if locus_tags:
             for tag in locus_tags.split(","):
                 etree.SubElement(sequencing_project, 'LOCUS_TAG_PREFIX').text = tag.strip()
@@ -446,7 +446,7 @@ class EnaSubmissionHelper:
         #Submission().remove_component_from_submission(sub_id=str(self.submission_id), component="study", component_ids=[singlecell["study_id"]])
 
         if result['status'] is False:
-            message = "Study not registered."
+            message = "."
             self.logging_error(message)
         else:        
             message = f"Study {study['study_id']} has been registered successfully to ENA."
@@ -573,6 +573,10 @@ class EnaSubmissionHelper:
         sample_accession_map = {sample[identifier_map["sample"]]: sample['biosampleAccession'] for sample in samples  }
         errors = []
         file_identifier = identifier_map["file"]
+
+        enafiles = EnaFileTransfer().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"local_path":1,  "remote_path":1})
+        enafile_map = {enafile["local_path"].split("/")[-1] : enafile["remote_path"] for enafile in enafiles}
+
         for index, row in component_df.iterrows():
 
             # create datafile xml
@@ -588,7 +592,7 @@ class EnaSubmissionHelper:
             column_name = "study_id"
             non_attribute_names.append(column_name)
             non_attribute_names.append(file_identifier)
-            submission_name = str(self.submission_id) + "_reads_" + row[column_name] + row[file_identifier]
+            submission_name = str(self.submission_id) + "_" + row[column_name] +  "_"+ row[file_identifier]
             # add experiment node to experiment set
             experiment_node = etree.SubElement(experiment_root, 'EXPERIMENT')
             experiment_alias = "copo-reads-" + submission_name
@@ -615,10 +619,10 @@ class EnaSubmissionHelper:
             column_name = "library_layout"
             non_attribute_names.append(column_name)
             experiment_library_layout_node = etree.SubElement(experiment_library_descriptor_node, column_name.upper()) 
-            etree.SubElement(experiment_library_layout_node, row.get("library_layout"))
+            etree.SubElement(experiment_library_layout_node, row.get("library_layout", str()).upper())
 
             # platform
-            column_name = "sequencing_instrument_model"
+            column_name = "instrument_model"
             non_attribute_names.append(column_name)
             sequencing_instrument = row.get(column_name, str())
             inst_plat = [inst['platform'] for inst in instruments if inst['value'] == sequencing_instrument]
@@ -626,15 +630,15 @@ class EnaSubmissionHelper:
             if len(inst_plat):
                 experiment_platform_node = etree.SubElement(experiment_node, 'PLATFORM')
                 experiment_platform_type_node = etree.SubElement(experiment_platform_node, inst_plat[0])
-                etree.SubElement(experiment_platform_type_node, 'INSTRUMENT_MODEL').text = sequencing_instrument
+                etree.SubElement(experiment_platform_type_node, column_name.upper()).text = sequencing_instrument
 
             experiment_attributes = etree.SubElement(experiment_node, 'EXPERIMENT_ATTRIBUTES')
 
-            for key, items in row.items():
-                if key not in non_attribute_names:
+            for key, value in row.items():
+                if key not in non_attribute_names and value:
                     experiment_attribute = etree.SubElement(experiment_attributes, 'EXPERIMENT_ATTRIBUTE')
                     etree.SubElement(experiment_attribute, 'TAG').text = key
-                    etree.SubElement(experiment_attribute, 'VALUE').text = str(items)
+                    etree.SubElement(experiment_attribute, 'VALUE').text = str(value)
 
             submission_location = os.path.join(output_location, self.profile_id,row["study_id"],row[file_identifier])
             os.makedirs(submission_location, exist_ok=True)
@@ -665,7 +669,7 @@ class EnaSubmissionHelper:
                     continue
 
                 run_file_node = etree.SubElement(run_files_node, 'FILE')
-                run_file_node.set("filename", os.path.join(self.remote_location, row[name])) #TBC for remote_location
+                run_file_node.set("filename", os.path.join(enafile_map[row[name]], row[name])) #TBC for remote_location
                 
                 _, file_extension = os.path.splitext(row[name])
                 if file_extension in [".cram", ".bam"]:
@@ -692,21 +696,19 @@ class EnaSubmissionHelper:
             else:
                 final_submission_xml_path = submission_xml_path
 
-            curl_cmd = 'curl -u "' + self.user_token + ':' + self.pass_word \
+            curl_cmd = 'curl -u "' + user_token + ':' + pass_word \
                        + '" -F "SUBMISSION=@' \
                        + final_submission_xml_path \
                        + '" -F "EXPERIMENT=@' \
                        + experiement_xml_path \
                        + '" -F "RUN=@' \
                        + run_xml_path \
-                       + '" "' + self.ena_service \
+                       + '" "' + ena_service \
                        + '"'
 
             self.logging_debug(
                 "Submitting EXPERIMENT and RUN XMLs for " +  
-                    row[identifier] + " using CURL. CURL command is: " + curl_cmd.replace(self.pass_word,
-                                                                                                 "xxxxxx"),
-                self.submission_id)
+                    row[file_identifier] + " using CURL. CURL command is: " + curl_cmd.replace(pass_word, "xxxxx"))
 
             try:
                 receipt = subprocess.check_output(curl_cmd, shell=True)
@@ -721,23 +723,23 @@ class EnaSubmissionHelper:
 
             if receipt_root.get('success') == 'false':
                 result['status'] = False
-                result['message'] = "Submission error for datafiles: " + row[identifier] + " due to the following errors: "
-                errors = receipt_root.findall('.//ERROR')
-                if errors:
+                result['message'] = "Submission error for datafiles: " + row[file_identifier] + " due to the following errors: "
+                receipt_errors = receipt_root.findall('.//ERROR')
+                if receipt_errors:
                     error_text = str()
-                    for e in errors:
+                    for e in receipt_errors:
                         error_text = error_text + " \n" + e.text
 
                     result['message'] = result['message'] + error_text
 
                 # log error
-                ghlper.logging_error(result['message'], self.submission_id)
 
                 errors.append(result['message'])
+                Singlecell().update_component_status(id=singlecell["_id"], component="file", identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", status_column_value={"status": "rejected", "error": ", ".join(errors)})
                 continue
 
             # retrieve and save accessions
-            self.write_xml_file(location=submission_location, xml_object=receipt_root, file_name="receipt.xml")
+            self.write_xml_file(output_location=submission_location, xml_object=receipt_root, file_name="receipt.xml")
             self.logging_info("Saving EXPERIMENT and RUN accessions to the database")
             run_dict = dict(
                 accession=receipt_root.find('RUN').get('accession', default=str()),
@@ -752,10 +754,10 @@ class EnaSubmissionHelper:
             )
 
             if is_new:
-                submission_record = Submission().get_collection_handle().updateOne({"_id": ObjectId(self.submission_id)},
+                submission_record = Submission().get_collection_handle().update_one({"_id": ObjectId(self.submission_id)},
                                                             {"$addToSet": {"accessions.run": run_dict, "accessions.experiment": experiment_dict}})
                 
-                Singlecell().update_component_status(id=singlecell["_id"], component="file", identifier=identifier, identifier_value=row[identifier], repository="ena", status_column_value={"status": "accepted", "accession": run_dict["accession"], 'run_accession':run_dict["accession"],'experiment_accession': experiment_dict["accession"], "error": ""})
+                Singlecell().update_component_status(id=singlecell["_id"], component="file", identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", status_column_value={"status": "accepted", "accession": run_dict["accession"], 'run_accession':run_dict["accession"],'experiment_accession': experiment_dict["accession"], "error": ""})
 
         if errors:
             message = "Datafiles not registered due to the following errors: " + ", ".join(errors)

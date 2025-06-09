@@ -64,13 +64,12 @@ def process_pending_submission_ena():
 
              #submit study to ena 
             context = ena_submission_helper.register_project(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, singlecell=singlecell)   
+            Submission().remove_component_from_submission(sub_id=str(ena_submission_helper.submission_id), component="study", component_ids=[singlecell["study_id"]])
+
             if context['status']:
                 file_component_df, identifier_map = _prepare_file_submission(singlecell=singlecell)
                 context = ena_submission_helper.register_files(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, component_df=file_component_df, identifier_map=identifier_map, singlecell=singlecell)   
-
-                if context['status']:
-                    Submission().remove_component_from_submission(sub_id=str(ena_submission_helper.submission_id), component="study", component_ids=[singlecell["study_id"]])
-
+                #Submission().remove_component_from_submission(sub_id=str(ena_submission_helper.submission_id), component="study", component_ids=[singlecell["study_id"]])
 
 
 def _prepare_file_submission(singlecell):
