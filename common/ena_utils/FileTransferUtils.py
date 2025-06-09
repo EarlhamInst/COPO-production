@@ -24,11 +24,19 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 Image.MAX_IMAGE_PIXELS = None
 
 class TransferStatus(IntEnum):
-    DOWNLOADING_TO_LOCAL = 0
-    DOWNLOADED_TO_LOCAL = 1
-    TRANSFERRING_TO_ENA = 2
-    TANSFERED_TO_ENA = 3
+    DOWNLOADING_TO_LOCAL = 0 
+    DOWNLOADED_TO_LOCAL = 1 
+    TRANSFERRING_TO_ENA = 2 
+    TANSFERED_TO_ENA = 3 
     COMPLETED_VALIDATION_IN_ENA = 4
+
+TransferStatusNames = {
+    TransferStatus.DOWNLOADING_TO_LOCAL: "Downloading to local",
+    TransferStatus.DOWNLOADED_TO_LOCAL: "Transfered to COPO",
+    TransferStatus.TRANSFERRING_TO_ENA: "Transfering to ENA",
+    TransferStatus.TANSFERED_TO_ENA: "Transfered to ENA",
+    TransferStatus.COMPLETED_VALIDATION_IN_ENA: "Completed validation in ENA"
+}
     
 def make_transfer_record(file_id, submission_id, remote_location=None, no_remote_location=False):
     # N.B. called from celery

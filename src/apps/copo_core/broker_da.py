@@ -537,7 +537,7 @@ class BrokerDA:
         report_metadata["message"] = result.get("message", "success")
         self.context["action_feedback"] = report_metadata
         if result.get("status","success") == "success":
-            self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id, checklist_id=checklist_id)
+            self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id, checklist_id=checklist_id, study_id=study_id, schema_name=schema_name)
             self.context["component"] = "singlecell"
         return self.context
 
@@ -556,7 +556,7 @@ class BrokerDA:
         report_metadata["message"] = result.get("message", "success")
         self.context["action_feedback"] = report_metadata       
         if result.get("status","success") == "success":
-            self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id,checklist_id=checklist_id)
+            self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id,checklist_id=checklist_id, study_id=study_id)
             self.context["component"] = "singlecell"
         return self.context
 
@@ -604,7 +604,7 @@ class BrokerVisuals:
             general_sample = (copo_sample.generate_table_records, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("sample_checklist_id", str()))),
             files = (copo_file.generate_files_record, dict(profile_id=self.profile_id)),
             taggedseq = (EnaTaggedSequence().generate_taggedseq_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("tagged_seq_checklist_id", str()))),
-            singlecell = (copo_single_cell.generate_singlecell_record, dict(profile_id=self.profile_id, study_id=self.request_dict.get("study_id", str()),  checklist_id=self.request_dict.get("singlecell_checklist_id", str())))
+            singlecell = (copo_single_cell.generate_singlecell_record, dict(profile_id=self.profile_id, study_id=self.request_dict.get("study_id", str()), schema_name=self.request_dict.get("schema_name", str()), checklist_id=self.request_dict.get("singlecell_checklist_id", str())))
         )
 
         # NB: in table_data_dict, use an empty dictionary as a parameter for listed functions that define zero arguments

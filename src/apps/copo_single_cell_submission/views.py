@@ -417,7 +417,7 @@ def save_singlecell_records(request, profile_id, schema_name):
                                                             {"$set": singlecell_record, "$setOnInsert": insert_record },
                                                             upsert=True,  return_document=ReturnDocument.AFTER)   
 
-    table_data = generate_singlecell_record(profile_id=profile_id, checklist_id=checklist_id)
+    table_data = generate_singlecell_record(profile_id=profile_id, checklist_id=checklist_id, schema_name=schema_name)
     result = {"table_data": table_data, "component": "singlecell"}
     return JsonResponse(status=200, data=result)
 

@@ -430,7 +430,7 @@ class EnaSubmissionHelper:
         submission_project = etree.SubElement(project, 'SUBMISSION_PROJECT')
         sequencing_project = etree.SubElement(submission_project, 'SEQUENCING_PROJECT')
 
-        locus_tags = study.get("ena_locus_tags","")
+        locus_tags = study.get("ena_locus_tags","")  #TBC add locus tags to study
         if locus_tags:
             for tag in locus_tags.split(","):
                 etree.SubElement(sequencing_project, 'LOCUS_TAG_PREFIX').text = tag.strip()
@@ -446,7 +446,7 @@ class EnaSubmissionHelper:
         #Submission().remove_component_from_submission(sub_id=str(self.submission_id), component="study", component_ids=[singlecell["study_id"]])
 
         if result['status'] is False:
-            message = "Study not registered."
+            message = "."
             self.logging_error(message)
         else:        
             message = f"Study {study['study_id']} has been registered successfully to ENA."

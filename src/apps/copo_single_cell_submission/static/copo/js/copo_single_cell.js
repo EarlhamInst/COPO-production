@@ -1,5 +1,5 @@
 var current_study_id = '';
-var schema_name = $("#schema_name").val();
+//var schema_name = $("#schema_name").val();
 
 function get_checklist_id() {
   if ($('#checklist_id').length > 0) {
@@ -50,6 +50,7 @@ $(document).on('document_ready', function () {
   //uid = uid[uid.length - 2];
   var wsprotocol = 'ws://';
   var s3socket;
+  var schema_name = $("#schema_name").val();
  
   if (window.location.protocol === 'https:') {
     wsprotocol = 'wss://';
@@ -232,6 +233,7 @@ $(document).on('document_ready', function () {
       var args_dict = {};
       args_dict['singlecell_checklist_id'] = get_checklist_id();
       args_dict['profile_id'] = $('#profile_id').val(),
+      args_dict['schema_name'] = schema_name;
       load_records(componentMeta, args_dict, columnDefs); // call to load component records  
     } else if (d.action === 'file_processing_status') {
       $(element).html(d.message);
@@ -441,14 +443,13 @@ $(document).on('document_ready', function () {
         }
       }
     }
-    /*
-    table = $('#' + component + '_table').DataTable();
+    table = $('#' + event.tableID).DataTable();
     //var numCols = $('#' + component + '_table thead th').length;
     var numCols = table.columns().nodes().length;
     table.rows().nodes().to$().addClass('highlight_accession');
 
     for (var i = 0; i < numCols; i++) {
-      if ($(table.column(i).header()).text() == 'STATUS') {
+      if ($(table.column(i).header()).text().toUpperCase().startsWith('STATUS')) {
         var no_accessiion_indexes = table
           .rows()
           .eq(0)
@@ -493,7 +494,7 @@ $(document).on('document_ready', function () {
         );
       }
     });
-    */
+    
   });
 
   $(document).on('click', "#"+ componentMeta.tableID + "_study tbody tr >td", function (e) {

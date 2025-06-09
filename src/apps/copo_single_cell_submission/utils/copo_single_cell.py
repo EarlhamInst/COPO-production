@@ -13,39 +13,88 @@ from django.conf import settings
 from bson import regex
 import os
 import common.ena_utils.FileTransferUtils as tx
+from common.utils.helpers import get_env
 
 l = Logger()
 
-def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
+pass_word = get_env('WEBIN_USER_PASSWORD')
+user_token = get_env('WEBIN_USER').split("@")[0]
+session = requests.Session()
+session.auth = (user_token, pass_word)
+
+def _query_ena_file_processing_status(accession_no):
+    result = ""
+    url = f"{get_env('ENA_ENDPOINT_REPORT')}run-files/{accession_no}?format=json"
+    with requests.Session() as session:
+        session.auth = (user_token, pass_word)
+        headers = {'Accept': '/'}
+
+        try:
+            response = session.get(url, headers=headers)
+            if response.status_code == requests.codes.ok:
+                response_body = response.json()
+                for r in response_body:
+                    report = r.get("report",{})
+                    if report:
+                        result += "|"+ report.get("fileName") + " : " + report.get("archiveStatus") + " : " + report.get("releaseStatus")
+                if result:
+                    result = result[1:].replace("|", "<br/>")
+
+            else:
+                result = "Cannot get file processing result from ENA"
+                l.error(str(response.status_code) + ":" + response.text)
+        except Exception as e:
+            l.exception(e)
+        return result
+    
+def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), schema_name=str()):
 
     data_set = {}
     columns = {}
     column_keys = {}
     studies = []
     identifier_map = {}
+    submission_repository = {}
 
-
+    """
     profile = Profile().get_record(profile_id)
     if not profile:
         return dict(dataSet=data_set, columns=columns, components=list(columns.keys()))
-    schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
+    """
+    studies = []
+    if not schema_name:
+        if study_id:
+            studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"study_id": study_id, "checklist_id": checklist_id}, projection={"study_id": 1, "schema_name": 1})
+            if studies:
+                schema_name = studies[0].get("schema_name", "")
+    if schema_name:
+        studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"schema_name": schema_name, "checklist_id": checklist_id}, projection={"study_id": 1, "components.study":1})
+    else:
+        return dict(dataSet=data_set, columns=columns, submission_repository=submission_repository, components=list(columns.keys()))
+    
+    if not study_id:
+        study_id = studies[0]["study_id"]
+
     if checklist_id:
         schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
 
+        repositories = set()
         submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name)
         submisison_repository_component_map = submission_repository_df.to_dict('index')
         additional_columns_prefix_default_value = ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE
-        submission_repository = {}
         additional_fields_map = {}
+        file_df_map = {}
         for component, respositories in submisison_repository_component_map.items():
             submission_repository[component] = [repository for repository, value in respositories.items() if value]
             additional_fields_map[component] = [f"{prefix}_{repository}" for repository, value in respositories.items() if value for prefix in list(additional_columns_prefix_default_value.keys())]
-    
+            repositories.update(submission_repository[component])
 
         for component_name, component_schema in schemas.items():
             columns[component_name] = []
             component_schema_df = pd.DataFrame.from_records(component_schema)
-            identifier_df = component_schema_df.loc[component_schema_df['identifier'], 'term_name']                           
+            identifier_df = component_schema_df.loc[component_schema_df['identifier'], 'term_name']
+            file_df = component_schema_df.loc[component_schema_df['term_type'] == 'file', 'term_name']
+
             if not identifier_df.empty:
                 identifier_map[component_name]= identifier_df.iloc[0]
 
@@ -57,24 +106,25 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
 
             columns[component_name].append(dict(data="record_id", visible=False))
             columns[component_name].append(dict(data="DT_RowId", visible=False))
-            columns[component_name].extend([dict(data=item["term_name"], title=item["term_label"], defaultContent='', 
+            columns[component_name].extend([dict(data=item["term_name"],  title=item["term_label"], defaultContent='', 
                                                     render = "render_thumbnail_image_column_function" if item["term_type"] == "file" else None
                                                   ) for item in component_schema])
-            
+
+
             column_keys[component_name] = ([item["term_name"] for item in component_schema])
 
             for name in additional_fields_map.get(component_name, []):  
                     prefix = name.split("_")[0]
-                    columns[component_name].append(dict(data=name, title=name.replace("_", " for "), defaultContent= additional_columns_prefix_default_value[prefix])) # render = "render_accession_column_function"
+                    columns[component_name].append(dict(data=name, title=name.replace("_", " for "), className="ena-accession" if name.lower().endswith("accession_ena") else "", defaultContent= additional_columns_prefix_default_value[prefix])) # render = "render_accession_column_function"
                     column_keys[component_name].append(name)
  
-        studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"schema_name": schema_name, "checklist_id": checklist_id}, projection={"study_id": 1, "components.study": 1})
-        if not studies:
-            return dict(dataSet=data_set, columns=columns, submission_repository=submission_repository, components=list(columns.keys()))
-        
-        if not study_id:
-            study_id = studies[0]["study_id"]
-        
+            if not file_df.empty:
+                columns[component_name].append(dict(data="file_status", title="file_status", defaultContent=''))
+                
+                if "ena" in submission_repository.get(component_name,[]):
+                    columns[component_name].append(dict(data="ena_file_processing_status", title="ena_file_processing_status", defaultContent='', className="ena_file_processing_status"))
+                file_df_map[component_name] = file_df.values.tolist()
+
         #retriever all components info for first study
         singlecell = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"checklist_id": checklist_id, "study_id": study_id})
         if not singlecell or not singlecell[0]["components"].get("study",[]):
@@ -86,24 +136,73 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str()):
                 if study["study_id"] != study_id:
                     singlecell[0]["components"]["study"].extend(study["components"].get("study",[]))
 
+        files = SinglecellSchemas().get_all_files(singlecell=singlecell[0], schemas=schemas)
+
+        local_path = [regex.Regex(f'{x}$') for x in files]
+        projection = {'_id':0, 'local_path':1, 'status':1, "transfer_status":1}
+        filter = dict()
+        filter['local_path'] = {'$in': local_path}
+        filter['profile_id'] = profile_id
+    
+        enaFiles = EnaFileTransfer().get_all_records_columns(filter_by=filter, projection=projection)
+
+        enaFile_map = {os.path.basename(enafile["local_path"]) : tx.TransferStatusNames[tx.get_transfer_status(enafile)] for enafile in enaFiles}
+
+        submission_status_map = {}
+        submission_error_map = {}
+        submission_status={}
+        submission_error=[]
         for component_name, component_data in singlecell[0]["components"].items():
             if not component_data:
-                continue
+                continue                
 
             component_data_df = pd.DataFrame.from_records(component_data)
             
             for column in component_data_df.columns:
                 if column not in column_keys.get(component_name, []):
-
                     component_data_df.drop(column, axis=1, inplace=True)
 
+            if component_name != "study":
+            #propagate the submission status from components to study
+                for repository in submission_repository.get(component_name, []):
+                    status_column = f"status_{repository}"
+                    error_column = f"error_{repository}"
+                    if status_column in component_data_df.columns:
+                        status = "rejected" if any(component_data_df[status_column] == "rejected") else "pending" if any(component_data_df[status_column] != "accepted") else "accepted"
+                        if submission_status.get(repository, "accepted") != status and status != "accepted":
+                            submission_status[repository] = status
+                    if error_column in component_data_df.columns:
+                        error = component_data_df[error_column].dropna().tolist()
+                        if error:
+                            submission_error.extend(error)
+ 
             #set the identifier to DT_RowId
             #set the identifier to record_id
-                    
+
             component_data_df["DT_RowId"] = component_name + ( "_"+ study_id if component_name != 'study' else "")  + "_" + component_data_df.get(identifier_map.get(component_name,""), "")
             component_data_df["record_id"] = component_data_df["DT_RowId"]
             component_data_df.fillna("", inplace=True)
+
+            file_terms = file_df_map.get(component_name, [])
+            if file_terms:
+                component_data_df["file_status"] = ""
+                for term in file_terms:
+                    component_data_df["file_status"] = component_data_df["file_status"] + component_data_df[term].apply(lambda x: (x+ " : " + enaFile_map.get(x, "unknown") + "  ") if x else "")
+                
+                if "ena" in submission_repository.get(component_name,[]):
+                    component_data_df["ena_file_processing_status"] = component_data_df["accession_ena"].apply(lambda x: _query_ena_file_processing_status(x) if x else "")
+       
             data_set[component_name] = component_data_df.to_dict(orient="records")
+                    
+
+        study_component = data_set["study"][0]
+        for repository, status in submission_status.items():
+            status_for_study = [study_component[ f"status_{repository}"],status=="rejected"]
+            study_component[ f"status_{repository}"] = "rejected" if (any(status == "rejected" for status in status_for_study)) else "pending" if (any(status == "pending" for status in status_for_study)) else "accepted"
+            
+            #"rejected" if (study_component[ f"status_{repository}"] == "rejected" or submission_status["repository"]=="rejected") else "pending" if (study_component[ f"status_{repository}"] == "pending" or submission_status["repository"]=="pending") else "accepted"        
+            study_component[f"error_{repository}"] = study_component[f"error_{repository}"] + " " + "<br/>".join(submission_error) if submission_error else ""   
+
 
     return_dict = dict(dataSet=data_set,
                        columns=columns,
@@ -390,7 +489,7 @@ def update_submission_pending():
             files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
 
             local_path = [regex.Regex(f'{x}$') for x in files]
-            projection = {'_id':0, 'file_location':1, 'status':1}
+            projection = {'_id':0, 'local_path':1, 'status':1}
             filter = dict()
             filter['local_path'] = {'$in': local_path}
             filter['profile_id'] = sub["profile_id"]
@@ -404,7 +503,7 @@ def update_submission_pending():
             elif len(files) > len(enaFiles):
                 all_file_downloaded = False
                 # Log the missing files
-                missing_files = set(files) - {os.path.basename(enaFile["file_location"]) for enaFile in enaFiles}
+                missing_files = set(files) - {os.path.basename(enaFile["local_path"]) for enaFile in enaFiles}
                 Logger().error(f"Files not uploaded for submission {sub['_id']} : study {study_id} : {missing_files} ") 
                 break
 
@@ -417,3 +516,54 @@ def update_submission_pending():
 
     if all_downloaded_sub_ids:
         Submission().update_submission_pending(all_downloaded_sub_ids, component="study")
+
+
+"""
+class _GET_ENA_FILE_PROCESSING_STATUS(threading.Thread):
+    def __init__(self, profile_id, run_accession_number_map, data_map=dict(), columns=dict(), ena_file_transfer_map=dict()):
+        self.profile_id = profile_id
+        self.run_accession_number_map = run_accession_number_map
+        self.data_map = data_map
+        self.ena_file_transfer_map = ena_file_transfer_map
+
+        super(_GET_ENA_FILE_PROCESSING_STATUS, self).__init__() 
+
+    def run(self):
+        sent_2_frontend_every = 4000
+        #data = []
+        i = 0
+        #data = self.return_dict["dataSet"]
+        ecs_file_complete = []
+
+        for run_accession in self.run_accession_number_map.keys():
+            i += 1
+            file_processing_status = _query_ena_file_processing_status(run_accession)
+            if file_processing_status:
+               #data.append({"run_accession":run_accession, "msg":file_processing_status})
+
+               row = self.data_map.get(self.run_accession_number_map.get(run_accession), dict())
+               row["ena_file_processing_status"] = file_processing_status
+               complete_cnt = file_processing_status.count("File archived")
+               if complete_cnt > 0:
+                   file_ids = row["DT_RowId"][4:].split("_")    #row_data["DT_RowId"] = "row_fileid1_fileid2"
+                   if complete_cnt == len(file_ids):
+                        for file_id in file_ids:
+                            ecs_location = self.ena_file_transfer_map.get(file_id, {}).get("ecs_location","")
+                            if ecs_location:
+                                ecs_file_complete.append(ecs_location)
+
+
+            if i == sent_2_frontend_every:                 
+               #notify_read_status(data={"profile_id": self.profile_id, "file_processing_status":data},  msg="", action="file_processing_status" )
+               notify_read_status(data={"profile_id": self.profile_id, "table_data" : list(self.data_map.values())},
+                        msg="Refreshing table for file processing status", action="file_processing_status", html_id="sample_info")
+               i = 0
+               #data=[]
+        if i>0:
+            #notify_read_status(data={"profile_id": self.profile_id, "file_processing_status":data},  msg="", action="file_processing_status" )
+            notify_read_status(data={"profile_id": self.profile_id, "table_data" : list(self.data_map.values())},
+                        msg="Refreshing table for file processing status", action="file_processing_status", html_id="sample_info")
+            
+        if ecs_file_complete:
+            EnaFileTransfer().complete_remote_transfer_status_by_ecs_path( ecs_locations=ecs_file_complete)
+"""
