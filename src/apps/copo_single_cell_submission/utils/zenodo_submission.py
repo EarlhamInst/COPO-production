@@ -158,13 +158,19 @@ def process_pending_submission_zendo():
             try: 
                 if not accession:
                     deposition = Zenodo_deposition().create(deposition=zenodo_data)
-                    new_accessions.append( {"study_id":study_id, "deposition_id":deposition["id"], "doi": deposition.get("doi","")})
+                    new_accessions.append( {"study_id":study_id, "deposition_id":deposition["id"]})
                     deposition_id = deposition["id"]
                     changed_files = list(file_locations_map.values())
 
                 else:
                     deposition_id = accession["deposition_id"]
-                    Zenodo_deposition().unlock(_id=deposition_id)   
+                    deposition = Zenodo_deposition().read(_id=deposition_id)
+                    if deposition.get("state","") == "done":
+                        deposition = Zenodo_deposition().new_version(_id=deposition_id)    
+                        deposition_id = deposition.get("id","")
+                        Submission().update_component_submission_accession(profile_id=sub["profile_id"], repository="zenodo", component="study", identifier="study_id", accession={"study_id":study_id, "deposition_id":deposition["id"]})
+                    else:
+                        deposition = Zenodo_deposition().unlock(_id=deposition_id)
                     deposition = Zenodo_deposition().update(_id=deposition_id, deposition=zenodo_data)
                     uploaded_files = deposition.get("files",[]) 
                     changed_files_name  = set(file_locations_map.keys()) - {file["filename"] for file in uploaded_files}
@@ -177,9 +183,9 @@ def process_pending_submission_zendo():
                     changed_files.extend([file_locations_map[file] for file in changed_files_name])
 
                 Zenodo_deposition().upload_files(bucket_link=deposition.get("links",{}).get("bucket",""), files=changed_files, bytesstring=bytesstring)            
-            except requests.exceptions.ConnectionError as e:
+            except Exception as e:
                 notify_singlecell_status(data={"profile_id": sub["profile_id"]},
-                    msg=f"Connection problem to zenodo: {str(e)}",
+                    msg=f"Problem to zenodo: {str(e)}",
                     action="error",
                     html_id="submission_info")
                 continue
@@ -193,3 +199,51 @@ def process_pending_submission_zendo():
                     html_id="submission_info")
 
         Submission().add_component_submission_accession(sub_id=str(sub["_id"]), component="study", accessions=new_accessions)
+
+def publsh_zendo(profile_id, deposition_id, singlecell):
+    """
+    Publishes a submission to Zenodo.
+    :param submission_id: The ID of the submission.
+    :param deposition_id: The deposition_id information.
+    :param singlecell: The singlecell data.
+    """
+    notify_singlecell_status(data={"profile_id": singlecell["profile_id"]},
+        msg=f"Publishing {singlecell['study_id']} to zenodo...",
+        action="info",
+        html_id="submission_info")
+
+    result = {}
+    repository = "zenodo"
+    try:
+        deposition = Zenodo_deposition().read(_id=deposition_id)
+        if deposition.get("state","") == "done":
+            msg = f"{singlecell['study_id']} has been already published to Zenodo."
+            Logger().log(msg)
+            notify_singlecell_status(data={"profile_id": singlecell["profile_id"]},
+                msg=msg,
+                action="info",
+                html_id="submission_info")
+            return {"status": "success", "message": msg, "doi": deposition.get("doi","")}
+        deposition = Zenodo_deposition().publish(_id=deposition_id)
+        Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=singlecell["study_id"], repository=repository, status_column_value={"status":"published", "state" : deposition["state"], "accession": str(deposition["id"]), "doi" : deposition.get("doi",""), "embargo_date":deposition.get("metadata",{}).get("embargo_date","")})
+        new_accession = {"study_id": singlecell["study_id"], "deposition_id": deposition["id"], "doi": deposition.get("doi","")}
+        Submission().update_component_submission_accession(profile_id=profile_id, repository=repository, component="study", identifier="study_id", accession=new_accession)
+        result = {"status": "success", "message": f"{singlecell['study_id']} has been published to Zenodo.", "doi": deposition.get("doi","")}
+        """
+        notify_singlecell_status(data={"profile_id": singlecell["profile_id"]},
+            msg=f"{singlecell['study_id']} has been published to Zenodo.",
+            action="info",
+            html_id="submission_info")
+        """    
+    except Exception as e:
+        msg = f"Cannot publish to zenodo: {str(e)}"
+        Logger().error(msg)
+        Logger().exception(e)
+        """
+        notify_singlecell_status(data={"profile_id": singlecell["profile_id"]},              
+            msg=msg,
+            action="error",
+            html_id="submission_info")
+        """    
+        result = {"status": "error", "message": msg}
+    return result

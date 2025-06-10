@@ -374,6 +374,7 @@ $(document).on('document_ready', function () {
     var args_dict = {};
     args_dict['singlecell_checklist_id'] = this.value;
     args_dict['profile_id'] = $('#profile_id').val();
+    args_dict['schema_name'] = schema_name;
     load_records(componentMeta, args_dict, columnDefs); // call to load component records 
   });
 
@@ -482,18 +483,6 @@ $(document).on('document_ready', function () {
           .addClass('highlight_error_file_processing_status');
       }
     }
-
-    $('.ena-accession').each(function (i, obj) {
-      if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
-        $(obj).html(
-          "<a href='https://www.ebi.ac.uk/ena/browser/view/" +
-            $(obj).text() +
-            "' target='_blank'>" +
-            $(obj).text() +
-            '</a>'
-        );
-      }
-    });
     
   });
 

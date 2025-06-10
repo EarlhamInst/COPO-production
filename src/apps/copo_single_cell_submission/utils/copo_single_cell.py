@@ -14,6 +14,7 @@ from bson import regex
 import os
 import common.ena_utils.FileTransferUtils as tx
 from common.utils.helpers import get_env
+from . import zenodo_submission
 
 l = Logger()
 
@@ -115,7 +116,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
 
             for name in additional_fields_map.get(component_name, []):  
                     prefix = name.split("_")[0]
-                    columns[component_name].append(dict(data=name, title=name.replace("_", " for "), className="ena-accession" if name.lower().endswith("accession_ena") else "", defaultContent= additional_columns_prefix_default_value[prefix])) # render = "render_accession_column_function"
+                    columns[component_name].append(dict(data=name, title=name.replace("_", " for "), render="render_ena_accession_function" if name.lower().endswith("accession_ena") else "render_zenodo_accession_function" if name.lower().endswith("accession_zenodo") else "", defaultContent= additional_columns_prefix_default_value[prefix])) # render = "render_accession_column_function"
                     column_keys[component_name].append(name)
  
             if not file_df.empty:
@@ -196,9 +197,9 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
                     
 
         study_component = data_set["study"][0]
-        for repository, status in submission_status.items():
-            status_for_study = [study_component[ f"status_{repository}"],status=="rejected"]
-            study_component[ f"status_{repository}"] = "rejected" if (any(status == "rejected" for status in status_for_study)) else "pending" if (any(status == "pending" for status in status_for_study)) else "accepted"
+        for repository, repository_status in submission_status.items():
+            status_for_study = [study_component[ f"status_{repository}"],repository_status]
+            study_component[ f"status_{repository}"] = "rejected" if (any(status == "rejected" for status in status_for_study)) else "pending" if (any(status == "pending" for status in status_for_study)) else study_component[ f"status_{repository}"]
             
             #"rejected" if (study_component[ f"status_{repository}"] == "rejected" or submission_status["repository"]=="rejected") else "pending" if (study_component[ f"status_{repository}"] == "pending" or submission_status["repository"]=="pending") else "accepted"        
             study_component[f"error_{repository}"] = study_component[f"error_{repository}"] + " " + "<br/>".join(submission_error) if submission_error else ""   
@@ -471,6 +472,45 @@ def submit_singlecell(profile_id, target_ids, target_id, checklist_id, study_id,
         Singlecell().update_component_status(singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository=repository, status_column_value={"status":"processing"})
         return dict(status='success', message="Submission has been scheduled.")
 
+
+def publish_singlecell(profile_id, target_ids, target_id, study_id, repository="ena"):
+    if target_id:
+        target_ids = [target_id]
+
+    if not target_ids:
+        return dict(status='error', message="Please select one or more records to publish!")
+
+    singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
+    if not singlecell:
+        return dict(status='error', message="No record found.")
+    
+    #check if the submission is in progress
+    studies = singlecell.get("components",{}).get("study",[])
+    match  studies[0].get(f"status_{repository}", ""):
+        case "processing":
+            return dict(status='error', message="Submission is in progress, please wait until it is completed!")
+        case "published":
+            return dict(status='error', message="Submission is already published!")
+        case "rejected":
+            return dict(status='error', message="Submission is rejected, please fix the errors and resubmit!")
+        case "pending":
+            return dict(status='error', message="Please do the submission first!")
+    
+    if repository == "ena":
+        pass
+    elif repository == "zenodo":
+        accession = studies[0].get(f"accession_{repository}","")
+        if not accession:
+            return dict(status='error', message="Please do the submission first!")
+        result = zenodo_submission.publsh_zendo(profile_id=profile_id, deposition_id=accession, singlecell=singlecell)
+
+
+    if result.get("status","") == "error":
+        return result  
+    else:
+        #update the status of the singlecell record
+        #Singlecell().update_component_status(singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository=repository, status_column_value={"status":"published"})
+        return result
 
 def update_submission_pending():
     component = "study"

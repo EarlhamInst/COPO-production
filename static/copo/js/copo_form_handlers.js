@@ -278,7 +278,7 @@ function json2HtmlForm(data) {
           */
         });
 
-      const event = jQuery.Event('postformload'); //individual compnents can trap and handle this event as they so wish
+      const event = jQuery.Event('postformload'); //individual components can trap and handle this event as they so wish
       $('body').trigger(event);
       /*
       if (!groups.includes('dtol_users')) {

@@ -1,6 +1,7 @@
 from .zenodoclient import ZenodoClient
 
 import os
+from io import BytesIO
 
 class Zenodo_deposition:
     def __init__(self, metadata={}, creators=[]):
@@ -29,14 +30,16 @@ class Zenodo_deposition:
         for file in files: 
             file_data = {}
             file_name = os.path.basename(file)
-            file_data[file_name] = open(file, 'rb')
-            ZenodoClient().do_put(url=f"{bucket_link}/{file_name}", files=file_data )
+            with open(file, 'rb') as fp:
+                # Read the file in binary mode
+                #file_data[file_name] = open(file, 'rb')
+                ZenodoClient().do_put(url=f"{bucket_link}/{file_name}", data=fp )
         # Upload the manifest file if provided
         if bytesstring:
             file_data = {}
             file_name = "manifest.xlsx"
-            file_data[file_name] = bytesstring
-            ZenodoClient().do_put(url=f"{bucket_link}/{file_name}", files=file_data )
+            #file_data[file_name] = bytesstring
+            ZenodoClient().do_put(url=f"{bucket_link}/{file_name}", data=BytesIO(bytesstring.getvalue()).read() )
 
     def delete_file(self, _id, file_id):
         return ZenodoClient().do_delete(method=f"/deposit/depositions/{_id}/files/{file_id}")
@@ -50,3 +53,6 @@ class Zenodo_deposition:
     
     def unlock(self, _id):
         return ZenodoClient().do_post(method=f"/deposit/depositions/{_id}/actions/edit")
+    
+    def new_version(self, _id):
+        return ZenodoClient().do_post(method=f"/deposit/depositions/{_id}/actions/newversion")

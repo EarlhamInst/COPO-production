@@ -1161,7 +1161,7 @@ $(document).on("document_ready", function() {
               .on('click', 'td.summary-details-control', function (event) {
                 event.preventDefault();
 
-                var event = jQuery.Event('posttablerefresh'); //individual compnents can trap and handle this event as they so wish
+                var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
                 $('body').trigger(event);
 
                 var tr = $(this).closest('tr');

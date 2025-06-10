@@ -24,6 +24,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 Image.MAX_IMAGE_PIXELS = None
 
 class TransferStatus(IntEnum):
+    CHECKING_FOR_DOWNLOAD = -1
     DOWNLOADING_TO_LOCAL = 0 
     DOWNLOADED_TO_LOCAL = 1 
     TRANSFERRING_TO_ENA = 2 
@@ -31,6 +32,7 @@ class TransferStatus(IntEnum):
     COMPLETED_VALIDATION_IN_ENA = 4
 
 TransferStatusNames = {
+    TransferStatus.CHECKING_FOR_DOWNLOAD: "Checking for download",
     TransferStatus.DOWNLOADING_TO_LOCAL: "Downloading to local",
     TransferStatus.DOWNLOADED_TO_LOCAL: "Transfered to COPO",
     TransferStatus.TRANSFERRING_TO_ENA: "Transfering to ENA",
@@ -52,7 +54,7 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
     tx["ecs_location"] = file["ecs_location"]
     tx["file_id"] = str(file["_id"])
     tx["profile_id"] = file["profile_id"]
-    tx["file_type"] = file["type"]
+    tx["file_type"] = file["file_type"]
     # tx["status"] = "pending"
     tx["submission_id"] = submission_id
     tx["deleted"] = get_not_deleted_flag()
@@ -67,17 +69,19 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
     # tx["transfer_status"] = 1
     ena_file = EnaFileTransfer().get_collection_handle().find_one({"local_path": file["file_location"]})
     if not ena_file:
-        ena_file = {"status":"pending", "remote_path":remote_location}
+        ena_file = {"status":"pending", "remote_path":remote_location, "transfer_status": 1, "created": get_datetime()}
     
     if ena_file["status"] != "processing":
-        if remote_location and ena_file.get("remote_path","") != remote_location or get_transfer_status(ena_file) >= TransferStatus.DOWNLOADED_TO_LOCAL:
-            tx["transfer_status"] = 5
+        if remote_location:
+            if ena_file.get("remote_path","") != remote_location:
+                if get_transfer_status(ena_file) >= TransferStatus.DOWNLOADED_TO_LOCAL:
+                    tx["transfer_status"] = 5
         else:
             tx["transfer_status"] = 1
-            tx["created"] = get_datetime()
 
         if not no_remote_location and remote_location:
             tx["remote_path"] = remote_location
+
         tx["last_checked"] = get_datetime()
         tx["status"] = "pending"
         EnaFileTransfer().get_collection_handle().update_one({"local_path": file["file_location"]}, {"$set": tx},
@@ -331,6 +335,8 @@ def get_transfer_status(tx):
             return TransferStatus.DOWNLOADED_TO_LOCAL
         elif transfer_status == 2:
             return TransferStatus.TRANSFERRING_TO_ENA
+        elif transfer_status == 1:
+            return TransferStatus.CHECKING_FOR_DOWNLOAD
         elif transfer_status == 0:  #for compatibility with old records
             return TransferStatus.TANSFERED_TO_ENA
         else:

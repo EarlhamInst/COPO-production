@@ -74,7 +74,7 @@ class ZenodoClient:
         else:
             return json.loads(resp.text)
 
-    def do_put(self, method="", url="", method_params={}, url_params={}, params=None, files=None):
+    def do_put(self, method="", url="", method_params={}, url_params={}, params=None, files=None, data=None):
         """
         Sends a PUT request to the Sapio API.
 
@@ -102,7 +102,7 @@ class ZenodoClient:
         if files:
             self.session.headers['Content-Type'] = 'application/octet-stream'
             
-        resp = self.session.put(url=url, params=url_params, json=params,files=files )
+        resp = self.session.put(url=url, params=url_params, json=params, files=files, data=data )
         if resp.status_code >= 400:
             raise Exception('Error: ' + str(resp.status_code) + ' ' + resp.text)
         else:
