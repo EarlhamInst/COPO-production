@@ -66,7 +66,7 @@ def get_blank_manifest_url(version_name, checklist_id=None):
     manifest_version = settings.MANIFEST_VERSION
     version = manifest_version.get(version_name.upper(), "")
     version = "_v" + version if version else ""
-    return settings.MANIFEST_DOWNLOAD_URL.format(version_name+(("_"+ checklist_id) if checklist_id else ""), '', version)
+    return settings.MANIFEST_DOWNLOAD_URL.format(version_name+(("_"+ checklist_id) if checklist_id else "").upper(), version)
 
 
 @register.filter(is_safe=True, name="get_sop_url")
