@@ -1,13 +1,7 @@
 from common.dal.submission_da import Submission
-from .da import Singlecell, SinglecellSchemas, ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE
+from .da import Singlecell, SinglecellSchemas
 from common.utils.logger import Logger
-from common.dal.copo_da import EnaFileTransfer, DataFile 
-from bson import regex
-import os
-from common.utils.helpers import  notify_singlecell_status, get_not_deleted_flag
-from io import BytesIO
-from .SingleCellSchemasHandler import SingleCellSchemasHandler
-from .zenodo.deposition import Zenodo_deposition
+from common.utils.helpers import  get_not_deleted_flag
 from common.ena_utils.ena_helper import EnaSubmissionHelper
 import tempfile
 from .da import SinglecellSchemas
@@ -138,3 +132,13 @@ def _merge_paranent_data(component_df, identifier_map, component_name, parent_ma
         component_df = _merge_paranent_data(component_df, identifier_map, referenced_component, parent_map, singlecell, schemas, term_mapping=term_mapping)
         component_df.drop(columns=[identifier_map[referenced_component]], inplace=True, errors='ignore')
     return component_df
+
+
+def release_study(profile_id, singlecell):
+    submissions = Submission().get_all_records_columns(filter_by={"profile_id": profile_id, "repository": "ena", "deleted": get_not_deleted_flag()}, projection={"_id": 1, "accessions": 1})
+    if submissions:
+        ena_submission_helper = EnaSubmissionHelper(profile_id=profile_id, submission_id=str(submissions[0]["_id"]))
+        return ena_submission_helper.release_study(singlecell=singlecell)
+    else:
+        Logger().error(f"No submission found for profile_id: {profile_id} in ENA repository.")
+        return {"status": False, "message": "No submission found for the given profile."}

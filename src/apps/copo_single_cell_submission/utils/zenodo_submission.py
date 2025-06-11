@@ -219,7 +219,7 @@ def publsh_zendo(profile_id, deposition_id, singlecell):
         if deposition.get("state","") == "done":
             msg = f"{singlecell['study_id']} has been already published to Zenodo."
             Logger().log(msg)
-            notify_singlecell_status(data={"profile_id": singlecell["profile_id"]},
+            notify_singlecell_status(data={"profile_id": profile_id},
                 msg=msg,
                 action="info",
                 html_id="submission_info")

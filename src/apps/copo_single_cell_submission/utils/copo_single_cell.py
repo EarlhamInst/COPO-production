@@ -15,6 +15,7 @@ import os
 import common.ena_utils.FileTransferUtils as tx
 from common.utils.helpers import get_env
 from . import zenodo_submission
+from . import ena_submission
 
 l = Logger()
 
@@ -497,7 +498,7 @@ def publish_singlecell(profile_id, target_ids, target_id, study_id, repository="
             return dict(status='error', message="Please do the submission first!")
     
     if repository == "ena":
-        pass
+        result = ena_submission.release_study(profile_id=profile_id, singlecell=singlecell)
     elif repository == "zenodo":
         accession = studies[0].get(f"accession_{repository}","")
         if not accession:
