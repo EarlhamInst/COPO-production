@@ -207,9 +207,11 @@ class Singlecell(DAComponent):
                         field["show_as_attribute"] = True
                         field["label"] = key[:index].replace("_"," ") + " for " + key[index+1:]
                         field["control"] = "text"
+                        field["soring_name"] = key[index+1:] + "_" + key[:index]
                         fields.append(field)
                 data[key] = value
 
+        fields.sort(key=lambda x: x["soring_name"], reverse=False)
         return fields, data
 
     def update_component_status(self, id, component="study", identifier="study_id", identifier_value=str(), repository="ena", status_column_value={}):
