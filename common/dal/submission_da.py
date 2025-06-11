@@ -1139,6 +1139,12 @@ class Submission(DAComponent):
         self.get_collection_handle().update_one({"_id": ObjectId(sub_id)},
                                                   {"$addToSet": {f"accessions.{component}": {"$each": accessions}}})
 
+    def update_component_submission_accession(self, profile_id, repository, component="study", identifier="study_id", accession={},):
+        # this will replace existing accessions with new ones
+        self.get_collection_handle().update_one({"profile_id": profile_id, "repository":repository, "deleted":helpers.get_not_deleted_flag(),  f"accessions.{component}.{identifier}": accession[identifier]},
+                                                {"$set": {f"accessions.{component}.$": accession}})
+        return
+
     def get_pending_submission(self, repository="zenodo", component="study"):
         REFRESH_THRESHOLD = 600  # time in seconds to retry stuck submission
         # called by celery to get samples the supeprvisor has set to be sent to Zenodo

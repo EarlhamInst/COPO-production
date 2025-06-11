@@ -581,6 +581,12 @@ class EnaSubmissionHelper:
 
             # create datafile xml
             log_message = f"Registering {row[file_identifier]} ..."
+            sample_id = row.get("sample_id", str())
+            if not sample_id or sample_id not in sample_accession_map:
+                log_message = f"Skipping {row[file_identifier]} as no sample associated."
+                self.logging_info(log_message)
+                continue
+
             self.logging_info(log_message)
             #ghlper.logging_info(log_message, self.submission_id)
             #notify_submission_status(data={"profile_id": self.profile_id}, msg=log_message, action="info", html_id="datafile_info")

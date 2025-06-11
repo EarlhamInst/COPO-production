@@ -74,15 +74,18 @@ function place_task_buttons(componentMeta) {
 
   if (componentMeta.submission_repository != undefined && componentMeta.submission_repository.length) {
       componentMeta.submission_repository.forEach(function (item) {
-      action_button_name = "submit_singlecell_multi_" + item;
-      if ( action_button_name in record_action_button_def  ) {
-          button_str = record_action_button_def[action_button_name].template;
-          var actionBTN = $(button_str);
-          //actionBTN.removeClass(item);
-          actionBTN.attr('data-table', componentMeta.tableID);
-          customButtons.append(actionBTN);
-          is_custom_buttons_needed = true;
-      }
+      button_types = ["submit", "publish"];
+      button_types.forEach(function (button_type) {
+      action_button_name = button_type + "_singlecell_multi_" + item;
+        if ( action_button_name in record_action_button_def  ) {
+            button_str = record_action_button_def[action_button_name].template;
+            var actionBTN = $(button_str);
+            //actionBTN.removeClass(item);
+            actionBTN.attr('data-table', componentMeta.tableID);
+            customButtons.append(actionBTN);
+            is_custom_buttons_needed = true;
+        }
+      })
     });
   }
 
@@ -408,7 +411,7 @@ function do_render_server_side_table(componentMeta) {
       },
       fnDrawCallback: function () {
         refresh_tool_tips();
-        var event = jQuery.Event('posttablerefresh'); //individual compnents can trap and handle this event as they so wish
+        var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
         event.tableID = tableID;
         $('body').trigger(event);
 
@@ -691,6 +694,36 @@ function do_render_component_table_tabs(data, componentMeta, columnDefs = null) 
         }
     }
   
+    globalThis.render_ena_accession_function = 
+    function(data, type, row, meta) {
+        if (data == null || data == "") {
+            return "";
+        }
+        if (type === 'display') {
+
+            var url = 'https://www.ebi.ac.uk/ena/browser/view/' + data;
+            var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
+            return html;
+        } else {
+            return data;
+        } 
+    }
+    
+    globalThis.render_zenodo_accession_function = 
+    function(data, type, row, meta) {
+        if (data == null || data == "") {
+            return "";
+        }
+        if (type === 'display') {
+            var url = 'https://zenodo.org/records/' + data;
+            var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
+            return html;
+        } else {
+            return data;
+        } 
+    }
+
+
 
   is_empty = true;
   for (var i = 0; i < data.table_data.components.length; ++i) {
@@ -752,10 +785,15 @@ function do_render_component_table_tabs(data, componentMeta, columnDefs = null) 
     var tableID = table_name;
     var cols = data.table_data.columns[component];
     for (var j = 0; j < cols.length; ++j) {
+      if (cols[j].render != undefined )
+         cols[j].render = eval(cols[j].render); //convert string to function
+         cols[j].orderable = false; //make all columns orderable by default
+      /*
       if (cols[j].render == 'render_thumbnail_image_column_function') {
         cols[j].render = render_thumbnail_image_column_function;
         cols[j].orderable = false;
       }
+      */
     }
 
     tab_data = {table_data: {dataSet: dataSet, columns: cols}};
@@ -872,7 +910,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
       columns: cols,
       fnDrawCallback: function () {
         refresh_tool_tips();
-        var event = jQuery.Event('posttablerefresh'); //individual compnents can trap and handle this event as they so wish
+        var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
         event.tableID = tableID;
         $('body').trigger(event);
       },
@@ -903,7 +941,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
           (row = row),
           (data = data),
           (index = index)
-        ); //individual compnents can trap and handle this event as they so wish
+        ); //individual components can trap and handle this event as they so wish
         $('body').trigger(event);
       },
 
@@ -944,7 +982,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
     .on('click', 'td.summary-details-control', function (event) {
       event.preventDefault();
 
-      var event = jQuery.Event('posttablerefresh'); //individual compnents can trap and handle this event as they so wish
+      var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
       event.tableID = tableID;
       $('body').trigger(event);
 

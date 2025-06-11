@@ -197,7 +197,7 @@ class BrokerDA:
         kwargs = self.request_dict
         kwargs["referenced_field"] = self.param_dict.get("referenced_field", str())
         kwargs["referenced_type"] = self.param_dict.get("referenced_type", str())
-        kwargs.pop("compnent_dict", None)
+        kwargs.pop("component_dict", None)
         kwargs.pop("message_dict", None)
         kwargs.pop("target_id", None)
         kwargs.pop("component", None)
@@ -561,11 +561,41 @@ class BrokerDA:
         return self.context
 
 
+    def _publish_singlecell(self, repository=None):
+        """
+        function handles the publishing of a single cell submission to ENA or Zenodo
+        :return:
+        """
+        target_id = self.param_dict.get("target_id", str())
+        target_ids  = self.param_dict.get("target_ids", [])
+        checklist_id = self.request_dict.get("singlecell_checklist_id", str())
+        study_id = self.request_dict.get("study_id", "")
+        schema_name = self.request_dict.get("schema_name", str())
+
+        result = copo_single_cell.publish_singlecell(profile_id=self.profile_id,  target_ids=target_ids, target_id=target_id, study_id=study_id, repository=repository)
+        #result = {"status":"error", "message":"Publishing of single cell data is not yet implemented for this repository."}
+        report_metadata = dict()
+        report_metadata["status"] = result.get("status", "success")
+        report_metadata["message"] = result.get("message", "success")
+        self.context["action_feedback"] = report_metadata       
+        if result.get("status","success") == "success":
+            self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id, checklist_id=checklist_id, study_id=study_id, schema_name=schema_name)
+            self.context["component"] = "singlecell"
+        return self.context
+
     def do_submit_singlecell_ena(self):
         return self._submit_singlecell(repository="ena")
 
     def do_submit_singlecell_zenodo(self):
         return self._submit_singlecell(repository="zenodo")
+
+    def do_publish_singlecell_ena(self):
+        return self._publish_singlecell(repository="ena")
+  
+
+    def do_publish_singlecell_zenodo(self):
+        return self._publish_singlecell(repository="zenodo")
+    
 
 
 class BrokerVisuals:
