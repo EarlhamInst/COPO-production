@@ -18,6 +18,18 @@ $(document).ready(function () {
   // Show popup dialog when close icon is clicked
   $(document).on('click', '#closeModalIcon', displayCloseModal);
 
+  // Update manifest version when a manifest options is selected
+  $(document).on('click', '.manifest-options-menu a', function () {
+    // Get manifest options' parent cell ID
+    const cellId = $(this)
+      .closest('.dropdown')
+      .attr('id')
+      .replace('ManifestDropdownDiv', '');
+
+    const groupType = camelToSnake(cellId);
+    populateManifestTable({ groupType: groupType });
+  });
+
   handleThemeColourChange();
   wizardHandler();
   populateManifestTable();
@@ -150,7 +162,7 @@ function setSelectedItemManifestVersion(cellId, manifestList) {
 
   if (!selectedItem) return;
 
-  $versionCell.text(selectedItem.version || '');
+  $versionCell.text(selectedItem.version || '-');
 }
 
 function loadDownloadOptions(cellId, manifestList) {
@@ -164,16 +176,14 @@ function loadDownloadOptions(cellId, manifestList) {
   );
   if (!selectedItem) return;
 
-  console.log('Selected item file name: ', selectedItem.file_name);
   const downloadItems = [];
 
   if (selectedItem.blank_manifest_url) {
-    const downloadValue = getManifestFilename(selectedItem.type);
     downloadItems.push({
       label: 'Blank template',
       className: 'blank-template-link',
       href: selectedItem.blank_manifest_url,
-      ...(downloadValue && { download: downloadValue }),
+      download: selectedItem.file_name,
       title: `Download blank template for ${selectedItem.name}`,
       click: function (e) {
         e.preventDefault();
@@ -200,7 +210,7 @@ function loadDownloadOptions(cellId, manifestList) {
       label: 'Launch Prefilled Wizard',
       className: 'prefilled-template-option',
       href: '#',
-      title: `Launch wizard for ${selectedItem.name}`,
+      title: `Launch wizard for ${selectedItem.name} samples`,
       click: function (e) {
         e.preventDefault();
         showWizardBasedOnManifestType(selectedItem.name);
@@ -235,7 +245,7 @@ function loadDownloadOptions(cellId, manifestList) {
   });
 }
 
-function populateManifestTable() {
+function populateManifestTable({ groupType = '' } = {}) {
   $.ajax({
     type: 'GET',
     url: 'populate_manifest_table',
@@ -244,16 +254,22 @@ function populateManifestTable() {
   })
     .done(function (data) {
       // Group data by manifest 'type'
-      const grouped = {};
-      data.forEach((item) => {
-        if (!grouped[item.type]) grouped[item.type] = [];
-        grouped[item.type].push(item);
-      });
+      const grouped = data.reduce((groups, item) => {
+        (groups[item.type] = groups[item.type] || []).push(item);
+        return groups;
+      }, {});
+      const isAllGroups = groupType === '';
+      const targetGroups = isAllGroups ? Object.keys(grouped) : [groupType];
 
-      Object.keys(grouped).forEach((groupType) => {
-        const manifestList = grouped[groupType];
-        const cellId = toCamelCase(groupType);
-        loadManifestOptions(cellId, manifestList);
+      targetGroups.forEach((type) => {
+        const manifestList = grouped[type];
+        const cellId = toCamelCase(type);
+
+        // Load manifest options if no specific groupType is selected
+        if (isAllGroups) {
+          loadManifestOptions(cellId, manifestList);
+        }
+
         setSelectedItemManifestVersion(cellId, manifestList);
         loadDownloadOptions(cellId, manifestList);
       });
@@ -338,7 +354,6 @@ function displayCloseModal() {
 }
 // Set text colour according to the current theme
 function handleThemeColourChange() {
-  // Set text colour according to the current theme
   let section_header = $('.secondary-container').find('p');
   let manifest_filter_div = $('.manifest-filter-div');
   let manifest_filter_icon = $('.manifest-filter-icon');
@@ -428,8 +443,8 @@ function wizardHandler() {
 }
 
 function resetManifestWizard() {
-  let commonfieldsDropdownlistDivID = document.querySelector(
-    '#commonfieldsDropdownlistDiv'
+  let commonFieldsDropdownListDivID = document.querySelector(
+    '#commonFieldsDropdownListDiv'
   );
   let commonFieldErrorMessageID = document.getElementById(
     'commonFieldErrorMessageID'
@@ -440,8 +455,8 @@ function resetManifestWizard() {
   $('.btn-prev').hide(); // Hide previous button
 
   // Remove error information if it is shown
-  if (commonfieldsDropdownlistDivID.classList.contains('has-error')) {
-    commonfieldsDropdownlistDivID.classList.remove('has-error');
+  if (commonFieldsDropdownListDivID.classList.contains('has-error')) {
+    commonFieldsDropdownListDivID.classList.remove('has-error');
     commonFieldErrorMessageID.innerHTML = '';
     commonFieldErrorMessageID.style.display = 'none';
   }
@@ -456,14 +471,14 @@ function buildCommonFields() {
 
   $.ajax({
     type: 'GET',
-    url: 'get_manifest_fields/',
+    url: 'get_manifest_fields',
     dataType: 'json',
     data: {
       manifestType: manifestType,
     },
   })
     .done(function (data) {
-      let commonFieldsList = $('#commonfields');
+      let commonFieldsList = $('#commonFields');
       let option = [];
       let colour_lst = [];
 
@@ -551,7 +566,7 @@ function initCommonValueDropdown(commonField, commonValueDiv) {
 
   $.ajax({
     type: 'GET',
-    url: 'get_common_value_dropdown_list/',
+    url: 'get_common_value_dropdown_list',
     dataType: 'json',
     data: {
       manifestType: manifestType,
@@ -559,7 +574,7 @@ function initCommonValueDropdown(commonField, commonValueDiv) {
     },
   })
     .done(function (data) {
-      if (data['dropdownlist'].length !== 0) {
+      if (data['dropdown_list'].length !== 0) {
         const value_input = document.createElement('select');
         value_input.setAttribute('id', 'commonValueID');
         value_input.setAttribute('class', 'form-control');
@@ -577,8 +592,8 @@ function initCommonValueDropdown(commonField, commonValueDiv) {
             '</option>'
         );
 
-        for (let i = 0; i < data['dropdownlist'].length; i++) {
-          option = data['dropdownlist'][i];
+        for (let i = 0; i < data['dropdown_list'].length; i++) {
+          option = data['dropdown_list'][i];
           $(value_input).append(
             '<option value="' + option + '">' + option + '</option>'
           );
@@ -652,8 +667,8 @@ function initCommonValueDropdown(commonField, commonValueDiv) {
 }
 
 function disableSelectedOption(commonField) {
-  // Disable the selected option in dropdownlist
-  $('#commonfields option:contains(' + commonField + ')').attr(
+  // Disable the selected option in dropdown list
+  $('#commonFields option:contains(' + commonField + ')').attr(
     'disabled',
     'disabled'
   );
@@ -752,7 +767,7 @@ function removeFormDiv(div) {
   let commonField = $(div).closest('div .form-group').find('.cfID').text();
 
   // Enable the common field name that is disabled in the dropdown list by removing the disable attribute
-  $('#commonfields option:contains(' + commonField + ')').removeAttr(
+  $('#commonFields option:contains(' + commonField + ')').removeAttr(
     'disabled'
   );
   $(div).closest('div').remove(); // Remove the div from the form
@@ -771,7 +786,6 @@ function removeFormDiv(div) {
 function showWizardBasedOnManifestType(manifestType) {
   $(document).data('manifestType', manifestType);
   let manifest_wizard = $('#manifest-wizard');
-  // let manifestTypeID = document.getElementById('manifestType')
   $('#modal-placeholder').modal('show');
   manifest_wizard.wizard();
   // Automatically navigate to step 1 when the modal is launched
@@ -779,7 +793,6 @@ function showWizardBasedOnManifestType(manifestType) {
   manifest_wizard.wizard('selectedItem', { step: 1 });
   $('#formID .form-group').remove(); // Remove/clear all existing divs from the form
   document.getElementById('numberOfSamples').value = 1; // Preload with default number of samples
-  // $('.btn-prev').hide(); // Hide previous button
   buildCommonFields(); // Preload with the common fields dropdown list
 }
 
@@ -811,11 +824,11 @@ function validateCommonValue(e, data) {
         // now that the common value is neither undefined, null or empty i.e. it has a value
         $.ajax({
           type: 'GET',
-          url: 'validate_common_value/',
+          url: 'validate_common_value',
           dataType: 'json',
           data: {
             commonField: commonField,
-            common_value: common_value,
+            commonValue: common_value,
           },
         })
           .done(function (data) {
@@ -861,22 +874,22 @@ function validateCommonValue(e, data) {
     let commonFieldErrorMessageID = document.getElementById(
       'commonFieldErrorMessageID'
     );
-    let commonfieldsDropdownlistDivID = document.querySelector(
-      '#commonfieldsDropdownlistDiv'
+    let commonFieldsDropdownListDivID = document.querySelector(
+      '#commonFieldsDropdownListDiv'
     );
-    let commonfieldsID = document.getElementById('commonfields');
+    let commonFieldsID = document.getElementById('commonFields');
 
     // Check if the value of the default/disabled common field is an empty string and
     // check if the number of divs within the form is non-existent i.e equal to zero
-    if (commonfieldsID.value === '' && divs_in_form.length === 0) {
-      commonfieldsDropdownlistDivID.classList.add('has-error');
+    if (commonFieldsID.value === '' && divs_in_form.length === 0) {
+      commonFieldsDropdownListDivID.classList.add('has-error');
       commonFieldErrorMessageID.innerHTML =
         'Choose a common field then, enter or select its value before proceeding!';
       commonFieldErrorMessageID.style.display = ''; // Reveal span tag with error message
     } else {
       // Remove error information if it is shown
-      if (commonfieldsDropdownlistDivID.classList.contains('has-error')) {
-        commonfieldsDropdownlistDivID.classList.remove('has-error');
+      if (commonFieldsDropdownListDivID.classList.contains('has-error')) {
+        commonFieldsDropdownListDivID.classList.remove('has-error');
         commonFieldErrorMessageID.innerHTML = '';
         commonFieldErrorMessageID.style.display = 'none';
       }
@@ -896,11 +909,11 @@ function generateManifestTemplate(event) {
   const xhr = new XMLHttpRequest();
   // const manifestType = document.querySelector('#manifestType').value;
   let manifestType = $(document).data('manifestType');
-  const number_of_samples = document.getElementById('numberOfSamples').value;
+  const numberOfSamples = document.getElementById('numberOfSamples').value;
 
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val(); //.attr('value');
-  let commonFields_list = [];
-  let common_values_list = [];
+  let commonFieldsList = [];
+  let commonValuesList = [];
 
   $('#formID .form-group').each(function () {
     let common_value;
@@ -921,93 +934,62 @@ function generateManifestTemplate(event) {
     }
 
     //.append() cannot be used to add an item to a list/array in JavaScript so .push() is used instead
-    commonFields_list.push(commonField);
-    common_values_list.push(common_value);
+    commonFieldsList.push(commonField);
+    commonValuesList.push(common_value);
   });
 
   // Download the manifest template and show the spinner div
   // while the manifest template is being downloaded
   $('#spinner_div').removeClass('hidden');
 
-  const payload = {
-    row_count: number_of_samples,
-    manifestType: manifestType,
-    commonFields_list: commonFields_list,
-    common_values_list: common_values_list,
-  };
+  getManifestFilename(manifestType)
+    .then((fileName) => {
+      if (!fileName) {
+        console.error('Failed to retrieve manifest filename.');
+        $('#spinner_div').addClass('hidden');
+        return;
+      }
+      const payload = {
+        rowCount: numberOfSamples,
+        manifestType: manifestType,
+        commonFieldsList: commonFieldsList,
+        commonValuesList: commonValuesList,
+      };
 
-  downloadFile({
-    url: 'prefill_manifest_template/',
-    filename: getManifestFilename(manifestType),
-    method: 'POST',
-    body: JSON.stringify(payload),
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrftoken,
-    },
-  });
-
-  // xhr.open('POST', 'prefill_manifest_template/');
-  // xhr.onreadystatechange = function () {
-  //   if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-  //     let link = document.createElement('a');
-  //     let blob = new Blob([this.response], {});
-
-  //     link.download = getManifestFilename(manifestType); // set manifest filename
-  //     link.href = URL.createObjectURL(blob);
-  //     link.click();
-  //     window.URL.revokeObjectURL(link.href);
-  //     $('#spinner_div').hide();
-  //   } else {
-  //     console.error(`Error ${xhr.status}: ${xhr.statusText}`);
-  //   }
-  // };
-  // xhr.setRequestHeader('X-CSRFToken', csrftoken);
-  // xhr.responseType = 'blob';
-  // xhr.send(
-  //   JSON.stringify({
-  //     row_count: number_of_samples,
-  //     manifestType: manifestType,
-  //     commonFields_list: commonFields_list,
-  //     common_values_list: common_values_list,
-  //   })
-  // );
+      downloadFile({
+        url: 'prefill_manifest_template/',
+        filename: fileName,
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken,
+        },
+      });
+    })
+    .catch((error) => {
+      console.error('Error retrieving manifest filename:', error);
+      $('#spinner_div').addClass('hidden');
+    });
 }
 
 function getManifestFilename(manifestType) {
-  const dtol_current_version = $('#dtol_current_version');
-  const current_dtolenv_version = $('#current_dtolenv_version');
-
-  let filename = '';
-  let fileNamePart = `${manifestType.toUpperCase()}_MANIFEST_TEMPLATE_v`;
-
-  switch (manifestType) {
-    case 'asg':
-      filename = `${fileNamePart}${$('#asg_current_version').text()}.xlsx`;
-      break;
-    case 'dtolenv':
-      filename = `${fileNamePart}${current_dtolenv_version.text()}.xlsx`;
-      break;
-    /*
-    case 'dtolenv':
-      filename = `${fileNamePart}${current_dtolenv_version.text()}.xlsx`;
-      break;
-*/
-    case 'dtol':
-      filename = `${fileNamePart}${dtol_current_version.text()}.xlsx`;
-      break;
-    /*      
-    case 'env':
-      filename = `${fileNamePart}${current_dtolenv_version.text()}.xlsx`;
-      break;
-*/
-    case 'erga':
-      filename = `${fileNamePart}${$('#erga_current_version').text()}.xlsx`;
-      break;
-    default:
-      filename = null;
-  }
-  return filename;
+  return fetch(
+    `/manifests/get_manifest_file_name/${encodeURIComponent(manifestType)}`
+  )
+    .then((response) => {
+      if (!response.ok) {
+        console.error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      return data.file_name;
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      return null;
+    });
 }
 
 function downloadFile({
@@ -1053,4 +1035,8 @@ function downloadFile({
 
 function toCamelCase(str) {
   return str.toLowerCase().replace(/[_\s]+(.)/g, (_, chr) => chr.toUpperCase());
+}
+
+function camelToSnake(str) {
+  return str.replace(/([A-Z])/g, '_$1').toLowerCase();
 }

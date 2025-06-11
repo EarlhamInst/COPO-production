@@ -26,6 +26,37 @@ p {
   background: #f9fafb;
 }
 
+.manifest-dropdown-wrapper {
+  text-align: center;
+}
+
+/* Dropdown menus */
+.manifest-dropdown-wrapper .dropdown-toggle {
+  align-items: center;
+  display: inline-flex;
+  justify-content: space-between;
+  max-width: 400px; /* or a fixed width if needed */
+  padding: 6px 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Truncate only the label part */
+.manifest-dropdown-wrapper .dropdown-toggle .dropdown-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-grow: 1 1 auto;
+}
+
+/* Keep caret inside, fixed size */
+.manifest-dropdown-wrapper .dropdown-toggle .caret {
+  margin-left: 8px;
+  /* flex-shrink: 0; */
+  flex: 0 0 auto;
+}
+
 /* Manifest table filter*/
 #manifestFilter {
   float: right;
@@ -82,59 +113,9 @@ p {
   max-width: fit-content !important;
 }
 
-/* Set consistent width */
-/* .manifest-dropdown-wrapper .dropdown-toggle {
-  max-width: 400px;
-  text-align: left;
-  padding-right: 2em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-} */
-
-/* Ensure caret is right-aligned */
-/* .manifest-dropdown-wrapper .dropdown-toggle .caret {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-} */
-
-/* Keep label text slightly pushed away from caret */
-/* .manifest-dropdown-wrapper .dropdown-toggle .label-text {
-  display: inline-block;
-  max-width: calc(100% - 20px); /* avoid overlap with caret */
-/* overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: middle;
-} */
-
-.manifest-dropdown-wrapper {
+/* Fuelux modal */
+.wizard-final-step {
   text-align: center;
-}
-
-.manifest-dropdown-wrapper .dropdown-toggle {
-  align-items: center;
-  display: inline-flex;
-  justify-content: space-between;
-  max-width: 400px; /* or a fixed width if needed */
-  padding: 6px 12px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-/* Truncate only the label part */
-.manifest-dropdown-wrapper .dropdown-toggle .dropdown-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex-grow: 1 1 auto;
-}
-
-/* Keep caret inside, fixed size */
-.manifest-dropdown-wrapper .dropdown-toggle .caret {
-  margin-left: 8px;
-  /* flex-shrink: 0; */
-  flex: 0 0 auto;
+  font-size: medium;
+  color: black !important;
 }

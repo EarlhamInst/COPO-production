@@ -9,7 +9,7 @@ import re
 from bson import ObjectId, json_util
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse, resolve
 from io import BytesIO
@@ -49,6 +49,12 @@ def copo_manifests(request):
                 'title': 'European Nucleotide Archive',
             },
             {
+                'prefix': 'tolSamples',
+                'label_prefix': 'ToL',
+                'label_suffix': 'samples',
+                'title': 'Tree of Life',
+            },
+            {
                 'prefix': 'enaBarcode',
                 'label_prefix': 'ENA',
                 'label_suffix': 'tagged sequences or barcodes',
@@ -59,12 +65,6 @@ def copo_manifests(request):
                 'label_prefix': 'ENA',
                 'label_suffix': 'reads',
                 'title': 'European Nucleotide Archive',
-            },
-            {
-                'prefix': 'tolSamples',
-                'label_prefix': 'ToL',
-                'label_suffix': 'samples',
-                'title': 'Tree of Life',
             },
             {
                 'prefix': 'singleCell',
@@ -113,187 +113,161 @@ def extract_label_from_description(primary_id, description):
     return phrase
 
 
+def build_manifest_item(
+    x,
+    schema_name,
+    manifest_type,
+    label=None,
+    file_name=None,
+    show_prefill_wizard=False,
+    sop_url=None,
+    technology=None,
+    version=None,
+):
+    primary_id = x.get('primary_id', '')
+    name = (x.get('name') or '').strip()
+    description = x.get('description', '')
+
+    return {
+        'manifest_id': primary_id,
+        'type': manifest_type,
+        'technology': technology,
+        'name': name,
+        'label': label or f"{primary_id}: {name}",
+        'description': description,
+        'blank_manifest_url': reverse(
+            'api:download_blank_manifest',
+            kwargs={'schema_name': schema_name, 'checklist_id': primary_id},
+        ),
+        'sop_url': sop_url,
+        'show_prefill_wizard': show_prefill_wizard,
+        'file_name': file_name,
+        'version': version,
+    }
+
+
 def populate_manifest_table(request):
     manifests = []
 
-    # COPO samples manifests
-    copo_sample_checklists = EnaChecklist().get_general_sample_checklists_no_fields()
+    checklist_service = EnaChecklist()
+    profile_service = ProfileType()
+    singlecell_service = SinglecellSchemas()
 
-    if copo_sample_checklists:
-        items = [
-            {
-                'manifest_id': x.get('primary_id', ''),
-                'type': 'copo_samples',
-                'technology': None,
-                'name': (x.get('name') or ''),
-                'label': f"{extract_label_from_description(x.get('primary_id', ''), x.get('description', ''))} Checklist",
-                'description': x.get('description', ''),
-                'blank_manifest_url': reverse(
-                    'api:download_blank_manifest',
-                    kwargs={
-                        'schema_name': 'COPO_SAMPLES',
-                        'checklist_id': x.get('primary_id', ''),
-                    },
-                ),
-                'sop_url': None,
-                'show_prefill_wizard': False,
-                'file_name': f"{x.get('primary_id', '')}_MANIFEST_TEMPLATE.xlsx",
-                'version': None,
-            }
-            for x in copo_sample_checklists
-            if x['primary_id'].startswith('COPO')
-        ]
-        items.sort(key=lambda x: x['label'])
-        manifests.extend(items)
+    # COPO samples
+    copo_checklists = checklist_service.get_general_sample_checklists_no_fields()
+    copo_items = [
+        build_manifest_item(
+            x,
+            schema_name='COPO_SAMPLES',
+            manifest_type='copo_samples',
+            label=f"{extract_label_from_description(x.get('primary_id', ''), x.get('description', ''))} Checklist",
+            file_name=f"{x.get('primary_id', '')}_sample_MANIFEST_TEMPLATE.xlsx",
+        )
+        for x in copo_checklists
+        if x['primary_id'].startswith('COPO')
+    ]
+    copo_items.sort(key=lambda x: x['label'])
+    manifests.extend(copo_items)
 
-    # ENA samples manifests
-    ena_sample_checklists = EnaChecklist().get_general_sample_checklists_no_fields()
-    if ena_sample_checklists:
-        items = [
-            {
-                'manifest_id': x.get('primary_id', ''),
-                'type': 'ena_samples',
-                'technology': None,
-                'name': (x.get('name') or '').strip(),
-                'label': f"{x.get('primary_id', '')}: {(x.get('name') or '').strip()}",
-                'description': x.get('description', ''),
-                'blank_manifest_url': reverse(
-                    'api:download_blank_manifest',
-                    kwargs={
-                        'schema_name': 'ENA_SAMPLES',
-                        'checklist_id': x.get('primary_id', ''),
-                    },
-                ),
-                'sop_url': None,
-                'show_prefill_wizard': False,
-                'file_name': f"{x.get('primary_id', '')}_SAMPLE_MANIFEST_TEMPLATE.xlsx",
-                'version': None,
-            }
-            for x in ena_sample_checklists
-            if not x['primary_id'].startswith('COPO')
-        ]
-        # sort items by name
-        items.sort(key=lambda x: x['label'])
-        manifests.extend(items)
+    # ENA samples
+    ena_items = [
+        build_manifest_item(
+            x,
+            schema_name='ENA_SAMPLES',
+            manifest_type='ena_samples',
+            file_name=f"{x.get('primary_id', '')}_sample_MANIFEST_TEMPLATE.xlsx",
+        )
+        for x in copo_checklists
+        if not x['primary_id'].startswith('COPO')
+    ]
+    ena_items.sort(key=lambda x: x['label'])
+    manifests.extend(ena_items)
 
-    # ENA barcode manifests
-    barcode_checklists = EnaChecklist().get_barcoding_checklists_no_fields()
-    if barcode_checklists:
-        items = [
-            {
-                'manifest_id': x.get('primary_id', ''),
-                'type': 'ena_barcode',
-                'technology': None,
-                'name': x.get('name'),
-                'label': f"{x.get('primary_id', '')}: {(x.get('name') or '').strip()} Checklist",
-                'description': x.get('description', ''),
-                'blank_manifest_url': reverse(
-                    'api:download_blank_manifest',
-                    kwargs={
-                        'schema_name': 'ENA_BARCODE',
-                        'checklist_id': x.get('primary_id', ''),
-                    },
-                ),
-                'sop_url': None,
-                'show_prefill_wizard': False,
-                'file_name': f"ENA_BARCODE_{x.get('name').upper().replace(' ', '_')}_MANIFEST_TEMPLATE.xlsx",
-                'version': None,
-            }
-            for x in barcode_checklists
-        ]
-        manifests.extend(items)
+    # ENA barcode
+    barcode_checklists = checklist_service.get_barcoding_checklists_no_fields()
+    barcode_items = [
+        build_manifest_item(
+            x,
+            schema_name='ENA_BARCODE',
+            manifest_type='ena_barcode',
+            label=f"{x.get('primary_id', '')}: {(x.get('name') or '').strip()} Checklist",
+            file_name=f"{x.get('primary_id', '')}_MANIFEST_TEMPLATE.xlsx",
+        )
+        for x in barcode_checklists
+    ]
+    manifests.extend(barcode_items)
 
-    # ENA read manifests
-    read_checklists = EnaChecklist().get_sample_checklists_no_fields()
+    # ENA read
+    read_checklists = checklist_service.get_sample_checklists_no_fields()
+    read_items = [
+        build_manifest_item(
+            x,
+            schema_name='general',
+            manifest_type='ena_read',
+            label=(x.get('name') or '').title(),
+            file_name='read_manifest.xlsx',
+            technology=None,
+        )
+        for x in read_checklists
+        if x.get('primary_id') == 'read'
+    ]
+    manifests.extend(read_items)
 
-    if read_checklists:
-        items = [
-            {
-                'manifest_id': x.get('primary_id', ''),
-                'type': 'ena_read',
-                'technology': None,
-                'name': (x.get('name') or '').upper().strip(),
-                'label': (x.get('name') or '').title(),
-                'description': x.get('description', ''),
-                'blank_manifest_url': reverse(
-                    'api:download_blank_manifest',
-                    kwargs={
-                        'schema_name': 'general',
-                        'checklist_id': x.get('primary_id', ''),
-                    },
-                ),
-                'sop_url': None,
-                'show_prefill_wizard': False,
-                'file_name': 'READ_MANIFEST_TEMPLATE.xlsx',
-                'version': None,
-            }
-            for x in read_checklists
-            if x['primary_id'] == "read"
-        ]
-        manifests.extend(items)
-
-    # ToL samples manifests
-    excluded_manifests = ['dtolenv']
-
-    items = [
+    # ToL samples
+    excluded = ['dtolenv']
+    tol_items = [
         {
             'manifest_id': None,
             'type': 'tol_samples',
             'technology': None,
-            'name': x.type.upper(),
-            'label': x.description,
+            'name': profile.type.upper(),
+            'label': profile.description,
             'description': None,
-            'blank_manifest_url': get_blank_manifest_url(x.type.upper()),
-            'sop_url': get_sop_url(x.type.upper()),
+            'blank_manifest_url': get_blank_manifest_url(profile.type.upper()),
+            'sop_url': get_sop_url(profile.type.upper()),
             'show_prefill_wizard': True,
-            'file_name': get_manifest_filename(x.type.upper()),
-            'version': settings.MANIFEST_VERSION.get(x.type.upper(), ''),
+            'file_name': compute_manifest_file_name(profile.type.upper()),
+            'version': settings.MANIFEST_VERSION.get(profile.type.upper(), ''),
         }
-        for x in ProfileType().get_profile_types()
-        if x.is_dtol_profile == True and x.type not in excluded_manifests
+        for profile in profile_service.get_profile_types()
+        if profile.is_dtol_profile and profile.type not in excluded
     ]
-    manifests.extend(items)
+    manifests.extend(tol_items)
 
-    # Single-cell manifests
+    # Single-cell
     schema_name = 'COPO_SINGLE_CELL'
-    single_cell_manifests = SinglecellSchemas().get_checklists(
+    single_cell_manifests = singlecell_service.get_checklists(
         schema_name=schema_name, checklist_id=''
     )
-    if single_cell_manifests:
-        for key, value in single_cell_manifests.items():
-            file_name_part = (
-                f"{value.get('standard', '')}_{value.get('technology', '')}"
-            )
-            item = {
-                'manifest_id': key,  # aka primary ID or checklist ID
-                'type': 'single_cell',
-                'technology': value.get('technology', ''),
-                'name': f"{value.get('standard', '')}_{value.get('technology', '')}",
-                'label': value.get('name', ''),
-                'description': value.get('description', ''),
-                # get_blank_manifest_url(schema_name, key)
-                'blank_manifest_url': reverse(
-                    'api:download_blank_manifest',
-                    kwargs={'schema_name': schema_name, 'checklist_id': key},
-                ),
-                'sop_url': None,
-                'show_prefill_wizard': False,
-                'file_name': get_manifest_filename(
-                    schema_name, file_name_part=file_name_part.upper()
-                ),
-                'version': settings.MANIFEST_VERSION.get(schema_name, ''),
-            }
-            manifests.append(item)
+    for checklist_id, value in single_cell_manifests.items():
+        file_name = f"singlecell_manifest_{checklist_id}_v{settings.MANIFEST_VERSION.get(schema_name, '')}"
+        item = {
+            'manifest_id': checklist_id,
+            'type': 'single_cell',
+            'technology': value.get('technology', ''),
+            'name': f"{value.get('standard', '')}_{value.get('technology', '')}",
+            'label': value.get('name', ''),
+            'description': value.get('description', ''),
+            'blank_manifest_url': reverse(
+                'api:download_blank_manifest',
+                kwargs={'schema_name': schema_name, 'checklist_id': checklist_id},
+            ),
+            'sop_url': None,
+            'show_prefill_wizard': False,
+            'file_name': file_name,
+            'version': settings.MANIFEST_VERSION.get(schema_name, ''),
+        }
+        manifests.append(item)
 
-    return HttpResponse(json.dumps(manifests))
+    return JsonResponse(manifests, safe=False)
 
 
 def get_manifest_fields(request):
-    manifest_type = request.GET['manifest_type']
+    manifest_type = request.GET['manifestType'].lower()
     current_schema_version = ''
 
     # Get manifest version
-    current_schema_version = settings.MANIFEST_VERSION.get(manifest_type.upper(), str())
+    current_schema_version = settings.MANIFEST_VERSION.get(manifest_type.upper(), '')
 
     # Get sample fields
     s = helpers.json_to_pytype(
@@ -400,16 +374,16 @@ def get_common_value_dropdown_list(request):
         or 'digit number' in lkup.DTOL_RULES.get(field, '').get('human_readable', '')
     ]
 
-    manifest_type = request.GET['manifest_type']
-    common_field = request.GET['common_field']
-    common_value_dropdownlist = get_common_field_dropdownlist(
+    manifest_type = request.GET['manifestType'].lower()
+    common_field = request.GET['commonField']
+    common_value_dropdownlist = get_common_field_dropdown_list(
         common_field, manifest_type
     )
 
     return HttpResponse(
         json.dumps(
             {
-                'dropdownlist': common_value_dropdownlist,
+                'dropdown_list': common_value_dropdownlist,
                 'date_fields': date_fields,
                 'integer_fields': integer_fields,
             }
@@ -417,7 +391,7 @@ def get_common_value_dropdown_list(request):
     )
 
 
-def get_manifest_filename(manifest_type, file_name_part=None):
+def compute_manifest_file_name(manifest_type):
     manifest_type = manifest_type.upper()
 
     if 'ASG' in manifest_type:
@@ -431,30 +405,40 @@ def get_manifest_filename(manifest_type, file_name_part=None):
     else:
         type = manifest_type
 
-    # Optional file_name part or technolofy and standard (e.g. '_dwc_sc_rnaseq')
-    part = f'_{file_name_part}' if file_name_part else ''
+    if manifest_type not in settings.MANIFEST_VERSION:
+        return ''
 
     # Optional version string from settings
     version = settings.MANIFEST_VERSION.get(type, '')
     version_str = f'_v{version}' if version else ''
 
-    return settings.MANIFEST_FILE_NAME.format(type, part, version_str)
+    return settings.MANIFEST_FILE_NAME.format(type, version_str)
+
+
+def get_manifest_file_name(request, manifest_type):
+    file_name = compute_manifest_file_name(manifest_type)
+    return JsonResponse({'file_name': file_name})
 
 
 def prefill_manifest_template(request):
-    manifest_type = json_util.loads(request.body)['manifest_type']
-    number_of_samples = int(
-        json_util.loads(request.body)['row_count']
-    )  # Convert to int
-    common_fields = json_util.loads(request.body)['common_fields_list']
-    common_values = json_util.loads(request.body)['common_values_list']
-
-    manifests_dir = os.path.join('static', 'assets', 'manifests')
+    manifest_type = json_util.loads(request.body)['manifestType']
+    number_of_samples = int(json_util.loads(request.body)['rowCount'])  # Convert to int
+    common_fields = json_util.loads(request.body)['commonFieldsList']
+    common_values = json_util.loads(request.body)['commonValuesList']
 
     # Set the path to the blank manifest template based on the manifest type
-    file_name = get_manifest_filename(manifest_type)
+    file_name = compute_manifest_file_name(manifest_type)
 
-    manifest_template_path = os.path.join(manifests_dir, file_name)
+    manifest_template_path = settings.BASE_DIR + get_blank_manifest_url(
+        manifest_type.upper()
+    )
+
+    # Check if the manifest template file exists
+    if not os.path.exists(manifest_template_path):
+        return JsonResponse(
+            {'error': f'Manifest template file {file_name} not found.'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     # Duplicate the common field value according to the number of samples desired
     row_values = [[i] * int(number_of_samples) for i in common_values]
@@ -527,14 +511,14 @@ def prefill_manifest_template(request):
                                                 sheet_name='OrganismPartDefinitions')
 
         # Auto-adjust width of each column within the worksheet
-        autoAdjustExcelColumnWidth(metadataEntry_worksheet_concatenation, pandas_writer, 'Metadata Entry')
+        auto_adjust_excel_column_width(metadataEntry_worksheet_concatenation, pandas_writer, 'Metadata Entry')
 
-        autoAdjustExcelColumnWidth(dataValidation_worksheet, pandas_writer, 'Data Validation')
+        auto_adjust_excel_column_width(dataValidation_worksheet, pandas_writer, 'Data Validation')
 
-        autoAdjustExcelColumnWidth(organismPartDefinitions_worksheet, pandas_writer, 'OrganismPartDefinitions')
+        auto_adjust_excel_column_width(organismPartDefinitions_worksheet, pandas_writer, 'OrganismPartDefinitions')
 
         # Apply a dropdown list to the desired columns
-        applyDropdownlist(metadataEntry_worksheet_concatenation, pandas_writer, 'Metadata Entry',
+        apply_dropdown_list(metadataEntry_worksheet_concatenation, pandas_writer, 'Metadata Entry',
                         metadataEntry_worksheet_dataframe, dataValidation_worksheet_dataframe, manifest_type)
 
         #pandas_writer.save() '''
@@ -551,7 +535,7 @@ def prefill_manifest_template(request):
     return response
 
 
-def autoAdjustExcelColumnWidth(dataframe, pandas_writer, sheet_name):
+def auto_adjust_excel_column_width(dataframe, pandas_writer, sheet_name):
     for column in dataframe:
         column_length = max(dataframe[column].astype(str).map(len).max(), len(column))
         column_index = dataframe.columns.get_loc(column)
@@ -560,7 +544,7 @@ def autoAdjustExcelColumnWidth(dataframe, pandas_writer, sheet_name):
         )
 
 
-def applyDataValidationToColumn(
+def apply_data_validation_to_column(
     column,
     metadataEntry_worksheet_dataframe,
     dataValidation_worksheet_dataframe,
@@ -629,7 +613,7 @@ def applyDataValidationToColumn(
         )
 
 
-def applyDropdownlist(
+def apply_dropdown_list(
     dataframe,
     pandas_writer,
     sheet_name,
@@ -659,7 +643,7 @@ def applyDropdownlist(
             exceed the 255 character limit so the dropdown list for each of these columns will 
             be pulled from the respective column in the in the 'Data Validation' worksheet'''
 
-            common_value_dropdownlist = get_common_field_dropdownlist(
+            common_value_dropdownlist = get_common_field_dropdown_list(
                 column_name, manifest_type
             )
             common_value_dropdownlist.sort()
@@ -667,7 +651,7 @@ def applyDropdownlist(
             number_of_characters = sum(len(i) for i in common_value_dropdownlist)
 
             if number_of_characters >= 255:
-                applyDataValidationToColumn(
+                apply_data_validation_to_column(
                     column_name,
                     metadataEntry_worksheet_dataframe,
                     dataValidation_worksheet_dataframe,
@@ -684,7 +668,7 @@ def applyDropdownlist(
                 )
 
 
-def get_common_field_dropdownlist(common_field, manifest_type):
+def get_common_field_dropdown_list(common_field, manifest_type):
     def get_dropdown_items():
         if fieldsBasedOnManifestType and common_field in fieldsBasedOnManifestType:
             # Get dropdown list based on the manifest type
@@ -709,7 +693,7 @@ def get_common_field_dropdownlist(common_field, manifest_type):
     common_value_dropdownlist = []
 
     # The 'common field' parameter can be a list or not because the function,
-    # get_common_field_dropdownlist(common_field, manifest_type), is called in a
+    # get_common_field_dropdown_list(common_field, manifest_type), is called in a
     # couple functions in this file, ajax_handlers.py for various purposes
 
     # Check if the 'common field' parameter is a list or not
@@ -726,8 +710,8 @@ def get_common_field_dropdownlist(common_field, manifest_type):
 
 
 def validate_common_value(request):
-    common_field = request.GET['common_field']
-    common_value = request.GET['common_value']
+    common_field = request.GET['commonField']
+    common_value = request.GET['commonValue']
     isCommonValueValid = False
     error_message = ''
 
@@ -842,7 +826,7 @@ def download_manifest(request, manifest_id):
     # manifests_dir = os.path.join('static', 'assets', 'manifests')
 
     # Set the path to the blank manifest template based on the manifest type
-    file_name = get_manifest_filename(manifest_type)
+    file_name = compute_manifest_file_name(manifest_type)
 
     manifest_template_path = os.path.join(settings.MANIFEST_PATH, file_name)
 
@@ -871,7 +855,8 @@ def download_blank_manifest(request, schema_name, checklist_id):
     def generate_sample_manifest():
         checklist = EnaChecklist().get_checklist(checklist_id, with_read=False)
         write_ena_manifest(checklist=checklist, with_read=False, file_path=bytesstring)
-        return f'{checklist_id.upper()}_MANIFEST_TEMPLATE.xlsx'
+        file_name_part = '' if 'barcode' in checklist_id else '_sample'
+        return f'{checklist_id.upper()}{file_name_part}_MANIFEST_TEMPLATE.xlsx'
 
     def generate_read_manifest():
         checklist = EnaChecklist().get_checklist(
@@ -880,7 +865,7 @@ def download_blank_manifest(request, schema_name, checklist_id):
         write_ena_manifest(
             checklist=checklist, for_dtol=True, with_sample=False, file_path=bytesstring
         )
-        return f'{checklist_id.upper()}_MANIFEST_TEMPLATE.xlsx'
+        return f'{checklist_id.lower()}_manifest.xlsx'
 
     def generate_single_cell_manifest():
         schema = (
@@ -894,7 +879,7 @@ def download_blank_manifest(request, schema_name, checklist_id):
             checklist_id=checklist_id,
             file_path=bytesstring,
         )
-        return get_manifest_filename(schema_name, file_name_part=checklist_id.upper())
+        return f"singlecell_manifest_{checklist_id}_v{settings.MANIFEST_VERSION.get(schema_name, '')}"
 
     # Dispatch rules as (condition_func, handler_func)
     dispatch_rules = [
@@ -1058,20 +1043,20 @@ def generate_manifest_template(manifest_type, manifest_template_path, initial_da
         )
 
         # Auto-adjust width of each column within the worksheet
-        autoAdjustExcelColumnWidth(
+        auto_adjust_excel_column_width(
             metadataEntry_worksheet_concatenation, pandas_writer, 'Metadata Entry'
         )
 
-        autoAdjustExcelColumnWidth(
+        auto_adjust_excel_column_width(
             dataValidation_worksheet, pandas_writer, 'Data Validation'
         )
 
-        autoAdjustExcelColumnWidth(
+        auto_adjust_excel_column_width(
             organismPartDefinitions_worksheet, pandas_writer, 'OrganismPartDefinitions'
         )
 
         # Apply a dropdown list to the desired columns
-        applyDropdownlist(
+        apply_dropdown_list(
             metadataEntry_worksheet_concatenation,
             pandas_writer,
             'Metadata Entry',

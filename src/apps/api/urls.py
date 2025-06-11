@@ -246,12 +246,17 @@ manifest_patterns = [
         name="populate_manifest_table",
     ),
     path(
-        'get_manifest_fields/',
+        'get_manifest_fields',
         manifest_view.get_manifest_fields,
         name="get_manifest_fields",
     ),
+    re_path(
+        r'get_manifest_file_name/(?P<manifest_type>[a-zA-Z-_, ]+)',
+        manifest_view.get_manifest_file_name,
+        name="get_manifest_file_name",
+    ),
     path(
-        'get_common_value_dropdown_list/',
+        'get_common_value_dropdown_list',
         manifest_view.get_common_value_dropdown_list,
         name="get_common_value_dropdown_list",
     ),
@@ -273,7 +278,7 @@ manifest_patterns = [
     path('download_permits/', manifest_view.download_permits, name="download_permits"),
     path('view_images/', manifest_view.view_images, name="view_images"),
     path(
-        'validate_common_value/',
+        'validate_common_value',
         manifest_view.validate_common_value,
         name="validate_common_value",
     ),

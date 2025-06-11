@@ -27,8 +27,8 @@
         <table id="manifestTable" class="ui padded table" style="text-align: center">
             <thead>
             <tr>
-                <th></th>
-                <th>Manifest (Checklist) Type</th>
+                <th>Category</th>
+                <th>Manifest/Checklist Type</th>
                 <th>Current Version</th>
                 <th></th>
             </tr>
@@ -47,202 +47,6 @@
               <td id="{{ row.prefix }}DownloadOptions"></td>
             </tr>
           {% endfor %}
-            <!-- <tbody>
-                <tr>
-                    <td class="table-header">
-                        <span class="text-hover" title="Collaborative OPen Omics">COPO</span> samples
-                    </td>
-                    <td id="copoSamplesManifestOptions"></td>
-                    <td id="copoSamplesManifestVersion"></td>
-                    <td id="copoSamplesDownloadMenu"></td>
-                </tr>
-                <tr>
-                    <td class="table-header">
-                        <span class="text-hover" title="European Nucleotide Archive">ENA</span> samples</td>
-                        <td id="enaSamplesManifestOptions"></td>
-                        <td id="enaSamplesManifestVersion"></td>
-                        <td id="enaSamplesDownloadMenu"></td>
-                    </tr>
-                <tr>
-                    <td class="table-header">
-                        <span class="text-hover" title="European Nucleotide Archive">ENA</span> barcode</td>
-                        <td id="enaBarcodeManifestOptions"></td>
-                        <td id="enaBarcodeSamplesManifestVersion"></td>
-                        <td id="enaBarcodeDownloadMenu"></td>
-                    </tr>
-                <tr>
-                    <td class="table-header">
-                    <span class="text-hover" title="European Nucleotide Archive">ENA</span> read</td>
-                    <td id="enaReadManifestOptions"></td>
-                    <td id="enaReadManifestVersion"></td>
-                    <td id="enaReadDownloadMenu"></td>
-                </tr>
-                <tr>
-                    <td class="table-header">
-                    <span class="text-hover" title="Tree of Life">ToL</span> samples</td>
-                    <td id="tolSamplesManifestOptions"></td>
-                    <td id="tolSamplesManifestVersion"></td>
-                    <td id="tolSamplesDownloadMenu"></td>
-                </tr>
-                <tr>
-                    <td class="table-header">Single-cell</td>
-                    <td id="singleCellManifestOptions"></td>
-                    <td id="singleCellManifestVersion"></td>
-                    <td id="singleCellDownloadMenu"></td>
-                </tr>
-            </tbody> -->
-            <!-- <tbody>
-            <tr>
-                <td>Samples</td>
-                <td>ASG - Aquatic Symbiosis Genomics</td>
-                <td id="asg_current_version"></td>
-                <td>
-                    <div class="dropdown">
-                        <button class="btn btn-default dropdown-toggle" type="button" id="asgDropdownMenu"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                            Download
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="asgDropdownMenu">
-                            <li><a href="{{ 'ASG'| get_blank_manifest_url  }}">
-                                Blank template</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a id="asg_prefilled_template_option" class="wizard-link" href="javascript:"
-                                   onclick="showWizardBasedOnManifestType('asg')">
-                                   Prefilled template</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="{{ 'ASG'|get_sop_url  }}">
-                                    Standard Operating Procedure (SOP)</a></li>
-
-                        </ul>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>Barcoding</td>
-                <td>1.0</td>
-                <td>
-                    <div class="dropdown">
-                        <button class="btn btn-default dropdown-toggle" type="button" id="barcodingDropdownMenu"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                            Download
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="barcodingDropdownMenu">
-                            <li><a href="{% static 'assets/manifests/BARCODING_MANIFEST_TOL_TEMPLATE.xlsx' %}">
-                                Blank template</a>
-                            </li>
-                        </ul>
-                    </div>
-                </td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Samples</td>
-                <td>DToL - Darwin Tree of Life</td>
-                <td id="dtol_current_version"></td>
-                <td>
-                    <div class="dropdown">
-                        <button class="btn btn-default dropdown-toggle" type="button" id="dtolDropdownMenu"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                            Download
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dtolDropdownMenu">
-                            <li><a href="{{  'DTOL'| get_blank_manifest_url  }}">
-                                Blank template</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a id="dtol_prefilled_template_option" class="wizard-link" href="javascript:"
-                                   onclick="showWizardBasedOnManifestType('dtol')">
-                                   Prefilled template</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="{{ 'DTOL'|get_sop_url  }}">
-                                    Standard Operating Procedure (SOP)</a></li>
-                        </ul>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>ERGA - European Reference Genome Atlas</td>
-                <td id="erga_current_version"></td>
-                <td>
-                    <div class="dropdown">
-                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu3"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                            Download
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu3">
-                            <li><a href="{{'ERGA'| get_blank_manifest_url }}">
-                                Blank template</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a id="erga_prefilled_template_option" class="wizard-link" href="javascript:"
-                                   onclick="showWizardBasedOnManifestType('erga')">
-                                   Prefilled template</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="{{ 'ERGA'|get_sop_url  }}">
-                                    Standard Operating Procedure (SOP)</a></li>
-                        </ul>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>DwC - Darwin Core samples</td>
-                <td id="dwc_current_version"></td>
-                <td>
-                    <div class="dropdown">
-                        <button class="btn btn-default dropdown-toggle" type="button" id="dwcDropdownMenu"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                            Download
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dwcDropdownMenu">
-                            <li><a href="{% static 'assets/manifests/READS_MANIFEST_TOL_TEMPLATE.xlsx' %}">
-                                Blank template</a>
-                            </li>
-                        </ul>
-                    </div>
-                </td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>FAANG - Functional Annotation of Animal Genomes</td>
-                <td id="faang_current_version"></td>
-                <td>
-                    <div class="dropdown">
-                        <button class="btn btn-default dropdown-toggle" type="button" id="faangDropdownMenu"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                            Download
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="faangDropdownMenu">
-                            <li><a href="{{'FAANG'| get_blank_manifest_url }}">
-                                Blank template</a>
-                            </li>
-                        </ul>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>Reads</td>
-                <td>1.0</td>
-                <td>
-                    <div class="dropdown">
-                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuReads"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                            Download
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuReads">
-                            <li><a href="{% static 'assets/manifests/READS_MANIFEST_TOL_TEMPLATE.xlsx' %}">
-                                Blank template</a>
-                            </li>
-                        </ul>
-                    </div>
-                </td>
-                <td></td>
-            </tr>
-            </tbody> -->
         </table>
     </div>
     {#  Modal wizard starts #}
@@ -263,9 +67,6 @@
                     <div class="wizard" id="manifest-wizard">
                         <div class="steps-container">
                             <ul class="steps">
-                                {#                                <li data-step="1" class="active">#}
-                                {#                                    <span class="badge badge-info">1</span>Type<span class="chevron"></span>#}
-                                {#                                </li>#}
                                 <li data-step="2" class="active">
                                     <span class="badge">1</span>Samples<span class="chevron"></span>
                                 </li>
@@ -276,18 +77,6 @@
                         </div>
 
                         <div class="step-content">
-                            {#                            <div class="step-pane" data-step="1">#}
-                            {#                                <div class="well">#}
-                            {#                                    <label>Which manifest do you want to create?</label>#}
-                            {#                                    <select id="manifestType" class="form-control">#}
-                            {#                                        <option value="asg">ASG</option>#}
-                            {#                                        <option value="dtol">DTOL</option>#}
-                            {#                                        <option value="erga">ERGA</option>#}
-                            {#                                        <option value="env">ENV</option>#}
-                            {#                                    </select>#}
-                            {##}
-                            {#                                </div>#}
-                            {#                            </div>#}
                             <div class="step-pane" data-step="2">
                                 <div class="well">
                                     <label>How many samples would you like to describe?</label>
@@ -308,7 +97,7 @@
 
                                     </label>
                                     <br>
-                                    <div id="commonfieldsDropdownlistDiv" class="form-group">
+                                    <div id="commonFieldsDropdownListDiv" class="form-group">
                                         <span style="display:none;" id="commonFieldErrorMessageID"
                                               class="help-block"></span>
                                         <select class="form-control" id="commonfields"
@@ -329,8 +118,8 @@
                             </div>
 
                             <div class="step-pane" data-step="3">
-                                <p style="text-align:center; font-size: medium">The manifest template is ready to be
-                                    generated. Click the finish button to generate it.
+                                <p class="wizard-final-step">The manifest template is ready to be
+                                    generated. Please click the finish button to generate it.
                                 </p>
 
                             </div>
@@ -379,9 +168,6 @@
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Download <span class="caret"></span>
         </button>
         <ul class="dropdown-menu download-options-menu" aria-labelledby="downloadDropdownTemplate">
-            <!-- <li><a href="#" class="blank-template-link">Blank template</a></li>
-            <li><a id="" href="javascript:" class="wizard-link prefilled-template-option"  onclick="">Prefilled template</a></li>
-            <li><a href="#" class="sop-link">Standard Operating Procedure (SOP)</a></li> -->
         </ul>
     </div>
 {% endblock %}
