@@ -82,44 +82,13 @@ def copo_manifests(request):
     )
 
 
-def extract_label_from_description(primary_id, description):
-    # Extract token after underscore
-    token = primary_id.split('_')[-1]  # e.g., "FAANG"
-    first_letter = token[0].upper()
-
-    # Find location of (TOKEN) case-insensitively in the description
-    match = re.search(
-        rf'\(\s*{re.escape(token)}\s*\)', description, flags=re.IGNORECASE
-    )  # re.search(rf'\(\s*{token}\s*\)', description)
-    if not match or match.group(0).strip("() ").lower() != token.lower():
-        return ''
-
-    end_index = match.start()
-    before_token = description[:end_index]
-
-    # Find all words before the token
-    words = list(re.finditer(r'\b\w[\w\-]+\b', before_token))
-
-    # Walk backward to find the first word that starts with the token's first letter
-    start_index = 0
-    for i in range(len(words) - 1, -1, -1):
-        word = words[i].group(0)
-        if word[0].upper() == first_letter:
-            start_index = words[i].start()
-            break
-
-    # Extract from that word up to the closing parenthesis
-    phrase = description[start_index : match.end()].strip()
-    return phrase
-
-
 def build_manifest_item(
     x,
     schema_name,
     manifest_type,
     label=None,
-    file_name=None,
     show_prefill_wizard=False,
+    blank_manifest_url=None,
     sop_url=None,
     technology=None,
     version=None,
@@ -127,18 +96,16 @@ def build_manifest_item(
     primary_id = x.get('primary_id', '')
     name = (x.get('name') or '').strip()
     description = x.get('description', '')
+    file_name = os.path.basename(blank_manifest_url)
 
     return {
         'manifest_id': primary_id,
         'type': manifest_type,
         'technology': technology,
         'name': name,
-        'label': label or f"{primary_id}: {name}",
+        'label': label or f'{primary_id}: {name}',
         'description': description,
-        'blank_manifest_url': reverse(
-            'api:download_blank_manifest',
-            kwargs={'schema_name': schema_name, 'checklist_id': primary_id},
-        ),
+        'blank_manifest_url': blank_manifest_url,
         'sop_url': sop_url,
         'show_prefill_wizard': show_prefill_wizard,
         'file_name': file_name,
@@ -160,8 +127,8 @@ def populate_manifest_table(request):
             x,
             schema_name='COPO_SAMPLES',
             manifest_type='copo_samples',
-            label=f"{extract_label_from_description(x.get('primary_id', ''), x.get('description', ''))} Checklist",
-            file_name=f"{x.get('primary_id', '')}_sample_MANIFEST_TEMPLATE.xlsx",
+            label=x['name'],
+            blank_manifest_url=get_blank_manifest_url(f"{x['primary_id']}_sample"),
         )
         for x in copo_checklists
         if x['primary_id'].startswith('COPO')
@@ -175,7 +142,7 @@ def populate_manifest_table(request):
             x,
             schema_name='ENA_SAMPLES',
             manifest_type='ena_samples',
-            file_name=f"{x.get('primary_id', '')}_sample_MANIFEST_TEMPLATE.xlsx",
+            blank_manifest_url=get_blank_manifest_url(f"{x['primary_id']}_sample"),
         )
         for x in copo_checklists
         if not x['primary_id'].startswith('COPO')
@@ -190,8 +157,8 @@ def populate_manifest_table(request):
             x,
             schema_name='ENA_BARCODE',
             manifest_type='ena_barcode',
-            label=f"{x.get('primary_id', '')}: {(x.get('name') or '').strip()} Checklist",
-            file_name=f"{x.get('primary_id', '')}_MANIFEST_TEMPLATE.xlsx",
+            label=f"{x.get('primary_id', '')}: {(x.get('name') or '').strip()} checklist",
+            blank_manifest_url=get_blank_manifest_url(x['primary_id']),
         )
         for x in barcode_checklists
     ]
@@ -204,34 +171,41 @@ def populate_manifest_table(request):
             x,
             schema_name='general',
             manifest_type='ena_read',
-            label=(x.get('name') or '').title(),
-            file_name='read_manifest.xlsx',
+            label=(x.get('name') or '')
+            .title()
+            .replace('Checklist', 'checklist')
+            .strip(),
+            blank_manifest_url=get_blank_manifest_url(x['primary_id']),
             technology=None,
         )
         for x in read_checklists
-        if x.get('primary_id') == 'read'
+        if x['primary_id'] == 'read'
     ]
     manifests.extend(read_items)
 
     # ToL samples
     excluded = ['dtolenv']
-    tol_items = [
-        {
-            'manifest_id': None,
-            'type': 'tol_samples',
-            'technology': None,
-            'name': profile.type.upper(),
-            'label': profile.description,
-            'description': None,
-            'blank_manifest_url': get_blank_manifest_url(profile.type.upper()),
-            'sop_url': get_sop_url(profile.type.upper()),
-            'show_prefill_wizard': True,
-            'file_name': compute_manifest_file_name(profile.type.upper()),
-            'version': settings.MANIFEST_VERSION.get(profile.type.upper(), ''),
-        }
-        for profile in profile_service.get_profile_types()
-        if profile.is_dtol_profile and profile.type not in excluded
-    ]
+    tol_items = []
+
+    for profile in profile_service.get_profile_types():
+        if profile.is_dtol_profile and profile.type not in excluded:
+            profile_type = profile.type.upper()
+            blank_url = get_blank_manifest_url(profile_type)
+            tol_items.append(
+                {
+                    'manifest_id': None,
+                    'type': 'tol_samples',
+                    'technology': None,
+                    'name': profile_type,
+                    'label': profile.description,
+                    'description': None,
+                    'blank_manifest_url': blank_url,
+                    'sop_url': get_sop_url(profile_type),
+                    'show_prefill_wizard': True,
+                    'file_name': os.path.basename(blank_url),
+                    'version': settings.MANIFEST_VERSION.get(profile_type, ''),
+                }
+            )
     manifests.extend(tol_items)
 
     # Single-cell
@@ -240,7 +214,11 @@ def populate_manifest_table(request):
         schema_name=schema_name, checklist_id=''
     )
     for checklist_id, value in single_cell_manifests.items():
-        file_name = f"singlecell_manifest_{checklist_id}_v{settings.MANIFEST_VERSION.get(schema_name, '')}"
+        version = settings.MANIFEST_VERSION.get(schema_name, '')
+        blank_manifest_url = get_blank_manifest_url(
+            f'{schema_name}_{checklist_id}_{version}'
+        )
+
         item = {
             'manifest_id': checklist_id,
             'type': 'single_cell',
@@ -248,14 +226,11 @@ def populate_manifest_table(request):
             'name': f"{value.get('standard', '')}_{value.get('technology', '')}",
             'label': value.get('name', ''),
             'description': value.get('description', ''),
-            'blank_manifest_url': reverse(
-                'api:download_blank_manifest',
-                kwargs={'schema_name': schema_name, 'checklist_id': checklist_id},
-            ),
+            'blank_manifest_url': blank_manifest_url,
             'sop_url': None,
             'show_prefill_wizard': False,
-            'file_name': file_name,
-            'version': settings.MANIFEST_VERSION.get(schema_name, ''),
+            'file_name': os.path.basename(blank_manifest_url),
+            'version': version,
         }
         manifests.append(item)
 
@@ -808,11 +783,12 @@ def download_manifest(request, manifest_id):
     # special handling for permit file
     sample_df = pd.DataFrame.from_records(samples)
     for prefix in lkup.PERMIT_COLUMN_NAMES_PREFIX:
-        if f'{prefix}_REQUIRED' in sample_df.columns:
+        permit_required_column = f'{prefix}_REQUIRED'
+        if permit_required_column in sample_df.columns:
             filename_column = f'{prefix}_FILENAME'
             if filename_column in sample_df.columns:
                 sample_df[filename_column] = np.where(
-                    sample_df[f'{prefix}_REQUIRED'] == 'Y',
+                    sample_df[permit_required_column] == 'Y',
                     sample_df[filename_column].apply(
                         lambda x: x.rsplit('_', 1)[0] + '.pdf' if '_' in x else x
                     ),
@@ -820,7 +796,7 @@ def download_manifest(request, manifest_id):
                 )
             else:
                 sample_df[filename_column] = np.where(
-                    sample_df[f'{prefix}_REQUIRED'] == 'Y', '', 'NOT_APPLICABLE'
+                    sample_df[permit_required_column] == 'Y', '', 'NOT_APPLICABLE'
                 )
 
     # manifests_dir = os.path.join('static', 'assets', 'manifests')
@@ -843,75 +819,6 @@ def download_manifest(request, manifest_id):
     )
     response['Content-Disposition'] = f'attachment; filename={file_name}'
 
-    return response
-
-
-def download_blank_manifest(request, schema_name, checklist_id):
-    # This function downloads a blank manifest for the given schema and checklist_id
-    # without the automatic population of samples in the manifest.
-    bytesstring = BytesIO()
-
-    # Handlers
-    def generate_sample_manifest():
-        checklist = EnaChecklist().get_checklist(checklist_id, with_read=False)
-        write_ena_manifest(checklist=checklist, with_read=False, file_path=bytesstring)
-        file_name_part = '' if 'barcode' in checklist_id else '_sample'
-        return f'{checklist_id.upper()}{file_name_part}_MANIFEST_TEMPLATE.xlsx'
-
-    def generate_read_manifest():
-        checklist = EnaChecklist().get_checklist(
-            checklist_id=checklist_id, with_read=True, for_dtol=True, with_sample=False
-        )
-        write_ena_manifest(
-            checklist=checklist, for_dtol=True, with_sample=False, file_path=bytesstring
-        )
-        return f'{checklist_id.lower()}_manifest.xlsx'
-
-    def generate_single_cell_manifest():
-        schema = (
-            SinglecellSchemas().get_collection_handle().find_one({'name': schema_name})
-        )
-        if not schema:
-            return HttpResponse(status=404, content='Schema not found')
-
-        SingleCellSchemasHandler().write_manifest(
-            singlecell_schema=schema,
-            checklist_id=checklist_id,
-            file_path=bytesstring,
-        )
-        return f"singlecell_manifest_{checklist_id}_v{settings.MANIFEST_VERSION.get(schema_name, '')}"
-
-    # Dispatch rules as (condition_func, handler_func)
-    dispatch_rules = [
-        # Rule: any checklist_id == 'read', any schema_name
-        (lambda sn, cid: cid == 'read', generate_read_manifest),
-        # Rule: any schema_name == 'COPO_SINGLE_CELL', any checklist_id
-        (lambda sn, cid: sn == 'COPO_SINGLE_CELL', generate_single_cell_manifest),
-        # Add more rules here with different lambdas if needed
-        (
-            lambda sn, cid: sn.endswith('_SAMPLES') or sn.endswith('_BARCODE'),
-            generate_sample_manifest,
-        ),
-    ]
-
-    # Find matching handler based on rules
-    for condition_func, handler_func in dispatch_rules:
-        if condition_func(schema_name, checklist_id):
-            file_name = handler_func()
-            break
-    else:
-        # No matching rule found
-        return HttpResponse(
-            status=status.HTTP_400_BAD_REQUEST,
-            content='Unsupported schema_name or checklist_id combination',
-        )
-
-    # Prepare HTTP response
-    response = HttpResponse(
-        bytesstring.getvalue(),
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    )
-    response['Content-Disposition'] = f'attachment; filename={file_name}'
     return response
 
 

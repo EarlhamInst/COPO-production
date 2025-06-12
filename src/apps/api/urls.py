@@ -266,11 +266,6 @@ manifest_patterns = [
         name="prefill_manifest_template",
     ),
     re_path(
-        f'download_manifest/blank/(?P<schema_name>\w+)/(?P<checklist_id>\w+)$',
-        manifest_view.download_blank_manifest,
-        name="download_blank_manifest",
-    ),
-    re_path(
         r'^download_manifest/(?P<manifest_id>[A-Z0-9a-f-]+)',
         manifest_view.download_manifest,
         name="download_manifest",

@@ -220,7 +220,7 @@ MANIFEST_FILE_NAME = "{0}_manifest_template{1}.xlsx"
 MANIFEST_DOWNLOAD_URL = MEDIA_URL + "assets/manifests/" + MANIFEST_FILE_NAME
 
 SOP_PATH = os.path.join(BASE_DIR, 'static', 'assets', 'sops')
-SOP_FILE_NAME = "{0}_MANIFEST_SOP{1}.pdf"
+SOP_FILE_NAME = "{0}_manifest_sop{1}.pdf"
 SOP_DOWNLOAD_URL = "/static/assets/sops/" + SOP_FILE_NAME
 
 ELASTIC_SEARCH_URL = 'http://localhost:9200/ontologies/plant_ontology/_search'
