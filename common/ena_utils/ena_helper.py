@@ -11,19 +11,22 @@ from . import generic_helper as ghlper
 from common.dal.profile_da import Profile
 from common.utils import helpers
 from lxml import etree
-from common.lookup.lookup import SRA_SUBMISSION_TEMPLATE
 from common.schemas.utils.data_utils import simple_utc
 from common.utils.helpers import notify_submission_status, get_datetime, get_env, json_to_pytype
-from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SETTINGS, SRA_RUN_TEMPLATE,SRA_EXPERIMENT_TEMPLATE
+from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SETTINGS, SRA_RUN_TEMPLATE,SRA_EXPERIMENT_TEMPLATE, SRA_SUBMISSION_MODIFY_TEMPLATE, SRA_SUBMISSION_TEMPLATE
 import pandas as pd
 import subprocess
 import os
 import tempfile
 from common.dal.submission_da import Submission
-from common.dal.copo_da import EnaChecklist, EnaFileTransfer, DataFile
+from common.dal.copo_da import EnaChecklist, EnaFileTransfer
 from common.dal.sample_da import Sample
 from src.apps.copo_single_cell_submission.utils.da import Singlecell 
 from common.utils.copo_lookup_service import COPOLookup
+import requests
+from common.utils.logger import Logger
+lg = Logger()
+
 
 __author__ = 'etuka'
 __date__ = '02 April 2019'
@@ -446,7 +449,7 @@ class EnaSubmissionHelper:
         #Submission().remove_component_from_submission(sub_id=str(self.submission_id), component="study", component_ids=[singlecell["study_id"]])
 
         if result['status'] is False:
-            message = "."
+            message = result.get('message', "Study not registered.")
             self.logging_error(message)
         else:        
             message = f"Study {study['study_id']} has been registered successfully to ENA."
@@ -777,6 +780,117 @@ class EnaSubmissionHelper:
             result['message'] = message
 
         return result
+
+
+    def release_study(self,  singlecell=None):
+        result = dict(status=False, message='')
+        study = singlecell.get("components", {}).get("study", [{}])[0]
+        study_accession = study.get('accession_ena', str())
+        if not study_accession:
+        # get study accession
+            message = f'Study accession not found for study: {study["study_id"]}!'
+            self.logging_error(message)
+            result['message'] = message
+            return result
+        
+ 
+        # get study status from API
+        project_status = ghlper.get_study_status(user_token=user_token, pass_word=pass_word,
+                                        project_accession=study_accession)
+
+        if not project_status:
+            message = f'Cannot determine project release status for study: {study["study_id"]}!'
+            result['message'] = message
+            self.logging_info(message)
+            return result
+
+        release_status = project_status[0].get(
+            'report', dict()).get('releaseStatus', str())
+
+        if release_status.upper() == 'PUBLIC':
+            # study already released, update the information in the db
+
+            first_public = project_status[0].get(
+                'report', dict()).get('firstPublic', str())
+
+            try:
+                first_public = datetime.strptime(first_public, "%Y-%m-%dT%H:%M:%S")
+            except Exception as e:
+                first_public = get_datetime()
+
+            accession = {"state": "PUBLIC", "release_date": first_public}
+            Singlecell().update_component_status(
+                id=singlecell["_id"], component="study", identifier="study_id", identifier_value=study["study_id"],
+                repository="ena", status_column_value=accession)
+
+            message = f'Study {study["study_id"]} is already released. No action taken.'
+            self.logging_info(message)
+            result['message'] = message
+            return result
+
+        # release study
+        parser = etree.XMLParser(remove_blank_text=True)
+        root = etree.parse(SRA_SUBMISSION_MODIFY_TEMPLATE, parser).getroot()
+        actions = root.find('ACTIONS')
+        action = etree.SubElement(actions, 'ACTION')
+        self.logging_info('Releasing project with study: ' + study["study_id"])
+
+        action_type = etree.SubElement(action, 'RELEASE')
+        action_type.set("target", study_accession)
+
+        xml_str = etree.tostring(root, encoding='utf8', method='xml')
+
+        files = {'SUBMISSION': xml_str}
+        receipt = None
+
+        message = None
+        with requests.Session() as session:
+            session.auth = (user_token, pass_word)
+            try:
+                response = session.post(ena_service, data={}, files=files)
+                receipt = response.text
+                lg.log("ENA RECEIPT " + receipt)
+            except etree.ParseError as e:
+                lg.log("Unrecognised response from ENA " + str(e))
+                message = " Unrecognised response from ENA - " + str(
+                    receipt) + " Please try again later, if it persists contact admins"
+                
+
+            except Exception as e:
+                lg.exception(e)
+                message = 'API call error ' + \
+                    "Submitting project xml to ENA via CURL. href is: " + ena_service
+
+        if message:
+            self.logging_info(message)
+            result['message'] = message
+            return result
+
+        if receipt:
+            root = etree.fromstring(bytes(receipt, 'utf-8'))
+
+            if root.get('success') == 'false':
+                message = "Couldn't release project due to the following errors: "
+                errors = root.findall('.//ERROR')
+                if errors:
+                    error_text = str()
+                    for e in errors:
+                        error_text = error_text + " \n" + e.text
+                    message = message + error_text
+                    self.logging_info(message)
+                    result['status'] = False
+                    result['message'] = message
+                    return result
+
+
+            accession = {"state": "PUBLIC", "release_date": get_datetime()}
+            Singlecell().update_component_status(
+                id=singlecell["_id"], component="study", identifier="study_id", identifier_value=study["study_id"],
+                repository="ena", status_column_value=accession)
+            result["status"] = True
+            result["message"] = f'Study {study["study_id"]} has been released successfully to ENA.'
+            return result
+
 
 class SubmissionHelper:
     def __init__(self, submission_id=str()):

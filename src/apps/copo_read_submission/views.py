@@ -593,7 +593,7 @@ def get_read_accessions(request, sample_accession):
 def copo_reads(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
-    checklists = EnaChecklist().get_sample_checklists_no_fields()
+    checklists = EnaChecklist().get_read_checklist_no_fields()
     profile_checklist_ids = Sample().get_distinct_checklist(profile_id)
     if not profile_checklist_ids:
         profile_checklist_ids = []

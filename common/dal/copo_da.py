@@ -1048,6 +1048,10 @@ class EnaChecklist(DAComponent):
     def get_sample_checklists_no_fields(self):
         return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^(ERC|read)"}},  projection={"primary_id": 1, "name": 1, "description": 1})
 
+    def get_read_checklist_no_fields(self):
+        return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^(read)"}},  projection={"primary_id": 1, "name": 1, "description": 1})
+
+
     def get_general_sample_checklists_no_fields(self):
         return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^(ERC|COPO)"}},  projection={"primary_id": 1, "name": 1, "description": 1})
 

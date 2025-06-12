@@ -15,11 +15,10 @@ from src.apps.copo_core.views import web_page_access_checker
 
 @web_page_access_checker
 @login_required
-def copo_seq_annotation(request, profile_id, ui_component):
+def copo_seq_annotation(request, profile_id="", ui_component=None):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
     return render(request, 'copo/copo_seq_annotation.html', {'profile_id': profile_id, 'profile': profile, "ui_component": ui_component})
-
 
 @login_required()
 def ena_annotation(request, profile_id, seq_annotation_id=None):
@@ -136,10 +135,3 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
         return render(request, "copo/ena_annotation_form.html",
                       {"profile_id": profile_id, "form": form, "formset": formset, "hide_form": False})
 
-
-@web_page_access_checker
-@login_required
-def copo_seq_annotation(request, profile_id):
-    request.session["profile_id"] = profile_id
-    profile = Profile().get_record(profile_id)
-    return render(request, 'copo/copo_seq_annotation.html', {'profile_id': profile_id, 'profile': profile})
