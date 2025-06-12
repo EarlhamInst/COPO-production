@@ -206,7 +206,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'))
 MEDIA_URL = '/media/'
 
 MANIFEST_PATH = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'), 'assets', 'manifests')
-MANIFEST_FILE_NAME = "{0}_MANIFEST_TEMPLATE{1}.xlsx"
+MANIFEST_FILE_NAME = "{0}_manifest_template{1}.xlsx"
 MANIFEST_DOWNLOAD_URL = MEDIA_URL + "assets/manifests/" + MANIFEST_FILE_NAME
 
 SOP_PATH = os.path.join(BASE_DIR, 'static', 'assets', 'sops')

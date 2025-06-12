@@ -288,11 +288,13 @@ class ChecklistHandler:
         checklist_set.extend(self._parseCheckList(xmlstr))
         """
         
+        """
         reads = EnaChecklist().execute_query({"primary_id": "read", "deleted": get_not_deleted_flag()})
         read = None
         if reads:
            read = reads[0]
-
+        """
+        
         for checklist in checklist_set:
             #if checklist["primary_id"].startswith("ERC"):
                 #read_fields = {key: value for key, value in read["fields"].items() if value.get("for_dtol", False) == False}
@@ -305,12 +307,14 @@ class ChecklistHandler:
             #for checklist fields
             write_manifest(checklist, with_read=False)   
             
+            """
             #for checklist feils + read fields 
             if checklist["primary_id"].startswith("ERC"): 
                 fields = read["fields"]
                 fields.update(checklist["fields"])
                 checklist["fields"] = fields
                 write_manifest(checklist, with_read=True)  
+            """
 
 class EnaCheckListSpreadsheet:
    def __init__(self, file, checklist_id, component, validators=[], with_read=True, with_sample=True):
