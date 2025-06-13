@@ -15,9 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <!--[if IE]>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <![endif]-->
+
     <title>News | COPO</title>
     <!--REQUIRED STYLE SHEETS-->
     <!-- BOOTSTRAP CORE STYLE CSS -->
@@ -26,17 +24,13 @@
     <link href="/static/copo/css/fontawesome/fontawesome-6.5.1.min.css" rel="stylesheet"/>
     <!-- CUSTOM STYLE CSS -->
     <link href="/static/assets/css/style.css" rel="stylesheet"/>
+    <link href="/static/assets/css/navbar.css" rel="stylesheet"/>
     <!-- GOOGLE FONT -->
     <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
     <link href="https://fonts.googleapis.com/css?family=Raleway|Slabo+27px" rel="stylesheet">
     <link rel="shortcut icon" href="{% static 'copo/img/favicon.png' %}"/>
     <!-- favicon -->
     <link rel="icon" type="image/png" href="{% static 'copo/img/favicon_black.png' %}"/>
-    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-    <![endif]-->
     <style>
         body {
             background-color: rgba(179, 151, 89, 0.7);
@@ -55,9 +49,13 @@
 <body>
 
 
-<!-- Navigation -->
+<!-- Top navigation bar -->
 <div class="pull-right">
-    {% include "nav_dropdown.html" %}
+    {% if user.is_authenticated %}
+        {% include 'nav_authenticated.html' %}
+    {% else %}
+        {% include 'nav_public.html' %}
+    {% endif %}
 </div>
 {#<nav class="navbar-inverse" role="navigation">#}
 {##}

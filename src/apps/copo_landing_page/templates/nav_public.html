@@ -1,0 +1,48 @@
+{% load web_tags %}
+{% load static %}
+<nav id="frontpage-nav" class="navbar navbar-default navbar-fixed-top navbar-fixed-left" role="navigation">
+    <div class="container-fluid {% if banner %}display-flex{% else %}display-block{% endif %}">
+        <div class="navbar-header">
+            <a class="navbar-brand"
+               href="{% if user.is_authenticated %} {% url 'copo_profile_index:index' %} {% else %}/{% endif %}">
+                <img class="{% if banner %}margin-top-neg-12{% else %}margin-top-neg-8{% endif %}" style="height: 45px; margin-left: 12px; padding: 2px;"
+                     src="{% static 'assets/img/COPO-logo-full-CMYK-black.png' %}"
+                     alt="COPO logo">
+            </a>
+        </div>
+
+        <!-- Banner -->
+        {% if banner %}
+            <div class="global-warning-banner" title="{{banner.body}}">
+                <h1>{{ banner.header }}</h1>
+            </div>
+        {% endif %}
+
+        <!-- <div id="frontpage-navbar-inner" class="collapse navbar-collapse"> -->
+        <ul class="nav navbar-nav navbar-right collapse navbar-collapse">
+            <li role="presentation"><a href="/" target="_parent">Home</a></li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                    aria-expanded="false">Analytics <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li role="presentation"><a href="/copo/tol_dashboard/stats" target="_parent">Statistics</a></li>
+                    <li role="presentation"><a href="/copo/tol_dashboard/tol" target="_parent">Tree of Life Dashboard</a></li>
+                    <li role="presentation"><a href="/copo/copo_accessions/dashboard" target="_parent">Accessions Dashboard</a></li>
+                    <li role="presentation"><a href="/api" target="_parent">API Endpoints</a></li>
+                </ul>
+            </li>
+            <li role="presentation"><a href="/news" target="_parent">News</a></li>
+            <li role="presentation"><a href="/about" target="_parent">About</a></li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                    aria-expanded="false">Help <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li role="presentation"><a href="/manifests/index" target="_parent">Manifests</a></li>              
+                    <li role="presentation"><a href="https://copo-docs.readthedocs.io/en/latest/" target="_blank">Documentation</a></li>
+                    <li role="presentation"><a href="/contact" target="_parent">Contact Us</a></li>
+                </ul>
+            </li>
+        </ul>
+        <!-- </div> -- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
