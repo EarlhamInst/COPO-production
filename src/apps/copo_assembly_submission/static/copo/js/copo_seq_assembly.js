@@ -404,7 +404,7 @@ $(document).ready(function () {
           .addClass('highlight_error_file_processing_status');
       }
     }
-
+    /*
     $('.ena-accession').each(function (i, obj) {
       if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
         $(obj).html(
@@ -416,6 +416,7 @@ $(document).ready(function () {
         );
       }
     });
+    */
   });
 }); //end document ready
 

@@ -117,14 +117,14 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
 
             for name in additional_fields_map.get(component_name, []):  
                     prefix = name.split("_")[0]
-                    columns[component_name].append(dict(data=name, title=name.replace("_", " for "), render="render_ena_accession_function" if name.lower().endswith("accession_ena") else "render_zenodo_accession_function" if name.lower().endswith("accession_zenodo") else "", defaultContent= additional_columns_prefix_default_value[prefix])) # render = "render_accession_column_function"
+                    columns[component_name].append(dict(data=name, title=name.replace("_", " for ").title(), render="render_ena_accession_function" if name.lower().endswith("accession_ena") else "render_zenodo_accession_function" if name.lower().endswith("accession_zenodo") else "", defaultContent= additional_columns_prefix_default_value[prefix])) # render = "render_accession_column_function"
                     column_keys[component_name].append(name)
  
             if not file_df.empty:
-                columns[component_name].append(dict(data="file_status", title="file_status", defaultContent=''))
+                columns[component_name].append(dict(data="file_status", title="File Status", defaultContent=''))
                 
                 if "ena" in submission_repository.get(component_name,[]):
-                    columns[component_name].append(dict(data="ena_file_processing_status", title="ena_file_processing_status", defaultContent='', className="ena_file_processing_status"))
+                    columns[component_name].append(dict(data="ena_file_processing_status", title="ENA File Processing Status", defaultContent='', className="ena_file_processing_status"))
                 file_df_map[component_name] = file_df.values.tolist()
 
         #retriever all components info for first study
@@ -453,8 +453,11 @@ def submit_singlecell(profile_id, target_ids, target_id, checklist_id, study_id,
         return dict(status='error', message="No record found.")
     #check if the submission is in progress
     studies = singlecell.get("components",{}).get("study",[])
-    if studies[0].get(f"status_{repository}", "") == "processing":
-        return dict(status='error', message="Submission is in progress, please wait until it is completed!")
+    match studies[0].get(f"status_{repository}", ""):
+        case "published" | "accepted":
+            return dict(status='error', message="There is no pending change for submission!")
+        case "processing":
+            return dict(status='error', message="Submission is in progress, please wait until it is completed!")
 
     submissions = Submission().execute_query({"profile_id": profile_id, "repository": repository, "deleted": get_not_deleted_flag()})
     schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get("schema_name", singlecell["schema_name"]), target_id=singlecell["checklist_id"])
