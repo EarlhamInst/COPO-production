@@ -128,7 +128,7 @@ def populate_manifest_table(request):
             schema_name='COPO_SAMPLES',
             manifest_type='copo_samples',
             label=x['name'],
-            blank_manifest_url=get_blank_manifest_url(f"{x['primary_id']}_sample"),
+            blank_manifest_url=get_blank_manifest_url(x['primary_id']),
         )
         for x in copo_checklists
         if x['primary_id'].startswith('COPO')
@@ -142,7 +142,7 @@ def populate_manifest_table(request):
             x,
             schema_name='ENA_SAMPLES',
             manifest_type='ena_samples',
-            blank_manifest_url=get_blank_manifest_url(f"{x['primary_id']}_sample"),
+            blank_manifest_url=get_blank_manifest_url(x['primary_id']),
         )
         for x in copo_checklists
         if not x['primary_id'].startswith('COPO')
@@ -215,9 +215,7 @@ def populate_manifest_table(request):
     )
     for checklist_id, value in single_cell_manifests.items():
         version = settings.MANIFEST_VERSION.get(schema_name, '')
-        blank_manifest_url = get_blank_manifest_url(
-            f'{schema_name}_{checklist_id}_{version}'
-        )
+        blank_manifest_url = get_blank_manifest_url(schema_name, checklist_id)
 
         item = {
             'manifest_id': checklist_id,
