@@ -71,7 +71,8 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
                 schema_name = studies[0].get("schema_name", "")
     if schema_name:
         studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"schema_name": schema_name, "checklist_id": checklist_id}, projection={"study_id": 1, "components.study":1})
-    else:
+    
+    if not studies:
         return dict(dataSet=data_set, columns=columns, submission_repository=submission_repository, components=list(columns.keys()))
     
     if not study_id:
