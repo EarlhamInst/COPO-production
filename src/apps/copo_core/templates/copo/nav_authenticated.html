@@ -31,6 +31,13 @@
                     <span><i class="fa fa-bell" aria-hidden="true"></i></span>
                 </a>
             </li>
+            <li class="dropdown" style="margin-left: 15px;" title="Home">
+                <a href="/" target="_parent" aria-label="Home">
+                    <span data-copo-tour-id="home_button">
+                        <i class="fa fa-home" aria-hidden="true"></i>
+                    </span>
+                </a>
+            </li>
             <li class="dropdown" title="Analytics">
                 <a id="analyticsDropdown" href="#" class="dropdown-toggle " data-toggle="dropdown" role="button" aria-haspopup="true"
                     aria-expanded="false">
@@ -82,13 +89,13 @@
                     </span>
                 </a>
             </li>
-            <li class="dropdown" title="Help">
+            <li class="dropdown" style="margin-left: 10px;" title="Help">
                 <a id="helpDropdown" href="#" class="dropdown-toggle " data-toggle="dropdown" role="button" aria-haspopup="true"
                     aria-expanded="false">
                    <i class="fa fa-question-circle" aria-hidden="true"></i>
                    <span class="caret" style="margin-left: 5px;"></span>
                     <ul class="dropdown-menu" role="menu" aria-labelledby="helpDropdown">
-                        <li class="dropdown" style="margin-left: 15px;" title="View blank manifests or checklists">
+                        <li class="dropdown" title="View blank manifests or checklists">
                             <a href="/manifests/index" target="_parent"
                                 aria-label="Manifests">
                                 <div class="custom-nav-items">
@@ -97,7 +104,7 @@
                                 </div>
                             </a>
                         </li>
-                        <li class="dropdown" style="margin-left: 15px;" title="Documentation">
+                        <li class="dropdown" title="Documentation">
                             <a id="copo-documentation" href="https://copo-docs.readthedocs.io/en/latest/" 
                                target="_blank" aria-label="Documentation">
                                 <span data-copo-tour-id="documentation_button">
@@ -106,7 +113,7 @@
                                 </span>
                             </a>
                         </li>
-                        <li class="dropdown" style="margin-left: 15px;" title="Contact COPO">
+                        <li class="dropdown" title="Contact COPO">
                             <a href="/contact" target="_parent" aria-label="Contact COPO">
                                 <span data-copo-tour-id="contact_button">
                                         <i class="fa fa-envelope" aria-hidden="true"></i>
@@ -117,14 +124,14 @@
                     </ul>
                 </a>
             </li>
-            <li class="dropdown" style="margin-left: 15px;" title="About COPO">
+            <li class="dropdown" style="margin-left: 10px;" title="About COPO">
                 <a href="/about" target="_parent" aria-label="About COPO">
                     <span data-copo-tour-id="about_button">
                         <i class="fa fa-info-circle" style="font-size: 17px;" aria-hidden="true"></i>
                     </span>
                 </a>
             </li>
-            <li class="dropdown" title="Settings">
+            <li class="dropdown" style="margin-right: 10px;" title="Settings">
                 <a id="settingsDropdown" href="#" class="dropdown-toggle " data-toggle="dropdown" 
                    role="button" aria-haspopup="true" aria-expanded="false">
                     {% if user.is_authenticated %}

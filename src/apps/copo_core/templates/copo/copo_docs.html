@@ -122,33 +122,14 @@
 <input type="hidden" id="elastic_search_ajax" value="{# url 'copo:ajax_search_ontology' ontology_names='999' #}"/>
 <!-- end hidden fields -->
 
-<nav id="copo-global-nav" class="navbar navbar-default navbar-fixed-top" style="background: rgba(38, 38, 38, 0.95);">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="{% url 'copo_profile_index:index' %}">
-                <img style="height: 50px; margin-top: -15px;"
-                     src="{% static "copo/img/logo7-white-leaves-trans.png" %}"/>
-            </a>
-            <button type='button' class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="sr-only">Toggle Navigation</span>
-            </button>
-        </div>
-
-        <!-- Banner -->
-        {% if banner %}
-            <div class="global-warning-banner" title="{{banner.body}}">
-                <h1>{{ banner.header }}</h1>
-            </div>
-        {% endif %}
-
-        <ul class="nav navbar-nav navbar-right collapse navbar-collapse">
-
-        </ul>
-    </div>
-</nav>
+<!-- Top navigation bar -->
+<div class="pull-right">
+    {% if user.is_authenticated %}
+        {% include 'nav_authenticated.html' %}
+    {% else %}
+        {% include 'nav_public.html' %}
+    {% endif %}
+</div>
 
 </body>
 </html>

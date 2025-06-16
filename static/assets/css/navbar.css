@@ -32,17 +32,27 @@
   height: 50px !important;
 }
 
-#copo-global-nav .navbar-nav > li > a:hover,
-#copo-global-nav .navbar-nav > li > a:focus {
+#copo-global-nav .navbar-nav > .active > a i,
+#copo-global-nav .navbar-nav > li > a i:hover,
+#copo-global-nav .navbar-nav > li > a i:focus,
+#copo-global-nav .navbar-nav > .active > a i:hover,
+#copo-global-nav .navbar-nav > .active > a i:focus {
   color: white;
   background-color: black;
 }
 
-#copo-global-nav .navbar-nav > .active > a,
-#copo-global-nav .navbar-nav > .active > a:hover,
-#copo-global-nav .navbar-nav > .active > a:focus {
-  color: rgba(85, 85, 85, 1);
-  background-color: transparent;
+#copo-global-nav .navbar-nav > li > a i {
+  font-size: 16px;
+}
+
+#copo-global-nav .navbar-nav > li > a i:hover,
+#copo-global-nav .navbar-nav > li > a i:focus,
+#copo-global-nav .navbar-nav > .active > a i:hover,
+#copo-global-nav .navbar-nav > .active > a i:focus,
+#copo-global-nav .navbar-nav > .active > a i {
+  border-radius: 50%;
+  padding: 4px;
+  display: inline-block;
 }
 
 #copo-global-nav .navbar-nav .dropdown-menu li > a:hover,
@@ -55,10 +65,7 @@
 
 #copo-global-nav .navbar-toggle .icon-bar,
 #copo-global-nav .navbar-toggle:hover,
-#copo-global-nav .navbar-toggle:focus {
-  background-color: transparent;
-}
-
+#copo-global-nav .navbar-toggle:focus,
 #copo-global-nav .navbar-toggle:hover .icon-bar,
 #copo-global-nav .navbar-toggle:focus .icon-bar {
   background-color: transparent;
@@ -78,7 +85,6 @@
 #copo-global-nav .dropdown-menu > li > a {
   font-weight: bold;
   color: black !important;
-  font-size: 14px !important;
 }
 
 /* Authenticated top navigation bar - Inverse top navigation bar */
