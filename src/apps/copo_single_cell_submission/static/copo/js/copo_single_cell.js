@@ -152,7 +152,7 @@ $(document).on('document_ready', function () {
         tab_content = $('#singlecell-tab-content');
         tabs.empty();
         tab_content.empty();
-        is_first_compoent = true
+        is_first_component = true
         profile_id =  $('#profile_id').val()
         d.data["components"].forEach(component => {
           li = $('<li/>').addClass('nav-item');
@@ -187,10 +187,10 @@ $(document).on('document_ready', function () {
           div.append(table);
           tab_content.append(div);
 
-          if (is_first_compoent) {
+          if (is_first_component) {
             li.addClass('active');
             div.addClass('active in');
-            is_first_compoent = false;
+            is_first_component = false;
           } 
  
         var is_first_row = true;
@@ -223,6 +223,12 @@ $(document).on('document_ready', function () {
        }).draw();
       });
 
+      $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        active_tab = $(e.target).attr('aria-controls');
+        table = $('#singlecell_parse_table_' + active_tab).DataTable();
+        table.columns.adjust().draw();
+      })
+    
       $('#singlecell_info').hide();
       //$('#singlecell-tabs').fadeIn();
       $('#table_div').fadeIn(1000);
@@ -455,7 +461,7 @@ $(document).on('document_ready', function () {
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
-            return table.cell(rowIdx, i).data() != 'accepted' ? true : false;
+            return ['pending','rejected'].includes(table.cell(rowIdx, i).data()) ? true : false;
           });
         table
           .rows(no_accessiion_indexes)

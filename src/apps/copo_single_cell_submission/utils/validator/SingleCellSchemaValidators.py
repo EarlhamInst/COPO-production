@@ -108,7 +108,7 @@ class IncorrectValueValidator(Validator):
                                         self.flag = False
                                 except Exception as e:
                                     lg.exception(e)
-                                    self.errors.append("Invalid value <B>" + row + "</B> in column: <B>" + field["label"] + "</B>")
+                                    self.errors.append("Invalid value <B>" + row + "</B> in column: <B>" + field["term_label"] + "</B>")
                                     self.flag = False
 
                             else:

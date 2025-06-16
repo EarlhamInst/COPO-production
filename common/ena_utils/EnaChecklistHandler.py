@@ -605,8 +605,8 @@ class ReadChecklistHandler:
             EnaChecklist().get_collection_handle().find_one_and_update({"primary_id": checklist["primary_id"]},
                                                                             {"$set": checklist},
                                                                             upsert=True)        
-            #write_manifest(checklist, for_dtol=True, with_sample=False)
-            #write_manifest(checklist, for_dtol=False, with_sample=False)
+            write_manifest(checklist, for_dtol=True, with_sample=False)
+            write_manifest(checklist, for_dtol=False, with_sample=False)
 
 
 def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, samples=None, file_path=None):
@@ -647,14 +647,16 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
         df1 = df1.fillna("")
 
     if file_path is None:
+        manifest_name = checklist["primary_id"]
         if with_read:
-            if for_dtol:
-                file_path = os.path.join(settings.MANIFEST_PATH, settings.MANIFEST_FILE_NAME.format(checklist["primary_id"]+"_dtol", version)  )
-            else:
-                file_path = os.path.join(settings.MANIFEST_PATH, settings.MANIFEST_FILE_NAME.format(checklist["primary_id"], version))
-        else:
-            file_path = os.path.join(settings.MANIFEST_PATH, settings.MANIFEST_FILE_NAME.format(checklist["primary_id"]+"_sample", version)  )
+            if with_sample:
+                manifest_name = manifest_name + "_read"
 
+            if for_dtol:
+                manifest_name = manifest_name + "_dtol"
+
+        file_path = os.path.join(settings.MANIFEST_PATH, settings.MANIFEST_FILE_NAME.format(manifest_name, version)  )
+ 
     with pd.ExcelWriter(path=file_path, engine='xlsxwriter' ) as writer:  
         sheet_name = checklist["primary_id"] + " " + checklist["name"]
         sheet_name = sheet_name[:31]

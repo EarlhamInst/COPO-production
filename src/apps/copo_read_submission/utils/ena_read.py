@@ -212,8 +212,8 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
     columns.insert(0, detail_dict)
     columns.append(dict(data="record_id", visible=False))
     columns.append(dict(data="DT_RowId", visible=False))
-    columns.extend([dict(data=x, title=fields[x]["name"], defaultContent='', className="ena-accession" if x.lower().endswith("accession") else x  if x == "ena_file_processing_status" else ""    ) for x in label  ])
-    columns.extend([dict(data=x, title=x.upper().replace("_", " "), defaultContent='', className="ena-accession" if x.lower().endswith("accession") else  x if x == "ena_file_processing_status" else "" ) for x in default_label ])  
+    columns.extend([dict(data=x, title=fields[x]["name"], defaultContent='', render="render_ena_accession_function" if x.lower().endswith("accession") else "", className=x if x == "ena_file_processing_status" else "" ) for x in label  ])
+    columns.extend([dict(data=x, title=x.upper().replace("_", " "), defaultContent='', render="render_ena_accession_function" if x.lower().endswith("accession") else "", className= x if x == "ena_file_processing_status" else "" ) for x in default_label ])  
 
     label.extend(default_label)
 

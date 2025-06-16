@@ -21,6 +21,58 @@ $(document).ready(function () {
   });
 });
 
+function render_thumbnail_image_column_function (data, type, row, meta) {
+    profile_id = $('#profile_id').val();
+    if (data == null || data == "") {
+        return "";
+    } 
+    if (type === 'display') {
+        src = data.toLowerCase();
+        extension = src.substring(src.lastIndexOf("."));
+        if (image_file_extensions.includes(extension)) {
+            src = data
+            image_folder = upload_url + '/'+ profile_id + '/'
+            last_index_of_dot = src.lastIndexOf(".");
+            src = src.substring(0, last_index_of_dot)+"_thumb"+src.substring(last_index_of_dot);
+            //var image_html = '<a  target="_blank" href="'+ image_folder + data + '"><img title="' + data + '" src="'+ image_folder + src + '" /></a>';
+            var image_html = '<img title="' + data + '" src="'+ image_folder + src + '" onerror="this.onerror=null;this.title=\'image is being downloaded\';" />';
+            return image_html;
+        } else {
+            return data;
+        }
+    }
+    else {
+        return data;
+    }
+}
+
+function render_ena_accession_function(data, type, row, meta) {
+    if (data == null || data == "") {
+        return "";
+    }
+    if (type === 'display') {
+
+        var url = 'https://www.ebi.ac.uk/ena/browser/view/' + data;
+        var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
+        return html;
+    } else {
+        return data;
+    } 
+}
+
+function render_zenodo_accession_function(data, type, row, meta) {
+    if (data == null || data == "") {
+        return "";
+    }
+    if (type === 'display') {
+        var url = 'https://zenodo.org/records/' + data;
+        var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
+        return html;
+    } else {
+        return data;
+    } 
+}
+
 function set_empty_component_message(dataRows, table_id = '*') {
   //decides, based on presence of record, to display table or getting started info
 
@@ -72,11 +124,16 @@ function place_task_buttons(componentMeta) {
     is_custom_buttons_needed = true;
   }
 
-  if (componentMeta.submission_repository != undefined && componentMeta.submission_repository.length) {
+  component = componentMeta.component;
+  if (component.indexOf('#') > -1) {
+    //if component has subcomponent, then use the subcomponent name
+    component = component.substring(component.lastIndexOf("#")+1);
+  }
+  if (component=="study" && componentMeta.submission_repository != undefined && componentMeta.submission_repository.length) {
       componentMeta.submission_repository.forEach(function (item) {
       button_types = ["submit", "publish"];
       button_types.forEach(function (button_type) {
-      action_button_name = button_type + "_singlecell_multi_" + item;
+      action_button_name = button_type + "_singlecell_single_" + item;
         if ( action_button_name in record_action_button_def  ) {
             button_str = record_action_button_def[action_button_name].template;
             var actionBTN = $(button_str);
@@ -668,63 +725,6 @@ function do_render_component_table_tabs(data, componentMeta, columnDefs = null) 
   var tab_content = $('#' + componentMeta.component + '_data_tab_content');
   var tabs = $('#' + componentMeta.component + '_data_tabs');
 
-  globalThis.render_thumbnail_image_column_function =  
-    function(data, type, row, meta) {
-        profile_id = $('#profile_id').val();
-        if (data == null || data == "") {
-            return "";
-        } 
-        if (type === 'display') {
-            src = data.toLowerCase();
-            extension = src.substring(src.lastIndexOf("."));
-            if (image_file_extensions.includes(extension)) {
-                src = data
-                image_folder = upload_url + '/'+ profile_id + '/'
-                last_index_of_dot = src.lastIndexOf(".");
-                src = src.substring(0, last_index_of_dot)+"_thumb"+src.substring(last_index_of_dot);
-                //var image_html = '<a  target="_blank" href="'+ image_folder + data + '"><img title="' + data + '" src="'+ image_folder + src + '" /></a>';
-                var image_html = '<img title="' + data + '" src="'+ image_folder + src + '" onerror="this.onerror=null;this.title=\'image is being downloaded\';" />';
-                return image_html;
-            } else {
-                return data;
-            }
-        }
-        else {
-            return data;
-        }
-    }
-  
-    globalThis.render_ena_accession_function = 
-    function(data, type, row, meta) {
-        if (data == null || data == "") {
-            return "";
-        }
-        if (type === 'display') {
-
-            var url = 'https://www.ebi.ac.uk/ena/browser/view/' + data;
-            var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
-            return html;
-        } else {
-            return data;
-        } 
-    }
-    
-    globalThis.render_zenodo_accession_function = 
-    function(data, type, row, meta) {
-        if (data == null || data == "") {
-            return "";
-        }
-        if (type === 'display') {
-            var url = 'https://zenodo.org/records/' + data;
-            var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
-            return html;
-        } else {
-            return data;
-        } 
-    }
-
-
-
   is_empty = true;
   for (var i = 0; i < data.table_data.components.length; ++i) {
     var component = data.table_data.components[i];
@@ -784,17 +784,13 @@ function do_render_component_table_tabs(data, componentMeta, columnDefs = null) 
 
     var tableID = table_name;
     var cols = data.table_data.columns[component];
+    /*
     for (var j = 0; j < cols.length; ++j) {
       if (cols[j].render != undefined )
          cols[j].render = eval(cols[j].render); //convert string to function
          cols[j].orderable = false; //make all columns orderable by default
-      /*
-      if (cols[j].render == 'render_thumbnail_image_column_function') {
-        cols[j].render = render_thumbnail_image_column_function;
-        cols[j].orderable = false;
-      }
-      */
     }
+    */
 
     tab_data = {table_data: {dataSet: dataSet, columns: cols}};
     new_componentMeta =  { ...componentMeta };
@@ -821,6 +817,15 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
   var tableID = componentMeta.tableID;
   var dataSet = data.table_data.dataSet;
   var cols = data.table_data.columns;
+
+  for (var j = 0; j < cols.length; ++j) {
+    if (cols[j].render != undefined ) {
+        cols[j].render = eval(cols[j].render); //convert string to function
+        cols[j].orderable = false; //make all columns orderable by default
+    }
+  }
+
+
 
   set_empty_component_message(dataSet.length); //display empty component message when there's no record
 
