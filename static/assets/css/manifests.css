@@ -1,11 +1,121 @@
 label {
-    color: black !important;
+  color: black !important;
 }
 
 h4 {
-    color: black !important;
+  color: black !important;
 }
 
 p {
-    color: black !important;
+  color: black !important;
+}
+
+.hidden {
+  display: none;
+}
+
+.strong-divider {
+  border-top: 2px solid #333;
+  margin: 4px 0;
+  overflow: hidden;
+  background-color: #e5e5e5;
+}
+
+/* Manifest table */
+.table-header {
+  background: #f9fafb;
+}
+
+.manifest-dropdown-wrapper {
+  text-align: center;
+}
+
+/* Dropdown menus */
+.manifest-dropdown-wrapper .dropdown-toggle {
+  align-items: center;
+  display: inline-flex;
+  justify-content: space-between;
+  max-width: 400px; /* or a fixed width if needed */
+  padding: 6px 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Truncate only the label part */
+.manifest-dropdown-wrapper .dropdown-toggle .dropdown-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-grow: 1 1 auto;
+}
+
+/* Keep caret inside, fixed size */
+.manifest-dropdown-wrapper .dropdown-toggle .caret {
+  margin-left: 8px;
+  /* flex-shrink: 0; */
+  flex: 0 0 auto;
+}
+
+/* Manifest table filter*/
+#manifestFilter {
+  float: right;
+  margin-bottom: 1em;
+  padding: 0.5em;
+  width: 300px;
+  color: black;
+}
+
+.manifest-filter-div {
+  float: right;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1em;
+}
+
+.manifest-filter-icon {
+  font-size: 1.2em;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+/* Text CSS */
+.text-hover:hover + .tooltip-message {
+  display: block;
+}
+
+.text-hover {
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+
+.text-bold {
+  font-weight: bold;
+}
+
+/* Overlays */
+.text-hover[aria-describedby] + .tooltip > .tooltip-inner,
+.manifest-options-menu a[aria-describedby] + .tooltip > .tooltip-inner {
+  white-space: normal;
+  color: #000;
+  background-color: #f9fafb;
+  border: #000 solid 1px;
+}
+
+.manifest-options-menu a[aria-describedby] + .tooltip > .tooltip-inner {
+  width: 400px !important;
+  max-width: 400px !important;
+}
+
+.text-hover[aria-describedby] + .tooltip > .tooltip-inner {
+  width: 100% !important;
+  max-width: fit-content !important;
+}
+
+/* Fuelux modal */
+.wizard-final-step {
+  text-align: center;
+  font-size: medium;
+  color: black !important;
 }

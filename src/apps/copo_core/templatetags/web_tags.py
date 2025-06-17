@@ -3,7 +3,11 @@ from django import template
 from django.contrib.auth.models import Group
 from django.conf import settings
 from datetime import datetime
-from src.apps.copo_core.models import SequencingCentre, AssociatedProfileType, ProfileType
+from src.apps.copo_core.models import (
+    SequencingCentre,
+    AssociatedProfileType,
+    ProfileType,
+)
 import re
 
 register = template.Library()
@@ -21,6 +25,7 @@ def mongo_id(value):
 @register.filter("datafile_title")
 def datafile_title(value):
     from common.dal.copo_da import DataFile
+
     d = DataFile().get_record(value)
     cu = DataFile().get_relational_record_for_id(d['file_id'])
     return cu.filename
@@ -61,12 +66,14 @@ def check_group(user, group_name):
     return group in user.groups.all()
 
 
-@register.filter(is_safe=True,  name="get_blank_manifest_url")
+@register.filter(is_safe=True, name="get_blank_manifest_url")
 def get_blank_manifest_url(version_name, checklist_id=None):
     manifest_version = settings.MANIFEST_VERSION
     version = manifest_version.get(version_name.upper(), "")
     version = "_v" + version if version else ""
-    return settings.MANIFEST_DOWNLOAD_URL.format(version_name+(("_"+checklist_id) if checklist_id else ""), version)
+    return settings.MANIFEST_DOWNLOAD_URL.format(
+        version_name + (("_" + checklist_id) if checklist_id else ""), version
+    )
 
 
 @register.filter(is_safe=True, name="get_sop_url")
@@ -75,6 +82,7 @@ def get_sop_url(value):
     version = manifest_version.get(value.upper(), "")
     version = "_v" + version if version else ""
     return settings.SOP_DOWNLOAD_URL.format(value.upper(), version)
+
 
 @register.filter(is_safe=True, name="get_short_profile_type")
 def get_short_profile_type(value):
@@ -101,12 +109,14 @@ def is_list_empty(value):
         return True
     else:
         return False
-    
+
+
 @register.filter(is_safe=True, name="get_sequencing_centre_label")
 def get_sequencing_centre_label(value):
     # Get the label of the sequencing centre based on the abbreviation
     centre = SequencingCentre.objects.get(name=value)
     return f"{centre.label.title()} ({value})"
+
 
 @register.filter(is_safe=True, name="get_associated_type_label")
 def get_associated_type_label(value):
@@ -115,6 +125,7 @@ def get_associated_type_label(value):
     if associated_types:
         return f"{associated_types[0].label}"
     return value
+
 
 @register.filter(is_safe=True, name="get_profile_type_description")
 def get_profile_type_description(value):

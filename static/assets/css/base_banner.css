@@ -1,69 +1,84 @@
 /* Banner */
 #frontpage-navbar-inner {
-    font-size: 8px;
-    float: right !important;
-    /*Align top navbar to the right of the web page*/
-    padding-left: 20px;
+  font-size: 8px;
+  float: right !important;
+  /*Align top navbar to the right of the web page*/
+  padding-left: 20px;
 }
 
 #copo-global-nav .global-warning-banner,
-#frontpage-navbar-outer .global-warning-banner {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+#frontpage-nav .global-warning-banner {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 #copo-global-nav .global-warning-banner h1,
-#frontpage-navbar-outer .global-warning-banner h1 {
-    color: red;
-    text-decoration: none;
-    min-height: 1rem;
-    line-height: 1.1 !important;
-    font-family: revert;
-    font-family: 'Open Sans', sans-serif !important;
+#frontpage-nav .global-warning-banner h1 {
+  color: red;
+  text-decoration: none;
+  min-height: 1rem;
+  line-height: 1.1 !important;
+  font-family: revert;
+  font-family: 'Open Sans', sans-serif !important;
 }
 
 #copo-global-nav .global-warning-banner h1 {
-    font-weight: 500 !important;
-    font-size: 2em !important;
+  font-weight: 500 !important;
+  font-size: 2em !important;
 }
 
-#frontpage-navbar-outer .global-warning-banner h1 {
-    margin-top: 8px;
-    padding: revert !important;
-    font-weight: 700 !important;
-    font-size: 1.8em !important;
+#frontpage-nav .global-warning-banner h1 {
+  margin-top: 8px;
+  padding: revert !important;
+  font-weight: 700 !important;
+  font-size: 1.8em !important;
 }
 
 #copo-global-nav .global-warning-banner p,
-#frontpage-navbar-outer.global-warning-banner p {
-    text-decoration: none;
-    font-size: 16px;
+#frontpage-nav.global-warning-banner p {
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.top-banner-light {
+  background-color: #eaf0f0 !important;
+  color: #414141 !important;
+  font-size: 4em;
+  font-weight: bold;
+  padding: 80px 7px 7px 50px;
+}
+
+.top-banner-dark {
+  background-color: rgba(65, 65, 65, 1) !important;
+  color: #eaf0f0 !important;
+  font-size: 4em;
+  font-weight: bold;
+  padding: 20px 7px 7px 50px;
 }
 
 .display-flex {
-    display: flex !important;
+  display: flex !important;
 }
 
 .display-block {
-    display: block !important;
+  display: block !important;
 }
 
 .margin-top-neg-8 {
-    margin-top: -8px !important;
+  margin-top: -8px !important;
 }
 
 .margin-top-neg-12 {
-    margin-top: -12px !important;
+  margin-top: -12px !important;
 }
 
 @media (max-width: 768px) {
-
-    /* Hide on small screens */
-    #copo-global-nav .global-warning-banner,
-    #frontpage-navbar-outer .global-warning-banner {
-        display: none;
-    }
+  /* Hide on small screens */
+  #copo-global-nav .global-warning-banner,
+  #frontpage-nav .global-warning-banner {
+    display: none;
+  }
 }

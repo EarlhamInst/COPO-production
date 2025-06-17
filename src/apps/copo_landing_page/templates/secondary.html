@@ -28,7 +28,7 @@
         <div class="row">
 
             <div id="main_banner" class="col-sm-7 col-md-7 col-lg-7 left-panel">
-                <div class="topbanner-light">{% block topbanner %}{% endblock %}</div>
+                <div class="top-banner-light">{% block topbanner %}{% endblock %}</div>
                 <div class="secondary-container">
                     {% block content %}
 
@@ -39,8 +39,13 @@
 
             </div>
             <div class="col-sm-5 col-md-5 col-lg-5 zero-padding">
+                <!-- Top navigation bar -->
                 <div class="pull-right">
-                    {% include "nav_dropdown.html" %}
+                    {% if user.is_authenticated %}
+                        {% include 'nav_authenticated.html' %}
+                    {% else %}
+                        {% include 'nav_public.html' %}
+                    {% endif %}
                 </div>
             </div>
         </div>
