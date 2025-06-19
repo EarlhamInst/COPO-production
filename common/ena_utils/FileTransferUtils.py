@@ -70,14 +70,14 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
     ena_file = EnaFileTransfer().get_collection_handle().find_one({"local_path": file["file_location"]})
     if not ena_file:
         ena_file = {"status":"pending", "remote_path":remote_location, "transfer_status": 1, "created": get_datetime()}
+        tx["created"] = get_datetime()
+        tx["transfer_status"] = 1
     
     if ena_file["status"] != "processing":
         if remote_location:
             if ena_file.get("remote_path","") != remote_location:
                 if get_transfer_status(ena_file) >= TransferStatus.DOWNLOADED_TO_LOCAL:
                     tx["transfer_status"] = 5
-        else:
-            tx["transfer_status"] = 1
 
         if not no_remote_location and remote_location:
             tx["remote_path"] = remote_location

@@ -119,7 +119,7 @@ def save_ena_records(request):
     checklist = EnaChecklist().get_checklist(checklist_id=request.session["checklist_id"], with_read=True, for_dtol=profile_type.is_dtol_profile)
     column_name_mapping = { field["name"].upper() : key  for key, field in checklist["fields"].items() if not field.get("read_field", False) }
     #checklist_read = EnaChecklist().get_collection_handle().find_one({"primary_id": "read"})
-    column_name_mapping_read = { field["name"].upper() : key  for key, field in checklist["fields"].items() if field.get("read_field", False) }
+    column_name_mapping_read = { field["label"].upper() : key  for key, field in checklist["fields"].items() if field.get("read_field", False) }
     #bundle = list()
     #alias = str(uuid.uuid4())
     #bundle_meta = list()
@@ -248,7 +248,10 @@ def save_ena_records(request):
         sample["date_modified"] = dt 
         sample["deleted"] = get_not_deleted_flag()           
         sample["updated_by"] = uid
-        sample["checklist_id"] = request.session["checklist_id"]
+
+        checklist_id = request.session["checklist_id"]
+        if checklist_id != "read":
+            sample["checklist_id"] = checklist_id
         
         if "Organism" in s:
             sample["taxon_id"] = organism_map.get(s["Organism"], None)
