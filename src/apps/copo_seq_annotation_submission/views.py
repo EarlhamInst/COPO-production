@@ -17,15 +17,10 @@ from .utils import EnaAnnotation
 
 @web_page_access_checker
 @login_required
-def copo_seq_annotation(request, profile_id):
+def copo_seq_annotation(request, profile_id="", ui_component=None):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
-    return render(
-        request,
-        'copo/copo_seq_annotation.html',
-        {'profile_id': profile_id, 'profile': profile},
-    )
-
+    return render(request, 'copo/copo_seq_annotation.html', {'profile_id': profile_id, 'profile': profile, "ui_component": ui_component})
 
 @login_required()
 def ena_annotation(request, profile_id, seq_annotation_id=None):
@@ -45,7 +40,7 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
     sample_accession = []
     run_accession = []
     experiment_accession = []
-    existing_sub = Submission().get_records_by_field("profile_id", profile_id)
+    existing_sub = Submission().get_all_records_columns(filter_by={"profile_id": profile_id, "repository": "ena"} )
     existing_accessions = ""
     if existing_sub:
         existing_accessions = existing_sub[0].get("accessions", "")
@@ -74,7 +69,7 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
 
     ecs_files = []
     s3obj = S3Connection()
-    bucket_name = str(request.user.id) + "_" + request.user.username
+    bucket_name = profile_id
     if s3obj.check_for_s3_bucket(bucket_name):
         files = s3obj.list_objects(bucket_name)
         if files:
@@ -181,14 +176,3 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
             },
         )
 
-
-@web_page_access_checker
-@login_required
-def copo_seq_annotation(request, profile_id):
-    request.session["profile_id"] = profile_id
-    profile = Profile().get_record(profile_id)
-    return render(
-        request,
-        'copo/copo_seq_annotation.html',
-        {'profile_id': profile_id, 'profile': profile},
-    )

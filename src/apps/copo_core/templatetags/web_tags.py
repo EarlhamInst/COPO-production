@@ -3,6 +3,12 @@ from django import template
 from django.contrib.auth.models import Group
 from django.conf import settings
 from datetime import datetime
+from src.apps.copo_core.models import (
+    SequencingCentre,
+    AssociatedProfileType,
+    ProfileType,
+)
+import re
 
 import common.schemas.utils.data_utils as d_utils
 from src.apps.copo_core.models import (
@@ -68,11 +74,13 @@ def check_group(user, group_name):
 
 
 @register.filter(is_safe=True, name="get_blank_manifest_url")
-def get_blank_manifest_url(value):
+def get_blank_manifest_url(version_name, checklist_id=None):
     manifest_version = settings.MANIFEST_VERSION
-    version = manifest_version.get(value.upper(), "")
+    version = manifest_version.get(version_name.upper(), "")
     version = "_v" + version if version else ""
-    return settings.MANIFEST_DOWNLOAD_URL.format(value.upper(), version)
+    return settings.MANIFEST_DOWNLOAD_URL.format(
+        version_name + (("_" + checklist_id) if checklist_id else ""), version
+    )
 
 
 @register.filter(is_safe=True, name="get_sop_url")

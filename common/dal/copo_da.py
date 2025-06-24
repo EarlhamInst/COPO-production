@@ -19,8 +19,8 @@ lg = settings.LOGGER
 
 
 class Audit(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Audit, self).__init__(profile_id, 'audit')
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Audit, self).__init__(profile_id, 'audit',subcomponent)
         self.filter = {'action': 'update', 'collection_name': 'SampleCollection'}
         self.projection = {
             'update_log.updated_by': 0
@@ -367,13 +367,13 @@ class TestObjectType(DAComponent):
 
 
 class Publication(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Publication, self).__init__(profile_id, "publication")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Publication, self).__init__(profile_id, "publication", subcomponent=subcomponent)
 
 
 class TextAnnotation(DAComponent):
-    def __init__(self, profile_id=None):
-        super(TextAnnotation, self).__init__(profile_id, "textannotation")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(TextAnnotation, self).__init__(profile_id, "textannotation", subcomponent=subcomponent)
 
     def add_term(self, data):
         data["file_id"] = ObjectId(data["file_id"])
@@ -402,8 +402,8 @@ class TextAnnotation(DAComponent):
 
 
 class MetadataTemplate(DAComponent):
-    def __init__(self, profile_id=None):
-        super(MetadataTemplate, self).__init__(profile_id, "metadata_template")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(MetadataTemplate, self).__init__(profile_id, "metadata_template", subcomponent=subcomponent)
 
     def update_name(self, template_name, template_id):
         record = self.get_collection_handle().update_one(
@@ -430,8 +430,8 @@ class MetadataTemplate(DAComponent):
 
 
 class Annotation(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Annotation, self).__init__(profile_id, "annotation")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Annotation, self).__init__(profile_id, "annotation", subcomponent=subcomponent)
 
     def add_or_increment_term(self, data):
         # check if annotation is already present
@@ -488,8 +488,8 @@ class Annotation(DAComponent):
 
 
 class Person(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Person, self).__init__(profile_id, "person")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Person, self).__init__(profile_id, "person", subcomponent=subcomponent)
 
     def get_people_for_profile(self):
         docs = self.get_collection_handle().find({'profile_id': self.profile_id})
@@ -536,8 +536,8 @@ class Person(DAComponent):
 
 
 class CGCore(DAComponent):
-    def __init__(self, profile_id=None):
-        super(CGCore, self).__init__(profile_id, "cgcore")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(CGCore, self).__init__(profile_id, "cgcore", subcomponent=subcomponent)
 
     def get_component_schema(self, **kwargs):
         """
@@ -662,252 +662,10 @@ class CGCore(DAComponent):
         return super(CGCore, self).save_record(auto_fields, **kwargs)
 
 
-'''
-class Repository(DAComponent):
-    def __init__(self, profile=None):
-        super(Repository, self).__init__(None, "repository")
-
-    def get_by_uid(self, uid):
-        doc = self.get_collection_handle().find({"uid": uid}, {"name": 1, "type": 1, "url": 1})
-        return doc
-
-    def get_from_list(self, repo_list):
-        oids = list(map(lambda x: ObjectId(x), repo_list))
-        docs = self.get_collection_handle().find({"_id": {"$in": oids}, "personal": True}, {"apikey": 0})
-        return cursor_to_list_str(docs, use_underscore_in_id=False)
-
-    def get_by_ids(self, uids):
-        doc = list()
-        if (uids):
-            oids = list(map(lambda x: ObjectId(x), uids))
-            doc = self.get_collection_handle().find({"_id": {"$in": oids}})
-        return cursor_to_list(doc)
-
-    def get_by_username(self, username):
-        doc = self.get_collection_handle().find({"username": username})
-        return doc
-
-    def get_users(self, repo_id):
-        doc = self.get_collection_handle().find_one({"_id": ObjectId(repo_id)})
-        return doc['users']
-
-    def push_user(self, repo_id, uid, first_name, last_name, username, email):
-        args = {'uid': uid, "first_name": first_name, "last_name": last_name, "username": username, "email": email}
-        return self.get_collection_handle().update(
-            {'_id': ObjectId(repo_id)},
-            {'$push': {'users': args}}
-        )
-
-    def pull_user(self, repo_id, user_id):
-        doc = self.get_collection_handle().update({'_id': ObjectId(repo_id)},
-                                                  {'$pull': {'users': {'uid': user_id}}})
-
-        return doc
-
-    def add_personal_dataverse(self, url, name, apikey, type, username, password):
-        u = ThreadLocal.get_current_user()
-        doc = self.get_collection_handle().insert(
-            {"isCG": False, "url": url, "name": name, "apikey": apikey, "personal": True, "uid": u.id, "type": type,
-             "username": username, "password": password})
-        udetails = u.userdetails
-        udetails.repo_submitter.append(str(doc))
-        udetails.save()
-        return doc
-
-    def validate_record(self, auto_fields=dict(), validation_result=dict(), **kwargs):
-        """
-        validates record. useful before CRUD actions
-        :param auto_fields:
-        :param validation_result:
-        :param kwargs:
-        :return:
-        """
-
-        if validation_result.get("status", True) is False:  # no need continuing with validation, propagate error
-            return super(Repository, self).validate_record(auto_fields, result=validation_result, **kwargs)
-
-        local_result = dict(status=True, message="")
-        kwargs["validate_only"] = True  # causes the subsequent call to save_record to do everything else but save
-
-        new_record = super(Repository, self).save_record(auto_fields, **kwargs)
-        new_record_id = kwargs.get("target_id", str())
-
-        existing_records = cursor_to_list(
-            self.get_collection_handle().find({}, {"name": 1, "type": 1, "visibility": 1}))
-
-        # check for uniqueness of name - repository names must be unique!
-        same_name_records = [str(x["_id"]) for x in existing_records if
-                             x.get("name", str()).strip().lower() == new_record.get("name", str()).strip().lower()]
-
-        uniqueness_error = "Action error: duplicate repository name is not allowed."
-        if len(same_name_records) > 1:
-            # multiple duplicate names, shouldn't be
-            local_result["status"] = False
-            local_result["message"] = uniqueness_error
-
-            return super(Repository, self).validate_record(auto_fields, validation_result=local_result, **kwargs)
-        elif len(same_name_records) == 1 and new_record_id != same_name_records[0]:
-            local_result["status"] = False
-            local_result["message"] = uniqueness_error
-
-            return super(Repository, self).validate_record(auto_fields, validation_result=local_result, **kwargs)
-
-        # check repo visibility constraint - i.e. one public repository per repository type
-        if new_record.get("visibility", str()).lower() == 'public':
-            same_visibility_records = [str(x["_id"]) for x in existing_records if
-                                       x.get("type", str()).strip().lower() == new_record.get("type",
-                                                                                              str()).strip().lower()
-                                       and x.get("visibility", str()).lower() == 'public']
-
-            visibility_error = "Action error: multiple public instances of the same repository type is not allowed."
-            if len(same_visibility_records) > 1:
-                local_result["status"] = False
-                local_result[
-                    "message"] = visibility_error
-                return super(Repository, self).validate_record(auto_fields, validation_result=local_result, **kwargs)
-            elif len(same_visibility_records) == 1 and new_record_id != same_visibility_records[0]:
-                local_result["status"] = False
-                local_result[
-                    "message"] = visibility_error
-                return super(Repository, self).validate_record(auto_fields, validation_result=local_result, **kwargs)
-
-        return super(Repository, self).validate_record(auto_fields, validation_result=local_result, **kwargs)
-
-    def delete(self, repo_id):
-        # have to delete repo id from UserDetails model as well as remove mongo record
-        uds = UserDetails.objects.filter(repo_manager__contains=[repo_id])
-        for ud in uds:
-            ud.repo_manager.remove(repo_id)
-            ud.save()
-        uds = UserDetails.objects.filter(repo_submitter__contains=[repo_id])
-        for ud in uds:
-            ud.repo_submitter.remove(repo_id)
-            ud.save()
-        doc = self.get_collection_handle().remove({"_id": ObjectId(repo_id)})
-        return doc
-
-    def validate_and_delete(self, target_id=str(), target_ids=list()):
-        """
-        function deletes repository only if there are no dependent records
-        :param target_id:
-        :return:
-        """
-
-        repository_id = target_id
-
-        result = dict(status='success', message="")
-
-        if not repository_id:
-            return dict(status='error', message="Repository record identifier not found!")
-
-        # any dependent submission record?
-
-        count_submissions = Submission().get_collection_handle().find(
-            {"destination_repo": repository_id, 'deleted': helpers.get_not_deleted_flag()}).count()
-
-        if count_submissions > 0:
-            return dict(status='error', message="Action not allowed: dependent records exist!")
-
-        uds = UserDetails.objects.filter(repo_manager__contains=[repository_id])
-        for ud in uds:
-            ud.repo_manager.remove(repository_id)
-            ud.save()
-
-        uds = UserDetails.objects.filter(repo_submitter__contains=[repository_id])
-        for ud in uds:
-            ud.repo_submitter.remove(repository_id)
-            ud.save()
-        self.get_collection_handle().remove({"_id": ObjectId(repository_id)})
-
-        return result
-'''
-'''
-class RemoteDataFile:
-    def __init__(self, profile_id=None):
-        self.RemoteFileCollection = get_collection_ref(RemoteFileCollection)
-        self.profile_id = profile_id
-
-    def GET(self, id):
-        doc = self.RemoteFileCollection.find_one({"_id": ObjectId(id)})
-        if not doc:
-            pass
-        return doc
-
-    def get_by_sub_id(self, sub_id):
-        doc = self.RemoteFileCollection.find_one({"submission_id": sub_id})
-        return doc
-
-    def create_transfer(self, submission_id, file_path=None):
-        # before creating a new transfer record for this submission, remove all others
-        remote_record = self.get_by_sub_id(submission_id)
-        if remote_record:
-            self.delete_transfer(str(remote_record["_id"]))
-
-        fields = helpers.json_to_pytype(DB_TEMPLATES['REMOTE_FILE_COLLECTION'])
-        fields['submission_id'] = submission_id
-        fields['profile_id'] = self.profile_id
-        fields['file_path'] = file_path
-        transfer_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        fields["commenced_on"] = transfer_time
-        fields["current_time"] = transfer_time
-        fields["transfer_rate"] = ""
-
-        if file_path:
-            d = DataFile().GET(submission_id)
-            chunked_upload = ChunkedUpload.objects.get(id=int(d['file_id']))
-            fields["file_size_bytes"] = u.filesize_toString(chunked_upload.offset)
-
-        doc = self.RemoteFileCollection.insert(fields)
-
-        # return inserted record
-        df = self.GET(str(doc))
-        return df
-
-    def delete_transfer(self, transfer_id):
-        self.RemoteFileCollection.delete_one({'_id': ObjectId(transfer_id)})
-
-    def update_transfer(self, transfer_id, fields, delete="0"):
-
-        fields["deleted"] = delete
-        if 'transfer_rate' in fields:
-            # speed = fields.pop("transfer_rate")
-
-            self.RemoteFileCollection.update(
-                {
-                    "_id": ObjectId(transfer_id)
-                },
-                {
-                    # '$push': {"transfer_rate": float(speed)},
-                    '$set': fields
-                }
-            )
-        else:
-            self.RemoteFileCollection.update(
-                {
-                    "_id": ObjectId(transfer_id)
-                },
-                {
-                    '$set': fields
-                }
-            )
-
-    def get_all_records(self):
-        doc = {'profile_id': self.profile_id, 'deleted': helpers.get_not_deleted_flag()}
-        return cursor_to_list(self.RemoteFileCollection.find(doc))
-
-    def get_by_datafile(self, datafile_id):
-        doc = {'datafile_id': ObjectId(datafile_id), 'deleted': helpers.get_not_deleted_flag()}
-        return cursor_to_list(self.RemoteFileCollection.find(doc))
-
-    def sanitise_remote_files(self):
-        pass
-
-'''
-
 
 class Stats(DAComponent):
-    def __init__(self, profile=None):
-        super(Stats, self).__init__(profile, "stats")
+    def __init__(self, profile=None, subcomponent=None):
+        super(Stats, self).__init__(profile, "stats", subcomponent=subcomponent)
 
     def update_stats(self):
         datafiles = DataFile().get_collection_handle().count_documents({})
@@ -925,8 +683,8 @@ class Stats(DAComponent):
 
 
 class Description(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Description, self).__init__(profile_id, "description")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Description, self).__init__(profile_id, "description", subcomponent=subcomponent)
         self.DescriptionCollection = self.get_collection_handle()
 
     def GET(self, id):
@@ -1025,8 +783,8 @@ class Description(DAComponent):
 
 
 class Barcode(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Barcode, self).__init__(profile_id, "barcode")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Barcode, self).__init__(profile_id, "barcode", subcomponent=subcomponent)
 
     def add_sample_id(self, specimen_id, sample_id):
         self.get_collection_handle().update_many(
@@ -1037,8 +795,8 @@ class Barcode(DAComponent):
 
 
 class EnaFileTransfer(DAComponent):
-    def __init__(self, profile_id=None):
-        super(EnaFileTransfer, self).__init__(profile_id, "enaFileTransfer")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(EnaFileTransfer, self).__init__(profile_id, "enaFileTransfer", subcomponent=subcomponent)
         self.profile_id = profile_id
         # self.component = str()
 
@@ -1090,32 +848,24 @@ class EnaFileTransfer(DAComponent):
         )
 
     def get_transfer_status_by_local_path(self, profile_id, local_paths):
-        # return self.get_collection_handle().find({"profile_id"})
-        result = self.get_collection_handle().find(
-            {"local_path": {"$in": local_paths}, "profile_id": profile_id},
-            {"transfer_status": 1, "local_path": 1},
-        )
-        result_map = {x["local_path"]: x["transfer_status"] for x in list(result)}
+        #return self.get_collection_handle().find({"profile_id"})
+        result = self.get_collection_handle().find({"local_path": {"$in": local_paths}, "profile_id": profile_id},{"transfer_status":1, "local_path":1, "status":1})
+        result_map = {x["local_path"] : x for x in list(result)}
         return result_map
 
     def get_transfer_status_by_ecs_path(self, ecs_locations):
-        result = self.get_collection_handle().find(
-            {"ecs_location": {"$in": ecs_locations}},
-            {"transfer_status": 1, "ecs_location": 1, "status": 1},
-        )
-        result_map = {x["ecs_location"]: x["status"] for x in list(result)}
+        result = self.get_collection_handle().find({"ecs_location": {"$in": ecs_locations}},{ "ecs_location":1, "status":1})
+        result_map = {x["ecs_location"] : x  for x in list(result)}
         return result_map
-
-    def update_transfer_status_by_ecs_path(self, ecs_locations, status):
-        self.get_collection_handle().update_many(
-            {"ecs_location": {"$in": ecs_locations}, "transfer_status": 0},
-            {"$set": {"status": status}},
-        )
+    
+    def complete_remote_transfer_status_by_ecs_path(self, ecs_locations):
+                self.get_collection_handle().update_many({"ecs_location": {"$in": ecs_locations}, "status":"complete"},{"$set":{"status": "ena_complete"}})
 
 
 class APIValidationReport(DAComponent):
-    def __init__(self, profile_id=None):
-        super(APIValidationReport, self).__init__(profile_id, "apiValidationReport")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(APIValidationReport, self).__init__(
+            profile_id, "apiValidationReport", subcomponent=subcomponent)
 
     def setComplete(self, report_id):
         self.get_collection_handle().update_one(
@@ -1162,7 +912,7 @@ class TaggedSequenceChecklist(DAComponent):
 
 class CopoGroup(DAComponent):
     def __init__(self):
-        super(CopoGroup, self).__init__(None, "group")
+        super(CopoGroup, self).__init__(None, "group", subcomponent=None)
         self.Group = self.get_collection_handle()
 
     def get_by_owner(self, owner_id):
@@ -1358,8 +1108,8 @@ class CopoGroup(DAComponent):
 
 
 class DataFile(DAComponent):
-    def __init__(self, profile_id=None):
-        super(DataFile, self).__init__(profile_id=profile_id, component="datafile")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(DataFile, self).__init__(profile_id=profile_id, component="datafile", subcomponent=subcomponent)
 
     def get_for_profile(self, profile_id):
         docs = self.get_collection_handle().find({"profile_id": profile_id})
@@ -1585,34 +1335,58 @@ class DataFile(DAComponent):
 
 
 class EnaChecklist(DAComponent):
-    def __init__(self, profile_id=None):
-        super(EnaChecklist, self).__init__(
-            profile_id=profile_id, component="enaChecklist"
-        )
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(EnaChecklist, self).__init__(profile_id=profile_id, component="enaChecklist", subcomponent=subcomponent)
 
-    def get_checklist(self, checklist_id):
+    def get_checklist(self, checklist_id, with_read=True, for_dtol=False, with_sample=True):
         checklists = self.execute_query({"primary_id": checklist_id})
         if checklists:
-            if checklist_id == 'read':
-                fields = checklists[0].get("fields", {})
-                fields = {k: v for k, v in fields.items() if v.get("for_dtol", True)}
-                checklist = checklists[0]
-                checklist["fields"] = fields
-                return checklist
+            checklist = checklists[0]
+            if checklist_id != 'read' and with_read:
+                checklists = self.execute_query({"primary_id": "read"})
+                if checklists:
+                    read_checklist = checklists[0]
+                    fields = read_checklist.get("fields", {})
+                    fields.update(checklist["fields"])
+                    checklist["fields"] = fields
+            
+            df = pd.DataFrame.from_dict(checklist["fields"], orient='index')
+            
+            
+            if "read_field" in df.columns:
+                df["read_field"] = df["read_field"].fillna(False)
 
-            return checklists[0]
+            if for_dtol:
+                df["for_dtol"] = df["for_dtol"].fillna(True)
+                df = df.loc[df["for_dtol"] == True]
+            else:
+                if "for_dtol" in df.columns:
+                    df["for_dtol"] = df["for_dtol"].fillna(False)
+                    df = df.loc[df["for_dtol"] == False]
+
+            if with_sample and with_read:
+                df = df.loc[(df["shown_when_no_sample"] == False) | (df["shown_when_no_sample"].isnull())]
+            #df.set_index("name", drop=False, inplace=True)
+            df.fillna("", inplace=True)
+            checklist["fields"] = df.to_dict('index')
+            return checklist
 
     def get_barcoding_checklists_no_fields(self):
         return self.get_all_records_columns(
             filter_by={"primary_id": {"$in": settings.BARCODING_CHECKLIST}},
             projection={"primary_id": 1, "name": 1, "description": 1},
         )
-
+    
+    #obsolete
     def get_sample_checklists_no_fields(self):
-        return self.get_all_records_columns(
-            filter_by={"primary_id": {"$regex": "^(ERC|read)"}},
-            projection={"primary_id": 1, "name": 1, "description": 1},
-        )
+        return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^(ERC|read)"}},  projection={"primary_id": 1, "name": 1, "description": 1})
+
+    def get_read_checklist_no_fields(self):
+            return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^(read)"}},  projection={"primary_id": 1, "name": 1, "description": 1})
+
+
+    def get_general_sample_checklists_no_fields(self):
+            return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^(ERC|COPO)"}},  projection={"primary_id": 1, "name": 1, "description": 1})
 
 
 '''

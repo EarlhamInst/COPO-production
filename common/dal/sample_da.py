@@ -33,8 +33,8 @@ lg = settings.LOGGER
 
 
 class Source(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Source, self).__init__(profile_id, 'source')
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Source, self).__init__(profile_id, "source", subcomponent=subcomponent)
 
     def get_from_profile_id(self, profile_id):
         return self.get_collection_handle().find({'profile_id': profile_id})
@@ -265,8 +265,8 @@ class Source(DAComponent):
 
 
 class Sample(DAComponent):
-    def __init__(self, profile_id=None):
-        super(Sample, self).__init__(profile_id, 'sample')
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(Sample, self).__init__(profile_id, "sample", subcomponent=subcomponent)
 
     def get_sample_by_specimen_id(self, specimen_id):
         return self.get_collection_handle().find({'SPECIMEN_ID': specimen_id})
@@ -990,23 +990,6 @@ class Sample(DAComponent):
             {'_id': {'$in': [ObjectId(oid) for oid in oids]}}, field_values
         )
 
-        '''
-        # Determine if the update is being done by a user or by the system
-        set_update_data = {'date_modified': datetime.now(timezone.utc).replace(microsecond=0), 'time_updated': datetime.now(timezone.utc).replace(
-            microsecond=0)}
-
-        try:
-            email = ThreadLocal.get_current_user().email
-            set_update_data['updated_by'] = email
-            set_update_data['update_type'] = 'tempuser_'+str(shortuuid.ShortUUID().random(length=10)) #special handling for audit log
-        except:
-            set_update_data['updated_by'] = 'system'
-            set_update_data['update_type'] = 'system'
-      
-        set_update_data.update(field_values)
-
-        return self.get_collection_handle().update_many({'_id': {'$in': [ObjectId(oid) for oid in oids]}}, {'$set': set_update_data})
-        '''
 
     def remove_field(self, field, oid):
         return self.get_collection_handle().update_one(
@@ -1726,21 +1709,14 @@ class Sample(DAComponent):
             },
         )
 
-    def update_read_accession(self, sample_accessions):
+    def update_accession(self, sample_accessions):
         for accession in sample_accessions:
-            update_fields = {
-                'biosampleAccession': accession['biosample_accession'],
-                'sraAccession': accession['sample_accession'],
-                'status': 'accepted',
-            }
-            self.update_field(field_values=update_fields, oid=accession['sample_id'])
-            '''
-            self.get_collection_handle().update_many({'_id': ObjectId(accession['sample_id'])},
-                                                     {'$set': {'biosampleAccession': accession['biosample_accession'],
-                                                               'sraAccession': accession['sample_accession'],
-                                                               'status': 'accepted'}})
-            '''
-
+            update_fields = {"biosampleAccession": accession["biosample_accession"],
+                                                               "sraAccession": accession["sample_accession"],
+                                                               "status": "accepted"}
+            self.update_field(field_values=update_fields, oid=accession["sample_id"])
+ 
+            
     def update_datafile_status(self, datafile_ids, status):
         dt = helpers.get_datetime()
         for id in datafile_ids:
@@ -1781,10 +1757,9 @@ class Sample(DAComponent):
             field_values={'associated_tol_project': associated_tol_project},
         )
 
-    def get_distinct_checklist(self, profile_id):
-        return self.get_collection_handle().distinct(
-            'read.checklist_id', {'profile_id': profile_id}
-        )
+
+    def get_distinct_checklist(self,profile_id):
+        return self.get_collection_handle().distinct("checklist_id", {"profile_id": profile_id}) 
 
     def process_stale_sending_dtol_samples(self, refresh_threshold=3600):
         update_data = {

@@ -24,7 +24,7 @@
 }
 
 #copo-global-nav .global-warning-banner,
-#frontpage-navbar-outer .global-warning-banner {
+#frontpage-nav .global-warning-banner {
   flex-grow: 1;
   display: flex;
   align-items: center;
@@ -33,7 +33,7 @@
 }
 
 #copo-global-nav .global-warning-banner h1,
-#frontpage-navbar-outer .global-warning-banner h1 {
+#frontpage-nav .global-warning-banner h1 {
   color: red;
   text-decoration: none;
   min-height: 1rem;
@@ -47,7 +47,7 @@
   font-size: 2em !important;
 }
 
-#frontpage-navbar-outer .global-warning-banner h1 {
+#frontpage-nav .global-warning-banner h1 {
   margin-top: 8px;
   padding: revert !important;
   font-weight: 700 !important;
@@ -55,9 +55,25 @@
 }
 
 #copo-global-nav .global-warning-banner p,
-#frontpage-navbar-outer.global-warning-banner p {
+#frontpage-nav.global-warning-banner p {
   text-decoration: none;
   font-size: 16px;
+}
+
+.top-banner-light {
+  background-color: #eaf0f0 !important;
+  color: #414141 !important;
+  font-size: 4em;
+  font-weight: bold;
+  padding: 80px 7px 7px 50px;
+}
+
+.top-banner-dark {
+  background-color: rgba(65, 65, 65, 1) !important;
+  color: #eaf0f0 !important;
+  font-size: 4em;
+  font-weight: bold;
+  padding: 20px 7px 7px 50px;
 }
 
 .display-flex {
@@ -79,47 +95,7 @@
 @media (max-width: 768px) {
   /* Hide on small screens */
   #copo-global-nav .global-warning-banner,
-  #frontpage-navbar-outer .global-warning-banner {
+  #frontpage-nav .global-warning-banner {
     display: none;
-  }
-}
-
-@media (max-width: 856px) {
-  #copo-global-nav.has-margin-top-neg-12 {
-    height: 160px;
-  }
-
-  .has-banner .copo-main {
-    top: 160px;
-  }
-
-  .has-banner .copo-sidebar {
-    top: 160px;
-  }
-}
-
-@media (max-width: 860px) {
-  #frontpage-navbar-outer.has-margin-top-neg-12 {
-    height: 140px;
-  }
-}
-
-@media (max-width: 1451px) {
-  #copo-global-nav.has-margin-top-neg-12 {
-    height: 110px;
-  }
-
-  .has-banner .copo-main {
-    top: 120px;
-  }
-
-  .has-banner .copo-sidebar {
-    top: 110px;
-  }
-}
-
-@media (max-width: 1497px) {
-  #frontpage-navbar-outer.has-margin-top-neg-12 {
-    height: 100px;
   }
 }

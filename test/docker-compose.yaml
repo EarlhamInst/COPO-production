@@ -44,6 +44,7 @@ services:
       - ECS_SECRET_KEY=${ECS_SECRET_KEY}
       - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
       - ECS_ENDPOINT=http://ei-copo.obj-data.nbi.ac.uk
+      - ECS_ENDPOINT_EXTERNAL=http://ei-copo.obj-data.nbi.ac.uk
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
@@ -76,7 +77,7 @@ services:
       - POSTGRES_PASSWORD=password
 
   copo_mongo:
-    image: copo/copo-mongo:v7.0.1.1
+    image: copo/copo-mongo:v8.0.1
     ports:
       - "27017:27017"
     environment:

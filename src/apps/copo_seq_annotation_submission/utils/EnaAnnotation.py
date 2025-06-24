@@ -31,7 +31,7 @@ ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
 
 def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
     request = ThreadLocal.get_current_request()
-    bucket_name = str(request.user.id) + "_" + request.user.username
+    bucket_name = profile_id
 
     form_data["profile_id"] = profile_id  
     s3obj = s3()
@@ -61,7 +61,7 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
     if s3obj.check_for_s3_bucket(bucket_name):
         # get filenames from manifest
 
-        s3_file_etags = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=files)
+        s3_file_etags, _ = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=files)
         # check for files
         if not s3_file_etags:
             # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
@@ -83,7 +83,7 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
         return {"error": msg}
 
 
-    sub = Submission().get_collection_handle().find_one({"profile_id": profile_id, "deleted": {"$ne": get_deleted_flag()}})
+    sub = Submission().get_collection_handle().find_one({"profile_id": profile_id, "repository":"ena", "deleted": {"$ne": get_deleted_flag()}})
  
     if not sub:
         sub = dict()
@@ -97,12 +97,35 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
     else :
         sub_id = sub["_id"]   
 
+    existing_datafile_map = {}
+    datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name":{"$in": files}, "deleted": {"$ne": get_deleted_flag()}})
+    existing_datafile_map = {f["file_name"]: f for f in datafiles}
+    existing_annotions = SequenceAnnotation().get_all_records_columns(filter_by={"profile_id": profile_id, "filenames": {"$in": files }, "deleted": {"$ne": get_deleted_flag()}})
+    existing_annotion_map = {}
+    for f in existing_annotions:
+        for f_name in f["filenames"]:
+            existing_annotion_map[f_name] = f
+
     for f_name in files:
-        file_location = join(settings.LOCAL_UPLOAD_PATH, request.user.username, "seq_annotation", f_name)
-        df = DataFile().get_collection_handle().find_one({"file_location": file_location, "deleted": {"$ne": get_deleted_flag()}})
-        if df and df.get("s3_etag","") == s3_file_etags[f_name]:
-            file_ids.append(str(df["_id"]))
-            continue
+        file_location = join(settings.LOCAL_UPLOAD_PATH, profile_id, "seq_annotation", f_name)
+
+        existing_file = existing_datafile_map.get(f_name, None)
+        if existing_file:
+            if existing_file["file_location"] == file_location:
+                existing_annotion = existing_annotion_map.get(f_name, None)
+                if existing_annotion and (seq_annotation_id and existing_annotion["_id"] != ObjectId(seq_annotation_id) or not seq_annotation_id):
+                    return {"error": f'Files {f_name}, has been used for other annotation submission, please use another file name'}
+
+                if existing_file["s3_etag"] == s3_file_etags[f_name]:
+                    file_ids.append(str(existing_file["_id"]))
+                    continue
+            else: 
+                return {"error": f'Files {f_name}, has been used for other read / assembly / annotation submission, please use another file name'}
+
+        #df = DataFile().get_collection_handle().find_one({"file_location": file_location, "deleted": {"$ne": get_deleted_flag()}})
+        #if df and df.get("s3_etag","") == s3_file_etags[f_name]:
+        #   file_ids.append(str(df["_id"]))
+        #   continue
 
         df = dict()
         df["file_name"] = f_name
@@ -117,6 +140,7 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
         df["date_created"] = dt
         df["type"] = file_types[f_name]
         df["profile_id"] = profile_id
+
         inserted = DataFile().get_collection_handle().find_one_and_update({"file_location": file_location},
                                                                             {"$set": df}, upsert=True,
                                                                             return_document=ReturnDocument.AFTER)        
@@ -443,7 +467,7 @@ def update_seq_annotation_submission_pending():
 def submit_seq_annotation(profile_id, target_ids,  target_id):
     sub_id = None
     if profile_id:
-        submissions = Submission().get_records_by_field("profile_id", profile_id)
+        submissions = Submission().get_all_records_columns(filter_by={"profile_id": profile_id, "repository": "ena", "deleted": {"$ne": get_deleted_flag()}})
         if submissions and len(submissions) > 0:
             sub_id = str(submissions[0]["_id"])
             if target_ids:
@@ -485,6 +509,6 @@ def generate_additional_columns(profile_id):
                 assession_map = query_ena_file_processing_status_by_project(project_accessions[0].get("accession"), "SEQUENCE_ANNOTATION")
                 result = [{ "_id": ObjectId(accession_obj["alias"]), "ena_file_processing_status":assession_map.get(accession_obj["accession"], "") } for accession_obj in seq_annotation_accessions if accession_obj.get("accession","") ]
                 ecs_locations_with_file_archived = [ enaFilesMap[accession_obj["accession"]] for accession_obj in seq_annotation_accessions if accession_obj.get("accession","") and "File archived" in assession_map.get(accession_obj["accession"], "")]
-                EnaFileTransfer().update_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived, status = "ena_complete")        
+                EnaFileTransfer().complete_remote_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived)        
 
     return pd.DataFrame.from_dict(result)

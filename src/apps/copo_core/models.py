@@ -338,6 +338,7 @@ class Component(models.Model):
     title_buttons = models.ManyToManyField(TitleButton, blank=True)
     recordaction_buttons = models.ManyToManyField(RecordActionButton, blank=True)
     name = models.CharField(max_length=100, unique=True)
+    base_component = models.CharField(max_length=100, null=True)
     title = models.CharField(max_length=100)
     subtitle = models.CharField(max_length=100, blank=True, null=True)
     widget_icon = models.CharField(max_length=100, blank=True, null=True)
@@ -345,13 +346,14 @@ class Component(models.Model):
     widget_icon_class = models.CharField(max_length=100, blank=True, null=True)
     table_id = models.CharField(max_length=100)
     reverse_url = models.CharField(max_length=100,blank=True, null=True)
+    schema_name = models.CharField(max_length=100, blank=True, null=True)
 
 
     def __str__(self):
         return self.name + " : " + self.title
 
-    def create_component(self, name, title, subtitle, widget_icon, widget_colour, widget_icon_class, table_id, reverse_url):
-        self.name = name
+    def create_component(self, name, title, subtitle, widget_icon, widget_colour, widget_icon_class, table_id, reverse_url, schema_name="", base_component=""):
+        self.name = name.lower()
         self.title = title
         self.subtitle = subtitle
         self.widget_icon = widget_icon
@@ -359,6 +361,11 @@ class Component(models.Model):
         self.widget_icon_class = widget_icon_class
         self.table_id = table_id
         self.reverse_url = reverse_url
+        self.schema_name = schema_name
+        if base_component:
+            self.base_component = base_component
+        else:
+            self.base_component = self.name
         self.save()
         return self
     

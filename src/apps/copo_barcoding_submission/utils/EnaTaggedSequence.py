@@ -1,44 +1,29 @@
-import glob
-import gzip
-import numpy as np
-import os
-import pandas as pd
-import re
-import shutil
-import subprocess
-
-from bson import ObjectId
-from datetime import datetime
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
-from django.utils.decorators import method_decorator
 from django_tools.middlewares import ThreadLocal
-from django_tools.middlewares import ThreadLocal
-from lxml import etree as ET
-from pathlib import Path
-from rest_framework import status
-
+from common.utils.helpers import get_env, get_datetime, get_not_deleted_flag, json_to_pytype,notify_tagged_seq_status, map_to_dict
 from common.dal.copo_da import EnaChecklist
 from common.dal.submission_da import Submission
-from common.ena_utils.ena_helper import SubmissionHelper
-from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreadsheet
-from common.lookup.lookup import (
-    SRA_SUBMISSION_TEMPLATE,
-    SRA_PROJECT_TEMPLATE,
-    SRA_SETTINGS,
-)
-from common.schemas.utils.data_utils import simple_utc
-from common.utils.helpers import (
-    get_env,
-    get_datetime,
-    get_not_deleted_flag,
-    json_to_pytype,
-    notify_tagged_seq_status,
-    map_to_dict,
-)
-from common.utils.logger import Logger
 from .da import TaggedSequence
+from common.utils.logger import Logger
+from bson import ObjectId
+from django_tools.middlewares import ThreadLocal
+from lxml import etree as ET
+from django.http import HttpResponse, JsonResponse
+import os
+from common.lookup.lookup import SRA_PROJECT_TEMPLATE,SRA_SETTINGS
+import subprocess
+from pathlib import Path
+import pandas as pd
+import gzip
+import shutil
+import re
+import glob
+from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreadsheet
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+import numpy as np
+from common.ena_utils.ena_helper import EnaSubmissionHelper
+
 
 l = Logger()
 
@@ -209,14 +194,8 @@ class EnaTaggedSequence:
         tagged_seq_data = request.session.get("tagged_seq_data")
         profile_id = request.session["profile_id"]
         uid = str(request.user.id)
-        checklist = (
-            EnaChecklist()
-            .get_collection_handle()
-            .find_one({"primary_id": request.session["checklist_id"]})
-        )
-        column_name_mapping = {
-            field["name"].upper(): key for key, field in checklist["fields"].items()
-        }
+        checklist = EnaChecklist().get_collection_handle().find_one({"primary_id": request.session["checklist_id"]})
+        column_name_mapping = { field["label"].upper() : key  for key, field in checklist["fields"].items()  }
         fields = checklist["fields"]
         if tagged_seq_data:
             for p in range(1, len(tagged_seq_data)):
@@ -305,16 +284,14 @@ class EnaTaggedSequence:
                         message="Biocoding manifest submission is processing. Please wait for the current submission to complete before submitting another.",
                     )
 
-        return dict(
-            status='error',
-            message="System error. Biocoding manifest submission has NOT been scheduled! Please contact system administrator.",
-        )
+        return dict(status='error', message="System error. Biocoding manifest submission has NOT been scheduled! Please contact system administrator.")        
 
+    """
     def _get_submission_xml(self):
-        """
+        '''
         function creates and return submission xml path
         :return:
-        """
+        '''
 
         # create submission xml
         l.log("Creating submission xml...")
@@ -344,11 +321,8 @@ class EnaTaggedSequence:
         )
 
         # set user contacts
-        sra_map = {
-            "inform_on_error": "SRA Inform On Error",
-            "inform_on_status": "SRA Inform On Status",
-        }
-        user_contacts = self.submission_helper.get_sra_contacts()
+        sra_map = {"inform_on_error": "SRA Inform On Error", "inform_on_status": "SRA Inform On Status"}
+        user_contacts = get_sra_contacts(self.profile_id)
         for k, v in user_contacts.items():
             user_sra_roles = [x for x in sra_map.keys() if sra_map[x].lower() in v]
             if user_sra_roles:
@@ -376,12 +350,14 @@ class EnaTaggedSequence:
             action_type = ET.SubElement(action, 'RELEASE')
         '''
         return self._write_xml_file(xml_object=root, file_name="submission.xml")
+    """
 
-    def _get_edit_submission_xml(self, submission_xml_path=str()):
-        """
+    """
+    def _get_edit_submission_xml(self,submission_xml_path=str()):
+        '''
         function creates and return submission xml path
         :return:
-        """
+        '''
         # create submission xml
         l.log("Creating submission xml for edit....")
 
@@ -395,6 +371,7 @@ class EnaTaggedSequence:
         modify = ET.SubElement(action, 'MODIFY')
 
         return self._write_xml_file(xml_object=root, file_name="submission_edit.xml")
+    """
 
     def _write_xml_file(self, location=str(), xml_object=None, file_name=str()):
         """
@@ -439,23 +416,23 @@ class EnaTaggedSequence:
             return
 
         for sub in submissions:
-            notify_tagged_seq_status(
-                data={"profile_id": sub["profile_id"]},
-                msg="Biomanifest submitting...",
-                action="info",
-                html_id="tagged_seq_info",
-            )
-
-            self.submission_helper = SubmissionHelper(submission_id=str(sub["_id"]))
-            self.the_submission = os.path.join(self.submission_path, sub["profile_id"])
+            notify_tagged_seq_status(data={"profile_id": sub["profile_id"]},
+                    msg="Biomanifest submitting...",
+                    action="info",
+                    html_id="tagged_seq_info")
+            
+            enaSubmissionHelper = EnaSubmissionHelper(submission_id=str(sub["_id"]), profile_id=sub["profile_id"])
+            #self.submission_helper = SubmissionHelper(submission_id=str(sub["_id"]))
+            self.the_submission = os.path.join(self.submission_path, sub["profile_id"]) 
             try:
                 if not os.path.exists(self.the_submission):
                     os.makedirs(self.the_submission)
 
-                context = self._get_submission_xml()
+                #context = self._get_submission_xml()
+                context = enaSubmissionHelper.get_submission_xml()
                 submission_xml_path = context['value']
 
-                context = self._get_edit_submission_xml(submission_xml_path)
+                context = enaSubmissionHelper.get_edit_submission_xml(submission_xml_path) 
                 modify_submission_xml_path = context['value']
 
                 # register project
@@ -1009,14 +986,7 @@ class EnaTaggedSequence:
             [dict(data=x, title=fields[x]["name"], defaultContent='') for x in label]
         )
         columns.append(dict(data="status", title="STATUS", defaultContent=''))
-        columns.append(
-            dict(
-                data="accession",
-                title="ACCESSION",
-                defaultContent='',
-                className="ena-accession",
-            )
-        )
+        columns.append(dict(data="accession", title="ACCESSION", defaultContent='', render="render_ena_accession_function"))
         columns.append(dict(data="error", title="ERROR", defaultContent=''))
 
         tag_sequences = TaggedSequence(profile_id=profile_id).execute_query(

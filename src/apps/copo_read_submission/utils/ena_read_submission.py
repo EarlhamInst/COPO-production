@@ -39,9 +39,11 @@ import common.ena_utils.FileTransferUtils as tx
 from common.utils.logger import Logger
 import common.dal.mongo_util as mutil
 from pathlib import Path
+from common.ena_utils.ena_helper import EnaSubmissionHelper
+import tempfile
 
 
-# REPOSITORIES = settings.REPOSITORIES
+#REPOSITORIES = settings.REPOSITORIES
 BASE_DIR = settings.BASE_DIR
 ENA_TYPES = settings.ENA_TYPES
 """
@@ -206,6 +208,8 @@ class EnaReads:
             return dict(status=True, message=message)
 
         self.profile_id = submission_record.get("profile_id", str())
+        enaSubmissionHelper = EnaSubmissionHelper(profile_id=self.profile_id, submission_id=self.submission_id)
+
 
         notify_read_status(
             data={"profile_id": self.profile_id},
@@ -232,7 +236,8 @@ class EnaReads:
         self.sra_settings = json_to_pytype(SRA_SETTINGS).get("properties", dict())
         print("create self")
         # get submission xml
-        context = self._get_submission_xml()
+        output_location = tempfile.mkdtemp()
+        context = enaSubmissionHelper.get_submission_xml(output_location)
 
         if context['status'] is False:
             notify_read_status(
@@ -250,7 +255,7 @@ class EnaReads:
 
         submission_xml_path = context['value']
 
-        context = self._get_edit_submission_xml(submission_xml_path)
+        context = enaSubmissionHelper.get_edit_submission_xml(output_location, submission_xml_path)
         modify_submission_xml_path = context['value']
 
         # register project
@@ -387,6 +392,7 @@ class EnaReads:
 
         return conv_dir
 
+    '''
     def _get_submission_xml(self):
         """
         function creates and return submission xml path
@@ -421,11 +427,8 @@ class EnaReads:
         )
 
         # set user contacts
-        sra_map = {
-            "inform_on_error": "SRA Inform On Error",
-            "inform_on_status": "SRA Inform On Status",
-        }
-        user_contacts = self.submission_helper.get_sra_contacts()
+        sra_map = {"inform_on_error": "SRA Inform On Error", "inform_on_status": "SRA Inform On Status"}
+        user_contacts = get_sra_contacts(self.project_id)
         for k, v in user_contacts.items():
             user_sra_roles = [x for x in sra_map.keys() if sra_map[x].lower() in v]
             if user_sra_roles:
@@ -467,7 +470,7 @@ class EnaReads:
         modify = etree.SubElement(action, 'MODIFY')
 
         return self.write_xml_file(xml_object=root, file_name="submission_edit.xml")
-
+    '''
     def _register_project(self, submission_xml_path=str()):
         """
         function creates and submits project (study) xml
@@ -957,7 +960,7 @@ class EnaReads:
                     html_id="sample_info",
                 )
             # update sample status
-            Sample(profile_id=self.profile_id).update_read_accession(sample_accessions)
+            Sample(profile_id=self.profile_id).update_accession(sample_accessions)
         return dict(status=True, value='')
 
     def process_study_release(self, force_release=False):
@@ -1179,7 +1182,10 @@ class EnaReads:
 
         result = dict(status=True, value='')
         xml_parser = etree.XMLParser(remove_blank_text=True)
-
+        enaSubmissionHelper = EnaSubmissionHelper(
+            submission_id=self.submission_id,
+            profile_id=self.profile_id,
+         )
         # read in datafiles
         try:
             datafiles_df = pd.read_csv(
@@ -1315,14 +1321,12 @@ class EnaReads:
 
         # retrieve file upload status
 
-        file_submit_status_map = EnaFileTransfer().get_transfer_status_by_local_path(
-            profile_id=self.profile_id, local_paths=list(datafiles_df.datafile_location)
-        )
-        files_not_in_remote = [
-            os.path.basename(x)
-            for x in list(datafiles_df.datafile_location)
-            if file_submit_status_map.get(x, 1) != 0
-        ]
+        file_submit_status_map = EnaFileTransfer().get_transfer_status_by_local_path(profile_id=self.profile_id, local_paths=list(datafiles_df.datafile_location))
+        files_not_in_remote = []
+        for local_path, enaFile in file_submit_status_map.items():
+            transfer_status = tx.get_transfer_status(enaFile)
+            if transfer_status != tx.TransferStatus.TANSFERED_TO_ENA:
+                files_not_in_remote.append(os.path.basename(local_path))
 
         # retrieve already uploaded files
         # files_in_remote = [x.get('report', dict()).get('fileName', str()) for x in
@@ -1590,9 +1594,8 @@ class EnaReads:
                 run_file_node.set("checksum_method", "MD5")
 
             # write run xml
-            result = self.write_xml_file(
-                location=submission_location, xml_object=run_root, file_name="run.xml"
-            )
+            result = enaSubmissionHelper.write_xml_file(output_location=submission_location, xml_object=run_root,
+                                         file_name="run.xml")
 
             if result['status'] is False:
                 submission_errors.append(result['message'])
@@ -1602,7 +1605,7 @@ class EnaReads:
 
             final_submission_xml_path = submission_xml_path
             if not is_new:
-                result = self._get_edit_submission_xml(submission_xml_path)
+                result = enaSubmissionHelper.get_edit_submission_xml(output_location=submission_location, submission_xml_path=submission_xml_path)
                 final_submission_xml_path = result['value']
 
             # submit xmls to ENA service

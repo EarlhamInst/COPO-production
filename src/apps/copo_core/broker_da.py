@@ -3,6 +3,7 @@ from bson import ObjectId
 from django.contrib.auth.models import User
 import common.lookup.lookup as lkup
 from src.apps.copo_read_submission.utils import ena_read
+from src.apps.copo_sample.utils import copo_sample
 from src.apps.copo_assembly_submission.utils import EnaAssembly
 from src.apps.copo_seq_annotation_submission.utils import EnaAnnotation
 from src.apps.copo_file.utils import CopoFiles as copo_file
@@ -14,22 +15,21 @@ from common.dal.submission_da import Submission
 from common.schemas.utils import data_utils
 from common.utils import helpers
 from src.apps.copo_barcoding_submission.utils.EnaTaggedSequence import EnaTaggedSequence
-from src.apps.copo_read_submission.utils.ena_read_submission import EnaReads
-from .models import ProfileType
-
+from src.apps.copo_single_cell_submission.utils import copo_single_cell
 
 class BrokerDA:
     def __init__(self, **kwargs):
         self.param_dict = kwargs
         self.context = self.param_dict.get("context", dict())
-        self.component = self.param_dict.get("component", str())
+        component = self.param_dict.get("component", str()).split("#")
+        #parameter "component"  = component#subcomponent
+        self.component = component[0]
+        self.subcomponent = component[1] if len(component) > 1 else str()
         self.visualize = self.param_dict.get("visualize", str())
         self.profile_id = self.param_dict.get("profile_id", str())
         self.auto_fields = self.param_dict.get("auto_fields", dict())
         self.request_dict = self.param_dict.get("request_dict", dict())
-        self.da_object = self.param_dict.get(
-            "da_object", DAComponent(self.profile_id, self.component)
-        )
+        self.da_object = self.param_dict.get("da_object", DAComponent(self.profile_id, self.component, self.subcomponent))
 
         if self.auto_fields and isinstance(self.auto_fields, str):
             self.auto_fields = json.loads(self.auto_fields)
@@ -217,7 +217,7 @@ class BrokerDA:
         kwargs = self.request_dict
         kwargs["referenced_field"] = self.param_dict.get("referenced_field", str())
         kwargs["referenced_type"] = self.param_dict.get("referenced_type", str())
-        kwargs.pop("compnent_dict", None)
+        kwargs.pop("component_dict", None)
         kwargs.pop("message_dict", None)
         kwargs.pop("target_id", None)
         kwargs.pop("component", None)
@@ -498,6 +498,37 @@ class BrokerDA:
             self.context["component"] = "read"
         return self.context
 
+    def do_submit_sample(self):
+        target_id = self.param_dict.get("target_id", str())
+        target_ids  = self.param_dict.get("target_ids", [])
+        sample_checklist_id = self.request_dict.get("sample_checklist_id", str())
+
+        result = copo_sample.submit_sample(profile_id=self.profile_id, target_ids=target_ids, target_id=target_id, checklist_id=sample_checklist_id)
+        report_metadata = dict()
+        report_metadata["status"] = result.get("status", "success")
+        report_metadata["message"] = result.get("message", "success")
+        self.context["action_feedback"] = report_metadata       
+        if result.get("status","success") == "success":
+            self.context["table_data"] = copo_sample.generate_table_records(profile_id=self.profile_id, checklist_id=sample_checklist_id)
+            self.context["component"] = "read"
+        return self.context
+
+    def do_delete_sample(self):
+        target_id = self.param_dict.get("target_id", str())
+        target_ids  = self.param_dict.get("target_ids", [])
+        sample_checklist_id  = self.request_dict.get("sample_checklist_id", [])
+
+        result = copo_sample.delete_sample_records(profile_id=self.profile_id, target_ids=target_ids,
+                                                        target_id=target_id)
+        report_metadata = dict()
+        report_metadata["status"] = result.get("status", "success")
+        report_metadata["message"] = result.get("message", "success")
+        self.context["action_feedback"] = report_metadata
+        if result.get("status","success") == "success":
+            self.context["table_data"] = copo_sample.generate_table_records(profile_id=self.profile_id, checklist_id=sample_checklist_id)
+            self.context["component"] = "read"
+        return self.context
+
     def do_delete_read(self):
         """
         function handles the delete of a record for those components
@@ -545,19 +576,101 @@ class BrokerDA:
             )
             self.context["component"] = "taggedseq"
         return self.context
+    
+    def do_delete_singlecell(self):
+        """
+        function handles the delete of a record for those components
+        that have provided a way of first validating (dependencies checks etc.) this action
+        :return:
+        """
+
+        target_id = self.param_dict.get("target_id", str())
+        target_ids  = self.param_dict.get("target_ids", [])
+        checklist_id  = self.request_dict.get("singlecell_checklist_id", [])
+        study_id = self.request_dict.get("study_id", "")
+        schema_name = self.request_dict.get("schema_name", str())
+
+        result = copo_single_cell.delete_singlecell_records(profile_id=self.profile_id, checklist_id=checklist_id, target_ids=target_ids,
+                                                        target_id=target_id, study_id=study_id, schema_name=schema_name)
+        report_metadata = dict()
+        report_metadata["status"] = result.get("status", "success")
+        report_metadata["message"] = result.get("message", "success")
+        self.context["action_feedback"] = report_metadata
+        if result.get("status","success") == "success":
+            self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id, checklist_id=checklist_id, study_id=study_id, schema_name=schema_name)
+            self.context["component"] = "singlecell"
+        return self.context
+
+
+    def _submit_singlecell(self, repository=None):
+
+        target_id = self.param_dict.get("target_id", str())
+        target_ids  = self.param_dict.get("target_ids", [])
+        checklist_id = self.request_dict.get("singlecell_checklist_id", str())
+        study_id = self.request_dict.get("study_id", "")
+
+        result = copo_single_cell.submit_singlecell(profile_id=self.profile_id, target_ids=target_ids, target_id=target_id,checklist_id=checklist_id, study_id=study_id, repository=repository)
+
+        report_metadata = dict()
+        report_metadata["status"] = result.get("status", "success")
+        report_metadata["message"] = result.get("message", "success")
+        self.context["action_feedback"] = report_metadata       
+        if result.get("status","success") == "success":
+            self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id,checklist_id=checklist_id, study_id=study_id)
+            self.context["component"] = "singlecell"
+        return self.context
+
+
+    def _publish_singlecell(self, repository=None):
+        """
+        function handles the publishing of a single cell submission to ENA or Zenodo
+        :return:
+        """
+        target_id = self.param_dict.get("target_id", str())
+        target_ids  = self.param_dict.get("target_ids", [])
+        checklist_id = self.request_dict.get("singlecell_checklist_id", str())
+        study_id = self.request_dict.get("study_id", "")
+        schema_name = self.request_dict.get("schema_name", str())
+
+        result = copo_single_cell.publish_singlecell(profile_id=self.profile_id,  target_ids=target_ids, target_id=target_id, study_id=study_id, repository=repository)
+        #result = {"status":"error", "message":"Publishing of single cell data is not yet implemented for this repository."}
+        report_metadata = dict()
+        report_metadata["status"] = result.get("status", "success")
+        report_metadata["message"] = result.get("message", "success")
+        self.context["action_feedback"] = report_metadata       
+        if result.get("status","success") == "success":
+            self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id, checklist_id=checklist_id, study_id=study_id, schema_name=schema_name)
+            self.context["component"] = "singlecell"
+        return self.context
+
+    def do_submit_singlecell_ena(self):
+        return self._submit_singlecell(repository="ena")
+
+    def do_submit_singlecell_zenodo(self):
+        return self._submit_singlecell(repository="zenodo")
+
+    def do_publish_singlecell_ena(self):
+        return self._publish_singlecell(repository="ena")
+  
+
+    def do_publish_singlecell_zenodo(self):
+        return self._publish_singlecell(repository="zenodo")
+    
 
 
 class BrokerVisuals:
     def __init__(self, **kwargs):
         self.param_dict = kwargs
-        self.component = self.param_dict.get("component", str())
+        #parameter "component"  = component#subcomponent
+        components = self.param_dict.get("component", str()).split("#")
+        self.component = components[0]
+        self.subcomponent = components[1] if len(components) > 1 else str()
+
         self.profile_id = self.param_dict.get("profile_id", str())
         self.user_id = self.param_dict.get("user_id", str())
         self.context = self.param_dict.get("context", dict())
         self.request_dict = self.param_dict.get("request_dict", dict())
-        self.da_object = self.param_dict.get(
-            "da_object", DAComponent(self.profile_id, self.component)
-        )
+        self.da_object = self.param_dict.get("da_object", DAComponent(self.profile_id, self.component, self.subcomponent)) 
 
     def set_extra_params(self, extra_param):
         for k, v in extra_param.items():
@@ -565,62 +678,23 @@ class BrokerVisuals:
 
     def do_table_data(self):
         table_data_dict = dict(
-            # annotation=(htags.generate_copo_table_data, dict(profile_id=self.profile_id, component=self.component)),
-            # publication=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            # person=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            # datafile=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            sample=(
-                htags.generate_table_records,
-                dict(profile_id=self.profile_id, da_object=self.da_object),
-            ),
-            # source=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            # repository=(htags.generate_repositories_records, dict(component=self.component)),
-            metadata_template=(
-                htags.generate_table_records,
-                dict(profile_id=self.profile_id, da_object=self.da_object),
-            ),
-            profile=(
-                htags.generate_copo_profiles_data,
-                dict(profiles=Profile().get_all_profiles()),
-            ),
-            # submission=(htags.generate_submissions_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
-            seqannotation=(
-                htags.generate_table_records,
-                dict(
-                    profile_id=self.profile_id,
-                    da_object=self.da_object,
-                    additional_columns=EnaAnnotation.generate_additional_columns(
-                        self.profile_id
-                    ),
-                ),
-            ),
-            assembly=(
-                htags.generate_table_records,
-                dict(
-                    profile_id=self.profile_id,
-                    da_object=self.da_object,
-                    additional_columns=EnaAssembly.generate_additional_columns(
-                        self.profile_id
-                    ),
-                ),
-            ),
-            read=(
-                ena_read.generate_read_record,
-                dict(
-                    profile_id=self.profile_id,
-                    checklist_id=self.request_dict.get("sample_checklist_id", str()),
-                ),
-            ),
-            files=(copo_file.generate_files_record, dict(user_id=self.user_id)),
-            taggedseq=(
-                EnaTaggedSequence().generate_taggedseq_record,
-                dict(
-                    profile_id=self.profile_id,
-                    checklist_id=self.request_dict.get(
-                        "tagged_seq_checklist_id", str()
-                    ),
-                ),
-            ),
+            #annotation=(htags.generate_copo_table_data, dict(profile_id=self.profile_id, component=self.component)),
+            #publication=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            #person=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            #datafile=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            sample=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
+            #source=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
+            #repository=(htags.generate_repositories_records, dict(component=self.component)),
+            metadata_template=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
+            profile=(htags.generate_copo_profiles_data, dict(profiles=Profile().get_all_profiles())),
+            #submission=(htags.generate_submissions_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
+            seqannotation=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object, additional_columns=EnaAnnotation.generate_additional_columns(self.profile_id)) ),
+            assembly=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object, additional_columns=EnaAssembly.generate_additional_columns(self.profile_id) ) ),
+            read = (ena_read.generate_read_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("sample_checklist_id", str()))),
+            general_sample = (copo_sample.generate_table_records, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("sample_checklist_id", str()))),
+            files = (copo_file.generate_files_record, dict(profile_id=self.profile_id)),
+            taggedseq = (EnaTaggedSequence().generate_taggedseq_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("tagged_seq_checklist_id", str()))),
+            singlecell = (copo_single_cell.generate_singlecell_record, dict(profile_id=self.profile_id, study_id=self.request_dict.get("study_id", str()), schema_name=self.request_dict.get("schema_name", str()), checklist_id=self.request_dict.get("singlecell_checklist_id", str())))
         )
 
         # NB: in table_data_dict, use an empty dictionary as a parameter for listed functions that define zero arguments
@@ -899,3 +973,4 @@ class BrokerVisuals:
         self.context["component_info"] = "welcome to " + self.component
 
         return self.context
+    

@@ -187,21 +187,38 @@ def notify_ena_object_status(
     action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()
 ):
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
-    if checklist_id.startswith("ERC") or checklist_id == "read":
-        group_name = 'read_status_%s' % data["profile_id"]
-    else:
+    if checklist_id.startswith("ERT"):
         group_name = 'tagged_seq_status_%s' % data["profile_id"]
-    event = {
-        "type": "msg",
-        "action": action,
-        "message": msg,
-        "data": data,
-        "html_id": html_id,
-    }
+    else:
+        group_name = 'read_status_%s' % data["profile_id"]
+    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(group_name, event)
     return True
 
+
+def notify_singlecell_status(action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()):
+    # type points to the object type which will be passed to the socket and is a method defined in consumer.py
+    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    channel_layer = get_channel_layer()
+    group_name = 'singlecell_status_%s' % data["profile_id"]
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        event
+    )
+    return True
+
+
+def notify_submission_status(action="message", msg=str(), data={}, html_id=""):
+    # type points to the object type which will be passed to the socket and is a method defined in consumer.py
+    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    channel_layer = get_channel_layer()
+    group_name = 'submission_status_%s' % data["profile_id"]
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        event
+    )
+    return True
 
 def json_to_pytype(path_to_json, compatibility_mode=True):
     # use compatability mode if jsonref is causing problems
@@ -382,3 +399,15 @@ def check_and_save_bia_image_url(url):
         l.exception(f'Retrying due to error fetching image: {e}')
         raise  # Raise exception to trigger retry
     return None  # URL does not exist or is not an image
+
+
+def get_thumbnail_folder(profile_id):
+    """
+    This function returns the thumbnail folder for a given profile id
+    :param profile_id:
+    :return:
+    """
+    thumbnail_folder = os.path.join(settings.UPLOAD_PATH, profile_id)
+    if not os.path.exists(thumbnail_folder):
+        os.makedirs(thumbnail_folder)
+    return thumbnail_folder

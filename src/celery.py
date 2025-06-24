@@ -51,12 +51,14 @@ app.conf.beat_schedule = {
     },
     'process_bioimage_housekeeping': {
         'task': 'src.apps.copo_dtol_submission.tasks.process_bioimage_housekeeping',
-        'schedule': timedelta(days=1),
-    },
+        'schedule': timedelta(days=1)
+    },    
+    '''
     'find_incorrectly_rejected_samples': {
         'task': 'src.apps.copo_dtol_submission.tasks.find_incorrectly_rejected_samples',
         'schedule': timedelta(seconds=60),
     },
+    '''
     'poll_missing_tolids': {
         'task': 'src.apps.copo_dtol_submission.tasks.poll_missing_tolids',
         'schedule': timedelta(hours=2),  # shortened cause sometimes it doesn't work?
@@ -103,7 +105,28 @@ app.conf.beat_schedule = {
     },
     'send_fortnightly_pending_manifest_notification': {
         'task': 'src.apps.copo_dtol_submission.tasks.send_fortnightly_pending_manifest_notification',
-        'schedule': timedelta(weeks=2),
+        'schedule': timedelta(weeks=2)
+    },
+    'update_singlecell_schema': {
+        'task': 'src.apps.copo_single_cell_submission.tasks.update_singlecell_schema',
+        'schedule': timedelta(days=1)
+    },     
+    'process_zenodo_submission': {
+        'task': 'src.apps.copo_single_cell_submission.tasks.process_zenodo_submission',
+        'schedule': timedelta(seconds=10)
+    },
+    'process_ena_submission_singlecell': {
+        'task': 'src.apps.copo_single_cell_submission.tasks.process_ena_submission',
+        'schedule': timedelta(seconds=10)
+    },
+    'update_zenodo_submission_pending': {
+        'task': 'src.apps.copo_single_cell_submission.tasks.update_zenodo_submission_pending',
+        'schedule': timedelta(seconds=10)
+    },
+
+    'process_pending_sample_submission': {
+        'task': 'src.apps.copo_sample.tasks.process_pending_sample_submission',
+        'schedule': timedelta(seconds=10)
     },
 }
 

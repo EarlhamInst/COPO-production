@@ -65,16 +65,17 @@ var dialog = new BootstrapDialog({
 });
 
 $(document).on('document_ready', function () {
-  var uid = document.location.href;
-  uid = uid.split('/');
-  uid = uid[uid.length - 2];
+  profile_id = $('#profile_id').val();
+  //var uid = document.location.href;
+  //uid = uid.split('/');
+  //uid = uid[uid.length - 2];
   var wsprotocol = 'ws://';
   var s3socket;
 
   if (window.location.protocol === 'https:') {
     wsprotocol = 'wss://';
   }
-  var wsurl = wsprotocol + window.location.host + '/ws/read_status/' + uid;
+  var wsurl = wsprotocol + window.location.host + '/ws/read_status/' + profile_id;
 
   s3socket = new WebSocket(wsurl);
 
@@ -168,7 +169,7 @@ $(document).on('document_ready', function () {
       $(element).html(d.message);
       var args_dict = {};
       args_dict['sample_checklist_id'] = get_checklist_id();
-      args_dict['profile_id'] = $('#profile_id').val(),
+      args_dict['profile_id'] = profile_id,
       load_records(componentMeta, args_dict, columnDefs); // call to load component records
     } else if (d.action === 'file_processing_status') {
       $(element).html(d.message);
@@ -249,11 +250,11 @@ $(document).on('document_ready', function () {
 
   //add new component button
   $(document)
-    .off('click')
+    .off('click', '.new-reads-spreadsheet-template')
     .on('click', '.new-reads-spreadsheet-template', function (event) {
       url =
         '/copo/copo_read/ena_read_manifest_validate/' +
-        uid +
+        profile_id +
         '?checklist_id=' +
         get_checklist_id();
       dialog.realize();
@@ -392,7 +393,7 @@ $(document).on('document_ready', function () {
           .addClass('highlight_error_file_processing_status');
       }
     }
-
+    /*
     $('.ena-accession').each(function (i, obj) {
       if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
         $(obj).html(
@@ -404,6 +405,7 @@ $(document).on('document_ready', function () {
         );
       }
     });
+    */
   });
 });
 

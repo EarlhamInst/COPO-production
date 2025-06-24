@@ -102,6 +102,7 @@ MANIFEST_VERSION = {
     "DTOL_EI": "2.4",
     "ERGA": "2.5.1",
     "DTOL_BARCODE": "",
+    "COPO_SINGLE_CELL": "0.2",
 }
 
 BARCODING_CHECKLIST = ["ERT000002", "ERT000020"]
@@ -116,5 +117,16 @@ ENA_CHECKLIST_URL = [
     "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/ERT000020?type=sequence",
     "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/*?type=sample",
 ]
+COPO_SAMPLE_CHECKLIST_URL = [
+    "https://raw.githubusercontent.com/TGAC/COPO-schemas/refs/heads/main/samples/sample_checklist_dwc.xml",
+    "https://raw.githubusercontent.com/TGAC/COPO-schemas/refs/heads/main/samples/sample_checklist_faang.xml"
+]
 
-SANGER_SEQUENCING_CENTRE = "SANGER"
+
+SINGLE_CELL_SCHEMAS_URL = {
+   "COPO_SINGLE_CELL" : f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/single_cell/singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx"
+   #"COPO_SINGLE_CELL" : f"singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx"
+
+}
+
+IMAGE_FILE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.bmp']

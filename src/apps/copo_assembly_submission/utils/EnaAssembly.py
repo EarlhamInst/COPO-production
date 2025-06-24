@@ -20,6 +20,7 @@ from common.utils import html_tags_utils as htags
 from .da import Assembly
 import pandas as pd
 from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_project
+from common.dal.mongo_util import cursor_to_list
 
 l = Logger()
 # other types of assemblies (not individualss or cultured isolates):
@@ -82,8 +83,8 @@ def validate_assembly(form, profile_id, assembly_id):
     
     s3obj = s3()
     dt = get_datetime()
-    request = ThreadLocal.get_current_request()
-    bucket_name = str(request.user.id) + "_" + request.user.username
+    #request = ThreadLocal.get_current_request()
+    bucket_name = profile_id
     these_assemblies = join(settings.MEDIA_ROOT, "ena_assembly_files", profile_id)
     Path(these_assemblies).mkdir(parents=True,exist_ok=True)
     #these_assemblies_url_path = f"{settings.MEDIA_URL}ena_assembly_files/{profile_id}"
@@ -92,7 +93,7 @@ def validate_assembly(form, profile_id, assembly_id):
     file_ids = []
 
 
-    sub = Submission().get_collection_handle().find_one({"profile_id": profile_id, "deleted": {"$ne": get_deleted_flag()}})
+    sub = Submission().get_collection_handle().find_one({"profile_id": profile_id, "repository":"ena", "deleted":  get_not_deleted_flag()})
  
     if not sub:
         sub = dict()
@@ -119,31 +120,47 @@ def validate_assembly(form, profile_id, assembly_id):
     if s3obj.check_for_s3_bucket(bucket_name):
         # get filenames from manifest
 
-        s3_file_etags = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=files)
+        s3_file_etags,_ = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=files)
         # check for files
         if not s3_file_etags:
             # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
             return {"error": 'Files not found, please upload files to COPO and try again'}
 
+    files = [ form[field] for field in file_fields if form[field]]
+    datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name":{"$in": files}, "deleted": {"$ne": get_deleted_flag()}})
+    existing_datafile_map = {f["file_name"]: f for f in datafiles}
+    existing_assemblies = Assembly().get_all_records_columns(filter_by={"profile_id": profile_id, "deleted": {"$ne": get_deleted_flag()}})
+    existing_assemblies_map = {}
+    for existing_assembly in existing_assemblies:
+        for file_id in existing_assembly["files"]:
+            existing_assemblies_map[file_id] = existing_assembly
 
     for field in file_fields:
-        if not form[field]:
-            continue
-        
-        file_location = join(these_assemblies, form[field])
-        df = DataFile().get_collection_handle().find_one({"file_location": file_location, "deleted": {"$ne": get_deleted_flag()}})
-        if df and df["s3_etag"] == s3_file_etags[form[field]]:
-            file_ids.append(str(df["_id"]))
+        f_name = form[field]
+        if not f_name:
             continue
 
+        file_location = join(these_assemblies, f_name)
+        existing_file = existing_datafile_map.get(f_name, None)
+        if existing_file:
+            if existing_file["file_location"] == file_location:
+                existing_assembly = existing_assemblies_map.get(str(existing_file["_id"]), None)
+                if existing_assembly and (assembly_id and str(existing_assembly["_id"]) != assembly_id or not assembly_id) :
+                    return {"error": f'Files {f_name}, has been used for other assembly submission, please use another file name'}
+                if existing_file["s3_etag"] == s3_file_etags[f_name]:
+                    file_ids.append(str(existing_file["_id"]))
+                    continue        
+            else: 
+                return {"error": f'Files {f_name}, has been used for other read / assembly / annotation submission, please use another file name'}
+
         df = dict()
-        df["file_name"] = form[field]
-        df["ecs_location"] =  bucket_name + "/" + form[field]
+        df["file_name"] = f_name
+        df["ecs_location"] =  bucket_name + "/" + f_name
         df["bucket_name"] = bucket_name
         df["file_location"] = file_location
-        df["name"] = form[field]
+        df["name"] = f_name
         df["file_id"] = "NA"
-        df["s3_etag"] = s3_file_etags[form[field]]
+        df["s3_etag"] = s3_file_etags[f_name]
         df["file_hash"] = ""
         df["deleted"] = get_not_deleted_flag()
         df["date_created"] = dt
@@ -210,15 +227,14 @@ def update_assembly_submission_pending():
             if not assembly:
                 Submission().update_assembly_submission(sub_id=str(sub["_id"]), assembly_id= assembly_id)
                 continue
-            for f in assembly["files"]:
-                enaFile = EnaFileTransfer().get_collection_handle().find_one({"file_id": f, "profile_id": sub["profile_id"]})
-                if enaFile:
-                    if enaFile["status"] != "complete":
-                        all_file_uploaded = False
-                        break
-                else:
-                    """it should not happen"""    
-                    Logger().error("file not found " + f )
+
+            enaFiles = cursor_to_list(EnaFileTransfer().get_collection_handle().find({"profile_id": sub["profile_id"], "file_id": {"$in": assembly["files"]}}))
+
+            for enaFile in enaFiles:
+                if tx.get_transfer_status(enaFile) < tx.TransferStatus.DOWNLOADED_TO_LOCAL: 
+                    all_file_uploaded = False
+                    break
+ 
         if all_file_uploaded:
             all_uploaded_sub_ids.append(sub["_id"])
 
@@ -332,7 +348,7 @@ def process_assembly_pending_submission():
 def submit_assembly(profile_id, target_ids=list(),  target_id=str()):
     sub_id = None
     if profile_id:
-        submissions = Submission().get_records_by_field("profile_id", profile_id)
+        submissions = Submission().get_all_records_columns(filter_by={"profile_id":profile_id, "repository" : "ena", "deleted": get_not_deleted_flag()})
         if submissions and len(submissions) > 0:
             sub_id = str(submissions[0]["_id"])
             if not target_ids:
@@ -379,6 +395,6 @@ def generate_additional_columns(profile_id):
                 assession_map = query_ena_file_processing_status_by_project(project_accessions[0].get("accession"), "SEQUENCE_ASSEMBLY")
                 result = [{ "_id": ObjectId(accession_obj["assembly_id"]), "ena_file_processing_status":assession_map.get(accession_obj["accession"], "") } for accession_obj in assembly_accessions if accession_obj.get("accession","") ]     
                 ecs_locations_with_file_archived = [ enaFilesMap[accession_obj["accession"]] for accession_obj in assembly_accessions if accession_obj.get("accession","") and "File archived" in assession_map.get(accession_obj["accession"], "")]
-                EnaFileTransfer().update_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived, status = "ena_complete")        
+                EnaFileTransfer().complete_remote_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived)        
 
     return pd.DataFrame.from_dict(result)

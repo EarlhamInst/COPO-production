@@ -28,5 +28,7 @@ def copo_context(request):
         "profile_type_def": ProfileType.objects.all(),
         "title_button_def": TitleButton.objects.all(),
         "record_action_button_def": RecordActionButton.objects.all(),
-        
+        "media_url": settings.MEDIA_URL,
+        "upload_url": settings.UPLOAD_URL,
+        "image_file_extensions": settings.IMAGE_FILE_EXTENSIONS
     }

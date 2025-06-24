@@ -1,9 +1,26 @@
 #it is for mac, change some of the docker images if you want to use it for linux environment
-#export $(cat .env) > /dev/null 2>&1; docker compose -f local-docker-compose-mac.yaml up -d
+#1. export $(cat .env) > /dev/null 2>&1; docker compose -f local-docker-compose-mac.yaml up -d
+#
+#2. for new deployment with empty db, run the following command
+##python manage.py makemigrations
+##python manage.py makemigrations allauth
+#python manage.py setup_groups
+###python manage.py migrate
+#python manage.py createcachetable
+#python manage.py setup_sequencing_centres
+##python manage.py social_accounts
+##python manage.py setup_schemas
+##python manage.py setup_associated_profile_types
+##python manage.py setup_profile_types
+##python manage.py createsuperuser
+##python manage.py setup_news
+#
+##run rs.initiate() in mongo shell as copo_admin
+
 version: "3.9"
 services:
   copo_web:
-    image: debbyku/copo_new:v3.0.u2204
+    image: debbyku/copo_new:v24.04.01
     command: >
       sleep infinity
     ports:
@@ -47,8 +64,9 @@ services:
       - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
       - BIOIMAGE_PASSWORD=${vault_copo_bioimage_password}
       - ECS_SECRET_KEY=${vault_ecs_secret_key}
-      - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
-      - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
+      - ECS_ACCESS_KEY_ID=${vault_ecs_access_key}
+      - ECS_ENDPOINT=http://minio.copodev.cyverseuk.org
+      - ECS_ENDPOINT_EXTERNAL=http://minio.copodev.cyverseuk.org
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - ENA_V1_SAMPLE_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples
@@ -57,6 +75,8 @@ services:
       - DJANGO_SUPERUSER_PASSWORD=admin
       - DJANGO_SUPERUSER_EMAIL=admin@test.com
       - http_protocol=http
+      - ZENODOURL=https://zenodo.org/api
+      - ZENODOTOKEN=${ZENODOTOKEN}    
     depends_on:
       - copo_redis
       - copo_postgres
@@ -82,7 +102,7 @@ services:
       - POSTGRES_PASSWORD=password
 
   copo_mongo:
-    image: copo/copo-mongo-mac:v7.0.1
+    image: copo/copo-mongo-mac:v8.0.1
     command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
     entrypoint:
        - bash
@@ -101,6 +121,19 @@ services:
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD=password
       - MONGO_DB=copo_mongo
+
+  copo_minio:
+    image: quay.io/minio/minio 
+    command: server /data --console-address ":9001"
+    hostname: minio
+    environment:
+      MINIO_ROOT_USER: copo@nbi.ac.uk
+      MINIO_ROOT_PASSWORD: ${vault_ecs_secret_key}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+
   #copo_browser:
   #  image: debbyku/browserless.chrome
   #  ports: 
@@ -121,6 +154,27 @@ services:
   #    - MAX_CONCURRENT_SESSIONS=5
   #    - MAX_QUEUE_LENGTH=10
   #    - PREBOOT_QUANTITY=2
+  #copo_browser:
+  #  image: debbyku/browserless.chrome
+  #  ports: 
+  #    - "3000:3000"
+  #  links:
+  #    - copo_web:copo-new.cyverseuk.org
+  #  environment:
+  #    - COPO_WEB_USER=${COPO_WEB_USER}
+  #    - COPO_WEB_USER_PW=${COPO_WEB_USER_PW}
+  #    - COPO_WEB_URL=http://copo-new.cyverseuk.org:8000
+  #    - BROWSERLESS_HTTP_URL=http://copo_browser:3000
+  #    - BROWSERLESS_WS_URL=ws://copo_browser:3000
+  #    - CHROME_REFRESH_TIME=1800000
+  #    - CHROME_REFRESH_TIME_RANDOMNESS=10000
+  #    - CHROME_ARGS=--no-sandbox,--keepalive=30000,--disable-dev-shm-usage,--disable-gpu,--disable-setuid-sandbox,--disable-software-rasterizer,--disable-dev-shm-usage,--disable-accelerated-2d-canvas,--disable-gpu-sandbox,--disable-infobars,--disable-notifications,--disable-extensions,--disable-web-security,--disable-features=IsolateOrigins,site-per-process,--disable-site-isolat
+  #    - KEEP_ALIVE=true
+  #    - PREBOOT_CHROME=true
+  #    - MAX_CONCURRENT_SESSIONS=5
+  #    - MAX_QUEUE_LENGTH=10
+  #    - PREBOOT_QUANTITY=2
+
   edp:
     image: python:3.10.13-bullseye
     command: sleep infinity

@@ -24,6 +24,7 @@ from common.dal.copo_base_da import   DAComponent
 from src.apps.copo_barcoding_submission.utils.da import TaggedSequence
 from src.apps.copo_assembly_submission.utils.da import Assembly
 from src.apps.copo_seq_annotation_submission.utils.da import SequenceAnnotation
+from src.apps.copo_single_cell_submission.utils.da import Singlecell
 from common.s3.s3Connection import S3Connection as s3
 from common.lookup.lookup import REPO_NAME_LOOKUP
 from .models import Banner
@@ -40,7 +41,8 @@ da_dict = dict(
     assembly=Assembly,
     files=s3,
     taggedseq=TaggedSequence,
-    read=Sample          
+    read=Sample,
+    singlecell=Singlecell       
 )
 """
 @login_required
@@ -226,9 +228,11 @@ def _core_visualize(request):
     # for displaying tour message across site
     request.session["quick_tour_flag"] = context["quick_tour_flag"]
     component = request.POST.get("component", str())
-    da_object = DAComponent(profile_id=profile_id, component=request.POST.get("component", str()))
+    subcomponent = request.POST.get("subcomponent", str())
+
+    da_object = DAComponent(profile_id=profile_id, component=component, subcomponent=subcomponent)
     if component in da_dict:
-        da_object = da_dict[component](profile_id=profile_id)
+        da_object = da_dict[component](profile_id=profile_id, subcomponent=subcomponent)
         
     target_id=request.POST.get("target_id", None)    
     if component == "read" and target_id:
@@ -289,7 +293,7 @@ def copo_forms(request):
         request.session["profile_id"] = profile_id
 
     component = request.POST.get("component", str())
-    da_object = DAComponent(profile_id=profile_id, component=request.POST.get("component", str()))
+    da_object = DAComponent(profile_id=profile_id, component=component)
     if component in da_dict:
         da_object = da_dict[component](profile_id=profile_id)
 
@@ -337,8 +341,15 @@ def copo_forms(request):
                      submit_assembly=broker_da.do_submit_assembly,
                      submit_annotation=broker_da.do_submit_annotation,
                      submit_read=broker_da.do_submit_read,
+                     submit_sample=broker_da.do_submit_sample,
                      delete_read=broker_da.do_delete_read,
+                     delete_sample=broker_da.do_delete_sample,
                      submit_tagged_seq=broker_da.do_submit_tagged_seq,
+                     delete_singlecell=broker_da.do_delete_singlecell,
+                     submit_singlecell_ena=broker_da.do_submit_singlecell_ena,
+                     submit_singlecell_zenodo=broker_da.do_submit_singlecell_zenodo,
+                     publish_singlecell_ena=broker_da.do_publish_singlecell_ena,
+                     publish_singlecell_zenodo=broker_da.do_publish_singlecell_zenodo
                      )
 
     if task in task_dict:

@@ -1,5 +1,51 @@
 version: "3.9"
+
+# Settings and configurations that are common for all containers
+x-minio-common: &minio-common
+  image: quay.io/minio/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1
+  command: server --console-address ":9001" http://minio-{1...2}/data{1...2}
+  #healthcheck:
+    #test: ["CMD", "mc", "ready", "local"]
+    #interval: 5s
+    #timeout: 5s
+    #retries:  5
+  environment:
+    - MINIO_ROOT_USER_FILE=/run/secrets/minio_access_key
+    - MINIO_ROOT_PASSWORD_FILE=/run/secrets/minio_secret_key
+  secrets:
+    - minio_access_key
+    - minio_secret_key
+  networks:
+    - frontend
+    - backend
+  deploy:
+    endpoint_mode: dnsrr
+    restart_policy:
+      condition: any
+    resources:
+      limits:
+        cpus: '2'
+        memory: 2GB
+      reservations:
+        cpus: '0.4'
+        memory: 512mb
+    update_config:
+      parallelism: 1
+      delay: 10s
 services:
+  minio:
+    <<: *minio-common
+    hostname: minio-{{.Task.Slot}}
+    volumes:
+      - minio-data1:/data1
+      - minio-data2:/data2
+    deploy:
+      replicas: 2
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - "node.labels.minio-service==true"
+
   web:
     image: copo/copo-new-web:v3.0.0.1
     entrypoint:
@@ -51,13 +97,14 @@ services:
       - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
       - BIOIMAGE_PASSWORD_FILE=/run/secrets/copo_bioimage_password
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
-      - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
-      - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
+      - ECS_ACCESS_KEY_ID_FILE=/run/secrets/ecs_access_key
+      - ECS_ENDPOINT=http://minio:9000
+      - ECS_ENDPOINT_EXTERNAL=https://minio.copodev.cyverseuk.org
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
       - ENA_V1_SAMPLE_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples
-      
+      - ZENODOURL=https://zenodo.org/api
     depends_on:
       - redis
       - postgres
@@ -66,8 +113,8 @@ services:
       default:
         aliases:
            - copo-new.cyverseuk.org
-      copo-frontend-network:
-      copo-backend-network:
+      frontend:
+      backend:
     deploy:
       replicas: 1
       endpoint_mode: dnsrr
@@ -100,6 +147,7 @@ services:
       - copo_bioimage_path
       - copo_bioimage_password
       - ecs_secret_key
+      - ecs_access_key
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
       interval: 2m
@@ -157,8 +205,9 @@ services:
       - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
       - BIOIMAGE_PASSWORD_FILE=/run/secrets/copo_bioimage_password
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
-      - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
-      - ECS_ENDPOINT=https://ei-copo.obj-data.nbi.ac.uk
+      - ECS_ACCESS_KEY_ID_FILE=/run/secrets/ecs_access_key
+      - ECS_ENDPOINT=http://minio:9000
+      - ECS_ENDPOINT_EXTERNAL=http://minio:9000
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
@@ -167,7 +216,7 @@ services:
       - postgres
       - mongo
     networks:
-      - copo-backend-network
+      - backend
     deploy:
       replicas: 1
       endpoint_mode: dnsrr
@@ -201,9 +250,9 @@ services:
       - ecs_secret_key
       - copo_bioimage_password
   nginx:
-    image: copo/copo-nginx:1.25.3.3
+    image: copo/copo-nginx-tmp:1.25.3.8
     networks:
-      - copo-frontend-network
+      - frontend
     volumes:
       - static-data:/www/static
       - web-data:/www/media
@@ -214,6 +263,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "9000:9000"
+      - "9001:9001"
     environment:
       - copoweb=copo_web
     depends_on:
@@ -240,7 +291,7 @@ services:
     command: >
       bash -c "printenv >> /etc/environment && cron && sleep infinity"
     networks:
-      - copo-backend-network
+      - backend
     volumes:
       - mongo-backup:/backup/mongo
       - postgres-backup:/backup/postgres
@@ -279,7 +330,7 @@ services:
   sample_audit:
     image: copo/copo-sample-audit:v0.0.19
     networks:
-      - copo-backend-network
+      - backend
     secrets:
       - copo_mongo_user_password
     environment:
@@ -311,7 +362,7 @@ services:
   redis:
     image: copo/copo-redis:redis-v6.2.6.18
     networks:
-      - copo-backend-network
+      - backend
     deploy:
       replicas: 1
       endpoint_mode: dnsrr
@@ -334,7 +385,7 @@ services:
   postgres:
     image: postgres:15-bullseye
     networks:
-      - copo-backend-network
+      - backend
     volumes:
       - postgres-data:/var/lib/postgresql/data
     secrets:
@@ -363,7 +414,7 @@ services:
           memory: 512mb
 
   mongo:
-    image: copo/copo-mongo:v7.0.1
+    image: copo/copo-mongo:v8.0.5
     command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
     entrypoint:
        - bash
@@ -374,7 +425,7 @@ services:
           chown 999:999 /data/replica.key
           exec docker-entrypoint.sh $$@
     networks:
-      - copo-backend-network
+      - backend
     hostname: copo-mongo-server
     volumes:
       - mongo-data:/data/db
@@ -444,10 +495,8 @@ services:
 #          cpus: "0.3"
 #          memory: 512mb
 networks:
-  copo-backend-network:
-    external: true
-  copo-frontend-network:
-    external: true
+  backend:
+  frontend:
 secrets:
   copo_web_secret_key:
     external: true
@@ -481,6 +530,12 @@ secrets:
     external: true
   copo_bioimage_password:
     external: true
+  ecs_access_key:
+    external: true    
+  minio_access_key:
+    external: true
+  minio_secret_key:
+    external: true
 volumes:
   web-data:
     external: true
@@ -499,4 +554,8 @@ volumes:
   b2drop-permits:
     external: true
   singlecellschemas:
+    external: true
+  minio-data1:
+    external: true
+  minio-data2:
     external: true

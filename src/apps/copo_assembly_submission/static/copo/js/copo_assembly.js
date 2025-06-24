@@ -1,7 +1,8 @@
 $(document).on("document_ready", function() {
-  var uid = document.location.href;
-  uid = uid.split('/');
-  uid = uid[uid.length - 1];
+  profile_id = $('#profile_id').val();
+  //var uid = document.location.href;
+  //uid = uid.split('/');
+  //uid = uid[uid.length - 1];
   var wsprotocol = 'ws://';
   var s3socket;
   $('#copy_urls_button').fadeOut();
@@ -10,7 +11,7 @@ $(document).on("document_ready", function() {
   if (window.location.protocol === 'https:') {
     wsprotocol = 'wss://';
   }
-  var wsurl = wsprotocol + window.location.host + '/ws/assembly_status/' + uid;
+  var wsurl = wsprotocol + window.location.host + '/ws/assembly_status/' + profile_id;
 
   s3socket = new WebSocket(wsurl);
 

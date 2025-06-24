@@ -16,9 +16,13 @@
     <div class="container-fluid">
 
         <section id="statistics-section">
-            <!-- include navbar html -->
+            <!-- Top navigation bar -->
             <div class="pull-right">
-                {% include "nav_dropdown.html" %}
+                {% if user.is_authenticated %}
+                    {% include 'nav_authenticated.html' %}
+                {% else %}
+                    {% include 'nav_public.html' %}
+                {% endif %}
             </div>
             
             <br><br><br><br><br>

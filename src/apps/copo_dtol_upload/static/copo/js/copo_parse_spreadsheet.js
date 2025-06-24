@@ -2,6 +2,8 @@ var finishBtnStatus;
 var confirmBtnStatus;
 var permitBtnStatus;
 var isNew = true;
+var socket;
+var socket2;
 
 function upload_image_files(file) {
   var csrftoken = $.cookie('csrftoken');
@@ -367,8 +369,7 @@ $(document).ready(function () {
 
   var profileId = $('#profile_id').val();
   var wsprotocol = 'ws://';
-  var socket;
-  var socket2;
+
   window.addEventListener('beforeunload', function (event) {
     socket.close();
     socket2.close();

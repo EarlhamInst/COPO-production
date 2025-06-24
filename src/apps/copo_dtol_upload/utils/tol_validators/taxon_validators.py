@@ -54,7 +54,7 @@ class DtolEnumerationValidator(Validator):
                                     action="info",
                                     html_id="sample_info")
                     # check if taxon is submittable
-                    ena_taxon_errors = check_taxon_ena_submittable(taxon, by="id")
+                    ena_taxon_errors, _ = check_taxon_ena_submittable(taxon, by="id")
                     if ena_taxon_errors:
                         self.errors += ena_taxon_errors
                         self.flag = False
@@ -122,7 +122,7 @@ class DtolEnumerationValidator(Validator):
                 self.data.at[index, "TAXON_ID"] = records['IdList'][0]
                 taxon_id = records['IdList'][0]
                 # check if taxon is submittable
-                ena_taxon_errors = check_taxon_ena_submittable(taxon_id, by="id")
+                ena_taxon_errors, _ = check_taxon_ena_submittable(taxon_id, by="id")
                 if ena_taxon_errors:
                     self.errors += ena_taxon_errors
                     self.flag = False

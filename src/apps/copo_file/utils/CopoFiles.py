@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 l = Logger()
 
-def generate_files_record(user_id=str()):
+def generate_files_record(profile_id=str()):
     label = ['file_name', "S3_ETag", "last_uploaded", "size_in_bytes"]
     data_set = []
     columns = []
@@ -19,12 +19,12 @@ def generate_files_record(user_id=str()):
         columns.append(dict(data=x, title=x.upper().replace("_", " ")))
 
     s3obj = s3()
-    user = User.objects.get(pk=user_id)
-    if not user:
-        return dict(dataSet=data_set,
-                    columns=columns,
-                    )
-    bucket_name = str(user_id) + "_" + user.username
+    #user = User.objects.get(pk=user_id)
+    #if not user:
+    #    return dict(dataSet=data_set,
+    #                columns=columns,
+    #                )
+    bucket_name = profile_id
     #bucket_size = 0
     if s3obj.check_for_s3_bucket(bucket_name):
         files = s3obj.list_objects(bucket_name)

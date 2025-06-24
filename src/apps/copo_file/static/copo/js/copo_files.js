@@ -22,15 +22,14 @@ var dialog = new BootstrapDialog({
   ],
 });
 
-uid = document.location.href;
-uid = uid.split('/');
-uid = uid[uid.length - 2];
+//uid = document.location.href;
+//uid = uid.split('/');
+//uid = uid[uid.length - 2];
 
 $(document).ready(function () {
   //uid = document.location.href
   //uid = uid.split("/")
   //uid = uid[uid.length - 2]
-
   //******************************Event Handlers Block*************************//
   var component = 'files';
   //var copoVisualsURL = "/copo/copo_visuals/";
@@ -228,10 +227,11 @@ function upload_files(files) {
   $('#upload_local_files_button').fadeOut();
   var percent = $('.percent');
   $('#ss_upload_spinner').fadeIn('fast');
+  var profile_id = $('#profile_id').val();
 
   jQuery
     .ajax({
-      url: '/copo/copo_files/upload_ecs_files/' + uid,
+      url: '/copo/copo_files/upload_ecs_files/' + profile_id,
       data: form,
       files: files,
       cache: false,

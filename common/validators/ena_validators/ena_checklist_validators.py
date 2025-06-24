@@ -5,7 +5,9 @@ import re
 import requests
 from common.utils.helpers import get_env
 import xml.etree.ElementTree as ET
- 
+from Bio import Entrez
+from common.utils.helpers import notify_frontend
+from common.validators.helpers import check_taxon_ena_submittable, checkOntologyTerm
 
 #check mandatory fields are present in spreadsheet
 #check mandatory fields are not empty
@@ -17,6 +19,8 @@ session = requests.Session()
 session.auth = (user_token, pass_word) 
 
 lg = settings.LOGGER
+
+
 
 class MandatoryValuesValidator(Validator):
     def validate(self):
@@ -47,6 +51,9 @@ class IncorrectValueValidator(Validator):
         if biosampleAccessions:
             biosampleAccessionsMap = {row["biosampleAccession"]: row for row in biosampleAccessions} 
 
+        #get all BIOSAMPLEACCESSION_EXT_FIELD from the checklist fields
+        biosampleAccession_ext_field_map = {key: field for key, field in checklist["fields"].items() if field.get("type") == "BIOSAMPLEACCESSION_EXT_FIELD"}
+
         for column in self.data.columns:
             if column in checklist["fields"].keys():
                 field = checklist["fields"][column]
@@ -57,11 +64,12 @@ class IncorrectValueValidator(Validator):
                     if row:
                         if type == "TEXT_CHOICE_FIELD":
                             if row not in field.get("choice"):
-                                self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i) + ". Valid values are: " + str(field.get("choice")))
+                                self.errors.append("Invalid value '" + row + "' in column : '" + field["label"] + "' at row " + str(i) + ". Valid values are: " + str(field.get("choice")))
                                 self.flag = False
                         elif type == "TEXT_FIELD":
                             regex = field.get("regex","")
                             if regex:
+                                lg.debug("Regex: " + str(regex) + "| Row: " + str(row)+ "| Column: " + column)
                                 if not re.match(regex, row):
                                     '''
                                     if column == 'collection date':
@@ -79,9 +87,9 @@ class IncorrectValueValidator(Validator):
                                             self.flag = False        
                                     else:
                                     '''
-                                    self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i) + ". Valid value should match: " + str(regex))
+                                    self.errors.append("Invalid value '" + row + "' in column : '" + field["label"] + "' at row " + str(i) + ". Valid value should match: " + str(regex))
                                     self.flag = False
-                        elif type == "TAXON_FIELD":
+                        elif type == "BIOSAMPLEACCESSION_FIELD":
                             if row not in biosampleAccessionsMap.keys():
                                 #check biosample from ena
                                 try:
@@ -99,26 +107,92 @@ class IncorrectValueValidator(Validator):
                                             else:
                                                 self.data[f"{Validator.PREFIX_4_NEW_FIELD}sraAccession"] = sample_accession
                                     else:
-                                        self.errors.append("Invalid value " + row + " in column:'" + field["name"] + "'")
+                                        self.errors.append("Invalid value " + row + " in column:'" + field["label"] + "'")
                                         self.flag = False
                                 except Exception as e:
                                     lg.exception(e)
-                                    self.errors.append("Invalid value " + row + " in column:'" + field["name"] + "'")
+                                    self.errors.append("Invalid value " + row + " in column:'" + field["label"] + "'")
                                     self.flag = False
 
                             else:
-                      
-                                specimen_id = self.data.iloc[i-2].get("SPECIMEN_ID","")
-                                taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
-                                sample = biosampleAccessionsMap.get(row)
-                                if "SPECIMEN_ID" in sample and sample["SPECIMEN_ID"] != specimen_id:
-                                    self.errors.append("Invalid value " + specimen_id + " not match with " + sample.get("SPECIMEN_ID","")+ " in column: 'SPECIMEN_ID' at row " + str(i)) 
-                                    self.flag = False
-                                if  sample.get("TAXON_ID","") != taxon_id:
-                                    self.errors.append("Invalid value " + taxon_id + " not match with " + sample.get("TAXON_ID","") + " in column: 'TAXON_ID' at row " + str(i)) 
-                                    self.flag = False
-
+                                for key, field in biosampleAccession_ext_field_map.items():
+                                    value = self.data.iloc[i-2].get(key,"")
+                                    #specimen_id = self.data.iloc[i-2].get("SPECIMEN_ID","")
+                                    #taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
+                                    sample = biosampleAccessionsMap.get(row)
+                                    if key in sample and sample[key] != value:
+                                        self.errors.append("Invalid value " + value + " not match with " + sample.get(key,"")+ " in column: '" + key + "' at row " + str(i)) 
+                                        self.flag = False
+                                    
             else:
                 self.errors.append("Invalid column : '" + column +"'")
                 self.flag = False
+        return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
+    
+
+class TaxonValidator(Validator):
+    def validate(self):
+        checklist = self.kwargs.get("checklist", {})
+        taxid_column_name = f"{self.PREFIX_4_NEW_FIELD}taxon_id"
+        scientific_name_column_name = f"{self.PREFIX_4_NEW_FIELD}scientific_name"
+        for key, field in checklist["fields"].items():
+            type = field.get("type","")
+            match type:
+                case "TAXON_ID_FIELD":
+                    taxon_id_set = set([x for x in self.data[key].tolist() if x])
+                    #notify_frontend(data={"profile_id": self.profile_id},
+                    #                msg="Querying NCBI for TAXON_IDs in manifest",
+                    #                action="info",
+                    #                html_id="sample_info")
+                    taxon_id_list = list(taxon_id_set)
+                    if any(x for x in taxon_id_list):
+                        for taxon in taxon_id_list:
+                            # check if taxon is submittable
+                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(taxon, by="id")
+                            if ena_taxon_errors:
+                                self.errors += ena_taxon_errors
+                                self.flag = False
+                            else:
+                                if not taxid_column_name in self.data.columns:
+                                    self.data[taxid_column_name] = ""
+                                self.data.loc[ self.data[key]==taxon, taxid_column_name] = taxinfo["taxId"]
+                                self.data.loc[ self.data[key]==taxon, scientific_name_column_name] = taxinfo["scientificName"]
+
+                case "SCIENTIFIC_NAME_FIELD":
+                    taxon_id_set = set([x for x in self.data[key].tolist() if x])
+                    #notify_frontend(data={"profile_id": self.profile_id},
+                    #                msg="Querying NCBI for TAXON_IDs in manifest",
+                    #                action="info",
+                    #                html_id="sample_info")
+                    taxon_id_list = list(taxon_id_set)
+                    if any(x for x in taxon_id_list):
+                        for taxon in taxon_id_list:
+                            # check if taxon is submittable
+                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(taxon, by="binomial")
+                            if ena_taxon_errors:
+                                self.errors += ena_taxon_errors
+                                self.flag = False
+                            else:
+                                if not taxid_column_name in self.data.columns:
+                                    self.data[taxid_column_name] = ""
+                                self.data.loc[ self.data[key]==taxon, taxid_column_name] = taxinfo["taxId"]
+                                self.data.loc[ self.data[key]==taxon, scientific_name_column_name] = taxinfo["scientificName"]
+        return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
+    
+class OntologyValidator(Validator): 
+    def validate(self):
+        checklist = self.kwargs.get("checklist", {})
+        for key, field in checklist["fields"].items():
+            type = field.get("type","")
+            if type == "ONTOLOGY":
+                for i in range(0, len(self.data)):
+                    if self.data[key][i]:
+                        ontology =  field.get("ontology","").split(":")
+                        if len(ontology) == 2:
+                            if not checkOntologyTerm(ontology_id=ontology[0], ancestor=ontology[1], term=self.data[key][i]):
+                                self.errors.append("Invalid value '" + self.data[key][i] + "' in column : '" + field["label"] + "' at row " + str(i+1) + ". Valid value should match ontology: " + str(field.get("ontology","")))
+                                self.flag = False
+                        else:
+                            self.errors.append("Ontology term reference is missing for column : '" + field["label"] + "'")
+                            self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")

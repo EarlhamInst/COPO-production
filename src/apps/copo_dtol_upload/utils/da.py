@@ -2,8 +2,8 @@ from common.dal.copo_da import DAComponent
 from bson.objectid import ObjectId
 
 class ValidationQueue(DAComponent):
-    def __init__(self, profile_id=None):
-        super(ValidationQueue, self).__init__(profile_id, "validationQueue")
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(ValidationQueue, self).__init__(profile_id, "validationQueue", subcomponent=subcomponent)
 
     def get_queued_manifests(self):
         m_list = self.get_collection_handle().find(

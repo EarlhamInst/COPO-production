@@ -92,42 +92,50 @@ AnnotationCollection = "SeqAnnotationCollection"
 TaggedSequenceCollection = "TagSequenceCollection"
 EnaChecklistCollection = "EnaChecklistCollection"
 ReadObjectCollection = "SampleCollection"
+SinglecellSchemasCollection = "SingleCellSchemasCollection"
+SinglecellCollection = "SingleCellCollection"
 
-handle_dict = dict(
-    audit=get_collection_ref(AuditCollection),
-    publication=get_collection_ref(PubCollection),
-    person=get_collection_ref(PersonCollection),
-    sample=get_collection_ref(SampleCollection),
-    accessions=get_collection_ref(SampleCollection),
-    source=get_collection_ref(SourceCollection),
-    profile=get_collection_ref(ProfileCollection),
-    submission=get_collection_ref(SubmissionCollection),
-    datafile=get_collection_ref(DataFileCollection),
-    annotation=get_collection_ref(AnnotationReference),
-    group=get_collection_ref(GroupCollection),
-    repository=get_collection_ref(RepositoryCollection),
-    cgcore=get_collection_ref(CGCoreCollection),
-    textannotation=get_collection_ref(TextAnnotationCollection),
-    metadata_template=get_collection_ref(MetadataTemplateCollection),
-    stats=get_collection_ref(StatsCollection),
-    test=get_collection_ref(TestCollection),
-    barcode=get_collection_ref(BarcodeCollection),
-    validationQueue=get_collection_ref(ValidationQueueCollection),
-    enaFileTransfer=get_collection_ref(EnaFileTransferCollection),
-    apiValidationReport=get_collection_ref(APIValidationReport),
-    assembly=get_collection_ref(AssemblyCollection),
-    seqannotation=get_collection_ref(AnnotationCollection),
-    submissionQueue=get_collection_ref(SubmissionQueueCollection),
-    taggedseq=get_collection_ref(TaggedSequenceCollection),
-    enaChecklist=get_collection_ref(EnaChecklistCollection),
-    read=get_collection_ref(ReadObjectCollection),
-)
+handle_dict = dict(audit=get_collection_ref(AuditCollection),
+                   publication=get_collection_ref(PubCollection),
+                   person=get_collection_ref(PersonCollection),
+                   sample=get_collection_ref(SampleCollection),
+                   accessions=get_collection_ref(SampleCollection),
+                   source=get_collection_ref(SourceCollection),
+                   profile=get_collection_ref(ProfileCollection),
+                   submission=get_collection_ref(SubmissionCollection),
+                   datafile=get_collection_ref(DataFileCollection),
+                   annotation=get_collection_ref(AnnotationReference),
+                   group=get_collection_ref(GroupCollection),
+                   repository=get_collection_ref(RepositoryCollection),
+                   cgcore=get_collection_ref(CGCoreCollection),
+                   textannotation=get_collection_ref(TextAnnotationCollection),
+                   metadata_template=get_collection_ref(
+                       MetadataTemplateCollection),
+                   stats=get_collection_ref(StatsCollection),
+                   test=get_collection_ref(TestCollection),
+                   barcode=get_collection_ref(BarcodeCollection),
+                   validationQueue=get_collection_ref(
+                       ValidationQueueCollection),
+                   enaFileTransfer=get_collection_ref(
+                       EnaFileTransferCollection),
+                   apiValidationReport=get_collection_ref(APIValidationReport),
+                   assembly=get_collection_ref(AssemblyCollection),
+                   seqannotation=get_collection_ref(AnnotationCollection),
+                   submissionQueue=get_collection_ref(
+                       SubmissionQueueCollection),
+                   taggedseq=get_collection_ref(TaggedSequenceCollection),
+                   enaChecklist=get_collection_ref(EnaChecklistCollection),
+                   read=get_collection_ref(ReadObjectCollection),
+                   singlecellSchemas = get_collection_ref(SinglecellSchemasCollection),
+                   singlecell = get_collection_ref(SinglecellCollection)
+                )
 
 
 class DAComponent:
-    def __init__(self, profile_id=None, component=str()):
+    def __init__(self, profile_id=None, component=str(), subcomponent=str()):
         self.profile_id = profile_id
         self.component = component
+        self.subcomponent =  subcomponent
 
     def get_number(self):
         return self.get_collection_handle().count_documents({})

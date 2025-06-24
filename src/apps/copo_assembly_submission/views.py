@@ -30,7 +30,7 @@ def ena_assembly(request, profile_id, assembly_id=None):
     sample_accession = []
     run_accession = []
 
-    existing_sub = Submission().get_records_by_field("profile_id", profile_id)
+    existing_sub = Submission().get_all_records_columns(filter_by={"profile_id": profile_id, "repository": "ena"})
     existing_accessions = ""
     if existing_sub:
         existing_accessions = existing_sub[0].get("accessions", "")
@@ -58,7 +58,7 @@ def ena_assembly(request, profile_id, assembly_id=None):
 
     ecs_files = []
     s3obj = S3Connection()
-    bucket_name = str(request.user.id) + "_" + request.user.username
+    bucket_name = profile_id
     if s3obj.check_for_s3_bucket(bucket_name):
         files = s3obj.list_objects(bucket_name)
         if files:
@@ -158,11 +158,7 @@ def ena_assembly(request, profile_id, assembly_id=None):
 
 @web_page_access_checker
 @login_required
-def copo_assembly(request, profile_id):
+def copo_assembly(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
-    return render(
-        request,
-        'copo/copo_assembly.html',
-        {'profile_id': profile_id, 'profile': profile},
-    )
+    return render(request, 'copo/copo_assembly.html', {'profile_id': profile_id, 'profile': profile, "ui_component": ui_component})

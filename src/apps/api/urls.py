@@ -230,40 +230,43 @@ mapping_api_patterns = [re_path(r'^mapping', mapping.get_mapping, name='get_mapp
 
 manifest_patterns = [
     path(
-        'index/get_latest_manifest_versions',
-        manifest_view.get_latest_manifest_versions,
-        name='get_latest_manifest_versions',
+        'populate_manifest_table',
+        manifest_view.populate_manifest_table,
+        name="populate_manifest_table",
     ),
     path(
-        'get_manifest_fields/',
+        'get_manifest_fields',
         manifest_view.get_manifest_fields,
-        name='get_manifest_fields',
+        name="get_manifest_fields",
+    ),
+    re_path(
+        r'get_manifest_file_name/(?P<manifest_type>[a-zA-Z-_, ]+)',
+        manifest_view.get_manifest_file_name,
+        name="get_manifest_file_name",
     ),
     path(
-        'get_common_value_dropdown_list/',
+        'get_common_value_dropdown_list',
         manifest_view.get_common_value_dropdown_list,
-        name='get_common_value_dropdown_list',
+        name="get_common_value_dropdown_list",
     ),
     path(
         'prefill_manifest_template/',
         manifest_view.prefill_manifest_template,
-        name='prefill_manifest_template',
+        name="prefill_manifest_template",
     ),
     re_path(
         r'^download_manifest/(?P<manifest_id>[A-Z0-9a-f-]+)',
         manifest_view.download_manifest,
-        name='download_manifest',
+        name="download_manifest",
     ),
-    path('download_permits/', manifest_view.download_permits, name='download_permits'),
-    path('view_images/', manifest_view.view_images, name='view_images'),
+    path('download_permits/', manifest_view.download_permits, name="download_permits"),
+    path('view_images/', manifest_view.view_images, name="view_images"),
     path(
-        'validate_common_value/',
+        'validate_common_value',
         manifest_view.validate_common_value,
-        name='validate_common_value',
+        name="validate_common_value",
     ),
-    path(
-        'index/', TemplateView.as_view(template_name='manifests.html'), name='manifests'
-    ),
+    path('index', manifest_view.copo_manifests, name='manifests'),
 ]
 
 urlpatterns = (

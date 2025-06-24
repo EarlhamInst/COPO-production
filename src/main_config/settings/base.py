@@ -6,7 +6,6 @@ from django.contrib.messages import constants as messages
 from datetime import timedelta
 from common.utils import helpers as resolve_env
 
-
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 )
@@ -44,6 +43,7 @@ ALLOWED_HOSTS = [
     '.demo.copo-project.org',
     'localhost',
     '.copodev.cyverseuk.org',
+    '.copodev2.cyverseuk.org',
 ]
 ALLOWED_CIDR_NETS = ['10.0.0.0/24']
 CORS_ALLOWED_ORIGINS = [
@@ -56,6 +56,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://demo.copo-project.org",
     "https://copodev.cyverseuk.org",
     "http://copodev.cyverseuk.org",
+    "https://copodev2.cyverseuk.org",
+    "http://copodev2.cyverseuk.org",
     "https://copo-new.cyverseuk.org",
     "http://copo-new.cyverseuk.org",
 ]
@@ -98,6 +100,7 @@ PROJECT_APPS = [
     'src.apps.copo_manifest_wizard',
     'src.apps.copo_news',
     'src.apps.api',
+    'src.apps.copo_single_cell_submission',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -196,6 +199,8 @@ CSRF_TRUSTED_ORIGINS = [
     'https://copodev.cyverseuk.org',
     'https://copo-new.cyverseuk.org',
     'http://copodev.cyverseuk.org',
+    'http://copodev2.cyverseuk.org',
+    'https://copodev2.cyverseuk.org',
     'http://127.0.0.1:8000',
 ]
 
@@ -210,14 +215,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'))
 MEDIA_URL = '/media/'
 
-MANIFEST_PATH = os.path.join(
-    BASE_DIR, resolve_env.get_env('MEDIA_PATH'), 'assets', 'manifests'
-)
-MANIFEST_FILE_NAME = "{0}_MANIFEST_TEMPLATE{1}.xlsx"
+MANIFEST_PATH = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'), 'assets', 'manifests')
+MANIFEST_FILE_NAME = "{0}_manifest_template{1}.xlsx"
 MANIFEST_DOWNLOAD_URL = MEDIA_URL + "assets/manifests/" + MANIFEST_FILE_NAME
 
 SOP_PATH = os.path.join(BASE_DIR, 'static', 'assets', 'sops')
-SOP_FILE_NAME = "{0}_MANIFEST_SOP{1}.pdf"
+SOP_FILE_NAME = "{0}_manifest_sop{1}.pdf"
 SOP_DOWNLOAD_URL = "/static/assets/sops/" + SOP_FILE_NAME
 
 ELASTIC_SEARCH_URL = 'http://localhost:9200/ontologies/plant_ontology/_search'
@@ -300,6 +303,7 @@ TEMPLATES = [
 ROOT_URLCONF = 'src.main_config.urls'
 
 UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads')
+UPLOAD_URL = MEDIA_URL + 'uploads'
 LOCAL_UPLOAD_PATH = os.path.join(BASE_DIR, 'local_uploads')
 STANDARDS_MAP_FILE_PATH = os.path.join(
     SCHEMA_VERSIONS_DIR, 'isa_mappings', 'standards_map.json'

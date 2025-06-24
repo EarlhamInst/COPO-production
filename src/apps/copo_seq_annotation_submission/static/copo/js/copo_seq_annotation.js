@@ -1,7 +1,8 @@
 $(document).ready(function () {
-  var uid = document.location.href;
-  uid = uid.split('/');
-  uid = uid[uid.length - 2];
+  profile_id = $('#profile_id').val();
+  //var uid = document.location.href;
+  //uid = uid.split('/');
+  //uid = uid[uid.length - 2];
   var wsprotocol = 'ws://';
   var s3socket;
 
@@ -103,7 +104,7 @@ $(document).ready(function () {
     wsprotocol = 'wss://';
   }
   var wsurl =
-    wsprotocol + window.location.host + '/ws/annotation_status/' + uid;
+    wsprotocol + window.location.host + '/ws/annotation_status/' + profile_id;
 
   s3socket = new WebSocket(wsurl);
 
@@ -273,7 +274,7 @@ $(document).ready(function () {
 
   //add new component button
   $(document).on('click', '.new-component-template', function (event) {
-    url = '/copo/copo_seq_annotation/' + uid;
+    url = '/copo/copo_seq_annotation/' + profile_id;
     handle_add_n_edit(url);
   });
 
@@ -418,10 +419,10 @@ $(document).ready(function () {
 
     //add task
     if (task == 'add') {
-      url = '/copo/copo_seq_annotation/' + uid;
+      url = '/copo/copo_seq_annotation/' + profile_id;
       handle_add_n_edit(url);
     } else if (task == 'edit') {
-      url = '/copo/copo_seq_annotation/' + uid + '/' + records[0].record_id;
+      url = '/copo/copo_seq_annotation/' + profile_id + '/' + records[0].record_id;
       handle_add_n_edit(url);
     } else {
       form_generic_task(component, task, records);
@@ -468,6 +469,7 @@ $(document).ready(function () {
           .addClass('highlight_error_file_processing_status');
       }
     }
+    /*
     $('.ena-accession').each(function (i, obj) {
       if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
         $(obj).html(
@@ -479,5 +481,6 @@ $(document).ready(function () {
         );
       }
     });
+    */
   });
 });

@@ -16,13 +16,13 @@ import json
 
 @web_page_access_checker
 @login_required
-def copo_accessions(request, profile_id):
+def copo_accessions(request, profile_id, ui_component):
     request.session['profile_id'] = profile_id
     profile = Profile().get_record(profile_id)
     groups = get_group_membership_asString()
 
     return render(request, 'copo/accessions/copo_accessions.html',
-                  {'profile_id': profile_id, 'profile': profile, 'groups': groups, 'showAllCOPOAccessions': False})
+                  {'profile_id': profile_id, 'profile': profile, 'groups': groups, 'showAllCOPOAccessions': False, "ui_component": ui_component})
 
 def copo_accessions_dashboard(request):
     # Determine if users are in the appropriate membership group to view the web page

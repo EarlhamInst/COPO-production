@@ -953,9 +953,9 @@ function update_pending_samples_table() {
       className: 'dt-center text-center',
       render: function (data, type, row) {
         return (
-          "<a href='/copo/copo_sample/" +
+          "<a href='/copo/copo_sample/view/" +
           data.$oid +
-          "/view'><i class='fa fa-link' aria-hidden='true'></i></a>"
+          "/sample'><i class='fa fa-link' aria-hidden='true'></i></a>"
         );
       },
     });

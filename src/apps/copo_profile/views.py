@@ -60,53 +60,40 @@ def copo_profile_index(request):
     excluded_shared_profileIDs = list()
 
     # Get/load 8 profiles on downwards scroll
-    existing_profiles_paginated = (
-        Profile()
-        .get_collection_handle()
-        .aggregate(
-            [
-                {'$match': {'_id': {'$in': list(shared_profiles_mapping.keys())}}},
-                {
-                    '$addFields': {
-                        'submission_profile_id': {
-                            '$convert': {'input': '$_id', 'to': 'string', 'onError': 0}
-                        }
+    existing_profiles_paginated = Profile() \
+        .get_collection_handle() \
+        .aggregate([
+            {"$match": {"_id": {"$in": list(shared_profiles_mapping.keys())}}},
+            {"$addFields": {
+                "submission_profile_id": {
+                    "$convert": {
+                        "input": "$_id",
+                        "to": "string",
+                        "onError": 0
                     }
-                },
+                }
+            }
+            },
+            {"$lookup":
                 {
-                    '$lookup': {
-                        'from': 'SubmissionCollection',
-                        'localField': 'submission_profile_id',
-                        'foreignField': 'profile_id',
-                        'as': 'submission',
-                    }
-                },
-                {
-                    '$unwind': {
-                        'path': '$submission',
-                        'preserveNullAndEmptyArrays': True,
-                    }
-                },
-                {'$sort': {'date_created': pymongo.DESCENDING}},
-                {'$skip': db_skip_num},
-                {'$limit': num_of_profiles_per_page},
-                {
-                    '$project': {
-                        'study_status': '$submission.accessions.project.status',
-                        'study_release_date': '$submission.accessions.project.release_date',
-                        'sequencing_centre': 1,
-                        'title': 1,
-                        'description': 1,
-                        'associated_type': 1,
-                        'type': 1,
-                        'date_created': 1,
-                        'date_modified': 1,
-                    }
-                },
-            ]
-        )
-    )
-
+                    "from": 'SubmissionCollection',
+                    "localField": "submission_profile_id",
+                    "foreignField": "profile_id",
+                    "pipeline": [
+                        { "$match" : 
+                         {"$expr": { "$eq": [ "ena", "$repository" ] }}
+                        } ],
+                    "as": "submission"
+                }
+             },
+            {"$unwind": {'path': '$submission', "preserveNullAndEmptyArrays": True}},
+            {"$sort":  {"date_created": pymongo.DESCENDING}},
+            {"$skip": db_skip_num},
+            {"$limit": num_of_profiles_per_page},
+            {"$project": {"study_status": "$submission.accessions.project.status", "study_release_date": "$submission.accessions.project.release_date",
+                          "sequencing_centre": 1, "title": 1, "description": 1, "associated_type": 1, "type": 1, "date_created": 1, "date_modified": 1}}
+        ])
+    
     profile_page = cursor_to_list_str2(
         existing_profiles_paginated, use_underscore_in_id=False
     )

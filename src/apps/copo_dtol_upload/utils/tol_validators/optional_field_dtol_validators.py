@@ -512,11 +512,7 @@ class DtolEnumerationValidator(Validator):
                         elif "ASG" == p_type:
                             current_partner = self.data.at[cellcount - 1, "PARTNER"]
                             specimen_regex = re.compile(
-                                lookup.SPECIMEN_PREFIX["PARTNER"].get(
-                                    current_partner, ""
-                                )
-                                + r'\d{7}'
-                            )
+                                lookup.SPECIMEN_PREFIX["PARTNER"].get(current_partner, "") + r'\d{7}')
                             if not re.match(specimen_regex, c.strip()):
                                 self.errors.append(
                                     msg["validation_msg_error_specimen_regex"]

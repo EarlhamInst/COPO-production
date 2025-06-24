@@ -26,9 +26,8 @@ from common.schema_versions.lookup import dtol_lookups as lookup
 #    taxon_validators
 # from common.schema_versions import required_field_dtol_validators as required_validators
 from common.utils.logger import Logger
-from PIL import Image
 import numpy as np
-from PIL import ImageFile
+from PIL import ImageFile, Image
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

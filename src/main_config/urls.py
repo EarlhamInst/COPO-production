@@ -27,6 +27,7 @@ urlpatterns = [
         'copo/copo_read/',
         include('src.apps.copo_read_submission.urls', namespace='copo_read_submission'),
     ),
+    path('copo/copo_single_cell/', include('src.apps.copo_single_cell_submission.urls', namespace='copo_single_cell_submission')),
     path(
         'copo/copo_assembly/',
         include(
@@ -70,7 +71,9 @@ urlpatterns = [
         include('src.apps.copo_tol_dashboard.urls', namespace='copo_tol_dashboard'),
     ),
     path('copo/', include('src.apps.copo_core.urls', namespace='copo')),
-    # path('rest/', include('src.apps.copo_core.rest_urls', namespace='rest')),
+
+    #path('rest/', include('src.apps.copo_core.rest_urls', namespace='rest')),
+
     path('api/', include('src.apps.api.urls', namespace='api')),
     path('manifests/', include('src.apps.api.urls', namespace='manifests')),
     path('accounts/', include('allauth.urls')),

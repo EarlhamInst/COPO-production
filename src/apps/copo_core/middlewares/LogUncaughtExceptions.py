@@ -20,7 +20,7 @@ class LogUncaughtExceptions:
             Logger().log(e, level=Loglvl.ERROR)
             Logger().log(traceback.format_exc(), level=Loglvl.ERROR)
             #raise e
-            return HttpResponse(content="Errors occured", status=503)
+            return HttpResponse(content="Errors occurred", status=503)
         #finally:
             #logging.info("Processed " + request.build_absolute_uri())
 

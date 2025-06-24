@@ -15,6 +15,7 @@
     <!-- FONTAWESOME STYLE CSS -->
     <link href="/static/copo/css/fontawesome/fontawesome-6.5.1.min.css" rel="stylesheet" />
     <!-- CUSTOM STYLE CSS -->
+    <link href="/static/assets/css/navbar.css" rel="stylesheet" >
     <link href="/static/assets/css/style.css" rel="stylesheet" />
 
     <!-- BANNER STYLE CSS -->
@@ -29,24 +30,16 @@
 
     <!-- PAGE LEVEL STYLES -->
     {% block stylesheet_block %}{% endblock %}
-    <style>
-        .navbar-brand>img {
-            margin-top: -5px !important;
-        }
-
-        @media (max-width: 768px) {
-            .navbar-collapse {
-                background-color: rgba(179, 151, 89, 1);
-            }
-
-        }
-    </style>
 </head>
 
 <body>
-    <!-- include navbar html -->
+    <!-- Top navigation bar -->
     <div class="pull-right">
-        {% include "nav_dropdown.html" %}
+        {% if user.is_authenticated %}
+            {% include 'nav_authenticated.html' %}
+        {% else %}
+            {% include 'nav_public.html' %}
+        {% endif %}
     </div>
     <!-- Carousel -->
     {% block carouselblock %}

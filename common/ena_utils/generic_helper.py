@@ -83,11 +83,20 @@ def logging_info(message=str(), submission_id=str()):
     :return:
     """
 
-    lg.log(
-        '[Submission: ' + submission_id + '] ' + message,
-        level=Loglvl.INFO,
-        type=Logtype.FILE,
-    )
+    lg.log('[Submission: ' + submission_id + '] ' + message)
+
+    return True
+
+
+def logging_debug(message=str(), submission_id=str()):
+    """
+    function provides a consistent way of logging submission status/information
+    :param message:
+    :param submission_id:
+    :return:
+    """
+
+    lg.debug('[Submission: ' + submission_id + '] ' + message)
 
     return True
 
@@ -99,16 +108,8 @@ def logging_error(message=str(), submission_id=str()):
     :param submission_id:
     :return:
     """
-
-    try:
-        lg.log(
-            '[Submission: ' + submission_id + '] ' + message,
-            level=Loglvl.ERROR,
-            type=Logtype.FILE,
-        )
-    except Exception as e:
-        return False
-
+    lg.error('[Submission: ' + submission_id + '] ' + message)
+ 
     return True
 
 
@@ -311,10 +312,7 @@ def notify_tagged_seq_status(
     async_to_sync(channel_layer.group_send)(group_name, event)
     return True
 
-
-def notify_ena_object_status(
-    action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()
-):
+def notify_ena_object_status(action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()):
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
     if checklist_id.startswith("ERC"):
         group_name = 'read_status_%s' % data["profile_id"]
@@ -331,6 +329,16 @@ def notify_ena_object_status(
     async_to_sync(channel_layer.group_send)(group_name, event)
     return True
 
+def notify_singlecell_status(action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()):
+    # type points to the object type which will be passed to the socket and is a method defined in consumer.py
+    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    channel_layer = get_channel_layer()
+    group_name = 'singlecell_status_%s' % data["profile_id"]
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        event
+    )
+    return True
 
 def notify_transfer_status(profile_id=str(), submission_id=str(), status_message=str()):
     """

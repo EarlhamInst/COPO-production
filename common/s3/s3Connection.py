@@ -1,23 +1,25 @@
 import boto3
 from botocore.config import Config
 from django.conf import settings as s
-from django_tools.middlewares.ThreadLocal import get_current_request, get_current_user
+from django_tools.middlewares.ThreadLocal import get_current_request
 from common.utils.helpers import notify_read_status
 from common.utils.logger import Logger
 from boto3.s3.transfer import TransferConfig
 import logging
 from common.dal.copo_da import EnaFileTransfer
-
+from common.utils.helpers import get_env
 
 class S3Connection():
     """
     Class to handle interations with ECS cloud storage via s3 service
     """
 
-    def __init__(self, profile_id=str()):
-        self.ecs_endpoint = s.ECS_ENDPOINT
-        self.ecs_access_key_id = s.ECS_ACCESS_KEY_ID
-        self.ecs_secret_key = s.ECS_SECRET_KEY
+    def __init__(self, profile_id=str(), subcomponent=None):
+        self.profile_id = profile_id
+        self.ecs_access_key_id = get_env('ECS_ACCESS_KEY_ID')
+        self.ecs_secret_key = get_env('ECS_SECRET_KEY')
+        self.ecs_endpoint = get_env('ECS_ENDPOINT')
+        self.ecs_endpoint_external = get_env('ECS_ENDPOINT_EXTERNAL')
 
         self.expiration = 60 * 60 * 24
         self.path = '/'
@@ -27,6 +29,12 @@ class S3Connection():
                                                     retries={"max_attempts": 10}, s3={'addressing_style': "path"}),
                                       aws_access_key_id=self.ecs_access_key_id,
                                       aws_secret_access_key=self.ecs_secret_key)
+        
+        self.s3_client_external = boto3.client('s3', endpoint_url=self.ecs_endpoint_external, verify=False,  
+                                      config=Config(signature_version='s3v4', connect_timeout=120, read_timeout=240,
+                                                    retries={"max_attempts": 10}, s3={'addressing_style': "path"}),
+                                      aws_access_key_id=self.ecs_access_key_id,
+                                      aws_secret_access_key=self.ecs_secret_key)        
         # self.transport_params = {'client': self.s3_client}
         Logger().debug(
             msg=f"endpoint: {self.ecs_endpoint}, access key: {self.ecs_access_key_id}, secret: {self.ecs_secret_key}")
@@ -101,8 +109,8 @@ class S3Connection():
         :return:
         '''
         try:
-            response = self.s3_client.generate_presigned_url('put_object', Params={'Bucket': bucket, 'Key': key},
-                                                             ExpiresIn=expires_seconds)
+            response = self.s3_client_external.generate_presigned_url('put_object', Params={'Bucket': bucket, 'Key': key},
+                                                              ExpiresIn=expires_seconds)
             #response = response.replace("http://", "https://")
         except Exception as e:
             Logger().exception(e)
@@ -146,13 +154,14 @@ class S3Connection():
         :param file_list: list of files to look for
         :return: a list containing the names of files _not_ found
         '''
+        msg = ""
         try:
-            try:
-                profile_id = get_current_request().session["profile_id"]
-            except AttributeError:
-                profile_id = "xxxx"
-            # channels_group_name = "read_status_" + profile_id
+            profile_id = get_current_request().session["profile_id"]
+        except AttributeError:
+            profile_id = "xxxx"
 
+        # channels_group_name = "read_status_" + profile_id
+        try:
             missing_files = list()
             etags = dict()
             # get objects in the supplied bucket name
@@ -161,8 +170,8 @@ class S3Connection():
             if not bucket_files:
                 msg = "Bucket not found: " + bucket_name
                 notify_read_status(data={"profile_id": profile_id}, msg=msg, action="info",
-                                   html_id="sample_info")
-                return False
+                                   html_id="sample_info")                 
+                return False, msg
 
             for f in file_list:
 
@@ -172,7 +181,8 @@ class S3Connection():
                     found_flag = 0
                     print("Looking for", file)
                     file = file.strip()
-
+                    if not file:
+                        continue
                     notify_read_status(data={"profile_id": profile_id}, msg="Searching for: " + file, action="info",
                                        html_id="sample_info")
                     # time.sleep(2)
@@ -190,20 +200,25 @@ class S3Connection():
                         missing_files.append(file)
             if len(missing_files) > 0:
                 # report missing files
-                notify_read_status(data={"profile_id": profile_id}, msg="Files Missing: " + str(
-                    missing_files) + ". Please upload these files to COPO and try again.",
+                msg="Files Missing: " + str(missing_files) + ". Please upload these files to COPO and try again."
+              
+                notify_read_status(data={"profile_id": profile_id}, msg=msg,
                                    action="error",
                                    html_id="sample_info")
+                
                 # return false to halt execution
-                return False
+                return False, msg
             else:
-                return etags
+                return etags, ''
 
         except KeyError as e:
-            notify_read_status(data={"profile_id": profile_id}, msg="Key Error occurred...cannot find key: " + str(e),
+            msg = "Key Error occurred...cannot find key: " + str(e)
+             
+            notify_read_status(data={"profile_id": profile_id}, msg=msg,
                                action="info",
                                html_id="sample_info")
-            return False
+           
+            return False, msg
         except Exception as e:
             Logger().exception(e)
             notify_read_status(data={"profile_id": profile_id}, msg="An error has occurred: " + str(e), action="info",
@@ -211,16 +226,17 @@ class S3Connection():
             raise e
 
     def validate_and_delete(self, target_id=str(), target_ids=list()):
-        user = get_current_user()
-        bucket_name = str(user.id) + "_" + user.username
+        from common.ena_utils.FileTransferUtils import get_transfer_status, TransferStatus
+        bucket_name = self.profile_id
         filestatus_map = EnaFileTransfer().get_transfer_status_by_ecs_path(ecs_locations=[ f"{bucket_name}/{key}" for key in target_ids])
         file_not_deleted = []
         status = False
         for key in target_ids:
-            #ok to delete the file if there is no need to transfer to ENA
-            if filestatus_map.get(f"{bucket_name}/{key}", "ena_complete") == "ena_complete":
+            #ok to delete the file if there is no need to tranfer to ENA
+            enaFile = filestatus_map.get(f"{bucket_name}/{key}")
+            if enaFile is None or get_transfer_status(enaFile) >= TransferStatus.DOWNLOADED_TO_LOCAL:
+                status = True          
                 self.s3_client.delete_object(Bucket=bucket_name, Key=key)
-                status = True
             else:
                 file_not_deleted.append(key)
                 

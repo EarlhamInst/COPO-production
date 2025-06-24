@@ -14,6 +14,10 @@ const title_button_def = {
 
 }
 
+const media_url = "{{ media_url }}";
+const upload_url = "{{ upload_url }}";
+const image_file_extensions = "{{ image_file_extensions }}";
+
 const record_action_button_def = {
   {% for button in record_action_button_def %}
     {{ button.name  }}: {
@@ -39,7 +43,7 @@ const record_action_button_def = {
 const component_def = {
   {% for component in component_def %}
     {{ component.name|lower }}:  {
-      component: '{{ component.name }}',
+      component: '{{ component.base_component }}',
       title: '{{ component.title }}',
       {% if component.subtitle %}
       subtitle: '{{ component.subtitle }}',
@@ -51,230 +55,14 @@ const component_def = {
       colorClass: '{{ component.widget_colour_class }}',
       color: '{{ component.widget_colour }}',
       tableID: '{{ component.table_id }}',
+      schema_name: '{{ component.schema_name }}',
       recordActions: [ {% for button in component.recordaction_buttons.all %} '{{ button.name }}', {% endfor %} ],
-      url: "{% if component.reverse_url %}{% url component.reverse_url profile_id='999' %}{% endif %}",
+      url: "{% if component.reverse_url and component.schema_name %}{% url component.reverse_url  schema_name=component.schema_name  profile_id='999' ui_component=component.name  %}{% elif component.reverse_url %}{% url component.reverse_url  profile_id='999' ui_component=component.name %}{% endif %}"
     },
     
   {% endfor %}
 }
-   /*
-    const component1_def =  {
-    profile: 
-      {
-        component: 'profile',
-        title: 'Work Profiles',
-        subtitle: '#component_subtitle',
-        buttons: ['quick-tour-template', 'new-component-template'],
-        sidebarPanels: ['copo-sidebar-info'],
-        tableID: 'copo_profiles_table',
-        visibleColumns: 4,
-        recordActions: [
-          'add_record_all',
-          'edit_record_single',
-          'delete_record_multi',
-        ], //specifies action buttons for records manipulation
-        url: "",
-      },
-    accessions: {
-      component: 'accessions',
-      title: 'Accessions',
-      iconClass: 'fa fa-sitemap',
-      semanticIcon: 'sitemap', //semantic UI equivalence of fontawesome icon
-      buttons: [
-        'copo_accessions',
-        'accept_reject_samples',
-        'tol_inspect',
-        'tol_inspect_gal',
-      ],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'accessions_color',
-      color: 'pink',
-      tableID: 'accessions_table',
-      recordActions: [],
-      visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
-      url: "{% url 'copo_accession:copo_accessions' profile_id='999' %}",
-    },
-    accessions_dashboard:
-    {
-      component: 'accessions_dashboard',
-      title: 'Accessions',
-      iconClass: 'fa fa-sitemap',
-      semanticIcon: 'sitemap', //semantic UI equivalence of fontawesome icon
-      buttons: [
-        'copo_accessions',
-        'accept_reject_samples',
-        'tol_inspect',
-        'tol_inspect_gal',
-      ],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'accessions_color',
-      color: 'pink',
-      tableID: 'accessions_table',
-      recordActions: [],
-      visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
-      url: "{% url 'copo_accession:copo_accessions' profile_id='999' %}",
-    },
-    assembly:
-    {
-      component: 'assembly',
-      title: 'Assembly',
-      iconClass: 'fa fa-puzzle-piece',
-      semanticIcon: 'puzzle piece',
-      buttons: ['new-component-template'],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'assembly_color',
-      color: 'violet',
-      tableID: 'assembly_table',
-      recordActions: [
-        'add_record_all',
-        'edit_record_single',
-        'delete_record_multi',
-        'submit_assembly_multi',
-      ],
-      visibleColumns: 5,
-      url:  "{% url 'copo_assembly_submission:copo_assembly' profile_id='999' %}",
-    },
-    taggedseq:
-    {
-      component: 'taggedseq',
-      title: 'Barcoding Manifests',
-      subtitle: '#component_subtitle',
-      iconClass: 'fa fa-barcode',
-      semanticIcon: 'barcode',
-      buttons: [
-        'new-taggedseq-spreadsheet-template',
-        'download-blank-manifest-template|href:#blank_manifest_url',
-      ],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'data_color',
-      color: 'red',
-      tableID: 'tagged_seq_table',
-      recordActions: ['delete_record_multi', 'submit_tagged_seq_multi'],
-      visibleColumns: 5,
-      url: "{% url 'copo_barcoding_submission:copo_taggedseq' profile_id='999' %}",
-    },
-    files:
-    {
-      component: 'files',
-      title: 'Files',
-      iconClass: 'fa fa-file',
-      semanticIcon: 'file',
-      buttons: ['new-local-file', 'new-terminal-file'],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'files_color',
-      color: 'blue',
-      tableID: 'files_table',
-      recordActions: [
-        'add_local_all',
-        'add_terminal_all',
-        'delete_record_multi',
-      ], // , "delete_record_multi, submit_assembly_multi , "edit_record_single"
-      visibleColumns: 5,
-      url: "{% url 'copo_file:copo_files' profile_id='999' %}",
-    },
-    sample:
-    {
-      component: 'sample',
-      title: 'Samples',
-      iconClass: 'fa fa-filter',
-      semanticIcon: 'filter', //semantic UI equivalence of fontawesome icon
-      buttons: [
-        'quick-tour-template',
-        'new-samples-spreadsheet-template',
-        'download-blank-manifest-template|href:#blank_manifest_url',
-        'download-sop|href:#sop_url'
-       ],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'samples_color',
-      color: 'olive',
-      tableID: 'sample_table',
-      recordActions: [
-        'download_sample_manifest_single',
-        'download_permits_multiple',
-        'view_images_multiple',
-      ],
-      visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
-      url: "{% url 'copo_sample:copo_samples' profile_id='999' %}",
-    },
-    read:
-    {
-      component: 'read',
-      title: 'Reads',
-      subtitle: '#component_subtitle',
-      iconClass: 'fa fa-dna',
-      semanticIcon: 'dna', //semantic UI equivalence of fontawesome icon
-      buttons: [
-        'new-reads-spreadsheet-template',
-        'download-blank-manifest-template|href:#blank_manifest_url',
-      ],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'read_color',
-      color: 'orange',
-      tableID: 'read_table',
-      recordActions: ['delete_read_multi', 'submit_read_multi'],
-      visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
-      url: "{% url 'copo_read_submission:copo_reads' profile_id='999' %}",
-    },  
-    seqannotation:
-    {
-      component: 'seqannotation',
-      title: 'Sequence Annotations',
-      iconClass: 'fa fa-tag',
-      semanticIcon: 'tag',
-      buttons: ['quick-tour-template', 'new-component-template'],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'data_color',
-      color: 'yellow',
-      tableID: 'seqannotation_table',
-      recordActions: [
-        'add_record_all',
-        'edit_record_single',
-        'delete_record_multi',
-        'submit_annotation_multi',
-      ],
-      visibleColumns: 5,
-      url: "{% url 'copo_seq_annotation_submission:copo_seq_annotation' profile_id='999' %}",
-    }
  
- }
- */
-
-/*
-const profile1_type_def =  {
-   erga:  {
-      title: 'ERGA',
-      Description: 'ERGA is a profile type that is used to describe the erga data',
-      widget_colour: '#E61A8D',
-      components: [ 'accessions', 'assembly', 'taggedseq', 'sample', 'read', 'files', 'seqannotation']
-   }, 
-   test: {
-        title: 'Test',
-        Description: 'Test is a profile type that is used to describe the test data',
-        widget_colour: 'green',
-        components: [ 'accessions', 'assembly', 'read', 'files', 'seqannotation']
-   },
-   dtol: {
-    title: 'DTOL',
-    Description: 'DTOL is a profile type that is used to describe the test data',
-    widget_colour: 'blue',
-    components: [ 'accessions', 'assembly', 'taggedseq', 'sample', 'read', 'files', 'seqannotation']
-
-    },
-    asg: {
-        title: 'ASG',
-        Description: 'ASG is a profile type that is used to describe the test data',
-        widget_colour: 'yellow',
-        components: [ 'accessions', 'assembly', 'taggedseq', 'sample', 'read', 'files', 'seqannotation']
-    },
-    genomics: {
-        title: 'Stand-alone',
-        Description: 'Stand-alone is a profile type that is used to describe the test data',
-        widget_colour: 'pink',
-        components: [ 'accessions', 'assembly', 'read', 'files', 'seqannotation']
-    }    
-}
-*/
-
 const profile_type_def = {
   {% for profile_type in profile_type_def %}
     {{ profile_type.type|lower }}:  {

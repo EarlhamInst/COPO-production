@@ -1,6 +1,7 @@
 from django_tools.middlewares import ThreadLocal
 from common.utils.logger import Logger
 from common.dal.copo_da import DataFile, EnaFileTransfer, EnaChecklist
+from common.dal.profile_da import Profile
 from common.dal.submission_da import Submission
 from common.dal.sample_da import Sample, Source
 from .da import SubmissionQueue
@@ -9,6 +10,7 @@ from common.dal.mongo_util import cursor_to_list
 from bson import ObjectId
 import requests
 import threading
+from src.apps.copo_core.models import ProfileType
 
 l = Logger()
 pass_word = get_env('WEBIN_USER_PASSWORD')
@@ -56,7 +58,7 @@ def submit_read(profile_id,  target_ids=list(), target_id=None, checklist_id=Non
     paired_file_ids = [id.split("_")[1] for id in target_ids]
 
     sub = Submission().get_collection_handle().find_one(
-        {"profile_id": profile_id, "deleted": get_not_deleted_flag()})
+        {"profile_id": profile_id, "repository":"ena", "deleted": get_not_deleted_flag()})
 
     if not sub:
         return dict(status='error', message="Please contact System Support Error 10211!")
@@ -170,15 +172,21 @@ def delete_ena_records(profile_id, target_ids=list(), target_id=None):
 
     if delete_samples:
         Sample(profile_id=profile_id).get_collection_handle().delete_many({"_id": {"$in": delete_samples}})
-        Submission().get_collection_handle().update_one({"profile_id": profile_id}, {"$pull": {"accessions.sample": {"sample_id": {"$in": [str(id) for id in delete_samples]}}}})
+        Submission().get_collection_handle().update_one({"profile_id": profile_id, "repository":"ena"}, {"$pull": {"accessions.sample": {"sample_id": {"$in": [str(id) for id in delete_samples]}}}})
 
     return dict(status='success', message="Read record/s have been deleted!")
 
 
 
 def generate_read_record(profile_id=str(), checklist_id=str()):
-    checklist = EnaChecklist().execute_query({"primary_id" : checklist_id})
-    run_accession_number = []
+    profile = Profile().get_record(profile_id)
+    profile_type = ProfileType.objects.get(type=profile["type"])
+
+    if not profile:
+        return dict(dataSet=[],
+                    columns=[],
+                    )
+    checklist = EnaChecklist().get_checklist(checklist_id=checklist_id,with_read=True,for_dtol=profile_type.is_dtol_profile)
 
     if not checklist:
         return dict(dataSet=[],
@@ -186,15 +194,10 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
                     )
     label = []
     default_label = []
-    fields = checklist[0]["fields"]
-    if checklist_id == 'read':
-        label =  [ x for x in fields.keys() if fields[x]["type"] != "TEXT_AREA_FIELD" and fields[x].get("for_dtol", True) ]
-        default_label = ["ena_file_upload_status", "study_accession",  "sraAccession", "status",  "run_accession", "experiment_accession", "ena_file_processing_status"]
+    fields = checklist["fields"]
 
-    else:
-        label = [ x for x in fields.keys() if fields[x]["type"] != "TEXT_AREA_FIELD" and not fields[x].get("for_dtol", False) ]
-        default_label = ["ena_file_upload_status", "study_accession",  "biosampleAccession", "sraAccession", "status",  "run_accession", "experiment_accession", "ena_file_processing_status"]
-
+    label = [ x for x in fields.keys() if fields[x]["type"] != "TEXT_AREA_FIELD"]
+    default_label = ["ena_file_upload_status", "study_accession", "biosampleAccession", "sraAccession", "status",  "run_accession", "experiment_accession", "ena_file_processing_status"]
 
     read_label =  [ x for x in fields.keys() if fields[x]["type"] != "TEXT_AREA_FIELD" and fields[x].get("read_field", False) ] 
 
@@ -209,12 +212,12 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
     columns.insert(0, detail_dict)
     columns.append(dict(data="record_id", visible=False))
     columns.append(dict(data="DT_RowId", visible=False))
-    columns.extend([dict(data=x, title=fields[x]["name"], defaultContent='', className="ena-accession" if x.lower().endswith("accession") else x  if x == "ena_file_processing_status" else ""    ) for x in label  ])
-    columns.extend([dict(data=x, title=x.upper().replace("_", " "), defaultContent='', className="ena-accession" if x.lower().endswith("accession") else  x if x == "ena_file_processing_status" else "" ) for x in default_label ])  
+    columns.extend([dict(data=x, title=fields[x]["name"], defaultContent='', render="render_ena_accession_function" if x.lower().endswith("accession") else "", className=x if x == "ena_file_processing_status" else "" ) for x in label  ])
+    columns.extend([dict(data=x, title=x.upper().replace("_", " "), defaultContent='', render="render_ena_accession_function" if x.lower().endswith("accession") else "", className= x if x == "ena_file_processing_status" else "" ) for x in default_label ])  
 
     label.extend(default_label)
 
-    submission = Submission().get_all_records_columns(filter_by={"profile_id": profile_id}, projection={"_id": 1, "name": 1, "accessions": 1})
+    submission = Submission().get_all_records_columns(filter_by={"profile_id": profile_id,"repository":"ena"},  projection={"_id": 1, "name": 1, "accessions": 1})
     if not submission:
         return dict(dataSet=[],
                 columns=columns
@@ -225,7 +228,10 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
     if project_accession:
         study_accession = project_accession[0].get("accession","")
 
-    samples = Sample(profile_id=profile_id).execute_query({"read.checklist_id" : checklist_id, "profile_id": profile_id, 'deleted': get_not_deleted_flag()})
+    find_samples_by = {"profile_id": profile_id, "deleted": get_not_deleted_flag()}
+    if checklist_id != 'read':
+        find_samples_by["checklist_id"] = checklist_id
+    samples = Sample(profile_id=profile_id).execute_query(find_samples_by)
 
     ena_file_transfer_list = EnaFileTransfer(profile_id=profile_id).execute_query()
     data_files = DataFile(profile_id=profile_id).execute_query()
@@ -234,48 +240,47 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
 
     for sample in samples:
         for read in sample.get("read", []):
-            if read.get("checklist_id","") == checklist_id:
-                row_data = dict()
-                row_data.update({key : sample.get(key, str()) for key in label})
-                row_data["study_accession"] = study_accession
-                row_data["record_id"] = f'{str(sample["_id"])}_{read["file_id"]}'
-                row_data["file_name"] = read["file_name"]
+            row_data = dict()
+            row_data.update({key : sample.get(key, str()) for key in label})
+            row_data["study_accession"] = study_accession
+            row_data["record_id"] = f'{str(sample["_id"])}_{read["file_id"]}'
+            row_data["file_name"] = read["file_name"]
 
-                file_id_str = read.get("file_id", str())
-                file_ids = file_id_str.split(",")
-                if file_ids:
-                    row_data["DT_RowId"] = "row_" + read["file_id"].replace(",", "_")
-                    row_data["status"] = read.get("status", "pending")
+            file_id_str = read.get("file_id", str())
+            file_ids = file_id_str.split(",")
+            if file_ids:
+                row_data["DT_RowId"] = "row_" + read["file_id"].replace(",", "_")
+                row_data["status"] = read.get("status", "pending")
 
-                    if submission and row_data["status"] == "accepted":
-                        alias = None
-                        for accession in submission[0].get("accessions", {}).get("run", []):
-                            if set(accession.get("datafiles",[])) == set(file_ids):
-                                row_data["run_accession"] = accession.get("accession", str())
-                                alias = accession.get("alias", str())
-                                break
-                        if alias : 
-                            for accession in submission[0].get("accessions", {}).get("experiment", []):
-                                if accession.get("alias",[]) == alias:
-                                    row_data["experiment_accession"] = accession.get("accession", str())
-                                    break                        
+                if submission and row_data["status"] == "accepted":
+                    alias = None
+                    for accession in submission[0].get("accessions", {}).get("run", []):
+                        if set(accession.get("datafiles",[])) == set(file_ids):
+                            row_data["run_accession"] = accession.get("accession", str())
+                            alias = accession.get("alias", str())
+                            break
+                    if alias : 
+                        for accession in submission[0].get("accessions", {}).get("experiment", []):
+                            if accession.get("alias",[]) == alias:
+                                row_data["experiment_accession"] = accession.get("accession", str())
+                                break                        
 
-                    row_data["ena_file_upload_status"] = "unknown"
-                    #ena_file_transfer = EnaFileTransfer(profile_id=profile_id).execute_query({
-                    #    "file_id": {"$in": file_ids}})
-                    #if ena_file_transfer:
-                    row_data["ena_file_upload_status"] = ena_file_transfer_map.get(file_ids[0], {}).get(
-                        "status", str())
-                    if len(file_ids) > 1:
-                        row_data["ena_file_upload_status"] = row_data["ena_file_upload_status"] + \
-                            " | " + \
-                            ena_file_transfer_map.get(file_ids[1],{}).get("status", str())
-                                
-                    #files = DataFile().get_records(file_ids)
-                    file = ena_file_map.get(file_ids[0], {})
-                    if file:
-                        read_values = file.get("description", dict()).get("attributes",dict())
-                        row_data.update({key : read_values.get(key, str()) for key in read_label})
+                row_data["ena_file_upload_status"] = "unknown"
+                #ena_file_transfer = EnaFileTransfer(profile_id=profile_id).execute_query({
+                #    "file_id": {"$in": file_ids}})
+                #if ena_file_transfer:
+                row_data["ena_file_upload_status"] = ena_file_transfer_map.get(file_ids[0], {}).get(
+                    "status", str())
+                if len(file_ids) > 1:
+                    row_data["ena_file_upload_status"] = row_data["ena_file_upload_status"] + \
+                        " | " + \
+                        ena_file_transfer_map.get(file_ids[1],{}).get("status", str())
+                            
+                #files = DataFile().get_records(file_ids)
+                file = ena_file_map.get(file_ids[0], {})
+                if file:
+                    read_values = file.get("description", dict()).get("attributes",dict())
+                    row_data.update({key : read_values.get(key, str()) for key in read_label})
 
                 row_data["ena_file_processing_status"] = ""
                 
@@ -343,4 +348,4 @@ class _GET_ENA_FILE_PROCESSING_STATUS(threading.Thread):
                         msg="Refreshing table for file processing status", action="file_processing_status", html_id="sample_info")
             
         if ecs_file_complete:
-            EnaFileTransfer().update_transfer_status_by_ecs_path( ecs_locations=ecs_file_complete,status="ena_complete")
+            EnaFileTransfer().complete_remote_transfer_status_by_ecs_path( ecs_locations=ecs_file_complete)
