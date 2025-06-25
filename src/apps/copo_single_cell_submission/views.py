@@ -300,7 +300,7 @@ def save_singlecell_records(request, profile_id, schema_name):
     file_location_folder = settings.LOCAL_UPLOAD_PATH
     for filename in filenames:
 
-        file_type = "image" if is_image_file(filename) else "TODO"
+        file_type = "image" if is_image_file(filename) else "RAW DATA FILE"
         """
         if file_type == "image":
             file_location_folder = settings.UPLOAD_PATH
@@ -317,8 +317,7 @@ def save_singlecell_records(request, profile_id, schema_name):
         df["file_location"] = file_location
         df["ecs_location"] = bucket_name + "/" + filename
         df["file_hash"] = filename_map.get(filename,"")
-        df["file_type"] =  file_type
-        df["type"] = "RAW DATA FILE"
+        df["type"] =  file_type
         df["bucket_name"] = bucket_name
         df["deleted"] = get_not_deleted_flag()
         datafile = datafile_map.get(file_location, None)
@@ -340,79 +339,7 @@ def save_singlecell_records(request, profile_id, schema_name):
     for f in datafile_list:
         tx.make_transfer_record(file_id=str(f), submission_id=str(sub["_id"]), no_remote_location=True)  #remote_location=f"{profile_id}/{study_id}/"
     
-
-    """
-
-    for file in filenames:
-        file_location = join(settings.LOCAL_UPLOAD_PATH, profile_id, file)
-        datafile = datafile_map.get(file_location, None)    
-        if datafile:
-            file_id = str(datafile["_id"])
-            file_hash = datafile["file_hash"]
-            hash = filename_map[file]
-            if hash and file_hash != hash:
-                datafile["file_hash"] = hash
-                DataFile().get_collection_handle().update_one({"_id": datafile["_id"]}, {"$set": datafile}) 
-                file_transfer_list.append(datafile)
-        else:
-            datafile = dict()
-            datafile["file_name"] = file
-            datafile["file_location"] = file_location
-            datafile["ecs_location"] = bucket_name + "/" + file
-
-        # create transfer record for each image file
-        tx.make_transfer_record(file_id=str(inserted["_id"]), submission_id=str(sub_id), no_remote_location=True)
-
-        tx.make_transfer_record(file_id=image_file, submission_id=str(sub["_id"]), remote_location=str(sub["_id"]) + "/images/")
-        # create thumbnail for each image file
-        tx.make_thumbnail(file_id=image_file, submission_id=str(sub["_id"]), remote_location=str(sub["_id"]) + "/images/")
-
-
-
-    file_locations = [join(file_location_folder, filename) for filename in filenames]   
-    datafiles = DataFile().get_collection_handle().find({"file_location": { "$in" : file_locations } })
-    datafiles = cursor_to_list(datafiles)
-    duplicated_files = [datafile for datafile in datafiles if datafile.get("study_id","") != study_id] 
-    if duplicated_files:
-        return HttpResponse(status=400, content="The following files are already associated with another study: " + ", ".join( [ datafile["file_name"] + " : " + datafile.get("study_id","NULL") for datafile in duplicated_files]))
-    
-    datafile_map = {datafile["file_location"]: datafile for datafile in cursor_to_list(datafiles)}
-    
-
-    datafile_list = [] 
-    for filename in filenames:
-        df = dict()
-        df["profile_id"] = profile_id
-        df["study_id"] = study_id
-        df["file_name"] = filename
-        df["name"] = filename
-        df["file_hash"] = "TODO"
-        file_location = join(file_location_folder, filename)
-        df["file_location"] = file_location
-        df["ecs_location"] = bucket_name + "/" + filename
-        df["file_type"] = "TODO"
-        df["type"] = "RAW DATA FILE"
-        df["bucket_name"] = bucket_name
-        df["deleted"] = get_not_deleted_flag()
-        datafile = datafile_map.get(file_location, None)
-        file_changed = True
-        if datafile:                
-            if datafile["file_hash"] == df["file_hash"]:
-                file_changed = False
-            file_id = str(datafile["_id"])
-        result = DataFile().get_collection_handle().update_one({"file_location": file_location}, {"$set": df},
-                                                                        upsert=True)
-        if result.upserted_id:
-            file_id = str(result.upserted_id)
-        if file_changed:
-            datafile_list.append(file_id)
-    """
-            
-    """
-    for f in datafile_list:
-        tx.make_transfer_record(file_id=str(f), submission_id=str(sub["_id"]), remote_location=str(sub["_id"]) + "/reads/")
-    """
-
+ 
     singlecell_record = Singlecell().get_collection_handle().find_one_and_update(condition_for_singlecell_record,
                                                             {"$set": singlecell_record, "$setOnInsert": insert_record },
                                                             upsert=True,  return_document=ReturnDocument.AFTER)   
