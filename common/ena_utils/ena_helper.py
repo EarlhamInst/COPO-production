@@ -394,7 +394,7 @@ class EnaSubmissionHelper:
             self.logging_info(message)
         return result
 
-    def register_project(self, submission_xml_path=str(), modify_submission_xml_path=str(), singlecell=None):
+    def register_project(self, submission_xml_path=str(), modify_submission_xml_path=str(), study=None, singlecell_id=None):
         """
         function creates and submits project (study) xml
         :return:
@@ -406,6 +406,8 @@ class EnaSubmissionHelper:
         #ghlper.update_submission_status(status='info', message=log_message, submission_id=self.submission_id)
         self.logging_info(log_message)
 
+
+
         parser = etree.XMLParser(remove_blank_text=True)
         root = etree.parse(SRA_PROJECT_TEMPLATE, parser).getroot()
 
@@ -413,7 +415,7 @@ class EnaSubmissionHelper:
         project = root.find('PROJECT')
 
         # set project descriptors
-        study = singlecell.get("components", {}).get("study", [{}])[0]
+        #study = singlecell.get("components", {}).get("study", [{}])[0]
         project.set("alias", self.submission_id+":"+ study["study_id"])
         project.set("center_name", self.sra_settings["sra_center"])
 
@@ -439,9 +441,9 @@ class EnaSubmissionHelper:
 
         # do it for modify
         if study.get("accession_ena"):
-            result = self.process_project(output_location, root, modify_submission_xml_path, singlecell )
+            result = self.process_project(output_location, root, modify_submission_xml_path, study, singlecell_id)
         else:
-            result = self.process_project(output_location, root, submission_xml_path, singlecell)
+            result = self.process_project(output_location, root, submission_xml_path, study, singlecell_id)
 
         #Submission().remove_component_from_submission(sub_id=str(self.submission_id), component="study", component_ids=[singlecell["study_id"]])
 
@@ -456,7 +458,7 @@ class EnaSubmissionHelper:
 
         return result
 
-    def process_project(self, output_location, root, submission_xml_path, singlecell):
+    def process_project(self, output_location, root, submission_xml_path, study, singlecell_id):
         """
         function processes study xml
         :param output_location:
@@ -510,7 +512,7 @@ class EnaSubmissionHelper:
                 result['message'] = result['message'] + error_text
 
             # log error
-            Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=singlecell["study_id"], repository="ena", status_column_value={"status": "rejected",  "error": result['message'] })  
+            Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected",  "error": result['message'] })  
             self.logging_debug("Error in submitting study to ENA via CURL: " + str(result['message']))
             return result
 
@@ -533,7 +535,7 @@ class EnaSubmissionHelper:
                     study_id=study_id  # assuming study_id is the last part of the alias
                 )
             
-            Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=singlecell["study_id"], repository="ena", status_column_value={"status": "accepted", "state": status,  "accession": accession, "release_date": release_date, "error": ""})  
+            Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "accepted", "state": status,  "accession": accession, "release_date": release_date, "error": ""})  
 
         submission_record = Submission().get_collection_handle().find_one({"_id": ObjectId(self.submission_id)}, {"accessions.project": 1})
 
@@ -541,12 +543,12 @@ class EnaSubmissionHelper:
             updated_project_accessions = submission_record.get("accessions",{}).get('project',[])
             study_found = False
             for accession in updated_project_accessions:
-                if accession.get('study_id',"") == singlecell["study_id"]:
-                    accession.update(project_accessions[singlecell["study_id"]])
+                if accession.get('study_id',"") == study["study_id"]:
+                    accession.update(project_accessions[study["study_id"]])
                     study_found = True
                     break
             if not study_found:
-                updated_project_accessions.append(project_accessions[singlecell["study_id"]])
+                updated_project_accessions.append(project_accessions[study["study_id"]])
             Submission().get_collection_handle().update_one(
                 {"_id": ObjectId(str(submission_record.pop('_id')))},
                 {'$set': {"accessions.project": updated_project_accessions, "date_modified": dt}})
@@ -763,7 +765,7 @@ class EnaSubmissionHelper:
                 submission_record = Submission().get_collection_handle().update_one({"_id": ObjectId(self.submission_id)},
                                                             {"$addToSet": {"accessions.run": run_dict, "accessions.experiment": experiment_dict}})
                 
-                Singlecell().update_component_status(id=singlecell["_id"], component="file", identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", status_column_value={"status": "accepted", "accession": run_dict["accession"], 'run_accession':run_dict["accession"],'experiment_accession': experiment_dict["accession"], "error": ""})
+            Singlecell().update_component_status(id=singlecell["_id"], component="file", identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", status_column_value={"status": "accepted", "accession": run_dict["accession"], 'run_accession':run_dict["accession"],'experiment_accession': experiment_dict["accession"], "error": ""})
 
         if errors:
             message = "Datafiles not registered due to the following errors: " + ", ".join(errors)
@@ -780,7 +782,7 @@ class EnaSubmissionHelper:
 
 
     def release_study(self,  singlecell=None):
-        result = dict(status=False, message='')
+        result = dict(status="error", message='')
         study = singlecell.get("components", {}).get("study", [{}])[0]
         study_accession = study.get('accession_ena', str())
         if not study_accession:
@@ -798,7 +800,7 @@ class EnaSubmissionHelper:
         if not project_status:
             message = f'Cannot determine project release status for study: {study["study_id"]}!'
             result['message'] = message
-            self.logging_info(message)
+            #self.logging_error(message)
             return result
 
         release_status = project_status[0].get(
@@ -875,7 +877,6 @@ class EnaSubmissionHelper:
                         error_text = error_text + " \n" + e.text
                     message = message + error_text
                     self.logging_info(message)
-                    result['status'] = False
                     result['message'] = message
                     return result
 
@@ -884,7 +885,7 @@ class EnaSubmissionHelper:
             Singlecell().update_component_status(
                 id=singlecell["_id"], component="study", identifier="study_id", identifier_value=study["study_id"],
                 repository="ena", status_column_value=accession)
-            result["status"] = True
+            result["status"] = "success"
             result["message"] = f'Study {study["study_id"]} has been released successfully to ENA.'
             return result
 

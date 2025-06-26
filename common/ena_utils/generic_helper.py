@@ -467,6 +467,9 @@ def get_study_status(user_token=str(), pass_word=str(), project_accession=str())
         return list()
 
     if not response.status_code == 200:
+        log_general_error(
+            f"Error fetching study status for {project_accession}: {response.status_code} {response.text}"
+        )   
         return list()
 
     return response.json()

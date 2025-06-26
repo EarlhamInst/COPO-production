@@ -56,9 +56,18 @@ def process_pending_submission_ena():
             
             modify_submission_xml_path = context['value']
 
+
+            schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], target_id=singlecell["checklist_id"])
+            term_mapping = SinglecellSchemas().get_term_mapping(schema_name=singlecell["schema_name"])
+            study_component_schema = schemas.get("study", {})
+            rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in study_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}    
+            study_component_df = pd.DataFrame.from_records(studies)
+            study_component_df.rename(columns=rename_columns, inplace=True)
+            study = study_component_df.to_dict('records')[0]
+
              #submit study to ena 
-            context = ena_submission_helper.register_project(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, singlecell=singlecell)   
-            Submission().remove_component_from_submission(sub_id=str(ena_submission_helper.submission_id), component="study", component_ids=[singlecell["study_id"]])
+            context = ena_submission_helper.register_project(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, study=study, singlecell_id=singlecell["_id"])   
+            Submission().remove_component_from_submission(sub_id=str(ena_submission_helper.submission_id), component="study", component_ids=[study["study_id"]])
 
             if context['status']:
                 file_component_df, identifier_map = _prepare_file_submission(singlecell=singlecell)
@@ -141,4 +150,4 @@ def release_study(profile_id, singlecell):
         return ena_submission_helper.release_study(singlecell=singlecell)
     else:
         Logger().error(f"No submission found for profile_id: {profile_id} in ENA repository.")
-        return {"status": False, "message": "No submission found for the given profile."}
+        return {"status": "error", "message": "No submission found for the given profile."}

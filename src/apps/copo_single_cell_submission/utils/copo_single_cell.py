@@ -227,14 +227,12 @@ def _check_child_component_data(singlecell_data, component_name, identifiers, id
         if not child_component_data_df.empty:
             children_df = child_component_data_df.loc[child_component_data_df[foreign_key].isin(identifiers)]
             accession_columns = child_component_data_df.columns[child_component_data_df.columns.str.startswith("accession_")].tolist()
-            if not accession_columns:
-                continue
-            
-            children_has_accession_df = children_df.loc[children_df.apply(lambda x:  all(x[accession_columns] != ""), axis=1), child_identifier_key]
-            #children_has_accession_df = children_df.loc[children_df["accession"]!="" ,    child_identifier_key]
-            if not children_has_accession_df.empty:
-                return False,  f'{child_component_name}:{children_has_accession_df.tolist()} : record with accession number'
-            _check_child_component_data(singlecell_data, child_component_name, children_df[child_identifier_key].tolist(),  identifier_map, child_map)
+            if accession_columns:
+                children_has_accession_df = children_df.loc[children_df.apply(lambda x:  all(x[accession_columns] != ""), axis=1), child_identifier_key]
+                #children_has_accession_df = children_df.loc[children_df["accession"]!="" ,    child_identifier_key]
+                if not children_has_accession_df.empty:
+                    return False,  f'{child_component_name}:{children_has_accession_df.tolist()} : record with accession number'
+            return _check_child_component_data(singlecell_data, child_component_name, children_df[child_identifier_key].tolist(),  identifier_map, child_map)
     return True, ""
 
 
@@ -414,7 +412,16 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
         else:
             singlecell_data["components"].pop(component_name, None)
 
-        if singlecell_data["components"]:                    
+        if singlecell_data["components"]:   
+            #update status_repository = "pending" for study component   
+            submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name)
+            submisison_repository_component_map = submission_repository_df.to_dict('index')
+            respositories = submisison_repository_component_map.get("study", {})
+            for repository, value in respositories.items():
+                if value:
+                    status_column = f"status_{repository}"
+                    singlecell_data["components"]["study"][0][status_column] = "pending"
+            
             Singlecell(profile_id=profile_id).get_collection_handle().update_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id}, {"$set": {"components": singlecell_data["components"], "last_modified": dt, "last_update_by": dt}})
         else:
             Singlecell(profile_id=profile_id).get_collection_handle().delete_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id})
@@ -454,7 +461,26 @@ def submit_singlecell(profile_id, target_ids, target_id, checklist_id, study_id,
         return dict(status='error', message="No record found.")
     #check if the submission is in progress
     studies = singlecell.get("components",{}).get("study",[])
-    match studies[0].get(f"status_{repository}", ""):
+
+
+    submission_repository_df = SinglecellSchemas().get_submission_repositiory(singlecell["schema_name"])
+    submisison_repository_component_map = submission_repository_df.to_dict('index')
+
+    #propagate the submission status from components to study
+    status_column = f"status_{repository}"
+    final_status = studies[0].get(status_column, "pending")
+    for component, respositories in submisison_repository_component_map.items():
+        if component == "study" and repository not in respositories:
+            return dict(status='error', message=f"Repository {repository} is not supported for study submission!")
+        
+        component_data_df = pd.DataFrame.from_records(singlecell.get("components", {}).get(component, []))
+        if status_column in component_data_df.columns:
+            status = "rejected" if any(component_data_df[status_column] == "rejected") else "pending" if any(component_data_df[status_column] != "accepted") else "accepted"
+            if final_status != status and status != "accepted":
+                final_status = status
+ 
+
+    match status_column:
         case "published" | "accepted":
             return dict(status='error', message="There is no pending change for submission!")
         case "processing":
@@ -509,13 +535,7 @@ def publish_singlecell(profile_id, target_ids, target_id, study_id, repository="
             return dict(status='error', message="Please do the submission first!")
         result = zenodo_submission.publsh_zendo(profile_id=profile_id, deposition_id=accession, singlecell=singlecell)
 
-
-    if result.get("status","") == "error":
-        return result  
-    else:
-        #update the status of the singlecell record
-        #Singlecell().update_component_status(singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository=repository, status_column_value={"status":"published"})
-        return result
+    return result 
 
 def update_submission_pending():
     component = "study"

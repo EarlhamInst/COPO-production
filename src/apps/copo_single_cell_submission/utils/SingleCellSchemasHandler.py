@@ -363,10 +363,10 @@ class SinglecellschemasSpreadsheet:
                     df2 = df[[row["term_name"]]]    
                 df2 = df2.dropna()
                 for index2, row2 in df2.iterrows():
-                    file_name = row2[row["term_name"]]
+                    file_name = row2[row["term_name"]].strip()
                     if file_name:
                         if row["term_checksum"]:
-                            if row2[row["term_checksum"]]:
+                            if row2[row["term_checksum"]].strip():
                                 file_map[row2[row["term_name"]]] = row2[row["term_checksum"]]
                             else:
                                 msg = msg + "File name: " + file_name + f' is missing checksum <b>{row["term_checksum"]}</b> in the manifest.<br/>'
