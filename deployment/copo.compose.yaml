@@ -105,6 +105,7 @@ services:
       - B2DROP_PERMITS=/copo/b2drop/permits
       - ENA_V1_SAMPLE_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples
       - ZENODOURL=https://zenodo.org/api
+      - ZENODOTOKEN_FILE=/run/secrets/copo_zenodo_token
     depends_on:
       - redis
       - postgres
@@ -148,6 +149,7 @@ services:
       - copo_bioimage_password
       - ecs_secret_key
       - ecs_access_key
+      - copo_zenodo_token
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
       interval: 2m
@@ -211,6 +213,8 @@ services:
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
+      - ZENODOURL=https://zenodo.org/api
+      - ZENODOTOKEN_FILE=/run/secrets/copo_zenodo_token
     depends_on:
       - redis
       - postgres
@@ -247,10 +251,12 @@ services:
       - copo_public_name_service_api_key
       - copo_mail_password
       - copo_bioimage_path
-      - ecs_secret_key
       - copo_bioimage_password
+      - ecs_secret_key
+      - ecs_access_key    
+      - copo_zenodo_token  
   nginx:
-    image: copo/copo-nginx-tmp:1.25.3.8
+    image: copo/copo-nginx-minio:v1.25.3.2
     networks:
       - frontend
     volumes:
@@ -535,6 +541,8 @@ secrets:
   minio_access_key:
     external: true
   minio_secret_key:
+    external: true
+  copo_zenodo_token:
     external: true
 volumes:
   web-data:
