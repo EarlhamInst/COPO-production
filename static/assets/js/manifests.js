@@ -471,7 +471,7 @@ function buildCommonFields() {
 
   $.ajax({
     type: 'GET',
-    url: '/manifests/get_manifest_fields/',
+    url: '/manifests/get_manifest_fields',
     dataType: 'json',
     data: {
       manifestType: manifestType,
