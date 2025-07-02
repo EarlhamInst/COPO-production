@@ -217,7 +217,11 @@ class Email:
                 + " Manifest - "
                 + profile.get("title", " ")
             )
-            CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
+            try:
+                CopoEmail().send(to=list(email_addresses), sub=sub, content=msg, html=True)
+            except Exception as e:
+                logger.exception(e)
+                logger.error(f"Error sending email notification for rejected samples: {e}")
 
     def notify_manifest_pending_for_associated_project_type_checker(
         self, data, **kwargs
