@@ -490,10 +490,9 @@ def submit_singlecell(profile_id, target_ids, target_id, checklist_id, study_id,
     schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get("schema_name", singlecell["schema_name"]), target_id=singlecell["checklist_id"])
     files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
     if files:
-        if repository == "ena":
-            datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name": {"$in": files}}, projection={"_id": 1})
-            for file in datafiles:
-                tx.make_transfer_record(file["_id"], str(submissions[0]["_id"] ))
+        datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name": {"$in": files}}, projection={"_id": 1})
+        for file in datafiles:
+            tx.make_transfer_record(file_id = file["_id"], submission_id = str(submissions[0]["_id"]), no_remote_location= True if repository == "zenodo" else False)
             
     result =  Submission().make_submission_downloading(profile_id=profile_id, component="study", component_id=study_id, repository=repository)
     if result.get("status","") == "error":

@@ -2,7 +2,7 @@ import os
 from common.dal.copo_da import EnaFileTransfer, DataFile
 from common.dal.profile_da import Profile
 from common.s3.s3Connection import S3Connection as s3
-from datetime import datetime
+from datetime import datetime,timedelta
 from bson import ObjectId
 from common.utils.logger import Logger
 import gzip
@@ -62,25 +62,31 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
     # 1 check for presences of file on ecs
     # 2 transfer to COPO
     # 3 check for gzip
-    # 4 check for md5ß
-    # 5 transfer to ENA
+    # 4 check for md5ß  -- complete if no remote location
+    # 5 transfer to ENA -- complete if transfer to ENA is successful, ena_complete if ENA validation is successful
     # 10 Error
     # tx["transfer_status"] = 1
+    
+    need_update = False
     ena_file = EnaFileTransfer().get_collection_handle().find_one({"local_path": file["file_location"]})
     if not ena_file:
         ena_file = {"status":"pending", "remote_path":remote_location, "transfer_status": 1, "created": get_datetime()}
         tx["created"] = get_datetime()
         tx["transfer_status"] = 1
+        need_update = True
     
     if ena_file["status"] != "processing":
-        if remote_location:
-            if ena_file.get("remote_path","") != remote_location:
-                if get_transfer_status(ena_file) >= TransferStatus.DOWNLOADED_TO_LOCAL:
-                    tx["transfer_status"] = 5
-
         if not no_remote_location and remote_location:
-            tx["remote_path"] = remote_location
+            if ena_file.get("remote_path","") != remote_location:
+                # if remote location is different, update it and transfer it again to ENA
+                if get_transfer_status(ena_file) >= TransferStatus.DOWNLOADED_TO_LOCAL:
+                    tx["transfer_status"] = 5    
+                tx["remote_path"] = remote_location
+                need_update = True
 
+        if not need_update:
+            return
+        
         tx["last_checked"] = get_datetime()
         tx["status"] = "pending"
         EnaFileTransfer().get_collection_handle().update_one({"local_path": file["file_location"]}, {"$set": tx},
@@ -429,3 +435,22 @@ def transfer_to_ena(tx):
         Logger().exception(e)
         record_error("error transfering to ENA: " + str(e))
         reset_status_counter(tx)
+
+
+def housekeeping_local_uploads():
+    """
+    Housekeeping local uploads
+    """
+    # delete all files in local_uploads older than 30 days
+    time = datetime.now() - timedelta(days=settings.LOCAL_UPLOAD_HOUSEKEEPING_DAYS)
+    ena_files = EnaFileTransfer().execute_query({ "$or" : [ {"status" : "complete", "remote_path": "" }, {"status":"complete", "remote_path":{"$exists": False} }, {"status" : "ena_complete", "remote_path":{"$exists":True, "$ne": ""}} ],"last_checked":{"$lt":  time}})
+    if ena_files:
+        for ena_file in ena_files:
+            try:
+                Logger().debug(f"Deleting file: {ena_file['local_path']}")
+                if os.path.exists(ena_file["local_path"]):
+                    os.remove(ena_file["local_path"])
+            except Exception as e:
+                Logger().error(f"Error deleting file {ena_file['local_path']}: {e}")
+        # delete ena_file records
+        EnaFileTransfer().get_collection_handle().delete_many({"_id" : {"$in" : [ena_file["_id"] for ena_file in ena_files]}})
