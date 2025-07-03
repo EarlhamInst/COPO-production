@@ -577,7 +577,7 @@ class EnaSubmissionHelper:
         file_identifier = identifier_map["file"]
 
         enafiles = EnaFileTransfer().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"local_path":1,  "remote_path":1})
-        enafile_map = {enafile["local_path"].split("/")[-1] : enafile["remote_path"] for enafile in enafiles}
+        enafile_map = {enafile["local_path"].split("/")[-1] : enafile.get("remote_path") for enafile in enafiles if enafile.get("remote_path","")}
 
         for index, row in component_df.iterrows():
 

@@ -187,8 +187,7 @@ def save_singlecell_records(request, profile_id, schema_name):
                                 existing_component_data_df[f"{prefix}_{respository}"] = additional_columns_prefix_default_value[prefix]
 
                     existing_component_data_cannnot_delete_df = existing_component_data_df.drop(existing_component_data_df[
-                        #(existing_component_data_df["status"] == "pending") & (existing_component_data_df["accession"] =="")
-                        existing_component_data_df.apply(lambda row:  all(row[f"{prefix}_{respository}"] == additional_columns_prefix_default_value[prefix] for prefix in list(additional_columns_prefix_default_value.keys()) for respository in respositories ), axis=1)].index)
+                        existing_component_data_df.apply(lambda row:  all(row[f"accession_{respository}"] == "" for respository in respositories ), axis=1)].index)
                     
                     existing_component_data_cannnot_update_df = existing_component_data_df.drop(existing_component_data_df[
                         #(existing_component_data_df["status"] != "processing")
@@ -197,7 +196,7 @@ def save_singlecell_records(request, profile_id, schema_name):
                     if not component_data_df.empty:
                         existing_component_data_cannnot_delete_df.drop(existing_component_data_cannnot_delete_df[existing_component_data_cannnot_delete_df[identifier].isin(component_data_df[identifier])].index, inplace=True)
                     if not existing_component_data_cannnot_delete_df.empty:
-                        errors.append( component_name + ": Cannot delete records with status not \"pending\" or with accession number : " + existing_component_data_cannnot_delete_df[identifier].to_string(index=False))
+                        errors.append( component_name + ": Cannot delete records with accession number : " + existing_component_data_cannnot_delete_df[identifier].to_string(index=False))
                         is_error = True
                     if not existing_component_data_cannnot_update_df.empty:
                         errors.append( component_name + ": Cannot update record with status \"processing\" : " + existing_component_data_cannnot_update_df[identifier].to_string(index=False))
@@ -292,7 +291,7 @@ def save_singlecell_records(request, profile_id, schema_name):
     
     duplicated_files = [datafile for datafile in datafiles if datafile.get("study_id","") != study_id] 
     if duplicated_files:
-        return HttpResponse(status=400, content="The following files are already associated with another study: " + ", ".join( [ datafile["file_name"] + " : " + datafile.get("study_id","NULL") for datafile in duplicated_files]))
+        return HttpResponse(status=400, content="The following files are already associated with another study: " + ", ".join( [ datafile["file_name"] + " : " + datafile.get("study_id","READ") for datafile in duplicated_files]))
     
     datafile_map = {datafile["file_location"]: datafile for datafile in datafiles}  
 
@@ -336,10 +335,9 @@ def save_singlecell_records(request, profile_id, schema_name):
         if file_changed:
             datafile_list.append(file_id)
 
-    for f in datafile_list:
-        tx.make_transfer_record(file_id=str(f), submission_id=str(sub["_id"]), no_remote_location=True)  #remote_location=f"{profile_id}/{study_id}/"
+    #for f in datafile_list:
+    #    tx.make_transfer_record(file_id=str(f), submission_id=str(sub["_id"]), no_remote_location=True)  #remote_location=f"{profile_id}/{study_id}/"
     
- 
     singlecell_record = Singlecell().get_collection_handle().find_one_and_update(condition_for_singlecell_record,
                                                             {"$set": singlecell_record, "$setOnInsert": insert_record },
                                                             upsert=True,  return_document=ReturnDocument.AFTER)   

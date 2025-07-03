@@ -130,3 +130,5 @@ SINGLE_CELL_SCHEMAS_URL = {
 }
 
 IMAGE_FILE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.bmp']
+
+LOCAL_UPLOAD_HOUSEKEEPING_DAYS = 10  # number of days to keep local uploads before deleting them
