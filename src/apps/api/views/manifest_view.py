@@ -785,17 +785,17 @@ def download_manifest(request, manifest_id):
     for prefix in lkup.PERMIT_COLUMN_NAMES_PREFIX:
         permit_required_column = f'{prefix}_REQUIRED'
         if permit_required_column in sample_df.columns:
-            filename_column = f'{prefix}_FILENAME'
-            if filename_column in sample_df.columns:
-                sample_df[filename_column] = np.where(
+            file_name_column = f'{prefix}_FILENAME'
+            if file_name_column in sample_df.columns:
+                sample_df[file_name_column] = np.where(
                     sample_df[permit_required_column] == 'Y',
-                    sample_df[filename_column].apply(
+                    sample_df[file_name_column].apply(
                         lambda x: x.rsplit('_', 1)[0] + '.pdf' if '_' in x else x
                     ),
                     'NOT_APPLICABLE',
                 )
             else:
-                sample_df[filename_column] = np.where(
+                sample_df[file_name_column] = np.where(
                     sample_df[permit_required_column] == 'Y', '', 'NOT_APPLICABLE'
                 )
 
@@ -862,7 +862,7 @@ def download_permits(request):
 def view_images(request):
     # Get array from Ajax call
     specimen_ids = json.loads(request.POST.get('specimen_ids', []))
-    image_filenames = DataFile().get_image_filenames_by_specimen_id(specimen_ids)
+    image_file_names = DataFile().get_image_file_names_by_specimen_id(specimen_ids)
 
     return HttpResponse(json.dumps(image_file_names))
 

@@ -1134,7 +1134,7 @@ class DataFile(DAComponent):
 
         return docs
 
-    def get_image_filenames_by_specimen_id(self, specimen_ids):
+    def get_image_file_names_by_specimen_id(self, specimen_ids):
         from .sample_da import Sample
 
         # Get sample by SPECIMEN_ID

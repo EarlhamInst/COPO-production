@@ -308,7 +308,7 @@ class Sample(DAComponent):
 
         return out
 
-    def get_permit_filenames_by_sample_id(self, sample_ids):
+    def get_permit_file_names_by_sample_id(self, sample_ids):
         sample_ids = [ObjectId(x) for x in sample_ids]
         projection = {col: 1 for col in PERMIT_FILENAME_COLUMN_NAMES}
         projection['_id'] = 0
