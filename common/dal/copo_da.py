@@ -1230,9 +1230,8 @@ class DataFile(DAComponent):
                         )
 
         # Return a list of image file paths ensuring that it beings with '/'
-        image_filenames = [
-            f'/{x}' if not x.startswith('/') else x for x in image_filenames
-        ]
+        # All images within the 'media/samples_images' directory should start with a '/'
+        image_filenames = [f'/{x}' if 'media' in x else x for x in image_filenames]
         return image_filenames
 
     def get_record_property(self, datafile_id=str(), elem=str()):

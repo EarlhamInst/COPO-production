@@ -30,10 +30,34 @@ projection = {'file_location': 1, 'name': 1, 'bioimage_name': 1}
 cursor = datafile_collection.find(filter, projection)
 
 
-bia_image_file_prefix = (
-    f'https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/012/S-BIAD1012/Files/'
-)
+bia_image_file_prefix = f'https://ftp.ebi.ac.uk/pub/databases/biostudies/S-BIAD/012/S-BIAD1012/Files/'
 
+# BioImage Archive (BIA) has updated their image file path prefix
+# This MongoDB query to finds all records that 
+# matches the previous prefix and replaces it with the correct one 
+'''
+db.DataFileCollection.updateMany(
+  {
+    "file_location": {
+      "$regex": "^https://ftp\\.ebi\\.ac\\.uk/biostudies/fire/"
+    },
+    "bioimage_name": {"$exists": true, "$ne": ""},"bucket_name": {"$exists": false},"ecs_location": {"$exists": false}, "file_location": {"$exists": true, "$ne": ""}
+  },
+  [
+    {
+      "$set": {
+        "file_location": {
+          "$replaceOne": {
+            "input": "$file_location",
+            "find": "https://ftp.ebi.ac.uk/biostudies/fire/",
+            "replacement": "https://ftp.ebi.ac.uk/pub/databases/biostudies/"
+          }
+        }
+      }
+    }
+  ]
+)
+'''
 
 @retry(
     stop=stop_after_attempt(5),  # Retry up to 5 times

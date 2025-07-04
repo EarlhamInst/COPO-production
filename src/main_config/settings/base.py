@@ -225,7 +225,7 @@ SOP_DOWNLOAD_URL = "/static/assets/sops/" + SOP_FILE_NAME
 
 ELASTIC_SEARCH_URL = 'http://localhost:9200/ontologies/plant_ontology/_search'
 BIA_IMAGE_URL_PREFIX = (
-    'https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/012/S-BIAD1012/Files/'
+    'https://ftp.ebi.ac.uk/pub/databases/biostudies/S-BIAD/012/S-BIAD1012/Files/'
 )
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
