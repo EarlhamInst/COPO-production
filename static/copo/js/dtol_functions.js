@@ -205,9 +205,18 @@ $(document).on('document_ready', function () {
   $(document).on('click', 'tr.sample_table_row', function (e) {
     // Note: Sample table rows within the 'Accepted Samples' tab do not have checkboxes
     // displayed to be checked therefore, they have to be programmatically clicked
-    let checkbox = $($(e.target).siblings('.tickbox').find('input'));
-    var cb = checkbox.length ? checkbox : $($(e.target).siblings('.tickbox'));
-    cb.click();
+
+    let active_tab = $('#sample_filter').find('.active a').attr('href');
+
+    if (active_tab === 'accepted') {
+      // Toggle selected class without removing it from others
+      $(this).toggleClass('selected');
+    } else {
+      // For tabs that do have checkboxes
+      let checkbox = $($(e.target).siblings('.tickbox').find('input'));
+      var cb = checkbox.length ? checkbox : $($(e.target).siblings('.tickbox'));
+      cb.click();
+    }
   });
 
   $(document).on('click', '.delete-selected', function (e) {

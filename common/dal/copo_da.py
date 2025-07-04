@@ -20,7 +20,7 @@ lg = settings.LOGGER
 
 class Audit(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
-        super(Audit, self).__init__(profile_id, 'audit',subcomponent)
+        super(Audit, self).__init__(profile_id, 'audit', subcomponent)
         self.filter = {'action': 'update', 'collection_name': 'SampleCollection'}
         self.projection = {
             'update_log.updated_by': 0
@@ -368,12 +368,16 @@ class TestObjectType(DAComponent):
 
 class Publication(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
-        super(Publication, self).__init__(profile_id, "publication", subcomponent=subcomponent)
+        super(Publication, self).__init__(
+            profile_id, "publication", subcomponent=subcomponent
+        )
 
 
 class TextAnnotation(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
-        super(TextAnnotation, self).__init__(profile_id, "textannotation", subcomponent=subcomponent)
+        super(TextAnnotation, self).__init__(
+            profile_id, "textannotation", subcomponent=subcomponent
+        )
 
     def add_term(self, data):
         data["file_id"] = ObjectId(data["file_id"])
@@ -403,7 +407,9 @@ class TextAnnotation(DAComponent):
 
 class MetadataTemplate(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
-        super(MetadataTemplate, self).__init__(profile_id, "metadata_template", subcomponent=subcomponent)
+        super(MetadataTemplate, self).__init__(
+            profile_id, "metadata_template", subcomponent=subcomponent
+        )
 
     def update_name(self, template_name, template_id):
         record = self.get_collection_handle().update_one(
@@ -431,7 +437,9 @@ class MetadataTemplate(DAComponent):
 
 class Annotation(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
-        super(Annotation, self).__init__(profile_id, "annotation", subcomponent=subcomponent)
+        super(Annotation, self).__init__(
+            profile_id, "annotation", subcomponent=subcomponent
+        )
 
     def add_or_increment_term(self, data):
         # check if annotation is already present
@@ -662,7 +670,6 @@ class CGCore(DAComponent):
         return super(CGCore, self).save_record(auto_fields, **kwargs)
 
 
-
 class Stats(DAComponent):
     def __init__(self, profile=None, subcomponent=None):
         super(Stats, self).__init__(profile, "stats", subcomponent=subcomponent)
@@ -684,7 +691,9 @@ class Stats(DAComponent):
 
 class Description(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
-        super(Description, self).__init__(profile_id, "description", subcomponent=subcomponent)
+        super(Description, self).__init__(
+            profile_id, "description", subcomponent=subcomponent
+        )
         self.DescriptionCollection = self.get_collection_handle()
 
     def GET(self, id):
@@ -796,7 +805,9 @@ class Barcode(DAComponent):
 
 class EnaFileTransfer(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
-        super(EnaFileTransfer, self).__init__(profile_id, "enaFileTransfer", subcomponent=subcomponent)
+        super(EnaFileTransfer, self).__init__(
+            profile_id, "enaFileTransfer", subcomponent=subcomponent
+        )
         self.profile_id = profile_id
         # self.component = str()
 
@@ -848,24 +859,33 @@ class EnaFileTransfer(DAComponent):
         )
 
     def get_transfer_status_by_local_path(self, profile_id, local_paths):
-        #return self.get_collection_handle().find({"profile_id"})
-        result = self.get_collection_handle().find({"local_path": {"$in": local_paths}, "profile_id": profile_id},{"transfer_status":1, "local_path":1, "status":1})
-        result_map = {x["local_path"] : x for x in list(result)}
+        # return self.get_collection_handle().find({"profile_id"})
+        result = self.get_collection_handle().find(
+            {"local_path": {"$in": local_paths}, "profile_id": profile_id},
+            {"transfer_status": 1, "local_path": 1, "status": 1},
+        )
+        result_map = {x["local_path"]: x for x in list(result)}
         return result_map
 
     def get_transfer_status_by_ecs_path(self, ecs_locations):
-        result = self.get_collection_handle().find({"ecs_location": {"$in": ecs_locations}},{ "ecs_location":1, "status":1})
-        result_map = {x["ecs_location"] : x  for x in list(result)}
+        result = self.get_collection_handle().find(
+            {"ecs_location": {"$in": ecs_locations}}, {"ecs_location": 1, "status": 1}
+        )
+        result_map = {x["ecs_location"]: x for x in list(result)}
         return result_map
-    
+
     def complete_remote_transfer_status_by_ecs_path(self, ecs_locations):
-                self.get_collection_handle().update_many({"ecs_location": {"$in": ecs_locations}, "status":"complete"},{"$set":{"status": "ena_complete"}})
+        self.get_collection_handle().update_many(
+            {"ecs_location": {"$in": ecs_locations}, "status": "complete"},
+            {"$set": {"status": "ena_complete"}},
+        )
 
 
 class APIValidationReport(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
         super(APIValidationReport, self).__init__(
-            profile_id, "apiValidationReport", subcomponent=subcomponent)
+            profile_id, "apiValidationReport", subcomponent=subcomponent
+        )
 
     def setComplete(self, report_id):
         self.get_collection_handle().update_one(
@@ -1109,7 +1129,9 @@ class CopoGroup(DAComponent):
 
 class DataFile(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
-        super(DataFile, self).__init__(profile_id=profile_id, component="datafile", subcomponent=subcomponent)
+        super(DataFile, self).__init__(
+            profile_id=profile_id, component="datafile", subcomponent=subcomponent
+        )
 
     def get_for_profile(self, profile_id):
         docs = self.get_collection_handle().find({"profile_id": profile_id})
@@ -1172,12 +1194,13 @@ class DataFile(DAComponent):
         ]
 
         # Check if the filename path exists in the database
-        # If it does not, retrieve the image file path from BioImage Archive (BIA)
+        # If it does not, retrieve the image file path from BioImage Archive (BIA).
+        # NB: Accepted sample records that have images would have their images uploaded to BIA
         bia_image_file_prefix = f'{settings.BIA_IMAGE_URL_PREFIX}{sample_type}/'
         if image_filenames and specimen:
             for x in image_filenames:
                 filename = os.path.basename(x)
-
+                # Check if image has been uploaded to BIA
                 lg.log(f'Checking for BIA image URL for: {filename}')
 
                 bia_image_url = helpers.check_and_save_bia_image_url(
@@ -1196,6 +1219,15 @@ class DataFile(DAComponent):
                         filter,
                         {'$set': {'file_location': bia_image_url}},
                     )
+                else:
+                    # Image does not exist in BIA so the local image path will be used
+                    local_image_file_path = x.replace('/archive/', '/')
+                    image_filenames[image_filenames.index(x)] = local_image_file_path
+
+                    if not os.path.exists(local_image_file_path):
+                        lg.error(
+                            f'Image file path does not exist: {local_image_file_path}'
+                        )
 
         # Return a list of image file paths ensuring that it beings with '/'
         image_filenames = [
@@ -1336,9 +1368,13 @@ class DataFile(DAComponent):
 
 class EnaChecklist(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
-        super(EnaChecklist, self).__init__(profile_id=profile_id, component="enaChecklist", subcomponent=subcomponent)
+        super(EnaChecklist, self).__init__(
+            profile_id=profile_id, component="enaChecklist", subcomponent=subcomponent
+        )
 
-    def get_checklist(self, checklist_id, with_read=True, for_dtol=False, with_sample=True):
+    def get_checklist(
+        self, checklist_id, with_read=True, for_dtol=False, with_sample=True
+    ):
         checklists = self.execute_query({"primary_id": checklist_id})
         if checklists:
             checklist = checklists[0]
@@ -1349,10 +1385,9 @@ class EnaChecklist(DAComponent):
                     fields = read_checklist.get("fields", {})
                     fields.update(checklist["fields"])
                     checklist["fields"] = fields
-            
+
             df = pd.DataFrame.from_dict(checklist["fields"], orient='index')
-            
-            
+
             if "read_field" in df.columns:
                 df["read_field"] = df["read_field"].fillna(False)
 
@@ -1365,8 +1400,11 @@ class EnaChecklist(DAComponent):
                     df = df.loc[df["for_dtol"] == False]
 
             if with_sample and with_read:
-                df = df.loc[(df["shown_when_no_sample"] == False) | (df["shown_when_no_sample"].isnull())]
-            #df.set_index("name", drop=False, inplace=True)
+                df = df.loc[
+                    (df["shown_when_no_sample"] == False)
+                    | (df["shown_when_no_sample"].isnull())
+                ]
+            # df.set_index("name", drop=False, inplace=True)
             df.fillna("", inplace=True)
             checklist["fields"] = df.to_dict('index')
             return checklist
@@ -1376,17 +1414,25 @@ class EnaChecklist(DAComponent):
             filter_by={"primary_id": {"$in": settings.BARCODING_CHECKLIST}},
             projection={"primary_id": 1, "name": 1, "description": 1},
         )
-    
-    #obsolete
+
+    # obsolete
     def get_sample_checklists_no_fields(self):
-        return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^(ERC|read)"}},  projection={"primary_id": 1, "name": 1, "description": 1})
+        return self.get_all_records_columns(
+            filter_by={"primary_id": {"$regex": "^(ERC|read)"}},
+            projection={"primary_id": 1, "name": 1, "description": 1},
+        )
 
     def get_read_checklist_no_fields(self):
-            return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^(read)"}},  projection={"primary_id": 1, "name": 1, "description": 1})
-
+        return self.get_all_records_columns(
+            filter_by={"primary_id": {"$regex": "^(read)"}},
+            projection={"primary_id": 1, "name": 1, "description": 1},
+        )
 
     def get_general_sample_checklists_no_fields(self):
-            return self.get_all_records_columns(filter_by={"primary_id": {"$regex": "^(ERC|COPO)"}},  projection={"primary_id": 1, "name": 1, "description": 1})
+        return self.get_all_records_columns(
+            filter_by={"primary_id": {"$regex": "^(ERC|COPO)"}},
+            projection={"primary_id": 1, "name": 1, "description": 1},
+        )
 
 
 '''
