@@ -105,8 +105,7 @@ class PermitColumnsValidator(Validator):
                 if permit_filename_lst[0] == "N|NOT_APPLICABLE":
                     pass
                 elif permit_filename_lst[0].startswith("Y|") and (
-                    permit_filename_lst[0].endswith(".pdf")
-                    or permit_filename_lst[0].endswith(".PDF")
+                    permit_filename_lst[0].lower().endswith(".pdf")
                 ):
                     pass
                 else:

@@ -540,19 +540,26 @@ def apply_data_validation_to_column(
 
     # Data validation worksheet
     dataValidation_worksheet_name = "'Data Validation'"
-    dataValidation_worksheet_column_index = dataValidation_worksheet_dataframe.columns.get_loc(column)
-    dataValidation_worksheet_column_letter = cell.get_column_letter(dataValidation_worksheet_column_index + 1)
-    #organismPart_dataValidationColumn = '=%s!$%s$2:$%s$78'
-    #tissueForBarcoding_dataValidationColumn = '=%s!$%s$2:$%s$79'
-    #tissueForBiobanking_dataValidationColumn = '=%s!$%s$2:$%s$79'
+    dataValidation_worksheet_column_index = (
+        dataValidation_worksheet_dataframe.columns.get_loc(column)
+    )
+    dataValidation_worksheet_column_letter = cell.get_column_letter(
+        dataValidation_worksheet_column_index + 1
+    )
+    # organismPart_dataValidationColumn = '=%s!$%s$2:$%s$78'
+    # tissueForBarcoding_dataValidationColumn = '=%s!$%s$2:$%s$79'
+    # tissueForBiobanking_dataValidationColumn = '=%s!$%s$2:$%s$79'
     dataValidationColumn = '=%s!$%s$2:$%s1000'
 
     data_validation_column = dataValidationColumn % (
-        dataValidation_worksheet_name, dataValidation_worksheet_column_letter,
-        dataValidation_worksheet_column_letter)
+        dataValidation_worksheet_name,
+        dataValidation_worksheet_column_letter,
+        dataValidation_worksheet_column_letter,
+    )
 
     return pandas_writer.sheets[sheet_name].data_validation(
-        row_start_end, {'validate': 'list', 'source': data_validation_column})
+        row_start_end, {'validate': 'list', 'source': data_validation_column}
+    )
 
     """
     if "ORGANISM_PART" in column:
@@ -590,6 +597,7 @@ def apply_data_validation_to_column(
                                                                 {'validate': 'list', 'source': data_validation_column})
     """
 
+
 def apply_dropdown_list(
     dataframe,
     pandas_writer,
@@ -617,7 +625,9 @@ def apply_dropdown_list(
             exceed the 255 character limit so the dropdown list for each of these columns will 
             be pulled from the respective column in the in the 'Data Validation' worksheet'''
 
-            common_value_dropdownlist = get_common_field_dropdown_list(column_name, manifest_type)
+            common_value_dropdownlist = get_common_field_dropdown_list(
+                column_name, manifest_type
+            )
             if common_value_dropdownlist:
                 common_value_dropdownlist.sort()
 
@@ -637,11 +647,15 @@ def apply_dropdown_list(
                     # Get first row to the last row in a column
                     row_start_end = '%s2:%s1048576' % (column_letter, column_letter)
 
-                    pandas_writer.sheets[sheet_name].data_validation(row_start_end,
-                                                                        {'validate': 'list',
-                                                                        'source': common_value_dropdownlist})
+                    pandas_writer.sheets[sheet_name].data_validation(
+                        row_start_end,
+                        {'validate': 'list', 'source': common_value_dropdownlist},
+                    )
 
-        pandas_writer.sheets[sheet_name].set_column(column_index, column_index, column_length)
+        pandas_writer.sheets[sheet_name].set_column(
+            column_index, column_index, column_length
+        )
+
 
 def get_common_field_dropdown_list(common_field, manifest_type):
     def get_dropdown_items():
@@ -847,10 +861,18 @@ def download_permits(request):
 
     for file_path, dirs, files in os.walk(sample_permits_directory):
         for file_name in files:
-            if file_name.endswith('.pdf'):
-                if any(file_name == x for x in permit_file_names) or any(
-                    file_name == x.replace(f"_{x.split('_')[-1]}", '.pdf')
+            file_name_lower = file_name.lower()
+
+            # Check if the file name matches any of the permit file names
+            if file_name_lower.endswith('.pdf'):
+                normalised_permit_names = [
+                    x.lower().replace(f"_{x.split('_')[-1]}", '.pdf')
                     for x in permit_file_names
+                ]
+
+                if (
+                    file_name_lower in [x.lower() for x in permit_file_names]
+                    or file_name_lower in normalised_permit_names
                 ):
                     url = f"{file_path.replace('/copo',str())}/{file_name}"
                     permit_files_urls.append(url)
@@ -946,7 +968,7 @@ def generate_manifest_template(manifest_type, manifest_template_path, initial_da
         )
 
         # Auto-adjust width of each column within the worksheet
-        #autoAdjustExcelColumnWidth(metadataEntry_worksheet_concatenation, pandas_writer, 'Metadata Entry')
+        # autoAdjustExcelColumnWidth(metadataEntry_worksheet_concatenation, pandas_writer, 'Metadata Entry')
 
         auto_adjust_excel_column_width(
             dataValidation_worksheet, pandas_writer, 'Data Validation'
