@@ -1,5 +1,5 @@
 from common.dal.submission_da import Submission
-from .da import Singlecell, SinglecellSchemas, ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE
+from .da import Singlecell, SinglecellSchemas
 from common.utils.logger import Logger
 from common.dal.copo_da import EnaFileTransfer, DataFile 
 from bson import regex
@@ -9,55 +9,6 @@ from io import BytesIO
 from .SingleCellSchemasHandler import SingleCellSchemasHandler
 from .zenodo.deposition import Zenodo_deposition
 import datetime
-import requests
-
-
-"""
-def update_submission_pending():
-    component = "study"
-    subs = Submission().get_submission_downloading(repository="zenodo", component=component)
-    all_downloaded_sub_ids = []
-    for sub in subs:
-        all_file_downloaded = True
-        for study_id in sub[component]:
-            singlecell = Singlecell().get_collection_handle().find_one(
-                 {"profile_id":sub["profile_id"], "study_id":study_id,"deleted":get_not_deleted_flag()},
-                 {"schema_name":1,"checklist_id":1, "components":1})
-            if not singlecell:
-                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id= study_id)
-                continue
-            schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], target_id=singlecell["checklist_id"])
-            files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
-
-            local_path = [regex.Regex(f'{x}$') for x in files]
-            projection = {'_id':0, 'file_location':1, 'status':1}
-            filter = dict()
-            filter['local_path'] = {'$in': local_path}
-            filter['profile_id'] = sub["profile_id"]
-        
-            enaFiles = EnaFileTransfer().get_all_records_columns(filter_by=filter, projection=projection)
- 
-            if not files and not enaFiles:
-                # No files to download, continue to the next study
-                continue
-
-            elif len(files) > len(enaFiles):
-                all_file_downloaded = False
-                # Log the missing files
-                missing_files = set(files) - {os.path.basename(enaFile["file_location"]) for enaFile in enaFiles}
-                Logger().error(f"Files not uploaded for submission {sub['_id']} : study {study_id} : {missing_files} ") 
-                break
-
-            elif not all( enaFile["status" ] == "complete" for enaFile in enaFiles):
-                all_file_downloaded = False
-                break
-
-        if all_file_downloaded:
-            all_downloaded_sub_ids.append(sub["_id"])
-
-    if all_downloaded_sub_ids:
-        Submission().update_submission_pending(all_downloaded_sub_ids, component="study")
-"""
 
 def process_pending_submission_zendo():
     submissions = Submission().get_pending_submission(repository="zenodo", component="study")
@@ -143,11 +94,11 @@ def process_pending_submission_zendo():
                     "title":  study.get("title", study_id),
                     "upload_type": "dataset",
                     #"image_type": "photo",
-                    "access_right": "embargoed",
+                    "access_right": "open",
                     "description": study.get("description", study_id),
                     "license": "CC-BY-4.0",
                     "creators":  creators,
-                    "embargo_date":  (datetime.datetime.now() + datetime.timedelta(days=2*365)).strftime("%Y-%m-%d"),
+                    #"embargo_date":  (datetime.datetime.now() + datetime.timedelta(days=2*365)).strftime("%Y-%m-%d"),
                     "keywords": [study_id, "COPO broker"] 
                 },
             }
