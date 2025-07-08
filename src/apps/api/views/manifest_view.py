@@ -368,13 +368,13 @@ def compute_manifest_file_name(manifest_type):
     manifest_type = manifest_type.upper()
 
     if 'ASG' in manifest_type:
-        type = 'ASG'
+        type = 'asg'
     elif 'DTOLENV' in manifest_type or 'ENV' in manifest_type:
-        type = 'DTOLENV'
+        type = 'dtolenv'
     elif 'DTOL' in manifest_type:
-        type = 'DTOL'
+        type = 'dtol'
     elif 'ERGA' in manifest_type:
-        type = 'ERGA'
+        type = 'erga'
     else:
         type = manifest_type
 
@@ -382,7 +382,7 @@ def compute_manifest_file_name(manifest_type):
         return ''
 
     # Optional version string from settings
-    version = settings.MANIFEST_VERSION.get(type, '')
+    version = settings.MANIFEST_VERSION.get(type.upper(), '')
     version_str = f'_v{version}' if version else ''
 
     return settings.MANIFEST_FILE_NAME.format(type, version_str)
