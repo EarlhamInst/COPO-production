@@ -87,7 +87,7 @@ services:
       - MAIL_PASSWORD_FILE=/run/secrets/copo_mail_password
       - MAIL_PORT=587
       - MAIL_ADDRESS=data@earlham.ac.uk
-      - MAIL_SERVER=outlook.office365.com
+      - MAIL_SERVER=smtp.nbi.ac.uk
       - MAIL_USERNAME=eidata@nbi.ac.uk
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
@@ -197,7 +197,7 @@ services:
       - MAIL_PASSWORD_FILE=/run/secrets/copo_mail_password
       - MAIL_PORT=587
       - MAIL_ADDRESS=data@earlham.ac.uk
-      - MAIL_SERVER=outlook.office365.com
+      - MAIL_SERVER=smtp.nbi.ac.uk
       - MAIL_USERNAME=eidata@nbi.ac.uk
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
