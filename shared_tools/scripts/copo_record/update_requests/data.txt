@@ -1,0 +1,20 @@
+biospecimen
+SAMEAxxxx
+
+biosamples
+SAMEAxxxx
+
+Update
+tolid: xxxxx
+taxonid: xxxx
+Species name: xxxx
+---
+biospecimen
+SAMEAxxxx
+
+biosamples
+SAMEAxxxx
+
+Update
+taxonid: xxxx
+Species name: xxxx

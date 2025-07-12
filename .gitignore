@@ -162,3 +162,7 @@ static/assets/.DS_Store
 
 #ignore logs folder
 logs/*
+
+# Ignore update log files produced by the 'handle_update_requests.py' script
+update_request_*.txt
+update_request_errors*.log

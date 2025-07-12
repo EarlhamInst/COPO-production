@@ -1,112 +1,141 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-
-        
-        {
-            "name": "Python: Django",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/manage.py",    
-            "env" : {
-                "PYTHONPATH1" : "${workspaceFolder}/lib:${PYTHONPATH}"
-            },      
-            "args": [
-                "runserver",
-                "0.0.0.0:8000"
-            ],
-            "django": true,
-            "justMyCode": false
-        }, 
-        {
-            "name": "Python: Django Shell",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/manage.py",    
-            "env" : {
-                "PYTHONPATH1" : "${workspaceFolder}/lib:${PYTHONPATH}"
-            },      
-            "args": [
-                "shell_plus",
-                "--ptpython"
-            ],
-            "django": true,
-            "justMyCode": false
-        },     
-        {
-            "name": "Python: Django makemigration",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/manage.py",    
-            "env" : {
-                "PYTHONPATH" : "${workspaceFolder}/lib:${PYTHONPATH}"
-            },      
-            "args": [
-                "makemigration"
-            ],
-            "django": true,
-            "justMyCode": false
-        },                
-        {
-            "name": "Python: Celery Workers",
-            "type": "debugpy",
-            "env" : {
-                "GEVENT_SUPPORT": "true"
-            },
-            "request": "launch",
-            "module": "celery",
-            "console": "integratedTerminal",
-            "args": ["-A", "src", "worker", "-l", "debug", "-P", "gevent", "--concurrency" , "10", "-Q", "celery",  "-E", "--hostname=celery@%h"],
-            "justMyCode": true
-        },
-        {
-            "name": "Python: Celery Workers file_transfers",
-            "type": "debugpy",
-            "env" : {
-                "GEVENT_SUPPORT": "true"
-            },
-            "request": "launch",
-            "module": "celery",
-            "console": "integratedTerminal",
-            "args": ["-A", "src", "worker", "-l", "debug", "-P", "gevent", "--concurrency" , "10", "-Q", "file_transfers",  "-E", "--hostname=file_transfers@%h"],
-            "justMyCode": true
-        },        
-        {
-            "name": "Python: Celery Beat",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "celery",
-            "console": "integratedTerminal",
-            "args": ["-A", "src", "beat", "-l", "critical"]
-         },
-        {
-            "name": "Python: Generate standards map",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/manage.py",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
-            },
-            "args": [
-                "generate_standards_map"
-            ],
-            "django": true,
-            "justMyCode": false
-        },
-        {
-        "name": "Python: Validate API enums",
-        "type": "debugpy",
-        "request": "launch",
-        "program": "${workspaceFolder}/manage.py",
-        "env": {
-            "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
-        },
-        "args": ["validate_api_enums"],
-        "django": true,
-        "justMyCode": false
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Django",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "env": {
+        "PYTHONPATH1": "${workspaceFolder}/lib:${PYTHONPATH}"
+      },
+      "args": ["runserver", "0.0.0.0:8000"],
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Django Shell",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "env": {
+        "PYTHONPATH1": "${workspaceFolder}/lib:${PYTHONPATH}"
+      },
+      "args": ["shell_plus", "--ptpython"],
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Django makemigration",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
+      },
+      "args": ["makemigration"],
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Celery Workers",
+      "type": "debugpy",
+      "env": {
+        "GEVENT_SUPPORT": "true"
+      },
+      "request": "launch",
+      "module": "celery",
+      "console": "integratedTerminal",
+      "args": [
+        "-A",
+        "src",
+        "worker",
+        "-l",
+        "debug",
+        "-P",
+        "gevent",
+        "--concurrency",
+        "10",
+        "-Q",
+        "celery",
+        "-E",
+        "--hostname=celery@%h"
+      ],
+      "justMyCode": true
+    },
+    {
+      "name": "Python: Celery Workers file_transfers",
+      "type": "debugpy",
+      "env": {
+        "GEVENT_SUPPORT": "true"
+      },
+      "request": "launch",
+      "module": "celery",
+      "console": "integratedTerminal",
+      "args": [
+        "-A",
+        "src",
+        "worker",
+        "-l",
+        "debug",
+        "-P",
+        "gevent",
+        "--concurrency",
+        "10",
+        "-Q",
+        "file_transfers",
+        "-E",
+        "--hostname=file_transfers@%h"
+      ],
+      "justMyCode": true
+    },
+    {
+      "name": "Python: Celery Beat",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "celery",
+      "console": "integratedTerminal",
+      "args": ["-A", "src", "beat", "-l", "critical"]
+    },
+    {
+      "name": "Python: Generate standards map",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
+      },
+      "args": ["generate_standards_map"],
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Validate API enums",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
+      },
+      "args": ["validate_api_enums"],
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Handle Update Requests",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/shared_tools/scripts/copo_record/update_requests/handle_update_requests.py",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
+      },
+      "cwd": "${workspaceFolder}/shared_tools/scripts/copo_record/update_requests",
+      "args": [],
+      "django": true,
+      "justMyCode": false
+    }
+  ]
 }
