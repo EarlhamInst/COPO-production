@@ -91,7 +91,7 @@ class SingleCellSchemasHandler:
                         l.log(f"Identifier not found for {c[0]}")
 
                 for c, row in referenced_df.iterrows():
-                    if row["referenced_component"] not in identifier_map.keys():
+                    if row["referenced_component"] and  row["referenced_component"] not in identifier_map.keys():
                         raise Exception(f"Referenced component: '{row['referenced_component']}' is missing")    
                     
         for c, component_schemas_df in schemas_df.groupby("component_name", sort=False):
@@ -430,9 +430,11 @@ class SinglecellschemasSpreadsheet:
                         if component_schema_df.empty:
                             self.schemas.pop(component, None)
                             continue
+                        component_schema_df.fillna("", inplace=True)
                         component_schema_df["choice"] = component_schema_df[component_schema_df["term_type"] == "enum"]["term_name"].apply(lambda x:singlecell["enums"].get(x, []))
                         component_schema_df["mandatory"] = component_schema_df[self.checklist_id]
                         component_schema_df.set_index(keys="term_name", inplace=True)
+
                         self.schemas[component] = component_schema_df.to_dict("index")
 
                     for component, df in self.data.items():

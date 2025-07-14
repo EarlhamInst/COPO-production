@@ -96,7 +96,7 @@ def process_pending_submission_zendo():
                     #"image_type": "photo",
                     "access_right": "open",
                     "description": study.get("description", study_id),
-                    "license": "CC-BY-4.0",
+                    "license":  study.get("licence", "CC0-1.0"),
                     "creators":  creators,
                     #"embargo_date":  (datetime.datetime.now() + datetime.timedelta(days=2*365)).strftime("%Y-%m-%d"),
                     "keywords": [study_id, "COPO broker"] 

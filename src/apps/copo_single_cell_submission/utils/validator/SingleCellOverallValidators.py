@@ -32,14 +32,14 @@ class ForeignKeyValidator(Validator):
 
         for component, df in self.data.items():
             for referenced_component_dict in foreignkey_map[component]:
-                if referenced_component_dict["referenced_component"] not in self.data.keys():
+                if referenced_component_dict["referenced_component"] and referenced_component_dict["referenced_component"] not in self.data.keys():
                     self.errors.append("Referenced component: '" + referenced_component_dict["referenced_component"] + "' is missing")
                     self.flag = False
                 else:
                     for index, row in df.iterrows():
                         foreign_key =  referenced_component_dict["foreign_key"]
                         referenced_component = referenced_component_dict["referenced_component"]
-                        if row[foreign_key] and row[foreign_key] not in self.data[referenced_component][identifier_map[referenced_component]].values:
+                        if referenced_component and row[foreign_key] and row[foreign_key] not in self.data[referenced_component][identifier_map[referenced_component]].values:
                             self.errors.append( component + ": Foreign key constraint violated: '" + row[foreign_key] + "' is not present in the referenced component: '" + referenced_component + "'")
                             self.flag = False
 

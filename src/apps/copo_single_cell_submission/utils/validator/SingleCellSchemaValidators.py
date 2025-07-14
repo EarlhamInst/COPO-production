@@ -104,7 +104,7 @@ class IncorrectValueValidator(Validator):
                                             else:
                                                 self.data[f"{Validator.PREFIX_4_NEW_FIELD}sraAccession"] = sample_accession
                                     else:
-                                        self.errors.append("Invalid value <B>" + row + "</B> in column: <B>" + field["label"] + "</B>")
+                                        self.errors.append("Invalid value <B>" + row + "</B> in column: <B>" + field["term_label"] + "</B>")
                                         self.flag = False
                                 except Exception as e:
                                     lg.exception(e)
