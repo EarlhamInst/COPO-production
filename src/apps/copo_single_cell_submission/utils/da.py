@@ -137,7 +137,9 @@ class SinglecellSchemas(DAComponent):
     def get_all_files(self, singlecell, schemas=[]):
         filelist = []
         for component, component_data in singlecell["components"].items():
-            schema = schemas[component]        
+            schema = schemas.get(component, [])  
+            if not schema:
+                continue      
             schema_df = pd.DataFrame.from_records(schema)
             schema_file_df = schema_df.loc[schema_df['term_type'] == 'file', "term_name"]
             df = pd.DataFrame.from_records(component_data)

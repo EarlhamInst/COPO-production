@@ -16,6 +16,7 @@ import common.ena_utils.FileTransferUtils as tx
 from common.utils.helpers import get_env
 from . import zenodo_submission
 from . import ena_submission
+from common.s3.s3Connection import S3Connection as s3
 
 l = Logger()
 
@@ -490,10 +491,16 @@ def submit_singlecell(profile_id, target_ids, target_id, checklist_id, study_id,
     schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get("schema_name", singlecell["schema_name"]), target_id=singlecell["checklist_id"])
     files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
     if files:
-        datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name": {"$in": files}}, projection={"_id": 1})
+        s3obj = s3()
+        etags, _ = s3obj.check_s3_bucket_for_files(bucket_name=profile_id, file_list=files, just_return_etags= True)
+        datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name": {"$in": files}}, projection={"_id": 1, "file_name": 1})
+        errors = []
         for file in datafiles:
-            tx.make_transfer_record(file_id = file["_id"], submission_id = str(submissions[0]["_id"]), no_remote_location= True if repository == "zenodo" else False)
-            
+            result,message = tx.make_transfer_record(file_id = file["_id"], submission_id = str(submissions[0]["_id"]), no_remote_location= True if repository == "zenodo" else False, etag=etags.get(file["file_name"], ""))
+            if not result:
+                errors.append(message)
+        if errors:
+            return dict(status='error', message="Failed to create transfer record for files: " + ", ".join(errors))
     result =  Submission().make_submission_downloading(profile_id=profile_id, component="study", component_id=study_id, repository=repository)
     if result.get("status","") == "error":
         return result  
@@ -532,7 +539,7 @@ def publish_singlecell(profile_id, target_ids, target_id, study_id, repository="
         accession = studies[0].get(f"accession_{repository}","")
         if not accession:
             return dict(status='error', message="Please do the submission first!")
-        result = zenodo_submission.publsh_zendo(profile_id=profile_id, deposition_id=accession, singlecell=singlecell)
+        result = zenodo_submission.publish_zendo(profile_id=profile_id, deposition_id=accession, singlecell=singlecell)
 
     return result 
 

@@ -147,7 +147,7 @@ class S3Connection():
         #    print(e)
         # return bucket
 
-    def check_s3_bucket_for_files(self, bucket_name, file_list):
+    def check_s3_bucket_for_files(self, bucket_name, file_list, just_return_etags=False):
         '''
         Checks bucket_name for files supplied in file_list
         :param bucket_name: name of the s3 bucket to search
@@ -198,7 +198,7 @@ class S3Connection():
                     if not found_flag:
                         # if a file is not found it should be recorded as such
                         missing_files.append(file)
-            if len(missing_files) > 0:
+            if not just_return_etags and len(missing_files) > 0:
                 # report missing files
                 msg="Files Missing: " + str(missing_files) + ". Please upload these files to COPO and try again."
               
@@ -228,13 +228,14 @@ class S3Connection():
     def validate_and_delete(self, target_id=str(), target_ids=list()):
         from common.ena_utils.FileTransferUtils import get_transfer_status, TransferStatus
         bucket_name = self.profile_id
+
         filestatus_map = EnaFileTransfer().get_transfer_status_by_ecs_path(ecs_locations=[ f"{bucket_name}/{key}" for key in target_ids])
         file_not_deleted = []
         status = False
         for key in target_ids:
             #ok to delete the file if there is no need to tranfer to ENA
             enaFile = filestatus_map.get(f"{bucket_name}/{key}")
-            if enaFile is None or get_transfer_status(enaFile) >= TransferStatus.DOWNLOADED_TO_LOCAL:
+            if not enaFile or get_transfer_status(enaFile) >= TransferStatus.DOWNLOADED_TO_LOCAL:
                 status = True          
                 self.s3_client.delete_object(Bucket=bucket_name, Key=key)
             else:

@@ -39,10 +39,10 @@ TransferStatusNames = {
     TransferStatus.COMPLETED_VALIDATION_IN_ENA: "Completed validation in ENA"
 }
     
-def make_transfer_record(file_id, submission_id, remote_location=None, no_remote_location=False):
-    # N.B. called from celery
+def make_transfer_record(file_id, submission_id, remote_location=None, no_remote_location=False, etag="default"):
+    # etag: with etag, it means the file exists in ECS/MinIO,  if you don't need to check for the file existence, don't pass etag
     # make transfer object
-
+    result = True
     file = DataFile().get_record(file_id)
     tx = dict()
     if not no_remote_location:
@@ -70,6 +70,8 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
     need_update = False
     ena_file = EnaFileTransfer().get_collection_handle().find_one({"local_path": file["file_location"]})
     if not ena_file:
+        if not etag:
+            return False, f"Please upload the file {file["file_name"]} to COPO first"
         ena_file = {"status":"pending", "remote_path":remote_location, "transfer_status": 1, "created": get_datetime()}
         tx["created"] = get_datetime()
         tx["transfer_status"] = 1
@@ -85,7 +87,7 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
                 need_update = True
 
         if not need_update:
-            return
+            return True, "Transfer record already exists for this file"
         
         tx["last_checked"] = get_datetime()
         tx["status"] = "pending"
@@ -95,7 +97,7 @@ def make_transfer_record(file_id, submission_id, remote_location=None, no_remote
         Logger().log(
             "The file is downloading, will not download it again: " + tx["local_path"]
         )
-
+    return True, "Transfer record created successfully"
 
 def check_for_stuck_transfers():
     # N.B. called from celery
@@ -454,3 +456,13 @@ def housekeeping_local_uploads():
                 Logger().error(f"Error deleting file {ena_file['local_path']}: {e}")
         # delete ena_file records
         EnaFileTransfer().get_collection_handle().delete_many({"_id" : {"$in" : [ena_file["_id"] for ena_file in ena_files]}})
+
+
+def remove_transfer_record(file_ids=list(), profile_id=None):
+    """
+    Remove transfer records for given file ids
+    """
+    if not file_ids:
+        return
+    EnaFileTransfer().get_collection_handle().delete_many({"file_id": {"$in": file_ids}, "profile_id": profile_id, "deleted": get_not_deleted_flag()})
+    Logger().debug(f"Removed transfer records for file ids: {file_ids}")

@@ -151,7 +151,7 @@ def process_pending_submission_zendo():
 
         Submission().add_component_submission_accession(sub_id=str(sub["_id"]), component="study", accessions=new_accessions)
 
-def publsh_zendo(profile_id, deposition_id, singlecell):
+def publish_zendo(profile_id, deposition_id, singlecell):
     """
     Publishes a submission to Zenodo.
     :param submission_id: The ID of the submission.

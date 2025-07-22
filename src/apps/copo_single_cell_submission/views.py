@@ -63,33 +63,48 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
 
             if not file_name_map:
                if msg:
-                notify_singlecell_status(data={"profile_id": profile_id},
-                            msg=msg, action="error",
-                            html_id="singlecell_info")
-                return HttpResponse(status=400)
+                    notify_singlecell_status(data={"profile_id": profile_id},
+                                msg=msg, action="error",
+                                html_id="singlecell_info")
+                    return HttpResponse(status=400)
+
+
+
             else: 
                 file_names = list(file_name_map.keys())
-                if s3obj.check_for_s3_bucket(bucket_name):
-                    # get filenames from manifest
-                    # check for files
-                    result,msg = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=file_names)
-                    if not result:
+                s3_checking_file_names = []
+                #check DataFileCollection, if it is in datafilecollection and with same md5 hash, then it exists
+                datafiles = DataFile().execute_query(query_dict={"profile_id": profile_id, "deleted": get_not_deleted_flag(), "file_name" : {"$in" : file_names }})
+                datafile_hash_map = {datafile["file_name"]: datafile["file_hash"] for datafile in datafiles}
+
+                # check if files are in DataFileCollection
+                for file_name in file_names:
+                    hash = datafile_hash_map.get(file_name, "")
+                    if not file_name_map[file_name] or hash != file_name_map[file_name]:  
+                        s3_checking_file_names.append(file_name)
+
+                if s3_checking_file_names:
+                    if s3obj.check_for_s3_bucket(bucket_name):
+                        # get filenames from manifest
+                        # check for files
+                        result,msg = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=s3_checking_file_names)
+                        if not result:
+                            notify_singlecell_status(data={"profile_id": profile_id},
+                                msg=msg, action="error", html_id="singlecell_info")
+                            # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
+                            return HttpResponse(status=400)
+                    else:
+                        # bucket is missing, therefore create bucket and notify user to upload files
                         notify_singlecell_status(data={"profile_id": profile_id},
-                            msg=msg, action="error", html_id="singlecell_info")
-                        # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
+                                        msg='s3 bucket not found, creating it', action="info",
+                                        html_id="singlecell_info")
+                        s3obj.make_s3_bucket(bucket_name=bucket_name)
+                        notify_singlecell_status(data={"profile_id": profile_id},
+                                        msg='Files not found, please click "Upload Data into COPO" and follow the '
+                                            'instructions.', action="error",
+                                        html_id="singlecell_info")
                         return HttpResponse(status=400)
-                else:
-                    # bucket is missing, therefore create bucket and notify user to upload files
-                    notify_singlecell_status(data={"profile_id": profile_id},
-                                    msg='s3 bucket not found, creating it', action="info",
-                                    html_id="singlecell_info")
-                    s3obj.make_s3_bucket(bucket_name=bucket_name)
-                    notify_singlecell_status(data={"profile_id": profile_id},
-                                    msg='Files not found, please click "Upload Data into COPO" and follow the '
-                                        'instructions.', action="error",
-                                    html_id="singlecell_info")
-                    return HttpResponse(status=400)
-                
+                    
             notify_singlecell_status(data={"profile_id": profile_id},
                             msg='Spreadsheet is valid', action="info",
                             html_id="singlecell_info")
@@ -335,8 +350,10 @@ def save_singlecell_records(request, profile_id, schema_name):
         if file_changed:
             datafile_list.append(file_id)
 
-    #for f in datafile_list:
-    #    tx.make_transfer_record(file_id=str(f), submission_id=str(sub["_id"]), no_remote_location=True)  #remote_location=f"{profile_id}/{study_id}/"
+    if datafile_list:
+        #remove the existing enafiletransfer as file hash changed.
+        tx.remove_transfer_record(file_ids=datafile_list, profile_id=profile_id )
+        #tx.make_transfer_record(file_id=str(f), submission_id=str(sub["_id"]), no_remote_location=True)  #remote_location=f"{profile_id}/{study_id}/"
     
     singlecell_record = Singlecell().get_collection_handle().find_one_and_update(condition_for_singlecell_record,
                                                             {"$set": singlecell_record, "$setOnInsert": insert_record },
