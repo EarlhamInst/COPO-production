@@ -347,7 +347,7 @@ class EnaSubmissionHelper:
                     etree.SubElement(sample_attribute_node, 'TAG').text = "ENA-CHECKLIST"
                     etree.SubElement(sample_attribute_node, 'VALUE').text = checklist.get("ena_checklist_id", checklist_id)
                     fields = checklist["fields"]
-                    key_mapping = { key :  value["synonym"] if "synonym" in value.keys() else value["name"] for key, value in fields.items() }
+                    key_mapping = { key :  value["name"] for key, value in fields.items() }
                     unit_mapping = { key :  value["unit"] if "unit" in value.keys() else "" for key, value in fields.items() }
                     for key in sample.keys():
                         if key in key_mapping and sample[key]:

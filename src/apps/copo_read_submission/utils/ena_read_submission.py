@@ -747,12 +747,7 @@ class EnaReads:
                 if checklist:
                     fields = checklist["fields"]
                     key_mapping = {
-                        key: (
-                            value["synonym"]
-                            if "synonym" in value.keys()
-                            else value["name"]
-                        )
-                        for key, value in fields.items()
+                        key: value["name"] for key, value in fields.items()
                     }
                     unit_mapping = {
                         key: value["unit"] if "unit" in value.keys() else ""
