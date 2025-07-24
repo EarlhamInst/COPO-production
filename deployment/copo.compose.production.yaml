@@ -253,7 +253,7 @@ services:
       - ecs_access_key
       - copo_zenodo_token
   nginx:
-    image: copo/copo-nginx-minio:v1.25.3.2
+    image: copo/copo-nginx-minio:v1.25.3.3
     networks:
       - frontend
     volumes:
