@@ -133,11 +133,15 @@ def samples_hist_json(request, metric):
         df = pandas.DataFrame(s_list)
 
     # now get counts of each value label in dataframe
-    u = df[metric].value_counts()
-    out = list()
-    for x in u.keys():
-        out.append({"k": x, "v": int(u[x])})
-    return HttpResponse(json_util.dumps(out))
+    if not df.empty:
+        u = df[metric].value_counts()
+        out = list()
+        for x in u.keys():
+            out.append({"k": x, "v": int(u[x])})
+        return HttpResponse(json_util.dumps(out))
+    return HttpResponse(
+        json_util.dumps([]), content_type="application/json"
+    )
 
 
 def get_tol_projects(request):
