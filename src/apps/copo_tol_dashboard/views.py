@@ -155,10 +155,10 @@ def gal_and_partners(request):
 
 def get_gal_names(request):
     projects = TOL_PROFILE_TYPES
-    samples = Sample().get_gal_names(projects)
+    gal_names = Sample().get_gal_names(projects)
     # Get 'GAL' field value, if it is not empty
-    gal_names = [sample.get('GAL') for sample in samples if sample.get('GAL')]
-    gal_names = set(gal_names)  # Get unique values for the 'GAL' field name
+    #gal_names = [sample.get('GAL') for sample in samples if sample.get('GAL')]
+    #gal_names = set(gal_names)  # Get unique values for the 'GAL' field name
     return HttpResponse(json_util.dumps(gal_names))
 
 

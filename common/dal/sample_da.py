@@ -27,6 +27,7 @@ from itertools import chain
 from pymongo.collection import ReturnDocument
 from pymongo import ReturnDocument
 from src.apps.copo_core.models import SequencingCentre, AssociatedProfileType
+from pymongo.collation import Collation, CollationStrength
 
 
 lg = settings.LOGGER
@@ -715,11 +716,10 @@ class Sample(DAComponent):
         return cursor_to_list(self.get_collection_handle().aggregate(pipeline))
 
     def get_gal_names(self, projects):
-        return cursor_to_list(
-            self.get_collection_handle().find(
-                {'sample_type': {'$in': projects}}, {'GAL': 1}
-            )
-        )
+        gal_names = self.get_collection_handle().distinct('GAL',{'sample_type': {"$in": projects}} , collation={ 'locale': 'en_US', 'strength': CollationStrength.PRIMARY })
+        return gal_names                                         
+    
+        
 
     def get_all_tol_samples(self):
         return self.get_collection_handle().find(
@@ -1232,7 +1232,7 @@ class Sample(DAComponent):
                 {'$match': match_dict},
                 {'$sort': {'time_created': -1}},
             ]
-        )
+        , collation={ 'locale': 'en_US', 'strength': CollationStrength.PRIMARY })
 
         records = cursor_to_list_str(cursor)
 
