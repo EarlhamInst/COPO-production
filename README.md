@@ -6,18 +6,6 @@ As a metadata broker, COPO encourages scientists to submit metadata that complie
 
 This repository builds on the work of the [COPO](https://github.com/collaborative-open-plant-omics/COPO) GitHub repository (now archived), which laid the foundation for the current implementation.
 
-## Features
-
-- Celery
-- Django 4.x
-- Docker Engine
-- Docker Swarm
-- MongoDB
-- Nginx
-- Postgres
-- Python 3.x
-- Redis
-
 ## Tech stack overview
 
 | Category                 | Tools / Libraries                                     | Purpose / Usage                                               |
