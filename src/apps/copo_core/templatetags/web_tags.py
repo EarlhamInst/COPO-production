@@ -88,7 +88,7 @@ def get_sop_url(value):
     manifest_version = settings.MANIFEST_VERSION
     version = manifest_version.get(value.upper(), "")
     version = "_v" + version if version else ""
-    return settings.SOP_DOWNLOAD_URL.format(value.upper(), version)
+    return settings.SOP_DOWNLOAD_URL.format(value.lower(), version)
 
 
 @register.filter(is_safe=True, name="get_short_profile_type")
