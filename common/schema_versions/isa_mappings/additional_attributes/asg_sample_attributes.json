@@ -2037,13 +2037,13 @@
             "2.4.1"
         ],
         "option_values": [
-            "MARINE BIOLOGICAL ASSOCIATION",
-            "NATURAL HISTORY MUSEUM",
-            "ROYAL BOTANIC GARDEN EDINBURGH",
-            "ROYAL BOTANIC GARDENS KEW/NATURAL HISTORY MUSEUM",
-            "UNIVERSITY OF OXFORD",
-            "NOT_COLLECTED",
-            "NOT_PROVIDED"
+            "Marine Biological Association",
+            "Natural History Museum",
+            "Royal Botanic Garden Edinburgh",
+            "Royal Botanic Gardens Kew/Natural History Museum",
+            "University of Oxford",
+            "not collected",
+            "not provided"
         ],
         "order": 51,
         "ref": "",
