@@ -314,13 +314,13 @@
             "2.4"
         ],
         "option_values": [
-            "EARLHAM INSTITUTE",
-            "MARINE BIOLOGICAL ASSOCIATION",
-            "NATURAL HISTORY MUSEUM",
-            "ROYAL BOTANIC GARDEN EDINBURGH",
-            "ROYAL BOTANIC GARDENS KEW",
-            "SANGER INSTITUTE",
-            "UNIVERSITY OF OXFORD"
+            "Earlham Institute",
+            "Marine Biological Association",
+            "Natural History Museum",
+            "Royal Botanic Garden Edinburgh",
+            "Royal Botanic Gardens Kew",
+            "Sanger Institute",
+            "University of Oxford"
         ],
         "order": null,
         "ref": "",
@@ -1201,6 +1201,12 @@
         "manifest_version": [
             "2.4"
         ],
+        "option_values": [
+            "DNA_BARCODING_COMPLETED",
+            "DNA_BARCODE_EXEMPT",
+            "DNA_BARCODING_FAILED",
+            "DNA_BARCODING_VIA_WSI_PROCESS"
+        ],
         "order": null,
         "ref": "",
         "required": "true",
@@ -1272,6 +1278,11 @@
         "manifest_version": [
             "2.4"
         ],
+        "option_values": [
+            "HG1",
+            "HG2",
+            "HG3"
+        ],
         "order": null,
         "ref": "",
         "required": "true",
@@ -1308,6 +1319,11 @@
         "label": "Regulatory Compliance",
         "manifest_version": [
             "2.4"
+        ],
+        "option_values": [
+            "Y",
+            "N",
+            "NOT_APPLICABLE"
         ],
         "order": null,
         "ref": "",
@@ -1529,6 +1545,18 @@
         "label": "Cell Number",
         "manifest_version": [
             "2.4"
+        ],
+        "option_values": [
+            "1",
+            "2-10",
+            "11-50",
+            "51-100",
+            "101-10000",
+            "10001-50000",
+            "50001-100000",
+            "100001-500000",
+            "500001-1000000",
+            "1000000+"
         ],
         "order": null,
         "ref": "",
@@ -1890,6 +1918,15 @@
         "manifest_version": [
             "2.4"
         ],
+        "option_values": [
+            "COASTAL",
+            "ESTUARY",
+            "LAKE",
+            "OPEN SEA",
+            "POND",
+            "RIVER",
+            "STREAM"
+        ],
         "order": null,
         "ref": "",
         "required": "true",
@@ -1961,6 +1998,11 @@
         "label": "Water Type",
         "manifest_version": [
             "2.4"
+        ],
+        "option_values": [
+            "BRACKISH_WATER",
+            "FRESH_WATER",
+            "SALT_WATER"
         ],
         "order": null,
         "ref": "",
