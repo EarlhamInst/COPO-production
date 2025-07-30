@@ -552,6 +552,57 @@ paths:
         '500':
           $ref: '#/components/responses/RangeError'
 
+  /sample/tube_or_well_ids:
+    get:
+      tags:
+        - Sample
+      summary: Retrieve a list of profile titles  with their associated sample Tube or Well IDs.
+      description: |
+        **Description:**
+
+        The retrieval process includes:
+
+        1.	**Mandatory Criteria**
+          -	Filter by project (required)
+        2.	**Optional Criteria**
+          -	Filter by associated_tol_project if provided
+          -	Apply a date range filter based on the first and last sample manifest upload dates.
+
+
+        **Field Mappings:**
+
+        To clarify the relationships between fields in the **Profile** and **Sample** entities:
+        1. profile_title or title in Profile corresponds to copo_profile_title in Sample.
+        2. profile_type or type in Profile corresponds to tol_project in Sample.
+
+      parameters:
+        - $ref: '#/components/parameters/project_required'
+        - $ref: '#/components/parameters/associated_tol_project_query'
+        - name: d_from
+          in: query
+          description: ISO 8601 formatted full date-time of the first manifest upload, i.e. manifests submitted or updated on or after this date will be matched. e.g. 2023-09-01T00:00:00+00:00
+          schema:
+            type: string
+            pattern: '^([A-Z0-9a-f- .:+]+)+$'
+            format: date-time
+        - name: d_to
+          in: query
+          description: ISO 8601 formatted full date-time of the last manifest upload, i.e. manifests submitted or updated before this date will be matched. e.g. 2023-09-30T00:00:00+00:00
+          schema:
+            type: string
+            pattern: '^([A-Z0-9a-f- .:+]+)+$'
+            format: date-time
+        - $ref: '#/components/parameters/return_type'
+      responses:
+        '200':
+          description: A JSON array of profile titles with their associated Tube or Well IDs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileTubeOrWellIDAssociationList'
+        '500':
+          $ref: '#/components/responses/RangeError'
+
   /sample/{from}/{to}:
     get:
       tags:
@@ -895,57 +946,6 @@ paths:
         '500':
           $ref: '#/components/responses/RangeError'
 
-  /profile/tube_or_well_ids:
-    get:
-      tags:
-        - Profile
-      summary: Retrieve a list of profile titles  with their associated sample Tube or Well IDs.
-      description: |
-        **Description:**
-
-        The retrieval process includes:
-
-        1.	**Mandatory Criteria**
-          -	Filter by profile_type (required)
-        2.	**Optional Criteria**
-          -	Apply a date range filter based on the first and last sample manifest upload dates.
-          -	Filter by associated_profile_type if provided
-
-        **Field Mappings:**
-
-        To clarify the relationships between fields in the **Profile** and **Sample** entities:
-        1.	associated_profile_type or associated_type in Profile corresponds to associated_tol_project in Sample.
-        2.	profile_title or title in Profile corresponds to copo_profile_title in Sample.
-        3.	profile_type or type in Profile corresponds to tol_project in Sample.
-
-      parameters:
-        - $ref: '#/components/parameters/profile_type'
-        - $ref: '#/components/parameters/associated_profile_type'
-        - name: d_from
-          in: query
-          description: ISO 8601 formatted full date-time of the first manifest upload, i.e. manifests submitted or updated on or after this date will be matched. e.g. 2023-09-01T00:00:00+00:00
-          schema:
-            type: string
-            pattern: '^([A-Z0-9a-f- .:+]+)+$'
-            format: date-time
-        - name: d_to
-          in: query
-          description: ISO 8601 formatted full date-time of the last manifest upload, i.e. manifests submitted or updated before this date will be matched. e.g. 2023-09-30T00:00:00+00:00
-          schema:
-            type: string
-            pattern: '^([A-Z0-9a-f- .:+]+)+$'
-            format: date-time
-        - $ref: '#/components/parameters/return_type'
-      responses:
-        '200':
-          description: A JSON array of profile titles with their associated Tube or Well IDs
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProfileTubeOrWellIDAssociationList'
-        '500':
-          $ref: '#/components/responses/RangeError'
-
   # Section: Statistics
   /stats/number_of_users:
     get:
@@ -1057,8 +1057,8 @@ paths:
 
 components:
   parameters:
-    associated_profile_type:
-      name: associated_profile_type
+    associated_tol_project_query:
+      name: associated_tol_project
       in: query
       description: |
         Get a list of samples in COPO by associated profile type

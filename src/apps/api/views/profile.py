@@ -77,8 +77,8 @@ def associate_profiles_with_tubes_or_well_ids(request):
     }
 
     return_type = request.GET.get('return_type', 'json').lower()
-    profile_type = request.GET.get('profile_type', '').lower()
-    associated_profile_type = request.GET.get('associated_profile_type', '')
+    profile_type = request.GET.get('project', '').lower()
+    associated_profile_type = request.GET.get('associated_tol_project', '')
 
     # Validate required profile_type
     project_issues = validate_project(profile_type)
@@ -94,7 +94,8 @@ def associate_profiles_with_tubes_or_well_ids(request):
     if associated_project_issues:
         return associated_project_issues
 
-    filter_dict['associated_type'] = {'$in': [associated_profile_type]}
+    if associated_profile_type:
+        filter_dict['associated_type'] = {'$in': [associated_profile_type]}
 
     # Validate optional date fields
     d_from = request.GET.get('d_from', None)
@@ -106,7 +107,7 @@ def associate_profiles_with_tubes_or_well_ids(request):
 
     # Unpack parsed date values from the result
     d_from_parsed, d_to_parsed = result
-    
+
     # Add date filters
     if d_from_parsed is not None:
         filter_dict['first_manifest_date_created'] = {'$gte': d_from_parsed}
@@ -117,10 +118,6 @@ def associate_profiles_with_tubes_or_well_ids(request):
     profiles = cursor_to_list(
         Profile().get_collection_handle().find(filter_dict, projection)
     )
-
-    if not profiles:
-        # If no profiles are found, return an empty response
-        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
     profile_count = len(profiles)
 
@@ -169,7 +166,7 @@ def associate_profiles_with_tubes_or_well_ids(request):
             well_ids = ' '.join(profile['TUBE_OR_WELL_IDs'])
             template.append(
                 {
-                    'copo_profile_title': profile['copo_profile_title'],
+                    'copo_profile_title': profile['profile_title'],
                     'TUBE_OR_WELL_IDs': well_ids,
                 }
             )

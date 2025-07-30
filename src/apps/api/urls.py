@@ -114,6 +114,11 @@ dtol_api_patterns = [
         s.get_fields_by_manifest_version,
         name='get_fields_by_manifest_version',
     ),
+    re_path(
+        r'^sample/tube_or_well_ids',
+        profile.associate_profiles_with_tubes_or_well_ids,
+        name='associate_profiles_with_tubes_or_well_ids',
+    ),
     # re_path(
     #     r'^sample/SampleFromStudyAccession/(?P<accessions>[A-Za-z0-9, ]+)',
     #     s.get_samples_from_study_accessions,
@@ -173,11 +178,6 @@ dtol_api_patterns = [
         r'^profile/get_for_user',
         profile.APIGetProfilesForUser.as_view(),
         name='get_for_user',
-    ),
-    re_path(
-        r'^profile/tube_or_well_ids',
-        profile.associate_profiles_with_tubes_or_well_ids,
-        name='associate_profiles_with_tubes_or_well_ids',
     ),
 ]
 
