@@ -677,34 +677,30 @@ class BrokerVisuals:
             self.param_dict[k] = v
 
     def do_table_data(self):
-        table_data_dict = dict(
-            #annotation=(htags.generate_copo_table_data, dict(profile_id=self.profile_id, component=self.component)),
-            #publication=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            #person=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            #datafile=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            sample=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
-            #source=(htags.generate_table_records, dict(profile_id=self.profile_id, component=self.component)),
-            #repository=(htags.generate_repositories_records, dict(component=self.component)),
-            metadata_template=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
-            profile=(htags.generate_copo_profiles_data, dict(profiles=Profile().get_all_profiles())),
-            #submission=(htags.generate_submissions_records, dict(profile_id=self.profile_id, da_object=self.da_object)),
-            seqannotation=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object, additional_columns=EnaAnnotation.generate_additional_columns(self.profile_id)) ),
-            assembly=(htags.generate_table_records, dict(profile_id=self.profile_id, da_object=self.da_object, additional_columns=EnaAssembly.generate_additional_columns(self.profile_id) ) ),
-            read = (ena_read.generate_read_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("sample_checklist_id", str()))),
-            general_sample = (copo_sample.generate_table_records, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("sample_checklist_id", str()))),
-            files = (copo_file.generate_files_record, dict(profile_id=self.profile_id)),
-            taggedseq = (EnaTaggedSequence().generate_taggedseq_record, dict(profile_id=self.profile_id,checklist_id=self.request_dict.get("tagged_seq_checklist_id", str()))),
-            singlecell = (copo_single_cell.generate_singlecell_record, dict(profile_id=self.profile_id, study_id=self.request_dict.get("study_id", str()), schema_name=self.request_dict.get("schema_name", str()), checklist_id=self.request_dict.get("singlecell_checklist_id", str())))
-        )
-
-        # NB: in table_data_dict, use an empty dictionary as a parameter for listed functions that define zero arguments
-
-        if self.component in table_data_dict:
-            kwargs = table_data_dict[self.component][1]
-            self.context["table_data"] = table_data_dict[self.component][0](**kwargs)
+   
+        match self.component:
+            case "sample": 
+                self.context["table_data"] = htags.generate_table_records(profile_id=self.profile_id, da_object=self.da_object)
+            case "read": 
+                self.context["table_data"] = ena_read.generate_read_record(profile_id=self.profile_id, checklist_id=self.request_dict.get("sample_checklist_id", str()))
+            case "general_sample":
+                self.context["table_data"] = copo_sample.generate_table_records(profile_id=self.profile_id, checklist_id=self.request_dict.get("sample_checklist_id", str()))
+            case "taggedseq": 
+                self.context["table_data"] = EnaTaggedSequence().generate_taggedseq_record(profile_id=self.profile_id, checklist_id=self.request_dict.get("tagged_seq_checklist_id", str()))
+            case "singlecell": 
+                self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id, study_id=self.request_dict.get("study_id", str()), schema_name=self.request_dict.get("schema_name", str()), checklist_id=self.request_dict.get("singlecell_checklist_id", str()))
+            case "files": 
+                self.context["table_data"] = copo_file.generate_files_record(profile_id=self.profile_id)
+            case "metadata_template": 
+                self.context["table_data"] = htags.generate_table_records(profile_id=self.profile_id, da_object=self.da_object)
+            case "profile": 
+                self.context["table_data"] = htags.generate_copo_profiles_data(profiles=Profile().get_all_profiles())
+            case "seqannotation": 
+                self.context["table_data"] = htags.generate_table_records(profile_id=self.profile_id, da_object=self.da_object, additional_columns=EnaAnnotation.generate_additional_columns(self.profile_id))
+            case "assembly":
+                self.context["table_data"] = htags.generate_table_records(profile_id=self.profile_id, da_object=self.da_object, additional_columns=EnaAssembly.generate_additional_columns(self.profile_id))
 
         self.context["component"] = self.component
-
         return self.context
 
     '''
@@ -788,6 +784,8 @@ class BrokerVisuals:
         if self.component in table_data_dict:
             kwargs = table_data_dict[self.component][1]
             self.context["table_data"] = table_data_dict[self.component][0](**kwargs)
+
+        
 
         self.context["component"] = self.component
         return self.context

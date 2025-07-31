@@ -126,8 +126,10 @@ def format_list_with_and(lst):
 @register.filter(is_safe=True, name="get_sequencing_centre_label")
 def get_sequencing_centre_label(value):
     # Get the label of the sequencing centre based on the abbreviation
-    centre = SequencingCentre.objects.get(name=value)
-    return f"{centre.label.title()} ({value})"
+    centres = SequencingCentre.objects.filter(name=value)
+    if centres:
+        return f"{centres[0].label.title()} ({value})"
+    return f"Unknown ({value})"
 
 
 @register.filter(is_safe=True, name="get_associated_type_label")

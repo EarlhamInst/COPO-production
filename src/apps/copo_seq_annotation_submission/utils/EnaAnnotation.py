@@ -498,7 +498,7 @@ def generate_additional_columns(profile_id):
             {"$unwind": {'path': '$enaFileTransfer', "preserveNullAndEmptyArrays": True}},
             {"$project": {"accession":1 , "ecs_location": "$enaFileTransfer.ecs_location",  "status": "$enaFileTransfer.status"}}
             ])
-    enaFilesMap = { enaFile["accession"] : enaFile["ecs_location"] for enaFile in list(enaFiles)}
+    enaFilesMap = { enaFile["accession"] : enaFile.get("ecs_location","") for enaFile in list(enaFiles)}
 
     if submissions and len(submissions) > 0:
         project_accessions = submissions[0].get("accessions",[]).get("project",[])

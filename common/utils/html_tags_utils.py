@@ -1700,7 +1700,7 @@ def resolve_copo_lookup2_data(data, elem):
 
 def resolve_select_data(data, elem):
     option_values = None
-    resolved_value = str()
+    resolved_value = data
 
     if "option_values" in elem:
         option_values = get_control_options(elem)
