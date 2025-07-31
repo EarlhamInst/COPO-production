@@ -118,21 +118,21 @@
                 "type": "string",
                 "required": true,
                 "enum": [
-                    "ADULT",
-                    "EGG",
-                    "EMBRYO",
-                    "GAMETOPHYTE",
-                    "JUVENILE",
-                    "LARVA",
-                    "PUPA",
-                    "SPORE_BEARING_STRUCTURE",
-                    "SPOROPHYTE",
-                    "VEGETATIVE_CELL",
-                    "VEGETATIVE_STRUCTURE",
-                    "ZYGOTE",
-                    "NOT_APPLICABLE",
-                    "NOT_COLLECTED",
-                    "NOT_PROVIDED"
+                    "adult",
+                    "egg",
+                    "embryo",
+                    "gametophyte",
+                    "juvenile",
+                    "larva",
+                    "pupa",
+                    "spore-bearing structure",
+                    "sporophyte",
+                    "vegetative cell",
+                    "vegetative structure",
+                    "zygote",
+                    "not applicable",
+                    "not collected",
+                    "not provided"
                 ]
             },
             {
@@ -146,10 +146,10 @@
                     "HERMAPHRODITE_MONOECIOUS",
                     "FEMALE",
                     "MALE",
+                    "SEXUAL_MORPH",
                     "NOT_APPLICABLE",
                     "NOT_COLLECTED",
-                    "NOT_PROVIDED",
-                    "SEXUAL_MORPH"
+                    "NOT_PROVIDED"
                 ]
             },
             {
@@ -266,13 +266,13 @@
                 "type": "string",
                 "required": true,
                 "enum": [
-                    "EARLHAM INSTITUTE",
-                    "MARINE BIOLOGICAL ASSOCIATION",
-                    "NATURAL HISTORY MUSEUM",
-                    "ROYAL BOTANIC GARDEN EDINBURGH",
-                    "ROYAL BOTANIC GARDENS KEW",
-                    "SANGER INSTITUTE",
-                    "UNIVERSITY OF OXFORD"
+                    "Earlham Institute",
+                    "Marine Biological Association",
+                    "Natural History Museum",
+                    "Royal Botanic Garden Edinburgh",
+                    "Royal Botanic Gardens Kew",
+                    "Sanger Institute",
+                    "University of Oxford"
                 ]
             },
             {
@@ -853,6 +853,7 @@
                     "ROYAL BOTANIC GARDEN EDINBURGH",
                     "ROYAL BOTANIC GARDENS KEW/NATURAL HISTORY MUSEUM",
                     "UNIVERSITY OF OXFORD",
+                    "NOT_APPLICABLE",
                     "NOT_COLLECTED",
                     "NOT_PROVIDED"
                 ]
@@ -889,10 +890,6 @@
                 "type": "string",
                 "required": true,
                 "enum": [
-                    "**OTHER_FUNGAL_TISSUE**",
-                    "**OTHER_PLANT_TISSUE**",
-                    "**OTHER_REPRODUCTIVE_ANIMAL_TISSUE**",
-                    "**OTHER_SOMATIC_ANIMAL_TISSUE**",
                     "ABDOMEN",
                     "ANTERIOR_BODY",
                     "BLADE",
@@ -932,9 +929,6 @@
                     "MUSCLE",
                     "MYCELIUM",
                     "MYCORRHIZA",
-                    "NOT_APPLICABLE",
-                    "NOT_COLLECTED",
-                    "NOT_PROVIDED",
                     "OVARY_ANIMAL",
                     "OVIDUCT",
                     "PANCREAS",
@@ -962,7 +956,14 @@
                     "THORAX",
                     "UNICELLULAR_ORGANISMS_IN_CULTURE",
                     "WHOLE_ORGANISM",
-                    "WHOLE_PLANT"
+                    "WHOLE_PLANT",
+                    "**OTHER_FUNGAL_TISSUE**",
+                    "**OTHER_PLANT_TISSUE**",
+                    "**OTHER_REPRODUCTIVE_ANIMAL_TISSUE**",
+                    "**OTHER_SOMATIC_ANIMAL_TISSUE**",
+                    "NOT_APPLICABLE",
+                    "NOT_COLLECTED",
+                    "NOT_PROVIDED"
                 ]
             },
             {
@@ -1067,7 +1068,8 @@
                     "DNA",
                     "RNA",
                     "biological sample/tissue from non-infectious organism",
-                    "inactivated biological sample from infectious organismlive biological sample from infectious organism"
+                    "inactivated biological sample from infectious organism",
+                    "live biological sample from infectious organism"
                 ]
             },
             {

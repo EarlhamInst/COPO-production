@@ -141,19 +141,19 @@
                 "required": true,
                 "enum": [
                     "adult",
-                    "juvenile",
-                    "pupa",
-                    "larva",
-                    "zygote",
-                    "embryo",
                     "egg",
-                    "sporophyte",
+                    "embryo",
                     "gametophyte",
+                    "juvenile",
+                    "larva",
+                    "pupa",
                     "spore-bearing structure",
-                    "vegetative structure",
+                    "sporophyte",
                     "vegetative cell",
-                    "not collected",
+                    "vegetative structure",
+                    "zygote",
                     "not applicable",
+                    "not collected",
                     "not provided"
                 ]
             },
@@ -168,10 +168,10 @@
                     "HERMAPHRODITE_MONOECIOUS",
                     "FEMALE",
                     "MALE",
+                    "SEXUAL_MORPH",
                     "NOT_APPLICABLE",
                     "NOT_COLLECTED",
-                    "NOT_PROVIDED",
-                    "SEXUAL_MORPH"
+                    "NOT_PROVIDED"
                 ]
             },
             {
@@ -261,7 +261,7 @@
                 "label": "Symbiont",
                 "column": "S",
                 "type": "string",
-                "required": true,
+                "required": false,
                 "enum": [
                     "TARGET",
                     "SYMBIONT"
@@ -939,10 +939,6 @@
                 "type": "string",
                 "required": true,
                 "enum": [
-                    "**OTHER_FUNGAL_TISSUE**",
-                    "**OTHER_PLANT_TISSUE**",
-                    "**OTHER_REPRODUCTIVE_ANIMAL_TISSUE**",
-                    "**OTHER_SOMATIC_ANIMAL_TISSUE**",
                     "ABDOMEN",
                     "ANTERIOR_BODY",
                     "BLADE",
@@ -982,9 +978,6 @@
                     "MUSCLE",
                     "MYCELIUM",
                     "MYCORRHIZA",
-                    "NOT_APPLICABLE",
-                    "NOT_COLLECTED",
-                    "NOT_PROVIDED",
                     "OVARY_ANIMAL",
                     "OVIDUCT",
                     "PANCREAS",
@@ -1012,7 +1005,14 @@
                     "THORAX",
                     "UNICELLULAR_ORGANISMS_IN_CULTURE",
                     "WHOLE_ORGANISM",
-                    "WHOLE_PLANT"
+                    "WHOLE_PLANT",
+                    "**OTHER_FUNGAL_TISSUE**",
+                    "**OTHER_PLANT_TISSUE**",
+                    "**OTHER_REPRODUCTIVE_ANIMAL_TISSUE**",
+                    "**OTHER_SOMATIC_ANIMAL_TISSUE**",
+                    "NOT_APPLICABLE",
+                    "NOT_COLLECTED",
+                    "NOT_PROVIDED"
                 ]
             },
             {
@@ -1075,10 +1075,6 @@
                 "type": "string",
                 "required": true,
                 "enum": [
-                    "**OTHER_FUNGAL_TISSUE**",
-                    "**OTHER_PLANT_TISSUE**",
-                    "**OTHER_REPRODUCTIVE_ANIMAL_TISSUE**",
-                    "**OTHER_SOMATIC_ANIMAL_TISSUE**",
                     "ABDOMEN",
                     "ANTERIOR_BODY",
                     "BLADE",
@@ -1145,6 +1141,10 @@
                     "UNICELLULAR_ORGANISMS_IN_CULTURE",
                     "WHOLE_ORGANISM",
                     "WHOLE_PLANT",
+                    "**OTHER_FUNGAL_TISSUE**",
+                    "**OTHER_PLANT_TISSUE**",
+                    "**OTHER_REPRODUCTIVE_ANIMAL_TISSUE**",
+                    "**OTHER_SOMATIC_ANIMAL_TISSUE**",
                     "NOT_APPLICABLE",
                     "NOT_COLLECTED",
                     "NOT_PROVIDED"
@@ -1363,10 +1363,10 @@
                 "type": "string",
                 "required": false,
                 "enum": [
-                    "ERGA-associated",
                     "ERGA-BGE",
                     "ERGA-Pilot",
-                    "ERGA-Community"
+                    "ERGA-Community",
+                    "ERGA-associated"
                 ]
             },
             {
