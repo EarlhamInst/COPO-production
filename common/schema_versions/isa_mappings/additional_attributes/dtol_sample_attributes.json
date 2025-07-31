@@ -799,13 +799,15 @@
             "2.4.1"
         ],
         "option_values": [
-            "Earlham Institute",
-            "Marine Biological Association",
-            "Natural History Museum",
-            "Royal Botanic Garden Edinburgh",
-            "Royal Botanic Gardens Kew",
-            "Sanger Institute",
-            "University of Oxford"
+            "EARLHAM INSTITUTE",
+            "MARINE BIOLOGICAL ASSOCIATION",
+            "NATURAL HISTORY MUSEUM",
+            "ROYAL BOTANIC GARDEN EDINBURGH",
+            "ROYAL BOTANIC GARDENS KEW",
+            "SANGER INSTITUTE",
+            "UNIVERSITY OF CAMBRIDGE",
+            "UNIVERSITY OF EDINBURGH",
+            "UNIVERSITY OF OXFORD"
         ],
         "order": 19,
         "ref": "",
@@ -2030,13 +2032,14 @@
             "2.4.1"
         ],
         "option_values": [
-            "Marine Biological Association",
-            "Natural History Museum",
-            "Royal Botanic Garden Edinburgh",
-            "Royal Botanic Gardens Kew/Natural History Museum",
-            "University of Oxford",
-            "not collected",
-            "not provided"
+            "MARINE BIOLOGICAL ASSOCIATION",
+            "NATURAL HISTORY MUSEUM",
+            "ROYAL BOTANIC GARDEN EDINBURGH",
+            "ROYAL BOTANIC GARDENS KEW/NATURAL HISTORY MUSEUM",
+            "UNIVERSITY OF OXFORD",
+            "NOT_APPLICABLE",
+            "NOT_COLLECTED",
+            "NOT_PROVIDED"
         ],
         "order": 51,
         "ref": "",
