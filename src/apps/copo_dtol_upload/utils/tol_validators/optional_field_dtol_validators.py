@@ -237,13 +237,13 @@ class DtolEnumerationValidator(Validator):
                     optional_regex = ""
                     biocollection_regex = ""
                     biocollection_qualifier_type = ""
-                    
+
                 cellcount = 0
                 for c in cells:
                     cellcount += 1
                     c_value = c
                     do_biocollection_checking = False
-                    
+
                     # reformat time of collection to handle excel format
                     if header == "TIME_OF_COLLECTION":
                         csplit = c.split(":")
@@ -272,7 +272,9 @@ class DtolEnumerationValidator(Validator):
 
                             if c_value not in allowed_vals or not location_2part:
                                 c_value_normalised = d_utils.normalise(c_value)
-                                if c_value_normalised in allowed_vals_normalised_lookup:
+                                # Only ERGA manifests have converted/normalised values for the field,
+                                # 'COLLECTION_LOCATION'. Therefore, manifests like DTOL/ASG have uppercase values for the field
+                                if p_type == "ERGA" and c_value_normalised in allowed_vals_normalised_lookup:
                                     # Display warning for field values that exist in the allowed
                                     # values list but are in the wrong case or format
                                     valid_value = allowed_vals_normalised_lookup[
@@ -316,7 +318,7 @@ class DtolEnumerationValidator(Validator):
                         elif c_value.strip() not in allowed_vals:
                             c_value_normalised = d_utils.normalise(c_value.strip())
 
-                            # extra handling for empty SYMBIONT in 'ASG', 'DTOL' 
+                            # extra handling for empty SYMBIONT in 'ASG', 'DTOL'
                             # and 'ERGA' manifests, which means 'TARGET'
                             if (
                                 not c_value.strip()
