@@ -819,13 +819,11 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
   var cols = data.table_data.columns;
 
   for (var j = 0; j < cols.length; ++j) {
-    if (cols[j].render != undefined ) {
+    if (typeof cols[j].render != "undefined" && cols[j].render != "") {
         cols[j].render = eval(cols[j].render); //convert string to function
-        cols[j].orderable = false; //make all columns orderable by default
+        //cols[j].orderable = false; //make all columns orderable by default
     }
   }
-
-
 
   set_empty_component_message(dataSet.length); //display empty component message when there's no record
 
