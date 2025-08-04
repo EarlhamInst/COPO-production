@@ -274,7 +274,11 @@ class DtolEnumerationValidator(Validator):
                                 c_value_normalised = d_utils.normalise(c_value)
                                 # Only ERGA manifests have converted/normalised values for the field,
                                 # 'COLLECTION_LOCATION'. Therefore, manifests like DTOL/ASG have uppercase values for the field
-                                if p_type == "ERGA" and c_value_normalised in allowed_vals_normalised_lookup:
+                                if (
+                                    p_type == "ERGA"
+                                    and c_value_normalised
+                                    in allowed_vals_normalised_lookup
+                                ):
                                     # Display warning for field values that exist in the allowed
                                     # values list but are in the wrong case or format
                                     valid_value = allowed_vals_normalised_lookup[
@@ -326,9 +330,13 @@ class DtolEnumerationValidator(Validator):
                                 and p_type in ["ASG", "DTOL", "ERGA"]
                             ):
                                 self.data.at[cellcount - 1, "SYMBIONT"] = "TARGET"
-                            elif c_value_normalised in allowed_vals_normalised_lookup:
+                            elif (
+                                p_type == "ERGA"
+                                and c_value_normalised in allowed_vals_normalised_lookup
+                            ):
                                 # Display warning for field values that exist in the allowed
-                                # values list but are in the wrong case or format
+                                # values list but are in the wrong case or format. This is for
+                                # ERGA manifests only.
                                 valid_value = allowed_vals_normalised_lookup[
                                     c_value_normalised
                                 ]
@@ -513,7 +521,11 @@ class DtolEnumerationValidator(Validator):
                         elif "ASG" == p_type:
                             current_partner = self.data.at[cellcount - 1, "PARTNER"]
                             specimen_regex = re.compile(
-                                lookup.SPECIMEN_PREFIX["PARTNER"].get(current_partner, "") + r'\d{7}')
+                                lookup.SPECIMEN_PREFIX["PARTNER"].get(
+                                    current_partner, ""
+                                )
+                                + r'\d{7}'
+                            )
                             if not re.match(specimen_regex, c.strip()):
                                 self.errors.append(
                                     msg["validation_msg_error_specimen_regex"]
