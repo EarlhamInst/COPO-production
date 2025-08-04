@@ -8,7 +8,6 @@ import common.schemas.utils.data_utils as d_utils
 from common.dal.mongo_util import cursor_to_list
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
-from ..enums import AssociatedProjectEnum, ProjectEnum, ReturnTypeEnum
 from ..utils import (
     generate_csv_response,
     generate_wrapper_response,
@@ -18,52 +17,45 @@ from ..utils import (
     validate_return_type,
 )
 from .sample import format_date
+from jsonpickle import encode
+from src.apps.copo_core.broker_da import BrokerDA
+from bson.json_util import dumps
+from common.dal.profile_da import Profile
 
+class APIProfile(APIView):
 
-class APICreateProfile(APIView):
     def post(self, request):
-        uid = request.user.id
-        # first check if there is a profile with this title already
-        existing_profiles = (
-            Profile()
-            .get_collection_handle()
-            .find({'user_id': uid, 'title': request.POST['title']})
-        )
-        if len(list(existing_profiles)) > 0:
-            return Response(
-                status=409,
-                data={
-                    'status': 'A Profile with that name already exists:'
-                    + request.POST['title']
-                },
-            )
-        p_dict = {
-            'title': request.POST['title'],
-            'description': request.POST['description'],
-            'type': request.POST['profile_type'],
-            'user_id': uid,
-        }
-        p = Profile().save_record({}, **p_dict)
-        out = {
-            '_id': str(p['_id']),
-            'title': p['title'],
-            'description': p['description'],
-            'type': p['type'],
-        }
-        return Response(out)
+        if request.method == 'POST':
+            request_data = request.data
+            auto_fields = { f"copo.profile.{k}" : v for k, v in request_data.items()}
 
+            broker_da = BrokerDA(component="profile", da_object=Profile(), task="save", auto_fields=auto_fields)
 
-class APIGetProfilesForUser(APIView):
-    def post(self, request):
-        uid = request.user.id
-        existing_profiles = Profile().get_collection_handle().find({'user_id': uid})
-        out = list()
-        for el in existing_profiles:
-            out.append(
-                {'title': el['title'], 'type': el['type'], '_id': str(el['_id'])}
-            )
-        return Response(out)
+            context = broker_da.do_save_edit()
+            out = encode(context, unpicklable=False)
+            status = context.get("action_feedback", dict()).get("status", "success")
+            if status == "success" or status=="warning":
+                profiles = Profile().get_all_records_columns(
+                    filter_by={'title': request_data['title'], 'user_id': request.user.id}, projection={'_id':1}
+                )
+                if profiles:
+                    return HttpResponse(status=201, content=dumps({"id": str(profiles[0].get("_id"))}), content_type='application/json')
 
+            return HttpResponse(status="400", content=out, content_type='application/json')
+        
+    def get(self, request):
+        if request.method == 'GET':
+            uid = request.user.id
+            existing_profiles = Profile().get_all_profiles(user=uid)
+            
+            #existing_profiles = Profile().get_collection_handle().find({'user_id': uid})
+            out = list()
+            for el in existing_profiles:
+                out.append(
+                    {'title': el['title'], "description":el['description'],'type': el['type'],  'id': str(el['_id'])}
+                )
+            return Response(out)
+    
 
 def associate_profiles_with_tubes_or_well_ids(request):
     filter_dict = {}

@@ -777,8 +777,14 @@ class DtolSpreadsheet:
             # then, update the associated tol project field in the sample
             associated_type = " | ".join(associated_profiles)
             
-            Sample().update_field("associated_tol_project",
+            if recorded_sample.get("associated_tol_project", "") != associated_type:
+                Sample().update_field("associated_tol_project",
                                     associated_type, recorded_sample["_id"])
+
+            if recorded_sample.get("manifest_version","0") != settings.MANIFEST_VERSION.get(self.type.upper(), "0"):
+                # update manifest version if it is different
+                Sample().update_field("manifest_version", settings.MANIFEST_VERSION.get(self.type.upper(), "0"), 
+                                      recorded_sample["_id"])
 
         if need_send_email:
             profile = Profile().get_record(profile_id)

@@ -31,10 +31,14 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
                        msg='', action="info",
                        html_id="singlecell_info")
     # method called by rest
+    if not request.FILES:
+        return HttpResponse(status=400, content="Please upload a manifest file.")
+
     file = request.FILES["file"]
     checklist_id = request.POST["checklist_id"]
-    name = file.name
     
+    name = file.name
+    error_msg = "Spreadsheet is not valid, please check the errors in the manifest."
 
     required_validators = []
     '''
@@ -53,7 +57,8 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
 
     if singlecell.loadManifest(fmt):
         l.log("Single cell manifest loaded")
-        if singlecell.validate():
+        validate_result, errors =  singlecell.validate()
+        if validate_result:
             l.log("About to collect Single cell manifest")
             
             # check s3 for bucket and files files
@@ -66,9 +71,7 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
                     notify_singlecell_status(data={"profile_id": profile_id},
                                 msg=msg, action="error",
                                 html_id="singlecell_info")
-                    return HttpResponse(status=400)
-
-
+                    return HttpResponse(status=400,content=msg)
 
             else: 
                 file_names = list(file_name_map.keys())
@@ -92,18 +95,17 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
                             notify_singlecell_status(data={"profile_id": profile_id},
                                 msg=msg, action="error", html_id="singlecell_info")
                             # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
-                            return HttpResponse(status=400)
+                            return HttpResponse(status=400, content=msg)
                     else:
                         # bucket is missing, therefore create bucket and notify user to upload files
                         notify_singlecell_status(data={"profile_id": profile_id},
                                         msg='s3 bucket not found, creating it', action="info",
                                         html_id="singlecell_info")
                         s3obj.make_s3_bucket(bucket_name=bucket_name)
+                        msg='Files not found, please click "Upload Data into COPO" and follow the instructions.'
                         notify_singlecell_status(data={"profile_id": profile_id},
-                                        msg='Files not found, please click "Upload Data into COPO" and follow the '
-                                            'instructions.', action="error",
-                                        html_id="singlecell_info")
-                        return HttpResponse(status=400)
+                                        msg=msg, action="error", html_id="singlecell_info")
+                        return HttpResponse(status=400, content=msg)
                     
             notify_singlecell_status(data={"profile_id": profile_id},
                             msg='Spreadsheet is valid', action="info",
@@ -112,10 +114,13 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
             notify_singlecell_status(data={"profile_id": profile_id}, msg="", action="make_valid", html_id="singlecell_info", checklist_id=checklist_id)
 
             singlecell.collect()
-            return HttpResponse()
-        return HttpResponse(status=400)
-    return HttpResponse(status=400)
-
+            #return empty response for successful validation
+            return HttpResponse(status=200, content="")
+        else:            
+            error_msg =  errors
+            #return 200 for validation error to prevent frontend from showing duplicated error message on the error box
+            return HttpResponse(status=200, content=error_msg)
+    return HttpResponse(status=400, content=error_msg)
 
 
 def is_image_file(filename):

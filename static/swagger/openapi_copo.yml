@@ -889,7 +889,7 @@ paths:
   #         $ref: '#/components/responses/RangeError'
 
   # Section: Profile
-  /profile/make_profile:
+  /profiles:
     post:
       tags:
         - Profile
@@ -900,13 +900,13 @@ paths:
       summary: Make a profile for authenticated user
       requestBody:
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               type: object
               required:
                 - title
                 - description
-                - profile_type
+                - type
               properties:
                 title: # <!--- form field name
                   type: string
@@ -914,15 +914,12 @@ paths:
                 description:
                   type: string
                   required: true
-                profile_type:
+                type:
                   type: string
                   enum:
                     [
                       'Genomics',
-                      'Darwin Tree of Life (DTOL)',
-                      'Darwin Tree of Life Environmental Samples (DTOLENV)',
-                      'Aquatic Symbiosis Genomics (ASG)',
-                      'European Reference Genome Atlas (ERGA)',
+                      ""
                     ]
                   required: true
       responses:
@@ -930,9 +927,7 @@ paths:
           description: representation of the created profile
         '500':
           $ref: '#/components/responses/RangeError'
-
-  /profile/get_for_user:
-    post:
+    get:
       tags:
         - Profile
       security:
@@ -943,6 +938,215 @@ paths:
       responses:
         '200':
           description: representation of the created profile
+        '500':
+          $ref: '#/components/responses/RangeError'
+
+
+  /profiles/{profile_id}/files:
+    get:
+      tags:
+        - Profile
+      security:
+        - app_id: []
+      parameters:
+       - $ref: '#/components/parameters/profile_id'
+      summary: Get File names by profile_id
+      description: |
+        Get a list of file names by its ID.
+      responses:
+        '200':
+          description: A JSON object representing the file names
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Files'
+        '500':
+          $ref: '#/components/responses/RangeError'
+
+  /profiles/{profile_id}/files/presignedurls:
+    post:
+      tags:
+        - Profile
+      security:
+        - app_id: []
+      parameters:
+       - $ref: '#/components/parameters/profile_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - file_names
+              properties:
+                file_names:
+                  type: array
+                  items:
+                    type: string
+      summary: Get presigned urls for file upload
+      description: |
+        Get presigned urls for file upload
+      responses:
+        '200':
+          description: A JSON object representing the file name and url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignedUrls'
+        '500':
+          $ref: '#/components/responses/RangeError'
+
+
+  /profiles/singlecells/checklists:
+    get:
+      tags:
+        - Profile
+      summary: Get supported checklist for singlecell schema
+      description: |
+        Get a list of supported checklist for singlecell schema.
+      responses:
+        '200':
+          description: A JSON object representing the checklist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Files'
+        '500':
+          $ref: '#/components/responses/RangeError'
+
+  /profiles/{profile_id}/singlecells/studies:
+    get:
+      tags:
+        - Profile
+      security:
+        - app_id: []
+      parameters:
+       - $ref: '#/components/parameters/profile_id'
+      summary: Get list of studies within the profile
+      description: |
+        Get list of studies within the profile.
+      responses:
+        '200':
+          description: A JSON list representing the studies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Files'
+        '500':
+          $ref: '#/components/responses/RangeError'
+
+    post:
+      tags:
+        - Profile
+      security:
+        - app_id: []
+      parameters:
+       - $ref: '#/components/parameters/profile_id'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - checklist_id
+                - file
+              properties:
+                checklist_id:
+                  type: string
+                  description: Name of the checklist to use
+                file:
+                  type: string
+                  format: binary
+      summary: Get list of studies within the profile
+      description: |
+        Get list of studies within the profile.
+      responses:
+        '200':
+          description: A JSON list representing the studies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Files'
+        '500':
+          $ref: '#/components/responses/RangeError'
+
+
+  /profiles/{profile_id}/singlecells/studies/{study_id}:
+    get:
+      tags:
+        - Profile
+      security:
+        - app_id: []
+      parameters:
+       - $ref: '#/components/parameters/profile_id'
+       - name: study_id
+         in: path
+         required: true
+         description: The ID of the study to retrieve
+         schema:
+           type: string
+           minimum: 1
+      summary: Get list of studies within the profile
+      description: |
+        Get list of studies within the profile.
+      responses:
+        '200':
+          description: A JSON list representing the studies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Files'
+        '500':
+          $ref: '#/components/responses/RangeError'
+
+  /profile/tube_or_well_ids:
+    get:
+      tags:
+        - Profile
+      summary: Retrieve a list of profile titles  with their associated sample Tube or Well IDs.
+      description: |
+        **Description:**
+
+        The retrieval process includes:
+
+        1.	**Mandatory Criteria**
+          -	Filter by profile_type (required)
+        2.	**Optional Criteria**
+          -	Apply a date range filter based on the first and last sample manifest upload dates.
+          -	Filter by associated_profile_type if provided
+
+        **Field Mappings:**
+
+        To clarify the relationships between fields in the **Profile** and **Sample** entities:
+        1.	associated_profile_type or associated_type in Profile corresponds to associated_tol_project in Sample.
+        2.	profile_title or title in Profile corresponds to copo_profile_title in Sample.
+        3.	profile_type or type in Profile corresponds to tol_project in Sample.
+
+      parameters:
+        - $ref: '#/components/parameters/profile_type'
+        - $ref: '#/components/parameters/associated_profile_type'
+        - name: d_from
+          in: query
+          description: ISO 8601 formatted full date-time of the first manifest upload, i.e. manifests submitted or updated on or after this date will be matched. e.g. 2023-09-01T00:00:00+00:00
+          schema:
+            type: string
+            pattern: '^([A-Z0-9a-f- .:+]+)+$'
+            format: date-time
+        - name: d_to
+          in: query
+          description: ISO 8601 formatted full date-time of the last manifest upload, i.e. manifests submitted or updated before this date will be matched. e.g. 2023-09-30T00:00:00+00:00
+          schema:
+            type: string
+            pattern: '^([A-Z0-9a-f- .:+]+)+$'
+            format: date-time
+        - $ref: '#/components/parameters/return_type'
+      responses:
+        '200':
+          description: A JSON array of profile titles with their associated Tube or Well IDs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileTubeOrWellIDAssociationList'
         '500':
           $ref: '#/components/responses/RangeError'
 
@@ -1232,6 +1436,13 @@ components:
       schema:
         $ref: '#/components/schemas/UpdatableFields'
   
+    profile_id:
+      name: profile_id
+      in: path
+      description: provide a hexadecimal 'profile_id'
+      schema:
+        type: string
+
   responses:
     RangeError:
       description: Call stack size exceeded - occurs only in Swagger UI. Try direct request.
@@ -2074,3 +2285,24 @@ components:
           VOUCHER_LINK,
         ]
       description: Fields that can be updated in COPO
+
+    Files:
+      type: object
+      properties:
+        file_name:
+          type: string
+        size_in_bytes:
+          type: number
+        last_uploaded:
+          type: string
+          format: date-time
+        S3_ETag: 
+          type: string
+    
+    PresignedUrls:
+      type: object
+      properties:
+        file_name:
+          type: string
+        urls:
+          type: string

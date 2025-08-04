@@ -2,7 +2,7 @@ from django.urls import path, re_path
 
 # from web.apps.web_copo import ajax_handlers
 # from .annotate_views import search_all, post_annotations, handle_upload
-from .views import audit, person, general, stats, profile, mapping
+from .views import audit, person, general, stats, profile, mapping, file, singlecell
 from .views import sample as s
 from .views.sample import (
     APIValidateManifest,
@@ -169,16 +169,38 @@ dtol_api_patterns = [
         audit.get_sample_updates_by_sample_field_and_value,
         name='get_sample_updates_by_sample_field_and_value',
     ),
-    re_path(
-        r'^profile/make_profile',
-        profile.APICreateProfile.as_view(),
-        name='make_profile',
+    path('profiles',
+        profile.APIProfile.as_view(),
+        name='profiles',
     ),
-    re_path(
-        r'^profile/get_for_user',
-        profile.APIGetProfilesForUser.as_view(),
-        name='get_for_user',
+
+
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/files/presignedurls',
+    file.APIFilesPresigned.as_view(),
+    name='files_presignedurls',
     ),
+
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/files',
+    file.APIFiles.as_view(),
+    name='files',
+    ),
+    path('profiles/singlecells/checklists',
+    singlecell.get_current_supported_checklists,
+    name='singlecells_checklist'
+    ),
+    
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies/(?P<study_id>[a-zA-Z0-9]+)',
+    singlecell.APIStudyDownload.as_view(),
+    name='singlecells_study_download',
+    ),
+
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies',
+    singlecell.APIStudy.as_view(),
+    name='singlecells_studies',
+    ),
+
+
+ 
 ]
 
 stats_api_patterns = [

@@ -508,7 +508,7 @@ class SinglecellschemasSpreadsheet:
                             msg="<h4>" + self.file.name + "</h4><h2>Errors</h2><ol>" + errors + "</ol>",
                             action="error",
                             html_id=self.component_info, checklist_id=self.checklist_id)
-            return False
+            return False, errors
  
         for component, df in self.new_data.items():
             for column in df.columns:
@@ -519,7 +519,7 @@ class SinglecellschemasSpreadsheet:
         #notify_singlecell_status(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid", action="info",
         #                html_id=self.component_info)
 
-        return True
+        return True, errors
 
    def collect(self):
         # create table data to show to the frontend from parsed manifest
