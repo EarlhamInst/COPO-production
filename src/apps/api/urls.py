@@ -170,10 +170,9 @@ dtol_api_patterns = [
         name='get_sample_updates_by_sample_field_and_value',
     ),
     path('profiles',
-        profile.APIProfile.as_view(),
+        profile.APIProfiles.as_view(),
         name='profiles',
     ),
-
 
     re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/files/presignedurls',
     file.APIFilesPresigned.as_view(),
@@ -199,6 +198,10 @@ dtol_api_patterns = [
     name='singlecells_studies',
     ),
 
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)',
+    profile.APIProfile.as_view(),
+    name='profile',
+    ),
 
  
 ]

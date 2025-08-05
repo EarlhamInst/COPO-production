@@ -14,7 +14,9 @@ l = Logger()
 def get_current_supported_checklists(request):
     schema_name = "COPO_SINGLE_CELL"
     checklists = SinglecellSchemas().get_checklists(schema_name=schema_name)
-    return JsonResponse(checklists, safe=False)
+    df = pd.DataFrame(checklists.values(), index=checklists.keys())
+    df = df.reset_index().rename(columns={'index': 'checklist_id'})
+    return JsonResponse(list(df.to_dict("index").values()), safe=False)
 
 class APIChecklist(APIView):
     schema_name = "COPO_SINGLE_CELL"
@@ -33,10 +35,13 @@ class APIStudy(APIView):
         """
         Get a list of studies
         """
+        checklist_id = request.GET.get("checklist_id", "")
         result = []
-        studies = Singlecell().get_all_records_columns(filter_by={"profile_id":profile_id,"deleted": get_not_deleted_flag(), "schema_name":self.schema_name},projection={"components.study":1, "checklist_id":1})
+        if not checklist_id:
+            studies = Singlecell().get_all_records_columns(filter_by={"profile_id":profile_id, "deleted": get_not_deleted_flag(), "schema_name":self.schema_name},projection={"components.study":1, "checklist_id":1})
+        else:
+            studies = Singlecell().get_all_records_columns(filter_by={"profile_id":profile_id, "deleted": get_not_deleted_flag(), "checklist_id": checklist_id, "schema_name":self.schema_name},projection={"components.study":1, "checklist_id":1})
         checklists = { study["checklist_id"] for study in studies}
-        chechlist_schema_map = SinglecellSchemas().get_schemas(self.schema_name, target_ids= checklists)
 
         for checklist_id in checklists:
             checklist_result = copo_single_cell_utils.generate_singlecell_record(profile_id=profile_id, checklist_id=checklist_id, schema_name=self.schema_name)

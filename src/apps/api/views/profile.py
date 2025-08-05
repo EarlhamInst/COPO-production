@@ -1,5 +1,5 @@
 import bson.json_util as jsonb
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -22,26 +22,27 @@ from src.apps.copo_core.broker_da import BrokerDA
 from bson.json_util import dumps
 from common.dal.profile_da import Profile
 
-class APIProfile(APIView):
+
+class APIProfiles(APIView):
 
     def post(self, request):
-        if request.method == 'POST':
-            request_data = request.data
-            auto_fields = { f"copo.profile.{k}" : v for k, v in request_data.items()}
+        request_data = request.data
+        auto_fields = { f"copo.profile.{k}" : v for k, v in request_data.items()}
 
-            broker_da = BrokerDA(component="profile", da_object=Profile(), task="save", auto_fields=auto_fields)
+        broker_da = BrokerDA(component="profile", da_object=Profile(), task="save", auto_fields=auto_fields)
 
-            context = broker_da.do_save_edit()
-            out = encode(context, unpicklable=False)
-            status = context.get("action_feedback", dict()).get("status", "success")
-            if status == "success" or status=="warning":
-                profiles = Profile().get_all_records_columns(
-                    filter_by={'title': request_data['title'], 'user_id': request.user.id}, projection={'_id':1}
-                )
-                if profiles:
-                    return HttpResponse(status=201, content=dumps({"id": str(profiles[0].get("_id"))}), content_type='application/json')
+        context = broker_da.do_save_edit()
+        out = encode(context, unpicklable=False)
+        status = context.get("action_feedback", dict()).get("status", "success")
+        if status == "success" or status=="warning":
+            profiles = Profile().get_all_records_columns(
+                filter_by={'title': request_data['title'], 'user_id': request.user.id}, projection={'_id':1}
+            )
+            if profiles:
+                return JsonResponse(status=201, data={"id": str(profiles[0].get("_id"))}, safe=False)
+ 
+        return JsonResponse(status=400, data={"id": str(profiles[0].get("_id"))}, safe=False)
 
-            return HttpResponse(status="400", content=out, content_type='application/json')
         
     def get(self, request):
         if request.method == 'GET':
@@ -54,8 +55,47 @@ class APIProfile(APIView):
                 out.append(
                     {'title': el['title'], "description":el['description'],'type': el['type'],  'id': str(el['_id'])}
                 )
-            return Response(out)
+            return JsonResponse(status=200, data=out, safe=False)
     
+class APIProfile(APIView):
+            
+    def put(self, request, profile_id):
+        request_data = request.data
+        auto_fields = { f"copo.profile.{k}" : v for k, v in request_data.items() if k not in ['id', 'profile_id']}
+
+        broker_da = BrokerDA(component="profile", da_object=Profile(), task="edit", auto_fields=auto_fields, target_id=profile_id)  
+
+        context = broker_da.do_save_edit()
+        out = encode(context, unpicklable=False)
+        status = context.get("action_feedback", dict()).get("status", "success")
+        if status == "success" or status=="warning":
+            profiles = Profile().get_all_records_columns(
+                filter_by={'title': request_data['title'], 'user_id': request.user.id}, projection={'title':1, 'description':1, 'type':1, '_id':0}
+            )
+            if profiles: 
+                profile = profiles[0]
+                profile["id"] = profile_id
+                return JsonResponse(status=200, data=profiles[0], safe=False)
+
+        return JsonResponse(status=400, content=out,safe=False )
+    
+
+    def get(self, request, profile_id):
+        """
+        Retrieve a profile by its ID.
+        """
+
+        profile = Profile().get_record(profile_id)
+
+        if not profile:
+            return JsonResponse(
+                status=status.HTTP_404_NOT_FOUND,
+                content={'error': 'Profile not found'},
+                safe=False 
+            )
+        out =  {'title': profile['title'], "description":profile['description'],'type': profile['type'],  'id': str(profile['_id'])}
+        return JsonResponse(status=200, data=out, safe=False)
+
 
 def associate_profiles_with_tubes_or_well_ids(request):
     filter_dict = {}

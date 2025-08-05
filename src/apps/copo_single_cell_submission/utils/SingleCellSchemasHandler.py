@@ -131,7 +131,7 @@ class SingleCellSchemasHandler:
             unlocked_format = {'locked': False}
 
             title_format = {
-                'bold' : True
+            'bold' : True
             }
 
             desc_eg_format = {
