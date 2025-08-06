@@ -315,7 +315,8 @@ def save_singlecell_records(request, profile_id, schema_name):
     
     datafile_map = {datafile["file_location"]: datafile for datafile in datafiles}  
 
-    datafile_list = [] 
+    changed_datafile_list = [] 
+    changed_datafile_image_list = []
     file_location_folder = settings.LOCAL_UPLOAD_PATH
     for filename in filenames:
 
@@ -353,12 +354,15 @@ def save_singlecell_records(request, profile_id, schema_name):
             file_id = str(result.upserted_id)
 
         if file_changed:
-            datafile_list.append(file_id)
+            changed_datafile_list.append(file_id)
+            if file_type == "image":
+                changed_datafile_image_list.append(file_id)
 
-    if datafile_list:
+    if changed_datafile_list:
         #remove the existing enafiletransfer as file hash changed.
-        tx.remove_transfer_record(file_ids=datafile_list, profile_id=profile_id )
-        #tx.make_transfer_record(file_id=str(f), submission_id=str(sub["_id"]), no_remote_location=True)  #remote_location=f"{profile_id}/{study_id}/"
+        tx.remove_transfer_record(file_ids=changed_datafile_list, profile_id=profile_id )
+        for f in changed_datafile_image_list:
+            tx.make_transfer_record(file_id=str(f), submission_id=str(sub["_id"]), no_remote_location=True)  #remote_location=f"{profile_id}/{study_id}/"
     
     singlecell_record = Singlecell().get_collection_handle().find_one_and_update(condition_for_singlecell_record,
                                                             {"$set": singlecell_record, "$setOnInsert": insert_record },
