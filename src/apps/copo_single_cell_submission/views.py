@@ -398,7 +398,7 @@ def download_manifest(request, schema_name, profile_id, study_id):
     bytesstring = BytesIO()
     SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=singlecell["checklist_id"], singlecell=singlecell, file_path=bytesstring)
     response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response['Content-Disposition'] = f"attachment; filename=singlecell_manifest_{study_id}.xlsx"
+    response['Content-Disposition'] = f"attachment; filename={schema_name.lower()}_manifest_{study_id}.xlsx"
     return response
 
 
@@ -429,7 +429,7 @@ def download_init_blank_manifest(request, schema_name, profile_id,  checklist_id
     bytesstring = BytesIO()
     SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=checklist_id, singlecell=singlecell, file_path=bytesstring)
     response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response['Content-Disposition'] = f"attachment; filename=singlecell_manifest_{checklist_id}.xlsx"
+    response['Content-Disposition'] = f"attachment; filename={schema_name.lower()}_manifest_{checklist_id}.xlsx"
     return response
 
 

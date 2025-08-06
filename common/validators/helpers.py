@@ -98,7 +98,7 @@ def checkOntologyTerm(ontology_id, ancestor, term):
         for elm in data.get("elements",[]):
             if term in elm.get("label",[]) or any( isinstance(synonym, str) and synonym == term  or synonym.get("value") == term for synonym in elm.get("synonym",[])) :
                 for ancestor_uri in elm.get("hierarchicalAncestor",[]):
-                    if ancestor_uri.endswith(f"{ontology_id.upper()}_{ancestor}"):
+                    if ancestor_uri.endswith(f"{ontology_id}_{ancestor}") or ancestor_uri.endswith(f"{ontology_id.upper()}_{ancestor}"):
                         return True
     return False
 
