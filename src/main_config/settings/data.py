@@ -103,7 +103,7 @@ MANIFEST_VERSION = {
     "ERGA": "2.5.1",
     "DTOL_BARCODE": "",
     "COPO_SINGLE_CELL": "0.3",
-    "COPO_IMAGES": "0.1",
+    "COPO_IMAGES_REMBI": "0.1",
 }
 
 BARCODING_CHECKLIST = ["ERT000002", "ERT000020"]
@@ -125,8 +125,8 @@ COPO_SAMPLE_CHECKLIST_URL = [
 
 
 SINGLE_CELL_SCHEMAS_URL = {
-    "COPO_SINGLE_CELL" : f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/single_cell/singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx",
-    "COPO_IMAGES": f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/images/image_schema_main_v{MANIFEST_VERSION['COPO_IMAGES']}.xlsx",
+    "COPO_SINGLE_CELL": f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/single_cell/singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx",
+    "COPO_IMAGES_REMBI": f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/images/rembi_image_schema_main_v{MANIFEST_VERSION['COPO_IMAGES_REMBI']}.xlsx",
 }
 
 IMAGE_FILE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.bmp']
