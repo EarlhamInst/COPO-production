@@ -349,7 +349,8 @@ def copo_forms(request):
                      submit_singlecell_ena=broker_da.do_submit_singlecell_ena,
                      submit_singlecell_zenodo=broker_da.do_submit_singlecell_zenodo,
                      publish_singlecell_ena=broker_da.do_publish_singlecell_ena,
-                     publish_singlecell_zenodo=broker_da.do_publish_singlecell_zenodo
+                     publish_singlecell_zenodo=broker_da.do_publish_singlecell_zenodo,
+                     make_snapshot=broker_da.do_make_snapshot,
                      )
 
     if task in task_dict:

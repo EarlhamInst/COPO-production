@@ -3069,7 +3069,7 @@ function generate_component_control(componentName, profile_type) {
     for (var i = 0; i < components.length; ++i) {
       var comp = components[i];
       //if (comp.hasOwnProperty('profile_component')) {
-      if (comp.component == component.component) {
+      if (comp.component == component.component && comp.title == component.title) {
         continue;
       }
       /*

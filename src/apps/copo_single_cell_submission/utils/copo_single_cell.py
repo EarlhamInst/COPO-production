@@ -17,6 +17,8 @@ from common.utils.helpers import get_env
 from . import zenodo_submission
 from . import ena_submission
 from common.s3.s3Connection import S3Connection as s3
+from . import SingleCellSchemasHandler  
+from io import BytesIO
 
 l = Logger()
 
@@ -588,6 +590,39 @@ def update_submission_pending():
     if all_downloaded_sub_ids:
         Submission().update_submission_pending(all_downloaded_sub_ids, component="study")
 
+
+def make_snapshot(profile_id, target_ids, target_id, checklist_id, study_id):
+    """
+    if target_id:
+        target_ids = [target_id]
+
+    if not target_ids:
+        return dict(status='error', message="Please select one or more records to make snapshot!")
+
+    singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
+    if not singlecell:
+        return dict(status='error', message="No record found.")
+        
+    #export singlecell record to manifest
+
+    #update snapshot version of the singlecell record
+    bytesstring = BytesIO()
+    schemas = SinglecellSchemas().get_collection_handle().find_one({"name": singlecell["schema_name"]})
+    SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=singlecell["checklist_id"], singlecell=singlecell, file_path=bytesstring)
+
+    with open("my_file.txt", "wb") as binary_file:
+        binary_file.write(bytesstring.getvalue())
+    """
+    return {"status":"error", "message": "Not Implemented yet."}
+ 
+
+
+def get_snapshot_file(profile_id, study_id, snapshot_version):
+    """
+    Get the snapshot filename for a single cell study.
+    The filename is in the format: study_id_snapshot_version_snapshot.xlsx
+    """
+    return f"{study_id}_snapshot_{snapshot_version}.xlsx"
 
 """
 class _GET_ENA_FILE_PROCESSING_STATUS(threading.Thread):

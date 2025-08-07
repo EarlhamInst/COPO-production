@@ -310,6 +310,8 @@ class Command(BaseCommand):
             )
         )
 
+        make_snapshot = RecordActionButton().create_record_action_button(name="make_snapshot",title="Make Snapshot",label="Make Snapshot",type="single",error_message="Please select one record to make snapshot",icon_class="fa fa-camera-retro",action="make_snapshot",icon_colour="grey")
+
         submit_sample_multi = RecordActionButton().create_record_action_button(
             name="submit_general_sample_multi",
             title="Submit Sample",
@@ -610,14 +612,14 @@ class Command(BaseCommand):
         )
 
         singlecell.recordaction_buttons.set(
-            [delete_singlecell_multi, download_singlecell_manifest_single]
+            [delete_singlecell_multi, download_singlecell_manifest_single, make_snapshot]
         )
         singlecell.title_buttons.set(
             [new_singlecell_spreadsheet_template, download_blank_manifest_template]
         )
 
         images.recordaction_buttons.set(
-            [delete_singlecell_multi, download_singlecell_manifest_single]
+            [delete_singlecell_multi, download_singlecell_manifest_single, make_snapshot]
         )
         images.title_buttons.set(
             [new_singlecell_spreadsheet_template, download_blank_manifest_template]

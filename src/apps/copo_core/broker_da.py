@@ -656,6 +656,22 @@ class BrokerDA:
     def do_publish_singlecell_zenodo(self):
         return self._publish_singlecell(repository="zenodo")
     
+    def do_make_snapshot(self):
+        target_id = self.param_dict.get("target_id", str())
+        target_ids  = self.param_dict.get("target_ids", [])
+        checklist_id = self.request_dict.get("singlecell_checklist_id", str())
+        study_id = self.request_dict.get("study_id", "")
+
+        result = copo_single_cell.make_snapshot(profile_id=self.profile_id, target_ids=target_ids, target_id=target_id,checklist_id=checklist_id, study_id=study_id)
+
+        report_metadata = dict()
+        report_metadata["status"] = result.get("status", "success")
+        report_metadata["message"] = result.get("message", "success")
+        self.context["action_feedback"] = report_metadata       
+        if result.get("status","success") == "success":
+            self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id,checklist_id=checklist_id, study_id=study_id)
+            self.context["component"] = "singlecell"
+        return self.context
 
 
 class BrokerVisuals:
