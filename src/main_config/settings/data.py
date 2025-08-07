@@ -103,6 +103,7 @@ MANIFEST_VERSION = {
     "ERGA": "2.5.1",
     "DTOL_BARCODE": "",
     "COPO_SINGLE_CELL": "0.3",
+    "COPO_IMAGES": "0.1",
 }
 
 BARCODING_CHECKLIST = ["ERT000002", "ERT000020"]
@@ -119,16 +120,16 @@ ENA_CHECKLIST_URL = [
 ]
 COPO_SAMPLE_CHECKLIST_URL = [
     "https://raw.githubusercontent.com/TGAC/COPO-schemas/refs/heads/main/samples/sample_checklist_dwc.xml",
-    "https://raw.githubusercontent.com/TGAC/COPO-schemas/refs/heads/main/samples/sample_checklist_faang.xml"
+    "https://raw.githubusercontent.com/TGAC/COPO-schemas/refs/heads/main/samples/sample_checklist_faang.xml",
 ]
 
 
 SINGLE_CELL_SCHEMAS_URL = {
-   "COPO_SINGLE_CELL" : f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/single_cell/singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx"
-   #"COPO_SINGLE_CELL" : f"singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx"
-
+    "COPO_SINGLE_CELL" : f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/single_cell/singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx",
+    "COPO_IMAGES": f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/images/image_schema_main_v{MANIFEST_VERSION['COPO_IMAGES']}.xlsx",
 }
 
 IMAGE_FILE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.bmp']
 
-LOCAL_UPLOAD_HOUSEKEEPING_DAYS = 10  # number of days to keep local uploads before deleting them
+# number of days to keep local uploads before deleting them
+LOCAL_UPLOAD_HOUSEKEEPING_DAYS = 10  
