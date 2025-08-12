@@ -37,10 +37,7 @@ class UserDetails(models.Model):
         null=True,
     )
     active_task = models.BooleanField(default=False)
-    cookie_consent_log = ArrayField(
-        JSONField(default=dict),
-        blank=True,
-        null=True)
+    cookie_consent_log = ArrayField(JSONField(default=dict), blank=True, null=True)
     # class Meta:
     # app_label = 'django.contrib.auth'
 
@@ -88,7 +85,8 @@ class StatusMessage(models.Model):
     message_owner = models.ForeignKey(User, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     message = models.TextField(
-        max_length=500, blank=False, default="All Tasks Complete")
+        max_length=500, blank=False, default="All Tasks Complete"
+    )
 
     class Meta:
         get_latest_by = 'created'
@@ -143,7 +141,10 @@ class ViewLock(models.Model):
             lock.save()
             return False
         else:
-            if datetime.utcnow().replace(tzinfo=pytz.utc) - lock.timeLocked > self.timeout:
+            if (
+                datetime.utcnow().replace(tzinfo=pytz.utc) - lock.timeLocked
+                > self.timeout
+            ):
                 # lock has expired
                 lock.delete()
                 self.lockView(url=url)
@@ -166,16 +167,20 @@ class SequencingCentre(models.Model):
     description = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     label = models.CharField(max_length=100)
-    contact_details = models.CharField(
-        max_length=800,
-        blank=True,
-        null=True)
+    contact_details = models.CharField(max_length=800, blank=True, null=True)
     is_approval_required = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
 
-    def create_sequencing_centre(self, name, description, label, contact_details=str(), is_approval_required=False):
+    def create_sequencing_centre(
+        self,
+        name,
+        description,
+        label,
+        contact_details=str(),
+        is_approval_required=False,
+    ):
         self.name = name
         self.description = description
         self.label = label
@@ -189,7 +194,8 @@ class SequencingCentre(models.Model):
         return True
 
     def get_sequencing_centres(self):
-        return SequencingCentre.objects.all()    
+        return SequencingCentre.objects.all()
+
 
 class AssociatedProfileType(models.Model):
     users = models.ManyToManyField(User)
@@ -203,13 +209,25 @@ class AssociatedProfileType(models.Model):
     def __str__(self):
         return self.name
 
-    def create_associated_profile_type(self, name, label, is_approval_required=False, is_acceptance_email_notification_required=False, acceptance_email_body="", is_approval_required_for_updated_manifest=True):
+    def create_associated_profile_type(
+        self,
+        name,
+        label,
+        is_approval_required=False,
+        is_acceptance_email_notification_required=False,
+        acceptance_email_body="",
+        is_approval_required_for_updated_manifest=True,
+    ):
         self.name = name
         self.label = label
         self.is_approval_required = is_approval_required
-        self.is_acceptance_email_notification_required = is_acceptance_email_notification_required
+        self.is_acceptance_email_notification_required = (
+            is_acceptance_email_notification_required
+        )
         self.acceptance_email_body = acceptance_email_body
-        self.is_approval_required_for_updated_manifest = is_approval_required_for_updated_manifest
+        self.is_approval_required_for_updated_manifest = (
+            is_approval_required_for_updated_manifest
+        )
         self.save()
         return self
 
@@ -227,45 +245,69 @@ class TitleButton(models.Model):
 
     name = models.CharField(max_length=50, unique=True)
     template = models.CharField(max_length=500)
-    additional_attr = models.CharField(max_length=500, blank=True, null=True, help_text="Additional attributes for the button,format: key1:value1,key2:value2,key3:value3")
+    additional_attr = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Additional attributes for the button,format: key1:value1,key2:value2,key3:value3",
+    )
 
     def __str__(self):
         return self.name
-    
+
     def create_title_button(self, name, template, additional_attr):
         self.name = name
         self.template = template
         self.additional_attr = additional_attr
         self.save()
         return self
-    
+
     def remove_all_title_buttons(self):
         TitleButton.objects.all().delete()
         return True
-    
+
     def get_title_buttons(self):
-        return TitleButton.objects.all()    
+        return TitleButton.objects.all()
+
 
 class RecordActionButton(models.Model):
     class action_types(models.TextChoices):
         SINGLE = 'single', _("Single")
         MULTIPLE = 'multi', _("Multiple")
+
         def __str__(self):
             return self.value
 
     name = models.CharField(max_length=100, unique=True)
-    icon_colour = models.CharField(max_length=100, blank=True, null=True, help_text="Colour of the icon")
-    title = models.CharField(max_length=100,  blank=True, null=True)
-    label = models.CharField(max_length=100,  blank=True, null=True)
-    type = models.CharField(max_length=100, choices=action_types.choices, default=action_types.SINGLE, blank=True, null=True )
+    icon_colour = models.CharField(
+        max_length=100, blank=True, null=True, help_text="Colour of the icon"
+    )
+    title = models.CharField(max_length=100, blank=True, null=True)
+    label = models.CharField(max_length=100, blank=True, null=True)
+    type = models.CharField(
+        max_length=100,
+        choices=action_types.choices,
+        default=action_types.SINGLE,
+        blank=True,
+        null=True,
+    )
     error_message = models.CharField(max_length=100, blank=True, null=True)
-    icon_class = models.CharField(max_length=100, help_text="Font Awesome icon class", blank=True, null=True)
-    action = models.CharField(max_length=100, help_text="Name of javascript function to be performed on click", blank=True, null=True)
+    icon_class = models.CharField(
+        max_length=100, help_text="Font Awesome icon class", blank=True, null=True
+    )
+    action = models.CharField(
+        max_length=100,
+        help_text="Name of javascript function to be performed on click",
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return self.name + " : " + self.title + " : " + self.type
 
-    def create_record_action_button(self, name, title, label, type, error_message, icon_class, action, icon_colour):
+    def create_record_action_button(
+        self, name, title, label, type, error_message, icon_class, action, icon_colour
+    ):
         self.name = name
         self.title = title
         self.label = label
@@ -283,6 +325,7 @@ class RecordActionButton(models.Model):
 
     def get_record_action_button(self):
         return RecordActionButton.objects.all()
+
 
 ''' 
 class SidebarPanel(models.Model):
@@ -331,6 +374,8 @@ class SidebarPanel(models.Model):
     def get_sidebar_panels(self):
         return SidebarPanel.objects.all()
 '''
+
+
 class Component(models.Model):
     class Meta:
         ordering = ['title']
@@ -341,47 +386,65 @@ class Component(models.Model):
     base_component = models.CharField(max_length=100, null=True)
     title = models.CharField(max_length=100)
     subtitle = models.CharField(max_length=100, blank=True, null=True)
+    group_name = models.CharField(max_length=100, blank=True, null=True)
+    group_title = models.CharField(max_length=100, blank=True, null=True)
     widget_icon = models.CharField(max_length=100, blank=True, null=True)
-    widget_colour = models.CharField(max_length=200,blank=True, null=True)
+    widget_colour = models.CharField(max_length=200, blank=True, null=True)
     widget_icon_class = models.CharField(max_length=100, blank=True, null=True)
     table_id = models.CharField(max_length=100)
-    reverse_url = models.CharField(max_length=100,blank=True, null=True)
+    reverse_url = models.CharField(max_length=100, blank=True, null=True)
     schema_name = models.CharField(max_length=100, blank=True, null=True)
-
 
     def __str__(self):
         return self.name + " : " + self.title
 
-    def create_component(self, name, title, subtitle, widget_icon, widget_colour, widget_icon_class, table_id, reverse_url, schema_name="", base_component=""):
+    def create_component(
+        self,
+        name,
+        title,
+        subtitle,
+        widget_icon,
+        widget_colour,
+        widget_icon_class,
+        table_id,
+        reverse_url,
+        schema_name="",
+        base_component="",
+        group_name="",
+        group_title="",
+    ):
         self.name = name.lower()
         self.title = title
         self.subtitle = subtitle
+        self.group_name = group_name
+        self.group_title = group_title
         self.widget_icon = widget_icon
         self.widget_colour = widget_colour
         self.widget_icon_class = widget_icon_class
         self.table_id = table_id
         self.reverse_url = reverse_url
         self.schema_name = schema_name
+
         if base_component:
             self.base_component = base_component
         else:
             self.base_component = self.name
         self.save()
         return self
-    
+
     def remove_all_components(self):
         Component.objects.all().delete()
         return True
 
     def get_components(self):
         return Component.objects.all()
-    
 
-#db.Profiles.updateMany({"associated_type.value":"BGE"},{"$set":{"associated_type.$":"BGE"}})
+
+# db.Profiles.updateMany({"associated_type.value":"BGE"},{"$set":{"associated_type.$":"BGE"}})
 class ProfileType(models.Model):
     class Meta:
         ordering = ['description']
-        
+
     associated_profile_types = models.ManyToManyField(AssociatedProfileType, blank=True)
     components = models.ManyToManyField(Component, blank=True)
     type = models.CharField(max_length=20, unique=True)
@@ -395,7 +458,16 @@ class ProfileType(models.Model):
     def __str__(self):
         return self.type + " : " + self.description
 
-    def create_profile_type(self, type, description, widget_colour, is_dtol_profile, is_permission_required, post_save_action=None, pre_save_action=None):
+    def create_profile_type(
+        self,
+        type,
+        description,
+        widget_colour,
+        is_dtol_profile,
+        is_permission_required,
+        post_save_action=None,
+        pre_save_action=None,
+    ):
         self.type = type
         self.description = description
         self.widget_colour = widget_colour
@@ -409,13 +481,13 @@ class ProfileType(models.Model):
     def remove_all_profile_types(self):
         ProfileType.objects.all().delete()
         return True
-    
+
     def get_profile_types(self):
         return ProfileType.objects.all()
-            
+
 
 @receiver(post_save, sender=SequencingCentre)
 @receiver(post_save, sender=AssociatedProfileType)
 @receiver(post_save, sender=ProfileType)
 def refresh_schema(sender, instance, **kwargs):
-    DataSchemas.refresh() 
+    DataSchemas.refresh()

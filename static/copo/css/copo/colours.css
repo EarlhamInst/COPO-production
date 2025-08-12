@@ -1,0 +1,109 @@
+/* Colour: Slate grey */
+.ui.icon.slate-grey {
+  color: #6b7a8f !important;
+}
+
+.ui.icon.slate-grey:hover {
+  color: #5f6e82 !important;
+}
+
+.ui.slate-grey.button,
+.ui.slate-grey.buttons.button {
+  background-color: #6b7a8f;
+  color: #fff;
+  text-shadow: none;
+  background-image: none;
+}
+
+.ui.slate-grey.button:hover,
+.ui.slate-grey.buttons.button:hover {
+  background-color: #5f6e82;
+}
+
+/* Colour: Warm stone */
+.ui.icon.warm-stone {
+  color: #8a7f76 !important;
+}
+
+.ui.icon.warm-stone:hover {
+  color: #7c726a !important;
+}
+
+.ui.warm-stone.button,
+.ui.warm-stone.buttons.button {
+  background-color: #8a7f76;
+  color: #fff;
+  text-shadow: none;
+  background-image: none;
+}
+
+.ui.warm-stone.button:hover,
+.ui.warm-stone.buttons.button:hover {
+  background-color: #7c726a;
+}
+
+/* Colour: Bright coral */
+.ui.icon.bright-coral {
+  color: #ff6f61 !important;
+}
+
+.ui.bright-coral.button {
+  box-shadow: 0 0 0 0 rgba(34, 36, 38, 0.15) inset;
+}
+.ui.bright-coral.button,
+.ui.bright-coral.buttons .button {
+  background-color: #ff6f61;
+  color: #fff;
+  text-shadow: none;
+  background-image: none;
+}
+
+.ui.bright-coral.button:hover {
+  background-color: #e65a52;
+  color: #fff;
+  text-shadow: none;
+}
+
+/* Colour: Terra Cotta */
+.ui.icon.terra-cotta {
+  color: #e96a64 !important;
+}
+
+.ui.icon.terra-cotta:hover {
+  color: #c65a55 !important;
+}
+
+.ui.terra-cotta.button,
+.ui.terra-cotta.buttons.button {
+  background-color: #e96a64;
+  color: #fff;
+  text-shadow: none;
+  background-image: none;
+}
+
+.ui.terra-cotta.button:hover,
+.ui.terra-cotta.buttons.button:hover {
+  background-color: #c65a55;
+}
+
+/* Colour: Coral-pink */
+.ui.icon.coral-pink {
+  color: #ff8781 !important;
+}
+
+.ui.icon.coral-pink:hover {
+  color: #d9736e !important;
+}
+
+.ui.coral-pink.button,
+.ui.coral-pink.buttons.button {
+  background-color: #ff8781;
+  color: #fff;
+  text-shadow: none;
+  background-image: none;
+}
+
+.ui.coral-pink.button:hover,
+.ui.coral-pink.buttons.button:hover {
+  background-color: #d9736e;
+}

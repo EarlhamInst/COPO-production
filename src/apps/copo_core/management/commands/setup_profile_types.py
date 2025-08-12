@@ -10,20 +10,22 @@ from src.apps.copo_core.models import (
 from common.dal.copo_base_da import DataSchemas
 
 '''
-ProfileType
+*** ProfileType ***
+
  id |   type   |                     description                     | widget_colour | is_dtol_profile | is_permission_required 
 ----+----------+-----------------------------------------------------+---------------+-----------------+------------------------
-  5 | erga     | European Reference Genome Atlas (ERGA)              | #E61A8D       | t               | t
-  4 | asg      | Aquatic Symbiosis Genomics (ASG)                    | #5829bb       | t               | t
-  3 | dtolenv  | Darwin Tree of Life Environmental Samples (DTOLENV) | #fb7d0d       | t               | t
+  1 | asg      | Aquatic Symbiosis Genomics (ASG)                    | #5829bb       | t               | t
   2 | dtol     | Darwin Tree of Life (DTOL)                          | #16ab39       | t               | t
-  1 | genomics | Stand-alone                                         | #009c95       | f               | f
+  3 | dtolenv  | Darwin Tree of Life Environmental Samples (DTOLENV) | #fb7d0d       | t               | t
+  4 | erga     | European Reference Genome Atlas (ERGA)              | #E61A8D       | t               | t
+  5 | genomics | Genomics                                            | #009c95       | f               | f
   6 | test     | Test New Profile                                    | violet        | f               | t
 
 '''
 
 """
-Component
+*** Component ***
+
  id |         name         |        title         | widget_icon  | widget_colour | widget_icon_class  |      table_id       |                    reverse_url                     |      subtitle       
 ----+----------------------+----------------------+--------------+---------------+--------------------+---------------------+----------------------------------------------------+---------------------
   1 | accessions           | Accessions           | sitemap      | pink          | fa fa-sitemap      | accessions_table    | copo_accession:copo_accessions                     | 
@@ -31,16 +33,19 @@ Component
   3 | assembly             | Assembly             | puzzle piece | violet        | fa fa-puzzle-piece | assembly_table      | copo_assembly_submission:copo_assembly             | 
   4 | files                | Files                | file         | blue          | fa fa-file         | files_table         | copo_file:copo_files                               | 
   5 | general_sample       | Samples              | filter       | olive         | fa fa-filter       | sample_table        | copo_sample:copo_general_samples                   | #component_subtitle
-  6 | images               | Images               | images       | grey          | fa fa-images       | images_table        | copo_image_submission:copo_images                  | #component_subtitle
-  7 | profile              | Work Profiles        |              |               |                    | copo_profiles_table |                                                    | #component_subtitle
-  8 | read                 | Reads                | dna          | orange        | fa fa-dna          | read_table          | copo_read_submission:copo_reads                    | #component_subtitle
-  9 | sample               | Samples              | filter       | olive         | fa fa-filter       | sample_table        | copo_sample:copo_samples                           | 
- 10 | seqannotation        | Sequence Annotations | tag          | yellow        | fa fa-tag          | seqannotation_table | copo_seq_annotation_submission:copo_seq_annotation | 
- 11 | singlecell           | Single Cell          | dna          | green         | fa fa-dna          | singlecell_table    | copo_single_cell_submission:copo_singlecell        | #component_subtitle
- 12 | taggedseq            | Barcoding Manifests  | barcode      | red           | fa fa-barcode      | tagged_seq_table    | copo_barcoding_submission:copo_taggedseq           | #component_subtitle
+  6 | images               | Images               |              | grey          |                    |                     |                                                    | #component_subtitle
+  7 | images_rembi         | REMBI                | image        | grey          | fa fa-image        | images_table        | copo_single_cell_submission:copo_singlecell        | #component_subtitle
+  8 | images_stx_fish      | ST FISH              | image        | grey          | fa fa-image        | images_table        | copo_single_cell_submission:copo_singlecell        | #component_subtitle
+  9 | profile              | Work Profiles        |              |               |                    | copo_profiles_table |                                                    | #component_subtitle
+ 10 | read                 | Reads                | dna          | orange        | fa fa-dna          | read_table          | copo_read_submission:copo_reads                    | #component_subtitle
+ 11 | sample               | Samples              | filter       | olive         | fa fa-filter       | sample_table        | copo_sample:copo_samples                           | 
+ 12 | seqannotation        | Sequence Annotations | tag          | yellow        | fa fa-tag          | seqannotation_table | copo_seq_annotation_submission:copo_seq_annotation | 
+ 13 | singlecell           | Single-cell          | dna          | green         | fa fa-dna          | singlecell_table    | copo_single_cell_submission:copo_singlecell        | #component_subtitle
+ 14 | taggedseq            | Barcoding Manifests  | barcode      | red           | fa fa-barcode      | tagged_seq_table    | copo_barcoding_submission:copo_taggedseq           | #component_subtitle
 """
+
 """
-RecordActionButton
+** RecordActionButton ***
 
  id |              name                       |                   title                    |          label           |  type  |                                     error_message                                     |      icon_class       |          action          | icon_colour 
 ----+-----------------------------------------+--------------------------------------------+--------------------------+--------+---------------------------------------------------------------------------------------+-----------------------+--------------------------+-------------
@@ -55,19 +60,21 @@ RecordActionButton
   9 | download_permits_multiple               | Download Permits                           | Download permits         | multi  | Please select one or more sample records from the table shown to download permits for | fa fa-download        | download-permits         | orange
  10 | download_sample_manifest_single         | Download Sample Manifest                   | Download sample manifest | single | Please select one of samples in the manifest to download                              | fa fa-download        | download-sample-manifest | blue
  11 | edit_record_single                      | Edit record                                | Edit                     | single | Please select a record to edit                                                        | fa fa-pencil-square-o | edit                     | green
- 12 | publish_singlecell_single_ena           | Publish Single Cell Records to ENA         | Publish to ENA           | single | Please select one record to publish                                                   | fa fa-info-circle     | publish_singlecell_ena   | teal
- 13 | publish_singlecell_single_zenodo        | Publish Single Cell Records to ZENODO      | Publish to ZENODO        | single | Please select one record to publish                                                   | fa fa-info-circle     | publish_singlecell_zenodo| blue
+ 12 | publish_singlecell_single_ena           | Publish Single-cell Records to ENA         | Publish to ENA           | single | Please select one record to publish                                                   | fa fa-info-circle     | publish_singlecell_ena   | teal
+ 13 | publish_singlecell_single_zenodo        | Publish Single-cell Records to ZENODO      | Publish to ZENODO        | single | Please select one record to publish                                                   | fa fa-info-circle     | publish_singlecell_zenodo| blue
  14 | releasestudy                            | Release Study                              | Release Study            | single |                                                                                       | fa fa-globe           | release_study            | blue
  15 | submit_annotation_multi                 | Submit Annotation                          | Submit                   | multi  | Please select one or more record to submit                                            | fa fa-info            | submit_annotation        | teal
  16 | submit_assembly_multi                   | Submit Assembly                            | Submit                   | multi  | Please select one or more record to submit                                            | fa fa-info            | submit_assembly          | teal
  17 | submit_read_multi                       | Submit Read                                | Submit                   | multi  | Please select one or more record to submit                                            | fa fa-info            | submit_read              | teal
- 18 | submit_singlecell_single_ena            | Submit Single Cell Records to ENA          | Submit to ENA            | single | Please select one record to submit                                                    | fa fa-info-circle     | submit_singlecell_ena    | teal
- 19 | submit_singlecell_single_zenodo         | Submit Single Cell Records to ZENODO       | Submit to ZENODO         | single | Please select one record to submit                                                    | fa fa-info-circle     | submit_singlecell_zenodo | blue
+ 18 | submit_singlecell_single_ena            | Submit Single-cell Records to ENA          | Submit to ENA            | single | Please select one record to submit                                                    | fa fa-info-circle     | submit_singlecell_ena    | teal
+ 19 | submit_singlecell_single_zenodo         | Submit Single-cell Records to ZENODO       | Submit to ZENODO         | single | Please select one record to submit                                                    | fa fa-info-circle     | submit_singlecell_zenodo | blue
  20 | submit_tagged_seq_multi                 | Submit Tagged Sequence                     | Submit                   | multi  | Please select one or more record to submit                                            | fa fa-info            | submit_tagged_seq        | teal
  21 | view_images_multiple                    | View Images                                | View images              | multi  | Please select one or more sample records from the table shown to view images for      | fa fa-eye             | view-images              | teal  
 """
+
 """
-TitleButton
+*** TitleButton ***
+
  id |                name                     |                                                                                                                        template                                                                                                                                                                                 |     additional_attr      
 ----+-----------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------
   1 | accept_reject_samples                   | <button style="display: none" title="Accept/Reject TOL Samples"             class="big circular ui icon teal button accept_reject_samples copo-tooltip">         <i class="icon tasks sign"></i>     </button>                                                                                                  | 
@@ -80,7 +87,7 @@ TitleButton
   8 | new_local_file                          | <button title="Add new file by browsing local file system"             class="big circular ui icon primary button new-local-file copo-tooltip">         <i class="icon desktop sign"></i>     </button>                                                                                                         | 
   9 | new_reads_spreadsheet_template          | <button style="display: inline" title="Add Read(s) from Read Spreadsheet"             class="big circular ui icon button new-reads-spreadsheet-template copo-tooltip">         <i class="icon table sign"></i>     </button>                                                                                    | 
  10 | new_samples_spreadsheet_template        | <button   title="Add/Update sample(s) from spreadsheet"             class="big circular ui icon button new-samples-spreadsheet-template copo-tooltip">         <i class="icon table sign"></i>     </button>                                                                                                    | 
- 11 | new_singlecell_spreadsheet_template     | <button style="display: inline" title="Add study from Single Cell Spreadsheet" class="big circular ui icon button new-singlecell-spreadsheet-template copo-tooltip"> <i class="icon table sign"></i></button>                                                                                                   | 
+ 11 | new_singlecell_spreadsheet_template     | <button style="display: inline" title="Add study from Single-cell Spreadsheet" class="big circular ui icon button new-singlecell-spreadsheet-template copo-tooltip"> <i class="icon table sign"></i></button>                                                                                                   | 
  12 | new_taggedseq_spreadsheet_template      | <button style="display: inline" title="Add Tagged Sequence (s) from Tagged Sequence Spreadsheet"             class="big circular ui icon button new-taggedseq-spreadsheet-template copo-tooltip">         <i class="icon table sign"></i>     </button>                                                         | 
  13 | new_terminal_file                       | <button title="Add new file by terminal"             class="big circular ui icon primary button new-terminal-file copo-tooltip">         <i class="icon terminal sign"></i>     </button>                                                                                                                       | 
  14 | quick_tour_template                     | <button title="Quick tour"             class="big circular ui icon orange button takeatour quick-tour-template copo-tooltip">         <i class="icon lightbulb"></i>     </button>                                                                                                                              | 
@@ -265,7 +272,7 @@ class Command(BaseCommand):
         )
         submit_singlecell_single_ena = RecordActionButton().create_record_action_button(
             name="submit_singlecell_single_ena",
-            title="Submit Single Cell Records to ENA",
+            title="Submit Single-cell Records to ENA",
             label="Submit to ENA",
             type="single",
             error_message="Please select one record to submit",
@@ -276,7 +283,7 @@ class Command(BaseCommand):
         submit_singlecell_single_zenodo = (
             RecordActionButton().create_record_action_button(
                 name="submit_singlecell_single_zenodo",
-                title="Submit Single Cell Records to ZENODO",
+                title="Submit Single-cell Records to ZENODO",
                 label="Submit to ZENODO",
                 type="single",
                 error_message="Please select one record to submit",
@@ -288,7 +295,7 @@ class Command(BaseCommand):
         publish_singlecell_single_ena = (
             RecordActionButton().create_record_action_button(
                 name="publish_singlecell_single_ena",
-                title="Publish Single Cell Records to ENA",
+                title="Publish Single-cell Records to ENA",
                 label="Publish to ENA",
                 type="single",
                 error_message="Please select one record to publish",
@@ -300,7 +307,7 @@ class Command(BaseCommand):
         publish_singlecell_single_zenodo = (
             RecordActionButton().create_record_action_button(
                 name="publish_singlecell_single_zenodo",
-                title="Publish Single Cell Records to ZENODO",
+                title="Publish Single-cell Records to ZENODO",
                 label="Publish to ZENODO",
                 type="single",
                 error_message="Please select one record to publish",
@@ -310,7 +317,16 @@ class Command(BaseCommand):
             )
         )
 
-        make_snapshot = RecordActionButton().create_record_action_button(name="make_snapshot",title="Make Snapshot",label="Make Snapshot",type="single",error_message="Please select one record to make snapshot",icon_class="fa fa-camera-retro",action="make_snapshot",icon_colour="grey")
+        make_snapshot = RecordActionButton().create_record_action_button(
+            name="make_snapshot",
+            title="Make Snapshot",
+            label="Make Snapshot",
+            type="single",
+            error_message="Please select one record to make snapshot",
+            icon_class="fa fa-camera-retro",
+            action="make_snapshot",
+            icon_colour="grey",
+        )
 
         submit_sample_multi = RecordActionButton().create_record_action_button(
             name="submit_general_sample_multi",
@@ -437,13 +453,15 @@ class Command(BaseCommand):
 
         self.stdout.write("Setup Completed")
 
-        self.stdout.write("Removing Component ")
+        self.stdout.write("Removing Component")
         Component().remove_all_components()
-        self.stdout.write("Adding Component ")
+        self.stdout.write("Adding Component")
 
         assembly = Component().create_component(
             name="assembly",
             title="Assembly",
+            group_name="",
+            group_title="",
             widget_icon="puzzle piece",
             widget_colour="violet",
             widget_icon_class="fa fa-puzzle-piece",
@@ -454,6 +472,8 @@ class Command(BaseCommand):
         taggedseq = Component().create_component(
             name="taggedseq",
             title="Barcoding Manifests",
+            group_name="",
+            group_title="",
             widget_icon="barcode",
             widget_colour="red",
             widget_icon_class="fa fa-barcode",
@@ -464,6 +484,8 @@ class Command(BaseCommand):
         files = Component().create_component(
             name="files",
             title="Files",
+            group_name="",
+            group_title="",
             widget_icon="file",
             widget_colour="blue",
             widget_icon_class="fa fa-file",
@@ -474,6 +496,8 @@ class Command(BaseCommand):
         seqannotation = Component().create_component(
             name="seqannotation",
             title="Sequence Annotations",
+            group_name="",
+            group_title="",
             widget_icon="tag",
             widget_colour="yellow",
             widget_icon_class="fa fa-tag",
@@ -484,6 +508,8 @@ class Command(BaseCommand):
         read = Component().create_component(
             name="read",
             title="Reads",
+            group_name="",
+            group_title="",
             widget_icon="dna",
             widget_colour="orange",
             widget_icon_class="fa fa-dna",
@@ -493,7 +519,9 @@ class Command(BaseCommand):
         )
         singlecell = Component().create_component(
             name="singlecell",
-            title="Single Cell",
+            title="Single-cell",
+            group_name="",
+            group_title="",
             widget_icon="dna",
             widget_colour="green",
             widget_icon_class="fa fa-dna",
@@ -506,19 +534,53 @@ class Command(BaseCommand):
         images = Component().create_component(
             name="images",
             title="Images",
+            group_name="",
+            group_title="",
             widget_icon="image",
-            widget_colour="grey",
+            widget_colour="bright-coral",
+            widget_icon_class="",
+            table_id="component_subtitle",
+            reverse_url="",
+            subtitle="#component_subtitle",
+            schema_name="",
+            base_component="",
+        )
+
+        images_rembi = Component().create_component(
+            name="rembi",
+            title="REMBI",
+            group_name="images",
+            group_title="Images",
+            widget_icon="image",
+            widget_colour="coral-pink",
             widget_icon_class="fa fa-image",
             table_id="singlecell_table",
             reverse_url="copo_single_cell_submission:copo_singlecell",
             subtitle="#component_subtitle",
-            schema_name="COPO_IMAGES",
+            schema_name="COPO_IMAGE_REMBI",
+            base_component="singlecell",
+        )
+
+        images_stx_fish = Component().create_component(
+            name="stx_fish",
+            title="ST FISH",
+            group_name="images",
+            group_title="Images",
+            widget_icon="image",
+            widget_colour="terra-cotta",
+            widget_icon_class="fa fa-image",
+            table_id="singlecell_table",
+            reverse_url="copo_single_cell_submission:copo_singlecell",
+            subtitle="#component_subtitle",
+            schema_name="COPO_IMAGE_STX_FISH",
             base_component="singlecell",
         )
 
         sample = Component().create_component(
             name="sample",
             title="Samples",
+            group_name="",
+            group_title="",
             widget_icon="filter",
             widget_colour="olive",
             widget_icon_class="fa fa-filter",
@@ -529,6 +591,8 @@ class Command(BaseCommand):
         accessions = Component().create_component(
             name="accessions",
             title="Accessions",
+            group_name="",
+            group_title="",
             widget_icon="sitemap",
             widget_colour="pink",
             widget_icon_class="fa fa-sitemap",
@@ -539,6 +603,8 @@ class Command(BaseCommand):
         profile = Component().create_component(
             name="profile",
             title="Work Profiles",
+            group_name="",
+            group_title="",
             widget_icon="",
             widget_colour="",
             widget_icon_class="",
@@ -549,6 +615,8 @@ class Command(BaseCommand):
         general_sample = Component().create_component(
             name="general_sample",
             title="Samples",
+            group_name="",
+            group_title="",
             widget_icon="filter",
             widget_colour="olive",
             widget_icon_class="fa fa-filter",
@@ -556,7 +624,6 @@ class Command(BaseCommand):
             reverse_url="copo_sample:copo_general_samples",
             subtitle="#component_subtitle",
         )
-
 
         assembly.recordaction_buttons.set(
             [
@@ -612,16 +679,27 @@ class Command(BaseCommand):
         )
 
         singlecell.recordaction_buttons.set(
-            [delete_singlecell_multi, download_singlecell_manifest_single, make_snapshot]
+            [
+                delete_singlecell_multi,
+                download_singlecell_manifest_single,
+                make_snapshot,
+            ]
         )
         singlecell.title_buttons.set(
             [new_singlecell_spreadsheet_template, download_blank_manifest_template]
         )
 
-        images.recordaction_buttons.set(
-            [delete_singlecell_multi, download_singlecell_manifest_single, make_snapshot]
+        images_rembi.recordaction_buttons.set(
+            [delete_singlecell_multi, download_singlecell_manifest_single]
         )
-        images.title_buttons.set(
+        images_rembi.title_buttons.set(
+            [new_singlecell_spreadsheet_template, download_blank_manifest_template]
+        )
+
+        images_stx_fish.recordaction_buttons.set(
+            [delete_singlecell_multi, download_singlecell_manifest_single]
+        )
+        images_stx_fish.title_buttons.set(
             [new_singlecell_spreadsheet_template, download_blank_manifest_template]
         )
 
@@ -720,6 +798,8 @@ class Command(BaseCommand):
                 read,
                 singlecell,
                 images,
+                images_rembi,
+                images_stx_fish,
                 accessions,
             ]
         )
