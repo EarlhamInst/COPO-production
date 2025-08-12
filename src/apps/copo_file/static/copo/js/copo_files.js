@@ -36,14 +36,14 @@ $(document).ready(function () {
   var csrftoken = $.cookie('csrftoken');
 
   //get component metadata
-  var componentMeta = get_component_meta(component);
+  var componentMeta = getComponentMeta(component);
 
   load_records(componentMeta); // call to load component records
 
   //register_resolvers_event(); //register event for publication resolvers
 
   //instantiate/refresh tooltips
-  refresh_tool_tips();
+  refreshToolTips();
 
   //trigger refresh of table
   $('body').on('refreshtable', function (event) {
@@ -62,25 +62,30 @@ $(document).ready(function () {
     for (var i = 0; i < numCols; i++) {
       if ($(table.column(i).header()).text() == 'SIZE IN BYTES') {
         var bucket_size_in_GB = table
-        .column(i)
-        .data()
-        .toArray()
-        .reduce(
-          (accumulator, currentValue) => accumulator + currentValue, 0,
-        );
-      
+          .column(i)
+          .data()
+          .toArray()
+          .reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+
         let table_wrapper = $('#' + componentMeta.tableID + '_wrapper');
-        
-        total_size = table_wrapper.find('#total_size')
+
+        total_size = table_wrapper.find('#total_size');
         if (total_size.length == 0) {
-          $('<span id="total_size"/>').insertBefore(table_wrapper.find('.dataTables_filter').find("label")).css({ float: 'left', padding: '16px 0'  });
-          total_size = table_wrapper.find('#total_size')
+          $('<span id="total_size"/>')
+            .insertBefore(
+              table_wrapper.find('.dataTables_filter').find('label')
+            )
+            .css({ float: 'left', padding: '16px 0' });
+          total_size = table_wrapper.find('#total_size');
         }
-        total_size.text('Total size for the files: ' + Math.round(bucket_size_in_GB/1024/1024/1024 * 100) / 100 + 'GB');
-        break
+        total_size.text(
+          'Total size for the files: ' +
+            Math.round((bucket_size_in_GB / 1024 / 1024 / 1024) * 100) / 100 +
+            'GB'
+        );
+        break;
       }
     }
-
   });
 
   // Remove profile title if present
@@ -195,18 +200,19 @@ $(document).ready(function () {
       });
   });
 
-  $(document).on("click", "#copy_urls_button", function (evt) {
+  $(document).on('click', '#copy_urls_button', function (evt) {
     //  $("#command_area").select()
     //navigator.clipboard.writeText($("#command_area").text());
-        //navigator.clipboard.writeText($("#command_area").text());
-        doDL($("#command_area").text());
-    })
-    
-    function doDL(s){
-        function dataUrl(data) {return "data:x-application/text," + encodeURI(data);}
-        window.open(dataUrl(s));
-    }
+    //navigator.clipboard.writeText($("#command_area").text());
+    doDL($('#command_area').text());
+  });
 
+  function doDL(s) {
+    function dataUrl(data) {
+      return 'data:x-application/text,' + encodeURI(data);
+    }
+    window.open(dataUrl(s));
+  }
 
   $(document).on('click', '#upload_local_files_button', function (evt) {
     //  $("#command_area").select()
@@ -259,10 +265,10 @@ function upload_files(files) {
     .fail(function (jqXHR, status, error) {
       $('#upload_local_files_button').fadeIn();
       $('#ss_upload_spinner').fadeOut('fast');
-      //console.log(jqXHR) 
-      var message = "Cannot upload files, please check your file size"
-      if (jqXHR.status != "0"){
-        message = jqXHR.status + " " + error
+      //console.log(jqXHR)
+      var message = 'Cannot upload files, please check your file size';
+      if (jqXHR.status != '0') {
+        message = jqXHR.status + ' ' + error;
       }
 
       BootstrapDialog.show({

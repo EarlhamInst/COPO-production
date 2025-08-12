@@ -53,7 +53,7 @@ $(document).ready(function () {
 
   do_global_help(component);
 
-  refresh_tool_tips();
+  refreshToolTips();
 
   //handle task button event
   $('body').on('addbuttonevents', function (event) {
@@ -70,7 +70,7 @@ $(document).ready(function () {
 
   //add new component button
   $(document).on('click', '.new-component-template', function (event) {
-    initiate_form_call(component);
+    initiateFormCall(component);
   });
 
   //details button hover
@@ -93,7 +93,7 @@ $(document).ready(function () {
 
     //add task
     if (task == 'add') {
-      initiate_form_call(component);
+      initiateFormCall(component);
       return false;
     }
 

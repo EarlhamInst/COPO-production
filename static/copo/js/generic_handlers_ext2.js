@@ -21,59 +21,66 @@ $(document).ready(function () {
   });
 });
 
-function render_thumbnail_image_column_function (data, type, row, meta) {
-    profile_id = $('#profile_id').val();
-    if (data == null || data == "") {
-        return "";
-    } 
-    if (type === 'display') {
-        src = data.toLowerCase();
-        extension = src.substring(src.lastIndexOf("."));
-        if (image_file_extensions.includes(extension)) {
-            src = data
-            image_folder = upload_url + '/'+ profile_id + '/'
-            last_index_of_dot = src.lastIndexOf(".");
-            src = src.substring(0, last_index_of_dot)+"_thumb"+src.substring(last_index_of_dot);
-            //var image_html = '<a  target="_blank" href="'+ image_folder + data + '"><img title="' + data + '" src="'+ image_folder + src + '" /></a>';
-            var image_html = '<img title="' + data + '" src="'+ image_folder + src + '" onerror="this.onerror=null;this.title=\'image is being downloaded\';" />';
-            return image_html;
-        } else {
-            return data;
-        }
+function render_thumbnail_image_column_function(data, type, row, meta) {
+  profile_id = $('#profile_id').val();
+  if (data == null || data == '') {
+    return '';
+  }
+  if (type === 'display') {
+    src = data.toLowerCase();
+    extension = src.substring(src.lastIndexOf('.'));
+    if (image_file_extensions.includes(extension)) {
+      src = data;
+      image_folder = upload_url + '/' + profile_id + '/';
+      last_index_of_dot = src.lastIndexOf('.');
+      src =
+        src.substring(0, last_index_of_dot) +
+        '_thumb' +
+        src.substring(last_index_of_dot);
+      //var image_html = '<a  target="_blank" href="'+ image_folder + data + '"><img title="' + data + '" src="'+ image_folder + src + '" /></a>';
+      var image_html =
+        '<img title="' +
+        data +
+        '" src="' +
+        image_folder +
+        src +
+        '" onerror="this.onerror=null;this.title=\'image is being downloaded\';" />';
+      return image_html;
+    } else {
+      return data;
     }
-    else {
-        return data;
-    }
+  } else {
+    return data;
+  }
 }
 
 function render_ena_accession_function(data, type, row, meta) {
-    if (data == null || data == "") {
-        return "";
-    }
-    if (type === 'display') {
-
-        var url = 'https://www.ebi.ac.uk/ena/browser/view/' + data;
-        var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
-        return html;
-    } else {
-        return data;
-    } 
+  if (data == null || data == '') {
+    return '';
+  }
+  if (type === 'display') {
+    var url = 'https://www.ebi.ac.uk/ena/browser/view/' + data;
+    var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
+    return html;
+  } else {
+    return data;
+  }
 }
 
 function render_zenodo_accession_function(data, type, row, meta) {
-    if (data == null || data == "") {
-        return "";
-    }
-    if (type === 'display') {
-        var url = 'https://zenodo.org/records/' + data;
-        var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
-        return html;
-    } else {
-        return data;
-    } 
+  if (data == null || data == '') {
+    return '';
+  }
+  if (type === 'display') {
+    var url = 'https://zenodo.org/records/' + data;
+    var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
+    return html;
+  } else {
+    return data;
+  }
 }
 
-function set_empty_component_message(dataRows, table_id = '*') {
+function setEmptyComponentMessage(dataRows, table_id = '*') {
   //decides, based on presence of record, to display table or getting started info
 
   if (dataRows == 0) {
@@ -110,7 +117,7 @@ function place_task_buttons(componentMeta) {
 
   if (componentMeta.recordActions.length) {
     componentMeta.recordActions.forEach(function (item) {
-      button_str = record_action_button_def[item].template;
+      button_str = recordActionButtonDef[item].template;
       var actionBTN = $(button_str);
       /*
       var actionBTN = $('.record-action-templates')
@@ -127,22 +134,26 @@ function place_task_buttons(componentMeta) {
   component = componentMeta.component;
   if (component.indexOf('#') > -1) {
     //if component has subcomponent, then use the subcomponent name
-    component = component.substring(component.lastIndexOf("#")+1);
+    component = component.substring(component.lastIndexOf('#') + 1);
   }
-  if (component=="study" && componentMeta.submission_repository != undefined && componentMeta.submission_repository.length) {
-      componentMeta.submission_repository.forEach(function (item) {
-      button_types = ["submit", "publish"];
+  if (
+    component == 'study' &&
+    componentMeta.submission_repository != undefined &&
+    componentMeta.submission_repository.length
+  ) {
+    componentMeta.submission_repository.forEach(function (item) {
+      button_types = ['submit', 'publish'];
       button_types.forEach(function (button_type) {
-      action_button_name = button_type + "_singlecell_single_" + item;
-        if ( action_button_name in record_action_button_def  ) {
-            button_str = record_action_button_def[action_button_name].template;
-            var actionBTN = $(button_str);
-            //actionBTN.removeClass(item);
-            actionBTN.attr('data-table', componentMeta.tableID);
-            customButtons.append(actionBTN);
-            is_custom_buttons_needed = true;
+        action_button_name = button_type + '_singlecell_single_' + item;
+        if (action_button_name in recordActionButtonDef) {
+          button_str = recordActionButtonDef[action_button_name].template;
+          var actionBTN = $(button_str);
+          //actionBTN.removeClass(item);
+          actionBTN.attr('data-table', componentMeta.tableID);
+          customButtons.append(actionBTN);
+          is_custom_buttons_needed = true;
         }
-      })
+      });
     });
   }
 
@@ -158,7 +169,7 @@ function place_task_buttons(componentMeta) {
   if (is_custom_buttons_needed) {
     var table = $('#' + componentMeta.tableID).DataTable();
     $(table.buttons().container()).append(customButtons);
-    refresh_tool_tips();
+    refreshToolTips();
     //table action buttons
     do_table_buttons_events();
   }
@@ -467,7 +478,7 @@ function do_render_server_side_table(componentMeta) {
         $(row).addClass('draggable_tr');
       },
       fnDrawCallback: function () {
-        refresh_tool_tips();
+        refreshToolTips();
         var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
         event.tableID = tableID;
         $('body').trigger(event);
@@ -720,8 +731,11 @@ function do_render_server_side_table(componentMeta) {
     });
 } //end of func
 
-function do_render_component_table_tabs(data, componentMeta, columnDefs = null) {
-
+function do_render_component_table_tabs(
+  data,
+  componentMeta,
+  columnDefs = null
+) {
   var tab_content = $('#' + componentMeta.component + '_data_tab_content');
   var tabs = $('#' + componentMeta.component + '_data_tabs');
 
@@ -730,52 +744,53 @@ function do_render_component_table_tabs(data, componentMeta, columnDefs = null) 
     var component = data.table_data.components[i];
     var tableTitle = component.replace(/_/g, ' ').toUpperCase();
     var dataSet = data.table_data.dataSet[component];
-    var submission_repository = data.table_data.submission_repository[component];
+    var submission_repository =
+      data.table_data.submission_repository[component];
 
     if (typeof dataSet == 'undefined') {
       dataSet = [];
       continue;
     } else if (dataSet.length > 0 && is_empty) {
-        is_empty = false;
-        tab_content.empty()
-        tabs.empty()
-      }
-    
+      is_empty = false;
+      tab_content.empty();
+      tabs.empty();
+    }
+
     li = $('<li/>').addClass('nav-item');
 
-    a = $('<a/>').addClass('nav-link')
-        .attr('id', component + '_data_tab')
-        .attr('data-toggle', 'tab')
-        .attr('href', '#' + component + '_data')
-        .attr('role', 'tab')
-        .attr('aria-controls', component+"_data")
-        .attr('aria-selected', 'false')
-        .html(component.replace(/_/g, ' ').toUpperCase());
+    a = $('<a/>')
+      .addClass('nav-link')
+      .attr('id', component + '_data_tab')
+      .attr('data-toggle', 'tab')
+      .attr('href', '#' + component + '_data')
+      .attr('role', 'tab')
+      .attr('aria-controls', component + '_data')
+      .attr('aria-selected', 'false')
+      .html(component.replace(/_/g, ' ').toUpperCase());
 
     li.append(a);
     tabs.append(li);
 
-    table_name = componentMeta.tableID + "_" + component;
+    table_name = componentMeta.tableID + '_' + component;
     div = $('<div/>')
-          .addClass('tab-pane')
-          .addClass('fade')
-          //.addClass('table-parent-div')
-          .attr('id', component+"_data")
-          .attr('role', 'tabpanel')
-          .attr('aria-labelledby', component + '_data_tab')
-  
+      .addClass('tab-pane')
+      .addClass('fade')
+      //.addClass('table-parent-div')
+      .attr('id', component + '_data')
+      .attr('role', 'tabpanel')
+      .attr('aria-labelledby', component + '_data_tab');
 
     table = $('<table/>')
-                  .attr('id', table_name)
-                  .attr('width', '100%')
-                  .attr("cellspacing", "0")
-                  .addClass('ui')
-                  .addClass('celled')
-                  .addClass('table')
-                  .addClass('hover')
-                  .addClass('copo-noborders-table');
+      .attr('id', table_name)
+      .attr('width', '100%')
+      .attr('cellspacing', '0')
+      .addClass('ui')
+      .addClass('celled')
+      .addClass('table')
+      .addClass('hover')
+      .addClass('copo-noborders-table');
     div.append(table);
-    tab_content.append(div);          
+    tab_content.append(div);
 
     if (i == 0) {
       li.addClass('active');
@@ -792,25 +807,26 @@ function do_render_component_table_tabs(data, componentMeta, columnDefs = null) 
     }
     */
 
-    tab_data = {table_data: {dataSet: dataSet, columns: cols}};
-    new_componentMeta =  { ...componentMeta };
-    new_componentMeta["tableID"]= tableID
-    new_componentMeta["component"] = componentMeta.component + "#" + component;
-    new_componentMeta["title"] = tableTitle;
-    new_componentMeta["submission_repository"] = submission_repository;
+    tab_data = { table_data: { dataSet: dataSet, columns: cols } };
+    new_componentMeta = { ...componentMeta };
+    new_componentMeta['tableID'] = tableID;
+    new_componentMeta['component'] = componentMeta.component + '#' + component;
+    new_componentMeta['title'] = tableTitle;
+    new_componentMeta['submission_repository'] = submission_repository;
     do_render_component_table(tab_data, new_componentMeta, columnDefs);
   }
 
   if (is_empty) {
-    set_empty_component_message(0)
+    setEmptyComponentMessage(0);
   }
 
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     active_tab = $(e.target).attr('aria-controls');
-    table = $('#' + active_tab).find('table').DataTable();
+    table = $('#' + active_tab)
+      .find('table')
+      .DataTable();
     table.columns.adjust().draw();
-  })
-
+  });
 }
 
 function do_render_component_table(data, componentMeta, columnDefs = null) {
@@ -819,13 +835,13 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
   var cols = data.table_data.columns;
 
   for (var j = 0; j < cols.length; ++j) {
-    if (typeof cols[j].render != "undefined" && cols[j].render != "") {
-        cols[j].render = eval(cols[j].render); //convert string to function
-        //cols[j].orderable = false; //make all columns orderable by default
+    if (typeof cols[j].render != 'undefined' && cols[j].render != '') {
+      cols[j].render = eval(cols[j].render); //convert string to function
+      //cols[j].orderable = false; //make all columns orderable by default
     }
   }
 
-  set_empty_component_message(dataSet.length); //display empty component message when there's no record
+  setEmptyComponentMessage(dataSet.length); //display empty component message when there's no record
 
   if (dataSet.length === 0) {
     return false;
@@ -912,7 +928,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
       //order: [[1, 'asc']],
       columns: cols,
       fnDrawCallback: function () {
-        refresh_tool_tips();
+        refreshToolTips();
         var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
         event.tableID = tableID;
         $('body').trigger(event);
@@ -1007,7 +1023,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
           subcomponent = componentMeta.component.substring(idx + 1);
         } else {
           component = componentMeta.component;
-          subcomponent = "";
+          subcomponent = '';
         }
         $.ajax({
           url: copoVisualsURL,
@@ -1094,7 +1110,10 @@ function load_records(componentMeta, args_dict, columnDefs = null) {
       alert("Couldn't retrieve " + componentMeta.component + ' data!');
     },
   }).done(function (data) {
-    if (typeof(data.table_data) != "undefined" && typeof(data.table_data.components) != 'undefined') {
+    if (
+      typeof data.table_data != 'undefined' &&
+      typeof data.table_data.components != 'undefined'
+    ) {
       do_render_component_table_tabs(data, componentMeta, columnDefs);
     } else {
       do_render_component_table(data, componentMeta, columnDefs);

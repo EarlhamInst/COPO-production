@@ -34,7 +34,8 @@ $(document).ready(function () {
   if (window.location.protocol === 'https:') {
     wsprotocol = 'wss://';
   }
-  var wsurl = wsprotocol + window.location.host + '/ws/assembly_status/' + profile_id;
+  var wsurl =
+    wsprotocol + window.location.host + '/ws/assembly_status/' + profile_id;
 
   s3socket = new WebSocket(wsurl);
 
@@ -189,15 +190,15 @@ $(document).ready(function () {
   var csrftoken = $.cookie('csrftoken');
 
   //get component metadata
-  var componentMeta = get_component_meta(component);
+  var componentMeta = getComponentMeta(component);
   var args_dict = {};
-  args_dict['profile_id'] = profile_id,
-  load_records(componentMeta, args_dict); // call to load component records
+  (args_dict['profile_id'] = profile_id),
+    load_records(componentMeta, args_dict); // call to load component records
 
   //register_resolvers_event(); //register event for publication resolvers
 
   //instantiate/refresh tooltips
-  refresh_tool_tips();
+  refreshToolTips();
 
   //trigger refresh of table
   $('body').on('refreshtable', function (event) {

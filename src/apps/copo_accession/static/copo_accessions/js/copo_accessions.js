@@ -229,7 +229,7 @@ $(document).on('document_ready', function () {
   do_accessions_table_records_exist();
 
   // Instantiate/refresh tooltips
-  refresh_tool_tips();
+  refreshToolTips();
 }); //End document ready
 
 //______________Handlers___________________________________
@@ -369,11 +369,11 @@ function place_accessions_task_buttons(componentMeta) {
     customButtons.append(actionBTN);
   });
 
-  refresh_tool_tips();
+  refreshToolTips();
 }
 
 function customise_accessions_table(table) {
-  const componentMeta = get_component_meta($('#nav_component_name').val());
+  const componentMeta = getComponentMeta($('#nav_component_name').val());
   const tableID = `#${componentMeta.tableID}`;
 
   // Add buttons to the table

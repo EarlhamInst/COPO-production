@@ -51,7 +51,7 @@ $(document).ready(function () {
     if (component == 'annotation') {
       initiate_annotation_call();
     } else {
-      initiate_form_call(component);
+      initiateFormCall(component);
     }
   });
 }); //end of document ready
@@ -93,7 +93,7 @@ var controlsMapping = {
   'semantic-ui-search': 'do_semantic_search_ui',
 };
 
-function initiate_form_call(component, args_dict) {
+function initiateFormCall(component, args_dict) {
   const errorMsg = "Couldn't build " + component + ' form!';
 
   var post_data = {};
@@ -163,7 +163,7 @@ function json2HtmlForm(data) {
   //tidy up before closing the modal
   const doTidyClose = {
     closeIt: function (dialogRef) {
-      refresh_tool_tips();
+      refreshToolTips();
 
       htmlForm.empty(); //clear form
       dialogRef.close();
@@ -182,7 +182,7 @@ function json2HtmlForm(data) {
     animate: true,
     draggable: true,
     onhide: function (dialogRef) {
-      refresh_tool_tips();
+      refreshToolTips();
     },
     onshown: function (dialogRef) {
       // Set aria-hidden to false and aria-modal to true
@@ -628,7 +628,7 @@ function build_clone_control(component_records, component_label) {
 
 function refresh_form_aux_controls() {
   //refresh controls
-  refresh_tool_tips();
+  refreshToolTips();
 
   //set up help tips
   set_up_help_ctrl('helptips-chk');
@@ -2376,7 +2376,7 @@ function create_attachable_component(formElem) {
     animate: true,
     draggable: false,
     onhide: function (dialogRef) {
-      refresh_tool_tips();
+      refreshToolTips();
     },
     onshown: function (dialogRef) {
       //prevent enter keypress from submitting form automatically
@@ -2473,10 +2473,10 @@ function create_attachable_component(formElem) {
                 //set the new record
                 selectizeControl.setValue(data.created_record_id, false);
 
-                refresh_tool_tips();
+                refreshToolTips();
               }
 
-              refresh_tool_tips();
+              refreshToolTips();
 
               dialogRef.close();
             },
@@ -2491,7 +2491,7 @@ function create_attachable_component(formElem) {
       refresh_validator(formCtrl);
 
       //refresh controls
-      refresh_tool_tips();
+      refreshToolTips();
 
       //set up help tips
       set_up_help_ctrl('helptips-chk-sub');
@@ -2501,7 +2501,7 @@ function create_attachable_component(formElem) {
         label: 'Cancel',
         cssClass: 'tiny ui basic button',
         action: function (dialogRef) {
-          refresh_tool_tips();
+          refreshToolTips();
           dialogRef.close();
         },
       },
@@ -2546,7 +2546,7 @@ function create_attachable_component(formElem) {
       formCtrl.append(generate_form_controls(formSchema, data.form.form_value));
 
       //refresh controls
-      refresh_tool_tips();
+      refreshToolTips();
 
       //attach clone control
       if (data.component_records.length) {
@@ -2555,7 +2555,7 @@ function create_attachable_component(formElem) {
         );
 
         //refresh controls
-        refresh_tool_tips();
+        refreshToolTips();
 
         //listen to clone control value change
         cloneCol.find('.copo-clone-control').on('change', function (event) {
@@ -2590,7 +2590,7 @@ function create_attachable_component(formElem) {
               refresh_validator(formCtrl);
 
               //refresh controls
-              refresh_tool_tips();
+              refreshToolTips();
             },
             error: function () {
               alert("Couldn't retrieve clone record!");
@@ -2696,7 +2696,7 @@ function do_array_ctrls(ctrlsDiv, counter, formElem) {
 
       //refresh controls
       refresh_validator($(this).closest('form'));
-      refresh_tool_tips();
+      refreshToolTips();
     },
   });
 
@@ -2747,7 +2747,7 @@ function get_element_clone(ctrlsDiv, counter) {
     get_element_clone(ctrlsDiv, counter).insertAfter(row);
 
     //refresh controls
-    refresh_tool_tips();
+    refreshToolTips();
   });
 
   left.append(ctrlClone);
@@ -2986,7 +2986,7 @@ function get_general_ontologyselect_span(ontologySpan, formElem) {
     formElem.option_values.sort(function (a, b) {
       return a.label.localeCompare(b.label);
     });
-    
+
     option_values = formElem.option_values;
   }
 
@@ -3285,7 +3285,7 @@ function get_form_ctrl(ctrlsDiv, formElem, elemValue) {
       get_element_clone(ctrlsDiv, counter).insertAfter(firstElement);
 
       //refresh controls
-      refresh_tool_tips();
+      refreshToolTips();
     });
   }
 
@@ -3671,7 +3671,7 @@ function save_form(formJSON, dialogRef) {
             dialog.close();
           });
 
-          refresh_tool_tips();
+          refreshToolTips();
 
           do_crud_action_feedback(data.action_feedback);
 
@@ -3691,7 +3691,7 @@ function save_form(formJSON, dialogRef) {
       }
 
       dialogRef.close();
-      refresh_tool_tips();
+      refreshToolTips();
     },
     error: function (data) {
       console.log(data.responseText);

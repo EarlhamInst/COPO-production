@@ -252,7 +252,7 @@ $(document).ready(function () {
   var csrftoken = $.cookie('csrftoken');
 
   //get component metadata
-  var componentMeta = get_component_meta(component);
+  var componentMeta = getComponentMeta(component);
   var args_dict = {};
   args_dict['profile_id'] = $('#profile_id').val();
   load_records(componentMeta, args_dict); // call to load component records
@@ -260,7 +260,7 @@ $(document).ready(function () {
   //register_resolvers_event(); //register event for publication resolvers
 
   //instantiate/refresh tooltips
-  refresh_tool_tips();
+  refreshToolTips();
 
   //trigger refresh of table
   $('body').on('refreshtable', function (event) {
@@ -357,7 +357,7 @@ $(document).ready(function () {
                     });
 
                     $el = $('.modal-dialog').find('#id_experiment');
-                    let experiment = []
+                    let experiment = [];
                     $el.find(':selected').each(function () {
                       experiment.push($(this).val());
                     });
@@ -422,7 +422,8 @@ $(document).ready(function () {
       url = '/copo/copo_seq_annotation/' + profile_id;
       handle_add_n_edit(url);
     } else if (task == 'edit') {
-      url = '/copo/copo_seq_annotation/' + profile_id + '/' + records[0].record_id;
+      url =
+        '/copo/copo_seq_annotation/' + profile_id + '/' + records[0].record_id;
       handle_add_n_edit(url);
     } else {
       form_generic_task(component, task, records);

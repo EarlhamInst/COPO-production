@@ -1,28 +1,28 @@
 $(document).ready(function () {
-    load_manifest_submission_list();
-    $(document).on("click", ".submit_button_clicked", submit_button_clicked)
-})
+  load_manifest_submission_list();
+  $(document).on('click', '.submit_button_clicked', submit_button_clicked);
+});
 
 function load_manifest_submission_list() {
-    var csrftoken = $('[name="csrfmiddlewaretoken"]').val();
-    $.ajax({
-        url: "/copo/copo_read/get_manifest_submission_list/",
-        headers: {
-            'X-CSRFToken': csrftoken
-        }
-    }).done(function (data) {
-        data = JSON.parse(data)
-        out = {}
-        out.table_data = {}
-        out.table_data.dataSet = data
-        do_display_manifest_submissions(out)
-    })
+  var csrftoken = $('[name="csrfmiddlewaretoken"]').val();
+  $.ajax({
+    url: '/copo/copo_read/get_manifest_submission_list/',
+    headers: {
+      'X-CSRFToken': csrftoken,
+    },
+  }).done(function (data) {
+    data = JSON.parse(data);
+    out = {};
+    out.table_data = {};
+    out.table_data.dataSet = data;
+    do_display_manifest_submissions(out);
+  });
 }
 
 function do_display_manifest_submissions(data) {
   var dtd = data.table_data.dataSet;
   var tableID = 'manifest_table';
-  set_empty_component_message(dtd.length, '#' + tableID); //display empty submission message.
+  setEmptyComponentMessage(dtd.length, '#' + tableID); //display empty submission message.
 
   if (dtd.length == 0) {
     return false;
@@ -191,7 +191,7 @@ function do_display_manifest_submissions(data) {
       ],
       columnDefs: [],
       fnDrawCallback: function () {
-        refresh_tool_tips();
+        refreshToolTips();
       },
       createdRow: function (row, data, index) {},
       dom: 'Bfr<"row"><"row info-rw" i>tlp',
@@ -225,114 +225,109 @@ function do_display_manifest_submissions(data) {
   //get_submission_information(submission_ids);
 }
 
-
 function get_manifest_table_dataset(dtd) {
-    var dataSet = [];
+  var dataSet = [];
 
-    for (var i = 0; i < dtd.length; ++i) {
-        var data = dtd[i];
-        // get submission type
-        var manifest_submission = null
-        if (data.hasOwnProperty("manifest_submission")) {
-            manifest_submission = 1
-        } else {
-            manifest_submission = 0
-        }
-        //get s_n
-        var s_n = '';
-        if (data.hasOwnProperty("s_n")) {
-            s_n = data.s_n;
-        }
-
-        //get submission id
-        var record_id = '';
-        if (data.hasOwnProperty("record_id")) {
-            record_id = data.record_id;
-        }
-        if (data.hasOwnProperty("_id")) {
-            record_id = data._id.$oid
-        }
-
-        //get row id
-        var DT_RowId = '';
-        if (data.hasOwnProperty("DT_RowId")) {
-            DT_RowId = data.DT_RowId;
-        } else {
-            DT_RowId = "row_" + data._id.$oid
-        }
-
-        //get repository_name
-        var repository_name = '';
-        if (data.hasOwnProperty("repository_name")) {
-            repository_name = data.repository_name;
-        }
-
-        //get repository_type
-        var repository_type = '';
-        if (data.hasOwnProperty("repository_type")) {
-            repository_type = data.repository_type;
-        }
-        if (data.hasOwnProperty("repository")) {
-            repository_type = data.repository
-        }
-
-        //get bundle name
-        var bundle_name = '';
-        if (data.hasOwnProperty("bundle_name")) {
-            bundle_name = data.bundle_name;
-        }
-
-        //get complete status
-        var complete = 'false';
-        if (data.hasOwnProperty("complete")) {
-            complete = data.complete;
-        }
-
-        //get date modified
-        var date_modified = '';
-        if (data.hasOwnProperty("date_modified")) {
-            date_modified = data.date_modified;
-        }
-
-
-        if (record_id) {
-            let option = {};
-            if (manifest_submission) {
-                option["record_id"] = record_id;
-                option["complete"] = complete;
-                option["repository_type"] = repository_type;
-                option["s_n"] = s_n;
-                option["DT_RowId"] = DT_RowId;
-            } else {
-                option["s_n"] = s_n;
-                option["DT_RowId"] = DT_RowId;
-                option["repository_type"] = repository_type;
-                option["bundle_name"] = bundle_name;
-                option["repository_name"] = repository_name;
-                option["date_modified"] = date_modified;
-                option["record_id"] = record_id;
-                option["complete"] = complete;
-            }
-            dataSet.push(option);
-        }
+  for (var i = 0; i < dtd.length; ++i) {
+    var data = dtd[i];
+    // get submission type
+    var manifest_submission = null;
+    if (data.hasOwnProperty('manifest_submission')) {
+      manifest_submission = 1;
+    } else {
+      manifest_submission = 0;
+    }
+    //get s_n
+    var s_n = '';
+    if (data.hasOwnProperty('s_n')) {
+      s_n = data.s_n;
     }
 
-    return dataSet;
+    //get submission id
+    var record_id = '';
+    if (data.hasOwnProperty('record_id')) {
+      record_id = data.record_id;
+    }
+    if (data.hasOwnProperty('_id')) {
+      record_id = data._id.$oid;
+    }
+
+    //get row id
+    var DT_RowId = '';
+    if (data.hasOwnProperty('DT_RowId')) {
+      DT_RowId = data.DT_RowId;
+    } else {
+      DT_RowId = 'row_' + data._id.$oid;
+    }
+
+    //get repository_name
+    var repository_name = '';
+    if (data.hasOwnProperty('repository_name')) {
+      repository_name = data.repository_name;
+    }
+
+    //get repository_type
+    var repository_type = '';
+    if (data.hasOwnProperty('repository_type')) {
+      repository_type = data.repository_type;
+    }
+    if (data.hasOwnProperty('repository')) {
+      repository_type = data.repository;
+    }
+
+    //get bundle name
+    var bundle_name = '';
+    if (data.hasOwnProperty('bundle_name')) {
+      bundle_name = data.bundle_name;
+    }
+
+    //get complete status
+    var complete = 'false';
+    if (data.hasOwnProperty('complete')) {
+      complete = data.complete;
+    }
+
+    //get date modified
+    var date_modified = '';
+    if (data.hasOwnProperty('date_modified')) {
+      date_modified = data.date_modified;
+    }
+
+    if (record_id) {
+      let option = {};
+      if (manifest_submission) {
+        option['record_id'] = record_id;
+        option['complete'] = complete;
+        option['repository_type'] = repository_type;
+        option['s_n'] = s_n;
+        option['DT_RowId'] = DT_RowId;
+      } else {
+        option['s_n'] = s_n;
+        option['DT_RowId'] = DT_RowId;
+        option['repository_type'] = repository_type;
+        option['bundle_name'] = bundle_name;
+        option['repository_name'] = repository_name;
+        option['date_modified'] = date_modified;
+        option['record_id'] = record_id;
+        option['complete'] = complete;
+      }
+      dataSet.push(option);
+    }
+  }
+
+  return dataSet;
 }
 
 function submit_button_clicked(evt) {
-    evt.preventDefault()
-    let sub_id = evt.currentTarget.id.split("_")[1]
+  evt.preventDefault();
+  let sub_id = evt.currentTarget.id.split('_')[1];
 
-    $.ajax({
-        url: "/copo/copo_read/init_manifest_submission/",
-        headers: {
-            'X-CSRFToken': csrftoken
-        },
-        data: {"submission_id": sub_id},
-        method: "POST"
-    }).done(function () {
-
-    })
-
+  $.ajax({
+    url: '/copo/copo_read/init_manifest_submission/',
+    headers: {
+      'X-CSRFToken': csrftoken,
+    },
+    data: { submission_id: sub_id },
+    method: 'POST',
+  }).done(function () {});
 }

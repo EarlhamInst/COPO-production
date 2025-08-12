@@ -36,8 +36,8 @@ function initialise_checklist_id() {
 }
 
 function reset_value() {
-  $("#singlecell_data_tabs").empty();
-  $("#singlecell_data_tab_content").empty();
+  $('#singlecell_data_tabs').empty();
+  $('#singlecell_data_tab_content').empty();
   current_study_id = '';
 }
 
@@ -50,13 +50,15 @@ $(document).on('document_ready', function () {
   //uid = uid[uid.length - 2];
   var wsprotocol = 'ws://';
   var s3socket;
-  var schema_name = $("#schema_name").val();
- 
+  var schema_name = $('#schema_name').val();
+
   if (window.location.protocol === 'https:') {
     wsprotocol = 'wss://';
   }
-  var wsurl = wsprotocol + window.location.host + '/ws/singlecell_status/' + profile_id;
-  var submission_wsurl =  wsprotocol + window.location.host + '/ws/submission_status/' + profile_id;
+  var wsurl =
+    wsprotocol + window.location.host + '/ws/singlecell_status/' + profile_id;
+  var submission_wsurl =
+    wsprotocol + window.location.host + '/ws/submission_status/' + profile_id;
 
   s3socket = new WebSocket(wsurl);
   submissionSocket = new WebSocket(submission_wsurl);
@@ -73,7 +75,7 @@ $(document).on('document_ready', function () {
 
     if (d.html_id != '') {
       element = element = $('#' + d.html_id);
- 
+
       if (!d && !$(element).is(':hidden')) {
         $(element).fadeOut('50');
       } else if (d && d.message && $(element).is(':hidden')) {
@@ -99,7 +101,7 @@ $(document).on('document_ready', function () {
       $(element).html(d.message);
       //$("#spinner").fadeOut()
     }
-};
+  };
 
   s3socket.onclose = function (e) {
     console.log('s3socket closing ', e);
@@ -144,55 +146,55 @@ $(document).on('document_ready', function () {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');
       $(element).html(d.message);
-      $('#export_error_button').prop("disabled", false)
+      $('#export_error_button').prop('disabled', false);
       //$("#spinner").fadeOut()
     } else if (d.action === 'make_table') {
- 
-        tabs = $('#singlecell-tabs');
-        tab_content = $('#singlecell-tab-content');
-        tabs.empty();
-        tab_content.empty();
-        is_first_component = true
-        profile_id =  $('#profile_id').val()
-        d.data["components"].forEach(component => {
-          li = $('<li/>').addClass('nav-item');
-          a = $('<a/>').addClass('nav-link')
-              .attr('id', component + '-tab')
-              .attr('data-toggle', 'tab')
-              .attr('href', '#' + component+"_"+profile_id)
-              .attr('role', 'tab')
-              .attr('aria-controls', component)
-              .attr('aria-selected', 'false')
-              .html(component.replace(/_/g, ' ').toUpperCase());
+      tabs = $('#singlecell-tabs');
+      tab_content = $('#singlecell-tab-content');
+      tabs.empty();
+      tab_content.empty();
+      is_first_component = true;
+      profile_id = $('#profile_id').val();
+      d.data['components'].forEach((component) => {
+        li = $('<li/>').addClass('nav-item');
+        a = $('<a/>')
+          .addClass('nav-link')
+          .attr('id', component + '-tab')
+          .attr('data-toggle', 'tab')
+          .attr('href', '#' + component + '_' + profile_id)
+          .attr('role', 'tab')
+          .attr('aria-controls', component)
+          .attr('aria-selected', 'false')
+          .html(component.replace(/_/g, ' ').toUpperCase());
 
-          li.append(a);
-          tabs.append(li);
+        li.append(a);
+        tabs.append(li);
 
-          table_name = "singlecell_parse_table_" + component;
-          div = $('<div/>')
-                .addClass('tab-pane')
-                .addClass('fade')
-                .attr('id', component+"_"+profile_id)
-                .attr('role', 'tabpanel')
-                .attr('aria-labelledby', component + '-tab');
-          table = $('<table/>')
-                  .attr('id', table_name)
-                  .addClass('table')
-                  .addClass('table-striped')
-                  .addClass('table-bordered');
-          thead = $('<thead/>');
-          tbody = $('<tbody/>');
-          table.append(thead);
-          table.append(tbody);
-          div.append(table);
-          tab_content.append(div);
+        table_name = 'singlecell_parse_table_' + component;
+        div = $('<div/>')
+          .addClass('tab-pane')
+          .addClass('fade')
+          .attr('id', component + '_' + profile_id)
+          .attr('role', 'tabpanel')
+          .attr('aria-labelledby', component + '-tab');
+        table = $('<table/>')
+          .attr('id', table_name)
+          .addClass('table')
+          .addClass('table-striped')
+          .addClass('table-bordered');
+        thead = $('<thead/>');
+        tbody = $('<tbody/>');
+        table.append(thead);
+        table.append(tbody);
+        div.append(table);
+        tab_content.append(div);
 
-          if (is_first_component) {
-            li.addClass('active');
-            div.addClass('active in');
-            is_first_component = false;
-          } 
- 
+        if (is_first_component) {
+          li.addClass('active');
+          div.addClass('active in');
+          is_first_component = false;
+        }
+
         var is_first_row = true;
         for (r in d.message[component]) {
           row = d.message[component][r];
@@ -203,10 +205,10 @@ $(document).on('document_ready', function () {
               html: cell,
             });
             if (is_first_row) {
-                td = $('<th/>', {
+              td = $('<th/>', {
                 html: cell.replace(/_/g, ' ').toUpperCase(),
               });
-            } 
+            }
             tr.append(td);
           }
           if (is_first_row) {
@@ -214,21 +216,23 @@ $(document).on('document_ready', function () {
           } else {
             table.append(tr);
           }
-          is_first_row = false
+          is_first_row = false;
         }
 
-        table.DataTable({
-         scrollY: 'auto',
-         scrollX: true,
-       }).draw();
+        table
+          .DataTable({
+            scrollY: 'auto',
+            scrollX: true,
+          })
+          .draw();
       });
 
       $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
         active_tab = $(e.target).attr('aria-controls');
         table = $('#singlecell_parse_table_' + active_tab).DataTable();
         table.columns.adjust().draw();
-      })
-    
+      });
+
       $('#singlecell_info').hide();
       //$('#singlecell-tabs').fadeIn();
       $('#table_div').fadeIn(1000);
@@ -238,9 +242,9 @@ $(document).on('document_ready', function () {
       $(element).html(d.message);
       var args_dict = {};
       args_dict['singlecell_checklist_id'] = get_checklist_id();
-      args_dict['profile_id'] = $('#profile_id').val(),
-      args_dict['schema_name'] = schema_name;
-      load_records(componentMeta, args_dict, columnDefs); // call to load component records  
+      (args_dict['profile_id'] = $('#profile_id').val()),
+        (args_dict['schema_name'] = schema_name);
+      load_records(componentMeta, args_dict, columnDefs); // call to load component records
     } else if (d.action === 'file_processing_status') {
       $(element).html(d.message);
       table = $('#singlecell_table').DataTable();
@@ -251,7 +255,6 @@ $(document).on('document_ready', function () {
       table.columns.adjust().draw();
       table.search('').columns().search('').draw();
       $(element).html(d.message + ' ... Done');
-
     }
   };
   window.addEventListener('beforeunload', function (event) {
@@ -259,30 +262,32 @@ $(document).on('document_ready', function () {
   });
 
   //******************************Event Handlers Block*************************//
-  var component = $("#nav_component_name").val();
+  var component = $('#nav_component_name').val();
   var copoFormsURL = '/copo/copo_forms/';
   //var copoVisualsURL = "/copo/copo_visuals/";
   var csrftoken = $.cookie('csrftoken');
 
   //get component metadata
-  var componentMeta = get_component_meta(component);
-
+  var componentMeta = getComponentMeta(component);
 
   //load_records(componentMeta); // call to load component records
 
   initialise_checklist_id();
-  var args_dict = { singlecell_checklist_id: get_checklist_id(), schema_name: schema_name };
+  var args_dict = {
+    singlecell_checklist_id: get_checklist_id(),
+    schema_name: schema_name,
+  };
   $('.download-blank-manifest-template').attr(
     'href',
     $('#blank_manifest_url_' + get_checklist_id()).val()
   );
-  args_dict['profile_id'] = $('#profile_id').val(),
-  load_records(componentMeta, args_dict, columnDefs); // call to load component records  
+  (args_dict['profile_id'] = $('#profile_id').val()),
+    load_records(componentMeta, args_dict, columnDefs); // call to load component records
 
   //register_resolvers_event(); //register event for publication resolvers
 
   //instantiate/refresh tooltips
-  refresh_tool_tips();
+  refreshToolTips();
 
   //trigger refresh of table
   $('body').on('refreshtable', function (event) {
@@ -301,68 +306,71 @@ $(document).on('document_ready', function () {
     $(this).closest('.alert').remove();
   });
 
-
-
   //add new component button
   $(document)
     .off('click', '.new-singlecell-spreadsheet-template')
     .on('click', '.new-singlecell-spreadsheet-template', function (event) {
-      $('#singlecell_spreadsheet_modal #span_checklist').html(get_selected_checklist_name());
+      $('#singlecell_spreadsheet_modal #span_checklist').html(
+        get_selected_checklist_name()
+      );
       $('#singlecell_spreadsheet_modal').modal({
         //"closable": false,
-        "show": true,
-        "size": BootstrapDialog.SIZE_WIDE}
-      );
+        show: true,
+        size: BootstrapDialog.SIZE_WIDE,
+      });
     });
 
-    $('#singlecell_spreadsheet_modal').on('show.bs.modal', function (event) {
-        var modal = $(this)     
-        modal.find('#upload_singlecell_manifest_button').prop("disabled", false)
-        modal.find('#export_error_button').prop("disabled", true)
-        modal.find('#save_singlecell_button').prop('disabled', true)   
-   
-        modal.find('#upload_singlecell_manifest_button')
-        .off('click')
-        .on('click', function (event) {
-          modal.find('#file').click()
-        });
+  $('#singlecell_spreadsheet_modal').on('show.bs.modal', function (event) {
+    var modal = $(this);
+    modal.find('#upload_singlecell_manifest_button').prop('disabled', false);
+    modal.find('#export_error_button').prop('disabled', true);
+    modal.find('#save_singlecell_button').prop('disabled', true);
 
-        modal.find('#export_error_button')
-        .off('click')
-        .on('click', function (event) {
-          doDL($("#singlecell_info").html());
-        });
+    modal
+      .find('#upload_singlecell_manifest_button')
+      .off('click')
+      .on('click', function (event) {
+        modal.find('#file').click();
+      });
 
-        modal.find('#save_singlecell_button')
-        .off('click')
-        .on('click', function (event) {
-          $(this).prop('disabled', true);
-          modal.find('#upload_singlecell_manifest_button').prop("disabled", true)
-          save_singlecell_data();          
-        });
-      
-        modal.find('#file')
-        .off('change')
-        .on('change', function (event) {
-          if (
-            $(this).prop('files') == undefined ||
-            $(this).prop('files').length == 0
-          ) {
-            return;
-          }
-          modal.find('#upload_singlecell_manifest_button').prop('disabled', true);
-          modal.find('#export_error_button').prop("disabled", true)
-          modal.find('#save_singlecell_button').prop('disabled', "true")
+    modal
+      .find('#export_error_button')
+      .off('click')
+      .on('click', function (event) {
+        doDL($('#singlecell_info').html());
+      });
 
-          tabs = $('#singlecell-tabs');
-          tab_content = $('#singlecell-tab-content');
-          tabs.empty();
-          tab_content.empty();
+    modal
+      .find('#save_singlecell_button')
+      .off('click')
+      .on('click', function (event) {
+        $(this).prop('disabled', true);
+        modal.find('#upload_singlecell_manifest_button').prop('disabled', true);
+        save_singlecell_data();
+      });
 
-          upload_spreadsheet($(this).prop('files')[0]);
-        });
-    });
- 
+    modal
+      .find('#file')
+      .off('change')
+      .on('change', function (event) {
+        if (
+          $(this).prop('files') == undefined ||
+          $(this).prop('files').length == 0
+        ) {
+          return;
+        }
+        modal.find('#upload_singlecell_manifest_button').prop('disabled', true);
+        modal.find('#export_error_button').prop('disabled', true);
+        modal.find('#save_singlecell_button').prop('disabled', 'true');
+
+        tabs = $('#singlecell-tabs');
+        tab_content = $('#singlecell-tab-content');
+        tabs.empty();
+        tab_content.empty();
+
+        upload_spreadsheet($(this).prop('files')[0]);
+      });
+  });
 
   $('#checklist_id').change(function () {
     if ($.fn.dataTable.isDataTable('#' + componentMeta.tableID)) {
@@ -381,7 +389,7 @@ $(document).on('document_ready', function () {
     args_dict['singlecell_checklist_id'] = this.value;
     args_dict['profile_id'] = $('#profile_id').val();
     args_dict['schema_name'] = schema_name;
-    load_records(componentMeta, args_dict, columnDefs); // call to load component records 
+    load_records(componentMeta, args_dict, columnDefs); // call to load component records
   });
 
   // Set colour of 'help_add_button' button and 'new-samples-spreadsheet-template'
@@ -389,12 +397,12 @@ $(document).on('document_ready', function () {
   var profile_type = document
     .getElementById('profile_type')
     .value.toLowerCase();
-  var colour = profile_type_def[profile_type]['widget_colour'];
+  var colour = profileTypeDef[profile_type]['widget_colour'];
   $('#help_add_button').css('color', 'white').css('background-color', colour);
   $('.new-singlecell-spreadsheet-template')
     .css('color', 'white')
     .css('background-color', colour);
- 
+
   //******************************Functions Block******************************//
 
   function do_record_task(event) {
@@ -410,43 +418,50 @@ $(document).on('document_ready', function () {
       records.push(item);
     });
 
-    var args_dict = { singlecell_checklist_id: get_checklist_id(), schema_name: schema_name };
+    var args_dict = {
+      singlecell_checklist_id: get_checklist_id(),
+      schema_name: schema_name,
+    };
 
     // Download sample manifest
     if (task == 'download-singlecell-manifest') {
       $('#download-singlecell-manifest-link').attr(
         'href',
-        '/copo/copo_single_cell/download_manifest/'+ profile_id  + '/' + schema_name + "/" + records[0].study_id
+        '/copo/copo_single_cell/download_manifest/' +
+          profile_id +
+          '/' +
+          schema_name +
+          '/' +
+          records[0].study_id
       );
       $('#download-singlecell-manifest-link span').trigger('click');
       return;
-    }
-    else {
+    } else {
       var study_id = '';
       for (var i = 0; i < records.length; i++) {
         if (study_id == '') {
           study_id = records[i].study_id;
         } else if (study_id != records[i].study_id) {
           study_id = '';
-          break
+          break;
         }
       }
       args_dict['study_id'] = study_id;
       form_generic_task('singlecell', task, records, args_dict);
-    }  
+    }
   }
 
   $('body').on('posttablerefresh', function (event) {
-    
-    if (event.tableID == componentMeta.tableID+"_study") {
+    if (event.tableID == componentMeta.tableID + '_study') {
       if (current_study_id == '') {
-        current_study_id = $("#"+ event.tableID + " tbody tr:first").attr('id');
-        $("#"+ event.tableID + " tbody tr:first td:eq(1)").click();
+        current_study_id = $('#' + event.tableID + ' tbody tr:first').attr(
+          'id'
+        );
+        $('#' + event.tableID + ' tbody tr:first td:eq(1)').click();
       } else {
-        if ( $("#" + current_study_id).hasClass('selected') ) {
-          ;
+        if ($('#' + current_study_id).hasClass('selected')) {
         } else {
-          $("#" + current_study_id + " td:eq(1)").click();
+          $('#' + current_study_id + ' td:eq(1)').click();
         }
       }
     }
@@ -456,12 +471,18 @@ $(document).on('document_ready', function () {
     table.rows().nodes().to$().addClass('highlight_accession');
 
     for (var i = 0; i < numCols; i++) {
-      if ($(table.column(i).header()).text().toUpperCase().startsWith('STATUS')) {
+      if (
+        $(table.column(i).header()).text().toUpperCase().startsWith('STATUS')
+      ) {
         var no_accessiion_indexes = table
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
-            return ['pending','rejected'].includes(table.cell(rowIdx, i).data()) ? true : false;
+            return ['pending', 'rejected'].includes(
+              table.cell(rowIdx, i).data()
+            )
+              ? true
+              : false;
           });
         table
           .rows(no_accessiion_indexes)
@@ -489,20 +510,30 @@ $(document).on('document_ready', function () {
           .addClass('highlight_error_file_processing_status');
       }
     }
-    
   });
 
-  $(document).on('click', "#"+ componentMeta.tableID + "_study tbody tr >td", function (e) {
-    selected_id = $(e.currentTarget).closest("tr").attr("id")
-    if (selected_id != current_study_id) {  
-      $('#'+current_study_id).removeClass('selected');
-      $(e.currentTarget).addClass('selected');
-      current_study_id = selected_id
-      id = selected_id.substring(selected_id.lastIndexOf("_")+1);
-      load_records(componentMeta, { singlecell_checklist_id: get_checklist_id(), profile_id: $('#profile_id').val(), study_id: id }, columnDefs);
+  $(document).on(
+    'click',
+    '#' + componentMeta.tableID + '_study tbody tr >td',
+    function (e) {
+      selected_id = $(e.currentTarget).closest('tr').attr('id');
+      if (selected_id != current_study_id) {
+        $('#' + current_study_id).removeClass('selected');
+        $(e.currentTarget).addClass('selected');
+        current_study_id = selected_id;
+        id = selected_id.substring(selected_id.lastIndexOf('_') + 1);
+        load_records(
+          componentMeta,
+          {
+            singlecell_checklist_id: get_checklist_id(),
+            profile_id: $('#profile_id').val(),
+            study_id: id,
+          },
+          columnDefs
+        );
+      }
     }
-  });
-
+  );
 });
 
 function upload_spreadsheet(file) {
@@ -515,7 +546,12 @@ function upload_spreadsheet(file) {
   var percent = $('.percent');
   jQuery
     .ajax({
-      url: '/copo/copo_single_cell/parse_singlecell_spreadsheet/'+ $("#profile_id").val()+ '/' +  $("#schema_name").val()+ '/',
+      url:
+        '/copo/copo_single_cell/parse_singlecell_spreadsheet/' +
+        $('#profile_id').val() +
+        '/' +
+        $('#schema_name').val() +
+        '/',
       data: form,
       cache: false,
       contentType: false,
@@ -538,7 +574,9 @@ function upload_spreadsheet(file) {
       },
     })
     .fail(function (data) {
-      $('#singlecell_spreadsheet_modal').find('#upload_singlecell_manifest_button').prop("disabled", false)
+      $('#singlecell_spreadsheet_modal')
+        .find('#upload_singlecell_manifest_button')
+        .prop('disabled', false);
       console.log(data);
       responseText = data.responseText;
       if (responseText != '') {
@@ -550,17 +588,28 @@ function upload_spreadsheet(file) {
     })
     .done(function (data) {
       // Hide upload button if 'Finish' button is visible and upload was successful
-      $('#singlecell_spreadsheet_modal').find('#upload_singlecell_manifest_button').prop("disabled", false)
-      $('#singlecell_spreadsheet_modal').find('#save_singlecell_button').prop("disabled", false)
+      $('#singlecell_spreadsheet_modal')
+        .find('#upload_singlecell_manifest_button')
+        .prop('disabled', false);
+      $('#singlecell_spreadsheet_modal')
+        .find('#save_singlecell_button')
+        .prop('disabled', false);
     });
 }
 
 function save_singlecell_data() {
   $.ajax({
-    url: '/copo/copo_single_cell/save_singlecell_records/'+ $("#profile_id").val() + '/' + $("#schema_name").val() + '/',
+    url:
+      '/copo/copo_single_cell/save_singlecell_records/' +
+      $('#profile_id').val() +
+      '/' +
+      $('#schema_name').val() +
+      '/',
   })
     .fail(function (data) {
-      $('#singlecell_spreadsheet_modal').find('#upload_singlecell_manifest_button').prop("disabled", false)
+      $('#singlecell_spreadsheet_modal')
+        .find('#upload_singlecell_manifest_button')
+        .prop('disabled', false);
       console.log(data);
       responseText = data.responseText;
       if (responseText != '') {
@@ -585,15 +634,15 @@ function save_singlecell_data() {
     });
 }
 
-
-function doDL(s){
-  function dataUrl(data) {return "data:x-application/text," + escape(data);}
-  var downloadLink = document.createElement("a");
+function doDL(s) {
+  function dataUrl(data) {
+    return 'data:x-application/text,' + escape(data);
+  }
+  var downloadLink = document.createElement('a');
   downloadLink.href = dataUrl(s);
-  downloadLink.download = "error.html";
+  downloadLink.download = 'error.html';
 
   document.body.appendChild(downloadLink);
   downloadLink.click();
   document.body.removeChild(downloadLink);
 }
- 

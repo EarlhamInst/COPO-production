@@ -10,7 +10,7 @@ $(document).ready(function () {
 
   show_submission_status_codes();
 
-  var componentMeta = get_component_meta(component);
+  var componentMeta = getComponentMeta(component);
 
   load_submissions();
 
@@ -125,7 +125,7 @@ $(document).ready(function () {
   //    show_submission_metadata($(this).attr("data-submission-id"))
   //});
 
-  refresh_tool_tips();
+  refreshToolTips();
 
   //******************************Functions Block******************************//
 
@@ -221,7 +221,7 @@ $(document).ready(function () {
   function do_display_submissions(data) {
     var dtd = data.table_data.dataSet;
     var tableID = componentMeta.tableID;
-    set_empty_component_message(dtd.length, '#' + tableID); //display empty submission message.
+    setEmptyComponentMessage(dtd.length, '#' + tableID); //display empty submission message.
 
     if (dtd.length == 0) {
       return false;
@@ -394,7 +394,7 @@ $(document).ready(function () {
         ],
         columnDefs: [],
         fnDrawCallback: function () {
-          refresh_tool_tips();
+          refreshToolTips();
         },
         createdRow: function (row, data, index) {},
         dom: 'Bfr<"row"><"row info-rw" i>tlp',
@@ -1106,7 +1106,7 @@ $(document).ready(function () {
             //invoke submit button when all submission conditions are met.
 
             processPanel.append(submit_submission_record(submission_id));
-            refresh_tool_tips();
+            refreshToolTips();
 
             return true
         }
@@ -1340,7 +1340,7 @@ $(document).ready(function () {
                         var elemValue = formElem.default_value;
                         userRepoSection.append(dispatchFormControl[controlsMapping[formElem.control.toLowerCase()]](formElem, elemValue));
                         userRepoSection.find(".constraint-label").remove();
-                        refresh_tool_tips();
+                        refreshToolTips();
                     }
                 },
                 error: function () {
@@ -1478,7 +1478,7 @@ $(document).ready(function () {
             },
           },
           fnDrawCallback: function () {
-            refresh_tool_tips();
+            refreshToolTips();
           },
           createdRow: function (row, data, index) {
             //add class to row for ease of selection later
@@ -1499,7 +1499,7 @@ $(document).ready(function () {
             $(this).removeClass('btn btn-default').addClass('tiny ui button');
           });
 
-        refresh_tool_tips();
+        refreshToolTips();
 
         let table_wrapper = $('#' + tableID + '_wrapper');
 
@@ -1628,7 +1628,7 @@ $(document).ready(function () {
           order: [[1, 'asc']],
           columns: cols,
           fnDrawCallback: function () {
-            refresh_tool_tips();
+            refreshToolTips();
           },
           createdRow: function (row, data, index) {
             //add class to row for ease of selection later
@@ -1649,7 +1649,7 @@ $(document).ready(function () {
             $(this).removeClass('btn btn-default').addClass('tiny ui button');
           });
 
-        refresh_tool_tips();
+        refreshToolTips();
 
         let table_wrapper = $(tableID + '_wrapper');
 

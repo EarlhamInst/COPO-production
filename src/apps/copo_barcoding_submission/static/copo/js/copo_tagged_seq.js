@@ -161,7 +161,7 @@ $(document).ready(function () {
   var csrftoken = $.cookie('csrftoken');
 
   //get component metadata
-  var componentMeta = get_component_meta(component);
+  var componentMeta = getComponentMeta(component);
 
   var args_dict = {};
   args_dict['tagged_seq_checklist_id'] = $('#checklist_id')
@@ -177,7 +177,7 @@ $(document).ready(function () {
   //register_resolvers_event(); //register event for publication resolvers
 
   //instantiate/refresh tooltips
-  refresh_tool_tips();
+  refreshToolTips();
 
   //trigger refresh of table
   $('body').on('refreshtable', function (event) {
@@ -230,8 +230,8 @@ $(document).ready(function () {
       $('#blank_manifest_url_' + this.value).val()
     );
     args_dict['tagged_seq_checklist_id'] = this.value;
-    args_dict['profile_id'] = profile_id,
-    load_records(componentMeta, args_dict); // call to load component records
+    (args_dict['profile_id'] = profile_id),
+      load_records(componentMeta, args_dict); // call to load component records
   });
 
   // Set colour of 'help_add_button' button and 'new-samples-spreadsheet-template'

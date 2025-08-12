@@ -1,149 +1,146 @@
-
 .pad-left {
-    padding-left: 5px;
+  padding-left: 5px;
 }
 
 .space-left {
-    margin-left: 20px;
+  margin-left: 20px;
 }
 
 span.summary-details-control {
-    position: relative;
-    cursor: pointer;
+  position: relative;
+  cursor: pointer;
 }
 
 span.summary-details-control:before {
-    position: absolute;
-    font-family: 'FontAwesome';
-    content: "\f196";
-    color: #3a6c55;
-    top: 10%;
-    left: 50%;
-    font-size: 13px;
-
+  position: absolute;
+  font-family: 'FontAwesome';
+  content: '\f196';
+  color: #3a6c55;
+  top: 10%;
+  left: 50%;
+  font-size: 13px;
 }
 
 div.shown span.summary-details-control:before {
-    position: absolute;
-    font-family: 'FontAwesome';
-    content: "\f147";
-    color: #3a6c55;
-    top: 10%;
-    left: 50%;
-    font-size: 13px;
-
+  position: absolute;
+  font-family: 'FontAwesome';
+  content: '\f147';
+  color: #3a6c55;
+  top: 10%;
+  left: 50%;
+  font-size: 13px;
 }
 
 .profile-component-icons {
-    color: #000;
-    font-size: 12px;
+  color: #000;
+  font-size: 12px;
 }
 
 /*start work profile navs*/
 .work-profiles-nav.navbar-default .navbar-brand {
-    color: rgba(119, 119, 119, 1);
-    background: transparent;
+  color: rgba(119, 119, 119, 1);
+  background: transparent;
 }
 
 .work-profiles-nav.navbar-default {
-    border: none;
-    background: transparent;
-    box-shadow: none !important;
+  border: none;
+  background: transparent;
+  box-shadow: none !important;
 }
 
 .work-profiles-nav.navbar-default .navbar-nav > li > a {
-    color: rgba(0, 0, 0, 1);
-    background: rgba(245, 245, 240, 0.95);
-    font-size: 12px;
-    margin-left: 10px;
-    border-radius: 4px;
-    width: 130px;
-    box-shadow: none !important;
+  color: rgba(0, 0, 0, 1);
+  background: rgba(245, 245, 240, 0.95);
+  font-size: 12px;
+  margin-left: 10px;
+  border-radius: 4px;
+  width: 130px;
+  box-shadow: none !important;
 }
 
 .work-profiles-nav.navbar-default .navbar-nav > li > a:hover,
 .work-profiles-nav.navbar-default .navbar-nav > li > a:focus {
-    /*color: #fff;*/
-    background: rgba(240, 240, 240, 1.0);
+  /*color: #fff;*/
+  background: rgba(240, 240, 240, 1);
 }
 
 .work-profiles-nav.navbar-default .navbar-nav > .active > a,
 .work-profiles-nav.navbar-default .navbar-nav > .active > a:hover,
 .work-profiles-nav.navbar-default .navbar-nav > .active > a:focus {
-    color: rgba(85, 85, 85, 1);
-    background-color: transparent;
+  color: rgba(85, 85, 85, 1);
+  background-color: transparent;
 }
 
 .work-profiles-nav.navbar-default .navbar-nav .dropdown-menu li > a:hover,
 .work-profiles-nav.navbar-default .navbar-nav.dropdown-menu li > a:focus,
 .work-profiles-nav.navbar-default .navbar-nav.dropdown-submenu:hover > a {
-    background-image: none;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: #fff;
+  background-image: none;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
 }
 
 .work-profiles-nav.navbar-default .navbar-toggle:hover,
 .work-profiles-nav.navbar-default .navbar-toggle:focus {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 .work-profiles-nav.navbar-default .navbar-toggle .icon-bar {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 .work-profiles-nav.navbar-default .navbar-toggle:hover .icon-bar,
 .work-profiles-nav.navbar-default .navbar-toggle:focus .icon-bar {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 /*end work profile navs*/
 
 .component-col-left {
-    padding-left: 5px;
+  padding-left: 5px;
 }
 
 .component-col-right {
-    padding-right: 10px;
+  padding-right: 10px;
 }
 
 .component-item {
-    border-radius: 4px;
-    background: rgba(245, 245, 240, 1);
+  border-radius: 4px;
+  background: rgba(245, 245, 240, 1);
 }
 
 .component-item-header {
-    text-align: center;
-    padding-top: 20px;
+  text-align: center;
+  padding-top: 20px;
 }
 
 .component-item-header > div > .icon_text {
-    font-weight: 500;
-    font-size: 12px;
+  font-weight: 500;
+  font-size: 12px;
 }
 
 .component-item-body {
-    margin-top: 10px;
-    padding: 10px;
-    text-align: center;
-    border-top: 1px solid #ffffff;
+  margin-top: 10px;
+  padding: 10px;
+  text-align: center;
+  border-top: 1px solid #ffffff;
 }
 
 .component-item-badge {
-    background: rgba(37, 37, 43, 0.8);
-    border-radius: 4px;
-    margin-top: 10px;
-    padding-top: 3px;
-    text-shadow: none;
-    box-shadow: none;
+  background: rgba(37, 37, 43, 0.8);
+  border-radius: 4px;
+  margin-top: 10px;
+  padding-top: 3px;
+  text-shadow: none;
+  box-shadow: none;
 }
 
 /*component buttons*/
 a.component-btns {
-    text-decoration: none;
+  text-decoration: none;
 }
 
 .component-btns > i {
-    color: rgba(41, 57, 84, 0.9);
+  color: rgba(41, 57, 84, 0.9);
 }
 
 /*end component buttons*/
@@ -151,38 +148,37 @@ a.component-btns {
 /*profile details panel*/
 .profile-details.panel,
 .profile-details.panel-default {
-    box-shadow: none;
-    border: none;
-
+  box-shadow: none;
+  border: none;
 }
 
 .profile-details.panel-default > .panel-heading {
-    background: #ffffff none no-repeat;
-    padding: 0px;
+  background: #ffffff none no-repeat;
+  padding: 0px;
 }
 
 .profile-details.panel-default > .panel-footer {
-    background-color: #ffffff;
-    border-top: none;
+  background-color: #ffffff;
+  border-top: none;
 }
 
 /*end profile details panel*/
 
 /* 'Add Profile' pop-up dialog*/
-.associated_type_ulTag {
-    padding: 0;
-    margin: 0;
-    list-style-type: none;
+.associated-type-ul-tag {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
 }
 
-.associated_type_ulTag li {
-    float: left;
-    padding: 4px 15px;
+.associated-type-ul-tag li {
+  float: left;
+  padding: 4px 15px;
 }
 
-.associated_type_ulTag li:before {
-    content: "\2022";
-    margin-right: 1em;
+.associated-type-ul-tag li:before {
+  content: '\2022';
+  margin-right: 1em;
 }
 
 /* End of 'Add Profile' pop-up dialog*/

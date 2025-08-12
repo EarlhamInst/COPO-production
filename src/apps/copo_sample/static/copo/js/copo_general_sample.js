@@ -75,8 +75,10 @@ $(document).on('document_ready', function () {
   if (window.location.protocol === 'https:') {
     wsprotocol = 'wss://';
   }
-  var read_wsurl = wsprotocol + window.location.host + '/ws/read_status/' + profile_id;
-  var submission_wsurl =  wsprotocol + window.location.host + '/ws/submission_status/' + profile_id;
+  var read_wsurl =
+    wsprotocol + window.location.host + '/ws/read_status/' + profile_id;
+  var submission_wsurl =
+    wsprotocol + window.location.host + '/ws/submission_status/' + profile_id;
   s3socket = new WebSocket(read_wsurl);
   submissionSocket = new WebSocket(submission_wsurl);
 
@@ -93,7 +95,7 @@ $(document).on('document_ready', function () {
 
     if (d.html_id != '') {
       element = element = $('#' + d.html_id);
- 
+
       if (!d && !$(element).is(':hidden')) {
         $(element).fadeOut('50');
       } else if (d && d.message && $(element).is(':hidden')) {
@@ -128,7 +130,6 @@ $(document).on('document_ready', function () {
   s3socket.onopen = function (e) {
     console.log('s3socket opened ', e);
   };
-
 
   s3socket.onmessage = function (e) {
     d = JSON.parse(e.data);
@@ -214,8 +215,8 @@ $(document).on('document_ready', function () {
       $(element).html(d.message);
       var args_dict = {};
       args_dict['sample_checklist_id'] = get_checklist_id();
-      args_dict['profile_id'] = $('#profile_id').val(),
-      load_records(componentMeta, args_dict, columnDefs); // call to load component records
+      (args_dict['profile_id'] = $('#profile_id').val()),
+        load_records(componentMeta, args_dict, columnDefs); // call to load component records
     } else if (d.action === 'file_processing_status') {
       $(element).html(d.message);
       table = $('#sample_table').DataTable();
@@ -260,7 +261,7 @@ $(document).on('document_ready', function () {
   var csrftoken = $.cookie('csrftoken');
 
   //get component metadata
-  var componentMeta = get_component_meta(component);
+  var componentMeta = getComponentMeta(component);
 
   //load_records(componentMeta); // call to load component records
 
@@ -270,13 +271,13 @@ $(document).on('document_ready', function () {
     'href',
     $('#blank_manifest_url_' + get_checklist_id()).val()
   );
-  args_dict['profile_id'] = $('#profile_id').val(),
-  load_records(componentMeta, args_dict, columnDefs); // call to load component records
+  (args_dict['profile_id'] = $('#profile_id').val()),
+    load_records(componentMeta, args_dict, columnDefs); // call to load component records
 
   //register_resolvers_event(); //register event for publication resolvers
 
   //instantiate/refresh tooltips
-  refresh_tool_tips();
+  refreshToolTips();
 
   //trigger refresh of table
   $('body').on('refreshtable', function (event) {
@@ -347,7 +348,7 @@ $(document).on('document_ready', function () {
   var profile_type = document
     .getElementById('profile_type')
     .value.toLowerCase();
-  var colour = profile_type_def[profile_type]['widget_colour'];
+  var colour = profileTypeDef[profile_type]['widget_colour'];
   $('#help_add_button').css('color', 'white').css('background-color', colour);
   $('.new-general-sample-spreadsheet-template')
     .css('color', 'white')
@@ -401,17 +402,16 @@ $(document).on('document_ready', function () {
     if (task == 'download-sample-manifest') {
       $('#download-sample-manifest-link').attr(
         'href',
-        '/copo/copo_sample/download_manifest/' + profile_id + "/" + get_checklist_id()
+        '/copo/copo_sample/download_manifest/' +
+          profile_id +
+          '/' +
+          get_checklist_id()
       );
       $('#download-sample-manifest-link span').trigger('click');
       return;
     } else {
-
       form_generic_task('sample', task, records, args_dict);
-
     }
-
-
   }
 
   $('body').on('posttablerefresh', function (event) {

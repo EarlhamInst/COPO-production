@@ -10,7 +10,7 @@ $(document).ready(function () {
     });
 
     $(document).on('click', '#releasestudy', function (e) {
-        let profile_id = $(e.currentTarget).closest('.ellipsisDiv').attr('id');
+        let profile_id = $(e.currentTarget).closest('.ellipsis-div').attr('id');
         //let profile_type = $(e.currentTarget).closest('.copo-records-panel').attr('profile_type');
         release_study(profile_id);
     });
