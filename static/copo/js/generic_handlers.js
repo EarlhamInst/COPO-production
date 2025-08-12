@@ -874,7 +874,7 @@ function do_render_table(data) {
       },
       dom: 'lf<"row button-rw">rtip',
       fnDrawCallback: function (oSettings) {
-        refresh_tool_tips();
+        refreshToolTips();
 
         $('.dataTables_filter').each(function () {
           if ($(this).attr('id') == data.table_data.table_id + '_filter') {
@@ -972,7 +972,7 @@ function do_render_table(data) {
   }
 } //end of function
 
-function refresh_tool_tips() {
+function refreshToolTips() {
   $("[data-toggle='tooltip']").tooltip();
   $("[data-toggle='popover']").popover();
   $('.ui.dropdown').dropdown();
@@ -2598,11 +2598,11 @@ function get_panel(panelType) {
 }
 
 //Set COPO frontpage properties in this dictionary
-function get_component_meta(componentName) {
+function getComponentMeta(componentName) {
   var componentMeta = null;
-  //var components = get_profile_components();
+  //var components = getProfileComponents();
 
-  componentMeta = component_def[componentName.toLowerCase()];
+  componentMeta = componentDef[componentName.toLowerCase()];
   /*
   components.forEach(function (comp) {
     if (comp.component == component) {
@@ -2616,7 +2616,7 @@ function get_component_meta(componentName) {
 }
 
 /*
-function get_profile_components() {
+function getProfileComponents() {
   return [
     {
       component: 'accessions',
@@ -2631,7 +2631,7 @@ function get_profile_components() {
         'tol_inspect_gal',
       ],
       sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-accessions'],
-      colorClass: 'accessions_color',
+      colourClass: 'accessions_color',
       color: 'pink',
       profile_component: 'dtol',
       tableID: 'accessions_table',
@@ -2651,7 +2651,7 @@ function get_profile_components() {
         'tol_inspect_gal',
       ],
       sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-accessions'],
-      colorClass: 'accessions_color',
+      colourClass: 'accessions_color',
       color: 'pink',
       profile_component: 'stand-alone',
       tableID: 'accessions_table',
@@ -2671,7 +2671,7 @@ function get_profile_components() {
         'tol_inspect_gal',
       ],
       sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-accessions'],
-      colorClass: 'accessions_color',
+      colourClass: 'accessions_color',
       color: 'pink',
       profile_component: '',
       tableID: 'accessions_table',
@@ -2686,7 +2686,7 @@ function get_profile_components() {
       countsKey: 'num_assembly',
       buttons: ['new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'assembly_color',
+      colourClass: 'assembly_color',
       color: 'violet',
       tableID: 'assembly_table',
       profile_component: 'stand-alone',
@@ -2706,7 +2706,7 @@ function get_profile_components() {
       countsKey: 'num_assembly',
       buttons: ['new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'assembly_color',
+      colourClass: 'assembly_color',
       color: 'violet',
       tableID: 'assembly_table',
       profile_component: 'dtol',
@@ -2730,7 +2730,7 @@ function get_profile_components() {
         'download-blank-manifest-template|href:#blank_manifest_url',
       ],
       sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'data_color',
+      colourClass: 'data_color',
       color: 'red',
       tableID: 'tagged_seq_table',
       profile_component: 'dtol',
@@ -2745,7 +2745,7 @@ function get_profile_components() {
       countsKey1: 'num_assembly',
       buttons: ['new-local-file', 'new-terminal-file'],
       sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'files_color',
+      colourClass: 'files_color',
       color: 'blue',
       tableID: 'files_table',
       profile_component: 'stand-alone',
@@ -2764,7 +2764,7 @@ function get_profile_components() {
       countsKey1: 'num_assembly',
       buttons: ['new-local-file', 'new-terminal-file'],
       sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'files_color',
+      colourClass: 'files_color',
       color: 'blue',
       tableID: 'files_table',
       profile_component: 'dtol',
@@ -2806,7 +2806,7 @@ function get_profile_components() {
         'accept_reject_samples',
       ],
       sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'samples_color',
+      colourClass: 'samples_color',
       color: 'olive',
       profile_component: 'dtol',
       tableID: 'sample_table',
@@ -2829,7 +2829,7 @@ function get_profile_components() {
         'download-blank-manifest-template|href:#blank_manifest_url',
       ],
       sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'read_color',
+      colourClass: 'read_color',
       color: 'orange',
       profile_component: 'stand-alone',
       tableID: 'read_table',
@@ -2848,7 +2848,7 @@ function get_profile_components() {
         'download-blank-manifest-template|href:#blank_manifest_url',
       ],
       sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'read_color',
+      colourClass: 'read_color',
       color: 'orange',
       profile_component: 'dtol',
       tableID: 'read_table',
@@ -2863,7 +2863,7 @@ function get_profile_components() {
       countsKey: 'num_seqannotation',
       buttons: ['quick-tour-template', 'new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'data_color',
+      colourClass: 'data_color',
       color: 'yellow',
       tableID: 'seqannotation_table',
       profile_component: 'stand-alone',
@@ -2883,7 +2883,7 @@ function get_profile_components() {
       countsKey: 'num_seqannotation',
       buttons: ['quick-tour-template', 'new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'data_color',
+      colourClass: 'data_color',
       color: 'yellow',
       tableID: 'seqannotation_table',
       profile_component: 'dtol',
@@ -2904,7 +2904,7 @@ function do_page_controls(componentName) {
   var component = null;
   profile_type = $('#profile_type').val();
   /*
-  var components = get_profile_components(profile_type);
+  var components = getProfileComponents(profile_type);
     if (comp.component == componentName) {
       profile_type = $('#profile_type').val();
       if (profile_type != undefined) {
@@ -2930,11 +2930,139 @@ function do_page_controls(componentName) {
     return false;
   }
   */
-  generate_component_control(componentName, profile_type);
+  generateComponentControl(componentName, profile_type);
+  initialiseComponentDropdownMenu();
 } //end of func
 
-function generate_component_control(componentName, profile_type) {
-  var component = get_component_meta(componentName);
+function groupComponentsByGroupName(components) {
+  const grouped = {};
+
+  components.forEach((component) => {
+    const group = component.group_name || '';
+    if (!grouped[group]) {
+      grouped[group] = [];
+    }
+    grouped[group].push(component);
+  });
+
+  return grouped;
+}
+
+function getParentComponentsToSkip(components) {
+  const grouped = groupComponentsByGroupName(components);
+  const parentComponentsToSkip = new Set();
+
+  Object.entries(grouped).forEach(([groupName, groupItems]) => {
+    const filteredItems = groupItems.filter(
+      (item) =>
+        item.component !== 'profile' &&
+        item.component !== 'accessions_dashboard'
+    );
+
+    if (groupName && filteredItems.length > 1) {
+      const parentComponent = components.find(
+        (item) => item.component === groupName
+      );
+      if (parentComponent) {
+        parentComponentsToSkip.add(parentComponent.component);
+      }
+    }
+  });
+
+  return parentComponentsToSkip;
+}
+
+function createComponentAnchor(
+  item,
+  profileId,
+  isIconOnly = false,
+  templateAnchor
+) {
+  const anchor = templateAnchor ? templateAnchor.clone() : $('<a/>');
+  anchor.attr('title', `Navigate to ${item.title}`);
+  anchor.attr('href', item.url ? item.url.replace('999', profileId) : '#');
+
+  const icon = anchor.find('i');
+  icon.addClass(item.colour);
+
+  if (!isIconOnly) {
+    icon.addClass(item.iconClass);
+
+    const button = $('<div/>', {
+      class: `tiny ui button profile-component-button profile-component-colour ${item.colour}`,
+    })
+      .append(`<i class="profile-component-icon ${item.iconClass}"></i>`)
+      .append(`<span class="profile-component-name">${item.title}</span>`);
+
+    anchor.empty().append(button);
+  } else {
+    icon.addClass(item.semanticIcon);
+  }
+
+  return anchor;
+}
+
+function createDropdownWrapper(
+  parentItem,
+  childrenItems,
+  profileId,
+  isIconOnly,
+  templateAnchor
+) {
+  const wrapper = $('<div/>', {
+    class: `profile-dropdown-wrapper${isIconOnly ? ' icon-only' : ''}`,
+    tabindex: 0,
+  });
+
+  const button = $('<div/>');
+
+  if (isIconOnly) {
+    // Component icon dropdown menu
+    wrapper.addClass('item');
+    button.addClass('profile-dropdown-icon');
+
+    button.append(
+      `<i class="ui icon ${parentItem.colour} profile-component-icon ${parentItem.semanticIcon}"></i>`
+    );
+  } else {
+    // Component button dropdown menu
+    button.addClass(
+      `tiny ui button profile-component-button profile-component-colour ${parentItem.colour}`
+    );
+    button.text(parentItem.title);
+  }
+
+  button.append('<i class="dropdown icon"></i>');
+
+  wrapper.append(button);
+
+  const menu = $('<div/>', {
+    class: `menu profile-dropdown-menu${
+      isIconOnly ? ' icon-only hidden' : ' comp'
+    }`,
+    tabindex: -1,
+  });
+
+  const container = $('<div/>', { class: isIconOnly ? '' : 'item' });
+
+  childrenItems.forEach((item) => {
+    const childAnchor = createComponentAnchor(
+      item,
+      profileId,
+      isIconOnly,
+      templateAnchor
+    );
+    isIconOnly ? menu.append(childAnchor) : container.append(childAnchor);
+  });
+
+  menu.append(container);
+  wrapper.append(menu);
+
+  return wrapper;
+}
+
+function generateComponentControl(componentName, profile_type) {
+  var component = getComponentMeta(componentName);
   var pageHeaders = $('.copo-page-headers'); //page header/icons
   var pageIcons = $('.copo-page-icons'); //profile component icons
   var sideBar = $('.copo-sidebar'); //sidebar panels
@@ -3064,39 +3192,96 @@ function generate_component_control(componentName, profile_type) {
 
     pageIcons.append(pcomponentHTML);
 
-    var components = get_profile_components(profile_type);
+    var components = getProfileComponents(profile_type);
 
-    for (var i = 0; i < components.length; ++i) {
-      var comp = components[i];
-      //if (comp.hasOwnProperty('profile_component')) {
-      if (comp.component == component.component && comp.title == component.title) {
-        continue;
+    // Sort components by title in ascending order
+    components.sort((a, b) => a.title.localeCompare(b.title));
+
+    // Group components by 'group' field value
+    const grouped = groupComponentsByGroupName(components);
+
+    // Get parent components to exclude from being rendered
+    const parentComponentsToSkip = getParentComponentsToSkip(components);
+
+    // for (var i = 0; i < components.length; ++i) {
+    //   var comp = components[i];
+    //   //if (comp.hasOwnProperty('profile_component')) {
+    //   if (
+    //     comp.component == component.component &&
+    //     comp.title == component.title
+    //   ) {
+    //     continue;
+    //   }
+    //   /*
+    //     if (
+    //       component.profile_component.toString() !=
+    //       comp.profile_component.toString()
+    //     ) {
+    //       continue;
+    //     }
+    //     */
+
+    //   // var newAnchor = pcomponentAnchor.clone();
+    //   // pcomponentHTML.append(newAnchor);
+
+    //   // newAnchor.attr('title', 'Navigate to ' + comp.title);
+    //   // component_link = comp.url.replace('999', profile_id);
+    //   // newAnchor.attr('href', component_link);
+
+    //   const anchor = createComponentAnchor(
+    //     comp,
+    //     profile_id,
+    //     true,
+    //     pcomponentAnchor
+    //   );
+    //   pcomponentHTML.append(anchor);
+
+    //   //newAnchor.attr('href', $('#' + comp.component + '_url').val());
+    //   // newAnchor.find('i').addClass(comp.colour).addClass(comp.semanticIcon);
+    //   //}
+    // }
+
+    Object.entries(grouped).forEach(([groupName, groupItems]) => {
+      // Skip components
+      // let filteredItems = groupItems.filter(
+      //   (item) => item.component !== item.component && item.title !== item.title
+      // );
+
+      // if (filteredItems.length === 0) return;
+
+      // Components with subcomponents i.e. dropdown menus
+      // Render as dropdown if group is non-empty and has more than one subcomponent
+      const isDropdownMenu = groupName && groupItems.length > 1;
+
+      if (isDropdownMenu) {
+        const parent = components.find((c) => c.component === groupName);
+        const dropdown = createDropdownWrapper(
+          parent,
+          groupItems,
+          profile_id,
+          true,
+          pcomponentAnchor
+        );
+        pcomponentHTML.append(dropdown);
+      } else {
+        groupItems
+          .filter((i) => !parentComponentsToSkip.has(i.component))
+          .forEach((j) => {
+            const anchor = createComponentAnchor(
+              j,
+              profile_id,
+              true,
+              pcomponentAnchor
+            );
+            pcomponentHTML.append(anchor);
+          });
       }
-      /*
-        if (
-          component.profile_component.toString() !=
-          comp.profile_component.toString()
-        ) {
-          continue;
-        }
-        */
-
-      var newAnchor = pcomponentAnchor.clone();
-      pcomponentHTML.append(newAnchor);
-
-      newAnchor.attr('title', 'Navigate to ' + comp.title);
-      component_link = comp.url.replace('999', profile_id)
-      newAnchor.attr('href', component_link);
-
-      //newAnchor.attr('href', $('#' + comp.component + '_url').val());
-      newAnchor.find('i').addClass(comp.color).addClass(comp.semanticIcon);
-      //}
-    }
+    });
   }
 
   //refresh components...
   quick_tour_event();
-  refresh_tool_tips();
+  refreshToolTips();
 }
 
 function refresh_webpop(elem, title, content, exrta_meta) {
@@ -3871,4 +4056,32 @@ function get_collapsible_panel() {
   );
 
   return panel.clone();
+}
+
+function initialiseComponentDropdownMenu() {
+  $('.profile-dropdown-wrapper').click(function (e) {
+    e.stopPropagation(); // Prevent bubbling to document
+    const $menu = $(this).find('.profile-dropdown-menu');
+
+    // Hide other dropdown menus
+    $('.profile-dropdown-menu')
+      .not($menu)
+      .hide()
+      .removeClass('visible')
+      .addClass('hidden');
+
+    // Toggle dropdown menu
+    if ($menu.hasClass('visible')) {
+      $menu.removeClass('visible').addClass('hidden');
+    } else {
+      $menu.removeClass('hidden').addClass('visible');
+    }
+  });
+
+  // Hide on outside click
+  $(document).on('click', function () {
+    $('.profile-dropdown-menu.visible')
+      .removeClass('visible')
+      .addClass('hidden');
+  });
 }
