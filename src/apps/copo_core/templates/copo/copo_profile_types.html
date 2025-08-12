@@ -18,7 +18,7 @@ const media_url = "{{ media_url }}";
 const upload_url = "{{ upload_url }}";
 const image_file_extensions = "{{ image_file_extensions }}";
 
-const record_action_button_def = {
+const recordActionButtonDef = {
   {% for button in record_action_button_def %}
     {{ button.name  }}: {
       template: '<div class=" tiny ui basic dtables-dbuttons  {{ button.icon_colour}} button copo-dt copo-tooltip" \
@@ -40,7 +40,7 @@ const record_action_button_def = {
 }
 
 
-const component_def = {
+const componentDef = {
   {% for component in component_def %}
     {{ component.name|lower }}:  {
       component: '{{ component.base_component }}',
@@ -48,12 +48,14 @@ const component_def = {
       {% if component.subtitle %}
       subtitle: '{{ component.subtitle }}',
       {% endif %}
+      group_name: '{{ component.group_name }}',
+      group_title: '{{ component.group_title }}',
       iconClass: '{{ component.widget_icon_class }}',
       semanticIcon: '{{ component.widget_icon }}',
       buttons: [ {% for button in component.title_buttons.all %} '{{ button.name }}', {% endfor %} ],
       sidebarPanels: ['copo-sidebar-info'],
-      colorClass: '{{ component.widget_colour_class }}',
-      color: '{{ component.widget_colour }}',
+      colourClass: '{{ component.widget_colour_class }}',
+      colour: '{{ component.widget_colour }}',
       tableID: '{{ component.table_id }}',
       schema_name: '{{ component.schema_name }}',
       recordActions: [ {% for button in component.recordaction_buttons.all %} '{{ button.name }}', {% endfor %} ],
@@ -63,7 +65,7 @@ const component_def = {
   {% endfor %}
 }
  
-const profile_type_def = {
+const profileTypeDef = {
   {% for profile_type in profile_type_def %}
     {{ profile_type.type|lower }}:  {
       title: '{{ profile_type.type | upper }}',
@@ -74,8 +76,8 @@ const profile_type_def = {
 }
 
 
-function get_profile_components(profile_type) {
-  if (profile_type){
-    return profile_type_def[profile_type.toLowerCase()].components.map(component => component_def[component]);
+function getProfileComponents(profileType) {
+  if (profileType){
+    return profileTypeDef[profileType.toLowerCase()].components.map(component => componentDef[component]);
   }
 }
