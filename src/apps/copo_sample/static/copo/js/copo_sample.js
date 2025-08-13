@@ -17,7 +17,7 @@ $(document).on('document_ready', function () {
   var wizardElement = $('#sampleWizard');
 
   //get component metadata
-  var componentMeta = getComponentMeta(component);
+  var componentMeta = get_component_meta(component);
 
   //load records
   var args_dict = {};
@@ -102,7 +102,7 @@ $(document).on('document_ready', function () {
   //var groups = $("#groups").val().split(",")
 
   var profile_type = $('#profile_type').val().toLowerCase();
-  var colour = profileTypeDef[profile_type]['widget_colour'];
+  var colour = profile_type_def[profile_type]['widget_colour'];
   $('#help_add_button').css('color', 'white').css('background-color', colour);
   $('.new-samples-spreadsheet-template')
     .css('color', 'white')
@@ -374,7 +374,7 @@ $(document).on('document_ready', function () {
     //handle events for step change
     wizardElement.on('changed.fu.wizard', function (evt, data) {
         //form controls help tip
-        refreshToolTips();
+        refresh_tool_tips();
         var activeStageIndx = wizardElement.wizard('selectedItem').step;
 
         //set up validator
@@ -604,7 +604,7 @@ $(document).on('document_ready', function () {
   });
 
   //instantiate/refresh tooltips
-  refreshToolTips();
+  refresh_tool_tips();
 
   /*.   deprecated
     //------------------- Functions Block ---------------------//
@@ -1654,7 +1654,7 @@ $(document).on('document_ready', function () {
             cellEditPanel.find('.input-copo').focus();
           }
 
-          refreshToolTips();
+          refresh_tool_tips();
 
           //set focus to selectize control
           if (selectizeObjects.hasOwnProperty(formElem.id)) {
@@ -1786,7 +1786,7 @@ $(document).on('document_ready', function () {
             accordion_head = accordion_head + content
         }
         $(accordion_head).appendTo(stagearea);
-        refreshToolTips();
+        refresh_tool_tips();
     }
     
     function generate_sample_edit_table(stage) {
@@ -1992,7 +1992,7 @@ $(document).on('document_ready', function () {
                     });
                 customButtons.append(applyCsvButton);
 
-                refreshToolTips();
+                refresh_tool_tips();
 
                 //add event for enter key press and cell double-click
                 table

@@ -9,13 +9,13 @@ $(document).ready(function () {
   var csrftoken = $.cookie('csrftoken');
 
   //get component metadata
-  var componentMeta = getComponentMeta(component);
+  var componentMeta = get_component_meta(component);
 
   //load records
   load_records(componentMeta);
 
   //instantiate/refresh tooltips
-  refreshToolTips();
+  refresh_tool_tips();
 
   //trigger refresh of table data
   $('body').on('refreshtable', function (event) {
@@ -29,7 +29,7 @@ $(document).ready(function () {
 
   //add new component button
   $(document).on('click', '.new-component-template', function (event) {
-    initiateFormCall(component);
+    initiate_form_call(component);
   });
 
   //details button hover
@@ -52,7 +52,7 @@ $(document).ready(function () {
 
     //add task
     if (task == 'add') {
-      initiateFormCall(component);
+      initiate_form_call(component);
       return false;
     }
 

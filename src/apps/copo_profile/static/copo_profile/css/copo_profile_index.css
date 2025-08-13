@@ -19,19 +19,19 @@
   grid-template-columns: auto auto;
 }
 
-.profile-component-name {
+.pcomponent-name {
   padding-left: 3px;
 }
 
-.profile-component-icon {
+.pcomponent-icon {
   padding-right: 5px;
 }
 
-.profile-component-colour {
+.pcomponent-color {
   border-radius: 0.28571429rem !important;
 }
 
-.profile-component-button {
+.pcomponent-button {
   margin: 3px 15px 3px 3px !important;
 }
 
@@ -50,7 +50,7 @@
   min-width: 150px;
   padding: 5px;
   border-radius: 4px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* end component buttons */

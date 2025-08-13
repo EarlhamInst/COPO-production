@@ -18,7 +18,7 @@ const media_url = "{{ media_url }}";
 const upload_url = "{{ upload_url }}";
 const image_file_extensions = "{{ image_file_extensions }}";
 
-const recordActionButtonDef = {
+const record_action_button_def = {
   {% for button in record_action_button_def %}
     {{ button.name  }}: {
       template: '<div class=" tiny ui basic dtables-dbuttons  {{ button.icon_colour}} button copo-dt copo-tooltip" \
@@ -40,7 +40,7 @@ const recordActionButtonDef = {
 }
 
 
-const componentDef = {
+const component_def = {
   {% for component in component_def %}
     {{ component.name|lower }}:  {
       component: '{{ component.base_component }}',
@@ -54,8 +54,8 @@ const componentDef = {
       semanticIcon: '{{ component.widget_icon }}',
       buttons: [ {% for button in component.title_buttons.all %} '{{ button.name }}', {% endfor %} ],
       sidebarPanels: ['copo-sidebar-info'],
-      colourClass: '{{ component.widget_colour_class }}',
-      colour: '{{ component.widget_colour }}',
+      colorClass: '{{ component.widget_colour_class }}',
+      color: '{{ component.widget_colour }}',
       tableID: '{{ component.table_id }}',
       schema_name: '{{ component.schema_name }}',
       recordActions: [ {% for button in component.recordaction_buttons.all %} '{{ button.name }}', {% endfor %} ],
@@ -65,7 +65,7 @@ const componentDef = {
   {% endfor %}
 }
  
-const profileTypeDef = {
+const profile_type_def = {
   {% for profile_type in profile_type_def %}
     {{ profile_type.type|lower }}:  {
       title: '{{ profile_type.type | upper }}',
@@ -76,8 +76,8 @@ const profileTypeDef = {
 }
 
 
-function getProfileComponents(profileType) {
-  if (profileType){
-    return profileTypeDef[profileType.toLowerCase()].components.map(component => componentDef[component]);
+function get_profile_components(profile_type) {
+  if (profile_type){
+    return profile_type_def[profile_type.toLowerCase()].components.map(component => component_def[component]);
   }
 }

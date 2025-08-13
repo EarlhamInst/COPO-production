@@ -874,7 +874,7 @@ function do_render_table(data) {
       },
       dom: 'lf<"row button-rw">rtip',
       fnDrawCallback: function (oSettings) {
-        refreshToolTips();
+        refresh_tool_tips();
 
         $('.dataTables_filter').each(function () {
           if ($(this).attr('id') == data.table_data.table_id + '_filter') {
@@ -972,7 +972,7 @@ function do_render_table(data) {
   }
 } //end of function
 
-function refreshToolTips() {
+function refresh_tool_tips() {
   $("[data-toggle='tooltip']").tooltip();
   $("[data-toggle='popover']").popover();
   $('.ui.dropdown').dropdown();
@@ -2598,11 +2598,11 @@ function get_panel(panelType) {
 }
 
 //Set COPO frontpage properties in this dictionary
-function getComponentMeta(componentName) {
+function get_component_meta(componentName) {
   var componentMeta = null;
-  //var components = getProfileComponents();
+  //var components = get_profile_components();
 
-  componentMeta = componentDef[componentName.toLowerCase()];
+  componentMeta = component_def[componentName.toLowerCase()];
   /*
   components.forEach(function (comp) {
     if (comp.component == component) {
@@ -2616,7 +2616,7 @@ function getComponentMeta(componentName) {
 }
 
 /*
-function getProfileComponents() {
+function get_profile_components() {
   return [
     {
       component: 'accessions',
@@ -2631,7 +2631,7 @@ function getProfileComponents() {
         'tol_inspect_gal',
       ],
       sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-accessions'],
-      colourClass: 'accessions_color',
+      colorClass: 'accessions_color',
       color: 'pink',
       profile_component: 'dtol',
       tableID: 'accessions_table',
@@ -2651,7 +2651,7 @@ function getProfileComponents() {
         'tol_inspect_gal',
       ],
       sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-accessions'],
-      colourClass: 'accessions_color',
+      colorClass: 'accessions_color',
       color: 'pink',
       profile_component: 'stand-alone',
       tableID: 'accessions_table',
@@ -2671,7 +2671,7 @@ function getProfileComponents() {
         'tol_inspect_gal',
       ],
       sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-accessions'],
-      colourClass: 'accessions_color',
+      colorClass: 'accessions_color',
       color: 'pink',
       profile_component: '',
       tableID: 'accessions_table',
@@ -2686,7 +2686,7 @@ function getProfileComponents() {
       countsKey: 'num_assembly',
       buttons: ['new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
-      colourClass: 'assembly_color',
+      colorClass: 'assembly_color',
       color: 'violet',
       tableID: 'assembly_table',
       profile_component: 'stand-alone',
@@ -2706,7 +2706,7 @@ function getProfileComponents() {
       countsKey: 'num_assembly',
       buttons: ['new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
-      colourClass: 'assembly_color',
+      colorClass: 'assembly_color',
       color: 'violet',
       tableID: 'assembly_table',
       profile_component: 'dtol',
@@ -2730,7 +2730,7 @@ function getProfileComponents() {
         'download-blank-manifest-template|href:#blank_manifest_url',
       ],
       sidebarPanels: ['copo-sidebar-info'],
-      colourClass: 'data_color',
+      colorClass: 'data_color',
       color: 'red',
       tableID: 'tagged_seq_table',
       profile_component: 'dtol',
@@ -2745,7 +2745,7 @@ function getProfileComponents() {
       countsKey1: 'num_assembly',
       buttons: ['new-local-file', 'new-terminal-file'],
       sidebarPanels: ['copo-sidebar-info'],
-      colourClass: 'files_color',
+      colorClass: 'files_color',
       color: 'blue',
       tableID: 'files_table',
       profile_component: 'stand-alone',
@@ -2764,7 +2764,7 @@ function getProfileComponents() {
       countsKey1: 'num_assembly',
       buttons: ['new-local-file', 'new-terminal-file'],
       sidebarPanels: ['copo-sidebar-info'],
-      colourClass: 'files_color',
+      colorClass: 'files_color',
       color: 'blue',
       tableID: 'files_table',
       profile_component: 'dtol',
@@ -2806,7 +2806,7 @@ function getProfileComponents() {
         'accept_reject_samples',
       ],
       sidebarPanels: ['copo-sidebar-info'],
-      colourClass: 'samples_color',
+      colorClass: 'samples_color',
       color: 'olive',
       profile_component: 'dtol',
       tableID: 'sample_table',
@@ -2829,7 +2829,7 @@ function getProfileComponents() {
         'download-blank-manifest-template|href:#blank_manifest_url',
       ],
       sidebarPanels: ['copo-sidebar-info'],
-      colourClass: 'read_color',
+      colorClass: 'read_color',
       color: 'orange',
       profile_component: 'stand-alone',
       tableID: 'read_table',
@@ -2848,7 +2848,7 @@ function getProfileComponents() {
         'download-blank-manifest-template|href:#blank_manifest_url',
       ],
       sidebarPanels: ['copo-sidebar-info'],
-      colourClass: 'read_color',
+      colorClass: 'read_color',
       color: 'orange',
       profile_component: 'dtol',
       tableID: 'read_table',
@@ -2863,7 +2863,7 @@ function getProfileComponents() {
       countsKey: 'num_seqannotation',
       buttons: ['quick-tour-template', 'new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
-      colourClass: 'data_color',
+      colorClass: 'data_color',
       color: 'yellow',
       tableID: 'seqannotation_table',
       profile_component: 'stand-alone',
@@ -2883,7 +2883,7 @@ function getProfileComponents() {
       countsKey: 'num_seqannotation',
       buttons: ['quick-tour-template', 'new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
-      colourClass: 'data_color',
+      colorClass: 'data_color',
       color: 'yellow',
       tableID: 'seqannotation_table',
       profile_component: 'dtol',
@@ -2904,7 +2904,7 @@ function do_page_controls(componentName) {
   var component = null;
   profile_type = $('#profile_type').val();
   /*
-  var components = getProfileComponents(profile_type);
+  var components = get_profile_components(profile_type);
     if (comp.component == componentName) {
       profile_type = $('#profile_type').val();
       if (profile_type != undefined) {
@@ -2983,16 +2983,16 @@ function createComponentAnchor(
   anchor.attr('href', item.url ? item.url.replace('999', profileId) : '#');
 
   const icon = anchor.find('i');
-  icon.addClass(item.colour);
+  icon.addClass(item.color);
 
   if (!isIconOnly) {
     icon.addClass(item.iconClass);
 
     const button = $('<div/>', {
-      class: `tiny ui button profile-component-button profile-component-colour ${item.colour}`,
+      class: `tiny ui button pcomponent-button pcomponent-color ${item.color}`,
     })
-      .append(`<i class="profile-component-icon ${item.iconClass}"></i>`)
-      .append(`<span class="profile-component-name">${item.title}</span>`);
+      .append(`<i class="pcomponent-icon ${item.iconClass}"></i>`)
+      .append(`<span class="pcomponent-name">${item.title}</span>`);
 
     anchor.empty().append(button);
   } else {
@@ -3022,12 +3022,12 @@ function createDropdownWrapper(
     button.addClass('profile-dropdown-icon');
 
     button.append(
-      `<i class="ui icon ${parentItem.colour} profile-component-icon ${parentItem.semanticIcon}"></i>`
+      `<i class="ui icon ${parentItem.color} pcomponent-icon ${parentItem.semanticIcon}"></i>`
     );
   } else {
     // Component button dropdown menu
     button.addClass(
-      `tiny ui button profile-component-button profile-component-colour ${parentItem.colour}`
+      `tiny ui button pcomponent-button pcomponent-color ${parentItem.color}`
     );
     button.text(parentItem.title);
   }
@@ -3062,7 +3062,7 @@ function createDropdownWrapper(
 }
 
 function generateComponentControl(componentName, profile_type) {
-  var component = getComponentMeta(componentName);
+  var component = get_component_meta(componentName);
   var pageHeaders = $('.copo-page-headers'); //page header/icons
   var pageIcons = $('.copo-page-icons'); //profile component icons
   var sideBar = $('.copo-sidebar'); //sidebar panels
@@ -3192,7 +3192,7 @@ function generateComponentControl(componentName, profile_type) {
 
     pageIcons.append(pcomponentHTML);
 
-    var components = getProfileComponents(profile_type);
+    var components = get_profile_components(profile_type);
 
     // Sort components by title in ascending order
     components.sort((a, b) => a.title.localeCompare(b.title));
@@ -3281,7 +3281,7 @@ function generateComponentControl(componentName, profile_type) {
 
   //refresh components...
   quick_tour_event();
-  refreshToolTips();
+  refresh_tool_tips();
 }
 
 function refresh_webpop(elem, title, content, exrta_meta) {

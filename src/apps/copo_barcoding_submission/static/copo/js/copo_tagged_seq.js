@@ -161,7 +161,7 @@ $(document).ready(function () {
   var csrftoken = $.cookie('csrftoken');
 
   //get component metadata
-  var componentMeta = getComponentMeta(component);
+  var componentMeta = get_component_meta(component);
 
   var args_dict = {};
   args_dict['tagged_seq_checklist_id'] = $('#checklist_id')
@@ -177,7 +177,7 @@ $(document).ready(function () {
   //register_resolvers_event(); //register event for publication resolvers
 
   //instantiate/refresh tooltips
-  refreshToolTips();
+  refresh_tool_tips();
 
   //trigger refresh of table
   $('body').on('refreshtable', function (event) {

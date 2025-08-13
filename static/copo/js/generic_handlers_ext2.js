@@ -80,7 +80,7 @@ function render_zenodo_accession_function(data, type, row, meta) {
   }
 }
 
-function setEmptyComponentMessage(dataRows, table_id = '*') {
+function set_empty_component_message(dataRows, table_id = '*') {
   //decides, based on presence of record, to display table or getting started info
 
   if (dataRows == 0) {
@@ -117,7 +117,7 @@ function place_task_buttons(componentMeta) {
 
   if (componentMeta.recordActions.length) {
     componentMeta.recordActions.forEach(function (item) {
-      button_str = recordActionButtonDef[item].template;
+      button_str = record_action_button_def[item].template;
       var actionBTN = $(button_str);
       /*
       var actionBTN = $('.record-action-templates')
@@ -145,8 +145,8 @@ function place_task_buttons(componentMeta) {
       button_types = ['submit', 'publish'];
       button_types.forEach(function (button_type) {
         action_button_name = button_type + '_singlecell_single_' + item;
-        if (action_button_name in recordActionButtonDef) {
-          button_str = recordActionButtonDef[action_button_name].template;
+        if (action_button_name in record_action_button_def) {
+          button_str = record_action_button_def[action_button_name].template;
           var actionBTN = $(button_str);
           //actionBTN.removeClass(item);
           actionBTN.attr('data-table', componentMeta.tableID);
@@ -169,7 +169,7 @@ function place_task_buttons(componentMeta) {
   if (is_custom_buttons_needed) {
     var table = $('#' + componentMeta.tableID).DataTable();
     $(table.buttons().container()).append(customButtons);
-    refreshToolTips();
+    refresh_tool_tips();
     //table action buttons
     do_table_buttons_events();
   }
@@ -478,7 +478,7 @@ function do_render_server_side_table(componentMeta) {
         $(row).addClass('draggable_tr');
       },
       fnDrawCallback: function () {
-        refreshToolTips();
+        refresh_tool_tips();
         var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
         event.tableID = tableID;
         $('body').trigger(event);
@@ -817,7 +817,7 @@ function do_render_component_table_tabs(
   }
 
   if (is_empty) {
-    setEmptyComponentMessage(0);
+    set_empty_component_message(0);
   }
 
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
@@ -841,7 +841,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
     }
   }
 
-  setEmptyComponentMessage(dataSet.length); //display empty component message when there's no record
+  set_empty_component_message(dataSet.length); //display empty component message when there's no record
 
   if (dataSet.length === 0) {
     return false;
@@ -928,7 +928,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
       //order: [[1, 'asc']],
       columns: cols,
       fnDrawCallback: function () {
-        refreshToolTips();
+        refresh_tool_tips();
         var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
         event.tableID = tableID;
         $('body').trigger(event);

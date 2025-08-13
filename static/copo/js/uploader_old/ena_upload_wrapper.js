@@ -286,7 +286,7 @@ $(document).ready(function () {
       },
     }).done(function (data) {
       //refresh datafiles table
-      do_render_server_side_table(getComponentMeta('datafile'));
+      do_render_server_side_table(get_component_meta('datafile'));
 
       //check if the file needs compression; send request to server to gzip
       if (data.do_compress) {
@@ -321,7 +321,7 @@ $(document).ready(function () {
             get_hash(file_id, tform);
 
             //update table data
-            do_render_server_side_table(getComponentMeta('datafile'));
+            do_render_server_side_table(get_component_meta('datafile'));
           },
           error: function (data) {
             console.log(data);
@@ -365,7 +365,7 @@ function get_hash(id, tform) {
       .closest('.file_info')
       .remove();
 
-    do_render_server_side_table(getComponentMeta('datafile'));
+    do_render_server_side_table(get_component_meta('datafile'));
   });
 }
 

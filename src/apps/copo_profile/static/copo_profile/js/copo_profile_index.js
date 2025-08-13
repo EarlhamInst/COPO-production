@@ -27,9 +27,9 @@ $(document).on('document_ready', function () {
   const copoProfileIndexURL = '/copo/';
   const copoAcceptRejectURL = '/copo/dtol_submission/accept_reject_sample';
   const copoVisualsURL = '/copo/copo_visualize/';
-  const componentMeta = getComponentMeta(component);
+  const componentMeta = get_component_meta(component);
   const csrfToken = $.cookie('csrftoken');
-  const tableId = componentMeta.tableId;
+  const tableId = componentMeta.tableID;
   const tableLoader = $('<div class="copo-i-loader"></div>');
 
   const profilesTotal = getProfilesTotal();
@@ -112,7 +112,7 @@ $(document).on('document_ready', function () {
   // Add new profile button
   $(document).on('click', '.new-component-template', function () {
     var argsDict = { profileType: getProfileType() };
-    initiateFormCall(component, argsDict);
+    initiate_form_call(component, argsDict);
   });
 
   $(document).on('click', '#accept_reject_shortcut', function () {
@@ -125,7 +125,7 @@ $(document).on('document_ready', function () {
   }
 
   // Display empty profile message for potential first time users
-  setEmptyComponentMessage(profilesTotal);
+  set_empty_component_message(profilesTotal);
 
   // No profile records exist
   if (profilesVisibleLength === 0) {
@@ -357,8 +357,8 @@ function initialisePopover() {
       $content.append($editButton);
       $content.append($deleteButton);
 
-      componentDef['profile']['recordActions'].forEach((item) => {
-        var action = recordActionButtonDef[item];
+      component_def['profile']['recordActions'].forEach((item) => {
+        var action = record_action_button_def[item];
         const $button = $(
           '<button id="' +
             item +
@@ -458,7 +458,7 @@ function loadProfileRecords(obj) {
       appendRecordComponents(divGrid); // Adds 'Components' buttons
 
       // Initialise functions for the profile grids beyond the 8 records that are shown by default
-      refreshToolTips(); // Refreshes/reloads/reinitialises all popover and dropdown functions
+      refresh_tool_tips(); // Refreshes/reloads/reinitialises all popover and dropdown functions
       initialiseRecords(copoVisualsURL, csrfToken, component);
 
       setProfileGridHeading(divGrid, tableId); // Set profile grid heading
@@ -528,7 +528,7 @@ function appendRecordComponents(grids) {
 
 function editProfileRecord(profileRecordId, profileType) {
   const component = 'profile';
-  let csrfToken = $.cookie('csrfToken');
+  let csrfToken = $.cookie('csrftoken');
 
   $('#ellipsisId[data-toggle="popover"]').popover('hide'); // Hides the popover
 
@@ -540,7 +540,7 @@ function editProfileRecord(profileRecordId, profileType) {
       task: 'form',
       component: component,
       target_id: profileRecordId,
-      profileType: profileType,
+      profile_type: profileType,
     },
     success: function (data) {
       json2HtmlForm(data);
@@ -554,7 +554,7 @@ function editProfileRecord(profileRecordId, profileType) {
 function deleteProfileRecord(profileRecordId) {
   const component = 'profile';
   const copoDeleteProfile = '/copo/copo_profile/delete';
-  let csrfToken = $.cookie('csrfToken');
+  let csrfToken = $.cookie('csrftoken');
 
   $('#ellipsisId[data-toggle="popover"]').popover('hide'); // Hides the popover
 
@@ -814,7 +814,7 @@ function updateCounts(copoVisualsURL, csrfToken, component) {
 }
 
 function createComponentButtons(recordId, profileType) {
-  const components = getProfileComponents(profileType);
+  const components = get_profile_components(profileType);
 
   // Sort components by title in ascending order
   components.sort((a, b) => a.title.localeCompare(b.title));
@@ -919,7 +919,7 @@ function setProfileGridHeading(grids, tableId) {
 
         if (profileType) {
           acronym = profileType.toUpperCase();
-          colour = profileTypeDef[profileType.toLowerCase()]['widget_colour'];
+          colour = profile_type_def[profileType.toLowerCase()]['widget_colour'];
 
           if ($(el).attr('shared-profile-type') === '') {
             // Remove 'shared-profile-type' attribute

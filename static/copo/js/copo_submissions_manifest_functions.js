@@ -22,7 +22,7 @@ function load_manifest_submission_list() {
 function do_display_manifest_submissions(data) {
   var dtd = data.table_data.dataSet;
   var tableID = 'manifest_table';
-  setEmptyComponentMessage(dtd.length, '#' + tableID); //display empty submission message.
+  set_empty_component_message(dtd.length, '#' + tableID); //display empty submission message.
 
   if (dtd.length == 0) {
     return false;
@@ -191,7 +191,7 @@ function do_display_manifest_submissions(data) {
       ],
       columnDefs: [],
       fnDrawCallback: function () {
-        refreshToolTips();
+        refresh_tool_tips();
       },
       createdRow: function (row, data, index) {},
       dom: 'Bfr<"row"><"row info-rw" i>tlp',

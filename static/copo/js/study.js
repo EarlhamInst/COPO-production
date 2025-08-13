@@ -3,7 +3,7 @@ $(document).ready(function () {
   do_housekeeping();
 
   function do_housekeeping() {
-    refreshToolTips();
+    refresh_tool_tips();
 
     //will populate form fields
     do_populate_details_fields();
@@ -45,7 +45,7 @@ $(document).ready(function () {
     $('#new_data_file_id').on('change', function () {
       //refresh for dynamic bindings
       refresh_selectbox();
-      refreshToolTips();
+      refresh_tool_tips();
     });
 
     //handle event for doi text box enter key
@@ -706,7 +706,7 @@ $(document).ready(function () {
       refresh_selectbox(); //to bind dynamic fields
     }
 
-    refreshToolTips();
+    refresh_tool_tips();
   }
 
   function do_populate_details_fields() {

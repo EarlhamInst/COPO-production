@@ -190,7 +190,7 @@ $(document).ready(function () {
   var csrftoken = $.cookie('csrftoken');
 
   //get component metadata
-  var componentMeta = getComponentMeta(component);
+  var componentMeta = get_component_meta(component);
   var args_dict = {};
   (args_dict['profile_id'] = profile_id),
     load_records(componentMeta, args_dict); // call to load component records
@@ -198,7 +198,7 @@ $(document).ready(function () {
   //register_resolvers_event(); //register event for publication resolvers
 
   //instantiate/refresh tooltips
-  refreshToolTips();
+  refresh_tool_tips();
 
   //trigger refresh of table
   $('body').on('refreshtable', function (event) {

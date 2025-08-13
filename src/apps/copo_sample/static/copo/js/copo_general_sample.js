@@ -261,7 +261,7 @@ $(document).on('document_ready', function () {
   var csrftoken = $.cookie('csrftoken');
 
   //get component metadata
-  var componentMeta = getComponentMeta(component);
+  var componentMeta = get_component_meta(component);
 
   //load_records(componentMeta); // call to load component records
 
@@ -277,7 +277,7 @@ $(document).on('document_ready', function () {
   //register_resolvers_event(); //register event for publication resolvers
 
   //instantiate/refresh tooltips
-  refreshToolTips();
+  refresh_tool_tips();
 
   //trigger refresh of table
   $('body').on('refreshtable', function (event) {
@@ -348,7 +348,7 @@ $(document).on('document_ready', function () {
   var profile_type = document
     .getElementById('profile_type')
     .value.toLowerCase();
-  var colour = profileTypeDef[profile_type]['widget_colour'];
+  var colour = profile_type_def[profile_type]['widget_colour'];
   $('#help_add_button').css('color', 'white').css('background-color', colour);
   $('.new-general-sample-spreadsheet-template')
     .css('color', 'white')
