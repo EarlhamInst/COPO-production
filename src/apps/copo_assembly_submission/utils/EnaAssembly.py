@@ -21,6 +21,7 @@ from .da import Assembly
 import pandas as pd
 from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_project
 from common.dal.mongo_util import cursor_to_list
+from common.ena_utils.ena_helper import EnaSubmissionHelper
 
 l = Logger()
 # other types of assemblies (not individualss or cultured isolates):
@@ -261,6 +262,9 @@ def process_assembly_pending_submission():
         these_assemblies = join(settings.MEDIA_ROOT, "ena_assembly_files", sub["profile_id"])
         these_assemblies_url_path = f"{settings.MEDIA_URL}ena_assembly_files/{sub['profile_id']}"
 
+        enaSubmissionHelper = EnaSubmissionHelper(profile_id=sub["profile_id"], submission_id=str(sub["_id"]))
+
+
         for assembly_id in sub["assemblies"]:
             assembly = Assembly().get_record(assembly_id)
             if not assembly:
@@ -285,21 +289,28 @@ def process_assembly_pending_submission():
             manifest_path = join(these_assemblies, "manifest.txt")
             with open(manifest_path, "w") as destination:
                 destination.write(manifest_content)
+
             #verify submission
+            Logger().log(msg='validating assembly submission')
+            ghlper.notify_assembly_status(data={"profile_id": sub["profile_id"]},
+                        msg="Validating Assembly Submission",
+                        action="info",
+                        html_id="assembly_info")
+
+            submission_type = assembly.get("submission_type", "genome")
+            return_code, output = enaSubmissionHelper.validate_assembly(file_path=manifest_path, submission_type= submission_type)
+
+      
+            """
             test = ""
             if "dev" in ena_service:
                 test = " -test "
             #cli_path = "tools/reposit/ena_cli/webin-cli.jar"
-            submission_type = assembly.get("submission_type", "genome")
+           
             webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
             Logger().debug(msg=webin_cmd)
             #print(webin_cmd)
             try:
-                Logger().log(msg='validating assembly submission')
-                ghlper.notify_assembly_status(data={"profile_id": sub["profile_id"]},
-                                msg="Validating Assembly Submission",
-                                action="info",
-                                html_id="assembly_info")
                 output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True)
                 Logger().debug(output)
                 output = output.decode("ascii")
@@ -308,14 +319,19 @@ def process_assembly_pending_submission():
                 return_code = cpe.returncode
                 output = cpe.stdout
                 output = output.decode("ascii") + " ERROR return code " + str(return_code)
-
+            """
             Submission().update_assembly_submission(sub_id=str(sub["_id"]), assembly_id=assembly_id)
             Logger().debug(msg=output)
             #print(output)
             #todo decide if keeping or deleting these files
             #report is being stored in webin-cli.report and manifest.txt.report so we can get errors there
             if return_code == 0:
-                return_code, output = _submit_assembly(file_path=str(manifest_path), profile_id=sub["profile_id"], submission_type=submission_type)
+                Logger().log(msg="submitting assembly")
+                ghlper.notify_assembly_status(data={"profile_id": sub["profile_id"]},
+                                msg="Submitting Assembly",
+                                action="info",
+                                html_id="assembly_info")
+                return_code, output = enaSubmissionHelper.submit_assembly(file_path=str(manifest_path), submission_type=submission_type)
                 if return_code != 0 :
                     #handle possibility submission is not successfull
                     #this may happen for instance if the same assembly has already been submitted, which would not get caught

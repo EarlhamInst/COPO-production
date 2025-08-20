@@ -17,6 +17,7 @@ from openpyxl.utils import get_column_letter
 from common.dal.profile_da import Profile
 import re
 import collections
+import numpy as np
  
 l = Logger()
 
@@ -41,7 +42,7 @@ class SingleCellSchemasHandler:
 
     def _parseSchemas(self, schema_name, xls):
         enums_df = pd.read_excel(xls, "allowed_values", dtype=str)
-        compoents_df = pd.read_excel(xls, "components", index_col="key")
+        components_df = pd.read_excel(xls, "components", index_col="key")
         standards_df = pd.read_excel(xls, "standards", index_col="key")
         technology_df = pd.read_excel(xls, "technologies", index_col="key")
         term_mapping_df = pd.read_excel(xls, "term_mapping", index_col="copo_name")
@@ -55,6 +56,7 @@ class SingleCellSchemasHandler:
 
         component_schemas_dict = {}
         #validate the schema
+        #no empty component_name, term_name, term_label, term_type
         #no duplicate name,label within a component with same version and term_name
         #check foreign key constraints
         #check valid regex
@@ -66,6 +68,13 @@ class SingleCellSchemasHandler:
             raise Exception("Invalid regex")
 
         schemas_df.drop(columns=["regex_valid"], inplace=True)
+
+        empty_values = ""
+        column_names = list(schemas_df.columns.values)
+        for i,j in zip(*np.where(pd.isnull(schemas_df[["component_name", "term_name", "term_label", "term_type"]]))):
+            empty_values = empty_values + f"Empty value in {column_names[j+1]} at row {i+1} \n"
+        if empty_values:
+            raise Exception(f'Empty values: {empty_values} in the schema. Please check the schema file.')
 
         for checklist_id in checklist_df.index:
                 #no duplicate name,label within a component with same versio and term_name
@@ -110,7 +119,7 @@ class SingleCellSchemasHandler:
         singlecell_dict["enums"] = enums_dict
         singlecell_dict["standards"] = standards_df.to_dict("index")
         singlecell_dict["technologies"]= technology_df.to_dict("index")
-        singlecell_dict["components"]= compoents_df.to_dict("index")
+        singlecell_dict["components"]= components_df.to_dict("index")
         singlecell_dict["checklists"]= checklist_df.to_dict("index")
         singlecell_dict["term_mapping"] = term_mapping_df.to_dict("index")
         singlecell_dict["name"] = schema_name
