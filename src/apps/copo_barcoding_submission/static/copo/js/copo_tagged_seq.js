@@ -230,8 +230,8 @@ $(document).ready(function () {
       $('#blank_manifest_url_' + this.value).val()
     );
     args_dict['tagged_seq_checklist_id'] = this.value;
-    (args_dict['profile_id'] = profile_id),
-      load_records(componentMeta, args_dict); // call to load component records
+    args_dict['profile_id'] = profile_id,
+    load_records(componentMeta, args_dict); // call to load component records
   });
 
   // Set colour of 'help_add_button' button and 'new-samples-spreadsheet-template'
