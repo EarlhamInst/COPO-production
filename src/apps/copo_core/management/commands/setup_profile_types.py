@@ -457,11 +457,21 @@ class Command(BaseCommand):
         Component().remove_all_components()
         self.stdout.write("Adding Component")
 
+        # Create group components
+        # Images parent component
+        Component().create_component(
+            is_parent=True,
+            name="images",
+            title="Images",
+            widget_icon="image",
+            widget_colour="bright-coral",
+        )
+
+        # Create other components. They can act as a main component
+        # or as a child/subcomponent when grouped.
         assembly = Component().create_component(
             name="assembly",
             title="Assembly",
-            group_name="",
-            group_title="",
             widget_icon="puzzle piece",
             widget_colour="violet",
             widget_icon_class="fa fa-puzzle-piece",
@@ -472,8 +482,6 @@ class Command(BaseCommand):
         taggedseq = Component().create_component(
             name="taggedseq",
             title="Barcoding Manifests",
-            group_name="",
-            group_title="",
             widget_icon="barcode",
             widget_colour="red",
             widget_icon_class="fa fa-barcode",
@@ -484,8 +492,6 @@ class Command(BaseCommand):
         files = Component().create_component(
             name="files",
             title="Files",
-            group_name="",
-            group_title="",
             widget_icon="file",
             widget_colour="blue",
             widget_icon_class="fa fa-file",
@@ -496,8 +502,6 @@ class Command(BaseCommand):
         seqannotation = Component().create_component(
             name="seqannotation",
             title="Sequence Annotations",
-            group_name="",
-            group_title="",
             widget_icon="tag",
             widget_colour="yellow",
             widget_icon_class="fa fa-tag",
@@ -508,8 +512,6 @@ class Command(BaseCommand):
         read = Component().create_component(
             name="read",
             title="Reads",
-            group_name="",
-            group_title="",
             widget_icon="dna",
             widget_colour="orange",
             widget_icon_class="fa fa-dna",
@@ -520,8 +522,6 @@ class Command(BaseCommand):
         singlecell = Component().create_component(
             name="singlecell",
             title="Single-cell",
-            group_name="",
-            group_title="",
             widget_icon="dna",
             widget_colour="green",
             widget_icon_class="fa fa-dna",
@@ -531,26 +531,10 @@ class Command(BaseCommand):
             schema_name="COPO_SINGLE_CELL",
         )
 
-        images = Component().create_component(
-            name="images",
-            title="Images",
-            group_name="",
-            group_title="",
-            widget_icon="image",
-            widget_colour="bright-coral",
-            widget_icon_class="",
-            table_id="component_subtitle",
-            reverse_url="",
-            subtitle="#component_subtitle",
-            schema_name="",
-            base_component="",
-        )
-
         images_rembi = Component().create_component(
             name="rembi",
             title="REMBI",
             group_name="images",
-            group_title="Images",
             widget_icon="image",
             widget_colour="coral-pink",
             widget_icon_class="fa fa-image",
@@ -565,7 +549,6 @@ class Command(BaseCommand):
             name="stx_fish",
             title="ST FISH",
             group_name="images",
-            group_title="Images",
             widget_icon="image",
             widget_colour="terra-cotta",
             widget_icon_class="fa fa-image",
@@ -579,8 +562,6 @@ class Command(BaseCommand):
         sample = Component().create_component(
             name="sample",
             title="Samples",
-            group_name="",
-            group_title="",
             widget_icon="filter",
             widget_colour="olive",
             widget_icon_class="fa fa-filter",
@@ -591,8 +572,6 @@ class Command(BaseCommand):
         accessions = Component().create_component(
             name="accessions",
             title="Accessions",
-            group_name="",
-            group_title="",
             widget_icon="sitemap",
             widget_colour="pink",
             widget_icon_class="fa fa-sitemap",
@@ -603,8 +582,6 @@ class Command(BaseCommand):
         profile = Component().create_component(
             name="profile",
             title="Work Profiles",
-            group_name="",
-            group_title="",
             widget_icon="",
             widget_colour="",
             widget_icon_class="",
@@ -615,8 +592,6 @@ class Command(BaseCommand):
         general_sample = Component().create_component(
             name="general_sample",
             title="Samples",
-            group_name="",
-            group_title="",
             widget_icon="filter",
             widget_colour="olive",
             widget_icon_class="fa fa-filter",
@@ -797,7 +772,6 @@ class Command(BaseCommand):
                 seqannotation,
                 read,
                 singlecell,
-                images,
                 images_rembi,
                 images_stx_fish,
                 accessions,
