@@ -128,7 +128,7 @@ COPO_SAMPLE_CHECKLIST_URL = [
 SINGLE_CELL_SCHEMAS_URL = {
     "COPO_SINGLE_CELL": f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/single_cell/singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx",
     "COPO_IMAGES_REMBI": f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/images/rembi_image_schema_main_v{MANIFEST_VERSION['COPO_IMAGES_REMBI']}.xlsx",
-    "COPO_IMAGES_STX_FISH": f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/images/spatial_transcriptomics_fish_image_schema_main_v{MANIFEST_VERSION['COPO_IMAGES_STX_FISH']}.xlsx",
+    "COPO_IMAGES_STX_FISH": f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/images/stx_fish_image_schema_main_v{MANIFEST_VERSION['COPO_IMAGES_STX_FISH']}.xlsx",
 }
 
 IMAGE_FILE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.bmp']
