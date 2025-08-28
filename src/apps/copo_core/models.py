@@ -437,7 +437,7 @@ class Component(models.Model):
             self.subtitle = ''
             self.schema_name = ''
         else:
-            # Main components logic
+            # Single/Standalone components logic
             self.group_name = group_name
             self.group_title = group_name.title() if group_name and not group_title else group_title
             self.is_assignable = is_assignable

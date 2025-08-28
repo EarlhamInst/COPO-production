@@ -111,7 +111,7 @@ $(document).on('document_ready', function () {
 
   // Add new profile button
   $(document).on('click', '.new-component-template', function () {
-    var argsDict = { profileType: getProfileType() };
+    var argsDict = { profile_type: getProfileType() };
     initiate_form_call(component, argsDict);
   });
 
@@ -481,34 +481,10 @@ function loadProfileRecords(obj) {
   });
 }
 
-// function getParentComponents(grouped, components) {
-//   const parentComponentsToSkip = new Set();
-
-//   Object.entries(grouped).forEach(([groupName, groupItems]) => {
-//     const filteredItems = groupItems.filter(
-//       (item) =>
-//         item.component !== 'profile' &&
-//         item.component !== 'accessions_dashboard'
-//     );
-
-//     if (groupName && filteredItems.length > 1) {
-//       const parentComponent = components.find(
-//         (item) => item.component === groupName
-//       );
-//       if (parentComponent) {
-//         parentComponentsToSkip.add(parentComponent.component);
-//       }
-//     }
-//   });
-
-//   return parentComponentsToSkip;
-// }
-
 function appendRecordComponents(grids) {
   // Loop through each grid
   grids.each(function () {
     let recordId = $(this).closest('.grid').find('.row-title span').attr('id');
-
     let copoRecordsPanel = $(this).closest('.grid').find('.copo-records-panel');
     let profileType =
       copoRecordsPanel.attr('profile-type') ||
@@ -518,11 +494,11 @@ function appendRecordComponents(grids) {
       profileType = profileType.toLowerCase().trim();
     }
     // Add component buttons to the menu for each profile record
-    let menu = $(this).closest('.grid').find('#expandingMenu');
-    let componentButtons;
-    $(menu).attr('id', 'menu_' + recordId);
-    componentButtons = createComponentButtons(recordId, profileType);
-    $(menu).find('.comp').append(componentButtons);
+    let $menu = $(this).closest('.grid').find('#expandingMenu');
+    let $componentButtons = createComponentButtons(recordId, profileType);
+
+    $($menu).attr('id', 'menu_' + recordId);
+    $($menu).find('.comp').append($componentButtons);
   });
 }
 
@@ -530,7 +506,8 @@ function editProfileRecord(profileRecordId, profileType) {
   const component = 'profile';
   let csrfToken = $.cookie('csrftoken');
 
-  $('#ellipsisId[data-toggle="popover"]').popover('hide'); // Hides the popover
+  // Hide the popover
+  $('#ellipsisId[data-toggle="popover"]').popover('hide');
 
   $.ajax({
     url: copoFormsURL,
@@ -556,7 +533,8 @@ function deleteProfileRecord(profileRecordId) {
   const copoDeleteProfile = '/copo/copo_profile/delete';
   let csrfToken = $.cookie('csrftoken');
 
-  $('#ellipsisId[data-toggle="popover"]').popover('hide'); // Hides the popover
+  // Hide the popover
+  $('#ellipsisId[data-toggle="popover"]').popover('hide');
 
   // Show a modal dialog to confirm if a user would like to delete the profile
   BootstrapDialog.show({
@@ -822,49 +800,34 @@ function createComponentButtons(recordId, profileType) {
   // Group components by 'group' field value
   const grouped = groupComponentsByGroupName(components);
 
-  // Get parent components to exclude from being rendered
-  const parentComponentsToSkip = getParentComponentsToSkip(components);
-
   const componentsDIV = $('<div/>', {
     class: 'item',
   });
 
+  const seenGroups = new Set();
   Object.entries(grouped).forEach(([groupName, groupItems]) => {
-    // Skip components
-    let filteredItems = groupItems.filter(
-      (item) =>
-        item.component !== 'profile' &&
-        item.component !== 'accessions_dashboard'
-    );
-
-    if (filteredItems.length === 0) return;
+    if (groupItems.length === 0) return;
 
     // Components with subcomponents i.e. dropdown menus
     // Render as dropdown if group is non-empty and has more than one subcomponent
-    const isDropdownMenu = groupName && filteredItems.length > 1;
+    const isDropdownMenu = groupName && groupItems.length > 1;
 
-    if (isDropdownMenu) {
-      // Find the parent component from the components list
-      const parentComponent = components.find(
-        (item) => item.component === groupName
-      );
-
+    if (isDropdownMenu && groupName) {
       const dropdown = createDropdownWrapper(
-        parentComponent,
-        filteredItems,
+        groupName,
+        groupItems,
         recordId,
-        false // full-button mode
+        false
       );
       componentsDIV.append(dropdown);
     } else {
-      // Single/Standalone component.
+      // Single/Standalone component
       // These are components that do not have
-      // subcomponents/dropdown menu and parent component.
-      // NB: Parent components are excluded from the output
-      filteredItems
-        .filter((item) => !parentComponentsToSkip.has(item.component))
-        .forEach((item) => {
-          const anchor = createComponentAnchor(item, recordId, false);
+      // subcomponents/a dropdown menu and are not parent components.
+      groupItems
+        .filter((i) => i.isAssignable && !i.isParent)
+        .forEach((j) => {
+          const anchor = createComponentAnchor(j, recordId, false);
           componentsDIV.append(anchor);
         });
     }
@@ -875,9 +838,9 @@ function createComponentButtons(recordId, profileType) {
 
 function filterActionMenu() {
   $('.copo-records-panel').each(function (idx, el) {
-    let t = $(el).attr('profileType');
+    let t = $(el).attr('profile-type');
     let sharedType = $(el).attr('shared-profile-type');
-    let s = $(el).attr('studyStatus');
+    let s = $(el).attr('study-status');
     studyStatus = '';
 
     if (s != undefined) {

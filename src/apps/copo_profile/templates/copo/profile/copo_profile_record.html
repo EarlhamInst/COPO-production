@@ -2,7 +2,7 @@
 {% load static %}
 {% load web_tags %}
 <div class="grid">
-    <div class="copo-records-panel" profile-type="{{ profile.type }}" shared-profile-type="{{ profile.shared_type }}"  study_status="{{ profile.study_status | get_first_value_from_array }}" study_release_date="{{ profile.study_release_date | get_first_value_from_array }}">
+    <div class="copo-records-panel" profile-type="{{ profile.type }}" shared-profile-type="{{ profile.shared_type }}"  study-status="{{ profile.study_status | get_first_value_from_array }}" study_release_date="{{ profile.study_release_date | get_first_value_from_array }}">
         <!--Panel -->
         <div class="panel">
             <!--Panel heading -->
@@ -92,7 +92,7 @@
                                         </div>
                                     {% endif %}
                                     {% if profile.study_status %}
-                                        <div class="studyStatusDiv">
+                                        <div class="study-status-div">
                                             <span class="bold-text">Release Status: </span> 
                                             <span id="study_status_{{profile.id}}">{{ profile.study_status | get_first_value_from_array}}</span>
                                         </div>

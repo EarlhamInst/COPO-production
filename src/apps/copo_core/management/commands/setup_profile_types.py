@@ -467,8 +467,8 @@ class Command(BaseCommand):
             widget_colour="bright-coral",
         )
 
-        # Create other components. They can act as a main component
-        # or as a child/subcomponent when grouped.
+        # Create other components. They can act as a single/standalone 
+        # component or as a child/subcomponent when grouped.
         assembly = Component().create_component(
             name="assembly",
             title="Assembly",

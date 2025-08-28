@@ -19,6 +19,14 @@
   grid-template-columns: auto auto;
 }
 
+.pcomponent-icon-class {
+  display: none;
+}
+
+.ui.dropdown .menu > .item .dropdown.icon {
+  color: black;
+}
+
 .pcomponent-name {
   padding-left: 3px;
 }

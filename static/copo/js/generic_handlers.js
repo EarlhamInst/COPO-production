@@ -2930,7 +2930,7 @@ function do_page_controls(componentName) {
     return false;
   }
   */
-  generateComponentControl(componentName, profile_type);
+  generate_component_control(componentName, profile_type);
   initialiseComponentDropdownMenu();
 } //end of func
 
@@ -2938,130 +2938,200 @@ function groupComponentsByGroupName(components) {
   const grouped = {};
 
   components.forEach((component) => {
-    const group = component.group_name || '';
+    // Treat null, undefined, empty string or string "None" as empty.
+    // Parent components would typically have a "None" group name.
+    const group =
+      !component.groupName || component.groupName === 'None'
+        ? ''
+        : component.groupName.trim().toLowerCase();
     if (!grouped[group]) {
       grouped[group] = [];
     }
-    grouped[group].push(component);
+    // Avoid duplicates by skipping components
+    // with the same name and title
+    if (
+      !grouped[group].some(
+        (item) =>
+          item.component === component.component &&
+          item.title === component.title
+      )
+    ) {
+      grouped[group].push(component);
+    }
   });
 
   return grouped;
 }
 
-function getParentComponentsToSkip(components) {
-  const grouped = groupComponentsByGroupName(components);
-  const parentComponentsToSkip = new Set();
+function createComponentAnchor(item, profileId, isIconOnly = false) {
+  const $templateAnchor = isIconOnly
+    ? $('a.pcomponent-icon-template').clone()
+    : $('a.pcomponent-button-template').clone();
 
-  Object.entries(grouped).forEach(([groupName, groupItems]) => {
-    const filteredItems = groupItems.filter(
-      (item) =>
-        item.component !== 'profile' &&
-        item.component !== 'accessions_dashboard'
-    );
-
-    if (groupName && filteredItems.length > 1) {
-      const parentComponent = components.find(
-        (item) => item.component === groupName
-      );
-      if (parentComponent) {
-        parentComponentsToSkip.add(parentComponent.component);
-      }
-    }
+  $templateAnchor.attr('title', function (_, oldTitle) {
+    return (oldTitle || '') + ` ${item.title}`;
   });
+  $templateAnchor.attr(
+    'href',
+    item.url ? item.url.replace('999', profileId) : '#'
+  );
 
-  return parentComponentsToSkip;
-}
-
-function createComponentAnchor(
-  item,
-  profileId,
-  isIconOnly = false,
-  templateAnchor
-) {
-  const anchor = templateAnchor ? templateAnchor.clone() : $('<a/>');
-  anchor.attr('title', `Navigate to ${item.title}`);
-  anchor.attr('href', item.url ? item.url.replace('999', profileId) : '#');
-
-  const icon = anchor.find('i');
-  icon.addClass(item.color);
+  const $icon = $templateAnchor.find('i');
 
   if (!isIconOnly) {
-    icon.addClass(item.iconClass);
-
-    const button = $('<div/>', {
-      class: `tiny ui button pcomponent-button pcomponent-color ${item.color}`,
-    })
-      .append(`<i class="pcomponent-icon ${item.iconClass}"></i>`)
-      .append(`<span class="pcomponent-name">${item.title}</span>`);
-
-    anchor.empty().append(button);
+    const $button = $templateAnchor.find('.pcomponent-button');
+    $button.addClass(item.color);
+    $button.find('.pcomponent-icon').addClass(item.iconClass);
+    $button.find('.pcomponent-name').text(item.title);
+    $icon.addClass(item.iconClass);
+    $templateAnchor.removeClass('pcomponent-button-template');
   } else {
-    icon.addClass(item.semanticIcon);
+    $icon.addClass(`${item.color} ${item.semanticIcon}`);
+    $templateAnchor.removeClass('pcomponent-icon-template');
   }
 
-  return anchor;
+  return $templateAnchor;
 }
 
-function createDropdownWrapper(
-  parentItem,
+function createDropdownWrapper1(
+  groupName,
   childrenItems,
   profileId,
-  isIconOnly,
-  templateAnchor
+  isIconOnly
 ) {
-  const wrapper = $('<div/>', {
-    class: `profile-dropdown-wrapper${isIconOnly ? ' icon-only' : ''}`,
-    tabindex: 0,
-  });
+  // Find the dropdown menu wrapper that
+  // matches the parent component group name
+  // NB: It must exist in the 'components_template.html'.
+  const $wrapper = isIconOnly
+    ? $('.profile-dropdown-wrapper.pcomponent-dropdown-icon-template')
+        .filter(function () {
+          const parentComponentName = $(this)
+            .contents()
+            .filter(function () {
+              return this.nodeType === 3 && this.nodeValue.trim();
+            })
+            .text()
+            .trim()
+            .toLowerCase();
 
-  const button = $('<div/>');
+          return parentComponentName === groupName.toLowerCase();
+        })
+        .clone()
+    : $('.profile-dropdown-wrapper.pcomponent-dropdown-button-template')
+        .filter(function () {
+          const parentComponentName = $(this)
+            .find('.pcomponent-button')
+            .contents()
+            .filter(function () {
+              return this.nodeType === 3 && this.nodeValue.trim(); // Retain only text nodes
+            })
+            .text()
+            .replace(/\s+/g, ' ') // Normalise whitespaces/newlines
+            .trim()
+            .toLowerCase();
+
+          return parentComponentName === groupName.toLowerCase();
+        })
+        .clone();
+
+  if (!$wrapper.length) {
+    console.error(`Component dropdown wrapper not found for ${groupName}`);
+    return;
+  }
+
+  const $menu = $wrapper.find(
+    `.profile-dropdown-menu${isIconOnly ? '.icon-only' : ''}`
+  );
+  const $container = $('<div/>');
 
   if (isIconOnly) {
     // Component icon dropdown menu
-    wrapper.addClass('item');
-    button.addClass('profile-dropdown-icon');
-
-    button.append(
-      `<i class="ui icon ${parentItem.color} pcomponent-icon ${parentItem.semanticIcon}"></i>`
-    );
+    $wrapper.removeClass('pcomponent-dropdown-icon-template');
   } else {
     // Component button dropdown menu
-    button.addClass(
-      `tiny ui button pcomponent-button pcomponent-color ${parentItem.color}`
-    );
-    button.text(parentItem.title);
+    $container.addClass('item');
+    $wrapper.removeClass('pcomponent-dropdown-button-template');
   }
 
-  button.append('<i class="dropdown icon"></i>');
-
-  wrapper.append(button);
-
-  const menu = $('<div/>', {
-    class: `menu profile-dropdown-menu${
-      isIconOnly ? ' icon-only hidden' : ' comp'
-    }`,
-    tabindex: -1,
-  });
-
-  const container = $('<div/>', { class: isIconOnly ? '' : 'item' });
-
   childrenItems.forEach((item) => {
-    const childAnchor = createComponentAnchor(
-      item,
-      profileId,
-      isIconOnly,
-      templateAnchor
-    );
-    isIconOnly ? menu.append(childAnchor) : container.append(childAnchor);
+    const childAnchor = createComponentAnchor(item, profileId, isIconOnly);
+    isIconOnly ? $menu.append(childAnchor) : $container.append(childAnchor);
   });
 
-  menu.append(container);
-  wrapper.append(menu);
+  $menu.append($container);
+  $wrapper.append($menu);
 
-  return wrapper;
+  return $wrapper;
 }
 
-function generateComponentControl(componentName, profile_type) {
+function createDropdownWrapper(
+  groupName,
+  childrenItems,
+  profileId,
+  isIconOnly
+) {
+  const templateDiv = isIconOnly
+    ? '.profile-dropdown-wrapper.pcomponent-dropdown-icon-template'
+    : '.profile-dropdown-wrapper.pcomponent-dropdown-button-template';
+
+  // Normalise group name for comparison
+  const targetParentComponentName = String(groupName).trim().toLowerCase();
+
+  // Find dropdown wrapper based on template type
+  const $wrapper = $(templateDiv)
+    .filter(function () {
+      const parentComponentName = isIconOnly
+        ? // Component icon only
+          $(this).find('.pcomponent-icon-name').clone().text()
+        : // Component button only
+          $(this)
+            .find('.pcomponent-button')
+            .clone()
+            .children()
+            .remove()
+            .end()
+            .text();
+
+      return (
+        parentComponentName.replace(/\s+/g, ' ').trim().toLowerCase() ===
+        targetParentComponentName
+      );
+    })
+    .clone();
+
+  if (!$wrapper.length) {
+    console.error(`Component dropdown wrapper not found for ${groupName}`);
+    return;
+  }
+
+  // Remove template-specific classes
+  $wrapper.removeClass(
+    isIconOnly
+      ? 'pcomponent-dropdown-icon-template'
+      : 'pcomponent-dropdown-button-template'
+  );
+
+  if (isIconOnly) $wrapper.find('.pcomponent-icon-name').remove();
+  
+  const $menu = $wrapper.find(
+    `.profile-dropdown-menu${isIconOnly ? '.icon-only' : ''}`
+  );
+
+  // Add inner container to component button only
+  const $container = !isIconOnly ? $('<div/>').addClass('item') : null;
+
+  // Build child components/subcomponents
+  childrenItems.forEach((item) => {
+    const childAnchor = createComponentAnchor(item, profileId, isIconOnly);
+    ($container || $menu).append(childAnchor);
+  });
+
+  if ($container) $menu.append($container);
+
+  return $wrapper;
+}
+
+function generate_component_control(componentName, profile_type) {
   var component = get_component_meta(componentName);
   var pageHeaders = $('.copo-page-headers'); //page header/icons
   var pageIcons = $('.copo-page-icons'); //profile component icons
@@ -3200,63 +3270,16 @@ function generateComponentControl(componentName, profile_type) {
     // Group components by 'group' field value
     const grouped = groupComponentsByGroupName(components);
 
-    // Get parent components to exclude from being rendered
-    const parentComponentsToSkip = getParentComponentsToSkip(components);
-
-    // for (var i = 0; i < components.length; ++i) {
-    //   var comp = components[i];
-    //   //if (comp.hasOwnProperty('profile_component')) {
-    //   if (
-    //     comp.component == component.component &&
-    //     comp.title == component.title
-    //   ) {
-    //     continue;
-    //   }
-    //   /*
-    //     if (
-    //       component.profile_component.toString() !=
-    //       comp.profile_component.toString()
-    //     ) {
-    //       continue;
-    //     }
-    //     */
-
-    //   // var newAnchor = pcomponentAnchor.clone();
-    //   // pcomponentHTML.append(newAnchor);
-
-    //   // newAnchor.attr('title', 'Navigate to ' + comp.title);
-    //   // component_link = comp.url.replace('999', profile_id);
-    //   // newAnchor.attr('href', component_link);
-
-    //   const anchor = createComponentAnchor(
-    //     comp,
-    //     profile_id,
-    //     true,
-    //     pcomponentAnchor
-    //   );
-    //   pcomponentHTML.append(anchor);
-
-    //   //newAnchor.attr('href', $('#' + comp.component + '_url').val());
-    //   // newAnchor.find('i').addClass(comp.colour).addClass(comp.semanticIcon);
-    //   //}
-    // }
-
     Object.entries(grouped).forEach(([groupName, groupItems]) => {
-      // Skip components
-      // let filteredItems = groupItems.filter(
-      //   (item) => item.component !== item.component && item.title !== item.title
-      // );
-
-      // if (filteredItems.length === 0) return;
-
-      // Components with subcomponents i.e. dropdown menus
-      // Render as dropdown if group is non-empty and has more than one subcomponent
+     
+      // Render as dropdown if group is non-empty and has more
+      // than one subcomponent
       const isDropdownMenu = groupName && groupItems.length > 1;
 
       if (isDropdownMenu) {
-        const parent = components.find((c) => c.component === groupName);
+        // Components with subcomponents i.e. dropdown menus
         const dropdown = createDropdownWrapper(
-          parent,
+          groupName,
           groupItems,
           profile_id,
           true,
@@ -3264,8 +3287,9 @@ function generateComponentControl(componentName, profile_type) {
         );
         pcomponentHTML.append(dropdown);
       } else {
+        // Single/Standalone components
         groupItems
-          .filter((i) => !parentComponentsToSkip.has(i.component))
+          .filter((i) => i.isAssignable && !i.isParent)
           .forEach((j) => {
             const anchor = createComponentAnchor(
               j,

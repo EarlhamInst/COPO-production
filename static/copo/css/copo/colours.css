@@ -1,47 +1,3 @@
-/* Colour: Slate grey */
-.ui.icon.slate-grey {
-  color: #6b7a8f !important;
-}
-
-.ui.icon.slate-grey:hover {
-  color: #5f6e82 !important;
-}
-
-.ui.slate-grey.button,
-.ui.slate-grey.buttons.button {
-  background-color: #6b7a8f;
-  color: #fff;
-  text-shadow: none;
-  background-image: none;
-}
-
-.ui.slate-grey.button:hover,
-.ui.slate-grey.buttons.button:hover {
-  background-color: #5f6e82;
-}
-
-/* Colour: Warm stone */
-.ui.icon.warm-stone {
-  color: #8a7f76 !important;
-}
-
-.ui.icon.warm-stone:hover {
-  color: #7c726a !important;
-}
-
-.ui.warm-stone.button,
-.ui.warm-stone.buttons.button {
-  background-color: #8a7f76;
-  color: #fff;
-  text-shadow: none;
-  background-image: none;
-}
-
-.ui.warm-stone.button:hover,
-.ui.warm-stone.buttons.button:hover {
-  background-color: #7c726a;
-}
-
 /* Colour: Bright coral */
 .ui.icon.bright-coral {
   color: #ff6f61 !important;
@@ -66,44 +22,58 @@
 
 /* Colour: Terra Cotta */
 .ui.icon.terra-cotta {
-  color: #e96a64 !important;
+  /* color: #e96a64 !important; */
+  background: radial-gradient(circle at top right, #4a90e2 30%, #e96a64 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
+/*
 .ui.icon.terra-cotta:hover {
-  color: #c65a55 !important;
+   color: #c65a55 !important; 
 }
-
+*/
 .ui.terra-cotta.button,
 .ui.terra-cotta.buttons.button {
-  background-color: #e96a64;
+  /* background-color: #e96a64; 
+  background-image: none; */
+  background: radial-gradient(circle at top right, #4a90e2 30%, #e96a64 70%);
   color: #fff;
   text-shadow: none;
-  background-image: none;
 }
 
 .ui.terra-cotta.button:hover,
 .ui.terra-cotta.buttons.button:hover {
-  background-color: #c65a55;
+  /* background-color: #c65a55; */
+  background: radial-gradient(circle at bottom right, #2c6fb6 30%, #c65a55 70%);
 }
 
 /* Colour: Coral-pink */
 .ui.icon.coral-pink {
-  color: #ff8781 !important;
+  /* color: #ff8781 !important; */
+  background: radial-gradient(circle at top right, #5c5c5c 30%, #ff8781 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
+/*
 .ui.icon.coral-pink:hover {
-  color: #d9736e !important;
+   color: #d9736e !important; 
 }
-
+*/
 .ui.coral-pink.button,
 .ui.coral-pink.buttons.button {
-  background-color: #ff8781;
+  /* background-color: #ff8781;
+  background-image: none; */
+  background: radial-gradient(circle at top right, #5c5c5c 30%, #ff8781 70%);
   color: #fff;
   text-shadow: none;
-  background-image: none;
 }
 
 .ui.coral-pink.button:hover,
 .ui.coral-pink.buttons.button:hover {
-  background-color: #d9736e;
+  /* background-color: #d9736e; */
+  background: radial-gradient(circle at bottom right, #3d3d3d 30%, #d9736e 70%);
 }
