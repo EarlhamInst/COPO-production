@@ -1,0 +1,58 @@
+{% load static %}
+{% load web_tags %}
+{% load html_tags %}
+
+{% block stylesheet_block%}
+<style>
+  th {
+    display: table-cell;
+  }
+  tbody {
+    display: table-row-group;
+    vertical-align: middle;
+    unicode-bidi: isolate;
+    border-color: inherit;
+}
+</style>
+
+{% endblock %} 
+
+<div>
+<h1> Component: {{component.name}} ({{component.key}})</h1>
+ 
+
+  {% if terms %}
+  <h2>Terms</h2>
+  <table>
+    <thead>
+    <tr role="row">
+      <th role="columnheader">Name</th>
+      <th role="columnheader">Label</th>
+      <th role="columnheader">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+  {% for term in terms %}
+    <tr>
+      <td>
+        {% if term.term_type != 'ontology' and term.term_reference|get_non_nan_value != 'N/A' %}
+          <a href="{{term.term_reference}}">{{ term.term_name}}</a>
+        {% else %}
+          <a href="{{term.term_name}}">{{term.term_name}}</a></td>
+        {% endif %}
+      <td>{{ term.term_label}}</td>
+      <td>{{ term.term_description|safe }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+  </table>
+  {% else %}
+    <p>No terms associated with this component</p>
+{% endif %}
+
+
+<h2>uri: {% url "copo_single_cell_submission:display_term" schema_name component.key %}</h2>
+
+ 
+
+
