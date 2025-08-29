@@ -65,11 +65,10 @@ def generate_accession_records(request):
     isUserProfileActive = d_utils.convertStringToBoolean(request.POST.get('isUserProfileActive',str()))
     isOtherAccessionsTabActive = d_utils.convertStringToBoolean(request.POST.get('isOtherAccessionsTabActive', str()))
     showAllCOPOAccessions = d_utils.convertStringToBoolean(request.POST.get('showAllCOPOAccessions', str()))
-    filter_accessions = json.loads(request.POST.get('filter_accessions', list()))
-
+    filter_accessions = json.loads(request.POST.get('filter_accessions', '[]')) # 'json.loads()' expects a string
     # Convert items in the 'filter_accessions' list to lowercase
     filter_accessions = [x.lower() for x in filter_accessions] if filter_accessions else list()
-    
+
     # Replace 'genomics' with 'isasample' in the 'filter_accessions' list
     filter_accessions = ['isasample' if 'genomics' in filter_accessions else accession for accession in filter_accessions]
 
@@ -206,4 +205,3 @@ def are_accession_records_available(request):
 
     records_count = Submission().get_accession_records_count(element_dict)
     return HttpResponse(json_util.dumps(records_count))
-
