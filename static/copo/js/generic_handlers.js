@@ -3879,14 +3879,14 @@ function get_collapsible_panel() {
 }
 
 function initialiseNavToggle() {
-  $('#copo-global-nav .navbar-toggle, #frontpage-nav .navbar-toggle').on(
+  $('#copoGlobalNav .navbar-toggle, #frontpageNav .navbar-toggle').on(
     'click',
     function () {
       $(this).closest('nav').find('.navbar-nav').toggleClass('active');
     }
   );
 
-  $('#copo-global-nav .navbar-nav li a, #frontpage-nav .navbar-nav li a').on(
+  $('#copoGlobalNav .navbar-nav li a, #frontpageNav .navbar-nav li a').on(
     'click',
     function () {
       if ($(window).width() < 768) {

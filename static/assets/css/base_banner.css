@@ -4,27 +4,27 @@
   padding: 2px 2px 4px 2px;
 }
 
-#frontpage-navbar-inner {
+#frontpageNavbarInner {
   font-size: 8px;
   float: right !important;
   /*Align top navbar to the right of the web page*/
   padding-left: 20px;
 }
 
-#frontpage-navbar-outer {
+#frontpageNavbarOuter {
   height: 59px;
   min-height: 10px;
   max-height: 180px;
 }
 
-#copo-global-nav {
+#copoGlobalNav {
   height: 55px;
   min-height: 10px;
   max-height: 180px;
 }
 
-#copo-global-nav .global-warning-banner,
-#frontpage-nav .global-warning-banner {
+#copoGlobalNav .global-warning-banner,
+#frontpageNav .global-warning-banner {
   flex-grow: 1;
   display: flex;
   align-items: center;
@@ -32,8 +32,8 @@
   text-align: center;
 }
 
-#copo-global-nav .global-warning-banner h1,
-#frontpage-nav .global-warning-banner h1 {
+#copoGlobalNav .global-warning-banner h1,
+#frontpageNav .global-warning-banner h1 {
   color: red;
   text-decoration: none;
   min-height: 1rem;
@@ -42,20 +42,20 @@
   font-family: 'Open Sans', sans-serif !important;
 }
 
-#copo-global-nav .global-warning-banner h1 {
+#copoGlobalNav .global-warning-banner h1 {
   font-weight: 500 !important;
   font-size: 2em !important;
 }
 
-#frontpage-nav .global-warning-banner h1 {
+#frontpageNav .global-warning-banner h1 {
   margin-top: 8px;
   padding: revert !important;
   font-weight: 700 !important;
   font-size: 1.8em !important;
 }
 
-#copo-global-nav .global-warning-banner p,
-#frontpage-nav.global-warning-banner p {
+#copoGlobalNav .global-warning-banner p,
+#frontpageNav.global-warning-banner p {
   text-decoration: none;
   font-size: 16px;
 }
@@ -94,8 +94,8 @@
 
 @media (max-width: 768px) {
   /* Hide on small screens */
-  #copo-global-nav .global-warning-banner,
-  #frontpage-nav .global-warning-banner {
+  #copoGlobalNav .global-warning-banner,
+  #frontpageNav .global-warning-banner {
     display: none;
   }
 }
