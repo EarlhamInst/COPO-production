@@ -991,7 +991,7 @@ class EnaSubmissionHelper:
                 accession = re.search( "ERZ\d*\w" , output).group(0).strip()
                 assembly_accession = dict(
                     accession = accession,
-                    alias = f"webin-{submission_type}-{row["assemblyname"]}",
+                    alias = f'webin-{submission_type}-{row["assemblyname"]}',
                     project_accession=row["study_accession"],
                     sample_accession=row["biosampleAccession"],
                 )
