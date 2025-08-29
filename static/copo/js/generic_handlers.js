@@ -55,6 +55,8 @@ $(document).ready(function () {
 
   setup_copo_general_lookup_event();
 
+  initialiseNavToggle();
+
   var event = jQuery.Event('document_ready'); //individual components can trap and handle this event as they so wish
   $(document).trigger(event);
 });
@@ -3069,7 +3071,10 @@ function generate_component_control(componentName, profile_type) {
     for (var i = 0; i < components.length; ++i) {
       var comp = components[i];
       //if (comp.hasOwnProperty('profile_component')) {
-      if (comp.component == component.component && comp.title == component.title) {
+      if (
+        comp.component == component.component &&
+        comp.title == component.title
+      ) {
         continue;
       }
       /*
@@ -3085,7 +3090,7 @@ function generate_component_control(componentName, profile_type) {
       pcomponentHTML.append(newAnchor);
 
       newAnchor.attr('title', 'Navigate to ' + comp.title);
-      component_link = comp.url.replace('999', profile_id)
+      component_link = comp.url.replace('999', profile_id);
       newAnchor.attr('href', component_link);
 
       //newAnchor.attr('href', $('#' + comp.component + '_url').val());
@@ -3871,4 +3876,29 @@ function get_collapsible_panel() {
   );
 
   return panel.clone();
+}
+
+function initialiseNavToggle() {
+  $('#copo-global-nav .navbar-toggle, #frontpage-nav .navbar-toggle').on(
+    'click',
+    function () {
+      $(this).closest('nav').find('.navbar-nav').toggleClass('active');
+    }
+  );
+
+  $('#copo-global-nav .navbar-nav li a, #frontpage-nav .navbar-nav li a').on(
+    'click',
+    function () {
+      if ($(window).width() < 768) {
+        $(this).closest('.navbar-nav').removeClass('active');
+      }
+    }
+  );
+
+  // Reset menu on window resize
+  $(window).on('resize', function () {
+    if ($(window).width() >= 768) {
+      $('.navbar-nav').removeClass('active');
+    }
+  });
 }

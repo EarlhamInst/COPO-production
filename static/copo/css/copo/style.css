@@ -199,6 +199,10 @@ copo-noborders-table.dataTable thead td {
   line-height: 1.4;
 }
 
+.global-row {
+  margin-bottom: 70px;
+}
+
 .global-notifications-title {
   font-weight: 500;
   font-size: 21px;
@@ -218,33 +222,70 @@ copo-noborders-table.dataTable thead td {
 
 /* end page title */
 
-/*h1 {*/
+/* page icons */
+.profile-dropdown-wrapper .profile-dropdown-menu {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /*auto auto */
+  gap: 0.5em;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #ccc;
+  min-width: 88px;
+  padding: 5px;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
 
-/*font-size: x-large;*/
+.profile-dropdown-wrapper {
+  position: relative;
+  cursor: pointer;
+  vertical-align: middle;
+  line-height: 1;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-box-flex: 0;
+  user-select: none;
+  text-transform: none;
+  color: rgba(0, 0, 0, 0.87);
+  font-weight: 400;
+}
 
-/*}*/
+.profile-dropdown-wrapper .menu .item {
+  display: block;
+}
 
-/*.h2 {*/
+.profile-dropdown-wrapper .profile-dropdown-icon {
+  padding-right: 0.8em;
+}
 
-/*font-family: 'Quattrocento Sans', sans-serif;*/
+.copo-page-icons .profile-dropdown-wrapper.icon-only > i.dropdown.icon {
+  margin: 0 !important;
+}
 
-/*color: #163657;*/
+.navbar-collapse.in {
+  background-color: black;
+  width: fit-content;
+  margin-left: auto;
+  overflow: hidden;
+}
 
-/*}*/
+.navbar-collapse.in > li > a {
+  color: white !important;
+  height: max-content !important;
+}
 
-/*.h2 small {*/
+@media (max-width: 768px) {
+  .copo-page-icons {
+    padding-top: 10px;
+  }
 
-/*color: #163657*/
-
-/*}*/
-
-/*.h3 {*/
-
-/*color: #163657;*/
-
-/*font-family: 'Quattrocento Sans', sans-serif;*/
-
-/*}*/
+  .global-row {
+    margin-bottom: 20px;
+  }
+}
 
 .list-group.panel > .list-group-item {
   border-bottom-right-radius: 4px;
@@ -1140,7 +1181,7 @@ th {
 }
 
 .copo-main {
-  top: 61px;
+  top: 10px; /* 61px;*/
 }
 
 /*CSS for profiles type legend on profile index web page*/

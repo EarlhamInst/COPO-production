@@ -4,6 +4,11 @@
   text-shadow: none !important;
 }
 
+#copo-global-nav .navbar-nav > li > a i,
+#copo-global-nav .navbar-nav > li > a i {
+  cursor: pointer;
+}
+
 .navbar-custom-items {
   color: #fff !important;
 }
@@ -20,6 +25,22 @@
   background: transparent;
   border-bottom-color: rgba(38, 38, 38, 0.95);
   border-bottom-width: thin;
+}
+
+#copo-global-nav .navbar-nav > li + li {
+  margin-left: 5px;
+}
+
+#copo-global-nav .navbar-nav .dropdown-menu > li + li {
+  margin-top: 5px;
+}
+
+#copo-global-nav .navbar-nav > li > a .caret {
+  margin-left: 5px;
+}
+
+#copo-global-nav .navbar-nav > li.dropdown:last-child {
+  margin-right: 10px;
 }
 
 #copo-global-nav .navbar-brand {
@@ -63,12 +84,22 @@
   color: #fff;
 }
 
-#copo-global-nav .navbar-toggle .icon-bar,
+#copo-global-nav .navbar-toggle {
+  border-color: black;
+}
+
 #copo-global-nav .navbar-toggle:hover,
-#copo-global-nav .navbar-toggle:focus,
+#copo-global-nav .navbar-toggle:focus {
+  background-color: black;
+}
+
 #copo-global-nav .navbar-toggle:hover .icon-bar,
 #copo-global-nav .navbar-toggle:focus .icon-bar {
-  background-color: transparent;
+  background-color: white;
+}
+
+#copo-global-nav .navbar-toggle .icon-bar {
+  background-color: black;
 }
 
 #copo-global-nav .dropdown-menu {
@@ -249,3 +280,65 @@
   color: #080808 !important;
 }
 /* End public top navigation bar */
+
+/* Media queries */
+@media (min-width: 768px) {
+  .navbar-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-end !important;
+  }
+  .navbar-toggle {
+    display: none; /* hide toggle button on desktop */
+  }
+}
+
+@media (max-width: 767px) {
+  .navbar-nav {
+    display: none;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: absolute;
+    right: 0;
+    background-color: black;
+    padding: 10px 0;
+    width: 180px;
+    z-index: 999;
+    border-radius: 0 0 5px 5px;
+  }
+
+  .navbar-nav.active {
+    display: flex;
+  }
+  .navbar-nav li {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+  }
+
+  .navbar-nav li a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    color: white !important;
+    text-decoration: none;
+  }
+
+  /* Icon spacing */
+  .navbar-nav li a i {
+    margin-left: 8px;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .navbar-nav li a span.icon_text {
+    margin-left: 5px;
+  }
+
+  .navbar-nav li a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
