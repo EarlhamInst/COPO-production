@@ -51,7 +51,7 @@
 {% endif %}
 
 
-<h2>uri: {% url "copo_single_cell_submission:display_term" schema_name component.key %}</h2>
+<h2>uri: {{request.scheme}}://{{request.get_host}}{% url "copo_single_cell_submission:display_term" schema_name component.key %}</h2>
 
  
 

@@ -472,8 +472,8 @@ def display_term(request, schema_name, term):
                         options.append(f"This is an ontology term. Please refer to {field['term_reference']} for more information.")
                     elif field["namespace_prefix"] != 'ei':
                         uri = field.get("term_reference", "")  
-                    if not uri:
-                        uri = reverse("copo_single_cell_submission:display_term", args=[schema_name, field["term_name"]])
+                    if not uri or not isinstance(uri, str):
+                        uri = request.build_absolute_uri(reverse("copo_single_cell_submission:display_term", args=[schema_name, field["term_name"]]))
                     return render(request, 'copo/schema_term.html', {'options': options, 'term': field, 'uri': uri, 'component_key': component_key})        
     
     return HttpResponse(status=404, content="Term not found")
