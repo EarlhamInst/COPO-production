@@ -4,11 +4,6 @@
   text-shadow: none !important;
 }
 
-#copoGlobalNav .navbar-nav > li > a i,
-#copoGlobalNav .navbar-nav > li > a i {
-  cursor: pointer;
-}
-
 .navbar-custom-items {
   color: #fff !important;
 }
@@ -53,27 +48,24 @@
   height: 50px !important;
 }
 
-#copoGlobalNav .navbar-nav > .active > a i,
-#copoGlobalNav .navbar-nav > li > a i:hover,
-#copoGlobalNav .navbar-nav > li > a i:focus,
-#copoGlobalNav .navbar-nav > .active > a i:hover,
-#copoGlobalNav .navbar-nav > .active > a i:focus {
-  color: white;
-  background-color: black;
-}
-
+/* Default icon style */
 #copoGlobalNav .navbar-nav > li > a i {
   font-size: 16px;
+  padding: 4px;
+  display: inline-block;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+  cursor: pointer;
 }
 
+/* Hover/focus/active for icon */
 #copoGlobalNav .navbar-nav > li > a i:hover,
 #copoGlobalNav .navbar-nav > li > a i:focus,
 #copoGlobalNav .navbar-nav > .active > a i:hover,
 #copoGlobalNav .navbar-nav > .active > a i:focus,
 #copoGlobalNav .navbar-nav > .active > a i {
-  border-radius: 50%;
-  padding: 4px;
-  display: inline-block;
+  color: white;
+  background-color: black;
 }
 
 #copoGlobalNav .navbar-nav .dropdown-menu li > a:hover,
@@ -82,24 +74,6 @@
   background-image: none;
   background-color: rgba(0, 0, 0, 0.8);
   color: #fff;
-}
-
-#copoGlobalNav .navbar-toggle {
-  border-color: black;
-}
-
-#copoGlobalNav .navbar-toggle:hover,
-#copoGlobalNav .navbar-toggle:focus {
-  background-color: black;
-}
-
-#copoGlobalNav .navbar-toggle:hover .icon-bar,
-#copoGlobalNav .navbar-toggle:focus .icon-bar {
-  background-color: white;
-}
-
-#copoGlobalNav .navbar-toggle .icon-bar {
-  background-color: black;
 }
 
 #copoGlobalNav .dropdown-menu {
@@ -116,6 +90,25 @@
 #copoGlobalNav .dropdown-menu > li > a {
   font-weight: bold;
   color: black !important;
+}
+
+/* Navbar toggle button */
+#copoGlobalNav .navbar-toggle {
+  border-color: black;
+}
+
+#copoGlobalNav .navbar-toggle:hover,
+#copoGlobalNav .navbar-toggle:focus {
+  background-color: black;
+}
+
+#copoGlobalNav .navbar-toggle:hover .icon-bar,
+#copoGlobalNav .navbar-toggle:focus .icon-bar {
+  background-color: white;
+}
+
+#copoGlobalNav .navbar-toggle .icon-bar {
+  background-color: black;
 }
 
 /* Authenticated top navigation bar - Inverse top navigation bar */
@@ -189,6 +182,7 @@
   max-height: 180px;
   border-bottom-color: rgba(38, 38, 38, 0.95) !important;
   border-bottom-width: thin !important;
+  margin-bottom: 0 !important;
 }
 
 #frontpageNav .navbar-nav > li > a:hover,
