@@ -40,13 +40,11 @@
             </div>
             <div class="col-sm-5 col-md-5 col-lg-5 zero-padding">
                 <!-- Top navigation bar -->
-                <div class="pull-right">
-                    {% if user.is_authenticated %}
-                        {% include 'nav_authenticated.html' %}
-                    {% else %}
-                        {% include 'nav_public.html' %}
-                    {% endif %}
-                </div>
+                {% if user.is_authenticated %}
+                    {% include 'nav_authenticated.html' %}
+                {% else %}
+                    {% include 'nav_public.html' %}
+                {% endif %}
             </div>
         </div>
 

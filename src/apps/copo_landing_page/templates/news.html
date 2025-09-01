@@ -43,13 +43,11 @@
 
 
 <!-- Top navigation bar -->
-<div class="pull-right">
-    {% if user.is_authenticated %}
-        {% include 'nav_authenticated.html' %}
-    {% else %}
-        {% include 'nav_public.html' %}
-    {% endif %}
-</div>
+{% if user.is_authenticated %}
+    {% include 'nav_authenticated.html' %}
+{% else %}
+    {% include 'nav_public.html' %}
+{% endif %}
 {#<nav class="navbar-inverse" role="navigation">#}
 {##}
 {#    <div class="navbar-header">#}
@@ -87,7 +85,7 @@
 
 <!--End Navigation -->
 
-        <div id="myCarousel" class="carousel container slide">
+        <div id="newsCarousel" class="carousel container slide">
             <div class="carousel-inner">
                 <div class="item one"></div>
                 <div class="item two"></div>

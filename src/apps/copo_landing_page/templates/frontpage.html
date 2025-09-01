@@ -14,18 +14,13 @@
 
 {% block baseblock %}
     <div class="container-fluid">
-
         <section id="statistics-section">
             <!-- Top navigation bar -->
-            <div class="pull-right">
-                {% if user.is_authenticated %}
-                    {% include 'nav_authenticated.html' %}
-                {% else %}
-                    {% include 'nav_public.html' %}
-                {% endif %}
-            </div>
-            
-            <br><br><br><br><br>
+            {% if user.is_authenticated %}
+                {% include 'nav_authenticated.html' %}
+            {% else %}
+                {% include 'nav_public.html' %}
+            {% endif %}
             
             <!--<div id="copo-icon">
                <img src="{% static 'assets/img/COPO-logo-full-CMYK-black.png' %}" alt="copo_black image">
