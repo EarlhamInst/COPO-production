@@ -16,5 +16,6 @@ urlpatterns = [
     re_path('view/(?P<profile_id>[a-z0-9]+)/(?P<schema_name>\w+)/(?P<ui_component>\w+)', views.copo_singlecell,
          name='copo_singlecell'),
 
+    re_path('term/(?P<schema_name>\w+)/(?P<term>\w+)', views.display_term, name='display_term'),
          
 ]

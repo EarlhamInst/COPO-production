@@ -148,3 +148,10 @@ def get_profile_type_description(value):
     if profile_type:
         return f"{profile_type[0].description}"
     return value
+
+@register.filter(is_safe=True, name="get_non_nan_value")
+def get_non_nan_value(value):
+    if value and str(value).lower() != 'nan':
+        return value
+    return 'N/A'
+

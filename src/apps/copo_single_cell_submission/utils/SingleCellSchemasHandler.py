@@ -18,6 +18,10 @@ from common.dal.profile_da import Profile
 import re
 import collections
 import numpy as np
+import json
+from io import BytesIO
+from pyld import jsonld
+from django.urls import reverse
  
 l = Logger()
 
@@ -129,7 +133,7 @@ class SingleCellSchemasHandler:
         return singlecell_dict
 
 
-    def write_manifest(self, singlecell_schema, checklist_id=None, singlecell=None, file_path=None):
+    def write_manifest(self, singlecell_schema, checklist_id=None, singlecell=None, file_path=None, format="xlsx", request=None):
             
             schema_name = singlecell_schema["name"]
             schemas = singlecell_schema["schemas"]
@@ -171,119 +175,121 @@ class SingleCellSchemasHandler:
  
                 data_validation_column_index = 0
 
-                with pd.ExcelWriter(path=file_path, engine='xlsxwriter' ) as writer:  
+                if format == "xlsx":
+                    with pd.ExcelWriter(path=file_path, engine='xlsxwriter' ) as writer:  
 
-                    for component_name, schema in schemas.items():
-                        component_schema_df = pd.DataFrame.from_records(schema)
-                        component_schema_df = component_schema_df.drop(component_schema_df[pd.isna(component_schema_df[schema_checklist])].index)
-                        
-                        if component_schema_df.empty:
-                            continue
-                        
-                        component_schema_df.fillna("", inplace=True)
-                        component_schema_df["choice"] = component_schema_df[component_schema_df["term_type"] == "enum"]["term_name"].apply(lambda x:singlecell_schema.get("enums",[]).get(x, []))
-                        component_schema_df["mandatory"] = component_schema_df[schema_checklist]
-                        component_schema_df.set_index(keys="term_name", inplace=True)
-            
-                        #component_schema_df.sort_values(by=['mandatory','term_label'], inplace=True)
-                        component_schema_df.loc[component_schema_df["mandatory"] == "M" , "term_label"] = component_schema_df["term_label"]
-                        component_schema_df.loc[component_schema_df["mandatory"] != "M", "term_label"] = component_schema_df["term_label"] + " (optional)"
-                        component_schema_df["empty_column"] = ""
-
-                        component_schema_df_transposed = component_schema_df.transpose()
-                        component_schema_df_transposed = component_schema_df_transposed.loc[["term_label", "term_description", "term_example", "empty_column"]]
-                        component_schema_df_transposed.columns = component_schema_df_transposed.iloc[0]
-
-                        if singlecell is not None:
-                            component_data_df = pd.DataFrame.from_records(singlecell["components"].get(component_name, []))
-                            if not component_data_df.empty:
-                                new_column_name = { field["term_name"] : field["term_label" ]+ (" (optional)" if  field[schema_checklist] != 'M' else "") for field in schema if field[schema_checklist] in ["M","O"] }
-                                component_data_df.drop(columns=list(set(component_data_df.columns) - set(new_column_name.keys())), inplace=True)
-                                component_data_df.rename(columns=new_column_name, inplace=True)
-
-                                component_schema_df_transposed  = pd.concat([component_schema_df_transposed , component_data_df], axis=0)
-                                component_schema_df_transposed.fillna("", inplace=True)
-                          
-
-                        #sheet_name = component_names.get(component_name, {}).get("name", component_name)
-                        #sheet_name = sheet_name[:31]
-                        sheet_name = component_name
-                        component_schema_df_transposed.to_excel(writer, sheet_name=sheet_name, index=False, header=False)
-
-                        last_column_letter = get_column_letter(len(component_schema_df_transposed.columns))
-                        
-                        for index, field in component_schema_df.iterrows():
-                            name = field["term_label"]
-                            description = field.get("term_description", name)
-                            type = field.get("term_type","string")
-                            if name not in component_schema_df_transposed.columns:
+                        for component_name, schema in schemas.items():
+                            component_schema_df = pd.DataFrame.from_records(schema)
+                            component_schema_df = component_schema_df.drop(component_schema_df[pd.isna(component_schema_df[schema_checklist])].index)
+                            
+                            if component_schema_df.empty:
                                 continue
-                            column_index = component_schema_df_transposed.columns.get_loc(name)
-
-                            column_length = len(description)
-                            column_length = 70 if column_length > 70 else column_length
-                            column_letter = get_column_letter(column_index + 1)
-
-                            cell_format = writer.book.add_format({'num_format': '@', 'text_wrap': True, "valign":"top"})  #dosen't work
-                            writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
-
-                            if field["mandatory"] == "M":
-                                cell_format = writer.book.add_format(title_format)
-                                writer.sheets[sheet_name].conditional_format(f'{column_letter}1', {'type': 'no_errors', 'format': cell_format})                            
-                                #writer.sheets[sheet_name].write(f"{column_letter}1", name, cell_format)
-                           
-
-                            cell_start_end = '%s5:%s1048576' % (column_letter, column_letter)
-
-                            if type == "string":
-                                pass
-
-                                """ doesn't work 
-                                if field["term_regex"]: 
-                                    #for i in range(5, 1000):
-                                    writer.sheets[sheet_name].data_validation(cell_start_end, {'validate': 'custom', 
-                                                                                                          'value': f'=REGEXTEST({column_letter}5, "{field["term_regex"]}")',
-                                                                                                          'error_title': 'Invalid value',
-                                                                                                          'error_message': f'Invalid value for {name}. {field["term_error_message"]}',
-                                                                                                          'ignore_blank': True})
-                                """
-                            elif type == "enum" and "choice" in field:
-                                choice = field["choice"]
-
-                                if len(choice) > 0:
-                                    source = ""
-                                    number_of_char_for_choice = sum([len(str(x)) for x in choice])
-                                    if number_of_char_for_choice <= 255:
-                                        source = choice
-                                    else:
-                                        s = pd.Series(choice, name=field["term_label"])
-                                        s.to_frame().to_excel(writer, sheet_name="data_values", index=False, header=True, startrow=0, startcol=data_validation_column_index)
-                                        column_letter = get_column_letter(data_validation_column_index + 1)
-                                        column_length = max(s.astype(str).map(len).max(), len(field["term_label"]))
-                                        writer.sheets["data_values"].set_column(data_validation_column_index, data_validation_column_index, column_length)
-                                        source = "=%s!$%s$2:$%s$%s" % ("data_values", column_letter, column_letter, str(len(choice) + 1))
-                                        data_validation_column_index = data_validation_column_index + 1
-
-                                    writer.sheets[sheet_name].data_validation(cell_start_end,
-                                                                            {'validate': 'list',
-                                                                            'source': source})
-                                    
-
-
-                        cell_format = writer.book.add_format(seperator_format)
-                        writer.sheets[sheet_name].write("A4", "FILL OUT INFORMATION BELOW THIS LINE", cell_format)
-
-                        # Set the conditional format for locking rows 2 to 3
-                        cell_format = writer.book.add_format(desc_eg_format)
-                        writer.sheets[sheet_name].conditional_format(f'A2:{last_column_letter}3', {'type': 'no_errors', 'format': cell_format})
+                            
+                            component_schema_df.fillna("", inplace=True)
+                            component_schema_df["choice"] = component_schema_df[component_schema_df["term_type"] == "enum"]["term_name"].apply(lambda x:singlecell_schema.get("enums",[]).get(x, []))
+                            component_schema_df["mandatory"] = component_schema_df[schema_checklist]
+                            component_schema_df.set_index(keys="term_name", inplace=True)
                 
-                        # Set all rows below row 4 to unlocked
-                        cell_format = writer.book.add_format(unlocked_format)
-                        for row in range(4, 1004):
-                            writer.sheets[sheet_name].set_row(row, None, cell_format)
-                        
-                        # Protect the worksheet
-                        writer.sheets[sheet_name].protect()
+                            #component_schema_df.sort_values(by=['mandatory','term_label'], inplace=True)
+                            component_schema_df.loc[component_schema_df["mandatory"] == "M" , "term_label"] = component_schema_df["term_label"]
+                            component_schema_df.loc[component_schema_df["mandatory"] != "M", "term_label"] = component_schema_df["term_label"] + " (optional)"
+                            component_schema_df["empty_column"] = ""
+
+                            component_schema_df_transposed = component_schema_df.transpose()
+                            component_schema_df_transposed = component_schema_df_transposed.loc[["term_label", "term_description", "term_example", "empty_column"]]
+                            component_schema_df_transposed.columns = component_schema_df_transposed.iloc[0]
+
+                            if singlecell is not None:
+                                component_data_df = pd.DataFrame.from_records(singlecell["components"].get(component_name, []))
+                                if not component_data_df.empty:
+                                    new_column_name = { field["term_name"] : field["term_label" ]+ (" (optional)" if  field[schema_checklist] != 'M' else "") for field in schema if field[schema_checklist] in ["M","O"] }
+                                    component_data_df.drop(columns=list(set(component_data_df.columns) - set(new_column_name.keys())), inplace=True)
+                                    component_data_df.rename(columns=new_column_name, inplace=True)
+
+                                    component_schema_df_transposed  = pd.concat([component_schema_df_transposed , component_data_df], axis=0)
+                                    component_schema_df_transposed.fillna("", inplace=True)
+                            
+
+
+                            #sheet_name = component_names.get(component_name, {}).get("name", component_name)
+                            #sheet_name = sheet_name[:31]
+                            sheet_name = component_name
+                            component_schema_df_transposed.to_excel(writer, sheet_name=sheet_name, index=False, header=False)
+
+                            last_column_letter = get_column_letter(len(component_schema_df_transposed.columns))
+                            
+                            for index, field in component_schema_df.iterrows():
+                                name = field["term_label"]
+                                description = field.get("term_description", name)
+                                type = field.get("term_type","string")
+                                if name not in component_schema_df_transposed.columns:
+                                    continue
+                                column_index = component_schema_df_transposed.columns.get_loc(name)
+
+                                column_length = len(description)
+                                column_length = 70 if column_length > 70 else column_length
+                                column_letter = get_column_letter(column_index + 1)
+
+                                cell_format = writer.book.add_format({'num_format': '@', 'text_wrap': True, "valign":"top"})  #dosen't work
+                                writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
+
+                                if field["mandatory"] == "M":
+                                    cell_format = writer.book.add_format(title_format)
+                                    writer.sheets[sheet_name].conditional_format(f'{column_letter}1', {'type': 'no_errors', 'format': cell_format})                            
+                                    #writer.sheets[sheet_name].write(f"{column_letter}1", name, cell_format)
+                            
+
+                                cell_start_end = '%s5:%s1048576' % (column_letter, column_letter)
+
+                                if type == "string":
+                                    pass
+
+                                    """ doesn't work 
+                                    if field["term_regex"]: 
+                                        #for i in range(5, 1000):
+                                        writer.sheets[sheet_name].data_validation(cell_start_end, {'validate': 'custom', 
+                                                                                                            'value': f'=REGEXTEST({column_letter}5, "{field["term_regex"]}")',
+                                                                                                            'error_title': 'Invalid value',
+                                                                                                            'error_message': f'Invalid value for {name}. {field["term_error_message"]}',
+                                                                                                            'ignore_blank': True})
+                                    """
+                                elif type == "enum" and "choice" in field:
+                                    choice = field["choice"]
+
+                                    if len(choice) > 0:
+                                        source = ""
+                                        number_of_char_for_choice = sum([len(str(x)) for x in choice])
+                                        if number_of_char_for_choice <= 255:
+                                            source = choice
+                                        else:
+                                            s = pd.Series(choice, name=field["term_label"])
+                                            s.to_frame().to_excel(writer, sheet_name="data_values", index=False, header=True, startrow=0, startcol=data_validation_column_index)
+                                            column_letter = get_column_letter(data_validation_column_index + 1)
+                                            column_length = max(s.astype(str).map(len).max(), len(field["term_label"]))
+                                            writer.sheets["data_values"].set_column(data_validation_column_index, data_validation_column_index, column_length)
+                                            source = "=%s!$%s$2:$%s$%s" % ("data_values", column_letter, column_letter, str(len(choice) + 1))
+                                            data_validation_column_index = data_validation_column_index + 1
+
+                                        writer.sheets[sheet_name].data_validation(cell_start_end,
+                                                                                {'validate': 'list',
+                                                                                'source': source})
+                                        
+
+
+                            cell_format = writer.book.add_format(seperator_format)
+                            writer.sheets[sheet_name].write("A4", "FILL OUT INFORMATION BELOW THIS LINE", cell_format)
+
+                            # Set the conditional format for locking rows 2 to 3
+                            cell_format = writer.book.add_format(desc_eg_format)
+                            writer.sheets[sheet_name].conditional_format(f'A2:{last_column_letter}3', {'type': 'no_errors', 'format': cell_format})
+                    
+                            # Set all rows below row 4 to unlocked
+                            cell_format = writer.book.add_format(unlocked_format)
+                            for row in range(4, 1004):
+                                writer.sheets[sheet_name].set_row(row, None, cell_format)
+                            
+                            # Protect the worksheet
+                            writer.sheets[sheet_name].protect()
                         
                     if "data_values" in writer.sheets:
                         writer.sheets["data_values"].protect()
@@ -294,6 +300,56 @@ class SingleCellSchemasHandler:
                         sheet.autofit()
                     """
     
+                elif format == "jsonld":
+
+                     
+                    url_prefix = settings.COPO_URL.get(settings.ENVIRONMENT_TYPE, "local")
+                    singlecell_dict = {}
+
+                    context = []
+                    
+                    for component_name, schema in schemas.items():
+                        component_schema_df = pd.DataFrame.from_records(schema)
+                        component_schema_df = component_schema_df.drop(component_schema_df[pd.isna(component_schema_df[schema_checklist])].index)
+                        component_schema_df.fillna("", inplace=True)
+
+                        if component_schema_df.empty:
+                            continue
+
+
+                    for component_name, schema in schemas.items():
+                        
+                        if not schema :
+                            continue
+                        
+                        if singlecell is not None:
+                            component_data_df = pd.DataFrame.from_records(singlecell["components"].get(component_name, []))
+                            
+                            if not component_data_df.empty:
+                                context.append(request.build_absolute_uri(f"/media/assets/manifests/{schema_name}_{checklist}_{component_name}{version}.jsonld"))
+                                new_column_name = {field["term_name"] : url_prefix + reverse("copo_single_cell_submission:display_term", args=[singlecell_schema["name"], field["term_name"]]) if not field["term_reference"] or not isinstance(field["term_reference"],str) or field["term_type"] == "ontology" else field["term_reference"] for field in schema if field[schema_checklist] in ["M","O"] }
+
+                                component_data_df.drop(columns=list(set(component_data_df.columns) -set(new_column_name.keys())), inplace=True)
+                                component_data_df.rename(columns=new_column_name, inplace=True)
+                                component_data_df.fillna("", inplace=True)
+                                component_data_df["@type"] = url_prefix + reverse("copo_single_cell_submission:display_term", args=[singlecell_schema["name"], component_name])
+                                singlecell_dict[url_prefix + reverse("copo_single_cell_submission:display_term", args=[singlecell_schema["name"], component_name])] = component_data_df.to_dict("records")
+             
+                    try:
+                        compacted = jsonld.compact(singlecell_dict, context)
+                    except Exception as e:
+                        l.error(f"Failed to generate JSON-LD for {schema_name} {checklist}: {str(e)}")
+                        l.exception(e)
+                        continue
+    
+                    if isinstance(file_path, BytesIO):
+                        outfile = file_path
+                    else:
+                        outfile = open(file_path, "w")
+                    #with outfile:
+                    outfile.write(bytes(json.dumps(compacted), 'utf-8'))
+
+
     def updateSchemas(self):
         for name, url in settings.SINGLE_CELL_SCHEMAS_URL.items():
             version = settings.MANIFEST_VERSION.get(name, str())
@@ -305,7 +361,67 @@ class SingleCellSchemasHandler:
                                                                                 {"$set": singlecell_schema},
                                                                                 upsert=True)
             self.write_manifest(singlecell_schema)
- 
+            self.generate_jsonld(singlecell_schema, None)
+         
+
+    def generate_jsonld(self, singlecell_schema, checklist_id=None):
+        """
+        Generate JSON-LD for a single cell study.
+        The JSON-LD will be generated based on the schema and the single cell schema.
+        """
+        #schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
+        #singlecell_schemas = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name})
+
+        url_prefix = settings.COPO_URL.get(settings.ENVIRONMENT_TYPE, "local")
+        checklists = singlecell_schema.get("checklists", {})
+
+        schema_name = singlecell_schema.get("name", "COPO_SINGLE_CELL")
+        version = settings.MANIFEST_VERSION.get(schema_name, str())
+        if version:
+            version = "_v" + version
+
+        for id, checklist in checklists.items():
+            if checklist_id and id != checklist_id:
+                continue
+
+            schemas = singlecell_schema.get("schemas",{})
+
+            for component_name, schema in schemas.items():
+                component_schema_df = pd.DataFrame.from_records(schema)
+                component_schema_df = component_schema_df.drop(component_schema_df[pd.isna(component_schema_df[id])].index)
+                if component_schema_df.empty:
+                    continue
+                component_schema_df.fillna("", inplace=True)
+                file_path = os.path.join(settings.MANIFEST_PATH, settings.MANIFEST_JSONLD_FILE_NAME.format(schema_name, id, component_name, version) )            
+
+                context_for_checklist_component = {}
+                #context_for_checklist_component[component_name]={"@id": f"{ei_url}/{component_name}", "@container": "@set"}
+                context_for_checklist_component[component_name]={"@id": url_prefix + reverse("copo_single_cell_submission:display_term", args=[singlecell_schema["name"], component_name]), "@container": "@set"}
+                
+
+                for _, row in component_schema_df.iterrows():
+                    term_reference = row["term_reference"]
+                    term_type = row["term_type"]
+                    term_name = row["term_name"]
+
+                    if term_reference and term_type != "ontology":
+                        pass
+                    elif (not term_reference or term_type == "ontology"):
+                        term_reference =  url_prefix + reverse("copo_single_cell_submission:display_term", args=[singlecell_schema["name"], term_name])   
+                    else:
+                        continue
+
+                    context_for_checklist_component[term_name] = {"@id": term_reference}
+                
+                try:
+                    compacted = jsonld.compact({}, context_for_checklist_component)
+                except Exception as e:
+                    l.error(f"Failed to generate JSON-LD context for {schema_name} {id} {component_name}: {str(e)}")
+                    continue
+                                                
+                with open(file_path, "w") as outfile:
+                    outfile.write(json.dumps(compacted))
+
 class SinglecellschemasSpreadsheet:
    def __init__(self, file, profile_id, schema_name, checklist_id,  component, validators=[]):
         self.req = ThreadLocal.get_current_request()
