@@ -54,10 +54,6 @@ body {
   background-color: white !important;
 }
 
-#frontpageNavbarInner.navbar-collapse.in {
-  background-color: #f7f6f6;
-}
-
 #copo-icon {
   width: 1000px;
   margin: 0 auto;

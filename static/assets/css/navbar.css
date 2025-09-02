@@ -42,10 +42,24 @@
   color: rgba(119, 119, 119, 1);
 }
 
+#copoGlobalNav .navbar-header .navbar-brand img {
+  height: 45px;
+  margin-left: 12px;
+}
+
 #copoGlobalNav .navbar-nav > li > a {
   color: black;
   background: transparent;
-  height: 50px !important;
+}
+
+#copoGlobalNav .navbar-nav > li,
+#copoGlobalNav .navbar-nav > li > a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  line-height: 1;
+  padding: 0 5px;
 }
 
 /* Default icon style */
@@ -56,6 +70,10 @@
   border-radius: 50%;
   transition: background-color 0.2s, color 0.2s;
   cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 1;
 }
 
 /* Hover/focus/active for icon */
@@ -92,21 +110,58 @@
   color: black !important;
 }
 
+/* Nav bar dropdown icon */
+#copoGlobalNav .nav .dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+}
+
+#copoGlobalNav .nav .dropdown-toggle i {
+  display: inline-block;
+}
+
+#copoGlobalNav .nav .dropdown-toggle span {
+  display: inline-flex;
+  align-items: center;
+}
+
+#copoGlobalNav .nav .dropdown-toggle span .caret,
+#copoGlobalNav .nav .dropdown-toggle .caret {
+  display: inline-block;
+}
+
+.navbar-nav.active .dropdown-toggle span .caret,
+.navbar-nav.active .dropdown-toggle .caret {
+  color: white !important;
+  border-top-color: white !important;
+  border-bottom-color: white !important;
+}
+
 /* Navbar toggle button */
+#frontpageNav .navbar-toggle,
 #copoGlobalNav .navbar-toggle {
   border-color: black;
 }
 
+#frontpageNav .navbar-toggle {
+  margin-right: 25px;
+}
+
+#frontpageNav .navbar-toggle:hover,
+#frontpageNav .navbar-toggle:focus,
 #copoGlobalNav .navbar-toggle:hover,
 #copoGlobalNav .navbar-toggle:focus {
   background-color: black;
 }
 
+#frontpageNav .navbar-toggle:hover .icon-bar,
+#frontpageNav .navbar-toggle:focus .icon-bar,
 #copoGlobalNav .navbar-toggle:hover .icon-bar,
 #copoGlobalNav .navbar-toggle:focus .icon-bar {
   background-color: white;
 }
 
+#frontpageNav .navbar-toggle .icon-bar,
 #copoGlobalNav .navbar-toggle .icon-bar {
   background-color: black;
 }
@@ -185,12 +240,35 @@
   margin-bottom: 0 !important;
 }
 
-#frontpageNav .navbar-nav > li > a:hover,
-#frontpageNav .navbar-nav > .active > a,
-#frontpageNav .navbar-nav > .active > a:hover,
-#frontpageNav .navbar-nav > .active > a:focus {
-  background-color: #080808 !important;
+#frontpageNav .navbar-header .navbar-brand img {
+  height: 45px;
+  margin-left: 12px;
+  padding: 2px;
+}
+
+/* Nav bar toggle button */
+#frontpageNav .navbar-nav.active li {
+  text-align: center;
+}
+
+#frontpageNav .navbar-nav.active > .active > a {
+  background-color: #ffffff !important;
+  color: #080808 !important;
+}
+
+#frontpageNav .navbar-nav.active > .active > a:hover,
+#frontpageNav .navbar-nav.active > .active > a:focus {
+  background-color: #f0f0f0 !important;
+}
+
+#frontpageNav .navbar-nav.active > :not(.active) > a {
   color: #ffffff !important;
+}
+
+#frontpageNav .navbar-nav.active > :not(.active) > a:hover,
+#frontpageNav .navbar-nav.active > :not(.active) > a:focus {
+  background-color: #ffffff !important;
+  color: #080808 !important;
 }
 
 #frontpageNav .nav {
@@ -198,6 +276,14 @@
   font-size: 8px;
   float: right !important;
   padding-left: 20px;
+}
+
+#frontpageNav .nav.active {
+  width: 260px;
+}
+
+#frontpageNav .nav.active .dropdown-menu {
+  border: black solid;
 }
 
 #frontpageNav .nav li a {
@@ -283,7 +369,7 @@
     justify-content: flex-end !important;
   }
   .navbar-toggle {
-    display: none; /* hide toggle button on desktop */
+    display: none;
   }
 }
 
@@ -329,6 +415,9 @@
   }
 
   .navbar-nav li a span.icon_text {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
     margin-left: 5px;
   }
 

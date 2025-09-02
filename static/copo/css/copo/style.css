@@ -280,6 +280,7 @@ copo-noborders-table.dataTable thead td {
 @media (max-width: 768px) {
   .copo-page-icons {
     padding-top: 10px;
+    float: left;
   }
 
   .global-row {

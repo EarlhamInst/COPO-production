@@ -1,10 +1,10 @@
 {% load web_tags %}
 {% load static %}
-<nav id="copoGlobalNav" class="navbar navbar-default">
+<nav id="copoGlobalNav" class="navbar navbar-default {% if banner %}has-margin-top-neg-12{% endif %}" role="navigation">
     <div class="container-fluid {% if banner %}display-flex{% else %}display-block{% endif %}">
         <div class="navbar-header">
             <a class="navbar-brand" href="{% if user.is_authenticated %} {% url 'copo_profile_index:index' %} {% else %}/{% endif %}">
-                <img class="{% if banner %}margin-top-neg-12{% else %}margin-top-neg-8{% endif %}" style="height: 45px; margin-left: 12px;"
+                <img class="{% if banner %}margin-top-neg-12{% else %}margin-top-neg-8{% endif %}"
                      src="{% static 'assets/img/COPO-logo-full-CMYK-black.png' %}"
                      alt="COPO logo">
             </a>

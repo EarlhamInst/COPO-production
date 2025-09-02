@@ -3879,21 +3879,25 @@ function get_collapsible_panel() {
 }
 
 function initialiseNavToggle() {
-  $('#copoGlobalNav .navbar-toggle, #frontpageNav .navbar-toggle').on(
-    'click',
-    function () {
-      $(this).closest('nav').find('.navbar-nav').toggleClass('active');
-    }
-  );
+  $('#copoGlobalNav .navbar-toggle').on('click', function () {
+    $(this).closest('nav').find('.navbar-nav').toggleClass('active');
+  });
 
-  $('#copoGlobalNav .navbar-nav li a, #frontpageNav .navbar-nav li a').on(
-    'click',
-    function () {
+  $('#copoGlobalNav .navbar-nav li a').on('click', function (e) {
+    const $li = $(this).closest('li');
+
+    if ($li.hasClass('dropdown')) {
+      // Prevent the dropdown toggle from collapsing the menu
+      e.preventDefault();
+      e.stopPropagation();
+      $li.siblings().removeClass('open');
+      $li.toggleClass('open');
+    } else {
       if ($(window).width() < 768) {
         $(this).closest('.navbar-nav').removeClass('active');
       }
     }
-  );
+  });
 
   // Reset menu on window resize
   $(window).on('resize', function () {

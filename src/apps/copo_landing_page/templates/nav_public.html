@@ -1,14 +1,20 @@
 {% load web_tags %}
 {% load static %}
-<nav id="frontpageNav" class="navbar navbar-default navbar-fixed-left" role="navigation">
+<nav id="frontpageNav" class="navbar navbar-default navbar-fixed-left {% if banner %}has-margin-top-neg-12{% endif %}" role="navigation">
     <div class="container-fluid {% if banner %}display-flex{% else %}display-block{% endif %}">
         <div class="navbar-header">
             <a class="navbar-brand"
                href="{% if user.is_authenticated %} {% url 'copo_profile_index:index' %} {% else %}/{% endif %}">
-                <img class="{% if banner %}margin-top-neg-12{% else %}margin-top-neg-8{% endif %}" style="height: 45px; margin-left: 12px; padding: 2px;"
+                <img class="{% if banner %}margin-top-neg-12{% else %}margin-top-neg-8{% endif %}"
                      src="{% static 'assets/img/COPO-logo-full-CMYK-black.png' %}"
                      alt="COPO logo">
             </a>
+            <button class="navbar-toggle" type='button'>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="sr-only">Toggle Navigation</span>
+            </button>
         </div>
 
         <!-- Banner -->
@@ -18,8 +24,7 @@
             </div>
         {% endif %}
 
-        <!-- <div id="frontpageNavbarInner" class="collapse navbar-collapse"> -->
-        <ul class="nav navbar-nav navbar-right collapse navbar-collapse">
+        <ul class="nav navbar-nav navbar-right">
             <li role="presentation"><a href="/" target="_parent">Home</a></li>
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
@@ -43,6 +48,5 @@
                 </ul>
             </li>
         </ul>
-        <!-- </div> -- /.navbar-collapse -->
-    </div><!-- /.container-fluid -->
+    </div>
 </nav>
