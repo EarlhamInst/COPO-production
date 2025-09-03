@@ -2,7 +2,7 @@
 /* Set the width of the buttons in the Components tab to the same width */
 /* Left align the text in the buttons */
 .ui.menu .ui.dropdown.item .comp .ui.button {
-  width: 120px !important;
+  width: 130px !important;
   text-align: left;
   white-space: normal;
   word-wrap: break-word;
@@ -24,7 +24,7 @@
 }
 
 .ui.dropdown .menu > .item .dropdown.icon {
-  color: black;
+  color: white;
 }
 
 .pcomponent-name {

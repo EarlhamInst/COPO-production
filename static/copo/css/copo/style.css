@@ -254,8 +254,9 @@ copo-noborders-table.dataTable thead td {
   display: block;
 }
 
-.profile-dropdown-wrapper .profile-dropdown-icon {
-  padding-right: 0.8em;
+.profile-dropdown-wrapper.item .dropdown.icon {
+  padding-right: 0.8em !important;
+  margin: 0 !important;
 }
 
 .list-group.panel > .list-group-item {
@@ -1006,6 +1007,10 @@ th {
   padding-left: 0px !important;
   font-size: 20px;
   font-weight: 500;
+}
+
+.page-title-custom select {
+  width: 400px;
 }
 
 .copo-components-icons {
