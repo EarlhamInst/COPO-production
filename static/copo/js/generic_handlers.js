@@ -4022,3 +4022,34 @@ function initialiseComponentDropdownMenu() {
       .addClass('hidden');
   });
 }
+
+function initialiseNavToggle() {
+  // Initialise navigation bar on each component page
+  $('#copoGlobalNav .navbar-toggle').on('click', function () {
+    $(this).closest('nav').find('.navbar-nav').toggleClass('active');
+  });
+
+  // Handle nav item clicks
+  $('#copoGlobalNav .navbar-nav li a').on('click', function (e) {
+    const $li = $(this).closest('li');
+
+    if ($li.hasClass('dropdown')) {
+      // Prevent the dropdown toggle from collapsing the menu
+      e.preventDefault();
+      e.stopPropagation();
+      $li.siblings().removeClass('open');
+      $li.toggleClass('open');
+    } else {
+      if ($(window).width() < 768) {
+        $(this).closest('.navbar-nav').removeClass('active');
+      }
+    }
+  });
+
+  // Reset menu on window resize
+  $(window).on('resize', function () {
+    if ($(window).width() >= 768) {
+      $('.navbar-nav').removeClass('active');
+    }
+  });
+}
