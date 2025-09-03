@@ -121,7 +121,7 @@
 
     <!-- Profile component templates: Component buttons only -->
     <!-- Button (main/child component) -->
-    <a title="Navigate to" href="#" class="pcomponent-button-template">
+    <a class="pcomponent-button-template" title="Navigate to" href="#">
         <div class="tiny ui button pcomponent-button pcomponent-color">
             <i class="pcomponent-icon"></i>
             <span class="pcomponent-name"></span>
@@ -129,34 +129,33 @@
     </a>
 
      <!-- Button (dropdown menu/group): Images -->
-    <div class="profile-dropdown-wrapper pcomponent-dropdown-button-template" tabindex="0">
+    <div class="profile-dropdown-wrapper images-pcomponent-dropdown-button-template" tabindex="0">
         <div class="tiny ui button pcomponent-button pcomponent-color bright-coral">
-            Images
             <i class="dropdown icon"></i>
         </div>
         <div class="menu profile-dropdown-menu comp transition" tabindex="-1">
+            <div class="item"></div>
         </div>
     </div>
 
     <!-- Profile component templates: Component icons only -->
     <!-- Icon: General component icons container for each web page -->
     <div class="huge ui right floated main menu pcomponents-icons-templates">
-        <a class="icon item pcomponents-anchor copo-tooltip" title="" href="">
+        <a class="icon item pcomponents-anchor copo-tooltip" title="" href="#">
             <i class="ui icon"></i>
         </a>
     </div>
 
     <!-- Icon (main/child component) -->
-    <a class="icon item copo-tooltip pcomponent-icon-template" href="#" title="Navigate to">
+    <a class="icon item copo-tooltip pcomponent-icon-template" title="Navigate to" href="#">
         <i class="ui icon"></i>
     </a>
 
     <!-- Icon (dropdown menu/group): Images -->
-    <div class="profile-dropdown-wrapper item pcomponent-dropdown-icon-template icon-only" tabindex="0">
-        <p class="pcomponent-icon-name">Images</p>
+    <div class="profile-dropdown-wrapper item images-pcomponent-dropdown-icon-template" tabindex="0">
         <i class="ui icon bright-coral image"></i>
         <i class="dropdown icon"></i>
-        <div class="menu profile-dropdown-menu icon-only hidden" tabindex="-1">
+        <div class="menu profile-dropdown-menu hidden" tabindex="-1">
         </div>
     </div>
 
@@ -199,7 +198,7 @@
 
     <!-- dataverse modal template -->
     <!-- <div id="template_repo_metadata_form"> -->
-        <form>
+        <!-- <form>
             <div class="create_add_dataverse">
                 <input type="radio" name="create_repo_radio" value="new" checked="checked"><label>&nbsp Create new
                 dataset with your metadata
@@ -209,7 +208,7 @@
                 <input type="radio" name="create_repo_radio" value="existing"><label>&nbsp Add to
                 Existing</label>
             </div>
-            <hr/>
+            <hr/> -->
 
             <!-- new dataverse controls -->
             <!--
@@ -284,7 +283,7 @@
                 </div>
             </div>
         </div>-->
-            <div class="dataverse-controls">
+            <!-- <div class="dataverse-controls">
                 <h5>Search for Dataverse</h5>
                 <div style="visibility:hidden" class="radio-inline">
                     <label><input type="radio" value="dataverse" checked="checked"
@@ -306,12 +305,12 @@
                             src="{% static 'copo/img/loading.gif' %}" alt=""></span>
 
 
-                </div>
+                </div> -->
 
 
                 <!--<div style="margin-top:30px" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
                 </div>-->
-                <div id="table-div-dataverse" class="table table-striped table-bordered"
+                <!-- <div id="table-div-dataverse" class="table table-striped table-bordered"
                      style="padding: 10px;width:100%">
 
                 </div>
@@ -319,7 +318,7 @@
 
 
             </div>
-        </form>
+        </form> -->
     <!-- </div> -->
 
     <!-- accordion template -->
@@ -342,8 +341,6 @@
             </div>
         </div>
     </div> -->
-
-  
 
     <!-- Record actions templates to be placed alongside data tables
      "description": "Provides templates for composing reusable buttons. 'btnType' can either be: "
@@ -779,7 +776,6 @@
     <!--button title="Record tasks" class="big circular ui icon button record-tasks-template copo-tooltip">
         <i class="icon tasks"></i>
     </button-->
-
 
     <!-- profile components button template -->
     <!-- <a class="tiny ui labeled button pcomponent-button" tabindex="0" style="margin: 3px;">
