@@ -33,15 +33,14 @@ from common.dal.copo_base_da import DataSchemas
   3 | assembly             | Assembly             | puzzle piece | violet        | fa fa-puzzle-piece | assembly_table      | copo_assembly_submission:copo_assembly             | 
   4 | files                | Files                | file         | blue          | fa fa-file         | files_table         | copo_file:copo_files                               | 
   5 | general_sample       | Samples              | filter       | olive         | fa fa-filter       | sample_table        | copo_sample:copo_general_samples                   | #component_subtitle
-  6 | images               | Images               |              | grey          |                    |                     |                                                    | #component_subtitle
-  7 | images_rembi         | REMBI                | image        | grey          | fa fa-image        | images_table        | copo_single_cell_submission:copo_singlecell        | #component_subtitle
-  8 | images_stx_fish      | ST FISH              | image        | grey          | fa fa-image        | images_table        | copo_single_cell_submission:copo_singlecell        | #component_subtitle
-  9 | profile              | Work Profiles        |              |               |                    | copo_profiles_table |                                                    | #component_subtitle
- 10 | read                 | Reads                | dna          | orange        | fa fa-dna          | read_table          | copo_read_submission:copo_reads                    | #component_subtitle
- 11 | sample               | Samples              | filter       | olive         | fa fa-filter       | sample_table        | copo_sample:copo_samples                           | 
- 12 | seqannotation        | Sequence Annotations | tag          | yellow        | fa fa-tag          | seqannotation_table | copo_seq_annotation_submission:copo_seq_annotation | 
- 13 | singlecell           | Single-cell          | dna          | green         | fa fa-dna          | singlecell_table    | copo_single_cell_submission:copo_singlecell        | #component_subtitle
- 14 | taggedseq            | Barcoding Manifests  | barcode      | red           | fa fa-barcode      | tagged_seq_table    | copo_barcoding_submission:copo_taggedseq           | #component_subtitle
+  6 | images_rembi         | REMBI                | image        | coral-pink    | fa fa-image        | images_table        | copo_single_cell_submission:copo_singlecell        | #component_subtitle
+  7 | images_stx_fish      | ST FISH              | image        | terra-cotta   | fa fa-image        | images_table        | copo_single_cell_submission:copo_singlecell        | #component_subtitle
+  8 | profile              | Work Profiles        |              |               |                    | copo_profiles_table |                                                    | #component_subtitle
+  9 | read                 | Reads                | dna          | orange        | fa fa-dna          | read_table          | copo_read_submission:copo_reads                    | #component_subtitle
+ 10 | sample               | Samples              | filter       | olive         | fa fa-filter       | sample_table        | copo_sample:copo_samples                           | 
+ 11 | seqannotation        | Sequence Annotations | tag          | yellow        | fa fa-tag          | seqannotation_table | copo_seq_annotation_submission:copo_seq_annotation | 
+ 12 | singlecell           | Single-cell          | dna          | green         | fa fa-dna          | singlecell_table    | copo_single_cell_submission:copo_singlecell        | #component_subtitle
+ 13 | taggedseq            | Barcoding Manifests  | barcode      | red           | fa fa-barcode      | tagged_seq_table    | copo_barcoding_submission:copo_taggedseq           | #component_subtitle
 """
 
 """
@@ -457,18 +456,7 @@ class Command(BaseCommand):
         Component().remove_all_components()
         self.stdout.write("Adding Component")
 
-        # Create group components
-        # Images parent component
-        Component().create_component(
-            is_parent=True,
-            name="images",
-            title="Images",
-            widget_icon="image",
-            widget_colour="bright-coral",
-        )
-
-        # Create other components. They can act as a single/standalone 
-        # component or as a child/subcomponent when grouped.
+        # Components
         assembly = Component().create_component(
             name="assembly",
             title="Assembly",
