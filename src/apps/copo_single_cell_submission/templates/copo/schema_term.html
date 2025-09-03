@@ -1,0 +1,49 @@
+{% load static %}
+{% load web_tags %}
+{% load html_tags %}
+
+
+{% block title %}{{ ui_component }}{% endblock %}
+{% block stylesheet_block%}
+<style>
+</style>
+
+{% endblock %} 
+
+<div>
+<h1> Term: {{term.term_label}} ({{term.term_name}})</h1>
+<p>
+    <em>
+        {{ term.term_description |safe }}
+    </em>
+</p>
+
+
+<h2>Properties</h2>
+<p>
+<ul>
+    <li>Type: {{term.term_type}}</li>
+    <li>Regex: {{term.term_regex | get_non_nan_value }}</li>
+    <li>Cardinality: {{term.term_cardinality}} </li>
+</ul>
+</p>    
+
+<h2>uri: {{uri}}</h2>
+
+{% if term.term_example %}
+    <h2>Examples</h2>
+<p>
+    <ul>
+        <li>{{ term.term_example }}</li>
+    </ul>
+</p>
+{% endif %}
+
+{% if options %}
+    <h2>Options</h2>
+    <ul>
+    {% for option in options %}
+        <li><strong>{{ option}}</strong> </li>
+    {% endfor %}
+    </ul>
+{% endif %}

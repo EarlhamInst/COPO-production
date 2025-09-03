@@ -22,7 +22,7 @@ from common.dal.copo_da import EnaChecklist, EnaFileTransfer
 from common.dal.sample_da import Sample
 from common.dal.submission_da import Submission
 from common.lookup.lookup import SRA_SETTINGS
-from common.ena_utils.ena_helper import SubmissionHelper
+from common.ena_utils.ena_helper import SubmissionHelper,EnaSubmissionHelper
 
 # import common.schemas.utils.data_utils as d_utils
 from common.utils.copo_lookup_service import COPOLookup
@@ -39,7 +39,6 @@ import common.ena_utils.FileTransferUtils as tx
 from common.utils.logger import Logger
 import common.dal.mongo_util as mutil
 from pathlib import Path
-from common.ena_utils.ena_helper import EnaSubmissionHelper
 import tempfile
 
 
@@ -1675,6 +1674,8 @@ class EnaReads:
                 accession=receipt_root.find('RUN').get('accession', default=str()),
                 alias=receipt_root.find('RUN').get('alias', default=str()),
                 datafiles=submitted_files_id,
+                project_accession = project_accession,
+                sample_accession=sample_accession,
             )
 
             experiment_dict = dict(
@@ -1682,6 +1683,8 @@ class EnaReads:
                     'accession', default=str()
                 ),
                 alias=receipt_root.find('EXPERIMENT').get('alias', default=str()),
+                project_accession = project_accession,
+                sample_accession=sample_accession,
             )
 
             submission_record = collection_handle.find_one(

@@ -2,6 +2,7 @@ from common.dal.copo_da import DAComponent
 import pandas as pd
 from common.utils.helpers import get_datetime, get_not_deleted_flag
 from django_tools.middlewares import ThreadLocal
+from bson.objectid import ObjectId
 
 ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE = {"status":"pending", "accession":"", "error":""}
 
@@ -238,5 +239,5 @@ class Singlecell(DAComponent):
         update_element_values = {f"components.{component}.$.{key}_{repository}": value for key, value in status_column_value.items()}
         update_element_values.update({"updated_by": username, "date_modified": dt})
 
-        self.get_collection_handle().update_one({"_id": id, "deleted": get_not_deleted_flag(), f"components.{component}.{identifier}": identifier_value},
+        self.get_collection_handle().update_one({"_id": ObjectId(id), "deleted": get_not_deleted_flag(), f"components.{component}.{identifier}": identifier_value},
                             {"$set": update_element_values})

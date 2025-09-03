@@ -199,6 +199,10 @@ copo-noborders-table.dataTable thead td {
   line-height: 1.4;
 }
 
+.global-row {
+  margin-bottom: 70px;
+}
+
 .global-notifications-title {
   font-weight: 500;
   font-size: 21px;
@@ -223,7 +227,6 @@ copo-noborders-table.dataTable thead td {
   display: grid;
   grid-template-columns: repeat(3, 1fr); /*auto auto */
   gap: 0.5em;
-
   position: absolute;
   top: 100%;
   left: 0;
@@ -257,6 +260,29 @@ copo-noborders-table.dataTable thead td {
 .profile-dropdown-wrapper.item .dropdown.icon {
   padding-right: 0.8em !important;
   margin: 0 !important;
+}
+
+.navbar-collapse.in {
+  background-color: black;
+  width: fit-content;
+  margin-left: auto;
+  overflow: hidden;
+}
+
+.navbar-collapse.in > li > a {
+  color: white !important;
+  height: max-content !important;
+}
+
+@media (max-width: 768px) {
+  .copo-page-icons {
+    padding-top: 10px;
+    float: left;
+  }
+
+  .global-row {
+    margin-bottom: 20px;
+  }
 }
 
 .list-group.panel > .list-group-item {
@@ -1157,7 +1183,7 @@ th {
 }
 
 .copo-main {
-  top: 61px;
+  top: 10px; /* 61px;*/
 }
 
 /*CSS for profiles type legend on profile index web page*/

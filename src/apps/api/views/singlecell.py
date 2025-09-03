@@ -27,7 +27,9 @@ class APIChecklist(APIView):
 class APIStudyDownload(APIView):
     schema_name = "COPO_SINGLE_CELL"
     def get(self, request, profile_id, study_id):
-        return views.download_manifest(request, self.schema_name, profile_id, study_id)
+        format = request.GET.get("return_type", "xlsx")
+        return views.download_manifest(request, self.schema_name, profile_id, study_id, format=format)
+    
 
 class APIStudy(APIView):
     schema_name = "COPO_SINGLE_CELL"

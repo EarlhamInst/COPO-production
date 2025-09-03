@@ -20,6 +20,7 @@ import common.ena_utils.FileTransferUtils as tx
 from common.dal.mongo_util import cursor_to_list
 import common.ena_utils.FileTransferUtils as tx
 from src.apps.copo_core.views import web_page_access_checker
+from django.urls import reverse
 
 l = Logger()
 
@@ -393,16 +394,19 @@ def copo_singlecell(request, schema_name, profile_id, ui_component):
 
 @login_required
 @web_page_access_checker
-def download_manifest(request, schema_name, profile_id, study_id):
-
+def download_manifest(request, schema_name, profile_id, study_id, format="xlsx"):
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "study_id": study_id})
     if not singlecell:
         return HttpResponse(status=404, content="No record found")
     schemas = SinglecellSchemas().get_collection_handle().find_one({"name": schema_name})
     bytesstring = BytesIO()
-    SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=singlecell["checklist_id"], singlecell=singlecell, file_path=bytesstring)
-    response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response['Content-Disposition'] = f"attachment; filename={schema_name.lower()}_manifest_{study_id}.xlsx"
+    SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=singlecell["checklist_id"], singlecell=singlecell, file_path=bytesstring, format=format, request=request)
+    if format == "xlsx":
+        content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    elif format == "jsonld":
+        content_type = "application/ld+json"
+    response = HttpResponse(bytesstring.getvalue(), content_type=content_type)
+    response['Content-Disposition'] = f"attachment; filename={schema_name.lower()}_manifest_{study_id}.{format}"
     return response
 
 
@@ -437,3 +441,39 @@ def download_init_blank_manifest(request, schema_name, profile_id,  checklist_id
     return response
 
 
+def display_term(request, schema_name, term):
+    """
+    Display the term information.
+    This is a placeholder function for displaying term information.
+    """
+    # In a real application, you would retrieve the term details from a database or an API
+    # Here we just return a simple message for demonstration purposes
+
+    singlecell_schemas = SinglecellSchemas().get_collection_handle().find_one({"name": schema_name})
+    if not singlecell_schemas:
+        return HttpResponse(status=404, content="Schema not found")
+    schemas = singlecell_schemas.get("schemas", {})
+    components = singlecell_schemas.get("components", [])
+    allowed_values = singlecell_schemas.get("enums", {})
+
+    for component_key, fields in schemas.items():
+        if component_key == term:
+            component = components.get(component_key, {}) 
+            component["key"] = component_key
+            return render(request, 'copo/schema_component.html', {'terms': fields, 'schema_name': schema_name, "component": component}) 
+        else:
+            for field in fields:
+                uri = ""
+                if field["term_name"] == term:
+                    options = []
+                    if field["term_type"] == "enum":
+                        options = allowed_values.get(field["term_name"], [])
+                    if field["term_type"] == "ontology":
+                        options.append(f"This is an ontology term. Please refer to {field['term_reference']} for more information.")
+                    elif field["namespace_prefix"] != 'ei':
+                        uri = field.get("term_reference", "")  
+                    if not uri or not isinstance(uri, str):
+                        uri = request.build_absolute_uri(reverse("copo_single_cell_submission:display_term", args=[schema_name, field["term_name"]]))
+                    return render(request, 'copo/schema_term.html', {'options': options, 'term': field, 'uri': uri, 'component_key': component_key})        
+    
+    return HttpResponse(status=404, content="Term not found")

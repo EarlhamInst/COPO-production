@@ -11,9 +11,7 @@ from lxml import etree
 from common.schemas.utils.data_utils import simple_utc
 from common.utils.helpers import notify_submission_status, get_datetime, get_env, json_to_pytype
 from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SETTINGS, SRA_RUN_TEMPLATE,SRA_EXPERIMENT_TEMPLATE, SRA_SUBMISSION_MODIFY_TEMPLATE, SRA_SUBMISSION_TEMPLATE
-import pandas as pd
 import subprocess
-import os
 import tempfile
 from common.dal.submission_da import Submission
 from common.dal.copo_da import EnaChecklist, EnaFileTransfer
@@ -23,7 +21,9 @@ from common.utils.copo_lookup_service import COPOLookup
 import requests
 from common.utils.logger import Logger
 lg = Logger()
-
+from src.apps.copo_assembly_submission.utils.da import Assembly
+import re
+import glob
 
 __author__ = 'etuka'
 __date__ = '02 April 2019'
@@ -752,13 +752,15 @@ class EnaSubmissionHelper:
             run_dict = dict(
                 accession=receipt_root.find('RUN').get('accession', default=str()),
                 alias=receipt_root.find('RUN').get('alias', default=str()),
-                project_accession=project_accession
+                project_accession=project_accession,
+                sample_accession=sample_accession_map[row["sample_id"]],
             )
 
             experiment_dict = dict(
                 accession=receipt_root.find('EXPERIMENT').get('accession', default=str()),
                 alias=receipt_root.find('EXPERIMENT').get('alias', default=str()),
-                project_accession=project_accession
+                project_accession=project_accession,
+                sample_accession = sample_accession_map[row["sample_id"]],
             )
 
             if is_new:
@@ -889,6 +891,192 @@ class EnaSubmissionHelper:
             result["message"] = f'Study {study["study_id"]} has been released successfully to ENA.'
             return result
 
+
+    def register_assembly(self, identifier=str(), assembly_component_data_df=pd.DataFrame(), 
+                          assembly_run_ref_data_df=pd.DataFrame(),assembly_file_data_df=pd.DataFrame(), parent_map=dict(), singlecell_id=str()):
+        
+        result = dict(status=True, value="")
+        ena_fields = []
+        for x in Assembly().get_schema().get("schema_dict"):
+            if x.get("ena_assembly_submisison", False):
+                ena_fields.append(x["id"].split(".")[-1])
+
+        enafiles = EnaFileTransfer().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"local_path":1 })
+        enafile_map = {enafile["local_path"].split("/")[-1] : enafile.get("local_path") for enafile in enafiles if enafile.get("local_path","")}
+
+        submission_folder = os.path.join
+
+        errors = []
+        for index, row in assembly_component_data_df.iterrows():
+            if row.get("assembly_id", str()):
+                self.logging_info(f"Registering assembly {row[identifier]}...")
+
+            manifest_content = ""
+            manifest_content += "STUDY" + "\t" + row.get("study_accession", "") + "\n"
+            manifest_content += "SAMPLE" + "\t" + row.get("biosampleAccession", "") + "\n"
+
+            for field in ena_fields:
+                value = row.get(field, None)
+                if value:
+                    manifest_content += field.upper() + "\t" + str(value) + "\n"
+
+            assembly_file_df = assembly_file_data_df.loc[assembly_file_data_df[parent_map["assembly_file"]["assembly"]]==row[identifier]] 
+            if assembly_file_df.empty:
+                    self.logging_error("no assembly file found")
+
+            for _, file_row in assembly_file_df.iterrows():
+                manifest_content += file_row["assembly_file_type"].upper() + "\t" + enafile_map.get(file_row["assembly_file_name"], "") + "\n"
+
+            assembly_run_ref_df = assembly_run_ref_data_df.loc[assembly_run_ref_data_df[parent_map["assembly_run_ref"]["assembly"]]==row[identifier]]
+ 
+            run_accessions = []
+            if "run_accession_ena" in assembly_run_ref_df.columns:
+                run_accessions= assembly_run_ref_df["run_accession_ena"].values.tolist()
+
+            if run_accessions:
+                manifest_content += "RUN_REF\t" + ",".join(run_accessions) + "\n"
+            else:
+                message = f"no run accession found for assembly {row[identifier]}"
+                self.logging_error(message)
+                result['status'] = False
+                result['message'] = message
+                return result
+
+            submission_folder = os.path.join(tempfile.gettempdir(), self.profile_id, row["study_id"], row[identifier])
+            os.makedirs(submission_folder, exist_ok=True)
+            manifest_path = os.path.join(submission_folder,"manifest.txt")
+
+            with open(manifest_path, "w") as destination:
+                destination.write(manifest_content)
+
+            #verify submission
+            self.logging_info("validating assembly")
+            submission_type=row.get("submission_type", "transcriptome")
+            return_code, output = self.validate_assembly(file_path=manifest_path, submission_type=submission_type)
+            """
+           
+            test = ""
+            if "dev" in ena_service:
+                test = " -test "
+            #cli_path = "tools/reposit/ena_cli/webin-cli.jar"
+            submission_type = row.get("submission_type", "transcriptome")
+            webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
+            
+            #qself.logging_debug(webin_cmd)
+            try:
+                self.logging_info('validating assembly submission')
+                output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True)
+                self.logging_debug(output)
+                output = output.decode("ascii")
+                return_code = 0
+            except subprocess.CalledProcessError as cpe:
+                return_code = cpe.returncode
+                output = cpe.stdout
+                output = output.decode("ascii") + " ERROR return code " + str(return_code)
+
+            self.logging_debug(output)
+            #report is being stored in webin-cli.report and manifest.txt.report so we can get errors there
+            """
+
+
+            error = ""
+            if return_code == 0:
+                self.logging_info("submitting assembly")
+                return_code, output = self.submit_assembly(file_path=str(manifest_path), submission_type=submission_type)
+                if return_code != 0 :
+                    #handle possibility submission is not successfull
+                    #this may happen for instance if the same assembly has already been submitted, which would not get caught
+                    #by the validation step
+                    return {"error": output}
+                accession = re.search( "ERZ\d*\w" , output).group(0).strip()
+                assembly_accession = dict(
+                    accession = accession,
+                    alias = f'webin-{submission_type}-{row["assemblyname"]}',
+                    project_accession=row["study_accession"],
+                    sample_accession=row["biosampleAccession"],
+                )
+                update_result = Submission().get_collection_handle().update_one({"_id": ObjectId(self.submission_id), "accessions.assembly.alias":assembly_accession["alias"]},
+                                                                {"$set": {"accessions.assembly.$": assembly_accession}})
+                    
+                if update_result.matched_count == 0:
+                    Submission().get_collection_handle().update_one({"_id": ObjectId(self.submission_id)},
+                                                                {"$addToSet": {"accessions.assembly": assembly_accession}})
+                Singlecell().update_component_status(id=singlecell_id, component="assembly", identifier=identifier, identifier_value=row[identifier], repository="ena", status_column_value={"status": "accepted", "accession": accession, "error": ""})
+                self.logging_info(f"Registering assembly {row[identifier]}...successfully submitted to ENA with accession {accession}")
+            else:
+                error = output
+                if return_code == 2:
+                    with open(os.path.join(submission_folder,"manifest.txt.report")) as report_file:
+                        error = output + " " + report_file.read()
+                elif return_code == 3:
+                    directories = sorted(glob.glob(f"{submission_folder}/{submission_type}/*"),key=os.path.getmtime)
+                    with open(f"{directories[-1]}/validate/webin-cli.report") as report_file:
+                        error = output + " " + report_file.read()
+                Singlecell().update_component_status(id=singlecell_id, component="assembly", identifier=identifier, identifier_value=row[identifier], repository="ena", status_column_value={"status": "rejected", "error":error})
+ 
+            if error:
+                errors.append(error) 
+
+        if errors:
+            message = "Assembly not registered due to the following errors: " + ",".join(errors)
+            self.logging_error(message)
+            result['status'] = False
+            result['message'] = message
+        elif not assembly_component_data_df.empty:
+            message = "Assembly registered successfully."
+            self.logging_info(message)
+            result['status'] = True
+            result['message'] = message
+        else:
+            message = "No assembly data to register."
+            self.logging_debug(message)
+            result['status'] = True
+            result['message'] = message
+        return result
+
+
+
+    def validate_assembly(self, file_path, submission_type):
+        test = ""
+        if "dev" in ena_service:
+            test = " -test "
+        webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -validate -ascp"
+        self.logging_debug(webin_cmd)
+        try:
+            self.logging_info("validating assembly")
+            output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True)
+            output = output.decode("ascii")
+            return_code = 0
+        except subprocess.CalledProcessError as cpe:
+            return_code = cpe.returncode
+            output = cpe.stdout
+            output = output.decode("ascii") + " ERROR return code " + str(cpe.returncode)
+        self.logging_debug(output)
+        return return_code, output
+
+
+    def submit_assembly(self, file_path, submission_type):
+        test = ""
+        if "dev" in ena_service:
+            test = " -test "
+        webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token}  -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
+        Logger().debug(msg=webin_cmd)
+        # print(webin_cmd)
+        # try/except as it turns out this can fail even if validate is successfull
+        try:
+            #self.logging_info("submitting assembly")
+            output = subprocess.check_output(webin_cmd,stderr=subprocess.STDOUT, shell=True)
+            output = output.decode("ascii")
+            return_code = 0
+        except subprocess.CalledProcessError as cpe:
+            return_code = cpe.returncode
+            output = cpe.stdout
+            output = output.decode("ascii") + " ERROR return code " + str(cpe.returncode)
+        self.logging_debug(output)
+
+        #todo delete files after successfull submission
+        #todo decide if keeping manifest.txt and store accession in assembly objec too
+        return return_code, output
 
 class SubmissionHelper:
     def __init__(self, submission_id=str()):

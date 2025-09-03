@@ -1,9 +1,10 @@
 $(document).ready(function () {
+  initialiseNavToggle();
+
   $(document).on('click', '.card', function () {
     window.location = '/copo/tol_dashboard/stats#';
   });
 
-  // $('.ui.dropdown').dropdown();
   const image = getRandomInt(images.length);
   $('body').css('background-image', 'url(' + images[image] + ')');
 
@@ -49,4 +50,35 @@ $(document).ready(function () {
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
+}
+
+function initialiseNavToggle() {
+  // Initialise navigation bar on the Landing page
+  $('#frontpageNav .navbar-toggle').on('click', function () {
+    $(this).closest('nav').find('.navbar-nav').toggleClass('active');
+  });
+
+  // Handle nav item clicks
+  $('#frontpageNav .navbar-nav li a').on('click', function (e) {
+    const $li = $(this).closest('li');
+
+    if ($li.hasClass('dropdown')) {
+      // Prevent the dropdown toggle from collapsing the menu
+      e.preventDefault();
+      e.stopPropagation();
+      $li.siblings().removeClass('open');
+      $li.toggleClass('open');
+    } else {
+      if ($(window).width() < 768) {
+        $(this).closest('.navbar-nav').removeClass('active');
+      }
+    }
+  });
+
+  // Reset menu on window resize
+  $(window).on('resize', function () {
+    if ($(window).width() >= 768) {
+      $('.navbar-nav').removeClass('active');
+    }
+  });
 }

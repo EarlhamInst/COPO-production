@@ -69,10 +69,110 @@ def process_pending_submission_ena():
             context = ena_submission_helper.register_project(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, study=study, singlecell_id=singlecell["_id"])   
             Submission().remove_component_from_submission(sub_id=str(ena_submission_helper.submission_id), component="study", component_ids=[study["study_id"]])
 
+            singlecell = Singlecell().get_collection_handle().find_one(
+                 {"profile_id":sub["profile_id"], "study_id":study_id,"deleted": get_not_deleted_flag()},
+                 {"schema_name":1,"checklist_id":1, "study_id":1, "components":1})
+
+            #submit run to ena
             if context['status']:
                 file_component_df, identifier_map = _prepare_file_submission(singlecell=singlecell)
                 context = ena_submission_helper.register_files(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, component_df=file_component_df, identifier_map=identifier_map, singlecell=singlecell)   
                 #Submission().remove_component_from_submission(sub_id=str(ena_submission_helper.submission_id), component="study", component_ids=[singlecell["study_id"]])
+
+            singlecell = Singlecell().get_collection_handle().find_one(
+                 {"profile_id":sub["profile_id"], "study_id":study_id,"deleted": get_not_deleted_flag()},
+                 {"schema_name":1,"checklist_id":1, "study_id":1, "components":1})
+
+            #submit assembly to ena
+            if context['status']:
+                assembly_component_data_df, assembly_run_ref_data_df,assembly_file_data_df, parent_map = _prepare_assembly_submission(singlecell=singlecell)
+                context = ena_submission_helper.register_assembly(identifier=identifier_map["assembly"],  assembly_component_data_df=assembly_component_data_df, assembly_run_ref_data_df=assembly_run_ref_data_df, assembly_file_data_df=assembly_file_data_df, parent_map=parent_map, singlecell_id=singlecell["_id"])   
+                #Submission().remove_component_from_submission(sub_id=str(ena_submission_helper.submission_id), component="study", component_ids=[singlecell["study_id"]])    
+             
+                
+def _prepare_assembly_submission(singlecell):
+    #get info from the components: assembly, assembly_run_ref[run accession / experiment accession], assembly_genome, assembly_file
+    checklist_id = singlecell.get("checklist_id", "")
+    schema_name = singlecell.get("schema_name", "")
+    components = singlecell.get("components", {})
+
+    schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
+    term_mapping = SinglecellSchemas().get_term_mapping(schema_name=schema_name)
+
+    identifier_map, foreign_key_map = SinglecellSchemas().get_key_map(schemas=schemas)
+    parent_map = SinglecellSchemas().get_parent_map(foreign_key_map)
+    child_map = SinglecellSchemas().get_child_map(foreign_key_map)
+    assembly_component_data = components.get("assembly", [])
+    if not assembly_component_data:
+        return None, None, None, None
+    assembly_component_data_df = pd.DataFrame.from_records(assembly_component_data)
+    #drop rows where accession_ena is not empty
+    assembly_component_data_df = assembly_component_data_df.drop(assembly_component_data_df[assembly_component_data_df["accession_ena"]!=""].index)
+    assembly_component_schema = schemas["assembly"]
+    assembly_component_schema_df = pd.DataFrame.from_records(assembly_component_schema)
+    assembly_component_schema_df.fillna(value="", inplace=True)
+
+    schema_columns = assembly_component_data_df.columns[assembly_component_data_df.columns.isin(assembly_component_schema_df["term_name"].tolist() + ["accession_ena"])]
+    rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in assembly_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
+    assembly_component_data_df.fillna(value="", inplace=True)
+    assembly_component_data_df = assembly_component_data_df[schema_columns]
+    assembly_component_data_df.rename(columns=rename_columns, inplace=True)
+    child_component_data_df_map = dict()
+
+    #get study accession_ena and biosampleAccession
+    study_component_data = components.get("study", [])
+    study_accession = study_component_data[0].get("accession_ena", "")
+    if not study_accession:
+        Logger().error(f"Missing study accession for singlecell submission: {singlecell.get('study_id', 'Unknown')}")
+        return None, None, None, None
+    
+    sample_component_data = components.get("sample", [])
+    sample_component_data_df = pd.DataFrame.from_records(sample_component_data)
+    sample_component_data_df.fillna(value="", inplace=True)
+    sample_component_data_df = sample_component_data_df[[identifier_map["sample"], "biosampleAccession"]]
+    assembly_component_data_df = assembly_component_data_df.merge(sample_component_data_df, left_on=parent_map["assembly"]["sample"], right_on=identifier_map["sample"], how="left") 
+    assembly_component_data_df["study_accession"] = study_accession
+
+
+    for component, foreign_key in child_map["assembly"].items():
+        child_component_data = components.get(component, [])
+        if not child_component_data:
+            continue
+        child_component_schema = schemas.get(component, {})
+        if not child_component_schema:
+            Logger().error(f"Missing schema for component {component} in singlecell submission: {singlecell.get('study_id', 'Unknown')}")
+            continue
+        child_component_schema_df = pd.DataFrame.from_records(child_component_schema)
+        child_component_schema_df.fillna(value="", inplace=True)
+        child_component_data_df = pd.DataFrame.from_records(child_component_data)
+        schema_columns = child_component_data_df.columns[child_component_data_df.columns.isin(child_component_schema_df["term_name"].tolist())]
+        rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in assembly_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
+        child_component_data_df.fillna(value="", inplace=True)
+        child_component_data_df = child_component_data_df[schema_columns]
+        child_component_data_df.rename(columns=rename_columns, inplace=True)
+        child_component_data_df_map[component] = child_component_data_df
+
+    assembly_run_ref_data_df = child_component_data_df_map.get("assembly_run_ref", pd.DataFrame())
+    assembly_genome_data_df = child_component_data_df_map.get("assembly_genome", pd.DataFrame())
+    assembly_file_data_df = child_component_data_df_map.get("assembly_file", pd.DataFrame())
+
+    if not assembly_genome_data_df.empty:
+        assembly_genome_data_df["submission_type"] = "genome"
+        assembly_component_data_df = assembly_component_data_df.merge (            
+                assembly_genome_data_df,
+                right_on=["study_id", child_map["assembly"]["assembly_genome"]],
+                left_on=["study_id", identifier_map["assembly"]], how="left")
+    
+
+    file_component_data = components.get("file", [])
+    file_component_data_df = pd.DataFrame.from_records(file_component_data)
+
+    assembly_run_ref_data_df = assembly_run_ref_data_df.merge(
+            file_component_data_df,
+            left_on=["study_id", parent_map["assembly_run_ref"]["file"]],
+            right_on=["study_id", identifier_map["file"]] )
+
+    return assembly_component_data_df, assembly_run_ref_data_df, assembly_file_data_df, parent_map
 
 
 def _prepare_file_submission(singlecell):

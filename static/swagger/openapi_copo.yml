@@ -1173,6 +1173,13 @@ paths:
          schema:
            type: string
            minimum: 1
+       - in: query
+         name: return_type
+         required: false
+         description: The format of the export file
+         schema:
+           type: string
+           enum: [xlsx, jsonld]
       summary: Get list of studies within the profile
       description: |
         Get list of studies within the profile.

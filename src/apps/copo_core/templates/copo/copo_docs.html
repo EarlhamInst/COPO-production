@@ -123,13 +123,10 @@
 <!-- end hidden fields -->
 
 <!-- Top navigation bar -->
-<div class="pull-right">
-    {% if user.is_authenticated %}
-        {% include 'nav_authenticated.html' %}
-    {% else %}
-        {% include 'nav_public.html' %}
-    {% endif %}
-</div>
-
+{% if user.is_authenticated %}
+    {% include 'nav_authenticated.html' %}
+{% else %}
+    {% include 'nav_public.html' %}
+{% endif %}
 </body>
 </html>

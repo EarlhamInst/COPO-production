@@ -55,6 +55,8 @@ $(document).ready(function () {
 
   setup_copo_general_lookup_event();
 
+  initialiseNavToggle();
+
   var event = jQuery.Event('document_ready'); //individual components can trap and handle this event as they so wish
   $(document).trigger(event);
 });

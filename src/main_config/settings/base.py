@@ -43,7 +43,6 @@ ALLOWED_HOSTS = [
     '.demo.copo-project.org',
     'localhost',
     '.copodev.cyverseuk.org',
-    '.copodev2.cyverseuk.org',
 ]
 ALLOWED_CIDR_NETS = ['10.0.0.0/24']
 CORS_ALLOWED_ORIGINS = [
@@ -56,8 +55,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://demo.copo-project.org",
     "https://copodev.cyverseuk.org",
     "http://copodev.cyverseuk.org",
-    "https://copodev2.cyverseuk.org",
-    "http://copodev2.cyverseuk.org",
     "https://copo-new.cyverseuk.org",
     "http://copo-new.cyverseuk.org",
 ]
@@ -199,8 +196,6 @@ CSRF_TRUSTED_ORIGINS = [
     'https://copodev.cyverseuk.org',
     'https://copo-new.cyverseuk.org',
     'http://copodev.cyverseuk.org',
-    'http://copodev2.cyverseuk.org',
-    'https://copodev2.cyverseuk.org',
     'http://127.0.0.1:8000',
 ]
 
@@ -216,7 +211,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'))
 MEDIA_URL = '/media/'
 
 MANIFEST_PATH = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'), 'assets', 'manifests')
-MANIFEST_FILE_NAME = "{0}_manifest_template{1}.xlsx"
+MANIFEST_FILE_NAME = "{0}_manifest_template{1}.xlsx" # 0: schema name_checklist_id, 1: version
+MANIFEST_JSONLD_FILE_NAME = "{0}_{1}_{2}{3}.jsonld" # 0: schema name, 1: checklist_id, 2: component_name, 3: version
 MANIFEST_DOWNLOAD_URL = MEDIA_URL + "assets/manifests/" + MANIFEST_FILE_NAME
 
 SOP_PATH = os.path.join(BASE_DIR, 'static', 'assets', 'sops')
@@ -233,7 +229,12 @@ SESSION_COOKIE_AGE = 48 * 60 * 60  #
 
 SITE_ID = 1
 
-COPO_URL = 'copo-project.org'
+COPO_URL = {"prod": "https://copo-project.org",
+            "demo": "https://demo.copo-project.org",
+            "dev":  "https://copodev.cyverseuk.org",
+            "local": "http://127.0.0.1:8000",
+            "test": "http://copo-new.cyverseuk.org:8000",
+            }
 
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024 * 2

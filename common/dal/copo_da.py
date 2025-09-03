@@ -90,7 +90,12 @@ class Audit(DAComponent):
                 if manifest_id not in profile_title_map:
                     if profile_id:
                         profile = Profile().get_record(profile_id)
-                        profile_title_map[manifest_id] = profile.get('title', '')
+                        if profile:
+                            profile_title_map[manifest_id] = profile.get('title', '')
+                        else:
+                            lg.error(
+                                f'No profile found for ID {profile_id}. Manifest ID is {manifest_id}.'
+                            )
 
             # Get the profile title
             merged_info['copo_profile_title'] = profile_title_map.get(manifest_id, '')
