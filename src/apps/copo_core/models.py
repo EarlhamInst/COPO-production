@@ -384,11 +384,8 @@ class Component(models.Model):
     name = models.CharField(max_length=100, unique=True)
     title = models.CharField(max_length=100)
     subtitle = models.CharField(max_length=100, blank=True, null=True)
-    is_assignable = models.BooleanField(default=True)
-    is_parent = models.BooleanField(default=False)
     schema_name = models.CharField(max_length=100, blank=True, null=True)
     group_name = models.CharField(max_length=100, blank=True, null=True)
-    group_title = models.CharField(max_length=100, blank=True, null=True)
     table_id = models.CharField(max_length=100)
     reverse_url = models.CharField(max_length=100, blank=True, null=True)
     widget_icon = models.CharField(max_length=100, blank=True, null=True)
@@ -404,18 +401,15 @@ class Component(models.Model):
         self,
         name,
         title,
+        subtitle,
         widget_icon,
         widget_colour,
-        subtitle="",
-        widget_icon_class="",
-        table_id="",
-        reverse_url="",
+        widget_icon_class,
+        table_id,
+        reverse_url,
         schema_name="",
         base_component="",
-        group_name="",
-        group_title="",
-        is_parent=False,
-        is_assignable=True,
+        group_name=""
     ):
         self.name = name.lower()
         self.title = title
@@ -427,21 +421,8 @@ class Component(models.Model):
         self.reverse_url = reverse_url
         self.schema_name = schema_name
         self.base_component = base_component or self.name
-
-        if is_parent:
-            # Parent/group components logic
-            self.is_assignable = False
-            self.widget_icon_class = ''
-            self.table_id = ''
-            self.reverse_url = ''
-            self.subtitle = ''
-            self.schema_name = ''
-        else:
-            # Single/Standalone components logic
-            self.group_name = group_name
-            self.group_title = group_name.title() if group_name and not group_title else group_title
-            self.is_assignable = is_assignable
-
+        self.group_name = group_name
+            
         self.save()
         return self
 

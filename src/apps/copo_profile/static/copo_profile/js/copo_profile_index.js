@@ -823,11 +823,10 @@ function createComponentButtons(recordId, profileType) {
     } else {
       // Single/Standalone component
       // These are components that do not have
-      // subcomponents/a dropdown menu and are not parent components.
+      // subcomponents or a dropdown menu and are not parent components.
       groupItems
-        .filter((i) => i.isAssignable && !i.isParent)
-        .forEach((j) => {
-          const anchor = createComponentAnchor(j, recordId, false);
+        .forEach((item) => {
+          const anchor = createComponentAnchor(item, recordId, false);
           componentsDIV.append(anchor);
         });
     }
