@@ -102,7 +102,7 @@ MANIFEST_VERSION = {
     "DTOL_EI": "2.4",
     "ERGA": "2.5.1",
     "DTOL_BARCODE": "",
-    "COPO_SINGLE_CELL": "0.3",
+    "COPO_SINGLE_CELL": "0.4",
     "COPO_IMAGES_REMBI": "0.1",
     "COPO_IMAGES_STX_FISH": "0.1"
 }
