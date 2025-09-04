@@ -3035,8 +3035,6 @@ function createDropdownWrapper(
 
   // Build child components/subcomponents
   childrenItems.forEach((item) => {
-    // Skip to next iteration if it's the current component
-    if (skipCurrentComponent(item)) return;
     const childAnchor = createComponentAnchor(item, profileId, isIconOnly);
     ($container || $menu).append(childAnchor);
   });
@@ -3186,24 +3184,27 @@ function generate_component_control(componentName, profile_type) {
     const grouped = groupComponentsByGroupName(components);
 
     Object.entries(grouped).forEach(([groupName, groupItems]) => {
+      // Skip current component before deciding dropdown logic
+      const filteredItems = groupItems.filter(
+        (item) => !skipCurrentComponent(item)
+      );
+      
       // Render as dropdown if group is non-empty and has more
       // than one subcomponent
-      const isDropdownMenu = groupName && groupItems.length > 1;
+      const isDropdownMenu = groupName && filteredItems.length > 1;
 
       if (isDropdownMenu) {
         // Components with subcomponents i.e. dropdown menus
         const dropdown = createDropdownWrapper(
           groupName,
-          groupItems,
+          filteredItems,
           profile_id,
           true
         );
         pcomponentHTML.append(dropdown);
       } else {
         // Single/Standalone components
-        groupItems.forEach((item) => {
-          // Skip to next iteration if it's the current component
-          if (skipCurrentComponent(item)) return;
+        filteredItems.forEach((item) => {
           const anchor = createComponentAnchor(item, profile_id, true);
           pcomponentHTML.append(anchor);
         });
