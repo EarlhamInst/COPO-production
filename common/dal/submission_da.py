@@ -1123,9 +1123,9 @@ class Submission(DAComponent):
             if len(sub[component]) == 0:
                 update_data["$set"] = {f"{component}_status": "complete", component: []}
             else:
-                update_data["$pull"] = {component: {"$each": component_ids}}
+                update_data["$pullall"] = {component: component_ids }
                 
-            if update_data.get("$set", None) or update_data.get("$pull", None):
+            if update_data.get("$set", None) or update_data.get("$pullall", None):
                 update_data["$set"]["date_modified"] = helpers.get_datetime()
                 update_data["$set"]["updated_by"] = "system"
                 sub_handle.update_one({"_id": ObjectId(sub_id)}, update_data)

@@ -141,7 +141,7 @@ def process_pending_submission_zendo():
                     html_id="submission_info")
                 continue
 
-            Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository="zenodo", status_column_value={"status": "accepted", "state" : deposition["state"],  "accession": str(deposition["id"]), "doi" : deposition.get("doi",""), "error": "", "embargo_date":deposition.get("metadata",{}).get("embargo_date","")})  
+            Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository="zenodo", status_column_value={"status": "accepted", "state" : deposition["state"],  "accession": str(deposition["id"]), "doi" : deposition.get("doi",""), "error": ""})  
             Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
 
             notify_singlecell_status(data={"profile_id": sub["profile_id"]},

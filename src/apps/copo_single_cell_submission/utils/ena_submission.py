@@ -175,6 +175,20 @@ def _prepare_assembly_submission(singlecell):
     return assembly_component_data_df, assembly_run_ref_data_df, assembly_file_data_df, parent_map
 
 
+def merge_parent_component(singlecell,schemas, component_name, component_df):
+    checklist_id = singlecell.get("checklist_id", "")
+    schema_name = singlecell.get("schema_name", "")
+
+    #schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
+    term_mapping = SinglecellSchemas().get_term_mapping(schema_name=schema_name)
+
+    identifier_map, foreign_key_map = SinglecellSchemas().get_key_map(schemas=schemas)
+    parent_map = SinglecellSchemas().get_parent_map(foreign_key_map)
+
+    component_df = _merge_paranent_data(component_df=component_df, identifier_map=identifier_map, component_name=component_name, parent_map=parent_map, singlecell=singlecell, schemas=schemas, term_mapping=term_mapping)
+    return component_df
+
+
 def _prepare_file_submission(singlecell):
     checklist_id = singlecell.get("checklist_id", "")
     schema_name = singlecell.get("schema_name", "")

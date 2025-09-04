@@ -1193,7 +1193,200 @@ paths:
         '500':
           $ref: '#/components/responses/RangeError'
 
+  /profiles/{profile_id}/singlecells/studies/{study_id}/action/submit:
+    post:
+      tags:
+        - Profile
+      security:
+        - app_id: []
+      parameters:
+       - $ref: '#/components/parameters/profile_id'
+       - name: study_id
+         in: path
+         required: true
+         description: The ID of the study to retrieve
+         schema:
+           type: string
+           minimum: 1
+       - in: query
+         name: repository
+         required: true
+         description: the public repository to submit to
+         schema:
+           type: string
+           enum: [ena, zenodo]
+      summary: Submit a study to a public repository
+      description: |
+        Submit a study to a public repository
+      responses:
+        '200':
+          description: submission scheduled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    description: Status of the study submission
+        '400':
+          description: submission not scheduled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    description: Status of the study submission
+    get:
+      tags:
+        - Profile
+      security:
+        - app_id: []
+      parameters:
+       - $ref: '#/components/parameters/profile_id'
+       - name: study_id
+         in: path
+         required: true
+         description: The ID of the study to retrieve
+         schema:
+           type: string
+           minimum: 1
+       - in: query
+         name: repository
+         required: true
+         description: the public repository to submit to
+         schema:
+           type: string
+           enum: [ena, zenodo]
+      summary: Query the submission status a study to a public repository
+      description: |
+        Query the submission status a study to a public repository
+      responses:
+        '200':
+          description: submission completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    description: Status of the study submission
+        '400':
+          description: submission failed or not completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    description: Status of the study submission
 
+  /profiles/{profile_id}/singlecells/studies/{study_id}/action/accession:
+    get:
+      tags:
+        - Profile
+      security:
+        - app_id: []
+      parameters:
+       - $ref: '#/components/parameters/profile_id'
+       - name: study_id
+         in: path
+         required: true
+         description: The ID of the study to retrieve
+         schema:
+           type: string
+           minimum: 1
+       - in: query
+         name: repository
+         required: false
+         description: the public repository to submit to
+         schema:
+           type: string
+           enum: [ena, zenodo]
+       - in: query
+         name: return_type
+         required: false
+         description: The format of the export file
+         schema:
+           type: string
+           enum: [json, csv]
+      summary: Accession number of a study submission
+      description: |
+        Accession number of a study submission
+      responses:
+        '200':
+          description: submission scheduled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    description: Accession number of a study submission
+        '400':
+          description: submission not scheduled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    description: Status of the study submission
+
+  /profiles/{profile_id}/singlecells/studies/{study_id}/action/publish:
+    post:
+      tags:
+        - Profile
+      security:
+        - app_id: []
+      parameters:
+       - $ref: '#/components/parameters/profile_id'
+       - name: study_id
+         in: path
+         required: true
+         description: The ID of the study to publish
+         schema:
+           type: string
+           minimum: 1
+       - in: query
+         name: repository
+         required: true
+         description: the public repository to publish to
+         schema:
+           type: string
+           enum: [ena, zenodo]
+      summary: Publish a study to a public repository
+      description: |
+        Publish a study to a public repository
+      responses:
+        '200':
+          description: The study has been published
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    description: Status of the study
+        '400':
+          description: The study has not been published
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    description: Status of the study
+
+                  
 
   # Section: Statistics
   /stats/number_of_users:
@@ -1483,6 +1676,7 @@ components:
   
     profile_id:
       name: profile_id
+      required: true
       in: path
       description: provide a hexadecimal 'profile_id'
       schema:

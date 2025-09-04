@@ -187,13 +187,30 @@ dtol_api_patterns = [
     singlecell.get_current_supported_checklists,
     name='singlecells_checklist'
     ),
+
+
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies/(?P<study_id>[a-zA-Z0-9]+)/action/submit$',
+    singlecell.APIStudySubmit.as_view(),
+    name='singlecells_study_submit',
+    ),
+
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies/(?P<study_id>[a-zA-Z0-9]+)/action/accession$',
+    singlecell.APIStudyAccession.as_view(),
+    name='singlecells_study_accession',
+    ),
+
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies/(?P<study_id>[a-zA-Z0-9]+)/action/publish$',
+    singlecell.APIStudyPublish.as_view(),
+    name='singlecells_study_publish',
+    ),
+
     
-    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies/(?P<study_id>[a-zA-Z0-9]+)',
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies/(?P<study_id>[a-zA-Z0-9]+)$',
     singlecell.APIStudyDownload.as_view(),
     name='singlecells_study_download',
     ),
 
-    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies',
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies$',
     singlecell.APIStudy.as_view(),
     name='singlecells_studies',
     ),

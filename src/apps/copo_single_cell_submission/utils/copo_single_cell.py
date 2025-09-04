@@ -452,13 +452,23 @@ def submit_singlecell_ena(profile_id, target_ids, target_id,checklist_id, study_
     return dict(status='error', message="Not Implement.")        
 """
 
-def submit_singlecell(profile_id, target_ids, target_id, checklist_id, study_id, repository="ena"):
-    if target_id:
-        target_ids = [target_id]
-
-    if not target_ids:
-        return dict(status='error', message="Please select one or more records to submit!")
+def query_submit_result(profile_id, study_id, repository="ena"):
+    submission = Submission().get_collection_handle().find_one({"profile_id": profile_id, "repository": repository, "deleted": get_not_deleted_flag()})
+    if not submission:
+        return dict(status='error', message="No submission record found.")
     
+    submission_status = submission.get("study_status", "pending")
+
+    match submission_status:
+        case "complete":
+            result = get_accession(profile_id, study_id, repository)
+            return dict(status='success', message="Submission is completed.", data=result)
+        case _:
+            return dict(status='error', message="Submission is in progress, please try again later!")  
+        
+        
+def submit_singlecell(profile_id, study_id, repository="ena"):
+
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
     if not singlecell:
         return dict(status='error', message="No record found.")
@@ -512,13 +522,73 @@ def submit_singlecell(profile_id, target_ids, target_id, checklist_id, study_id,
         return dict(status='success', message="Submission has been scheduled.")
 
 
-def publish_singlecell(profile_id, target_ids, target_id, study_id, repository="ena"):
-    if target_id:
-        target_ids = [target_id]
+def get_accession(profile_id, study_id, repository="", is_published=False):
 
-    if not target_ids:
-        return dict(status='error', message="Please select one or more records to publish!")
+    singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
+    if not singlecell:
+        return []
+    
+    schema_name = singlecell["schema_name"]
+    
+    schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=singlecell["checklist_id"])
 
+    repositories = set()
+    submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name)
+    submisison_repository_component_map = submission_repository_df.to_dict('index')
+    identifier_map, foreignkey_map = SinglecellSchemas().get_key_map(schemas=schemas)
+    submission_repository = {}
+
+    for component, respositories in submisison_repository_component_map.items():
+        submission_repository[component] = [repository for repository, value in respositories.items() if value]
+       
+    sample_df = pd.DataFrame.from_records(singlecell.get("components", {}).get("sample", []))
+
+    result = pd.DataFrame()    
+    for component, repositories in submission_repository.items():
+        if repository and repository not in repositories:
+            continue
+         #get the component data
+        component_df = pd.DataFrame.from_records(singlecell.get("components", {}).get(component, []))
+        if component_df.empty:
+            continue
+         #propagate the submission status from components to study
+        identifier = identifier_map[component]
+        foreign_keys = [ value["foreign_key"] for value in  foreignkey_map.get(component, {})]
+        keys = [identifier] + foreign_keys
+        new_repository = []
+        if repository:
+            new_repository.append(repository)
+        else:
+            new_repository = repositories
+
+
+
+        component_df_new = component_df.loc[:, component_df.columns.str.endswith(tuple(new_repository)) | component_df.columns.isin(keys)]
+
+        prefix = ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE.keys()
+
+        new_column_mapper = { col: f"{component}_{col}" 
+                                for col in component_df_new.columns 
+                                    if col not in keys 
+                                        and any(col.lower().startswith(f"{p}_") for p in prefix)}
+        
+        component_df_new.rename(columns=new_column_mapper, inplace=True)
+        
+        if "sample_id" not in component_df_new.columns:
+            component_with_parent_df = ena_submission.merge_parent_component(singlecell=singlecell,schemas=schemas, component_name=component, component_df=component_df)
+            if "sample_id" in component_with_parent_df.columns:
+                component_df_new["sample_id"] = component_with_parent_df["sample_id"]
+                component_df_new = component_df_new.merge(sample_df, how="left", on=["study_id","sample_id"])
+
+        if result.empty:
+            result = component_df_new
+        else:
+            result = result.merge(component_df_new, how="left" , on="study_id")
+
+    return result.to_dict(orient="records")
+
+
+def publish_singlecell(profile_id, study_id, repository="ena"):
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
     if not singlecell:
         return dict(status='error', message="No record found.")

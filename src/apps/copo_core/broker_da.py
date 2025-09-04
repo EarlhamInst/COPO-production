@@ -604,12 +604,10 @@ class BrokerDA:
 
     def _submit_singlecell(self, repository=None):
 
-        target_id = self.param_dict.get("target_id", str())
-        target_ids  = self.param_dict.get("target_ids", [])
         checklist_id = self.request_dict.get("singlecell_checklist_id", str())
         study_id = self.request_dict.get("study_id", "")
 
-        result = copo_single_cell.submit_singlecell(profile_id=self.profile_id, target_ids=target_ids, target_id=target_id,checklist_id=checklist_id, study_id=study_id, repository=repository)
+        result = copo_single_cell.submit_singlecell(profile_id=self.profile_id, study_id=study_id, repository=repository)
 
         report_metadata = dict()
         report_metadata["status"] = result.get("status", "success")
@@ -626,13 +624,12 @@ class BrokerDA:
         function handles the publishing of a single cell submission to ENA or Zenodo
         :return:
         """
-        target_id = self.param_dict.get("target_id", str())
-        target_ids  = self.param_dict.get("target_ids", [])
+
         checklist_id = self.request_dict.get("singlecell_checklist_id", str())
         study_id = self.request_dict.get("study_id", "")
         schema_name = self.request_dict.get("schema_name", str())
 
-        result = copo_single_cell.publish_singlecell(profile_id=self.profile_id,  target_ids=target_ids, target_id=target_id, study_id=study_id, repository=repository)
+        result = copo_single_cell.publish_singlecell(profile_id=self.profile_id, study_id=study_id, repository=repository)
         #result = {"status":"error", "message":"Publishing of single cell data is not yet implemented for this repository."}
         report_metadata = dict()
         report_metadata["status"] = result.get("status", "success")

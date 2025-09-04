@@ -69,6 +69,61 @@ class APIStudy(APIView):
         else:
             return JsonResponse({"status": "success", "message": "Single Cell records saved successfully."}, status=200)
     
+
+class APIStudySubmit(APIView):
+    schema_name = "COPO_SINGLE_CELL"
+    def post(self, request, profile_id, study_id):
+        repository = request.GET.get("repository", "ena")
+
+        result = copo_single_cell_utils.submit_singlecell(profile_id=profile_id, study_id=study_id, repository=repository)
+
+        if result["status"] == "error":
+            return JsonResponse(result, status=400)
+        else:
+            return JsonResponse(result, status=200)
+        
+    def get(self, request, profile_id, study_id):
+        repository = request.GET.get("repository", "ena")
+
+        result = copo_single_cell_utils.query_submit_result(profile_id=profile_id, study_id=study_id, repository=repository)
+
+        if result["status"] == "error":
+            return JsonResponse(result, status=400, safe=False)
+        else:
+            return JsonResponse(result, status=200, safe=False)
+        
+class APIStudyAccession(APIView):
+    schema_name = "COPO_SINGLE_CELL"
+
+    def get(self, request, profile_id, study_id):
+        repository = request.GET.get("repository", "")
+        return_type = request.GET.get("return_type", "json")
+        accessions = copo_single_cell_utils.get_accession(profile_id=profile_id, study_id=study_id, repository=repository)
+
+        if not accessions:
+            return JsonResponse("Not found", status=400, safe=False)
+        
+        if return_type == "csv":
+            df = pd.DataFrame(accessions)
+            response = HttpResponse(content_type='text/tab-separated-values')
+            response['Content-Disposition'] = f'attachment; filename="{study_id}_accessions.csv"'
+            df.to_csv(path_or_buf=response, sep="\t", index=False)
+            return response
+        elif return_type == "json":     
+            return JsonResponse(accessions, status=200, safe=False)
+
+class APIStudyPublish(APIView):
+    schema_name = "COPO_SINGLE_CELL"
+    def post(self, request, profile_id, study_id):
+        repository = request.GET.get("repository", "ena")
+
+        result = copo_single_cell_utils.publish_singlecell(profile_id=profile_id, study_id=study_id, repository=repository)
+
+        if result["status"] == "error":
+            return JsonResponse(result, status=400)
+        else:
+            return JsonResponse(result, status=200)
+
 class APIFilesPresigned(APIView):
     def post(self, request, profile_id):
         bucket_name = profile_id
