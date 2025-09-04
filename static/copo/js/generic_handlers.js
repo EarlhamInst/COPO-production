@@ -3028,11 +3028,6 @@ function createDropdownWrapper(
     // Inner container is within component button only
     $container = $menu.find('.item');
     
-    // Convert group name to title case
-    let label = targetParentComponentName.replace(/\b\w/g, (char) =>
-      char.toUpperCase()
-    );
-    $wrapper.find('.pcomponent-button .dropdown.icon').before(label);
     $wrapper.removeClass(
       `${targetParentComponentName}-pcomponent-dropdown-button-template`
     );
