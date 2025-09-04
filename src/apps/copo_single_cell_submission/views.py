@@ -415,12 +415,12 @@ def download_manifest(request, schema_name, profile_id, study_id, format="xlsx")
 def download_init_blank_manifest(request, schema_name, profile_id,  checklist_id):
       
     schemas = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name})
-    schema = SinglecellSchemas().get_schema(schema_name, checklist_id)
+    schema = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=schemas, target_id=checklist_id)
     sample_schema = schema.get("sample", [])
 
 
     samples = Sample().execute_query({"profile_id": profile_id, "deleted": get_not_deleted_flag(),
-                                                     "biosampleAccession": {"$ne": ""}})
+                                                     "biosampleAccession": {"$exists": "true"}})
     
     identifier_map = SinglecellSchemas().get_identifier_map(schemas=schema)
     identifier = identifier_map.get("sample", "")
