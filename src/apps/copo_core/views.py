@@ -31,6 +31,7 @@ from .models import Banner
 from common.schemas.utils import data_utils
 from common.utils.helpers import get_group_membership_asString
 from src.apps.copo_core.models import ProfileType
+from bson.errors import InvalidId
 
 LOGGER = settings.LOGGER
 
@@ -87,11 +88,12 @@ def web_page_access_checker(func):
             if not profile_id:
                 return func(request, *args, **kwargs)
 
-        profile =  Profile().get_record(ObjectId(profile_id))
+        profile =  Profile().get_record(profile_id)
 
-        # Show web page if profile does not exist but 'profile_id' exists from session
-        if not profile:
-           return func(request, *args, **kwargs)
+        # Show web page if profile does not exist but 'profile_id' exists from session <== we should return 403, i.e. invalid profile_id
+
+        if not profile or type(profile) == InvalidId:
+           return handler403(request)
         else:
             user_id = Profile().get_record(ObjectId(profile_id))['user_id']
 
@@ -539,7 +541,12 @@ def handler500(request):
     return error_page(request)
 
 
-def handler403(request, message="Apologies, you do not have permission to view this web page"):
+def handler403(request, message="Apologies, you do not have permission to view this web page"):    
+    if "api" in request.resolver_match.namespaces:
+        return HttpResponse(
+            json.dumps({"status": "error", "message": "Apologies, you do not have permission to access it"}), status=403, content_type="application/json"
+        )
+
     try:
         LOGGER.log(message)
     finally:

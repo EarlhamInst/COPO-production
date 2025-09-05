@@ -1066,11 +1066,13 @@ paths:
           $ref: '#/components/responses/RangeError'
 
 
-  /profiles/singlecells/checklists:
+  /profiles/schema/{schema_name}/checklists:
     get:
       tags:
         - Profile
       summary: Get supported checklist for singlecell schema
+      parameters:
+       - $ref: '#/components/parameters/schema_name'
       description: |
         Get a list of supported checklist for singlecell schema.
       responses:
@@ -1085,7 +1087,7 @@ paths:
         '500':
           $ref: '#/components/responses/RangeError'
 
-  /profiles/{profile_id}/singlecells/studies:
+  /profiles/{profile_id}/schema/{schema_name}/studies:
     get:
       tags:
         - Profile
@@ -1093,6 +1095,7 @@ paths:
         - app_id: []
       parameters:
         - $ref: '#/components/parameters/profile_id'
+        - $ref: '#/components/parameters/schema_name'
         - in: query
           name: checklist_id
           required: false
@@ -1122,6 +1125,7 @@ paths:
         - app_id: []
       parameters:
        - $ref: '#/components/parameters/profile_id'
+       - $ref: '#/components/parameters/schema_name'
       requestBody:
         content:
           multipart/form-data:
@@ -1158,7 +1162,7 @@ paths:
           $ref: '#/components/responses/RangeError'
 
 
-  /profiles/{profile_id}/singlecells/studies/{study_id}:
+  /profiles/{profile_id}/schema/{schema_name}/studies/{study_id}:
     get:
       tags:
         - Profile
@@ -1166,13 +1170,8 @@ paths:
         - app_id: []
       parameters:
        - $ref: '#/components/parameters/profile_id'
-       - name: study_id
-         in: path
-         required: true
-         description: The ID of the study to retrieve
-         schema:
-           type: string
-           minimum: 1
+       - $ref: '#/components/parameters/schema_name'
+       - $ref: '#/components/parameters/study_id'
        - in: query
          name: return_type
          required: false
@@ -1193,7 +1192,7 @@ paths:
         '500':
           $ref: '#/components/responses/RangeError'
 
-  /profiles/{profile_id}/singlecells/studies/{study_id}/action/submit:
+  /profiles/{profile_id}/schema/{schema_name}/studies/{study_id}/action/submit:
     post:
       tags:
         - Profile
@@ -1201,13 +1200,8 @@ paths:
         - app_id: []
       parameters:
        - $ref: '#/components/parameters/profile_id'
-       - name: study_id
-         in: path
-         required: true
-         description: The ID of the study to retrieve
-         schema:
-           type: string
-           minimum: 1
+       - $ref: '#/components/parameters/schema_name'
+       - $ref: '#/components/parameters/study_id'
        - in: query
          name: repository
          required: true
@@ -1246,13 +1240,8 @@ paths:
         - app_id: []
       parameters:
        - $ref: '#/components/parameters/profile_id'
-       - name: study_id
-         in: path
-         required: true
-         description: The ID of the study to retrieve
-         schema:
-           type: string
-           minimum: 1
+       - $ref: '#/components/parameters/schema_name'
+       - $ref: '#/components/parameters/study_id'
        - in: query
          name: repository
          required: true
@@ -1285,7 +1274,7 @@ paths:
                     type: object
                     description: Status of the study submission
 
-  /profiles/{profile_id}/singlecells/studies/{study_id}/action/accession:
+  /profiles/{profile_id}/schema/{schema_name}/studies/{study_id}/action/accession:
     get:
       tags:
         - Profile
@@ -1293,13 +1282,8 @@ paths:
         - app_id: []
       parameters:
        - $ref: '#/components/parameters/profile_id'
-       - name: study_id
-         in: path
-         required: true
-         description: The ID of the study to retrieve
-         schema:
-           type: string
-           minimum: 1
+       - $ref: '#/components/parameters/schema_name'
+       - $ref: '#/components/parameters/study_id'
        - in: query
          name: repository
          required: false
@@ -1339,7 +1323,7 @@ paths:
                     type: object
                     description: Status of the study submission
 
-  /profiles/{profile_id}/singlecells/studies/{study_id}/action/publish:
+  /profiles/{profile_id}/schema/{schema_name}/studies/{study_id}/action/publish:
     post:
       tags:
         - Profile
@@ -1347,13 +1331,8 @@ paths:
         - app_id: []
       parameters:
        - $ref: '#/components/parameters/profile_id'
-       - name: study_id
-         in: path
-         required: true
-         description: The ID of the study to publish
-         schema:
-           type: string
-           minimum: 1
+       - $ref: '#/components/parameters/schema_name'
+       - $ref: '#/components/parameters/study_id'
        - in: query
          name: repository
          required: true
@@ -1681,6 +1660,24 @@ components:
       description: provide a hexadecimal 'profile_id'
       schema:
         type: string
+
+    schema_name:
+      name: schema_name
+      in: path
+      required: true
+      description: The name of the schema to retrieve checklists for (e.g., copo_single_cell)
+      schema:
+        type: string
+        enum: [copo_single_cell, copo_image_rembi, copo_image_stx_fish]
+
+    study_id:
+      name: study_id
+      required: true
+      in: path
+      description: The ID of the study to retrieve
+      schema:
+        type: string
+
 
   responses:
     RangeError:

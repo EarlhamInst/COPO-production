@@ -1,10 +1,6 @@
 import bson.json_util as jsonb
 from django.http import HttpResponse, JsonResponse
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
-import common.schemas.utils.data_utils as d_utils
+from rest_framework.decorators import api_view
 from common.dal.mongo_util import cursor_to_list
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
@@ -21,11 +17,14 @@ from jsonpickle import encode
 from src.apps.copo_core.broker_da import BrokerDA
 from bson.json_util import dumps
 from common.dal.profile_da import Profile
+from bson.errors import InvalidId
+from src.apps.copo_core.views import web_page_access_checker
+from rest_framework import status as rest_status
+from rest_framework.decorators import api_view
 
-
-class APIProfiles(APIView):
-
-    def post(self, request):
+@api_view(['GET', 'POST'])
+def api_profiles(request):
+    if request.method == 'POST':
         request_data = request.data
         auto_fields = { f"copo.profile.{k}" : v for k, v in request_data.items()}
 
@@ -43,23 +42,23 @@ class APIProfiles(APIView):
  
         return JsonResponse(status=400, data={"id": str(profiles[0].get("_id"))}, safe=False)
 
+    if request.method == 'GET':
+        uid = request.user.id
+        existing_profiles = Profile().get_all_profiles(user=uid)
         
-    def get(self, request):
-        if request.method == 'GET':
-            uid = request.user.id
-            existing_profiles = Profile().get_all_profiles(user=uid)
-            
-            #existing_profiles = Profile().get_collection_handle().find({'user_id': uid})
-            out = list()
-            for el in existing_profiles:
-                out.append(
-                    {'title': el['title'], "description":el['description'],'type': el['type'],  'id': str(el['_id'])}
-                )
-            return JsonResponse(status=200, data=out, safe=False)
+        #existing_profiles = Profile().get_collection_handle().find({'user_id': uid})
+        out = list()
+        for el in existing_profiles:
+            out.append(
+                {'title': el['title'], "description":el['description'],'type': el['type'],  'id': str(el['_id'])}
+            )
+        return JsonResponse(status=200, data=out, safe=False)
     
-class APIProfile(APIView):
-            
-    def put(self, request, profile_id):
+
+@api_view(['GET', 'PUT'])
+@web_page_access_checker         
+def api_profile(request, profile_id):
+    if request.method == 'PUT':
         request_data = request.data
         auto_fields = { f"copo.profile.{k}" : v for k, v in request_data.items() if k not in ['id', 'profile_id']}
 
@@ -78,19 +77,18 @@ class APIProfile(APIView):
                 return JsonResponse(status=200, data=profiles[0], safe=False)
 
         return JsonResponse(status=400, content=out,safe=False )
-    
 
-    def get(self, request, profile_id):
+    elif request.method == 'GET':
         """
         Retrieve a profile by its ID.
         """
 
         profile = Profile().get_record(profile_id)
 
-        if not profile:
+        if not profile or type(profile) == InvalidId:
             return JsonResponse(
-                status=status.HTTP_404_NOT_FOUND,
-                content={'error': 'Profile not found'},
+                status=rest_status.HTTP_404_NOT_FOUND,
+                data={'error': 'Profile not found'},
                 safe=False 
             )
         out =  {'title': profile['title'], "description":profile['description'],'type': profile['type'],  'id': str(profile['_id'])}

@@ -1,9 +1,13 @@
 from django.http import JsonResponse
 from rest_framework.views import APIView
 from common.s3.s3Connection import S3Connection as s3
+from src.apps.copo_core.views import web_page_access_checker
+from rest_framework.decorators import api_view
 
-class APIFiles(APIView):
-    def get(self, request, profile_id):
+@api_view(['GET'])
+@web_page_access_checker    
+def api_files(request, profile_id):
+    if request.method == 'GET':
         s3obj = s3()
         bucket_name = profile_id
         files = s3obj.list_objects(bucket_name)
@@ -16,12 +20,13 @@ class APIFiles(APIView):
                 row_data["last_uploaded"] = file["LastModified"]
                 row_data["S3_ETag"] = file["ETag"].replace('"', '')
                 result.append(row_data)
-
         return JsonResponse(result, safe=False)
  
-    
-class APIFilesPresigned(APIView):
-    def post(self, request, profile_id):
+
+@api_view(['POST'])
+@web_page_access_checker       
+def api_file_presigned_urls(request, profile_id):
+    if request.method == 'POST':
         bucket_name = profile_id
         file_names = request.data.get("file_names", [])
         s3obj = s3()

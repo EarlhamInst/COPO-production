@@ -170,53 +170,55 @@ dtol_api_patterns = [
         name='get_sample_updates_by_sample_field_and_value',
     ),
     path('profiles',
-        profile.APIProfiles.as_view(),
+        profile.api_profiles,
         name='profiles',
     ),
 
-    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/files/presignedurls',
-    file.APIFilesPresigned.as_view(),
-    name='files_presignedurls',
-    ),
-
-    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/files',
-    file.APIFiles.as_view(),
-    name='files',
-    ),
-    path('profiles/singlecells/checklists',
+    re_path(r'profiles/schema/(?P<schema_name>\w+)/checklists$',
     singlecell.get_current_supported_checklists,
     name='singlecells_checklist'
     ),
 
 
-    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies/(?P<study_id>[a-zA-Z0-9]+)/action/submit$',
-    singlecell.APIStudySubmit.as_view(),
-    name='singlecells_study_submit',
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/files/presignedurls',
+    file.api_file_presigned_urls,
+    name='file_presigned_urls',
     ),
 
-    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies/(?P<study_id>[a-zA-Z0-9]+)/action/accession$',
-    singlecell.APIStudyAccession.as_view(),
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/files',
+    file.api_files,
+    name='files',
+    ),
+
+
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/schema/(?P<schema_name>\w+)/studies/(?P<study_id>[a-zA-Z0-9]+)/action/submit$',
+    singlecell.api_submit_study,
+    name='singlecells_submit_study',
+    ),
+
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/schema/(?P<schema_name>\w+)/studies/(?P<study_id>[a-zA-Z0-9]+)/action/accession$',
+    singlecell.api_study_accessions,
     name='singlecells_study_accession',
     ),
 
-    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies/(?P<study_id>[a-zA-Z0-9]+)/action/publish$',
-    singlecell.APIStudyPublish.as_view(),
-    name='singlecells_study_publish',
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/schema/(?P<schema_name>\w+)/studies/(?P<study_id>[a-zA-Z0-9]+)/action/publish$',
+    singlecell.api_publish_study,
+    name='singlecells_publish_study',
     ),
 
     
-    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies/(?P<study_id>[a-zA-Z0-9]+)$',
-    singlecell.APIStudyDownload.as_view(),
-    name='singlecells_study_download',
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/schema/(?P<schema_name>\w+)/studies/(?P<study_id>[a-zA-Z0-9]+)$',
+    singlecell.api_download_study,
+    name='singlecells_download_study',
     ),
 
-    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/singlecells/studies$',
-    singlecell.APIStudy.as_view(),
+    re_path(r'profiles/(?P<profile_id>[a-z0-9]+)/schema/(?P<schema_name>\w+)/studies$',
+    singlecell.api_studies,
     name='singlecells_studies',
     ),
 
     re_path(r'profiles/(?P<profile_id>[a-z0-9]+)',
-    profile.APIProfile.as_view(),
+    profile.api_profile,
     name='profile',
     ),
 

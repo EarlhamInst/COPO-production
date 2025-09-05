@@ -629,7 +629,7 @@ class BrokerDA:
         study_id = self.request_dict.get("study_id", "")
         schema_name = self.request_dict.get("schema_name", str())
 
-        result = copo_single_cell.publish_singlecell(profile_id=self.profile_id, study_id=study_id, repository=repository)
+        result = copo_single_cell.publish_singlecell(profile_id=self.profile_id, study_id=study_id, schema_name=schema_name, repository=repository)
         #result = {"status":"error", "message":"Publishing of single cell data is not yet implemented for this repository."}
         report_metadata = dict()
         report_metadata["status"] = result.get("status", "success")

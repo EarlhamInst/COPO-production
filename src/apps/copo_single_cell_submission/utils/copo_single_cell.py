@@ -235,7 +235,9 @@ def _check_child_component_data(singlecell_data, component_name, identifiers, id
                 #children_has_accession_df = children_df.loc[children_df["accession"]!="" ,    child_identifier_key]
                 if not children_has_accession_df.empty:
                     return False,  f'{child_component_name}:{children_has_accession_df.tolist()} : record with accession number'
-            return _check_child_component_data(singlecell_data, child_component_name, children_df[child_identifier_key].tolist(),  identifier_map, child_map)
+                
+            if child_identifier_key:
+                return _check_child_component_data(singlecell_data, child_component_name, children_df[child_identifier_key].tolist(),  identifier_map, child_map)
     return True, ""
 
 
@@ -452,7 +454,7 @@ def submit_singlecell_ena(profile_id, target_ids, target_id,checklist_id, study_
     return dict(status='error', message="Not Implement.")        
 """
 
-def query_submit_result(profile_id, study_id, repository="ena"):
+def query_submit_result(profile_id, study_id,schema_name, repository="ena"):
     submission = Submission().get_collection_handle().find_one({"profile_id": profile_id, "repository": repository, "deleted": get_not_deleted_flag()})
     if not submission:
         return dict(status='error', message="No submission record found.")
@@ -461,17 +463,21 @@ def query_submit_result(profile_id, study_id, repository="ena"):
 
     match submission_status:
         case "complete":
-            result = get_accession(profile_id, study_id, repository)
+            result = get_accession(profile_id=profile_id, study_id=study_id, schema_name=schema_name, repository=repository, is_published=False)
+            if not result:
+                return dict(status='error', message="No record found.")
             return dict(status='success', message="Submission is completed.", data=result)
         case _:
             return dict(status='error', message="Submission is in progress, please try again later!")  
         
         
-def submit_singlecell(profile_id, study_id, repository="ena"):
+def submit_singlecell(profile_id, study_id, schema_name, repository="ena"):
 
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
     if not singlecell:
-        return dict(status='error', message="No record found.")
+        return dict(status='error', message="Study not found.")
+    if schema_name and schema_name != singlecell.get("schema_name",""):
+        return dict(status='error', message=f"schema {schema_name} does not match with the study .")
     #check if the submission is in progress
     studies = singlecell.get("components",{}).get("study",[])
 
@@ -522,10 +528,12 @@ def submit_singlecell(profile_id, study_id, repository="ena"):
         return dict(status='success', message="Submission has been scheduled.")
 
 
-def get_accession(profile_id, study_id, repository="", is_published=False):
+def get_accession(profile_id, study_id, schema_name, repository="", is_published=False):
 
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
     if not singlecell:
+        return []
+    if schema_name and schema_name != singlecell.get("schema_name",""):
         return []
     
     schema_name = singlecell["schema_name"]
@@ -588,11 +596,13 @@ def get_accession(profile_id, study_id, repository="", is_published=False):
     return result.to_dict(orient="records")
 
 
-def publish_singlecell(profile_id, study_id, repository="ena"):
+def publish_singlecell(profile_id, study_id, schema_name, repository="ena"):
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
     if not singlecell:
         return dict(status='error', message="No record found.")
-    
+    if schema_name and schema_name != singlecell.get("schema_name",""):
+        return dict(status='error', message="Schema name does not match the record.")
+
     #check if the submission is in progress
     studies = singlecell.get("components",{}).get("study",[])
     match  studies[0].get(f"status_{repository}", ""):
