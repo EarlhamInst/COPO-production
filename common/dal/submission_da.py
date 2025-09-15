@@ -930,6 +930,7 @@ class Submission(DAComponent):
                 filter['profile_id'] = profile_id
 
         filter["accessions"] = {"$exists": True, "$ne": {}}
+        filter["repository"] = "ena"
         projection = {"_id": 1, "accessions": 1, "profile_id": 1}
         
         total_count = 0
