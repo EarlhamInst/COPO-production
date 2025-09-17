@@ -492,7 +492,7 @@ def query_submit_result(profile_id, study_id,schema_name, repository="ena"):
             return dict(status='error', message="Submission is in progress, please try again later!")  
         
         
-def submit_singlecell(profile_id, study_id, schema_name, repository="ena"):
+def submit_singlecell(profile_id, study_id, schema_name="", repository="ena"):
 
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
     if not singlecell:
