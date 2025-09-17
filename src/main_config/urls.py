@@ -73,6 +73,10 @@ urlpatterns = [
         include('src.apps.copo_accession.urls', namespace='copo_accession'),
     ),
     path(
+        'copo/copo_accessions_schema/',
+        include('src.apps.copo_accessions_schema.urls', namespace='copo_accession_schema'),
+    ),
+    path(
         'copo/tol_dashboard/',
         include('src.apps.copo_tol_dashboard.urls', namespace='copo_tol_dashboard'),
     ),

@@ -138,7 +138,8 @@ function place_task_buttons(componentMeta) {
   }
   if (
     component == 'study' &&
-    componentMeta.submission_repository != undefined &&
+    typeof componentMeta.submission_repository != "undefined" &&
+    componentMeta.submission_repository != null &&
     componentMeta.submission_repository.length
   ) {
     componentMeta.submission_repository.forEach(function (item) {
@@ -744,8 +745,9 @@ function do_render_component_table_tabs(
     var component = data.table_data.components[i];
     var tableTitle = component.replace(/_/g, ' ').toUpperCase();
     var dataSet = data.table_data.dataSet[component];
-    var submission_repository =
-      data.table_data.submission_repository[component];
+    var submission_repository = null;
+    if (typeof data.table_data.submission_repository != 'undefined')
+      submission_repository = data.table_data.submission_repository[component];
 
     if (typeof dataSet == 'undefined') {
       dataSet = [];

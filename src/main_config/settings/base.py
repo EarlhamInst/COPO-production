@@ -93,6 +93,7 @@ PROJECT_APPS = [
     'src.apps.copo_barcoding_submission',
     'src.apps.copo_file',
     'src.apps.copo_accession',
+    'src.apps.copo_accessions_schema',
     'src.apps.copo_tol_dashboard',
     'src.apps.copo_manifest_wizard',
     'src.apps.copo_news',

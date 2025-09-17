@@ -567,6 +567,16 @@ class Command(BaseCommand):
             reverse_url="copo_accession:copo_accessions",
             subtitle="",
         )
+        accessions_schema = Component().create_component(
+            name="accessions_schema",
+            title="Accessions",
+            widget_icon="sitemap",
+            widget_colour="pink",
+            widget_icon_class="fa fa-sitemap",
+            table_id="accessions_schema_table",
+            reverse_url="copo_accessions_schema:copo_accessions_schema",
+            subtitle="#component_subtitle",
+        )
         profile = Component().create_component(
             name="profile",
             title="Work Profiles",
@@ -645,7 +655,6 @@ class Command(BaseCommand):
             [
                 delete_singlecell_multi,
                 download_singlecell_manifest_single,
-                make_snapshot,
             ]
         )
         singlecell.title_buttons.set(

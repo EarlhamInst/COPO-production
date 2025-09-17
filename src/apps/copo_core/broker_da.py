@@ -712,7 +712,8 @@ class BrokerVisuals:
                 self.context["table_data"] = htags.generate_table_records(profile_id=self.profile_id, da_object=self.da_object, additional_columns=EnaAnnotation.generate_additional_columns(self.profile_id))
             case "assembly":
                 self.context["table_data"] = htags.generate_table_records(profile_id=self.profile_id, da_object=self.da_object, additional_columns=EnaAssembly.generate_additional_columns(self.profile_id))
-
+            case "accessions_schema":
+                self.context["table_data"] = copo_single_cell.generate_accessions_singlecell(profile_id=self.profile_id, study_id=self.request_dict.get("study_id", str()))
         self.context["component"] = self.component
         return self.context
 

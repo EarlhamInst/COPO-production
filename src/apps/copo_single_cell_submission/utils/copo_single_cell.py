@@ -6,7 +6,6 @@ from common.dal.profile_da import Profile
 from common.dal.copo_da import  DataFile, EnaFileTransfer
 from common.utils.helpers import get_not_deleted_flag
 import requests
-from django_tools.middlewares import ThreadLocal
 from common.dal.submission_da import Submission
 from common.dal.mongo_util import cursor_to_list
 from django.conf import settings
@@ -17,8 +16,7 @@ from common.utils.helpers import get_env
 from . import zenodo_submission
 from . import ena_submission
 from common.s3.s3Connection import S3Connection as s3
-from . import SingleCellSchemasHandler  
-from io import BytesIO
+
 
 l = Logger()
 
@@ -219,6 +217,29 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
                        )
 
     return return_dict
+
+
+def generate_accessions_singlecell(profile_id, study_id ):
+    profile = Profile().get_record(profile_id)
+    if not profile:
+        return dict(status='error', message="Profile not found!")
+
+    data_set = []     
+    columns = []
+    columns.append(dict(data="record_id", visible=False))
+    columns.append(dict(data="DT_RowId", visible=False))
+
+    accessions = get_accession(profile_id, study_id,repository="", schema_name="", is_published=False)
+    if accessions:
+        for column in accessions[0].keys():
+            columns.append(dict(data=column, title=column.replace("_", " ").title(), defaultContent='', render="render_ena_accession_function" if column.lower().endswith("accession_ena")or column.lower()=="biosampleaccession" else "render_zenodo_accession_function" if column.lower().endswith("accession_zenodo") else "")) 
+        for accession in accessions:
+            accession["DT_RowId"] = "accession_" + accession.get("biosampleAccession") if "biosampleAccession" in accession else accession.get("study_id") 
+            accession["record_id"] = accession["DT_RowId"]
+        data_set = accessions
+
+    return dict(dataSet=data_set, columns=columns)
+
 
 def _check_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map):
     
@@ -528,7 +549,7 @@ def submit_singlecell(profile_id, study_id, schema_name, repository="ena"):
         return dict(status='success', message="Submission has been scheduled.")
 
 
-def get_accession(profile_id, study_id, schema_name, repository="", is_published=False):
+def get_accession(profile_id, study_id, schema_name="", repository="", is_published=False):
 
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
     if not singlecell:
@@ -545,9 +566,23 @@ def get_accession(profile_id, study_id, schema_name, repository="", is_published
     submisison_repository_component_map = submission_repository_df.to_dict('index')
     identifier_map, foreignkey_map = SinglecellSchemas().get_key_map(schemas=schemas)
     submission_repository = {}
-
+        
     for component, respositories in submisison_repository_component_map.items():
         submission_repository[component] = [repository for repository, value in respositories.items() if value]
+    
+    must_in_repository_if_published = []
+    if is_published:
+        study = singlecell.get("components", {}).get("study", [])
+        repositories = submission_repository.get("study", [])
+        for repository  in repositories:
+            if repository == "ena":
+                if study[0].get(f"state_{repository}", "") == "PUBLIC":
+                    must_in_repository_if_published.append(repository)                    
+            elif repository == "zenodo":
+                if study[0].get(f"status_{repository}","") == "published" and study[0].get(f"state_{repository}", "done"):
+                    must_in_repository_if_published.append(repository)
+                    
+ 
        
     sample_df = pd.DataFrame.from_records(singlecell.get("components", {}).get("sample", []))
 
@@ -569,7 +604,10 @@ def get_accession(profile_id, study_id, schema_name, repository="", is_published
         else:
             new_repository = repositories
 
-
+        if is_published:
+            new_repository = [repository for repository in new_repository if repository in must_in_repository_if_published]
+            if not new_repository:
+                continue
 
         component_df_new = component_df.loc[:, component_df.columns.str.endswith(tuple(new_repository)) | component_df.columns.isin(keys)]
 
