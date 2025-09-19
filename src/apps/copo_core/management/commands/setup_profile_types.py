@@ -547,6 +547,20 @@ class Command(BaseCommand):
             base_component="singlecell",
         )
 
+        reads_schema = Component().create_component(
+            name="reads_schema",
+            title="READS",
+            widget_icon="dna",
+            widget_colour="orange",
+            widget_icon_class="fa fa-dna",
+            table_id="singlecell_table",
+            reverse_url="copo_single_cell_submission:copo_singlecell",
+            subtitle="#component_subtitle",
+            schema_name="COPO_READ",
+            base_component="singlecell",
+        )
+
+
         sample = Component().create_component(
             name="sample",
             title="Samples",
@@ -661,6 +675,16 @@ class Command(BaseCommand):
             [new_singlecell_spreadsheet_template, download_blank_manifest_template]
         )
 
+        reads_schema.recordaction_buttons.set(
+            [
+                delete_singlecell_multi,
+                download_singlecell_manifest_single,
+            ]
+        )
+        reads_schema.title_buttons.set(
+            [new_singlecell_spreadsheet_template, download_blank_manifest_template]
+        )
+
         images_rembi.recordaction_buttons.set(
             [delete_singlecell_multi, download_singlecell_manifest_single]
         )
@@ -763,11 +787,11 @@ class Command(BaseCommand):
         )
         genomics.components.set(
             [
-                assembly,
+                #assembly,
                 files,
                 general_sample,
-                seqannotation,
-                read,
+                #seqannotation,
+                reads_schema,
                 singlecell,
                 images_rembi,
                 images_stx_fish,

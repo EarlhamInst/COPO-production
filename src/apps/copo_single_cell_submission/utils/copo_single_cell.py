@@ -80,10 +80,10 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
         study_id = studies[0]["study_id"]
 
     if checklist_id:
-        schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
+        schemas = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=dict(), target_id=checklist_id)
 
         repositories = set()
-        submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name)
+        submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name=schema_name)
         submisison_repository_component_map = submission_repository_df.to_dict('index')
         additional_columns_prefix_default_value = ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE
         additional_fields_map = {}
@@ -183,7 +183,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
             #set the identifier to DT_RowId
             #set the identifier to record_id
 
-            component_data_df["DT_RowId"] = component_name + ( "_"+ study_id if component_name != 'study' else "")  + "_" + component_data_df.get(identifier_map.get(component_name,""), "")
+            component_data_df["DT_RowId"] = component_name + "_"+ study_id + "_" + component_data_df.get(identifier_map.get(component_name,""), "")
             component_data_df["record_id"] = component_data_df["DT_RowId"]
             component_data_df.fillna("", inplace=True)
 
@@ -345,7 +345,7 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
     if not profile:
         return dict(status='error', message="Profile not found!")
     #schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
-    schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
+    schemas = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=dict(), target_id=checklist_id)
     identifier_map, foreignkey_map = SinglecellSchemas().get_key_map(schemas)
     child_map = SinglecellSchemas().get_child_map(foreignkey_map)
 
@@ -440,7 +440,7 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
 
         if singlecell_data["components"]:   
             #update status_repository = "pending" for study component   
-            submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name)
+            submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name=schema_name)
             submisison_repository_component_map = submission_repository_df.to_dict('index')
             respositories = submisison_repository_component_map.get("study", {})
             for repository, value in respositories.items():
@@ -492,7 +492,7 @@ def query_submit_result(profile_id, study_id,schema_name, repository="ena"):
             return dict(status='error', message="Submission is in progress, please try again later!")  
         
         
-def submit_singlecell(profile_id, study_id, schema_name, repository="ena"):
+def submit_singlecell(profile_id, study_id, schema_name="", repository="ena"):
 
     singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "deleted": get_not_deleted_flag(), "study_id" : study_id})
     if not singlecell:
@@ -503,7 +503,7 @@ def submit_singlecell(profile_id, study_id, schema_name, repository="ena"):
     studies = singlecell.get("components",{}).get("study",[])
 
 
-    submission_repository_df = SinglecellSchemas().get_submission_repositiory(singlecell["schema_name"])
+    submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name=singlecell["schema_name"])
     submisison_repository_component_map = submission_repository_df.to_dict('index')
 
     #propagate the submission status from components to study
@@ -527,7 +527,7 @@ def submit_singlecell(profile_id, study_id, schema_name, repository="ena"):
             return dict(status='error', message="Submission is in progress, please wait until it is completed!")
 
     submissions = Submission().execute_query({"profile_id": profile_id, "repository": repository, "deleted": get_not_deleted_flag()})
-    schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get("schema_name", singlecell["schema_name"]), target_id=singlecell["checklist_id"])
+    schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get("schema_name", singlecell["schema_name"]), schemas=dict(), target_id=singlecell["checklist_id"])
     files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
     if files:
         s3obj = s3()
@@ -559,10 +559,10 @@ def get_accession(profile_id, study_id, schema_name="", repository="", is_publis
     
     schema_name = singlecell["schema_name"]
     
-    schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=singlecell["checklist_id"])
+    schemas = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=dict(), target_id=singlecell["checklist_id"])
 
     repositories = set()
-    submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name)
+    submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name=schema_name)
     submisison_repository_component_map = submission_repository_df.to_dict('index')
     identifier_map, foreignkey_map = SinglecellSchemas().get_key_map(schemas=schemas)
     submission_repository = {}
@@ -676,7 +676,7 @@ def update_submission_pending():
             if not singlecell:
                 Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id= study_id)
                 continue
-            schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], target_id=singlecell["checklist_id"])
+            schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], schemas=dict(), target_id=singlecell["checklist_id"])
             files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
 
             local_path = [regex.Regex(f'{x}$') for x in files]

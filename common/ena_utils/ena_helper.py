@@ -559,7 +559,7 @@ class EnaSubmissionHelper:
         return dict(status=True, value='')
 
 
-    def register_files(self, submission_xml_path=str(), modify_submission_xml_path=str(), component_df=pd.DataFrame(), identifier_map={}, singlecell=None):   
+    def register_files(self, submission_xml_path=str(), modify_submission_xml_path=str(), component_df=pd.DataFrame(), identifier_map={}, singlecell=None, file_component_name="file"):   
         """
         function creates and submits datafile xml
         :return:
@@ -574,7 +574,7 @@ class EnaSubmissionHelper:
         samples = singlecell.get("components", {}).get("sample", [])
         sample_accession_map = {sample[identifier_map["sample"]]: sample['biosampleAccession'] for sample in samples  }
         errors = []
-        file_identifier = identifier_map["file"]
+        file_identifier = identifier_map[file_component_name]
 
         enafiles = EnaFileTransfer().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"local_path":1,  "remote_path":1})
         enafile_map = {enafile["local_path"].split("/")[-1] : enafile.get("remote_path") for enafile in enafiles if enafile.get("remote_path","")}
@@ -743,7 +743,7 @@ class EnaSubmissionHelper:
                 # log error
 
                 errors.append(result['message'])
-                Singlecell().update_component_status(id=singlecell["_id"], component="file", identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", status_column_value={"status": "rejected", "error": ", ".join(errors)})
+                Singlecell().update_component_status(id=singlecell["_id"], component=file_component_name, identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", status_column_value={"status": "rejected", "error": ", ".join(errors)})
                 continue
 
             # retrieve and save accessions
@@ -767,7 +767,9 @@ class EnaSubmissionHelper:
                 submission_record = Submission().get_collection_handle().update_one({"_id": ObjectId(self.submission_id)},
                                                             {"$addToSet": {"accessions.run": run_dict, "accessions.experiment": experiment_dict}})
                 
-            Singlecell().update_component_status(id=singlecell["_id"], component="file", identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", status_column_value={"status": "accepted", "accession": run_dict["accession"], 'run_accession':run_dict["accession"],'experiment_accession': experiment_dict["accession"], "error": ""})
+            Singlecell().update_component_status(id=singlecell["_id"], component=file_component_name, identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", 
+                                                 status_column_value={"status": "accepted", "accession": run_dict["accession"], 'run_accession':run_dict["accession"],
+                                                                      'experiment_accession': experiment_dict["accession"], "error": ""})
 
         if errors:
             message = "Datafiles not registered due to the following errors: " + ", ".join(errors)
@@ -895,6 +897,11 @@ class EnaSubmissionHelper:
     def register_assembly(self, identifier=str(), assembly_component_data_df=pd.DataFrame(), 
                           assembly_run_ref_data_df=pd.DataFrame(),assembly_file_data_df=pd.DataFrame(), parent_map=dict(), singlecell_id=str()):
         
+        if assembly_component_data_df.empty:
+            message = "No assembly data to submit"
+            self.logging_info(message)
+            return dict(status=False, message=message)
+
         result = dict(status=True, value="")
         ena_fields = []
         for x in Assembly().get_schema().get("schema_dict"):
@@ -927,20 +934,21 @@ class EnaSubmissionHelper:
             for _, file_row in assembly_file_df.iterrows():
                 manifest_content += file_row["assembly_file_type"].upper() + "\t" + enafile_map.get(file_row["assembly_file_name"], "") + "\n"
 
-            assembly_run_ref_df = assembly_run_ref_data_df.loc[assembly_run_ref_data_df[parent_map["assembly_run_ref"]["assembly"]]==row[identifier]]
- 
-            run_accessions = []
-            if "run_accession_ena" in assembly_run_ref_df.columns:
-                run_accessions= assembly_run_ref_df["run_accession_ena"].values.tolist()
+            if not assembly_run_ref_data_df.empty:
+                assembly_run_ref_df = assembly_run_ref_data_df.loc[assembly_run_ref_data_df[parent_map["assembly_run_ref"]["assembly"]]==row[identifier]]
+    
+                run_accessions = []
+                if "run_accession_ena" in assembly_run_ref_df.columns:
+                    run_accessions= assembly_run_ref_df["run_accession_ena"].values.tolist()
 
-            if run_accessions:
-                manifest_content += "RUN_REF\t" + ",".join(run_accessions) + "\n"
-            else:
-                message = f"no run accession found for assembly {row[identifier]}"
-                self.logging_error(message)
-                result['status'] = False
-                result['message'] = message
-                return result
+                if run_accessions:
+                    manifest_content += "RUN_REF\t" + ",".join(run_accessions) + "\n"
+                else:
+                    message = f"no run accession found for assembly {row[identifier]}"
+                    self.logging_error(message)
+                    result['status'] = False
+                    result['message'] = message
+                    return result
 
             submission_folder = os.path.join(tempfile.gettempdir(), self.profile_id, row["study_id"], row[identifier])
             os.makedirs(submission_folder, exist_ok=True)

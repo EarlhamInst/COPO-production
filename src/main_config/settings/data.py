@@ -105,6 +105,7 @@ MANIFEST_VERSION = {
     "COPO_SINGLE_CELL": "0.4",
     "COPO_IMAGE_REMBI": "0.1",
     "COPO_IMAGE_STX_FISH": "0.1",
+    "COPO_READ": "0.1",
 }
 
 BARCODING_CHECKLIST = ["ERT000002", "ERT000020"]
@@ -124,11 +125,11 @@ COPO_SAMPLE_CHECKLIST_URL = [
     "https://raw.githubusercontent.com/TGAC/COPO-schemas/refs/heads/main/samples/sample_checklist_faang.xml",
 ]
 
-
 SINGLE_CELL_SCHEMAS_URL = {
     "COPO_SINGLE_CELL": f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/single_cell/singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx",
     "COPO_IMAGE_REMBI": f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/images/rembi_image_schema_main_v{MANIFEST_VERSION['COPO_IMAGE_REMBI']}.xlsx",
     "COPO_IMAGE_STX_FISH": f"https://github.com/TGAC/COPO-schemas/raw/refs/heads/main/images/stx_fish_image_schema_main_v{MANIFEST_VERSION['COPO_IMAGE_STX_FISH']}.xlsx",
+    "COPO_READ": f"reads_schema_main_v{MANIFEST_VERSION['COPO_READ']}.xlsx",
 }
 
 IMAGE_FILE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.bmp']

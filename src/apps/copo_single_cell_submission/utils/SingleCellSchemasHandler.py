@@ -74,9 +74,9 @@ class SingleCellSchemasHandler:
         schemas_df.drop(columns=["regex_valid"], inplace=True)
 
         empty_values = ""
-        column_names = list(schemas_df.columns.values)
-        for i,j in zip(*np.where(pd.isnull(schemas_df[["component_name", "term_name", "term_label", "term_type"]]))):
-            empty_values = empty_values + f"Empty value in {column_names[j+1]} at row {i+1} \n"
+        column_names = ["component_name", "term_name", "term_label", "term_type"]
+        for i,j in zip(*np.where(pd.isnull(schemas_df[column_names]))):
+            empty_values = empty_values + f"Empty value in '{column_names[j]}' at row {i+2} \n"
         if empty_values:
             raise Exception(f'Empty values: {empty_values} in the schema. Please check the schema file.')
 
