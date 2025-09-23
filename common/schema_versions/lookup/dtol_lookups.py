@@ -290,7 +290,7 @@ DTOL_ENUMS = {
         "Lithuania",
         "Luxembourg",
         "Macau",
-        "Macedonia",
+        "North Macedonia",
         "Madagascar",
         "Malawi",
         "Malaysia",
@@ -948,8 +948,7 @@ DTOL_RULES = {
         "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required",
     },
     'ORIGINAL_COLLECTION_DATE': {
-        "ena_regex": r"^[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{"
-        "4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?)?$",
+        "ena_regex": r"^[12][0-9]{3}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01])(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?)?$",
         "human_readable": "Date as YYYY, YYYY-MM or YYYY-MM-DD",
     },
     'ORIGINAL_DECIMAL_LATITUDE': {
