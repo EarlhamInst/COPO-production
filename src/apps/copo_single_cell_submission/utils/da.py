@@ -109,7 +109,7 @@ class SinglecellSchemas(DAComponent):
                 identifier_map[component]= identifier_df.iloc[0]
         return identifier_map
     
-    def get_key_map(self, schemas=[]):
+    def get_key_map(self, schemas={}):
         identifier_map = {}
         foreignkey_map = {}
         for component, schema in schemas.items():
@@ -231,7 +231,7 @@ class Singlecell(DAComponent):
         fields.sort(key=lambda x: x["soring_name"], reverse=False)
         return fields, data
 
-    def update_component_status(self, id, component="study", identifier="study_id", identifier_value=str(), repository="ena", status_column_value={}):
+    def update_component_status(self, id, component="study", identifier="study_id", identifier_value=str(), repository="ena", status_column_value={}, with_child_components=False):
         username = "system"
         user = ThreadLocal.get_current_user()
         if user:
@@ -243,3 +243,17 @@ class Singlecell(DAComponent):
 
         self.get_collection_handle().update_one({"_id": ObjectId(id), "deleted": get_not_deleted_flag(), f"components.{component}.{identifier}": identifier_value},
                             {"$set": update_element_values})
+
+        singlecell = self.get_collection_handle().find_one({"_id": ObjectId(id)}, {"schema_name": 1, "checklist_id": 1, "components": 1})
+
+        if with_child_components:
+            #get all the child components
+            schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], schemas=dict(), target_id=singlecell["checklist_id"])
+            _, foreignkey_map = SinglecellSchemas().get_key_map(schemas=schemas)
+            child_map = SinglecellSchemas().get_child_map(foreignkey_map=foreignkey_map)
+            if component in child_map:
+                for child_component, foreign_key in child_map[component].items():
+                    child_component_data = singlecell["components"].get(child_component,[])
+                    for row in child_component_data:
+                        if row[foreign_key] == identifier_value:
+                            self.update_component_status(id=id, component=child_component, identifier=foreign_key, identifier_value=row[foreign_key], repository=repository, status_column_value=status_column_value, with_child_components=True)

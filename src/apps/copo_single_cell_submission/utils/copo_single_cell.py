@@ -12,7 +12,7 @@ from django.conf import settings
 from bson import regex
 import os
 import common.ena_utils.FileTransferUtils as tx
-from common.utils.helpers import get_env
+from common.utils.helpers import get_env, get_current_user
 from . import zenodo_submission
 from . import ena_submission
 from common.s3.s3Connection import S3Connection as s3
@@ -193,7 +193,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
                 for term in file_terms:
                     component_data_df["file_status"] = component_data_df["file_status"] + component_data_df[term].apply(lambda x: (x+ " : " + enaFile_map.get(x, "unknown") + "  ") if x else "")
                 
-                if "ena" in submission_repository.get(component_name,[]):
+                if "ena" in submission_repository.get(component_name,[]) and "accession_ena" in component_data_df.columns:
                     component_data_df["ena_file_processing_status"] = component_data_df["accession_ena"].apply(lambda x: _query_ena_file_processing_status(x) if x else "")
        
             data_set[component_name] = component_data_df.to_dict(orient="records")
@@ -527,6 +527,20 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena"):
             return dict(status='error', message="Submission is in progress, please wait until it is completed!")
 
     submissions = Submission().execute_query({"profile_id": profile_id, "repository": repository, "deleted": get_not_deleted_flag()})
+    if not submissions:
+        now = get_datetime()
+        user_id = get_current_user().id
+        insert_sub = dict()
+        insert_sub["date_created"] = now
+        insert_sub["created_by"] = user_id
+        insert_sub["repository"] = repository
+        insert_sub["accessions"] = dict()
+        insert_sub["profile_id"] = profile_id
+        insert_sub["date_modified"] = now
+        insert_sub["deleted"] =  get_not_deleted_flag()
+
+        submission = Submission().get_collection_handle().insert_one(insert_sub) 
+        submissions = [{"_id":submission.inserted_id}]
     schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get("schema_name", singlecell["schema_name"]), schemas=dict(), target_id=singlecell["checklist_id"])
     files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
     if files:
