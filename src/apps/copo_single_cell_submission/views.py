@@ -255,7 +255,7 @@ def save_singlecell_records(request, profile_id, schema_name):
                     component_additional_fields = list(set(additional_fields_map.get(component_name, [])) & set(existing_component_data_df.columns))
                     #get the existing columns ended with _{repository}
                     component_additional_fields.extend([ col for col in existing_component_data_df.columns if any(col.endswith(f"_{repository}") 
-                                                                                                                  for repository in repositories) and
+                                                                                                                  for repository in global_repositories) and
                                                                                                                   col not in component_additional_fields])
                     if component_additional_fields:
                         existing_component_additional_fields_df = existing_component_data_df[[identifier]+ component_additional_fields]

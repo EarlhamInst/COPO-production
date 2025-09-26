@@ -643,8 +643,12 @@ def get_accession(profile_id, study_id, schema_name="", repository="", is_publis
         if result.empty:
             result = component_df_new
         else:
-            result = result.merge(component_df_new, how="left" , on="study_id")
-
+            if "sample_id" in component_df_new.columns and "sample_id" in result.columns:
+                merge_on = ["study_id", "sample_id"]
+            else:
+                merge_on = ["study_id"]
+            result = result.merge(component_df_new, how="left" , on=merge_on)
+         
     return result.to_dict(orient="records")
 
 
