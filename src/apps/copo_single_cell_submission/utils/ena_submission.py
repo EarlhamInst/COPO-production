@@ -481,7 +481,7 @@ def _handle_submit_receipt(submission, tree, analysis_sub):
             projection={ "_id":1, "schema_name":1,"checklist_id":1, "study_id":1})
         
         if not singlecells:
-            l.error(f"Cannot find singlecell for study: {analysis_sub["study_id"]}")
+            l.error(f"Cannot find singlecell for study: {analysis_sub['study_id']}")
             return status
         
         schemas = SinglecellSchemas().get_schema(schema_name=singlecells[0]["schema_name"], schemas=dict(), target_id=singlecells[0]["checklist_id"])   
@@ -509,7 +509,7 @@ def _get_accession(tree, submission, analysis_sub):
         projection={ "_id":1, "schema_name":1,"checklist_id":1, "study_id":1, "components":1})
     
     if not singlecells:
-        l.error(f"Cannot find singlecell for study: {analysis_sub["study_id"]}")
+        l.error(f"Cannot find singlecell for study: {analysis_sub['study_id']}")
         return status
     schemas = SinglecellSchemas().get_schema(schema_name=singlecells[0]["schema_name"], schemas=dict(), target_id=singlecells[0]["checklist_id"])   
     identifier_map = SinglecellSchemas().get_identifier_map(schemas=schemas)
@@ -534,7 +534,7 @@ def _get_accession(tree, submission, analysis_sub):
                 alias = analysis_id
             )
             Submission().get_collection_handle().update_one({"_id": submission["_id"]},
-                                                            {"$addToSet": {f"accessions.{analysis_sub["component"]}.accession": analysis_accession, }})
+                                                            {"$addToSet": {f"accessions.{analysis_sub['component']}.accession": analysis_accession, }})
 
     status = {"status": "success" }
     return status
