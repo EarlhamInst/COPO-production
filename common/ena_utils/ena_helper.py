@@ -14,7 +14,7 @@ from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SE
 import subprocess
 import tempfile
 from common.dal.submission_da import Submission
-from common.dal.copo_da import EnaChecklist, EnaFileTransfer
+from common.dal.copo_da import EnaChecklist, EnaFileTransfer, DataFile
 from common.dal.sample_da import Sample
 from src.apps.copo_single_cell_submission.utils.da import Singlecell 
 from common.utils.copo_lookup_service import COPOLookup
@@ -24,16 +24,16 @@ lg = Logger()
 from src.apps.copo_assembly_submission.utils.da import Assembly
 import re
 import glob
+import xml.etree.ElementTree as ET
+import json
 
-__author__ = 'etuka'
-__date__ = '02 April 2019'
 
 ena_service = get_env('ENA_SERVICE')
 pass_word = get_env('WEBIN_USER_PASSWORD')
 user_token = get_env('WEBIN_USER').split("@")[0]
 webin_user = get_env('WEBIN_USER')
 webin_domain = get_env('WEBIN_USER').split("@")[1]
-
+ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
 
 class EnaSubmissionHelper:
     def __init__(self, submission_id=str(), profile_id=str()):
@@ -559,7 +559,7 @@ class EnaSubmissionHelper:
         return dict(status=True, value='')
 
 
-    def register_files(self, submission_xml_path=str(), modify_submission_xml_path=str(), component_df=pd.DataFrame(), identifier_map={}, singlecell=None):   
+    def register_files(self, submission_xml_path=str(), modify_submission_xml_path=str(), component_df=pd.DataFrame(), identifier_map={}, singlecell=None, file_component_name="file"):   
         """
         function creates and submits datafile xml
         :return:
@@ -574,7 +574,7 @@ class EnaSubmissionHelper:
         samples = singlecell.get("components", {}).get("sample", [])
         sample_accession_map = {sample[identifier_map["sample"]]: sample['biosampleAccession'] for sample in samples  }
         errors = []
-        file_identifier = identifier_map["file"]
+        file_identifier = identifier_map[file_component_name]
 
         enafiles = EnaFileTransfer().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"local_path":1,  "remote_path":1})
         enafile_map = {enafile["local_path"].split("/")[-1] : enafile.get("remote_path") for enafile in enafiles if enafile.get("remote_path","")}
@@ -743,7 +743,7 @@ class EnaSubmissionHelper:
                 # log error
 
                 errors.append(result['message'])
-                Singlecell().update_component_status(id=singlecell["_id"], component="file", identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", status_column_value={"status": "rejected", "error": ", ".join(errors)})
+                Singlecell().update_component_status(id=singlecell["_id"], component=file_component_name, identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", status_column_value={"status": "rejected", "error": ", ".join(errors)})
                 continue
 
             # retrieve and save accessions
@@ -767,7 +767,9 @@ class EnaSubmissionHelper:
                 submission_record = Submission().get_collection_handle().update_one({"_id": ObjectId(self.submission_id)},
                                                             {"$addToSet": {"accessions.run": run_dict, "accessions.experiment": experiment_dict}})
                 
-            Singlecell().update_component_status(id=singlecell["_id"], component="file", identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", status_column_value={"status": "accepted", "accession": run_dict["accession"], 'run_accession':run_dict["accession"],'experiment_accession': experiment_dict["accession"], "error": ""})
+            Singlecell().update_component_status(id=singlecell["_id"], component=file_component_name, identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", 
+                                                 status_column_value={"status": "accepted", "accession": run_dict["accession"], 'run_accession':run_dict["accession"],
+                                                                      'experiment_accession': experiment_dict["accession"], "error": ""})
 
         if errors:
             message = "Datafiles not registered due to the following errors: " + ", ".join(errors)
@@ -892,9 +894,125 @@ class EnaSubmissionHelper:
             return result
 
 
-    def register_assembly(self, identifier=str(), assembly_component_data_df=pd.DataFrame(), 
-                          assembly_run_ref_data_df=pd.DataFrame(),assembly_file_data_df=pd.DataFrame(), parent_map=dict(), singlecell_id=str()):
+    def register_sequencing_annotation(self, identifier=str(), analysis_component_data_df=pd.DataFrame(), 
+                          analysis_run_ref_data_df=pd.DataFrame(),analysis_file_data_df=pd.DataFrame(), parent_map=dict(), singlecell_id=str(), analysis_component_name="sequencing_annotation"):
+        if analysis_component_data_df.empty:
+            message = "No sequencing annotation data to submit"
+            self.logging_info(message)
+            return dict(status=False, message=message)
+
+        result = dict(status=True, value="")
+
+        self.logging_info(f"Submitting sequencing annotation records...")
+        study_id = analysis_component_data_df["study_id"].values[0]
+
+        #sub_ids.append(sub["_id"])
+        analysis_set_dom_new = ET.Element("ANALYSIS_SET")
+        analysis_set_dom_edit = ET.Element("ANALYSIS_SET")
+        seq_annotation_id_new = []
+        seq_annotation_id_edit = []
+
+
+        ena_files = EnaFileTransfer().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"local_path":1,  "remote_path":1})
+        data_files = DataFile().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"file_name":1,  "file_hash":1 })
         
+        analysis_file_data_df["file_hash"] = analysis_file_data_df["sequencing_annotation_file_name"].map( 
+                            {data_file["file_name"] : data_file.get("file_hash", "") 
+                             for data_file in data_files if data_file.get("file_hash","") } )
+        analysis_file_data_df["remote_path"] = analysis_file_data_df["sequencing_annotation_file_name"].map( 
+                            {ena_file["local_path"].split("/")[-1] : ena_file.get("remote_path", "") 
+                             for ena_file in ena_files if ena_file.get("remote_path","") } )
+
+
+        for index, seq_annotation in analysis_component_data_df.iterrows():
+            
+            analysis_run_ref_df = pd.DataFrame()
+
+            if not analysis_run_ref_data_df.empty:
+                analysis_run_ref_df = analysis_run_ref_data_df.loc[analysis_run_ref_data_df[parent_map["sequencing_annotation_run_ref"][analysis_component_name]]==seq_annotation[identifier]]
+
+            run_accessions = []
+            if  not analysis_run_ref_df.empty and "run_accession_ena" in analysis_run_ref_df.columns:
+                run_accessions= analysis_run_ref_df["run_accession_ena"].values.tolist()
+            experiment_accessions = []
+            if not analysis_run_ref_df.empty and "experiment_accession_ena" in analysis_run_ref_df.columns:
+                experiment_accessions= analysis_run_ref_df["experiment_accession_ena"].values.tolist()
+
+            analysis_file_df = pd.DataFrame()
+            if not analysis_file_data_df.empty:
+                analysis_file_df = analysis_file_data_df.loc[analysis_file_data_df[parent_map["sequencing_annotation_file"][analysis_component_name]]==seq_annotation[identifier]] 
+ 
+            analysis_dom = self._build_analysis_dom(seq_annotation, run_accessions, experiment_accessions, analysis_file_df)
+            if seq_annotation.get("accession_ena",""):
+                analysis_set_dom_edit.append(analysis_dom)
+                seq_annotation_id_edit.append(seq_annotation["sequencing_annotation_id"])
+            else:
+                analysis_set_dom_new.append(analysis_dom)
+                seq_annotation_id_new.append(seq_annotation["sequencing_annotation_id"])
+
+        if len(seq_annotation_id_new) > 0:
+            submission_dom = self._build_submission_dom(is_new=True)
+            self._submit_ena_v2(submission_dom=submission_dom,  analysis_dom=analysis_set_dom_new, study_id=study_id, analysis_ids=seq_annotation_id_new, analysis_component_name=analysis_component_name)
+        if len(seq_annotation_id_edit) > 0:
+            submission_dom = self._build_submission_dom(is_new=False)
+            self._submit_ena_v2(submission_dom=submission_dom,  analysis_dom=analysis_set_dom_edit, study_id=study_id, analysis_ids=seq_annotation_id_edit, analysis_component_name=analysis_component_name)
+
+
+    def _build_analysis_dom(self, seq_annotation, run_accessions, experiment_accessions, analysis_file_df):
+        """
+        <ANALYSIS_SET>
+        <ANALYSIS alias="YF3059">
+            <TITLE>Y chromosome sequence STR analysis using lobSTR</TITLE>
+            <DESCRIPTION>Y chromosome sequence STR analysis using lobSTR</DESCRIPTION>
+            <STUDY_REF accession="ERP011288"/>
+            <SAMPLE_REF accession="ERS1023190"/>
+            <RUN_REF accession="ERR1198112"/>
+            <ANALYSIS_TYPE>
+                <SEQUENCE_ANNOTATION/>
+            </ANALYSIS_TYPE>
+            <FILES>
+                <FILE filename="STR_for_YF03059_20151228.tab.gz" filetype="tab" checksum_method="MD5"
+                    checksum="9f2976d079c10b111669b32590d1eb3e"/>
+            </FILES>
+        </ANALYSIS>
+        </ANALYSIS_SET>
+        """
+        #analysis_set = ET.Element("ANALYSIS_SET")
+        analysis = ET.Element("ANALYSIS", alias=str(seq_annotation["study_id"] + ":" + seq_annotation["sequencing_annotation_id"]))
+        ET.SubElement(analysis, "TITLE").text = seq_annotation["sequencing_annotation_title"]
+        ET.SubElement(analysis, "DESCRIPTION").text = seq_annotation["sequencing_annotation_description"]
+        ET.SubElement(analysis, "STUDY_REF").set("accession", seq_annotation["study_accession"])
+        ET.SubElement(analysis, "SAMPLE_REF").set("accession", seq_annotation["biosampleAccession"])
+
+        for run in run_accessions:
+            ET.SubElement(analysis, "RUN_REF").set("accession", run)
+        """
+        for experiment in experiment_accessions:
+            ET.SubElement(analysis, "EXPERIMENT_REF").set("accession", experiment)  
+        """          
+        analysis_type = ET.SubElement(analysis, "ANALYSIS_TYPE")
+        ET.SubElement(analysis_type, "SEQUENCE_ANNOTATION")
+        files = ET.SubElement(analysis, "FILES")
+
+        for _, file in analysis_file_df.iterrows():
+            file_elm = ET.SubElement(files, "FILE")
+            file_elm.set("filename", f'{file["remote_path"]}{file["sequencing_annotation_file_name"]}')
+            file_elm.set("filetype", file["sequencing_annotation_file_type"])
+            file_elm.set("checksum_method","MD5")
+            file_elm.set("checksum", file["file_hash"])
+
+        return  analysis
+
+
+
+    def register_assembly(self, identifier=str(), assembly_component_data_df=pd.DataFrame(), 
+                        assembly_run_ref_data_df=pd.DataFrame(),assembly_file_data_df=pd.DataFrame(), parent_map=dict(), singlecell_id=str()):
+        
+        if assembly_component_data_df.empty:
+            message = "No assembly data to submit"
+            self.logging_info(message)
+            return dict(status=False, message=message)
+
         result = dict(status=True, value="")
         ena_fields = []
         for x in Assembly().get_schema().get("schema_dict"):
@@ -918,6 +1036,8 @@ class EnaSubmissionHelper:
             for field in ena_fields:
                 value = row.get(field, None)
                 if value:
+                    if field.upper() == "ASSEMBLYNAME":
+                        value = f'{row["study_id"]}_{row["assembly_id"]}_{value}'
                     manifest_content += field.upper() + "\t" + str(value) + "\n"
 
             assembly_file_df = assembly_file_data_df.loc[assembly_file_data_df[parent_map["assembly_file"]["assembly"]]==row[identifier]] 
@@ -927,20 +1047,21 @@ class EnaSubmissionHelper:
             for _, file_row in assembly_file_df.iterrows():
                 manifest_content += file_row["assembly_file_type"].upper() + "\t" + enafile_map.get(file_row["assembly_file_name"], "") + "\n"
 
-            assembly_run_ref_df = assembly_run_ref_data_df.loc[assembly_run_ref_data_df[parent_map["assembly_run_ref"]["assembly"]]==row[identifier]]
- 
-            run_accessions = []
-            if "run_accession_ena" in assembly_run_ref_df.columns:
-                run_accessions= assembly_run_ref_df["run_accession_ena"].values.tolist()
+            if not assembly_run_ref_data_df.empty:
+                assembly_run_ref_df = assembly_run_ref_data_df.loc[assembly_run_ref_data_df[parent_map["assembly_run_ref"]["assembly"]]==row[identifier]]
+    
+                run_accessions = []
+                if "run_accession_ena" in assembly_run_ref_df.columns:
+                    run_accessions= assembly_run_ref_df["run_accession_ena"].values.tolist()
 
-            if run_accessions:
-                manifest_content += "RUN_REF\t" + ",".join(run_accessions) + "\n"
-            else:
-                message = f"no run accession found for assembly {row[identifier]}"
-                self.logging_error(message)
-                result['status'] = False
-                result['message'] = message
-                return result
+                if run_accessions:
+                    manifest_content += "RUN_REF\t" + ",".join(run_accessions) + "\n"
+                else:
+                    message = f"no run accession found for assembly {row[identifier]}"
+                    self.logging_error(message)
+                    result['status'] = False
+                    result['message'] = message
+                    return result
 
             submission_folder = os.path.join(tempfile.gettempdir(), self.profile_id, row["study_id"], row[identifier])
             os.makedirs(submission_folder, exist_ok=True)
@@ -951,10 +1072,15 @@ class EnaSubmissionHelper:
 
             #verify submission
             self.logging_info("validating assembly")
-            submission_type=row.get("submission_type", "transcriptome")
+
+            if not row.get("coverage", ""):
+                submission_type = "transcriptome"
+            else:
+                submission_type = "genome"
+                
             return_code, output = self.validate_assembly(file_path=manifest_path, submission_type=submission_type)
             """
-           
+        
             test = ""
             if "dev" in ena_service:
                 test = " -test "
@@ -977,8 +1103,6 @@ class EnaSubmissionHelper:
             self.logging_debug(output)
             #report is being stored in webin-cli.report and manifest.txt.report so we can get errors there
             """
-
-
             error = ""
             if return_code == 0:
                 self.logging_info("submitting assembly")
@@ -987,11 +1111,12 @@ class EnaSubmissionHelper:
                     #handle possibility submission is not successfull
                     #this may happen for instance if the same assembly has already been submitted, which would not get caught
                     #by the validation step
-                    return {"error": output}
+                    self.logging_error("assembly submission failed: " + output)
+                    return {"status": False, "message": output}
                 accession = re.search( "ERZ\d*\w" , output).group(0).strip()
                 assembly_accession = dict(
                     accession = accession,
-                    alias = f'webin-{submission_type}-{row["assemblyname"]}',
+                    alias = f'webin-{submission_type}-{row["study_id"]}_{row["assembly_id"]}_{row["assemblyname"]}',
                     project_accession=row["study_accession"],
                     sample_accession=row["biosampleAccession"],
                 )
@@ -1001,7 +1126,12 @@ class EnaSubmissionHelper:
                 if update_result.matched_count == 0:
                     Submission().get_collection_handle().update_one({"_id": ObjectId(self.submission_id)},
                                                                 {"$addToSet": {"accessions.assembly": assembly_accession}})
-                Singlecell().update_component_status(id=singlecell_id, component="assembly", identifier=identifier, identifier_value=row[identifier], repository="ena", status_column_value={"status": "accepted", "accession": accession, "error": ""})
+                Singlecell().update_component_status(id=singlecell_id, component="assembly", 
+                                                     identifier=identifier, 
+                                                     identifier_value=row[identifier], 
+                                                     repository="ena", 
+                                                     status_column_value={"status": "accepted", "accession": accession, "error": ""},
+                                                     with_child_components=True)
                 self.logging_info(f"Registering assembly {row[identifier]}...successfully submitted to ENA with accession {accession}")
             else:
                 error = output
@@ -1013,7 +1143,7 @@ class EnaSubmissionHelper:
                     with open(f"{directories[-1]}/validate/webin-cli.report") as report_file:
                         error = output + " " + report_file.read()
                 Singlecell().update_component_status(id=singlecell_id, component="assembly", identifier=identifier, identifier_value=row[identifier], repository="ena", status_column_value={"status": "rejected", "error":error})
- 
+
             if error:
                 errors.append(error) 
 
@@ -1077,6 +1207,77 @@ class EnaSubmissionHelper:
         #todo delete files after successfull submission
         #todo decide if keeping manifest.txt and store accession in assembly objec too
         return return_code, output
+
+
+    def _build_submission_dom(self, is_new=True):
+        """
+        <SUBMISSION_SET>
+        <SUBMISSION>
+    <ACTIONS>
+        <ACTION>
+            <ADD/>
+        </ACTION>
+        </ACTIONS>
+        </SUBMISSION>
+        </SUBMISSION_SET>
+        """
+        action_str = "ADD"
+        if not is_new:
+            action_str = "MODIFY"
+        submission_set = ET.Element("SUBMISSION_SET")
+        submission = ET.SubElement(submission_set, "SUBMISSION")
+        actions = ET.SubElement(submission, "ACTIONS")
+        action = ET.SubElement(actions, "ACTION")
+        add = ET.SubElement(action, action_str)
+        return submission_set
+
+
+
+    def _submit_ena_v2(self, submission_dom, analysis_dom, study_id, analysis_ids, analysis_component_name):
+        webin = ET.Element("WEBIN")
+        webin.append(submission_dom)
+        webin.append(analysis_dom)
+        xml_str = ET.tostring(webin, encoding='utf8', method='xml')
+        self.logging_debug(str(xml_str))
+        files = {'file': xml_str}
+
+        with requests.Session() as session:    
+            session.auth = (user_token, pass_word)    
+            try:
+                response = session.post(ena_v2_service_async, data={},files = files)
+                receipt = response.text
+                ghlper.logging_info("ENA RECEIPT " + receipt)
+                if response.status_code == requests.codes.ok:
+                    #receipt = subprocess.check_output(curl_cmd, shell=True)
+                    return self._handle_async_receipt(receipt, study_id, analysis_ids, analysis_component_name )
+                else:
+                    ghlper.logging_info(response.status_codes, response.text)
+                    message = 'API call error ' + "Submitting project xml to ENA via CURL. CURL command is: " + ena_v2_service_async
+                    self.logging_error(message)
+                    #reset_seq_annotation_submission_status(sub["_id"])
+            except ET.ParseError as e:
+                ghlper.logging_exception(e)
+                message = " Unrecognised response from ENA - " + str(
+                    receipt) + " Please try again later, if it persists contact admins"
+                self.logging_error(message)
+                #reset_seq_annotation_submission_status(sub["_id"])
+                return False
+            except Exception as e:
+                ghlper.logging_exception(e)
+                message = 'API call error ' + "Submitting project xml to ENA via CURL. href is: " + ena_v2_service_async
+                self.logging_error(message)
+                #reset_seq_annotation_submission_status(sub["_id"])
+                return False
+
+    def _handle_async_receipt(self, receipt, study_id, analysis_ids, analysis_component_name):
+        result = json.loads(receipt)
+        submission_id = result["submissionId"]
+        href = result["_links"]["poll"]["href"]
+        analysis_submission = {'id': submission_id, "component": analysis_component_name,
+                      'analysis_ids': analysis_ids, 'href': href, "study_id":study_id}
+        return Submission().update_analysis_submission_async(self.submission_id, analysis_submission)
+
+
 
 class SubmissionHelper:
     def __init__(self, submission_id=str()):

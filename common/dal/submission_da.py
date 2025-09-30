@@ -802,6 +802,19 @@ class Submission(DAComponent):
                                {"_id": 1, "seq_annotation_submission": 1, "profile_id": 1})
         return cursor_to_list(subs)
 
+
+    def update_analysis_submission_async(self, sub_id, analysis_submission):
+        sub_handle = self.get_collection_handle()
+        sub_handle.update_one({"_id": ObjectId(sub_id)},
+                              {"$set": {"date_modified": helpers.get_datetime()},
+                               "$push": {"analysis_submission": analysis_submission}})
+
+    def get_async_analysis_submission(self):
+        sub_handle = self.get_collection_handle()
+        subs = sub_handle.find({"repository":"ena","analysis_submission": {"$exists": True, "$ne": []}, "deleted": helpers.get_not_deleted_flag() },
+                               {"_id": 1, "analysis_submission": 1, "profile_id": 1})
+        return cursor_to_list(subs)
+
     '''
     def update_seq_annotation_submission_error(self, sub_id, seq_annotation_ids, error):
 

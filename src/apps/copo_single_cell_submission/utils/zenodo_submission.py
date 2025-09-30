@@ -62,7 +62,7 @@ def process_pending_submission_zendo():
             #bytesstring.getvalue()
             SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=singlecell["checklist_id"], singlecell=singlecell, file_path=bytesstring)
 
-            schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], target_id=singlecell["checklist_id"])
+            schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], schemas=dict(), target_id=singlecell["checklist_id"])
             files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
             local_path = [regex.Regex(f'{x}$') for x in files]
             projection = {'_id':0, 'local_path':1, 'status':1}

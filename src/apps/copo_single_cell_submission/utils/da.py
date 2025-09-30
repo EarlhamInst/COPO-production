@@ -33,7 +33,7 @@ class SinglecellSchemas(DAComponent):
         else:
             return {}
 
-    def get_submission_repositiory(self, schema_name):
+    def get_submission_repositiory(self,  schema_name=str(),schemas=dict()):
         #get all the components from the schema
         """
         the result is
@@ -41,9 +41,12 @@ class SinglecellSchemas(DAComponent):
         study    study            study  
         file     read             
         """
-        singlecell = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name},{"components":1})
-        if singlecell:
-            components = singlecell["components"]
+        if schemas:
+            singlecell_schemas = schemas
+        elif schema_name:
+            singlecell_schemas = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name},{"components":1})
+        if singlecell_schemas:
+            components = singlecell_schemas["components"]
             component_df = pd.DataFrame.from_dict(components, orient='index')
             #component_df = component_df.set_index("key", inplace=True)
             not_repositiory_columns = [column for column in component_df.columns if not column.startswith("repository_")]
@@ -61,10 +64,11 @@ class SinglecellSchemas(DAComponent):
         return {}
 
     #target_id is the checklist_id
-    def get_schema(self, schema_name="", schemas=dict, target_id=str()):
-        schemas = {}
-        singlecell_schemas = schemas
-        if not singlecell_schemas and schema_name:
+    def get_schema(self, schema_name="", schemas=dict(), target_id=str()):        
+        if schemas:
+            singlecell_schemas = schemas
+         
+        elif schema_name:
             singlecell = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name},{"schemas":1})
             singlecell_schemas = singlecell["schemas"]
 
@@ -83,7 +87,7 @@ class SinglecellSchemas(DAComponent):
         return schemas
 
 
-    def get_schemas(self, schema_name, schemas=dict, target_ids=[]):
+    def get_schemas(self, schema_name, schemas=dict(), target_ids=[]):
         singlecell_schemas = schemas
         if not singlecell_schemas and schema_name:
             singlecell = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name},{"schemas":1})
@@ -105,7 +109,7 @@ class SinglecellSchemas(DAComponent):
                 identifier_map[component]= identifier_df.iloc[0]
         return identifier_map
     
-    def get_key_map(self, schemas=[]):
+    def get_key_map(self, schemas={}):
         identifier_map = {}
         foreignkey_map = {}
         for component, schema in schemas.items():
@@ -168,7 +172,6 @@ class Singlecell(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
         super(Singlecell, self).__init__(profile_id, "singlecell", subcomponent=subcomponent)
     
-
     def get_table_attributes(self, target_id=str()):
         if not target_id:
             return dict(schema_dict=[],
@@ -178,16 +181,15 @@ class Singlecell(DAComponent):
         #format for target_id "study_AB33445"
         tmp = target_id.split("_")
 
-        if len(tmp) >1:
-            study_id = target_id.split("_")[1]
         if len(tmp) > 2:
-            subcomponent_id = target_id.split("_")[2]
+            study_id = tmp[-2]
+            subcomponent_id = tmp[-1]
 
         if self.subcomponent == "study":
             subcomponent_id = study_id
         
         singlecell = self.get_collection_handle().find_one({"profile_id": self.profile_id, "study_id": study_id}, {"schema_name": 1, "checklist_id": 1, "components": 1})
-        schemas = SinglecellSchemas().get_schema(schema_name= singlecell["schema_name"], target_id=singlecell["checklist_id"])
+        schemas = SinglecellSchemas().get_schema(schema_name= singlecell["schema_name"], schemas=dict(), target_id=singlecell["checklist_id"])
 
         fields = []
         data={}
@@ -229,7 +231,7 @@ class Singlecell(DAComponent):
         fields.sort(key=lambda x: x["soring_name"], reverse=False)
         return fields, data
 
-    def update_component_status(self, id, component="study", identifier="study_id", identifier_value=str(), repository="ena", status_column_value={}):
+    def update_component_status(self, id, component="study", identifier="study_id", identifier_value=str(), repository="ena", status_column_value={}, with_child_components=False):
         username = "system"
         user = ThreadLocal.get_current_user()
         if user:
@@ -241,3 +243,17 @@ class Singlecell(DAComponent):
 
         self.get_collection_handle().update_one({"_id": ObjectId(id), "deleted": get_not_deleted_flag(), f"components.{component}.{identifier}": identifier_value},
                             {"$set": update_element_values})
+
+        singlecell = self.get_collection_handle().find_one({"_id": ObjectId(id)}, {"schema_name": 1, "checklist_id": 1, "components": 1})
+
+        if with_child_components:
+            #get all the child components
+            schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], schemas=dict(), target_id=singlecell["checklist_id"])
+            _, foreignkey_map = SinglecellSchemas().get_key_map(schemas=schemas)
+            child_map = SinglecellSchemas().get_child_map(foreignkey_map=foreignkey_map)
+            if component in child_map:
+                for child_component, foreign_key in child_map[component].items():
+                    child_component_data = singlecell["components"].get(child_component,[])
+                    for row in child_component_data:
+                        if row[foreign_key] == identifier_value:
+                            self.update_component_status(id=id, component=child_component, identifier=foreign_key, identifier_value=row[foreign_key], repository=repository, status_column_value=status_column_value, with_child_components=True)

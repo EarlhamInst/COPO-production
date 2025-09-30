@@ -7,7 +7,7 @@ from common.dal.submission_da import Submission
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample, Source
 from common.utils import helpers 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from common.s3.s3Connection import S3Connection as s3
 from pymongo import ReturnDocument
 import common.ena_utils.FileTransferUtils as tx
@@ -92,7 +92,7 @@ def parse_ena_spreadsheet(request):
                 result,_ = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=file_names)
                 if not result:
                     # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
-                    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+                    return HttpResponseBadRequest()
             else:
                 # bucket is missing, therefore create bucket and notify user to upload files
                 ghlper.notify_read_status(
@@ -109,7 +109,7 @@ def parse_ena_spreadsheet(request):
                     action="error",
                     html_id="sample_info",
                 )
-                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+                return HttpResponseBadRequest()
             ghlper.notify_read_status(
                 data={"profile_id": profile_id},
                 msg='Spreadsheet is valid',
@@ -118,8 +118,8 @@ def parse_ena_spreadsheet(request):
             )
             ena.collect()
             return HttpResponse()
-        return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
-    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+        return HttpResponseBadRequest()
+    return HttpResponseBadRequest()
 
 
 @web_page_access_checker

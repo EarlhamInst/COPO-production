@@ -267,7 +267,7 @@ def submit_ena_dtol_v2(submission_dom, analysis_dom, sub, seq_annotation_ids):
                 #receipt = subprocess.check_output(curl_cmd, shell=True)
                 return handle_async_receipt(receipt, sub, seq_annotation_ids )
             else:
-                l.log("General Error " + requests.status_codes)
+                l.log("General Error " + response.status_codes, response.text)
                 message = 'API call error ' + "Submitting project xml to ENA via CURL. CURL command is: " + ena_v2_service_async
                 notify_annotation_status(data={"profile_id": sub["profile_id"]}, msg=message, action="error",
                                 html_id="annotation_info")

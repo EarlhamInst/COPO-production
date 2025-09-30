@@ -74,9 +74,9 @@ class SingleCellSchemasHandler:
         schemas_df.drop(columns=["regex_valid"], inplace=True)
 
         empty_values = ""
-        column_names = list(schemas_df.columns.values)
-        for i,j in zip(*np.where(pd.isnull(schemas_df[["component_name", "term_name", "term_label", "term_type"]]))):
-            empty_values = empty_values + f"Empty value in {column_names[j+1]} at row {i+1} \n"
+        column_names = ["component_name", "term_name", "term_label", "term_type"]
+        for i,j in zip(*np.where(pd.isnull(schemas_df[column_names]))):
+            empty_values = empty_values + f"Empty value in '{column_names[j]}' at row {i+2} \n"
         if empty_values:
             raise Exception(f'Empty values: {empty_values} in the schema. Please check the schema file.')
 
@@ -141,7 +141,7 @@ class SingleCellSchemasHandler:
             #component_names = singlecell_schema["components"]
 
             # Cell formats
-            unlocked_format = {'locked': False}
+            unlocked_format = {'locked': False,'text_wrap': True, "valign":"top"}
 
             title_format = {
             'bold' : True
@@ -199,6 +199,8 @@ class SingleCellSchemasHandler:
                             component_schema_df_transposed = component_schema_df_transposed.loc[["term_label", "term_description", "term_example", "empty_column"]]
                             component_schema_df_transposed.columns = component_schema_df_transposed.iloc[0]
 
+                            component_data_df = pd.DataFrame()
+                            
                             if singlecell is not None:
                                 component_data_df = pd.DataFrame.from_records(singlecell["components"].get(component_name, []))
                                 if not component_data_df.empty:
@@ -209,8 +211,6 @@ class SingleCellSchemasHandler:
                                     component_schema_df_transposed  = pd.concat([component_schema_df_transposed , component_data_df], axis=0)
                                     component_schema_df_transposed.fillna("", inplace=True)
                             
-
-
                             #sheet_name = component_names.get(component_name, {}).get("name", component_name)
                             #sheet_name = sheet_name[:31]
                             sheet_name = component_name
@@ -230,7 +230,7 @@ class SingleCellSchemasHandler:
                                 column_length = 70 if column_length > 70 else column_length
                                 column_letter = get_column_letter(column_index + 1)
 
-                                cell_format = writer.book.add_format({'num_format': '@', 'text_wrap': True, "valign":"top"})  #dosen't work
+                                cell_format = writer.book.add_format({'num_format': '@', 'text_wrap': True, "valign":"top", 'text_wrap': True})  #dosen't work
                                 writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
 
                                 if field["mandatory"] == "M":
@@ -238,6 +238,31 @@ class SingleCellSchemasHandler:
                                     writer.sheets[sheet_name].conditional_format(f'{column_letter}1', {'type': 'no_errors', 'format': cell_format})                            
                                     #writer.sheets[sheet_name].write(f"{column_letter}1", name, cell_format)
                             
+                                if field["identifier"]:
+                                    prefix = field.get("identifier_prefix","")
+                                    if prefix:
+                                        starting_number = 5 + component_data_df.shape[0] if not component_data_df.empty else 5
+                                        cell_format = writer.book.add_format({"bg_color": "#D3D3D3"})
+                                        #writer.sheets[sheet_name].conditional_format(f'{column_letter}1', {'type': 'no_errors', 'format': cell_format}) 
+                                        if column_letter != 'A':  
+                                            #writer.sheets[sheet_name].write_dynamic_array_formula(f'{column_letter}5:{column_letter}1000', '=IF(INDIRECT("A"&ROW())<>"",CONCAT("ABC",ROW()-4),"")')
+                                            #if the cell is not empty, the formula will return empty string
+                                            #writer.sheets[sheet_name].write_array_formula(f'{column_letter}{starting_number}:{column_letter}1000', f'{{=IF(ISBLANK(C{starting_number}:C1000)*ISBLANK(D{starting_number}:D1000),"", CONCATENATE("AAA", TEXT(ROW()-4,"0000")))}}')
+                                            writer.sheets[sheet_name].write_array_formula(f'{column_letter}{starting_number}:{column_letter}1000', f'{{=IF(ISBLANK(C{starting_number}:C1000)*ISBLANK(D{starting_number}:D1000)*ISBLANK(E{starting_number}:E1000)*ISBLANK(F{starting_number}:F1000), "", CONCATENATE("{prefix}", TEXT(ROW()-4,"000")))}}', cell_format)
+                                            
+                                if  index == "study_id" and sheet_name != "study":
+                                    starting_number = 5
+                                    if not component_data_df.empty:
+                                        studies = component_data_df[field["term_label"]]
+                                        studies = [x for x in studies if x]
+                                        starting_number = 5 + len(studies)
+                                    cell_format = writer.book.add_format({"bg_color": "#D3D3D3"})
+                                    #writer.sheets[sheet_name].conditional_format(f'{column_letter}1', {'type': 'no_errors', 'format': cell_format})   #COUNTBLANK(A2:Z2)=COLUMNS(A2:Z2)
+                                    writer.sheets[sheet_name].write_array_formula(f'{column_letter}{starting_number}:{column_letter}1000', f'{{=IF(ISBLANK(C{starting_number}:C1000)*ISBLANK(D{starting_number}:D1000)*ISBLANK(E{starting_number}:E1000)*ISBLANK(F{starting_number}:F1000),"", IF(study!$A$5 <> "", study!$A$5, ""))}}', cell_format )
+
+                                    #writer.sheets[sheet_name].write(f"{column_letter}1", name, cell_format)
+
+
 
                                 cell_start_end = '%s5:%s1048576' % (column_letter, column_letter)
 

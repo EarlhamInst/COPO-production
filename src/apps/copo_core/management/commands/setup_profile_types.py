@@ -479,7 +479,7 @@ class Command(BaseCommand):
         )
         files = Component().create_component(
             name="files",
-            title="Files",
+            title="Data Files",
             widget_icon="file",
             widget_colour="blue",
             widget_icon_class="fa fa-file",
@@ -546,6 +546,20 @@ class Command(BaseCommand):
             schema_name="COPO_IMAGE_STX_FISH",
             base_component="singlecell",
         )
+
+        reads_schema = Component().create_component(
+            name="reads_schema",
+            title="Reads",
+            widget_icon="dna",
+            widget_colour="orange",
+            widget_icon_class="fa fa-dna",
+            table_id="singlecell_table",
+            reverse_url="copo_single_cell_submission:copo_singlecell",
+            subtitle="#component_subtitle",
+            schema_name="COPO_READ",
+            base_component="singlecell",
+        )
+
 
         sample = Component().create_component(
             name="sample",
@@ -661,6 +675,16 @@ class Command(BaseCommand):
             [new_singlecell_spreadsheet_template, download_blank_manifest_template]
         )
 
+        reads_schema.recordaction_buttons.set(
+            [
+                delete_singlecell_multi,
+                download_singlecell_manifest_single,
+            ]
+        )
+        reads_schema.title_buttons.set(
+            [new_singlecell_spreadsheet_template, download_blank_manifest_template]
+        )
+
         images_rembi.recordaction_buttons.set(
             [delete_singlecell_multi, download_singlecell_manifest_single]
         )
@@ -747,6 +771,15 @@ class Command(BaseCommand):
             widget_colour="#009c95",
             is_dtol_profile=False,
             is_permission_required=False,
+            is_deprecated=True,
+        )
+
+        biodata = ProfileType().create_profile_type(
+            type="biodata",
+            description="Biodata",
+            widget_colour="#00AAFF",
+            is_dtol_profile=False,
+            is_permission_required=False,
         )
 
         erga.components.set(
@@ -768,10 +801,18 @@ class Command(BaseCommand):
                 general_sample,
                 seqannotation,
                 read,
+                accessions,
+            ]
+        )
+        biodata.components.set(
+            [
+                files,
+                general_sample,
+                reads_schema,
                 singlecell,
                 images_rembi,
                 images_stx_fish,
-                accessions,
+                accessions_schema,
             ]
         )
 

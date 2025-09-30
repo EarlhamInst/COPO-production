@@ -1,6 +1,6 @@
 from .utils.SingleCellSchemasHandler import SingleCellSchemasHandler
 from .utils.zenodo_submission import  process_pending_submission_zendo
-from .utils.ena_submission import process_pending_submission_ena
+from .utils.ena_submission import process_pending_submission_ena, poll_asyn_analysis_submission_receipt
 from .utils.copo_single_cell import update_submission_pending
 from src.celery import app
 from common.utils.logger import Logger
@@ -34,4 +34,11 @@ def process_ena_submission(self):
 def update_zenodo_submission_pending(self):
     Logger().debug("Running update_zenodo_submission_pending")
     update_submission_pending()
+    return True
+
+@app.task(bind=True, base=CopoBaseClassForTask)
+@only_one(key="poll_asyn_analysis_submission_receipt", timeout=5)
+def process_asyn_analysis_submission_receipt(self):
+    Logger().debug("Running poll_asyn_analysis_submission_receipt")
+    poll_asyn_analysis_submission_receipt()
     return True

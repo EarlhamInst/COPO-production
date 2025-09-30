@@ -140,7 +140,7 @@ def save_singlecell_records(request, profile_id, schema_name):
     uid = str(request.user.id)
     username = request.user.username
     checklist_id = request.session["checklist_id"]
-    schemas = SinglecellSchemas().get_schema(schema_name=schema_name, target_id=checklist_id)
+    schemas = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=dict(), target_id=checklist_id)
     identifier_map, _ = SinglecellSchemas().get_key_map(schemas)
     submission_repository = {}
     submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name)
@@ -190,6 +190,10 @@ def save_singlecell_records(request, profile_id, schema_name):
         if existing_record["checklist_id"] != checklist_id:
             return HttpResponse(status=400, content=f'Study already exists with different checklist: {existing_record["checklist_id"]}')
         
+        global_repositories = set()
+        for repositories in submission_repository.values():
+            global_repositories.update(repositories)
+
         for component_name, existing_component_data in existing_record["components"].items():
 
             #additional_fields = additional_fields_map.get(component_name,[])
@@ -199,20 +203,22 @@ def save_singlecell_records(request, profile_id, schema_name):
             if not existing_component_data_df.empty:
                 identifier = identifier_map.get(component_name, "")
                 if identifier:
-                    respositories = submission_repository.get(component_name, [])
-                    if not respositories:
-                        continue
-                    for respository in respositories:
+                    repositories = submission_repository.get(component_name, [])
+                    #if not respositories:
+                    #    continue
+                    for repository in repositories:
                         for prefix in list(additional_columns_prefix_default_value.keys()):
-                            if f"{prefix}_{respository}" not in existing_component_data_df.columns:
-                                existing_component_data_df[f"{prefix}_{respository}"] = additional_columns_prefix_default_value[prefix]
+                            if f"{prefix}_{repository}" not in existing_component_data_df.columns:
+                                existing_component_data_df[f"{prefix}_{repository}"] = additional_columns_prefix_default_value[prefix]
 
+                    #check if any of the existing record with accession number, if so, cannot delete
                     existing_component_data_cannnot_delete_df = existing_component_data_df.drop(existing_component_data_df[
-                        existing_component_data_df.apply(lambda row:  all(row[f"accession_{respository}"] == "" for respository in respositories ), axis=1)].index)
+                        existing_component_data_df.apply(lambda row:  all(row.get(f"accession_{repository}", "") == "" for repository in global_repositories), axis=1)].index)
                     
+                    #check if any of the existing record with status "processing", if so, cannot update
                     existing_component_data_cannnot_update_df = existing_component_data_df.drop(existing_component_data_df[
                         #(existing_component_data_df["status"] != "processing")
-                        existing_component_data_df.apply(lambda row:  all(row[f"status_{respository}"] != "processing" for respository in respositories ), axis=1)].index)
+                        existing_component_data_df.apply(lambda row:  all(row.get(f"status_{repository}","") != "processing" for repository in repositories ), axis=1)].index)
 
                     if not component_data_df.empty:
                         existing_component_data_cannnot_delete_df.drop(existing_component_data_cannnot_delete_df[existing_component_data_cannnot_delete_df[identifier].isin(component_data_df[identifier])].index, inplace=True)
@@ -235,20 +241,24 @@ def save_singlecell_records(request, profile_id, schema_name):
                         component_sorted_data_df = component_data_df.sort_index(axis=1)
 
                         for index, row in existing_component_data_df.iterrows():
-                            if all(row[f"status_{repository}"] != additional_columns_prefix_default_value["status"] for repository in respositories):
+                            if all(row[f"status_{repository}"] != additional_columns_prefix_default_value["status"] for repository in repositories):
                                 tmp_data = component_sorted_data_df.loc[component_sorted_data_df[identifier] == row[identifier]].sort_index(axis=1)
                          
                                 if not tmp_data.iloc[0].compare(existing_component_common_columns_df.loc[(existing_component_common_columns_df[identifier] == row[identifier])].iloc[0]).empty:
-                                    for respository in respositories:
+                                    for repository in repositories:
                                         existing_component_data_df.loc[(existing_component_data_df[identifier] == row[identifier]), f"status_{repository}"] = additional_columns_prefix_default_value["status"]
                     else:
-                        for repository in respositories:
+                        for repository in repositories:
                             existing_component_data_df[f"status_{repository}"] = additional_columns_prefix_default_value["status"]
 
-
-                    componnet_additional_fields = list(set(additional_fields_map[component_name]) & set(existing_component_data_df.columns))
-                    if componnet_additional_fields:
-                        existing_component_additional_fields_df = existing_component_data_df[[identifier]+ componnet_additional_fields]
+                    
+                    component_additional_fields = list(set(additional_fields_map.get(component_name, [])) & set(existing_component_data_df.columns))
+                    #get the existing columns ended with _{repository}
+                    component_additional_fields.extend([ col for col in existing_component_data_df.columns if any(col.endswith(f"_{repository}") 
+                                                                                                                  for repository in global_repositories) and
+                                                                                                                  col not in component_additional_fields])
+                    if component_additional_fields:
+                        existing_component_additional_fields_df = existing_component_data_df[[identifier]+ component_additional_fields]
                         singlecell_record["components"][component_name] = component_data_df.merge(existing_component_additional_fields_df, on=identifier, how="left" ) 
             
     if errors:
@@ -415,7 +425,7 @@ def download_manifest(request, schema_name, profile_id, study_id, format="xlsx")
 def download_init_blank_manifest(request, schema_name, profile_id,  checklist_id):
       
     schemas = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name})
-    schema = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=schemas, target_id=checklist_id)
+    schema = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=schemas["schemas"], target_id=checklist_id)
     sample_schema = schema.get("sample", [])
 
 
