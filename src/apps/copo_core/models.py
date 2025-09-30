@@ -448,6 +448,7 @@ class ProfileType(models.Model):
     is_permission_required = models.BooleanField(default=True)
     post_save_action = models.CharField(max_length=100, blank=True, null=True)
     pre_save_action = models.CharField(max_length=100, blank=True, null=True)
+    is_deprecated = models.BooleanField(default=False, blank=True, null=True)
 
     def __str__(self):
         return self.type + " : " + self.description
@@ -461,6 +462,7 @@ class ProfileType(models.Model):
         is_permission_required,
         post_save_action=None,
         pre_save_action=None,
+        is_deprecated=False,
     ):
         self.type = type
         self.description = description
@@ -469,6 +471,7 @@ class ProfileType(models.Model):
         self.is_permission_required = is_permission_required
         self.post_save_action = post_save_action
         self.pre_save_action = pre_save_action
+        self.is_deprecated = is_deprecated
         self.save()
         return self
 

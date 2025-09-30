@@ -479,7 +479,7 @@ class Command(BaseCommand):
         )
         files = Component().create_component(
             name="files",
-            title="Files",
+            title="Data Files",
             widget_icon="file",
             widget_colour="blue",
             widget_icon_class="fa fa-file",
@@ -549,7 +549,7 @@ class Command(BaseCommand):
 
         reads_schema = Component().create_component(
             name="reads_schema",
-            title="READS",
+            title="Reads",
             widget_icon="dna",
             widget_colour="orange",
             widget_icon_class="fa fa-dna",
@@ -771,6 +771,15 @@ class Command(BaseCommand):
             widget_colour="#009c95",
             is_dtol_profile=False,
             is_permission_required=False,
+            is_deprecated=True,
+        )
+
+        biodata = ProfileType().create_profile_type(
+            type="biodata",
+            description="Biodata",
+            widget_colour="#00AAFF",
+            is_dtol_profile=False,
+            is_permission_required=False,
         )
 
         erga.components.set(
@@ -787,15 +796,23 @@ class Command(BaseCommand):
         )
         genomics.components.set(
             [
-                #assembly,
+                assembly,
                 files,
                 general_sample,
-                #seqannotation,
+                seqannotation,
+                read,
+                accessions,
+            ]
+        )
+        biodata.components.set(
+            [
+                files,
+                general_sample,
                 reads_schema,
                 singlecell,
                 images_rembi,
                 images_stx_fish,
-                accessions,
+                accessions_schema,
             ]
         )
 
