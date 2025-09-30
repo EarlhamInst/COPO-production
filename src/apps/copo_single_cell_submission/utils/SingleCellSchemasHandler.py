@@ -141,7 +141,7 @@ class SingleCellSchemasHandler:
             #component_names = singlecell_schema["components"]
 
             # Cell formats
-            unlocked_format = {'locked': False}
+            unlocked_format = {'locked': False,'text_wrap': True, "valign":"top"}
 
             title_format = {
             'bold' : True
@@ -230,7 +230,7 @@ class SingleCellSchemasHandler:
                                 column_length = 70 if column_length > 70 else column_length
                                 column_letter = get_column_letter(column_index + 1)
 
-                                cell_format = writer.book.add_format({'num_format': '@', 'text_wrap': True, "valign":"top"})  #dosen't work
+                                cell_format = writer.book.add_format({'num_format': '@', 'text_wrap': True, "valign":"top", 'text_wrap': True})  #dosen't work
                                 writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
 
                                 if field["mandatory"] == "M":
