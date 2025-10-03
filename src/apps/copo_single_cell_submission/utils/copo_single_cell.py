@@ -191,11 +191,8 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
             if file_terms:
                 component_data_df["file_status"] = ""
                 for term in file_terms:
-                    component_data_df["file_status"] = component_data_df["file_status"] + component_data_df[term].apply(lambda x: (x+ " : " + enaFile_map.get(x, "unknown") + "  ") if x else "")
-                
-                if "ena" in submission_repository.get(component_name,[]) and "accession_ena" in component_data_df.columns:
-                    component_data_df["ena_file_processing_status"] = component_data_df["accession_ena"].apply(lambda x: _query_ena_file_processing_status(x) if x else "")
-       
+                    component_data_df["file_status"] = component_data_df["file_status"] + component_data_df[term].apply(lambda x: (x+ " : " + enaFile_map.get(x, "unknown") + "  ") if x else "") if term in component_data_df.columns else ""
+            
             data_set[component_name] = component_data_df.to_dict(orient="records")
                     
 

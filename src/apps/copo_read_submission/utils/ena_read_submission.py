@@ -1319,7 +1319,11 @@ class EnaReads:
         files_not_in_remote = []
         for local_path, enaFile in file_submit_status_map.items():
             transfer_status = tx.get_transfer_status(enaFile)
-            if transfer_status != tx.TransferStatus.TANSFERED_TO_ENA:
+            if transfer_status  not in [ tx.TransferStatus.TRANSFERRED_TO_ENA, 
+                                         tx.TransferStatus.COMPLETED_VALIDATION_IN_ENA,
+                                         tx.TransferStatus.ARCHIVE_COMPLETED_VALIDATION_IN_ENA,
+                                         tx.TransferStatus.ARCHIVE_TRANSFERRED_TO_ENA
+                                        ]:
                 files_not_in_remote.append(os.path.basename(local_path))
 
         # retrieve already uploaded files

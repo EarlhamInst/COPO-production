@@ -230,8 +230,10 @@ class SingleCellSchemasHandler:
                                 column_length = 70 if column_length > 70 else column_length
                                 column_letter = get_column_letter(column_index + 1)
 
-                                cell_format = writer.book.add_format({'num_format': '@', 'text_wrap': True, "valign":"top", 'text_wrap': True})  #dosen't work
+                                cell_format = writer.book.add_format({'num_format': '@', 'text_wrap': True, "valign":"top"})  #dosen't work
                                 writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
+
+                                cell_start_end = '%s5:%s1048576' % (column_letter, column_letter)
 
                                 if field["mandatory"] == "M":
                                     cell_format = writer.book.add_format(title_format)
@@ -242,31 +244,39 @@ class SingleCellSchemasHandler:
                                     prefix = field.get("identifier_prefix","")
                                     if prefix:
                                         starting_number = 5 + component_data_df.shape[0] if not component_data_df.empty else 5
-                                        cell_format = writer.book.add_format({"bg_color": "#D3D3D3"})
+                                        cell_format = writer.book.add_format({"bg_color": "#D3D3D3",'num_format': '0;–0;;@', "valign":"top"})
                                         #writer.sheets[sheet_name].conditional_format(f'{column_letter}1', {'type': 'no_errors', 'format': cell_format}) 
                                         if column_letter != 'A':  
                                             #writer.sheets[sheet_name].write_dynamic_array_formula(f'{column_letter}5:{column_letter}1000', '=IF(INDIRECT("A"&ROW())<>"",CONCAT("ABC",ROW()-4),"")')
                                             #if the cell is not empty, the formula will return empty string
                                             #writer.sheets[sheet_name].write_array_formula(f'{column_letter}{starting_number}:{column_letter}1000', f'{{=IF(ISBLANK(C{starting_number}:C1000)*ISBLANK(D{starting_number}:D1000),"", CONCATENATE("AAA", TEXT(ROW()-4,"0000")))}}')
-                                            writer.sheets[sheet_name].write_array_formula(f'{column_letter}{starting_number}:{column_letter}1000', f'{{=IF(ISBLANK(C{starting_number}:C1000)*ISBLANK(D{starting_number}:D1000)*ISBLANK(E{starting_number}:E1000)*ISBLANK(F{starting_number}:F1000), "", CONCATENATE("{prefix}", TEXT(ROW()-4,"000")))}}', cell_format)
-                                            
+                                            writer.sheets[sheet_name].write_array_formula(f'{column_letter}{starting_number}:{column_letter}100', f'{{=IF(ISBLANK(C{starting_number}:C100)*ISBLANK(D{starting_number}:D100)*ISBLANK(E{starting_number}:E100)*ISBLANK(F{starting_number}:F100), "" , CONCATENATE("{prefix}", TEXT(ROW()-4,"000")))}}', cell_format)
+                                          
                                 if  index == "study_id" and sheet_name != "study":
                                     starting_number = 5
                                     if not component_data_df.empty:
                                         studies = component_data_df[field["term_label"]]
                                         studies = [x for x in studies if x]
                                         starting_number = 5 + len(studies)
-                                    cell_format = writer.book.add_format({"bg_color": "#D3D3D3"})
+                                    cell_format = writer.book.add_format({"bg_color": "#D3D3D3",'num_format': '0;–0;;@', "valign":"top"})
                                     #writer.sheets[sheet_name].conditional_format(f'{column_letter}1', {'type': 'no_errors', 'format': cell_format})   #COUNTBLANK(A2:Z2)=COLUMNS(A2:Z2)
-                                    writer.sheets[sheet_name].write_array_formula(f'{column_letter}{starting_number}:{column_letter}1000', f'{{=IF(ISBLANK(C{starting_number}:C1000)*ISBLANK(D{starting_number}:D1000)*ISBLANK(E{starting_number}:E1000)*ISBLANK(F{starting_number}:F1000),"", IF(study!$A$5 <> "", study!$A$5, ""))}}', cell_format )
-
+                                    writer.sheets[sheet_name].write_array_formula(f'{column_letter}{starting_number}:{column_letter}100', f'{{=IF(ISBLANK(C{starting_number}:C100)*ISBLANK(D{starting_number}:D100)*ISBLANK(E{starting_number}:E100)*ISBLANK(F{starting_number}:F100), "", IF(study!$A$5 <> "", study!$A$5, "" ))}}', cell_format)
                                     #writer.sheets[sheet_name].write(f"{column_letter}1", name, cell_format)
+                                
+                                elif field["referenced_component"]:
+                                    referenced_component = field["referenced_component"]
+                                    referenced_schema = schemas.get(referenced_component, [])
+                                    referenced_schema_df = pd.DataFrame.from_records(referenced_schema)
+                                    referenced_schema_df = referenced_schema_df.drop(referenced_schema_df[pd.isna(referenced_schema_df[schema_checklist])].index)
+                                    referenced_schema_df.reset_index(inplace=True)
+                                    if not referenced_schema_df.empty:
+                                        referenced_field = referenced_schema_df.loc[referenced_schema_df['identifier']]
+                                        source = f'={referenced_component}!${get_column_letter(referenced_field.index[0] + 1)}$5:${get_column_letter(referenced_field.index[0] + 1)}$100'                                        
+                                        writer.sheets[sheet_name].data_validation(cell_start_end,
+                                                                                {'validate': 'list',
+                                                                                 'source': source})   
 
-
-
-                                cell_start_end = '%s5:%s1048576' % (column_letter, column_letter)
-
-                                if type == "string":
+                                elif type == "string":
                                     pass
 
                                     """ doesn't work 
@@ -547,7 +557,7 @@ class SinglecellschemasSpreadsheet:
                 # read excel and convert all to string
                 if m_format == "xls":
                     self.data = pd.read_excel(self.file, keep_default_na=False,
-                                                  na_values=lookup.NA_VALS, sheet_name=None, dtype=str)    
+                                                  na_values=lookup.NA_VALS, sheet_name=None, dtype=str, converters={0: lambda x : "" if x==0 else x, 1: lambda x : "" if x==0 else x } )    
 
                     if not isinstance(self.data, dict): 
                         raise Exception("invalid single cell manifest") 
@@ -566,9 +576,13 @@ class SinglecellschemasSpreadsheet:
                 for key, df in self.data.items():  
                     #df = df.iloc[3:]  # remove the first 3 rows                  
                     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
-                    df = df.apply(lambda x: x.astype(str))
+                    df = df.apply(lambda x: x.astype("string"))
                     df = df.apply(lambda x: x.str.strip())
-                    #self.data.columns = self.data.columns.str.replace(" ", "")
+                    #remove the rows with all empty values or 0
+                    df = df.replace("", np.nan)
+                    df.dropna(how="all", inplace=True)
+                    df.fillna("", inplace=True)
+                    self.data[key] = df
                    
                 singlecell = SinglecellSchemas().get_collection_handle().find_one({"name":self.schema_name},{"schemas":1, "enums":1})
                 self.schemas = singlecell["schemas"]

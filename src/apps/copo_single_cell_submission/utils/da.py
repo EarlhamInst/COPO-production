@@ -161,7 +161,7 @@ class SinglecellSchemas(DAComponent):
             schema_file_df = schema_df.loc[schema_df['term_type'] == 'file', "term_name"]
             df = pd.DataFrame.from_records(component_data)
             if not schema_file_df.empty:
-                file_df = df[schema_file_df.tolist()]
+                file_df = df[list(set.intersection(set(schema_file_df.tolist()), set(df.columns)))]
                 file_df = file_df.dropna()
                 fileslist = file_df.values.tolist()
                 for files in fileslist:

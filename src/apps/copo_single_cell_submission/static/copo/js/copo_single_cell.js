@@ -92,7 +92,7 @@ $(document).on('document_ready', function () {
     } else if (d.action === 'warning') {
       // show something on the info div
       // check info div is visible
-      $(element).removeClass('alert-danger').addClass('alert-warning');
+      $(element).removeClass('alert-danger').removeClass("alert-info").addClass('alert-warning');
       $(element).html(d.message);
       //$("#spinner").fadeOut()
     } else if (d.action === 'error') {
@@ -100,6 +100,14 @@ $(document).on('document_ready', function () {
       $(element).removeClass('alert-info').addClass('alert-danger');
       $(element).html(d.message);
       //$("#spinner").fadeOut()
+    } else if (d.action === 'refresh_table') {
+      $(element).removeClass('alert-danger').addClass('alert-info');
+      $(element).html(d.message);
+      var args_dict = {};
+      args_dict['singlecell_checklist_id'] = get_checklist_id();
+      (args_dict['profile_id'] = $('#profile_id').val()),
+        (args_dict['schema_name'] = schema_name);
+      load_records(componentMeta, args_dict, columnDefs); // call to load component records
     }
   };
 
@@ -233,7 +241,7 @@ $(document).on('document_ready', function () {
         table.columns.adjust().draw();
       });
 
-      $('#singlecell_info').hide();
+      //$('#singlecell_info').hide();
       //$('#singlecell-tabs').fadeIn();
       $('#table_div').fadeIn(1000);
       $('#ena_finish_button').fadeIn();
@@ -579,12 +587,15 @@ function upload_spreadsheet(file) {
         .prop('disabled', false);
       console.log(data);
       responseText = data.responseText;
+      $('#file').val('');
+      /*
       if (responseText != '') {
         BootstrapDialog.show({
           title: 'Error',
           message: 'Error ' + data.status + ': ' + data.responseText,
         });
       }
+      */
     })
     .done(function (data) {
       // Hide upload button if 'Finish' button is visible and upload was successful
@@ -594,6 +605,7 @@ function upload_spreadsheet(file) {
       $('#singlecell_spreadsheet_modal')
         .find('#save_singlecell_button')
         .prop('disabled', false);
+      $('#file').val('');
     });
 }
 

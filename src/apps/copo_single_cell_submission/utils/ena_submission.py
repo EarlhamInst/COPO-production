@@ -129,6 +129,8 @@ def process_pending_submission_ena():
                                                                                                    analysis_component_name=submission_components["sequencing_annotation"]
                                                                                                    )    
 
+            ena_submission_helper.push_action(message="Submission done", action="refresh_table")
+
 def _prepare_analysis_submission(singlecell, component_name="sequencing_annotation", is_assembly=False):
     #get info from the components: sequencing_annotation, sequencing_annotation_run_ref[run accession / experiment accession], sequencing_annotation_file
     checklist_id = singlecell.get("checklist_id", "")

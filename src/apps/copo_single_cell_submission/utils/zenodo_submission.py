@@ -65,13 +65,13 @@ def process_pending_submission_zendo():
             schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], schemas=dict(), target_id=singlecell["checklist_id"])
             files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
             local_path = [regex.Regex(f'{x}$') for x in files]
-            projection = {'_id':0, 'local_path':1, 'status':1}
+            projection = {'_id':0, 'local_path':1, 'status':1, 'is_archived':1, 'profile_id':1}
             filter = dict()
             filter['local_path'] = {'$in': local_path}
             filter['profile_id'] = sub["profile_id"]
         
             enaFiles = EnaFileTransfer().get_all_records_columns(filter_by=filter, projection=projection)
-            datafiles = DataFile().get_all_records_columns(filter_by={"profile_id":sub["profile_id"], "filename": {"$in":files}}, projection={"_id":0, "file_name":1, "file_hash":1})
+            datafiles = DataFile().get_all_records_columns(filter_by={"profile_id":sub["profile_id"], "file_name": {"$in":files}}, projection={"_id":0, "file_name":1, "file_hash":1})
 
             file_locations_map = {os.path.basename(enaFile["local_path"]) : enaFile["local_path"] for enaFile in enaFiles }
             file_hash_map = {datafile["file_name"]: datafile["file_hash"] for datafile in datafiles}
@@ -135,6 +135,7 @@ def process_pending_submission_zendo():
 
                 Zenodo_deposition().upload_files(bucket_link=deposition.get("links",{}).get("bucket",""), files=changed_files, bytesstring=bytesstring)            
             except Exception as e:
+                Logger().exception(e)
                 notify_singlecell_status(data={"profile_id": sub["profile_id"]},
                     msg=f"Problem to zenodo: {str(e)}",
                     action="error",
@@ -146,9 +147,9 @@ def process_pending_submission_zendo():
 
             notify_singlecell_status(data={"profile_id": sub["profile_id"]},
                     msg=f"{study_id} has been submitted to Zenodo.",
-                    action="info",
+                    action="refresh_table",
                     html_id="submission_info")
-
+            
         Submission().add_component_submission_accession(sub_id=str(sub["_id"]), component="study", accessions=new_accessions)
 
 def publish_zendo(profile_id, deposition_id, singlecell):

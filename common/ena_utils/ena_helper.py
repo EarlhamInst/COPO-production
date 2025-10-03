@@ -46,6 +46,8 @@ class EnaSubmissionHelper:
         ghlper.logging_debug(message, self.submission_id)
 
 
+    def push_action(self, message, action):
+        notify_submission_status(data={"profile_id": self.profile_id},  msg=message, action=action, html_id="submission_info")
 
     def logging_info(self, message=str()):
         """

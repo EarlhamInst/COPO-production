@@ -49,12 +49,17 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
         if inspect.isclass(element) and issubclass(element, Validator) and not element.__name__ == "Validator":
             required_validators.append(element)
     '''
+
     singlecell = SinglecellschemasSpreadsheet(file=file, profile_id=profile_id, schema_name=schema_name,  checklist_id=checklist_id, component="singlecell", validators=required_validators)
     s3obj = s3()
     if name.endswith("xlsx") or name.endswith("xls"):
         fmt = 'xls'
     else:
-        return HttpResponse(status=415, content="Please make sure your manifest is in xlxs format")
+        msg = "Please make sure your manifest is in xlxs format"
+        notify_singlecell_status(data={"profile_id": profile_id}, msg=msg,
+                action="error",
+                html_id="singlecell_info", checklist_id=checklist_id)
+        return HttpResponse(status=415, content=msg)
 
     if singlecell.loadManifest(fmt):
         l.log("Single cell manifest loaded")
@@ -87,6 +92,7 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
                     if not file_name_map[file_name] or hash != file_name_map[file_name]:  
                         s3_checking_file_names.append(file_name)
 
+                is_warning = False
                 if s3_checking_file_names:
                     if s3obj.check_for_s3_bucket(bucket_name):
                         # get filenames from manifest
@@ -94,9 +100,10 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
                         result,msg = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=s3_checking_file_names)
                         if not result:
                             notify_singlecell_status(data={"profile_id": profile_id},
-                                msg=msg, action="error", html_id="singlecell_info")
+                                msg=msg, action="warning", html_id="singlecell_info")
+                            is_warning = True
                             # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
-                            return HttpResponse(status=400, content=msg)
+                            #return HttpResponse(status=400, content=msg)
                     else:
                         # bucket is missing, therefore create bucket and notify user to upload files
                         notify_singlecell_status(data={"profile_id": profile_id},
@@ -104,13 +111,16 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
                                         html_id="singlecell_info")
                         s3obj.make_s3_bucket(bucket_name=bucket_name)
                         msg='Files not found, please click "Upload Data into COPO" and follow the instructions.'
+                        is_warning = True
                         notify_singlecell_status(data={"profile_id": profile_id},
-                                        msg=msg, action="error", html_id="singlecell_info")
-                        return HttpResponse(status=400, content=msg)
+                                        msg=msg, action="warning", html_id="singlecell_info")
+                        #return HttpResponse(status=400, content=msg)
                     
-            notify_singlecell_status(data={"profile_id": profile_id},
-                            msg='Spreadsheet is valid', action="info",
-                            html_id="singlecell_info")
+            if not is_warning:
+                notify_singlecell_status(data={"profile_id": profile_id},
+                                msg='Spreadsheet is valid', action="info",
+                                html_id="singlecell_info")
+            
             notify_singlecell_status(data={"profile_id": profile_id}, msg="", action="close", html_id="upload_controls", checklist_id=checklist_id)
             notify_singlecell_status(data={"profile_id": profile_id}, msg="", action="make_valid", html_id="singlecell_info", checklist_id=checklist_id)
 
@@ -120,7 +130,7 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
         else:            
             error_msg =  errors
             #return 200 for validation error to prevent frontend from showing duplicated error message on the error box
-            return HttpResponse(status=200, content=error_msg)
+            return HttpResponse(status=400, content=error_msg)
     return HttpResponse(status=400, content=error_msg)
 
 

@@ -24,21 +24,27 @@ Image.MAX_IMAGE_PIXELS = None
 
 
 class TransferStatus(IntEnum):
+    ARCHIVE = -2  # the file is archived, not in local_uploads folder
+    ARCHIVE_COMPLETED_VALIDATION_IN_ENA = -4
+    ARCHIVE_TRANSFERRED_TO_ENA = -3    
     CHECKING_FOR_DOWNLOAD = -1
     DOWNLOADING_TO_LOCAL = 0
     DOWNLOADED_TO_LOCAL = 1
     TRANSFERRING_TO_ENA = 2
-    TANSFERED_TO_ENA = 3
+    TRANSFERRED_TO_ENA = 3
     COMPLETED_VALIDATION_IN_ENA = 4
 
 
 TransferStatusNames = {
     TransferStatus.CHECKING_FOR_DOWNLOAD: "Checking for download",
     TransferStatus.DOWNLOADING_TO_LOCAL: "Downloading to local",
-    TransferStatus.DOWNLOADED_TO_LOCAL: "Transfered to COPO",
-    TransferStatus.TRANSFERRING_TO_ENA: "Transfering to ENA",
-    TransferStatus.TANSFERED_TO_ENA: "Transfered to ENA",
+    TransferStatus.DOWNLOADED_TO_LOCAL: "Transferred to COPO",
+    TransferStatus.TRANSFERRING_TO_ENA: "Transferring to ENA",
+    TransferStatus.TRANSFERRED_TO_ENA: "Transferred to ENA",
     TransferStatus.COMPLETED_VALIDATION_IN_ENA: "Completed validation in ENA",
+    TransferStatus.ARCHIVE: "The file is archived, need to download from COPO again",
+    TransferStatus.ARCHIVE_TRANSFERRED_TO_ENA: "The file is archived, but transferred to ENA",
+    TransferStatus.ARCHIVE_COMPLETED_VALIDATION_IN_ENA: "The file is archived, but completed validation in ENA",
 }
 
 
@@ -103,6 +109,9 @@ def make_transfer_record(
                 # if remote location is different, update it and transfer it again to ENA
                 if get_transfer_status(ena_file) >= TransferStatus.DOWNLOADED_TO_LOCAL:
                     tx["transfer_status"] = 5
+                elif get_transfer_status(ena_file) in [TransferStatus.ARCHIVE, TransferStatus.ARCHIVE_TRANSFERRED_TO_ENA, TransferStatus.ARCHIVE_COMPLETED_VALIDATION_IN_ENA]:
+                    tx["transfer_status"] = 1
+                    tx["is_archive"] = "0"
                 tx["remote_path"] = remote_location
                 need_update = True
 
@@ -385,12 +394,25 @@ def get_transfer_status(tx):
     """
     if tx:
         transfer_status = tx.get("transfer_status", 0)
+        is_archive = tx.get("is_archive", "0")
         status = tx.get("status", str())
+        #if the file has been uploaded to ENA, the status won't change without regarding to the is_archive flag
         if transfer_status == 5 and status == "ena_complete":
-            return TransferStatus.COMPLETED_VALIDATION_IN_ENA
+            if is_archive == "1":
+                return TransferStatus.ARCHIVE_COMPLETED_VALIDATION_IN_ENA
+            else: 
+                return TransferStatus.COMPLETED_VALIDATION_IN_ENA
         elif transfer_status == 5 and status == "complete":
-            return TransferStatus.TANSFERED_TO_ENA
-        elif transfer_status == 5 and status == "pending":
+            if is_archive == "1":
+                return TransferStatus.ARCHIVE_TRANSFERRED_TO_ENA
+            else:
+                return TransferStatus.TRANSFERRED_TO_ENA
+        
+        #if the file is archived, then return False
+        if is_archive == "1":
+            return TransferStatus.ARCHIVE
+        
+        if transfer_status == 5 and status == "pending":
             return TransferStatus.TRANSFERRING_TO_ENA
         elif transfer_status > 2:
             return TransferStatus.DOWNLOADED_TO_LOCAL
@@ -399,7 +421,7 @@ def get_transfer_status(tx):
         elif transfer_status == 1:
             return TransferStatus.CHECKING_FOR_DOWNLOAD
         elif transfer_status == 0:  # for compatibility with old records
-            return TransferStatus.TANSFERED_TO_ENA
+            return TransferStatus.TRANSFERRED_TO_ENA
         else:
             # unknown status
             Logger().error(
@@ -486,12 +508,14 @@ def housekeeping_local_uploads():
     time = datetime.now() - timedelta(days=settings.LOCAL_UPLOAD_HOUSEKEEPING_DAYS)
     ena_files = EnaFileTransfer().execute_query(
         {
-            "$or": [
-                {"status": "complete", "remote_path": ""},
-                {"status": "complete", "remote_path": {"$exists": False}},
-                {"status": "ena_complete", "remote_path": {"$exists": True, "$ne": ""}},
-            ],
+            #"$or": [
+                #{"status": "complete", "remote_path": ""},
+                #{"status": "complete", "remote_path": {"$exists": False}},
+                #{"status": "ena_complete", "remote_path": {"$exists": True, "$ne": ""}},  #"ena_complele" is an obsolete status
+            #],
+            'status': {"$in": ["complete", "ena_complete"]},
             "last_checked": {"$lt": time},
+            "is_archived": {"$ne": 1},
         }
     )
     if ena_files:
@@ -503,8 +527,8 @@ def housekeeping_local_uploads():
             except Exception as e:
                 Logger().error(f"Error deleting file {ena_file['local_path']}: {e}")
         # delete ena_file records
-        EnaFileTransfer().get_collection_handle().delete_many(
-            {"_id": {"$in": [ena_file["_id"] for ena_file in ena_files]}}
+        EnaFileTransfer().get_collection_handle().update_many(
+            {"_id": {"$in": [ena_file["_id"] for ena_file in ena_files]}},{"$set": {"is_archived": "1", "last_checked": get_datetime()}}
         )
 
 

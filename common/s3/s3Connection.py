@@ -200,7 +200,7 @@ class S3Connection():
                         missing_files.append(file)
             if not just_return_etags and len(missing_files) > 0:
                 # report missing files
-                msg="Files Missing: " + str(missing_files) + ". Please upload these files to COPO and try again."
+                msg="Files Missing: " + str(missing_files) + ". Please upload these files to COPO."
               
                 notify_read_status(data={"profile_id": profile_id}, msg=msg,
                                    action="error",

@@ -867,14 +867,14 @@ class EnaFileTransfer(DAComponent):
         # return self.get_collection_handle().find({"profile_id"})
         result = self.get_collection_handle().find(
             {"local_path": {"$in": local_paths}, "profile_id": profile_id},
-            {"transfer_status": 1, "local_path": 1, "status": 1},
+            {"transfer_status": 1, "local_path": 1, "status": 1, "is_archived": 1},
         )
         result_map = {x["local_path"]: x for x in list(result)}
         return result_map
 
     def get_transfer_status_by_ecs_path(self, ecs_locations):
         result = self.get_collection_handle().find(
-            {"ecs_location": {"$in": ecs_locations}}, {"ecs_location": 1, "status": 1}
+            {"ecs_location": {"$in": ecs_locations}}, {"ecs_location": 1, "status": 1, "is_archived": 1}
         )
         result_map = {x["ecs_location"]: x for x in list(result)}
         return result_map
