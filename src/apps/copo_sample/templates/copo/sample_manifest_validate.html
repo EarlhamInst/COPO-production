@@ -4,7 +4,7 @@
 {% load web_tags_orcid %}
 {% load web_tags %}
 
-{% block title %}Sample Manifest Validation{% endblock %}
+<!-- {% block title %}Sample Manifest Validation{% endblock %} -->
 
 {% block stylesheet_block %}
     <link rel="stylesheet" href="{% static 'copo/css/copo/browse_style.css' %}" xmlns="http://www.w3.org/1999/html">
@@ -54,7 +54,8 @@
             margin-right: 25px
         }
         .checklist  {
-            color: red;
+            color: black;
+            font-weight: bold;
             font-size: 1.2em;
         }        
 
@@ -81,13 +82,11 @@
     <input type="hidden" id="profile_id" value="{{ profile_id }}"/>
     <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12">
-            <h3 class="h3">
-                for <span class="checklist" >{{ checklist_id }} : {{ checklist_name }} </span>
-            </h3>
+            <p> Please upload a completed sample manifest to validate:</p>
 
-            <p>
-                Upload a completed manifest for validation
-            </p>
+            <h3 class="h3">
+                <span class="checklist" >{{ checklist_id }}: {{ checklist_name }} </span>
+            </h3>
 
             <input id="file" type="file" style="display:none"/>
 
