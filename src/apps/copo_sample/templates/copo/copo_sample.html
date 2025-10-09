@@ -211,34 +211,36 @@
                  style="display: none;">
                 <div class="copo-webui-popover">
                     <div class="webui-popover-inner">
-                        <h3 class="copo-webui-popover-title">Samples - Getting started</h3>
+                        <h3 class="copo-webui-popover-title">Getting started</h3>
                         <div class="copo-webui-popover-content">
                             <div class="webpop-content-div">
-                                The samples page provides a platform for describing and managing
-                                biological samples,
-                                obtained as part of a project.
-                                <br/><br/>The description functionality presents a wizard that guides
-                                the user through a step-by-step
-                                process of sample metadata attribution.
-                                <br/><br/>
-                                Use the
-                                <button id="help_add_button" class="circular tiny ui icon button">
-                                    <i class="icon sign table"></i>
-                                </button>
-                                to upload <strong>{{ profile.type | get_profile_type_description}}</strong> samples.
-                                <br/><br/>
-                                Click the
-                                    <button class="circular tiny ui icon brown  button">
+                                This page relates to <strong>{{ profile.type | get_profile_type_description}}</strong> as part 
+                                of the <strong>Samples</strong> component 
+                                (<i id="componentIcon" class="ui icon" aria-hidden="true"></i>) of a profile. 
+                                Samples represent units of biomaterial usually associated with single collection events.
+                                <br><br>
+                                <div>
+                                    <strong>Download blank manifest</strong>: Click the
+                                    <button class="circular tiny ui icon brown button no-click">
                                         <i class="icon download sign"></i>
                                     </button>
-                                to download a blank <strong>{{ profile.type | get_profile_type_description }}</strong> manifest template.
-                                <br /><br />
-                                <div><strong>Quick Tour: </strong>To explore the various
-                                    controls available on this page, click the
-                                    <button class="circular tiny ui icon orange button">
+                                    button above to download a blank manifest template.  
+                                </div>
+                                <br>
+                                <div>
+                                    <strong>Upload completed manifest</strong>: After having completed the manifest, click the
+                                    <button id="help_add_button" class="circular tiny ui icon button no-click">
+                                        <i class="icon table sign"></i>
+                                     </button>
+                                    button above to upload it.
+                                </div>
+                                <br>
+                                <div>
+                                    <strong>Quick tour</strong>: To explore various controls on this page, click the
+                                    <button class="circular tiny ui icon orange button no-click">
                                         <i class="icon lightbulb"></i>
                                     </button>
-                                    icon.
+                                    button above.
                                 </div>
                             </div>
                         </div>

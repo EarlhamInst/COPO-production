@@ -1,8 +1,9 @@
 {% extends 'copo/base_2col.html' %}
-{% load static %} {% load web_tags %} 
-{%load html_tags %}
+{% load static %}
+{% load web_tags %} 
+{% load html_tags %}
 
-{% block title %}{{ ui_component }}{% endblock %}
+{% block title %}{{ ui_component | get_component_title }}{% endblock %}
 
 {% block stylesheet_block%}
 <style>
@@ -19,7 +20,7 @@
 </style>
 
 {% endblock %} 
-{% block title_block %}{{ ui_component }}{% endblock %}
+{% block title_block %}{{ ui_component | get_component_title }}{% endblock %}
 {% block tagline_block%} {% endblock %}
 {% block browse_header_block %} {% csrf_token %}
 <div hidden id="hidden_attrs">
@@ -51,7 +52,7 @@
   <input
     type="hidden"
     id="component_subtitle"
-    value="<select id='checklist_id' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}' >  {{ checklist.primary_id }} : {{ checklist.name }}</option>{% endfor %}</select> "
+    value="<select id='checklist_id' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}'>{{ checklist.name }}</option>{% endfor %}</select>"
   />
   <input
     type="hidden"
@@ -75,28 +76,36 @@
   >
     <div class="copo-webui-popover">
       <div class="webui-popover-inner">
-        <h3 class="copo-webui-popover-title">{{ ui_component }} - Getting started</h3>
+        <h3 class="copo-webui-popover-title">Getting started</h3>
         <div class="copo-webui-popover-content">
           <div class="webpop-content-div">
-            The <strong>{{ ui_component }}</strong> component of a profile <br /><br />
-            Select the desired checklist from the dropdown menu then, click the
-            <button class="circular tiny ui icon brown button">
-              <i class="icon download sign"></i>
-            </button>
-            button to download the blank manifest.
-            <br /><br />
-            After having completed the manifest, click the
-            <button id="help_add_button" class="circular tiny ui icon button">
-              <i class="icon table sign"></i>
-            </button>
-            button to upload the manifest.
-            <!--div><strong>Quick Tour: </strong>To explore the various
-                                controls available on this page, click the
-                                <button class="circular tiny ui icon orange button">
-                                    <i class="icon lightbulb"></i>
-                                </button>
-                                icon.
-                            </div-->
+            This page relates to the <strong>{{ ui_component | get_component_title }}</strong> component 
+            (<i id="componentIcon" class="ui icon" aria-hidden="true"></i>) of a profile. 
+            <span class="welcome-msg page-welcome-message-{{ ui_component }}"></span>
+            <br><br>
+            <div>
+              <strong>Download blank manifest</strong>: Select the desired checklist from the dropdown menu above then, click the
+              <button class="circular tiny ui icon brown button no-click">
+                  <i class="icon download sign"></i>
+              </button>
+              button next to it to download a blank manifest.
+            </div> 
+            <br><br>
+            <div>
+              <strong>Upload completed manifest</strong>: After having completed the manifest, 
+              choose the matching checklist option from the dropdown menu then, click the
+              <button id="help_add_button" class="circular tiny ui icon button no-click">
+                  <i class="icon table sign"></i>
+              </button>
+              button to upload it.
+            </div>
+            <!--<div>
+              <strong>Quick tour</strong>: To explore various controls on this page, click the
+              <button class="circular tiny ui icon orange button no-click">
+                  <i class="icon lightbulb"></i>
+              </button>
+              button.
+            </div>-->
           </div>
         </div>
       </div>
@@ -112,7 +121,7 @@ data-backdrop="static" data-keyboard="false">
     <div class="modal-header">
         <button id='singlecell_close_btn' type="button" class="close" aria-label="Close" data-dismiss="modal"><span
                 aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Upload a completed manifest for : <span style="color:white;font-size:20px;" id="span_checklist" /> </h4>
+        <h4 class="modal-title">Upload a completed manifest for: <span style="color:white;font-size:20px;" id="span_checklist"></span> </h4>
     </div>
     <div class="modal-body" style="width: 100%">
             <div class="col-lg-12 col-md-12 col-sm-12">

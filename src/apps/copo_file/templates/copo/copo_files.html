@@ -4,13 +4,13 @@
 {% load web_tags %}
 {% load html_tags %}
 
-{% block title %}Files{% endblock %}
+{% block title %}Data Files{% endblock %}
 
 {% block stylesheet_block %}
     <link rel="stylesheet" href="{% static 'copo/css/copo_files.css' %}">
 {% endblock %}
 
-{% block title_block %}Files{% endblock %}
+{% block title_block %}Data Files{% endblock %}
 
 {% block tagline_block %}
 
@@ -135,25 +135,32 @@
              style="display: none;">
             <div class="copo-webui-popover">
                 <div class="webui-popover-inner">
-                    <h3 class="copo-webui-popover-title">Files - Getting started</h3>
+                    <h3 class="copo-webui-popover-title">Getting started</h3>
                     <div class="copo-webui-popover-content">
                         <div class="webpop-content-div">
-                            The files' page provides a platform for uploading files from a cluster or from one's
-                            local (computer) system.
-                            <br/><br/>
-                            <div>To add files from your local system, click the
-                                <button class="circular tiny ui icon primary button">
-                                    <i class="icon desktop sign"></i>
-                                </button>
-                                icon.
-                            </div>
-                            <br/>
-                            <div>To add files via the terminal, click the
-                                <button class="circular tiny ui icon primary button">
-                                    <i class="icon terminal sign"></i>
-                                </button>
-                                icon.
-                            </div>
+                            This page relates to the <strong>Data Files</strong> component 
+                            (<i id="componentIcon" class="ui icon" aria-hidden="true"></i>) of a profile.
+                            The following are ways to upload data files:
+                            <ol>
+                                <li>
+                                    <b>From your local (computer) system</b>: click the
+                                    <button class="circular tiny ui icon primary button no-click">
+                                        <i class="icon desktop sign"></i>
+                                    </button>
+                                    icon above.
+                                </li>
+                                <li>
+                                    <b>Via the terminal</b>: click the
+                                    <button class="circular tiny ui icon primary button no-click">
+                                        <i class="icon terminal sign"></i>
+                                    </button>
+                                    icon above. 
+                                    <br>Files can be uploaded from a 
+                                    <span class="hover-text" title="High-performance computing">HPC</span> 
+                                    cluster. Use a Slurm job with the HPC scheduler when uploading from the cluster.
+                                </li>
+                            </ol>
+                            <br>
                         </div>
                     </div>
                 </div>

@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group
 from django.conf import settings
 from datetime import datetime
 from src.apps.copo_core.models import (
+    Component,
     SequencingCentre,
     AssociatedProfileType,
     ProfileType,
@@ -155,3 +156,15 @@ def get_non_nan_value(value):
         return value
     return 'N/A'
 
+@register.filter(is_safe=True, name='get_component_title')
+def get_component_title(component_name):
+    component = Component.objects.filter(name=component_name).first()
+
+    if component is None:
+        return 'Single-cell'
+
+    return (
+        f'{component.title} {component.group_name}'
+        if component.group_name
+        else component.title
+    )

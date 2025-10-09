@@ -153,8 +153,29 @@ div.dataTables_wrapper div.dataTables_processing {
   background: transparent !important;
 }
 
+div.dataTables_length,
 div.dataTables_paginate {
   padding-top: 15px !important;
+  width: 50%;
+}
+
+.modal div .dataTables_wrapper .dataTables_info,
+.modal .dataTables_wrapper .dataTables_info {
+  padding-top: 25px !important;
+}
+
+.modal div .dataTables_wrapper .dataTables_paginate,
+.modal .dataTables_wrapper .dataTables_paginate {
+  width: 100% !important;
+}
+
+div.dataTables_length {
+  float: left;
+}
+
+div.dataTables_paginate {
+  float: right;
+  margin-bottom: 5px !important;
 }
 
 div.dataTables_processing.ui.segment {
@@ -512,6 +533,33 @@ copo-noborders-table.dataTable thead td {
 
 .text-underline {
   text-decoration: underline;
+}
+
+.hover-text {
+  color: #0077cc;
+  text-decoration: underline;
+  cursor: help;
+}
+
+.ui.tiny.button.no-click {
+  font-size: 8px !important;
+}
+
+.no-click {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+#componentIcon {
+  cursor: not-allowed;
+  pointer-events: none;
+  display: inline;
+  vertical-align: middle;
+  margin-right: -0.015em;
+}
+
+.webpop-content-div span.welcome-msg {
+  color: rgba(0, 0, 0, 0.87);
 }
 
 /*custom styling of bootstrap dialog*/
@@ -2035,4 +2083,23 @@ div.shown span.side-help-trigger:before {
   text-overflow: ellipsis;
   /* Aligns text with the baseline of the text */
   vertical-align: bottom;
+}
+
+/* Quick tour button CSS */
+.tour-start-btn,
+.tour-next-btn {
+  text-decoration: none;
+}
+
+.webpop-content-div span,
+.tour-start-btn i,
+.tour-next-btn i {
+  color: #35637e;
+}
+
+.tour-dismiss-btn,
+.tour-end-btn {
+  text-decoration: none;
+  color: #c93c00;
+  float: right !important;
 }

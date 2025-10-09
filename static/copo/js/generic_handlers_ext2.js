@@ -80,6 +80,22 @@ function render_zenodo_accession_function(data, type, row, meta) {
   }
 }
 
+function addComponentMessage(componentName) {
+  // Adds additional information to the component page
+  let pageDescription = $('.page-welcome-message-template').find(
+    `.msg-${componentName}`
+  );
+
+  let $pageDescriptionElement = $(`.page-welcome-message-${componentName}`);
+
+  if (pageDescription.length && $pageDescriptionElement.length) {
+    $pageDescriptionElement.html(pageDescription.html().trim());
+  } else {
+    // console.warn(`Page welcome message not found for ${componentName}`);
+    if (!$pageDescriptionElement.length) $pageDescriptionElement.remove();
+  }
+}
+
 function set_empty_component_message(dataRows, table_id = '*') {
   //decides, based on presence of record, to display table or getting started info
 

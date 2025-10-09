@@ -53,7 +53,7 @@
   <input
     type="hidden"
     id="component_subtitle"
-    value="<select id='checklist_id' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}' >  {{ checklist.primary_id }} : {{ checklist.name }}</option>{% endfor %}</select> "
+    value="<select id='checklist_id' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}' >  {{ checklist.primary_id }}: {{ checklist.name }}</option>{% endfor %}</select> "
   />
   <input
     type="hidden"
@@ -76,28 +76,36 @@
   >
     <div class="copo-webui-popover">
       <div class="webui-popover-inner">
-        <h3 class="copo-webui-popover-title">Sample - Getting started</h3>
+        <h3 class="copo-webui-popover-title">Getting started</h3>
         <div class="copo-webui-popover-content">
           <div class="webpop-content-div">
-            The <strong>Sample</strong> component of a profile <br /><br />
-            Select the desired checklist from the dropdown menu then, click the
-            <button class="circular tiny ui icon brown button">
-              <i class="icon download sign"></i>
-            </button>
-            button to download the blank manifest.
-            <br /><br />
-            After having completed the manifest, click the
-            <button id="help_add_button" class="circular tiny ui icon button">
-              <i class="icon table sign"></i>
-            </button>
-            button to upload the manifest.
-            <!--div><strong>Quick Tour: </strong>To explore the various
-                                controls available on this page, click the
-                                <button class="circular tiny ui icon orange button">
-                                    <i class="icon lightbulb"></i>
-                                </button>
-                                icon.
-                            </div-->
+            This page relates to the <strong>Samples</strong> component 
+            (<i id="componentIcon" class="ui icon" aria-hidden="true"></i>) of a profile. 
+            Samples represent units of biomaterial usually associated with single collection events.
+            <br><br>
+            <div>
+              <strong>Download blank manifest</strong>: Select the desired checklist from the dropdown menu above then, click the
+              <button class="circular tiny ui icon brown button no-click">
+                  <i class="icon download sign"></i>
+              </button>
+              button next to it to download a blank manifest.  
+            </div>
+            <br>
+            <div>
+              <strong>Upload completed manifest</strong>: After having completed the manifest, 
+              choose the matching checklist option from the dropdown menu then, click the
+              <button id="help_add_button" class="circular tiny ui icon button no-click">
+                  <i class="icon table sign"></i>
+              </button>
+              button to upload it.
+            </div>
+            <!--<div>
+              <strong>Quick tour</strong>: To explore various controls on this page, click the
+              <button class="circular tiny ui icon orange button no-click">
+                  <i class="icon lightbulb"></i>
+              </button>
+              button.
+            </div>-->
           </div>
         </div>
       </div>

@@ -15,6 +15,7 @@ $(document).ready(function () {
   //set up global navigation components if component is available
   if (componentName) {
     do_page_controls(componentName);
+    setComponentIcon(componentName);
   }
 
   //global_help_call
@@ -2936,6 +2937,45 @@ function do_page_controls(componentName) {
   initialiseComponentDropdownMenu();
 } //end of func
 
+function setComponentIcon(componentName) {
+  let $componentIcon = $('#componentIcon');
+  let component = get_component_meta(componentName);
+
+  if (componentName === 'profile') return;
+
+  if (component && $componentIcon.length) {
+    $componentIcon.addClass(`${component.semanticIcon} ${component.color}`);
+
+    // Update page welcome message if a template message exists
+    addComponentMessage(componentName);
+  } else {
+    if (!$componentIcon.length) {
+      // console.warn(`Component icon not found for ${componentName}`);
+      return;
+    }
+
+    $componentIcon.hide();
+    // Remove the brackets surrounding the icon
+    $componentIcon
+      .contents()
+      .filter(function () {
+        return this.nodeType === 3;
+      })
+      .remove();
+  }
+}
+
+function getComponentGroupName(componentName) {
+  let component = get_component_meta(componentName);
+  if (!component) return '';
+
+  // Treat null, undefined, empty string or string "None" as empty.
+  // Parent components would typically have a "None" group name.
+  return !component.groupName || component.groupName === 'None'
+    ? ''
+    : component.groupName.trim().toLowerCase();
+}
+
 function groupComponentsByGroupName(components) {
   const grouped = {};
 
@@ -2962,7 +3002,8 @@ function createComponentAnchor(item, profileId, isIconOnly = false) {
     : $('a.pcomponent-button-template').clone();
 
   $templateAnchor.attr('title', function (_, oldTitle) {
-    return (oldTitle || '') + ` ${item.title}`;
+    let componentGroupName = item.groupName ? ` ${item.groupName}` : '';
+    return (oldTitle || '') + ` ${item.title}${componentGroupName}`;
   });
   $templateAnchor.attr(
     'href',
@@ -3027,7 +3068,7 @@ function createDropdownWrapper(
   } else {
     // Inner container is within component button only
     $container = $menu.find('.item');
-    
+
     $wrapper.removeClass(
       `${targetParentComponentName}-pcomponent-dropdown-button-template`
     );
@@ -3059,9 +3100,8 @@ function generate_component_control(componentName, profile_type) {
   if ($('#profile_title').length) {
     var profileTitle = $('<div/>', {
       class: 'page-title-custom',
-      style: 'margin-right:10px;',
       html:
-        "<span title='Profile title' style='color: #8c8c8c; font-size: 18px;'>Profile: " +
+        "<span class='page-profile-title-text' title='Profile title'>Profile: " +
         $('#profile_title').val() +
         '</span>',
     });
@@ -3070,20 +3110,19 @@ function generate_component_control(componentName, profile_type) {
   }
 
   //add page title
-  var PageTitle = $('<span/>', {
+  let componentGroupName = getComponentGroupName(componentName);
+  var pageTitle = $('<span/>', {
     class: 'page-title-custom',
-    style: 'margin-right:10px;',
     html:
-      component.title +
-      ' ' +
+      `<span class='page-title-text'>${component.title}&nbsp;${componentGroupName}</span>` +
       (component.subtitle
-        ? "<span style='color: #8c8c8c; font-size: 18px;'>" +
+        ? "<span class='page-subtitle-text'>" +
           $(component.subtitle).val() +
           '</span>'
         : ''),
   });
 
-  pageHeaders.append(PageTitle);
+  pageHeaders.append(pageTitle);
 
   //create panels
   if (component.sidebarPanels) {
@@ -3188,7 +3227,7 @@ function generate_component_control(componentName, profile_type) {
       const filteredItems = groupItems.filter(
         (item) => !skipCurrentComponent(item)
       );
-      
+
       // Render as dropdown if group is non-empty and has more
       // than one subcomponent
       const isDropdownMenu = groupName && filteredItems.length > 1;
@@ -3609,29 +3648,21 @@ function update_quick_tour_flag() {
 
 function quick_tour_event() {
   $('.takeatour').on('click', function (e) {
-    var dismissTour =
-      '<a class="dismisstouralert pull-right" href="#" role="button" ' +
-      'style="text-decoration: none; color:  #c93c00;" aria-haspopup="true" aria-expanded="false">' +
-      '<i class="fa fa-times-circle " aria-hidden="true">' +
-      '</i>&nbsp; Dismiss Tour</a>';
+    let template = $('.tour-template').clone();
 
-    var takeTour =
-      '<a class="takeatouryes" href="#" role="button" ' +
-      'style="text-decoration: none;" aria-haspopup="true" aria-expanded="false">' +
-      '<i class="fa fa-lightbulb-o " style="color: #35637e;" aria-hidden="true">' +
-      '</i>&nbsp; Take Tour</a>';
+    if (!template.length) {
+      console.log('No tour template found!');
+      return;
+    }
 
-    var messageContent =
-      'Do you want to take a quick tour of the page? <br/><br/><span style="color: #35637e;">Please note that your screen will be dimmed, and regular page elements inaccessible in the quick tour mode.</span>' +
-      '<hr/>' +
-      takeTour +
-      dismissTour;
-
+    template.removeClass('tour-template');
     $(this).webuiPopover('destroy');
 
     $(this).webuiPopover({
-      title: 'Quick Tour',
-      content: '<div class="webpop-content-div">' + messageContent + '</div>',
+      title: template.find('.webui-popover-title').html(),
+      content: function () {
+        return template.find('.webui-popover-content').html();
+      },
       trigger: 'sticky',
       width: 300,
       arrow: true,
@@ -3640,7 +3671,7 @@ function quick_tour_event() {
     });
   });
 
-  $(document).on('click', '.takeatouryes', function (e) {
+  $(document).on('click', '.tour-start-btn', function (e) {
     quickTourArray = [];
     WebuiPopovers.hideAll(); //hide all shown popovers
 
@@ -3659,18 +3690,18 @@ function quick_tour_event() {
     }
   });
 
-  $(document).on('click', '.quicktournext', function () {
+  $(document).on('click', '.tour-next-btn', function () {
     if (quickTourArray.length > 0) {
       quick_tour_select();
     }
   });
 
-  $(document).on('click', '.endcopotour', function () {
+  $(document).on('click', '.tour-end-btn', function () {
     quickTourArray = [];
     WebuiPopovers.hideAll(); //hide all shown popovers
   });
 
-  $(document).on('click', '.dismisstouralert', function () {
+  $(document).on('click', '.tour-dismiss-btn', function () {
     update_quick_tour_flag();
   });
 }
@@ -3678,28 +3709,31 @@ function quick_tour_event() {
 function quick_tour_select() {
   // display tour elements
 
-  var item = quickTourArray[0];
-  var itemMessage = quickTourMessages[item.attr('data-copo-tour-id')];
+  const item = quickTourArray[0];
+  const itemMessage = quickTourMessages[item.attr('data-copo-tour-id')];
 
-  var endTour =
-    '<a class="endcopotour pull-right" href="#" role="button" ' +
-    'style="text-decoration: none; color:  #c93c00;" aria-haspopup="true" aria-expanded="false">' +
-    '<i class="fa fa-times-circle " aria-hidden="true">' +
-    '</i>&nbsp; End Tour</a>';
+  let endTour = $('.tour-end-btn-temp')
+    .clone()
+    .removeClass('tour-end-btn-temp');
 
-  var nextTip = endTour;
+  let nextTip = endTour;
 
   if (quickTourArray.length > 1) {
-    nextTip =
-      '<a class="quicktournext" href="#" role="button" ' +
-      'style="text-decoration: none;" aria-haspopup="true" aria-expanded="false">' +
-      '<i class="fa fa-lightbulb-o " style="color: #35637e;" aria-hidden="true">' +
-      '</i>&nbsp; Next Tip</a>';
-
-    nextTip += endTour;
+    nextTip = $('.tour-next-btn-temp')
+      .clone()
+      .removeClass('tour-next-btn-temp');
+    nextTip.add(endTour);
   }
 
-  var messageContent = itemMessage.content + '<hr/>' + nextTip;
+  const messageContent =
+    itemMessage.content +
+    '<hr/>' +
+    nextTip
+      .map(function () {
+        return this.outerHTML;
+      })
+      .get()
+      .join('');
 
   item.webuiPopover('destroy');
   item.webuiPopover({
@@ -3747,9 +3781,14 @@ function quick_tour_messages() {
         content: 'Click this button to view system notifications.',
       },
       global_user_authenticated_button: {
-        title: 'Authenticated User',
+        title: 'Settings',
         content:
-          'Click here to access the following tasks: <ul><li>View your ORCiD profile</li><li>View obtained tokens</li><li>Logout of the system</li></ul>',
+          'Click here to access the following tasks: <ul><li>View work profile groups</li><li>View account details (e.g. ORCID)</li><li>Logout from COPO website</li></ul>',
+      },
+      about_button: {
+        title: 'About COPO',
+        content:
+          'Click here to view information about CollAborative OPen Omics Project (COPO), including privacy policy and terms of use.',
       },
       profile_links_button_group: {
         title: 'Profile Links',
@@ -3790,9 +3829,9 @@ function quick_tour_messages() {
       //     "content": "Interact with the help pane to find help topics relevant to the page and/or current task."
       // },
       profile_table: {
-        title: 'Profile Records',
+        title: 'Work Profiles',
         content:
-          "Profile records list.<ol><li>Click on any component (e.g., Samples) within a profile to access any particular component's page</li><li>Use the action buttons (e.g., Select all, Add) to interact with profile records</li><li>Use the profile search control to display a filtered listing of records, based on matched terms</li></ol>",
+          "Each profile created is made up of components. <ol><li>Click the <strong>Components</strong> button associated with a desired profile.</li><li>Click any of the components displayed in the popover (e.g. Samples) to access a particular component's page</li><li>Use the table records buttons (e.g., Select all, Add) to interact with profile records</li><li>Use the profile search box to display a filtered listing of records, based on matched terms</li></ol>",
       },
       new_publication_button: {
         title: 'Create New Publication',
@@ -4047,5 +4086,46 @@ function initialiseNavToggle() {
     if ($(window).width() >= 768) {
       $('.navbar-nav').removeClass('active');
     }
+  });
+}
+
+function confirmCloseDialog(triggerDialog) {
+  BootstrapDialog.show({
+    title: 'Confirm Close',
+    message:
+      'Are you sure that you would like to close the modal? ' +
+      'Any upload progress will be lost.',
+    cssClass: 'copo-modal1',
+    closable: false,
+    animate: true,
+    closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
+    closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
+    type: BootstrapDialog.TYPE_WARNING,
+    buttons: [
+      {
+        label: 'No, cancel',
+        cssClass: 'tiny ui basic button',
+        action: function (dialogRef) {
+          dialogRef.close();
+        },
+      },
+      {
+        label: 'Yes, close modal',
+        cssClass: 'tiny ui basic button',
+        action: function (dialogRef) {
+          dialogRef.close(); // Close 'Confirm Close' modal
+          triggerDialog.close(); // Close triggered modal
+        },
+      },
+    ],
+    onshown: function (dialogRef) {
+      // Remove aria-hidden before focusing the modal
+      dialogRef.getModal().removeAttr('aria-hidden');
+
+      // Set focus after a short delay
+      setTimeout(function () {
+        dialogRef.getModal().focus();
+      }, 50);
+    },
   });
 }

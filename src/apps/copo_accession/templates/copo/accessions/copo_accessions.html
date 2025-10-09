@@ -65,22 +65,24 @@
             <div class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-0 page-welcome-message" style="display: none;">
                 <div class="copo-webui-popover">
                     <div class="webui-popover-inner">
-                        <h3 class="copo-webui-popover-title">Accessions - Getting started</h3>
+                        <h3 class="copo-webui-popover-title">Getting started</h3>
                         <div class="copo-webui-popover-content">
                             <div class="webpop-content-div">
-                                The accessions page provides a platform for retrieving and analysing
-                                biological samples that have biosample accession, SRA accession
-                                and submission accession associated with them as part of a project
-                                after the samples have been accepted.
+                                This page relates to the <strong>Accessions</strong> component 
+                                (<i id="componentIcon" class="ui icon" aria-hidden="true"></i>) of a profile.
+                                It displays the unique identifiers (accessions) assigned to submissions along 
+                                with basic information about each submission. These may include project, biosample,
+                                <span class="hover-text" title="Sequence Read Archive (SRA, previously known as the Short Read Archive)">SRA</span>
+                                and submission accessions associated.
 
                                 {% if showAllCOPOAccessions is False %}
-                                <br /><br />
+                                <br><br>
                                 <div><strong>All COPO accessions: </strong>To explore all accessions on COPO,
                                     click the
-                                    <button class="circular tiny ui icon pink button">
+                                    <button class="circular tiny ui icon pink button no-click">
                                         <i class="icon sitemap"></i>
                                     </button>
-                                    icon.
+                                    icon above.
                                 </div>
                                 {% endif %}
                             </div>
