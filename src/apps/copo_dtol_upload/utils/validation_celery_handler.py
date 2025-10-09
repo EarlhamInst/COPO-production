@@ -294,8 +294,8 @@ class ProcessValidationQueue:
 
     def make_table(self, qm):
         permits_required = False
-        notify_frontend(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid", action="info",
-                        max_ellipsis_length=0, html_id="sample_info")
+        notify_frontend(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.", 
+            action="info", max_ellipsis_length=0, html_id="sample_info")
         notify_frontend(data={"profile_id": self.profile_id}, msg="", action="close", html_id="upload_controls")
         notify_frontend(data={"profile_id": self.profile_id}, msg="", action="make_valid", html_id="sample_info")
 

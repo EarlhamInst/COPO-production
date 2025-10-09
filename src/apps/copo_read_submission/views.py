@@ -112,8 +112,8 @@ def parse_ena_spreadsheet(request):
                 return HttpResponseBadRequest()
             ghlper.notify_read_status(
                 data={"profile_id": profile_id},
-                msg='Spreadsheet is valid',
-                action="info",
+                msg='Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.',
+                action="success",
                 html_id="sample_info",
             )
             ena.collect()

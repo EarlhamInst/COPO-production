@@ -84,8 +84,8 @@ def parse_sample_spreadsheet(request):
     if ena.loadManifest(fmt):
         l.log("Sample manifest loaded")
         if ena.validate():
-            ghlper.notify_read_status(data={"profile_id": profile_id}, msg="Spreadsheet is valid", action="info",
-                             html_id="sample_info")
+            ghlper.notify_read_status(data={"profile_id": profile_id}, msg="Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.", 
+                action="success", html_id="sample_info")
             ena.collect()
             return HttpResponse()
         else:

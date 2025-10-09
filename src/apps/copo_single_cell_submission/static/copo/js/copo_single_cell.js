@@ -89,10 +89,18 @@ $(document).on('document_ready', function () {
       $(element).removeClass('alert-danger').addClass('alert-info');
       $(element).html(d.message);
       //$("#spinner").fadeOut()
+    } else if (d.action === 'success') {
+      // show something on the success div
+      // check success div is visible
+      $(element).removeClass('alert-danger alert-info').addClass('alert-success');
+      $(element).html(d.message);
+      //$("#spinner").fadeOut()
     } else if (d.action === 'warning') {
       // show something on the info div
       // check info div is visible
-      $(element).removeClass('alert-danger').removeClass("alert-info").addClass('alert-warning');
+      $(element)
+        .removeClass('alert-danger alert-info')
+        .addClass('alert-warning');
       $(element).html(d.message);
       //$("#spinner").fadeOut()
     } else if (d.action === 'error') {
@@ -148,6 +156,12 @@ $(document).on('document_ready', function () {
       // show something on the info div
       // check info div is visible
       $(element).removeClass('alert-danger').addClass('alert-warning');
+      $(element).html(d.message);
+      //$("#spinner").fadeOut()
+    } else if (d.action === 'success') {
+      // show something on the success div
+      // check success div is visible
+      $(element).removeClass('alert-danger alert-info').addClass('alert-success');
       $(element).html(d.message);
       //$("#spinner").fadeOut()
     } else if (d.action === 'error') {

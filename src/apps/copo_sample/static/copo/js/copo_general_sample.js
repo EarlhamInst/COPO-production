@@ -28,7 +28,7 @@ var columnDefs = [];
 
 var dialog = new BootstrapDialog({
   title: 'Upload Sample Manifest',
-  message: "<div><input type='file' id='fileid' style='display:none' /></div>",
+  message: "<div><input type='file' id='fileid' style='display:none;'/></div>",
   size: BootstrapDialog.SIZE_WIDE,
   buttons: [
     {
@@ -58,10 +58,31 @@ var dialog = new BootstrapDialog({
     {
       label: 'Close',
       action: function (dialogItself) {
-        dialogItself.close();
+        confirmCloseDialog(dialogItself);
       },
     },
   ],
+  onshown: function (dialogRef) {
+    // Remove aria-hidden before focusing the modal
+    dialogRef.getModal().removeAttr('aria-hidden');
+
+    // Show the confirmation dialog if the close
+    // icon in the modal title is clicked
+    dialogRef
+      .getModal()
+      .find('.bootstrap-dialog-close-button')
+      .off('click.confirm') // Prevent duplicate handlers
+      .on('click.confirm', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        confirmCloseDialog(dialogRef);
+      });
+
+    // Set focus after a short delay
+    setTimeout(function () {
+      dialogRef.getModal().focus();
+    }, 50);
+  },
 });
 
 $(document).on('document_ready', function () {
@@ -116,6 +137,13 @@ $(document).on('document_ready', function () {
       $(element).removeClass('alert-danger').addClass('alert-warning');
       $(element).html(d.message);
       //$("#spinner").fadeOut()
+    } else if (d.action === 'success') {
+      // check success div is visible
+      $(element)
+        .removeClass('alert-danger alert-info')
+        .addClass('alert-success');
+      $(element).html(d.message);
+      //$("#spinner").fadeOut();
     } else if (d.action === 'error') {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');
@@ -164,6 +192,13 @@ $(document).on('document_ready', function () {
       $(element).removeClass('alert-danger').addClass('alert-warning');
       $(element).html(d.message);
       //$("#spinner").fadeOut()
+    } else if (d.action === 'success') {
+      // check success div is visible
+      $(element)
+        .removeClass('alert-danger alert-info')
+        .addClass('alert-success');
+      $(element).html(d.message);
+      //$("#spinner").fadeOut();
     } else if (d.action === 'error') {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');

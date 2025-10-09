@@ -265,8 +265,8 @@ class DtolSpreadsheet:
             raise
 
         # if we get here we have a valid spreadsheet
-        notify_frontend(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid", action="info",
-                        html_id="sample_info")
+        notify_frontend(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.",
+            action="success", html_id="sample_info")
         notify_frontend(data={"profile_id": self.profile_id}, msg="", action="close", html_id="upload_controls")
         notify_frontend(data={"profile_id": self.profile_id}, msg="", action="make_valid", html_id="sample_info")
 

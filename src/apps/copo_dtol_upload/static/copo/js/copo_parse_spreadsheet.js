@@ -363,8 +363,14 @@ $(document).ready(function () {
     );
 
     // Add event listeners to the close buttons
-    sample_spreadsheet_close_btn1.addEventListener('click', confirmCloseDialog);
-    sample_spreadsheet_close_btn2.addEventListener('click', confirmCloseDialog);
+    sample_spreadsheet_close_btn1.addEventListener(
+      'click',
+      confirmCloseSampleDialog
+    );
+    sample_spreadsheet_close_btn2.addEventListener(
+      'click',
+      confirmCloseSampleDialog
+    );
   }
 
   var profileId = $('#profile_id').val();
@@ -818,7 +824,7 @@ $(document).ready(function () {
           $('#sample_info').hide();
           $('#sample_parse_table').DataTable({
             scrollY: 'auto',
-            scrollX: true
+            scrollX: true,
           });
           $('#table_div').fadeIn(1000);
           $('#sample_parse_table').DataTable().draw();
@@ -858,73 +864,64 @@ $(document).ready(function () {
   };
 });
 
-$(document).on(
-  'click',
-  '.new-samples-spreadsheet-template',
-  function (event) {
-    $('#sample_spreadsheet_modal').modal('show');
+$(document).on('click', '.new-samples-spreadsheet-template', function (event) {
+  $('#sample_spreadsheet_modal').modal('show');
 
-    $('#warning_info').fadeOut('fast');
-    $('#warning_info2').fadeOut('fast');
-    $('#warning_info3').fadeOut('fast');
+  $('#warning_info').fadeOut('fast');
+  $('#warning_info2').fadeOut('fast');
+  $('#warning_info3').fadeOut('fast');
 
-    $('#images_label').addClass('disabled');
-    $('#images_label').attr('disabled', 'true');
-    $('#images_label').find('input').attr('disabled', 'true');
-    $('#ss_upload_spinner').fadeOut('fast');
-    $('#files_label').addClass('disabled');
-    $('#files_label').attr('disabled', 'true');
-    $('#files_label').find('input').attr('disabled', 'true');
-    $('#finish_button').fadeOut('fast');
-    $('#confirm_button').fadeOut('fast');
-    $('#export_errors_button').fadeOut('fast');
-  }
-);
+  $('#images_label').addClass('disabled');
+  $('#images_label').attr('disabled', 'true');
+  $('#images_label').find('input').attr('disabled', 'true');
+  $('#ss_upload_spinner').fadeOut('fast');
+  $('#files_label').addClass('disabled');
+  $('#files_label').attr('disabled', 'true');
+  $('#files_label').find('input').attr('disabled', 'true');
+  $('#finish_button').fadeOut('fast');
+  $('#confirm_button').fadeOut('fast');
+  $('#export_errors_button').fadeOut('fast');
+});
 
-$(document).on(
-  'click',
-  '.new-samples-spreadsheet-template',
-  function (event) {
-    profile_type = $('#profile_type').val();
-    if (profile_type.toLowerCase() == 'erga') {
-
-      BootstrapDialog.show({
-        title: 'Accept Code of Conduct',
-        message:
-          "By uploading a manifest to Collaborative OPen Omics (COPO), you confirm that you are an European Reference Genome Atlas (ERGA) member and thus adhere to ERGA's " +
-          'code of conduct.' +
-          '\n\nYou further confirm that you read, understood and followed the ' +
-          "<a href='https://bit.ly/3zHun36'>ERGA Sample " +
-          'Code of Practice</a>.',
-        cssClass: 'copo-modal1',
-        closable: true,
-        animate: true,
-        closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
-        closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
-        type: BootstrapDialog.TYPE_INFO,
-        buttons: [
-          {
-            label: 'Cancel',
-            cssClass: 'tiny ui basic' + ' button',
-            id: 'code_cancel',
-            action: function (dialogRef) {
-              $('#sample_spreadsheet_modal').modal('hide');
-              dialogRef.close();
-            },
+$(document).on('click', '.new-samples-spreadsheet-template', function (event) {
+  profile_type = $('#profile_type').val();
+  if (profile_type.toLowerCase() == 'erga') {
+    BootstrapDialog.show({
+      title: 'Accept Code of Conduct',
+      message:
+        "By uploading a manifest to Collaborative OPen Omics (COPO), you confirm that you are an European Reference Genome Atlas (ERGA) member and thus adhere to ERGA's " +
+        'code of conduct.' +
+        '\n\nYou further confirm that you read, understood and followed the ' +
+        "<a href='https://bit.ly/3zHun36'>ERGA Sample " +
+        'Code of Practice</a>.',
+      cssClass: 'copo-modal1',
+      closable: true,
+      animate: true,
+      closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
+      closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
+      type: BootstrapDialog.TYPE_INFO,
+      buttons: [
+        {
+          label: 'Cancel',
+          cssClass: 'tiny ui basic' + ' button',
+          id: 'code_cancel',
+          action: function (dialogRef) {
+            $('#sample_spreadsheet_modal').modal('hide');
+            dialogRef.close();
           },
-          {
-            label: 'Okay',
-            id: 'code_okay',
-            cssClass: 'tiny ui basic button',
-            action: function (dialogRef) {
-              dialogRef.close();
-            },
+        },
+        {
+          label: 'Okay',
+          id: 'code_okay',
+          cssClass: 'tiny ui basic button',
+          action: function (dialogRef) {
+            dialogRef.close();
           },
-        ],
-      });
-    }
+        },
+      ],
+    });
   }
-);
+});
 
 $(document).on('click', '#code_cancel', function (event) {
   var data = $('#sample_info').html();
@@ -972,8 +969,9 @@ function download(filename, text) {
   }
 }
 
-function confirmCloseDialog(el) {
-  el.preventDefault();
+function confirmCloseSampleDialog(e) {
+  e.preventDefault();
+
   BootstrapDialog.show({
     title: 'Confirm Close',
     message:
@@ -1003,9 +1001,19 @@ function confirmCloseDialog(el) {
           dialogRef.close();
 
           // Close 'Upload Spreadsheet' modal
-          $('#sample_spreadsheet_modal').modal('hide');
+          const modalId = $(e.target).closest('.modal').attr('id');
+          $(`#${modalId}`).modal('hide');
         },
       },
     ],
+    onshown: function (dialogRef) {
+      // Remove aria-hidden before focusing the modal
+      dialogRef.getModal().removeAttr('aria-hidden');
+
+      // Set focus after a short delay
+      setTimeout(function () {
+        dialogRef.getModal().focus();
+      }, 50);
+    },
   });
 }

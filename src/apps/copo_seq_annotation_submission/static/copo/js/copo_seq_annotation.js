@@ -141,6 +141,17 @@ $(document).ready(function () {
         $('body').trigger(event);
       }
       //$("#spinner").fadeOut()
+    } else if (d.action === 'success') {
+      // show something on the info div
+      // check info div is visible
+      $(element).removeClass('alert-danger alert-info').addClass('alert-success');
+      $(element).html(d.message);
+      if ('table_data' in d.data) {
+        globalDataBuffer = d.data;
+        var event = jQuery.Event('refreshtable');
+        $('body').trigger(event);
+      }
+      //$("#spinner").fadeOut()
     } else if (d.action === 'error') {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');

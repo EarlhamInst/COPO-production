@@ -80,6 +80,11 @@ $(document).ready(function () {
       $(element).removeClass('alert-danger').addClass('alert-info');
       $(element).html(d.message);
       //$("#spinner").fadeOut()
+    } else if (d.action === 'success') {
+      // check info div is visible
+      $(element).removeClass('alert-info alert-danger').addClass('alert-success');
+      $(element).html(d.message);
+      //$("#spinner").fadeOut()
     } else if (d.action === 'error') {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');

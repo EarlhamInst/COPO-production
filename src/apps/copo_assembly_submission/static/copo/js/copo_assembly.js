@@ -37,6 +37,14 @@ $(document).on("document_ready", function() {
         .addClass('alert-info');
       //$("#" + d.html_id).html(d.message)
       //$("#spinner").fadeOut()
+    } else if (d.action === 'success') {
+      // show something on the success div
+      // check success div is visible
+      $('#' + d.html_id)
+        .removeClass('alert-info alert-danger')
+        .addClass('alert-success');
+      //$('#' + d.html_id).html(d.message);
+      //$("#spinner").fadeOut()
     } else if (d.action === 'error') {
       // check info div is visible
       $('#' + d.html_id)
