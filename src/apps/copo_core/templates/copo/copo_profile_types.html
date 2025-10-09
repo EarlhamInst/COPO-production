@@ -5,7 +5,7 @@
 const title_button_def = {
   {% autoescape off %}
   {% for button in title_button_def %}
-    {{ button.name  }} : {
+    {{ button.name  }}: {
       template: `{{ button.template }}`,
       additional_attr: '{{ button.additional_attr }}',
       },
