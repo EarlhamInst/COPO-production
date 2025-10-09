@@ -13,6 +13,7 @@ import inspect
 import math
 from common.schema_versions.lookup import dtol_lookups as lookup
 from common.validators.ena_validators import ena_checklist_validators  as required_validators
+from common.validators.ena_validators.ena_checklist_validators import ManifestChecklistValidator
 from common.validators.validator import Validator
 import json
 from common.dal.profile_da import Profile
@@ -317,7 +318,7 @@ class ChecklistHandler:
             """
 
 class EnaCheckListSpreadsheet:
-   def __init__(self, file, checklist_id, component, validators=[], with_read=True, with_sample=True):
+    def __init__(self, file, checklist_id, component, validators=[], with_read=True, with_sample=True):
         self.with_read = with_read
         self.req = ThreadLocal.get_current_request()
         self.profile_id = self.req.session.get("profile_id", None)
@@ -338,10 +339,9 @@ class EnaCheckListSpreadsheet:
         # if not then we are looking at creating samples having previously validated
         if file:
             self.file = file
-        #else:
+        # else:
         #    self.sample_data = self.req.session.get( self.component_table, "")
         #    self.isupdate = self.req.session.get("isupdate", False)
-
 
         # create list of required validators
         required = dict(globals().items())["required_validators"]
@@ -350,12 +350,19 @@ class EnaCheckListSpreadsheet:
             if inspect.isclass(element) and issubclass(element, Validator) and not element.__name__ == "Validator":
                 self.required_validators.append(element)
 
+        # Remove ManifestChecklistValidator if it was already added by the loop (to avoid duplicates)
+        self.required_validators = [
+            v for v in self.required_validators if v is not ManifestChecklistValidator
+        ]
+        # Insert at the beginning
+        self.required_validators.insert(0, ManifestChecklistValidator)
+
         self.required_validators.extend(validators)
 
-   def get_filenames_from_manifest(self):
+    def get_filenames_from_manifest(self):
         return list(self.data["File name"])
 
-   def loadManifest(self, m_format):
+    def loadManifest(self, m_format):
 
         if self.profile_id is not None:
             notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Loading...", action="info",
@@ -376,8 +383,8 @@ class EnaCheckListSpreadsheet:
                 self.data = self.data.loc[:, ~self.data.columns.str.contains('^Unnamed')]
                 self.data = self.data.apply(lambda x: x.astype(str))
                 self.data = self.data.apply(lambda x: x.str.strip())
-                #self.data.columns = self.data.columns.str.replace(" ", "")
-                   
+                # self.data.columns = self.data.columns.str.replace(" ", "")
+
                 new_column_name = { name : name.replace(" (optional)", "",-1).upper() for name in self.data.columns.values.tolist() }
                 self.new_data = self.data.rename(columns=new_column_name)    
 
@@ -393,12 +400,11 @@ class EnaCheckListSpreadsheet:
                 return False
             return True
 
-   def validate(self):
+    def validate(self):
         flag = True
         errors = []
         warnings = []
         self.isupdate = False
- 
 
         # validate for required fields
         for v in self.required_validators:
@@ -407,17 +413,21 @@ class EnaCheckListSpreadsheet:
                                                         data=self.new_data, fields=None,
                                                         errors=errors, warnings=warnings, flag=flag,
                                                         isupdate=self.isupdate).validate()
+
+                # Stop executing further validators if uploaded  manifest doesn't match expected checklist
+                if not flag and v is ManifestChecklistValidator:
+                    break
             except Exception as e:
                 l.exception(e)
                 error_message = str(e).replace("<", "").replace(">", "")
 
                 flag = False
                 errors.append(error_message)
-                                    
-                #notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Server Error - " + error_message,
+
+                # notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Server Error - " + error_message,
                 #                action="info",
                 #                html_id=self.component_info, checklist_id=self.checklist_id)
-                
+
         # send warnings
         if warnings:
             l.log(",".join(warnings))
@@ -435,20 +445,20 @@ class EnaCheckListSpreadsheet:
                             action="error",
                             html_id=self.component_info, checklist_id=self.checklist_id)
             return False
- 
+
         for column in self.new_data.columns:
             if column.startswith(Validator.PREFIX_4_NEW_FIELD):
                 self.data[column.removeprefix(Validator.PREFIX_4_NEW_FIELD)] = self.new_data[column]
 
         # if we get here we have a valid spreadsheet
-        notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid", action="info",
-                        html_id=self.component_info)
+        notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.", 
+            action="success", html_id=self.component_info)
         notify_ena_object_status(data={"profile_id": self.profile_id}, msg="", action="close", html_id="upload_controls", checklist_id=self.checklist_id)
         notify_ena_object_status(data={"profile_id": self.profile_id}, msg="", action="make_valid", html_id=self.component_info, checklist_id=self.checklist_id)
 
         return True
 
-   def collect(self):
+    def collect(self):
         # create table data to show to the frontend from parsed manifest
         tagged_seq_data = []
         headers = list()
@@ -467,7 +477,7 @@ class EnaCheckListSpreadsheet:
 
         notify_ena_object_status(data={"profile_id": self.profile_id}, msg=tagged_seq_data, action="make_table",
                         html_id=f"{self.component}_parse_table", checklist_id=self.checklist_id)
-        
+
 
 class ReadChecklistHandler:
     def __init__(self ):

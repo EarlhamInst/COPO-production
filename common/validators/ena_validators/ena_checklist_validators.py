@@ -9,9 +9,9 @@ from Bio import Entrez
 from common.utils.helpers import notify_frontend
 from common.validators.helpers import check_taxon_ena_submittable, checkOntologyTerm
 
-#check mandatory fields are present in spreadsheet
-#check mandatory fields are not empty
-#check values are valid: enum, regex
+# check mandatory fields are present in spreadsheet
+# check mandatory fields are not empty
+# check values are valid: enum, regex
 ena_sample_service = get_env("ENA_V1_SAMPLE_SERVICE")
 pass_word = get_env('WEBIN_USER_PASSWORD')
 user_token = get_env('WEBIN_USER').split("@")[0]
@@ -20,6 +20,48 @@ session.auth = (user_token, pass_word)
 
 lg = settings.LOGGER
 
+
+class ManifestChecklistValidator(Validator):
+    '''
+    Checks whether the uploaded manifest's column set
+    matches the expected checklist's columns.
+    '''
+
+    def validate(self):
+        checklist = self.kwargs.get('checklist', {})
+        expected_columns = set(checklist['fields'].keys())
+        uploaded_columns = set(self.data.columns)
+
+        # Determine the number of expected columns that are missing
+        missing = expected_columns - uploaded_columns
+        
+        # Determine the number of unexpected columns that exist in the uploaded manifest
+        extras = uploaded_columns - expected_columns
+
+        # Calculate the match ratio
+        total_expected = len(expected_columns)
+        match_ratio = (total_expected - len(missing)) / max(total_expected, 1)
+
+        # If almost nothing matches, show a single error message
+        if match_ratio < 0.5:  # Threshold: less than 50% columns match
+            self.errors.append(
+                'The uploaded manifest does not appear to match the expected checklist. '
+                'Please ensure that you are uploading the correct manifest for the selected manifest '
+                f'(expected {len(expected_columns)} columns, found {len(uploaded_columns)}).'
+            )
+            self.flag = False
+        else:
+            # Otherwise, proceed with the other validators
+            if missing:
+                self.warnings.append(
+                    f'Some expected columns are missing: {sorted(missing)}'
+                )
+            if extras:
+                self.warnings.append(
+                    f'Some unexpected columns were found: {sorted(extras)}'
+                )
+
+        return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
 
 
 class MandatoryValuesValidator(Validator):
@@ -128,7 +170,7 @@ class IncorrectValueValidator(Validator):
                 self.errors.append("Invalid column : '" + column +"'")
                 self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
-    
+
 
 class TaxonValidator(Validator):
     def validate(self):
@@ -178,7 +220,7 @@ class TaxonValidator(Validator):
                                 self.data.loc[ self.data[key]==taxon, taxid_column_name] = taxinfo["taxId"]
                                 self.data.loc[ self.data[key]==taxon, scientific_name_column_name] = taxinfo["scientificName"]
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
-    
+
 class OntologyValidator(Validator): 
     def validate(self):
         checklist = self.kwargs.get("checklist", {})
