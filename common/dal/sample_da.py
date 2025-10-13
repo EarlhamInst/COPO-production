@@ -718,8 +718,6 @@ class Sample(DAComponent):
     def get_gal_names(self, projects):
         gal_names = self.get_collection_handle().distinct('GAL',{'sample_type': {"$in": projects}} , collation={ 'locale': 'en_US', 'strength': CollationStrength.PRIMARY })
         return gal_names                                         
-    
-        
 
     def get_all_tol_samples(self):
         return self.get_collection_handle().find(
@@ -733,23 +731,16 @@ class Sample(DAComponent):
             filter['sample_type'] = sample_type
 
         if d_from or d_to:
-            filter['$match']['time_created'] = {
-                '$gte': d_from if d_from else None,
-                '$lt': d_to if d_to else None,
-            }
-
-            # Remove any 'None' values from the filter
-            filter['$match']['time_created'] = {
-                key: value
-                for key, value in filter['$match']['time_created'].items()
-                if value is not None
-            }
+            time_filter = {}
+            if d_from:
+                time_filter['$gte'] = d_from
+            if d_to:
+                time_filter['$lt'] = d_to
+            filter['time_created'] = time_filter
 
         if not sample_type and d_from is None and d_to is None:
             return self.get_number_of_samples()
-        elif sample_type and d_from and d_to:
-            return self.get_collection_handle().count_documents(filter)
-        elif sample_type and d_from is None and d_to is None:
+        elif sample_type:
             return self.get_collection_handle().count_documents(filter)
         else:
             return self.get_number_of_samples()
@@ -989,7 +980,6 @@ class Sample(DAComponent):
         return self.update_field_by_query(
             {'_id': {'$in': [ObjectId(oid) for oid in oids]}}, field_values
         )
-
 
     def remove_field(self, field, oid):
         return self.get_collection_handle().update_one(
@@ -1715,8 +1705,7 @@ class Sample(DAComponent):
                                                                "sraAccession": accession["sample_accession"],
                                                                "status": "accepted"}
             self.update_field(field_values=update_fields, oid=accession["sample_id"])
- 
-            
+
     def update_datafile_status(self, datafile_ids, status):
         dt = helpers.get_datetime()
         for id in datafile_ids:
@@ -1756,7 +1745,6 @@ class Sample(DAComponent):
             query={'profile_id': profile_id, 'status': {'$ne': 'accepted'}},
             field_values={'associated_tol_project': associated_tol_project},
         )
-
 
     def get_distinct_checklist(self,profile_id):
         return self.get_collection_handle().distinct("checklist_id", {"profile_id": profile_id}) 
