@@ -10,7 +10,6 @@ from django_tools.middlewares import ThreadLocal
 import inspect
 import math
 from common.schema_versions.lookup import dtol_lookups as lookup
-from .validator.SingleCellSchemaValidators import ManifestChecklistValidator
 from .validator import SingleCellSchemaValidators as required_validators
 from .validator import SingleCellOverallValidators as overall_validators
 from common.validators.validator import Validator
@@ -728,13 +727,6 @@ class SinglecellschemasSpreadsheet:
             ):
                 self.required_validators.append(element)
 
-        # Remove ManifestChecklistValidator if it was already added by the loop (to avoid duplicates)
-        self.required_validators = [
-            v for v in self.required_validators if v is not ManifestChecklistValidator
-        ]
-        # Insert at the beginning
-        self.required_validators.insert(0, ManifestChecklistValidator)
-
         required = dict(globals().items())["overall_validators"]
         for element_name in dir(required):
             element = getattr(required, element_name)
@@ -963,9 +955,6 @@ class SinglecellschemasSpreadsheet:
                         flag=flag,
                         isupdate=self.isupdate,
                     ).validate()
-                    # Stop executing further validators if uploaded  manifest doesn't match expected checklist
-                    if not flag and v is ManifestChecklistValidator:
-                        break
                 except Exception as e:
                     l.exception(e)
                     error_message = str(e).replace("<", "").replace(">", "")
