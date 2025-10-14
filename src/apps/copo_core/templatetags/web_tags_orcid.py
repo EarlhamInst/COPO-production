@@ -38,3 +38,11 @@ def date_present_month(value):
         return ''
     else:
         return ' - ' + value
+
+
+@register.filter(name='replace_underscore')
+def replace_underscore(value):
+    '''Replace underscores with dashes'''
+    if isinstance(value, str):
+        return value.replace('_', '-')
+    return value

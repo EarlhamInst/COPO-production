@@ -4,41 +4,31 @@
 {% load web_tags_orcid %}
 
 {% block title %}User Information{% endblock %}
-{% block meta_description %}View your user information such as ORCiD ID associated with your COPO account.{% endblock %}
+{% block meta_description %}View your user information such as ORCID ID associated with your COPO account.{% endblock %}
 
 {% block stylesheet_block %}
     <link rel="stylesheet" href="{% static 'copo/css/copo/browse_style.css' %}" xmlns="http://www.w3.org/1999/html">
-    <link rel="stylesheet" href="{% static 'copo/css/copo/orcid_profile.css' %}"
-        xmlns="http://www.w3.org/1999/html">
+    <link rel="stylesheet" href="{% static 'copo/css/copo/orcid_profile.css' %}" xmlns="http://www.w3.org/1999/html">
 {% endblock %}
 
+{% block title_block %}User Information{% endblock %}
 
-{% block title_block %} Index {% endblock %}
-
-{% block tagline_block %}
-
-
-{% endblock %}
-
+{% block tagline_block %}{% endblock %}
 
 {% block content %}
-
     <div class="orcid-div">
-        <h4 class="h4">ORCiD Profile</h4>
-        <img src="{% static 'copo/img/orcid.png' %}" style="height:50px">
-        {{ orcid.orcid_identifier.path }}
-
-        </a>
-
+        <h4 class="page-title-custom">User Information</h4>
+        <div class="orcid-info">
+            <p><img src="{% static 'copo/img/orcid.png' %}">Linked ORCID iD:
+                <a href="{{ orcid.orcid_identifier.uri | replace_underscore }}" target="_blank">{{ orcid.orcid_identifier.path | replace_underscore }}</a>
+            </p>
+        </div>        
     </div>
-    <div class="repositories-div">
+    <!-- <div class="repositories-div">
         {% for r in repos %}
             {{ r.name }}
         {% endfor %}
-    </div>
-
+    </div> -->
 {% endblock %}
 
-
-{% block js_block %}
-{% endblock %}
+{% block js_block %}{% endblock %}
