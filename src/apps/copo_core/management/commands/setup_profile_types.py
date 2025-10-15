@@ -327,26 +327,6 @@ class Command(BaseCommand):
             icon_colour="grey",
         )
 
-        submit_sample_multi = RecordActionButton().create_record_action_button(
-            name="submit_general_sample_multi",
-            title="Submit Sample to ENA",
-            label="Submit to ENA",
-            type="multi",
-            error_message="Please select one or more record to submit",
-            icon_class="fa fa-info-circle",
-            action="submit_sample",
-            icon_colour="teal",
-        )
-        delete_sample_multi = RecordActionButton().create_record_action_button(
-            name="delete_sample_multi",
-            title="Delete records",
-            label="Delete",
-            type="multi",
-            error_message="Please select one or more records to delete",
-            icon_class="fa fa-trash-can",
-            action="delete_sample",
-            icon_colour="red",
-        )
         download_general_sample_manifest_single = RecordActionButton().create_record_action_button(
             name="download_general_sample_manifest_single",
             title="Download Sample Manifest",
@@ -358,6 +338,28 @@ class Command(BaseCommand):
             icon_colour="blue",
         )
 
+        delete_sample_multi = RecordActionButton().create_record_action_button(
+            name="delete_sample_multi",
+            title="Delete records",
+            label="Delete",
+            type="multi",
+            error_message="Please select one or more records to delete",
+            icon_class="fa fa-trash-can",
+            action="delete_sample",
+            icon_colour="red",
+        )
+
+        submit_sample_multi = RecordActionButton().create_record_action_button(
+            name="submit_general_sample_multi",
+            title="Submit Sample to ENA",
+            label="Submit to ENA",
+            type="multi",
+            error_message="Please select one or more record to submit",
+            icon_class="fa fa-info-circle",
+            action="submit_sample",
+            icon_colour="teal",
+        )
+        
         self.stdout.write("Record Action Button Added")
         records = RecordActionButton.objects.all()
 
