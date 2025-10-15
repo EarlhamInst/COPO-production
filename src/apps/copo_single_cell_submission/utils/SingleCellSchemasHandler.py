@@ -190,11 +190,11 @@ class SingleCellSchemasHandler:
 
         desc_eg_format = {'text_wrap': True, 'italic': True, 'font_color': '#808080'}
 
-        seperator_format = {
+        separator_format = {
             'bold': True,
             'align': 'left',
             'valign': 'vcenter',
-            'bg_color': '#D3D3D3',
+            'bg_color': '#B5EAAA',
         }
 
         version = settings.MANIFEST_VERSION.get(schema_name, str())
@@ -327,7 +327,7 @@ class SingleCellSchemasHandler:
 
                             cell_format = writer.book.add_format(
                                 {'num_format': '@', 'text_wrap': True, "valign": "top"}
-                            )  # dosen't work
+                            )  # doesn't work
                             writer.sheets[sheet_name].set_column(
                                 column_index, column_index, column_length, cell_format
                             )
@@ -475,9 +475,14 @@ class SingleCellSchemasHandler:
                                         {'validate': 'list', 'source': source},
                                     )
 
-                        cell_format = writer.book.add_format(seperator_format)
+                        cell_format = writer.book.add_format(separator_format)
                         writer.sheets[sheet_name].write(
                             "A4", "FILL OUT INFORMATION BELOW THIS LINE", cell_format
+                        )
+                        cell_format = writer.book.add_format(separator_format)
+                        writer.sheets[sheet_name].conditional_format(
+                            f'A4:{last_column_letter}4',
+                            {'type': 'no_errors', 'format': cell_format},
                         )
 
                         # Set the conditional format for locking rows 2 to 3

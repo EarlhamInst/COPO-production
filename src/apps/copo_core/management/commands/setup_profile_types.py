@@ -329,8 +329,8 @@ class Command(BaseCommand):
 
         submit_sample_multi = RecordActionButton().create_record_action_button(
             name="submit_general_sample_multi",
-            title="Submit Sample",
-            label="Submit",
+            title="Submit Sample to ENA",
+            label="Submit to ENA",
             type="multi",
             error_message="Please select one or more record to submit",
             icon_class="fa fa-info-circle",
@@ -650,7 +650,7 @@ class Command(BaseCommand):
         seqannotation.title_buttons.set([new_component_template])
 
         general_sample.recordaction_buttons.set(
-            [
+            [   
                 download_general_sample_manifest_single,
                 delete_sample_multi,
                 submit_sample_multi,
