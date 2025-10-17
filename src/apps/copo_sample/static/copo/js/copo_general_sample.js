@@ -254,7 +254,7 @@ $(document).on('document_ready', function () {
       load_records(componentMeta, args_dict, columnDefs); // call to load component records
     } else if (d.action === 'file_processing_status') {
       $(element).html(d.message);
-      table = $('#sample_table').DataTable();
+      table = $('#'+ componentMeta.tableID).DataTable();
       //clear old, set new data
       table.rows().deselect();
       table.clear().draw();
@@ -450,7 +450,7 @@ $(document).on('document_ready', function () {
   }
 
   $('body').on('posttablerefresh', function (event) {
-    table = $('#' + component + '_table').DataTable();
+    table = $('#'+ componentMeta.tableID).DataTable();
     //var numCols = $('#' + component + '_table thead th').length;
     var numCols = table.columns().nodes().length;
     table.rows().nodes().to$().addClass('highlight_accession');
