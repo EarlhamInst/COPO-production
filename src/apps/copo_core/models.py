@@ -378,12 +378,14 @@ class SidebarPanel(models.Model):
 
 class Component(models.Model):
     class Meta:
-        ordering = ['title']
+        ordering = ['order']
 
+    order = models.PositiveIntegerField(default=0, editable=False)
     base_component = models.CharField(max_length=100, null=True)
     name = models.CharField(max_length=100, unique=True)
     title = models.CharField(max_length=100)
     subtitle = models.CharField(max_length=100, blank=True, null=True)
+    button_label = models.CharField(max_length=100, blank=True, null=True)
     schema_name = models.CharField(max_length=100, blank=True, null=True)
     group_name = models.CharField(max_length=100, blank=True, null=True)
     table_id = models.CharField(max_length=100)
@@ -409,10 +411,12 @@ class Component(models.Model):
         reverse_url,
         schema_name="",
         base_component="",
-        group_name=""
+        group_name="",
+        button_label=None,
     ):
         self.name = name.lower()
         self.title = title
+        self.button_label = f'Manage {title}' if button_label is None else button_label
         self.subtitle = subtitle
         self.widget_icon = widget_icon
         self.widget_colour = widget_colour
@@ -422,7 +426,12 @@ class Component(models.Model):
         self.schema_name = schema_name
         self.base_component = base_component or self.name
         self.group_name = group_name
-            
+
+        # Auto-assign the position of the component
+        if not self.order:
+            last_order = Component.objects.aggregate(models.Max('order'))['order__max'] or 0
+            self.order = last_order + 1
+
         self.save()
         return self
 

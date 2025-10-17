@@ -1,58 +1,181 @@
+/* Page welcome message */
+.page-welcome-message ol {
+  padding-top: 8px;
+}
+
+.page-welcome-message ol li {
+  padding-top: 5px;
+}
+
+.page-welcome-message ol li p i.fa-info-circle {
+  padding-right: 5px;
+}
+
+.page-welcome-message ol li p a {
+  text-decoration: underline;
+}
+
+/* Component menu */
+.menu-row {
+  margin-top: -7px;
+  float: left;
+  width: 100% !important;
+}
+
+.menu-no-addtl-info-row {
+  padding: 180px 12px 0px 12px; /* top right bottom left */
+  margin-right: -12px;
+  margin-left: -12px;
+}
+
+.ui.menu {
+  position: relative;
+  z-index: 1;
+  height: 340px;
+  overflow: hidden;
+  width: 100% !important;
+}
+
+.ui.compact.vertical.menu,
+.ui.compact.menu,
+.ui.menu .menu.comp {
+  width: 100% !important;
+}
+
+.ui.menu .menu.comp .item {
+  display: grid;
+  grid-template-columns: 1fr; /* 1 column */
+  gap: 8px;
+  position: relative;
+  z-index: 5;
+  overflow: hidden;
+  width: 100% !important;
+  padding-top: 10px !important;
+}
+
+/* Expand components menu on hover */
+.ui.menu:has(.menu.comp.many-items):hover,
+.ui.menu:has(.menu.comp.many-items) .menu.comp:hover .item {
+  overflow: visible !important;
+  max-height: none !important;
+  z-index: 10;
+  grid-template-columns: 1fr; /* 1 column */
+  height: auto;
+}
+
+.ui.menu:has(.menu.comp.many-items) .item {
+  padding-bottom: 25px;
+}
+
+/* 'More components' indicator at bottom of menu */
+.ui.menu:has(.menu.comp.many-items) .more-pcomponent-indicator {
+  position: sticky;
+  bottom: 0;
+  text-align: center;
+  padding-top: 8px;
+  background: linear-gradient(to top, white, transparent);
+  box-shadow: 0 -3px 6px rgba(0, 0, 0, 0.1);
+  color: #999;
+  font-size: 1.1em;
+  z-index: 15;
+  cursor: pointer;
+}
+
+@keyframes bounceArrow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+.ui.menu:has(.menu.comp.many-items) .item + .more-pcomponent-indicator i {
+  animation: bounceArrow 1.3s infinite;
+}
+
+.ui.menu:has(.menu.comp.many-items) .item:hover + .more-pcomponent-indicator i,
+.ui.menu:has(.menu.comp.many-items:hover) .more-pcomponent-indicator i,
+.ui.menu:has(.menu.comp.many-items)
+  .item:hover
+  + .more-pcomponent-indicator:hover
+  i {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+  animation: none;
+}
+
 /* Component buttons */
-/* Set the width of the buttons in the Components tab to the same width */
-/* Left align the text in the buttons */
-.ui.menu .ui.dropdown.item .comp .ui.button {
-  width: 130px !important;
+.profile-dropdown-menu.comp .ui.button,
+.ui .menu .item .ui.button,
+.ui.menu .comp .ui.button {
   text-align: left;
   white-space: normal;
   word-wrap: break-word;
   font-size: 12px !important;
-}
-
-.ui.menu .item {
-  display: block !important;
-}
-
-.ui.menu .item:not(.filtered),
-.ui.menu .ui.dropdown.item .comp .item:not(.filtered) {
-  display: inline-grid !important;
-  grid-template-columns: auto auto;
-}
-
-.pcomponent-icon-class {
-  display: none;
+  box-shadow: none !important;
+  padding: 0.5em !important;
+  width: 150px;
+  margin: 3px 15px 3px 3px !important;
 }
 
 .ui.dropdown .menu > .item .dropdown.icon {
   color: white;
 }
 
+#expandingMenuTitle {
+  padding: 5px 0 0 16px;
+  margin-bottom: 0;
+  font-weight: bold;
+}
+
 .pcomponent-name {
-  padding-left: 3px;
+  /* Show ellipsis after 2 lines of text */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2 !important;
+  vertical-align: top !important;
+  overflow-wrap: anywhere !important; /* Break words */
 }
 
 .pcomponent-icon {
-  padding-right: 5px;
-}
-
-.pcomponent-color {
-  border-radius: 0.28571429rem !important;
+  flex: 0 0 20px !important; /* Adjust 20px to match icon size */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-top: 2px !important;
+  text-shadow: none;
+  background: none;
 }
 
 .pcomponent-button {
-  margin: 3px 15px 3px 3px !important;
+  padding: 6px 10px !important;
+  border-radius: 0.28571429rem !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Dropdown menu components */
+.profile-dropdown-wrapper .ui.button {
+  justify-content: center;
 }
 
 .profile-dropdown-wrapper {
   position: relative;
   cursor: pointer;
+  z-index: 20;
 }
 
+.profile-dropdown-menu.comp,
 .profile-dropdown-wrapper .profile-dropdown-menu {
   position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
+  z-index: 9999;
   background: white;
   border: 1px solid #ccc;
   min-width: 150px;
@@ -61,7 +184,11 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* end component buttons */
+.profile-dropdown-menu.comp .item {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columns */
+  gap: 8px;
+}
 
 /* Text/paragraph ellipsis when text is too long */
 .ellipsis-2-lines {
@@ -115,7 +242,7 @@
   padding-top: 0;
 }
 
-/* Popover: Ellipsis */
+/* Popover: View more profile details button */
 .popover-title {
   background: #ffffff !important;
   color: black !important;
@@ -125,6 +252,7 @@
 .popover-content {
   background: #ffffff !important;
   color: black !important;
+  padding: 0 0 5px 10px !important;
 }
 
 .ellipsis-div .popover {
@@ -146,25 +274,57 @@
 /* Popover: showMoreProfileInfo */
 #showMoreProfileInfoBtn + .popover {
   clear: both;
-  width: 270px;
+  width: 220px;
+  padding-right: 10px;
+}
+
+#showMoreProfileInfoBtn {
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  color: #000000;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+#showMoreProfileInfoBtn:hover {
+  color: #fff;
+  background-color: #616161;
+  bottom: 30px;
+  opacity: 1;
+}
+
+#showMoreProfileInfoCloseBtn {
+  margin: 0.5px -10px 0 0;
+}
+
+.show-more-btn-spacing {
+  margin-top: 20px;
+}
+
+.show-more-btn-with-2-line-desc {
+  margin-top: 20px;
 }
 
 /* Profile panels */
-.panel {
+.panel.panel-profile {
   border-color: rgba(17, 70, 110, 0.1) !important;
 }
 
-.panel-heading {
+.panel.panel-profile .panel-heading {
   color: white;
 }
 
-.panel-body {
+.panel.panel-profile .panel-body {
   height: fit-content; /* Auto adjusts the height of the div according to its contents */
 }
 
 .grid-panel-body {
   padding: 15px;
   height: 356px !important;
+  position: relative;
+  z-index: 1;
 }
 
 .grid-panel-body-selected {
@@ -184,19 +344,12 @@
   margin-top: 30px;
 }
 
-#copo_profiles_table {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: left; /* left align the grid items */
-  width: 100%;
-  flex-grow: 1;
-  position: relative;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
 .bold-text {
   font-weight: bold;
+}
+
+.mt-10 {
+  margin-top: 10px;
 }
 
 .profile-info-label {
@@ -205,20 +358,47 @@
   margin-top: 10px;
 }
 
-.profileDescription {
+.profile-description {
   height: 42px;
 }
 
+.profile-info-row {
+  padding-left: 12px;
+  padding-right: 12px;
+  margin-right: -12px;
+  margin-left: -12px;
+}
+
+.date-created-div {
+  display: inline;
+  margin-bottom: 10px;
+}
+
 /* Profile grid */
+#copo_profiles_table {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 24px;
+  max-width: calc((450px * 2) + (24px * 2)); /* 2 grids per row with 24px gap */
+  /* margin: 0 10px 0 10px; */ /* Left align the centre: top right bottom left */
+  margin: 0 auto; /* Centre the table */
+}
+
+.copo-records-panel:hover,
+.copo-records-panel:focus-within,
+.grid:hover,
+.grid:focus-within {
+  z-index: 9999;
+}
+
 .grid,
 .grid-item {
-  height: 400px !important;
+  height: 400px;
   border-radius: 5px;
-  /* 4 grids per row, with space for margin */
-  width: calc((100% / 4) - 24px);
-  background-color: #ffffff;
-  margin: 8px;
-  display: inline-block;
+  background-color: #fff;
+  max-width: 515px;
+  position: relative;
+  z-index: 1;
 }
 
 .grid-selected {
@@ -226,11 +406,8 @@
   border: 1em solid rgba(0, 136, 204, 0.9) !important;
 }
 
+.grid:hover,
 .grid-item:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.grid:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -258,13 +435,6 @@
   animation: load 1s infinite;
 }
 
-.profile-info-row {
-  padding-left: 12px;
-  padding-right: 12px;
-  margin-right: -12px;
-  margin-left: -12px;
-}
-
 @keyframes load {
   /* Slide-in animation */
   100% {
@@ -272,7 +442,7 @@
   }
 }
 
-/* Associated types*/
+/* Associated types */
 .shared-owner-info-icon,
 .associated_type_info_icon {
   position: relative;
@@ -282,7 +452,6 @@
 ul.associated-type-ul-tag {
   float: left;
   position: relative;
-  /*margin-right: 20px;*/
   padding-left: 5px;
   list-style-type: disc;
   list-style-position: inside;
@@ -292,11 +461,10 @@ ul.associated-type-ul-tag {
   padding-bottom: 10px;
 }
 
-/*CSS styles for profile records with associated types assigned*/
+/* CSS styles for profile records with associated types assigned */
 .associated-type-div-value {
   height: fit-content;
   margin-bottom: 10px;
-  /*overflow-y: auto;*/
   padding-top: 15px;
   columns: 1;
 }
@@ -310,7 +478,6 @@ ul.associated-type-ul-tag {
 .sequencing_centre_div_value {
   height: fit-content;
   margin-bottom: 10px;
-  /*overflow-y: auto;*/
   padding-top: 15px;
   columns: 1;
 }
@@ -327,54 +494,7 @@ ul.sequencing-centre-ul-tag {
   padding-bottom: 10px;
 }
 
-/* Menu: Actions & Components button */
-/* Display buttons in the Components menu button in two columns */
-.menu-row {
-  /*top/right/bottom/left*/
-  padding: 130px 12px 0px 12px;
-  margin-right: -12px;
-  margin-left: -12px;
-}
-
-.menu-no-addtl-info-row {
-  /*top/right/bottom/left*/
-  padding: 180px 12px 0px 12px;
-  margin-right: -12px;
-  margin-left: -12px;
-}
-
-.ui.menu .ui.dropdown.item .comp .item:not(.filtered) {
-  display: inline-grid !important;
-  grid-template-columns: auto auto;
-}
-
-/* Show more button*/
-#showMoreProfileInfoBtn {
-  border: 1px solid #d0d0d0;
-  border-radius: 4px;
-  color: #000000;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 5px 10px;
-  cursor: pointer;
-}
-
-#showMoreProfileInfoBtn:hover {
-  color: #fff;
-  background-color: #616161;
-  bottom: 30px;
-  opacity: 1;
-}
-
-.show-more-btn-spacing {
-  margin-top: 20px;
-}
-
-.show-more-btn-with-2-line-desc {
-  margin-top: 20px;
-}
-
-/*Navigate to top button CSS*/
+/* Navigate to top button CSS */
 .navigate-to-top {
   position: fixed;
   bottom: -40px;
@@ -417,7 +537,7 @@ ul.sequencing-centre-ul-tag {
   opacity: 1;
 }
 
-/*Navigate to bottom*/
+/* Navigate to bottom */
 .navigate-to-bottom {
   word-wrap: break-word;
   position: fixed;
@@ -563,7 +683,15 @@ ul.sequencing-centre-ul-tag {
 @media only screen and (max-width: 2400px) {
 }
 
-@media only screen and (max-width: 1920px) {
+@media only screen and (min-width: 1920px) {
+  /* .pcomponent-icon {
+    margin-left: -14px;
+  } */
+
+  .date-created-div .bold-text::after {
+    content: '\A'; /* Inserts a line break */
+    white-space: pre; /* Makes the \A behave as a newline */
+  }
 }
 
 @media only screen and (max-width: 1797px) {
@@ -575,27 +703,24 @@ ul.sequencing-centre-ul-tag {
 @media only screen and (max-width: 1711px) {
 }
 
-@media only screen and (max-width: 1701px) {
+@media (min-width: 1704px) {
+  /* .pcomponent-icon {
+    margin-left: -14px;
+  } */
+
+  .date-created-div .bold-text::after {
+    content: '\A'; /* Inserts a line break */
+    white-space: pre; /* Makes the \A behave as a newline */
+  }
 }
 
 @media only screen and (max-width: 1703px) {
-  .grid,
-  .grid-item {
-    /* 3 grids per row, with space for margin */
-    width: calc((100% / 3) - 24px);
-  }
+}
 
-  .menu-row {
-    padding: 130px 12px 0px 12px;
-  }
+@media only screen and (max-width: 1701px) {
 }
 
 @media only screen and (max-width: 1669px) {
-  .grid,
-  .grid-item {
-    /* 2 grids per row, with space for margin */
-    width: calc((100% / 2) - 24px);
-  }
 }
 
 @media only screen and (max-width: 1498px) {
@@ -615,29 +740,28 @@ ul.sequencing-centre-ul-tag {
 
 @media only screen and (max-width: 1382px) {
   .dataTables_wrapper .dataTables_paginate .paginate_button {
-    padding: 15px 0 15px 15px !important; /*top right bottom left */
+    padding: 15px 0 15px 15px !important; /* top right bottom left */
   }
 }
 
 @media only screen and (max-width: 1325px) {
   .dataTables_wrapper .dataTables_paginate .paginate_button {
-    padding: 15px 5px 15px 5px !important; /*top right bottom left */
+    padding: 15px 5px 15px 5px !important; /* top right bottom left */
+  }
+
+  .date-created-div .bold-text::after {
+    content: '\A'; /* Inserts a line break */
+    white-space: pre; /* Makes the \A behave as a newline */
   }
 }
 
 @media only screen and (max-width: 1218px) {
   .dataTables_wrapper .dataTables_paginate .paginate_button {
-    padding: 15px 0 15px 15px !important; /*top right bottom left */
+    padding: 15px 0 15px 15px !important; /* top right bottom left */
   }
 }
 
 @media only screen and (max-width: 1089px) {
-  .grid,
-  .grid-item {
-    /* 1 grid per row, with no space for margin */
-    width: 80%;
-  }
-
   #copo_profiles_table {
     /* Centre all grids in the table */
     justify-content: center;
@@ -660,12 +784,14 @@ ul.sequencing-centre-ul-tag {
     height: 335px !important;
   }
 
-  .menu-row {
-    padding: 110px 12px 0px 12px;
-  }
-
   .menu-no-addtl-info-row {
     padding: 160px 12px 0px 12px;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  .menu-row {
+    margin-top: -168px;
   }
 }
 

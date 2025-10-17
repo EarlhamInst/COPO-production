@@ -7,7 +7,6 @@
 {% block meta_description %}Manage and explore work profiles (aka studies or projects) seamlessly. Create, edit or delete profiles and navigate to related components like samples, reads, and files. Infinite scroll lets you view more profiles effortlessly.{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="{% static 'copo/css/copo/colours.css' %}">
     <link rel="stylesheet" href="{% static 'copo_profile/css/copo_profile_index.css' %}">
 {% endblock %}
 
@@ -88,45 +87,49 @@
        title="Navigate to top of the web page">
         <i class="up-arrow"></i><i class="up-arrow"></i>
     </a>
+
     <!-- getting started section -->
-
     <div class="row">
-
         <div class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-0 page-welcome-message" style="display: none;">
             <div class="copo-webui-popover">
                 <div class="webui-popover-inner">
-                    <h3 class="copo-webui-popover-title">COPO - Getting started</h3>
+                    <h3 class="copo-webui-popover-title">Getting started</h3>
                     <div class="copo-webui-popover-content">
-                        <div class="webpop-content-div">
-                            Here are a few quick steps to get you started with COPO.
+                        <div class="webpop-content-div">Here are a few quick steps to get you started with the 
+                            Collaborative OPen Omics (COPO) platform.
                             <ol>
                                 <li>
-                                    <strong>COPO Profile: </strong>
+                                    <strong>COPO profile</strong>
                                     <p>The first step to getting work done in COPO is to create a work profile. A
-                                        profile is a collection of 'research objects' or components that form part of
-                                        your research project or study. Use the
-                                        <button class="circular mini ui icon primary button">
+                                        profile is a collection of research objects or components that form part of
+                                        your research project or study.
+                                    </p>
+                                    <p><b>To create a new profile</b>:
+                                        Choose a profile type from the dropdown menu above. Then, click the
+                                        <button class="circular tiny ui icon primary button no-click">
                                             <i class="icon add sign"></i>
                                         </button>
-                                        button on the page
-                                        to create a new profile.
+                                        button next to it to create a profile.
                                     </p>
+                                    
+                                    <p><i class='fa fa-info-circle'></i>If your desired profile type is not listed, please
+                                        <a href="mailto:{{copo_email}}">contact the COPO team</a> for assistance.
+                                    </p>
+                                <li>
+                                    <strong>Profile components</strong>
+                                    <p>After creating a work profile, you can start adding metadata for a component 
+                                        by clicking any of the available components in the profile to navigate to 
+                                        to its respective page.
+                                    </p>
+                                    <p>Examples: data files, samples, reads and annotations.</p>
                                 </li>
                                 <li>
-                                    <strong>Profile Components: </strong>
-                                    <p>Once you have created a work profile, you can start creating components within
-                                        the profile. COPO provides templates/wizards for creating and managing different
-                                        components including: Datafiles, Samples, Submission, Publications, People, and
-                                        Annotations. Profile components can be created in any order.</p></li>
-                                <li>
-                                    <strong>Quick Tour: </strong>
-                                    <p>Finally, if you've not done so already, take some time to explore the various
-                                        controls available on the page. Click the
-                                        <button class="circular mini ui icon orange button">
+                                    <strong>Quick tour</strong>
+                                    <p>To explore various controls on this page, click the
+                                        <button class="circular tiny ui icon orange button no-click">
                                             <i class="icon lightbulb"></i>
                                         </button>
-                                        icon on the
-                                        page to activate the quick tour agent.
+                                        button above.
                                     </p>
                                 </li>
                             </ol>

@@ -51,6 +51,7 @@ const component_def = {
       {% if  component.group_name %}
         groupName: '{{ component.group_name }}',
       {% endif %}
+      buttonLabel: '{{ component.button_label }}',
       schema_name: '{{ component.schema_name }}',
       tableID: '{{ component.table_id }}',
       url: "{% if component.reverse_url and component.schema_name %}{% url component.reverse_url  schema_name=component.schema_name  profile_id='999' ui_component=component.name  %}{% elif component.reverse_url %}{% url component.reverse_url  profile_id='999' ui_component=component.name %}{% endif %}",

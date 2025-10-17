@@ -89,10 +89,8 @@ $(document).ready(function () {
   });
 
   // Remove profile title if present
-  if (
-    $('.page-title-custom').find("span[title='Profile title']").is(':visible')
-  )
-    $('.page-title-custom').find("span[title='Profile title']").remove();
+  let profileTitleDiv = $('.page-title-custom').find('span.profile-title');
+  if (profileTitleDiv.is(':visible')) profileTitleDiv.remove();
 
   //details button hover
   /*

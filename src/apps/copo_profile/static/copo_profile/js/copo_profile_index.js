@@ -165,10 +165,10 @@ $(document).on('document_ready', function () {
 
   $(document).data('sortByDescendingOrder', true);
 
-  $(document).on('click', '.expanding-menu-panel > div', function (e) {
+  $(document).on('click', '.ui.menu > div', function (e) {
     const el = $(e.currentTarget);
     el.closest('.grid').removeClass('grid-selected');
-    el.closest('.panel-heading')
+    el.closest('.panel.panel-profile .panel-heading')
       .next('.grid-panel-body')
       .removeClass('grid-panel-body-selected');
   });
@@ -178,7 +178,7 @@ $(document).on('document_ready', function () {
     const el = $(e.currentTarget);
     if (el.hasClass('action')) {
       const actionType = el.data('actionType');
-      let id = el.closest('.expanding-menu-panel').attr('id');
+      let id = el.closest('.ui.menu').attr('id');
       id = id.split('_')[1];
 
       if (actionType === 'release_study') {
@@ -494,11 +494,24 @@ function appendRecordComponents(grids) {
       profileType = profileType.toLowerCase().trim();
     }
     // Add component buttons to the menu for each profile record
-    let $menu = $(this).closest('.grid').find('#expandingMenu');
+    let $menuParentElement = $(this).closest('.grid').find('#expandingMenu');
+    let $menuComp = $menuParentElement.find('.comp');
     let $componentButtons = createComponentButtons(recordId, profileType);
+    let $newIndicator = $(
+      '.more-pcomponent-indicator[data-template="true"]'
+    ).clone();
 
-    $($menu).attr('id', 'menu_' + recordId);
-    $($menu).find('.comp').append($componentButtons);
+    $($menuParentElement).attr('id', 'menu_' + recordId);
+    $menuComp.append($componentButtons);
+
+    // If more than 6 buttons exist, add 'many-items' class
+    // to reduce the height of each menu and add a down arrow indicator
+    if ($componentButtons.children().length > 6) {
+      $menuComp.addClass('many-items');
+      $newIndicator.removeAttr('data-template');
+      $menuParentElement.find('.item').after($newIndicator);
+      $newIndicator.appendTo($menuComp);
+    }
   });
 }
 
@@ -575,7 +588,7 @@ function deleteProfileRecord(profileRecordId) {
                 status: 'success',
               };
 
-              doCrudActionFeedback(actionFeedback);
+              do_crud_action_feedback(actionFeedback);
 
               // Remove the deleted profile record from the web page
               document
@@ -794,9 +807,6 @@ function updateCounts(copoVisualsURL, csrfToken, component) {
 function createComponentButtons(recordId, profileType) {
   const components = get_profile_components(profileType);
 
-  // Sort components by title in ascending order
-  components.sort((a, b) => a.title.localeCompare(b.title));
-
   // Group components by 'group' field value
   const grouped = groupComponentsByGroupName(components);
 
@@ -804,10 +814,8 @@ function createComponentButtons(recordId, profileType) {
     class: 'item',
   });
 
-  const seenGroups = new Set();
   Object.entries(grouped).forEach(([groupName, groupItems]) => {
     if (groupItems.length === 0) return;
-
     // Components with subcomponents i.e. dropdown menus
     // Render as dropdown if group is non-empty and has more than one subcomponent
     const isDropdownMenu = groupName && groupItems.length > 1;
@@ -899,17 +907,19 @@ function setProfileGridHeading(grids, tableId) {
 
         if (existingRecord.length) {
           // If the record already exists, update the heading and colour
-          existingRecord.find('.panel-heading').css('background-color', colour);
+          existingRecord
+            .find('.panel.panel-profile .panel-heading')
+            .css('background-color', colour);
 
           // Remove existing acronym if it exists
           existingRecord
-            .find('.panel-heading')
+            .find('.panel.panel-profile .panel-heading')
             .find('.row-title span small')
             .remove();
 
           // Add new acronym
           existingRecord
-            .find('.panel-heading')
+            .find('.panel.panel-profile .panel-heading')
             .find('.row-title span')
             .append('<small> (' + acronym.toUpperCase() + ') </small>');
         } else {
@@ -918,17 +928,19 @@ function setProfileGridHeading(grids, tableId) {
             $(el).removeAttr('shared-profile-type'); // Remove 'shared-profile-type' attribute if empty
 
           $(el)
-            .find('.panel-heading')
+            .find('.panel.panel-profile .panel-heading')
             .find('.row-title span')
             .append('<small> (' + acronym.toUpperCase() + ') </small>');
-          $(el).find('.panel-heading').css('background-color', colour);
+          $(el)
+            .find('.panel.panel-profile .panel-heading')
+            .css('background-color', colour);
         }
 
         // Add profile type legend item if it is not already included or displayed
         let legendData = {
           profileType: acronym.includes('Shared')
             ? acronym
-            : getTitleByValue(profileType),
+            : getTitleByValue(profileType) || toTitleCase(profileType),
           profileTypeAcronym: acronym.includes('Shared')
             ? 'SHARED'
             : acronym.toUpperCase(),
@@ -960,10 +972,10 @@ function initialiseRecords(copoVisualsURL, csrfToken, component) {
   filterActionMenu();
   updateCounts(copoVisualsURL, csrfToken, component);
 
-  $('.expanding-menu-panel > div').click(function (e) {
+  $('.ui.menu > div').click(function (e) {
     const el = $(e.currentTarget);
     el.closest('.grid').removeClass('grid-selected');
-    el.closest('.panel-heading')
+    el.closest('.panel.panel-profile .panel-heading')
       .next('.grid-panel-body')
       .removeClass('grid-panel-body-selected');
   });
@@ -1149,4 +1161,10 @@ function updateProfileTypesLegend() {
       $('.profiles-legend-group-item:contains(' + element + ')').remove();
     });
   }
+}
+
+function toTitleCase(str) {
+  return str.replace(/(?:^|\s)\w/g, function (match) {
+    return match.toUpperCase();
+  });
 }

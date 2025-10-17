@@ -4,7 +4,7 @@
 <div class="grid">
     <div class="copo-records-panel" profile-type="{{ profile.type }}" shared-profile-type="{{ profile.shared_type }}"  study-status="{{ profile.study_status | get_first_value_from_array }}" study_release_date="{{ profile.study_release_date | get_first_value_from_array }}">
         <!--Panel -->
-        <div class="panel">
+        <div class="panel panel-profile">
             <!--Panel heading -->
             <div class="panel-heading">
                 <div class="row">
@@ -25,95 +25,99 @@
                 <div class="row">
                     <div class="col-sm-12 col-md-12 col-lg-12"
                          style="height:fit-content;">
-                        <!--Panel content -->
-                        <!-- Row: Profile information-->
-                        <div class="profile-info-row">
-                            <div class="date-created-div" style="display:inline; margin-bottom: 10px;" date-created="{{ profile.date_created }}"><span class="bold-text">Created: </span> {{ profile.date_created }}</div>
-                            <div class="bold-text" style="margin-top: 10px;">Description:</div>
-                            <div class="ellipsis-2-lines profileDescription">{{ profile.description }}</div>
-                            
-                            {% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status%}
-                                <a id="showMoreProfileInfoBtn" class="btn {% if profile.description.strip|length < 56 %}show-more-btn-spacing{% elif profile.description.strip|length >= 56 %}show-more-btn-with-2-line-desc{% endif %}" href="#" rel="popover"
-                                    data-popover-content="#showMoreProfileInfoContent" data-placement="right">View more...</a>                         
-                            {% endif %}
-
-                            <!-- Content for 'showMoreProfileInfo' popover -->
-                            <div id="showMoreProfileInfoContent" class="hidden">
-                                <div class="popover-heading"></div>
-                                <div class="popover-content showMoreProfileInfoPopover-content-div">
-                                    {% if profile.owner_name %}
-                                        <div class="ownerDiv" style="margin-top: 10px;">
-                                            <span class="bold-text">Owner: </span> 
-                                            <span id="ownerID">{{ profile.owner_name }}</span>
-                                        </div>
-                                    {% endif %}
-                                    {% if profile.shared_owner_name %}
-                                        <div class="sharedOwnerDiv" style="margin-top: 10px;">
-                                            <span class="bold-text">Collaborator(s): </span> 
-                                            {% with profile.shared_owner_name as shared_owners %}
-                                                <span id="sharedOwnerID">
-                                                    {% if shared_owners|length > 3 %}
-                                                    {{ shared_owners|slice:":3"|join:", " }}&hellip;
-                                                        <i class="fa fa-info-circle shared-owner-info-icon" title="{{ shared_owners|format_list_with_and }}"></i>
-                                                    {% else %}
-                                                        {{ shared_owners|format_list_with_and }}
-                                                    {% endif %}
-                                                </span>
-                                            {% endwith %}
-                                        </div>
-                                    {% endif %}
-                                    {% if profile.associated_type %}
-                                        <div class="profile-info-label">
-                                            Associated
-                                            Profile Type(s):
-                                        </div>
-                                        <div class="associated-type-div-value ">
-                                            <ul class="associated-type-ul-tag">
-                                                {% for element in profile.associated_type %}
-                                                    <li> {{ element }}
-                                                        <i class="fa fa-info-circle associated_type_info_icon" title="{{ element | get_associated_type_label }}"></i>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    {% endif %}
-                                    {% if profile.sequencing_centre|is_list_empty %}
-                                        <div class="profile-info-label">
-                                            Associated Sequencing Centre(s):
-                                        </div>
-                                        <div class="sequencing_centre_div_value">
-                                            <ul class="sequencing_centre_ulTag">
-                                                {% for element in profile.sequencing_centre%}
-                                                    <li> {{ element }} 
-                                                        <i class="fa fa-info-circle sequencing-centre-info-icon" title="{{ element | get_sequencing_centre_label }}"></i>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    {% endif %}
-                                    {% if profile.study_status %}
-                                        <div class="study-status-div">
-                                            <span class="bold-text">Release Status: </span> 
-                                            <span id="study_status_{{profile.id}}">{{ profile.study_status | get_first_value_from_array}}</span>
-                                        </div>
-                                        <div><span class="bold-text">Release Date: </span>    
-                                            <span id="study_release_date_{{profile.id}}">{{ profile.study_release_date | get_first_value_from_array}}</span>
-                                        </div>
-                                    {% endif %}
+                        <div class="col-sm-6">
+                            <!--Panel content -->
+                            <!-- Row: Profile information-->
+                            <div class="profile-info-row">
+                                <div class="date-created-div" date-created="{{ profile.date_created }}">
+                                    <span class="bold-text">Created: </span> {{ profile.date_created }}
+                                </div>
+                                <div class="bold-text mt-10">Description:</div>
+                                <div class="ellipsis-2-lines profile-description">{{ profile.description }}</div>
                                 
-                                </div>
-                            </div>                  
+                                {% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status%}
+                                    <a id="showMoreProfileInfoBtn" class="btn {% if profile.description.strip|length < 56 %}show-more-btn-spacing{% elif profile.description.strip|length >= 56 %}show-more-btn-with-2-line-desc{% endif %}" href="#" rel="popover"
+                                        data-popover-content="#showMoreProfileInfoContent" data-placement="right">View more details</a>                         
+                                {% endif %}
+
+                                <!-- Content for 'showMoreProfileInfo' popover -->
+                                <div id="showMoreProfileInfoContent" class="hidden">
+                                    <div class="popover-heading"></div>
+                                    <div class="popover-content showMoreProfileInfoPopover-content-div">
+                                        {% if profile.owner_name %}
+                                            <div class="owner-div mt-10">
+                                                <span class="bold-text">Owner: </span> 
+                                                <span id="ownerID">{{ profile.owner_name }}</span>
+                                            </div>
+                                        {% endif %}
+                                        {% if profile.shared_owner_name %}
+                                            <div class="shared-owner-div mt-10">
+                                                <span class="bold-text">Collaborator(s): </span> 
+                                                {% with profile.shared_owner_name as shared_owners %}
+                                                    <span id="sharedOwnerID">
+                                                        {% if shared_owners|length > 3 %}
+                                                        {{ shared_owners|slice:":3"|join:", " }}&hellip;
+                                                            <i class="fa fa-info-circle shared-owner-info-icon" title="{{ shared_owners|format_list_with_and }}"></i>
+                                                        {% else %}
+                                                            {{ shared_owners|format_list_with_and }}
+                                                        {% endif %}
+                                                    </span>
+                                                {% endwith %}
+                                            </div>
+                                        {% endif %}
+                                        {% if profile.associated_type %}
+                                            <div class="profile-info-label">
+                                                Associated
+                                                Profile Type(s):
+                                            </div>
+                                            <div class="associated-type-div-value ">
+                                                <ul class="associated-type-ul-tag">
+                                                    {% for element in profile.associated_type %}
+                                                        <li> {{ element }}
+                                                            <i class="fa fa-info-circle associated_type_info_icon" title="{{ element | get_associated_type_label }}"></i>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        {% endif %}
+                                        {% if profile.sequencing_centre|is_list_empty %}
+                                            <div class="profile-info-label">
+                                                Associated Sequencing Centre(s):
+                                            </div>
+                                            <div class="sequencing_centre_div_value">
+                                                <ul class="sequencing_centre_ulTag">
+                                                    {% for element in profile.sequencing_centre%}
+                                                        <li> {{ element }} 
+                                                            <i class="fa fa-info-circle sequencing-centre-info-icon" title="{{ element | get_sequencing_centre_label }}"></i>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        {% endif %}
+                                        {% if profile.study_status %}
+                                            <div class="study-status-div">
+                                                <span class="bold-text">Release Status: </span> 
+                                                <span id="study_status_{{profile.id}}">{{ profile.study_status | get_first_value_from_array}}</span>
+                                            </div>
+                                            <div><span class="bold-text">Release Date: </span>    
+                                                <span id="study_release_date_{{profile.id}}">{{ profile.study_release_date | get_first_value_from_array}}</span>
+                                            </div>
+                                        {% endif %}
+                                    
+                                    </div>
+                                </div>                  
+                            </div>
                         </div>
-                        <!--Panel expanding menu -->
-                        <!-- Row: Profile menu-->
-                        <div class="{% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status %}menu-row{% else %}menu-no-addtl-info-row{% endif %}">
-                            <span id="expandingMenu" class="ui compact menu expanding-menu-panel">
-                                <div class="ui up pointing dropdown link item" tabindex="0">
-                                    Components
-                                    <i class="dropdown icon"></i>
-                                    <div class="menu comp" tabindex="-1"></div>
-                                </div>
-                            </span>
+                        <div class="col-sm-6">
+                            <!--Panel expanding menu -->
+                            <!-- Row: Profile menu-->
+                            <div class="{% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status %}menu-row{% else %}menu-no-addtl-info-row{% endif %}">
+                                <span id="expandingMenu" class="ui compact menu vertical">
+                                    <div class="menu comp" tabindex="-1">
+                                        <p id="expandingMenuTitle">Components</p>
+                                    </div>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>

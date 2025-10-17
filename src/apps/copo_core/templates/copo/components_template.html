@@ -120,9 +120,12 @@
     </div>
 
     <!-- Profile component templates: Component buttons only -->
+    <!-- 'More components' indicator : Down arrow (hovering expands the components menu) -->
+    <div class="more-pcomponent-indicator" data-template="true"><i class="fa fa-chevron-down"></i></div>
+
     <!-- Button (main/child component) -->
     <a class="pcomponent-button-template" title="Navigate to" href="#">
-        <div class="tiny ui button pcomponent-button pcomponent-color">
+        <div class="tiny ui button pcomponent-button">
             <i class="pcomponent-icon"></i>
             <span class="pcomponent-name"></span>
         </div>
@@ -130,10 +133,10 @@
 
      <!-- Button (dropdown menu/group): Images -->
     <div class="profile-dropdown-wrapper images-pcomponent-dropdown-button-template" tabindex="0">
-        <div class="tiny ui button pcomponent-button pcomponent-color bright-coral">Images
+        <div class="tiny ui button pcomponent-button bright-coral">Images
             <i class="dropdown icon"></i>
         </div>
-        <div class="menu profile-dropdown-menu comp transition" tabindex="-1">
+        <div class="menu profile-dropdown-menu comp transition hidden" tabindex="-1">
             <div class="item"></div>
         </div>
     </div>

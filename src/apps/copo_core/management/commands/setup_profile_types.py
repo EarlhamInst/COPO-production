@@ -359,7 +359,7 @@ class Command(BaseCommand):
             action="submit_sample",
             icon_colour="teal",
         )
-        
+
         self.stdout.write("Record Action Button Added")
         records = RecordActionButton.objects.all()
 
@@ -459,26 +459,6 @@ class Command(BaseCommand):
         self.stdout.write("Adding Component")
 
         # Components
-        assembly = Component().create_component(
-            name="assembly",
-            title="Assembly",
-            widget_icon="puzzle piece",
-            widget_colour="violet",
-            widget_icon_class="fa fa-puzzle-piece",
-            table_id="assembly_table",
-            reverse_url="copo_assembly_submission:copo_assembly",
-            subtitle="",
-        )
-        taggedseq = Component().create_component(
-            name="taggedseq",
-            title="Barcoding Manifests",
-            widget_icon="barcode",
-            widget_colour="red",
-            widget_icon_class="fa fa-barcode",
-            table_id="tagged_seq_table",
-            reverse_url="copo_barcoding_submission:copo_taggedseq",
-            subtitle="#component_subtitle",
-        )
         files = Component().create_component(
             name="files",
             title="Data Files",
@@ -489,16 +469,31 @@ class Command(BaseCommand):
             reverse_url="copo_file:copo_files",
             subtitle="",
         )
-        seqannotation = Component().create_component(
-            name="seqannotation",
-            title="Sequence Annotations",
-            widget_icon="tag",
-            widget_colour="yellow",
-            widget_icon_class="fa fa-tag",
-            table_id="seqannotation_table",
-            reverse_url="copo_seq_annotation_submission:copo_seq_annotation",
+
+        sample = Component().create_component(
+            name="sample",
+            title="Samples",
+            widget_icon="filter",
+            widget_colour="olive",
+            widget_icon_class="fa fa-filter",
+            table_id="sample_table",
+            reverse_url="copo_sample:copo_samples",
             subtitle="",
+            button_label="Manage Sample metadata"
         )
+
+        general_sample = Component().create_component(
+            name="general_sample",
+            title="Samples",
+            widget_icon="filter",
+            widget_colour="olive",
+            widget_icon_class="fa fa-filter",
+            table_id="sample_table",
+            reverse_url="copo_sample:copo_general_samples",
+            subtitle="#component_subtitle",
+            button_label="Manage Sample metadata",
+        )
+
         read = Component().create_component(
             name="read",
             title="Reads",
@@ -509,21 +504,68 @@ class Command(BaseCommand):
             reverse_url="copo_read_submission:copo_reads",
             subtitle="#component_subtitle",
         )
+        
+        reads_schema = Component().create_component(
+            name="reads_schema",
+            title="Reads",
+            widget_icon="dna",
+            widget_colour="orange",
+            widget_icon_class="fa fa-dna",
+            table_id="singlecell_table",
+            reverse_url="copo_single_cell_submission:copo_singlecell",
+            subtitle="#component_subtitle",
+            schema_name="COPO_READ",
+            base_component="singlecell",
+        )
+        
         singlecell = Component().create_component(
             name="singlecell",
             title="Single-cell",
-            widget_icon="dna",
+            widget_icon="bacterium",
             widget_colour="green",
-            widget_icon_class="fa fa-dna",
+            widget_icon_class="fa fa-bacterium",
             table_id="singlecell_table",
             reverse_url="copo_single_cell_submission:copo_singlecell",
             subtitle="#component_subtitle",
             schema_name="COPO_SINGLE_CELL",
         )
+        
+        assembly = Component().create_component(
+            name="assembly",
+            title="Assembly",
+            widget_icon="puzzle piece",
+            widget_colour="violet",
+            widget_icon_class="fa fa-puzzle-piece",
+            table_id="assembly_table",
+            reverse_url="copo_assembly_submission:copo_assembly",
+            subtitle="",
+        )
+
+        seqannotation = Component().create_component(
+            name="seqannotation",
+            title="Sequence Annotations",
+            widget_icon="tag",
+            widget_colour="yellow",
+            widget_icon_class="fa fa-tag",
+            table_id="seqannotation_table",
+            reverse_url="copo_seq_annotation_submission:copo_seq_annotation",
+            subtitle="",
+        )
+
+        taggedseq = Component().create_component(
+            name="taggedseq",
+            title="Barcoding Manifests",
+            widget_icon="barcode",
+            widget_colour="red",
+            widget_icon_class="fa fa-barcode",
+            table_id="tagged_seq_table",
+            reverse_url="copo_barcoding_submission:copo_taggedseq",
+            subtitle="#component_subtitle",
+        )
 
         images_rembi = Component().create_component(
             name="rembi",
-            title="REMBI",
+            title="General",
             group_name="images",
             widget_icon="image",
             widget_colour="coral-pink",
@@ -537,7 +579,7 @@ class Command(BaseCommand):
 
         images_stx_fish = Component().create_component(
             name="stx_fish",
-            title="ST FISH",
+            title="Spatial Transcriptomics",
             group_name="images",
             widget_icon="image",
             widget_colour="terra-cotta",
@@ -549,30 +591,6 @@ class Command(BaseCommand):
             base_component="singlecell",
         )
 
-        reads_schema = Component().create_component(
-            name="reads_schema",
-            title="Reads",
-            widget_icon="dna",
-            widget_colour="orange",
-            widget_icon_class="fa fa-dna",
-            table_id="singlecell_table",
-            reverse_url="copo_single_cell_submission:copo_singlecell",
-            subtitle="#component_subtitle",
-            schema_name="COPO_READ",
-            base_component="singlecell",
-        )
-
-
-        sample = Component().create_component(
-            name="sample",
-            title="Samples",
-            widget_icon="filter",
-            widget_colour="olive",
-            widget_icon_class="fa fa-filter",
-            table_id="sample_table",
-            reverse_url="copo_sample:copo_samples",
-            subtitle="",
-        )
         accessions = Component().create_component(
             name="accessions",
             title="Accessions",
@@ -582,7 +600,9 @@ class Command(BaseCommand):
             table_id="accessions_table",
             reverse_url="copo_accession:copo_accessions",
             subtitle="",
+            button_label="View Accessions"
         )
+        
         accessions_schema = Component().create_component(
             name="accessions_schema",
             title="Accessions",
@@ -592,7 +612,9 @@ class Command(BaseCommand):
             table_id="accessions_schema_table",
             reverse_url="copo_accessions_schema:copo_accessions_schema",
             subtitle="#component_subtitle",
+            button_label="View Accessions",
         )
+        
         profile = Component().create_component(
             name="profile",
             title="Work Profiles",
@@ -602,18 +624,10 @@ class Command(BaseCommand):
             table_id="copo_profiles_table",
             reverse_url="",
             subtitle="#component_subtitle",
+            button_label=""
         )
-        general_sample = Component().create_component(
-            name="general_sample",
-            title="Samples",
-            widget_icon="filter",
-            widget_colour="olive",
-            widget_icon_class="fa fa-filter",
-            table_id="sample_table",
-            reverse_url="copo_sample:copo_general_samples",
-            subtitle="#component_subtitle",
-        )
-
+        
+        # Assign record action buttons and title buttons to components
         assembly.recordaction_buttons.set(
             [
                 add_record_all,
@@ -733,6 +747,8 @@ class Command(BaseCommand):
 
         self.stdout.write("Removing Existing Profile Types ")
         ProfileType().remove_all_profile_types()
+        
+        # Add Profile Types
         self.stdout.write("Adding Profile Types")
 
         erga = ProfileType().create_profile_type(
@@ -783,26 +799,27 @@ class Command(BaseCommand):
             is_dtol_profile=False,
             is_permission_required=False,
         )
-
+        
+        # Assign components to profile types
         erga.components.set(
-            [assembly, taggedseq, files, seqannotation, read, sample, accessions]
+            [files, sample, read, assembly, seqannotation, taggedseq, accessions]
         )
         asg.components.set(
-            [assembly, taggedseq, files, seqannotation, read, sample, accessions]
+            [files, sample, read, assembly, seqannotation, taggedseq, accessions]
         )
         dtolenv.components.set(
-            [assembly, taggedseq, files, seqannotation, read, sample, accessions]
+            [files, sample, read, assembly, seqannotation, taggedseq, accessions]
         )
         dtol.components.set(
-            [assembly, taggedseq, files, seqannotation, read, sample, accessions]
+            [files, sample, read, assembly, seqannotation, taggedseq, accessions]
         )
         genomics.components.set(
             [
-                assembly,
                 files,
                 general_sample,
-                seqannotation,
                 read,
+                assembly,
+                seqannotation,
                 accessions,
             ]
         )

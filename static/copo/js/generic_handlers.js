@@ -3019,7 +3019,7 @@ function createComponentAnchor(item, profileId, isIconOnly = false) {
     const $button = $templateAnchor.find('.pcomponent-button');
     $button.addClass(item.color);
     $button.find('.pcomponent-icon').addClass(item.iconClass);
-    $button.find('.pcomponent-name').text(item.title);
+    $button.find('.pcomponent-name').text(item.buttonLabel);
     $icon.addClass(item.iconClass);
     $templateAnchor.removeClass('pcomponent-button-template');
   }
@@ -3098,15 +3098,16 @@ function generate_component_control(componentName, profile_type) {
 
   //add profile title
   if ($('#profile_title').length) {
-    var profileTitle = $('<div/>', {
+    let profileTitle = $('#profile_title').val();
+    let $profileTitleDiv = $('<div/>', {
       class: 'page-title-custom',
       html:
-        "<span class='page-profile-title-text' title='Profile title'>Profile: " +
-        $('#profile_title').val() +
+        `<span class='profile-title' title=${profileTitle}>Profile: ` +
+        profileTitle +
         '</span>',
     });
 
-    pageHeaders.append(profileTitle);
+    pageHeaders.append($profileTitleDiv);
   }
 
   //add page title
@@ -3215,9 +3216,6 @@ function generate_component_control(componentName, profile_type) {
     pageIcons.append(pcomponentHTML);
 
     var components = get_profile_components(profile_type);
-
-    // Sort components by title in ascending order
-    components.sort((a, b) => a.title.localeCompare(b.title));
 
     // Group components by 'group' field value
     const grouped = groupComponentsByGroupName(components);
@@ -4031,31 +4029,98 @@ function get_collapsible_panel() {
 }
 
 function initialiseComponentDropdownMenu() {
-  $('.profile-dropdown-wrapper').click(function (e) {
-    e.stopPropagation(); // Prevent bubbling to document
-    const $menu = $(this).find('.profile-dropdown-menu');
+  // Close component dropdowns when clicking outside
+  $(document)
+    .off('click.dropdownClose')
+    .on('click.dropdownClose', function () {
+      $('.profile-dropdown-menu.visible')
+        .removeClass('visible')
+        .addClass('hidden')
+        .hide();
+    });
 
-    // Hide other dropdown menus
-    $('.profile-dropdown-menu')
-      .not($menu)
-      .hide()
-      .removeClass('visible')
-      .addClass('hidden');
+  // Click handler for each dropdown wrapper
+  $('.profile-dropdown-wrapper')
+    .off('click.dropdown')
+    .on('click.dropdown', function (e) {
+      e.stopPropagation();
 
-    // Toggle dropdown menu
-    if ($menu.hasClass('visible')) {
-      $menu.removeClass('visible').addClass('hidden');
-    } else {
-      $menu.removeClass('hidden').addClass('visible');
-    }
-  });
+      const $wrapper = $(this);
+      const $menu = $wrapper.find('.profile-dropdown-menu').first();
+      const $button = $wrapper
+        .find('.pcomponent-button, .dropdown-button, .ui.button')
+        .first();
 
-  // Hide on outside click
-  $(document).on('click', function () {
-    $('.profile-dropdown-menu.visible')
-      .removeClass('visible')
-      .addClass('hidden');
-  });
+      // Hide other open dropdown menus
+      $('.profile-dropdown-menu')
+        .not($menu)
+        .each(function () {
+          const $otherMenu = $(this);
+          // Return to original wrapper
+          const $originalWrapper = $otherMenu.data('original-parent');
+          if ($originalWrapper && $originalWrapper.length) {
+            $originalWrapper.append($otherMenu);
+          }
+          $otherMenu.removeClass('visible').addClass('hidden').hide();
+        });
+
+      // Toggle visibility of current menu
+      if ($menu.hasClass('visible')) {
+        $menu.removeClass('visible').addClass('hidden').hide();
+        return;
+      }
+
+      // Store original parent
+      if (!$menu.data('original-parent')) {
+        $menu.data('original-parent', $menu.parent());
+      }
+
+      // Component icon dropdown menu only
+      if (!$button.length) {
+        // Stay within wrapper — no body move, no positioning
+        $menu.removeClass('hidden').addClass('visible').show();
+        return;
+      }
+
+      // Component button dropdown menu only
+      // Move menu to body to escape 'overflow hidden' of the components' div
+      if (!$menu.parent().is('body')) {
+        $menu.appendTo('body');
+      }
+
+      // Position the dropdown contents below its trigger button
+      const rect = $button[0].getBoundingClientRect(); // Get button co-ordinates
+      $menu.css({
+        top: rect.bottom + window.scrollY + 4 + 'px',
+        left: rect.left + window.scrollX + 'px',
+      });
+      $menu.removeClass('hidden').addClass('visible').show(); // Show menu
+    });
+
+  // Reposition visible dropdown menu on window scroll or resize
+  $(window)
+    .off('scroll.dropdown resize.dropdown')
+    .on('scroll.dropdown resize.dropdown', function () {
+      const $menu = $('.profile-dropdown-menu.visible');
+      if (!$menu.length) return;
+
+      const $wrapper = $menu.data('original-parent');
+      if (!$wrapper || !$wrapper.length) return;
+
+      const $button = $wrapper
+        .find('.pcomponent-button, .dropdown-button, .ui.button')
+        .first();
+
+      // Skip repositioning if no component button is found
+      // i.e. skip for icon-only components
+      if (!$button.length) return;
+
+      const rect = $button[0].getBoundingClientRect();
+      $menu.css({
+        top: rect.bottom + window.scrollY + 4 + 'px',
+        left: rect.left + window.scrollX + 'px',
+      });
+    });
 }
 
 function initialiseNavToggle() {
