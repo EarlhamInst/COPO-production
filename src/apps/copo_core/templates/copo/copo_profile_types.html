@@ -21,7 +21,7 @@ const image_file_extensions = "{{ image_file_extensions }}";
 const record_action_button_def = {
   {% for button in record_action_button_def %}
     {{ button.name  }}: {
-      template: '<div class=" tiny ui basic dtables-dbuttons  {{ button.icon_colour}} button copo-dt copo-tooltip" \
+      template: '<div class=" tiny ui basic dtables-dbuttons  {{ button.icon_colour}} button copo-dt copo-tooltip {% if 'submit' in button.action %}submit-btn{% endif %}" \
       data-container="body" \
       data-action="{{ button.action }}" \
       data-error-message="{{ button.error_message }}" \

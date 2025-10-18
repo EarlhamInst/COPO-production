@@ -22,22 +22,14 @@
 
 /* Colour: Terra Cotta */
 .ui.icon.terra-cotta {
-  /* color: #e96a64 !important; */
   background: radial-gradient(circle at top right, #4a90e2 30%, #e96a64 70%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/*
-.ui.icon.terra-cotta:hover {
-   color: #c65a55 !important; 
-}
-*/
 .ui.terra-cotta.button,
 .ui.terra-cotta.buttons.button {
-  /* background-color: #e96a64; 
-  background-image: none; */
   background: radial-gradient(circle at top right, #4a90e2 30%, #e96a64 70%);
   color: #fff;
   text-shadow: none;
@@ -45,28 +37,19 @@
 
 .ui.terra-cotta.button:hover,
 .ui.terra-cotta.buttons.button:hover {
-  /* background-color: #c65a55; */
   background: radial-gradient(circle at bottom right, #2c6fb6 30%, #c65a55 70%);
 }
 
 /* Colour: Coral-pink */
 .ui.icon.coral-pink {
-  /* color: #ff8781 !important; */
   background: radial-gradient(circle at top right, #5c5c5c 30%, #ff8781 70%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/*
-.ui.icon.coral-pink:hover {
-   color: #d9736e !important; 
-}
-*/
 .ui.coral-pink.button,
 .ui.coral-pink.buttons.button {
-  /* background-color: #ff8781;
-  background-image: none; */
   background: radial-gradient(circle at top right, #5c5c5c 30%, #ff8781 70%);
   color: #fff;
   text-shadow: none;
@@ -74,6 +57,40 @@
 
 .ui.coral-pink.button:hover,
 .ui.coral-pink.buttons.button:hover {
-  /* background-color: #d9736e; */
   background: radial-gradient(circle at bottom right, #3d3d3d 30%, #d9736e 70%);
+}
+
+/* Record data table button colours */
+.dataTables_wrapper .ui.basic.teal.button.submit-btn,
+.dataTables_wrapper .ui.teal.button.submit-btn,
+.dataTables_wrapper .ui.teal.buttons .button.submit-btn {
+  background-color: #00b5ad !important;
+  color: white !important;
+  font-weight: bold;
+  box-shadow: 0 0 0 1px rgba(34, 36, 38, .15) inset !important;
+}
+
+.dataTables_wrapper .ui.basic.teal.button.submit-btn:hover,
+.dataTables_wrapper .ui.teal.button.submit-btn:hover,
+.dataTables_wrapper .ui.teal.buttons .button.submit-btn:hover {
+  background-color: #00a39c !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) inset !important;
+  color: white !important;
+}
+
+.dataTables_wrapper .ui.basic.blue.button.submit-btn,
+.dataTables_wrapper .ui.blue.button.submit-btn,
+.dataTables_wrapper .ui.blue.buttons .button.submit-btn {
+  background-color: #2185d0 !important;
+  color: white !important;
+  font-weight: bold;
+  box-shadow: 0 0 0 1px rgba(34, 36, 38, .15) inset !important;
+}
+
+.dataTables_wrapper .ui.basic.blue.button.submit-btn:hover,
+.dataTables_wrapper .ui.blue.button.submit-btn:hover,
+.dataTables_wrapper .ui.blue.buttons .button.submit-btn:hover {
+  background-color: #1678c2 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) inset !important;
+  color: white !important;
 }
