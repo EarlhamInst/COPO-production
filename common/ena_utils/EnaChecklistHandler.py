@@ -7,7 +7,13 @@ import os
 import io
 from django.conf import settings
 from openpyxl.utils.cell import get_column_letter
-from common.utils.helpers import get_datetime, get_not_deleted_flag, get_env, notify_ena_object_status
+from common.utils.helpers import (
+    get_datetime,
+    get_not_deleted_flag,
+    get_env,
+    notify_ena_object_status,
+    describe_regex,
+)
 from django_tools.middlewares import ThreadLocal
 import inspect
 import math
@@ -36,7 +42,7 @@ class ChecklistHandler:
             except Exception as e:
                 l.exception(e)
                 return ""            
-        
+
     def _loadChecklist_local(self, file_location):
         '''
         This is a local file for testing purpose
@@ -151,7 +157,7 @@ class ChecklistHandler:
         checklist_set = []
         dt = get_datetime()
         root = ET.fromstring(xml, parser=parser)
-        #checklist_ids = settings.BARCODING_CHECKLIST
+        # checklist_ids = settings.BARCODING_CHECKLIST
         for checklist_elm in root.findall("./CHECKLIST"):
             checklist = {}
 
@@ -163,9 +169,9 @@ class ChecklistHandler:
                 checklist['ena_checklist_id'] = ena_checklist_id.text.strip()
 
             skip = settings.ENA_CHECKLIST_CONFIG.get(primary_id, dict()).get( "skip", list() )
-            #if primary_id not in checklist_ids:
+            # if primary_id not in checklist_ids:
             #    continue
-            #checklist_ids.remove(primary_id)
+            # checklist_ids.remove(primary_id)
             checklist['primary_id'] = primary_id
             checklist['name'] = checklist_elm.find("./DESCRIPTOR/NAME").text.strip()
             checklist['description'] = checklist_elm.find("./DESCRIPTOR/DESCRIPTION").text.strip()
@@ -214,15 +220,16 @@ class ChecklistHandler:
                     regex = field_elm.find("./FIELD_TYPE/TEXT_FIELD/REGEX_VALUE")
                     if regex is not None:
                         field['regex'] = regex.text.strip()
+                        field['regex_description'] = describe_regex(field['regex'])
                     ontology = field_elm.find("./FIELD_TYPE/ONTOLOGY")
                     if ontology is not None:
                         field['ontology'] = ontology.text.strip()
-    
+                        field['ontology_link'] = f"http://purl.obolibrary.org/obo/{str(field['ontology']).replace(':','_')}"
                     if key == 'language':
                         key = "language_code"
                     checklist['fields'][key] = field
                     if checklist['primary_id'].startswith("ERC"):
-                        #add ORGANISM
+                        # add ORGANISM
                         field = {}
                         field['name'] = "Organism"
                         field['label'] = "Organism"
@@ -231,7 +238,7 @@ class ChecklistHandler:
                         field['multiplicity'] = "single"
                         field['type'] = "SCIENTIFIC_NAME_FIELD"
                         checklist['fields']["organism"] = field
-                        #add SAMPLE
+                        # add SAMPLE
                         field = {}
                         field['name'] = "Sample"
                         field['label'] = "Sample"
@@ -240,9 +247,8 @@ class ChecklistHandler:
                         field['multiplicity'] = "single"
                         field['type'] = "TEXT_FIELD"
                         checklist['fields']["sample"] = field
-
                     elif checklist['primary_id'].startswith("ERT"):
-                        #add SPECIMEN_ID
+                        # add SPECIMEN_ID
                         field = {}
                         field['name'] = "SPECIMEN_ID"
                         field['label'] = "SPECIMEN_ID"
@@ -251,7 +257,7 @@ class ChecklistHandler:
                         field['multiplicity'] = "single"
                         field['type'] = "TEXT_FIELD"
                         checklist['fields']["SPECIMEN_ID"] = field
-                        #add TAXON_ID
+                        # add TAXON_ID
                         field = {}
                         field['name'] = "TAXON_ID"
                         field['label'] = "TAXON_ID"
@@ -267,7 +273,7 @@ class ChecklistHandler:
             checklist["modified_date"] =  dt
             checklist["deleted"] = get_not_deleted_flag()
             checklist_set.append(checklist)
-            #if len(checklist_ids) == 0:
+            # if len(checklist_ids) == 0:
             #    break
         return checklist_set
 
@@ -288,26 +294,26 @@ class ChecklistHandler:
         xmlstr = self._loadChecklist_local("sample_checklist_faang.xml")
         checklist_set.extend(self._parseCheckList(xmlstr))
         """
-        
+
         """
         reads = EnaChecklist().execute_query({"primary_id": "read", "deleted": get_not_deleted_flag()})
         read = None
         if reads:
            read = reads[0]
         """
-        
+
         for checklist in checklist_set:
-            #if checklist["primary_id"].startswith("ERC"):
-                #read_fields = {key: value for key, value in read["fields"].items() if value.get("for_dtol", False) == False}
-                #for key, value in read_fields.items():                    
-                #    value.update({"read_field": True})   
-                #checklist["fields"].update(read_fields)
+            # if checklist["primary_id"].startswith("ERC"):
+            # read_fields = {key: value for key, value in read["fields"].items() if value.get("for_dtol", False) == False}
+            # for key, value in read_fields.items():
+            #    value.update({"read_field": True})
+            # checklist["fields"].update(read_fields)
             EnaChecklist().get_collection_handle().find_one_and_update({"primary_id": checklist["primary_id"]},
                                                                             {"$set": checklist},
                                                                             upsert=True)
-            #for checklist fields
+            # for checklist fields
             write_manifest(checklist, with_read=False)   
-            
+
             """
             #for checklist feils + read fields 
             if checklist["primary_id"].startswith("ERC"): 

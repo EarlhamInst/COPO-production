@@ -2092,6 +2092,13 @@ div.shown span.side-help-trigger:before {
   word-wrap: break-word;
 }
 
+#warning_info li a,
+#warning_info2 li a,
+#warning_info3 li a,
+#sample_info li a {
+  text-decoration: underline;
+}
+
 /* Add ellipsis to profile title in error message */
 .title-ellipsis {
   display: inline-block;
@@ -2101,23 +2108,4 @@ div.shown span.side-help-trigger:before {
   text-overflow: ellipsis;
   /* Aligns text with the baseline of the text */
   vertical-align: bottom;
-}
-
-/* Quick tour button CSS */
-.tour-start-btn,
-.tour-next-btn {
-  text-decoration: none;
-}
-
-.webpop-content-div span,
-.tour-start-btn i,
-.tour-next-btn i {
-  color: #35637e;
-}
-
-.tour-dismiss-btn,
-.tour-end-btn {
-  text-decoration: none;
-  color: #c93c00;
-  float: right !important;
 }

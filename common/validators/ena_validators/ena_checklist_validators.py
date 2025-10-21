@@ -78,7 +78,7 @@ class MandatoryValuesValidator(Validator):
                     null_rows.extend(self.data[self.data[key] == ""].index.tolist())
                     null_rows.extend(self.data[self.data[key].isna()].index.tolist())
                     for row in null_rows:
-                        self.errors.append("Missing data detected in column <strong>%s</strong> part at row <strong>%s</strong>." % (
+                        self.errors.append("Missing data detected in column <strong>%s</strong> at row <strong>%s</strong>." % (
                             field["name"], str(row + 1)))
                         self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
@@ -93,7 +93,7 @@ class IncorrectValueValidator(Validator):
         if biosampleAccessions:
             biosampleAccessionsMap = {row["biosampleAccession"]: row for row in biosampleAccessions} 
 
-        #get all BIOSAMPLEACCESSION_EXT_FIELD from the checklist fields
+        # get all BIOSAMPLEACCESSION_EXT_FIELD from the checklist fields
         biosampleAccession_ext_field_map = {key: field for key, field in checklist["fields"].items() if field.get("type") == "BIOSAMPLEACCESSION_EXT_FIELD"}
 
         for column in self.data.columns:
@@ -129,11 +129,14 @@ class IncorrectValueValidator(Validator):
                                             self.flag = False        
                                     else:
                                     '''
-                                    self.errors.append("Invalid value '" + row + "' in column : '" + field["label"] + "' at row " + str(i) + ". Valid value should match: " + str(regex))
+                                    #  self.errors.append("Invalid value '" + row + "' in column : '" + field["label"] + "' at row " + str(i) + ". Valid value should match: " + str(regex))
+                                    self.errors.append(
+                                        f"Invalid value <strong>{row}</strong> in column <strong>{field['label']}</strong> at row <strong>{str(i)}</strong>.<br>Expected {str(field['regex_description'])}.<br>(Pattern: {str(regex)})"
+                                    )
                                     self.flag = False
                         elif type == "BIOSAMPLEACCESSION_FIELD":
                             if row not in biosampleAccessionsMap.keys():
-                                #check biosample from ena
+                                # check biosample from ena
                                 try:
                                     response = session.get(f"{ena_sample_service}/{row}", data={})
                                     if response.status_code == requests.codes.ok:
@@ -159,13 +162,13 @@ class IncorrectValueValidator(Validator):
                             else:
                                 for key, field in biosampleAccession_ext_field_map.items():
                                     value = self.data.iloc[i-2].get(key,"")
-                                    #specimen_id = self.data.iloc[i-2].get("SPECIMEN_ID","")
-                                    #taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
+                                    # specimen_id = self.data.iloc[i-2].get("SPECIMEN_ID","")
+                                    # taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
                                     sample = biosampleAccessionsMap.get(row)
                                     if key in sample and sample[key] != value:
                                         self.errors.append("Invalid value " + value + " not match with " + sample.get(key,"")+ " in column: '" + key + "' at row " + str(i)) 
                                         self.flag = False
-                                    
+
             else:
                 self.errors.append("Invalid column : '" + column +"'")
                 self.flag = False
@@ -232,7 +235,10 @@ class OntologyValidator(Validator):
                         ontology =  field.get("ontology","").split(":")
                         if len(ontology) == 2:
                             if not checkOntologyTerm(ontology_id=ontology[0], ancestor=ontology[1], term=self.data[key][i]):
-                                self.errors.append("Invalid value '" + self.data[key][i] + "' in column : '" + field["label"] + "' at row " + str(i+1) + ". Valid value should match ontology: " + str(field.get("ontology","")))
+                                # self.errors.append("Invalid value '" + self.data[key][i] + "' in column : '" + field["label"] + "' at row " + str(i+1) + ". Valid value should match ontology: " + str(field.get("ontology","")))
+                                self.errors.append(
+                                    f"Invalid value <strong>{self.data[key][i]}</strong> in column: <strong>{field['label']}</strong> at row <strong>{i + 1}</strong>.<br>Valid value should match ontology listed for <a target='_blank' href='{field.get('ontology_link','')}'>{str(field.get('ontology',''))}</a>."
+                                )
                                 self.flag = False
                         else:
                             self.errors.append("Ontology term reference is missing for column : '" + field["label"] + "'")
