@@ -94,10 +94,35 @@ $(document).ready(function () {
       {
         label: 'Close',
         action: function (dialogItself) {
-          dialogItself.close();
+          confirmCloseDialog(dialogItself);
         },
       },
     ],
+    onshown: function (dialogRef) {
+      // Remove aria-hidden before focusing the modal
+      dialogRef.getModal().removeAttr('aria-hidden');
+
+      // Show the confirmation dialog if the close
+      // icon in the modal title is clicked
+      const $closeButton = dialogRef
+        .getModal()
+        .find('.bootstrap-dialog-close-button');
+
+      // Remove any existing BootstrapDialog handlers
+      $closeButton.off('click');
+
+      // Add your custom confirm logic
+      $closeButton.on('click.confirm', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        confirmCloseDialog(dialogRef);
+      });
+
+      // Set focus after a short delay
+      setTimeout(function () {
+        dialogRef.getModal().focus();
+      }, 50);
+    },
   });
 
   if (window.location.protocol === 'https:') {
