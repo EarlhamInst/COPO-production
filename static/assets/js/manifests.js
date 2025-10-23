@@ -566,7 +566,7 @@ function initCommonValueDropdown(commonField, commonValueDiv) {
 
   $.ajax({
     type: 'GET',
-    url: '/manifests/get_common_value_dropdown_list/',
+    url: '/manifests/get_common_value_dropdown_list',
     dataType: 'json',
     data: {
       manifestType: manifestType,
@@ -580,7 +580,7 @@ function initCommonValueDropdown(commonField, commonValueDiv) {
         value_input.setAttribute('class', 'form-control');
         value_input.setAttribute('aria-describedby', 'commonValueStatus');
         value_input.setAttribute('required', '');
-        value_input.style.width = '200px'; // Set width of the select tag field
+        value_input.style.width = '220px'; // Set width of the select tag field
 
         let option = [];
 
