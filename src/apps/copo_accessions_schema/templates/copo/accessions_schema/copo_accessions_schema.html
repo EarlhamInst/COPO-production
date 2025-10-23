@@ -28,7 +28,7 @@
         <input
         type="hidden"
         id="component_subtitle"
-        value="<select id='study_id' name='studies'>{% for study in studies %}<option value='{{ study.study_id }}' title='{{study.schema_name}}: {{study.checklist_id}}' >  {{ study.study_id}} : {{study.title}} </option>{% endfor %}</select> "
+        value="<select id='study_id' class='searchable-select' name='studies'>{% for study in studies %}<option value='{{ study.study_id }}' title='{{study.schema_name}}: {{study.checklist_id}}' >  {{ study.study_id}} : {{study.title}} </option>{% endfor %}</select> "
       />
      
     </div>

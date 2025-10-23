@@ -30,10 +30,35 @@ var dialog = new BootstrapDialog({
     {
       label: 'Close',
       action: function (dialogItself) {
-        dialogItself.close();
+        confirmCloseDialog(dialogItself);
       },
     },
   ],
+  onshown: function (dialogRef) {
+    // Remove aria-hidden before focusing the modal
+    dialogRef.getModal().removeAttr('aria-hidden');
+
+    // Show the confirmation dialog if the close
+    // icon in the modal title is clicked
+    const $closeButton = dialogRef
+      .getModal()
+      .find('.bootstrap-dialog-close-button');
+
+    // Remove any existing BootstrapDialog handlers
+    $closeButton.off('click');
+
+    // Add your custom confirm logic
+    $closeButton.on('click.confirm', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      confirmCloseDialog(dialogRef);
+    });
+
+    // Set focus after a short delay
+    setTimeout(function () {
+      dialogRef.getModal().focus();
+    }, 50);
+  },
 });
 
 $(document).ready(function () {
@@ -82,7 +107,9 @@ $(document).ready(function () {
       //$("#spinner").fadeOut()
     } else if (d.action === 'success') {
       // check info div is visible
-      $(element).removeClass('alert-info alert-danger').addClass('alert-success');
+      $(element)
+        .removeClass('alert-info alert-danger')
+        .addClass('alert-success');
       $(element).html(d.message);
       //$("#spinner").fadeOut()
     } else if (d.action === 'error') {
@@ -224,6 +251,7 @@ $(document).ready(function () {
   );
 
   $('#checklist_id').change(function () {
+    $('.searchable-select').trigger('change.select2'); // Refresh select2 dropdown
     if ($.fn.dataTable.isDataTable('#' + componentMeta.tableID)) {
       //if table instance already exists, then do refresh
       table = $('#' + componentMeta.tableID).DataTable();
@@ -235,7 +263,7 @@ $(document).ready(function () {
       $('#blank_manifest_url_' + this.value).val()
     );
     args_dict['tagged_seq_checklist_id'] = this.value;
-    args_dict['profile_id'] = profile_id,
+    args_dict['profile_id'] = profile_id;
     load_records(componentMeta, args_dict); // call to load component records
   });
 

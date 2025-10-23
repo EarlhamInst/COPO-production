@@ -4121,6 +4121,24 @@ function initialiseComponentDropdownMenu() {
         left: rect.left + window.scrollX + 'px',
       });
     });
+
+  // Initialise Bootstrap-select, a searchable dropdown menu
+  // Select the first non-empty value option by default
+  const $selectOption = $('.searchable-select');
+  $selectOption.select2({
+    placeholder: 'Choose an option',
+    allowClear: false,
+  });
+
+  const $firstOption = $('.searchable-select option')
+    .filter(function () {
+      return $(this).val() !== '';
+    })
+    .first();
+
+  if ($firstOption.length) {
+    $selectOption.val($firstOption.val()).trigger('change');
+  }
 }
 
 function initialiseNavToggle() {

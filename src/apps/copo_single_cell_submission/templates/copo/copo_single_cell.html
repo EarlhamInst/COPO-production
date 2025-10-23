@@ -52,7 +52,7 @@
   <input
     type="hidden"
     id="component_subtitle"
-    value="<select id='checklist_id' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}'>{{ checklist.name }}</option>{% endfor %}</select>"
+    value="<select id='checklist_id' class='searchable-select' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}'>{{ checklist.name }}</option>{% endfor %}</select>"
   />
   <input
     type="hidden"

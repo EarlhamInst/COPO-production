@@ -1091,6 +1091,7 @@ th {
 .page-title-text {
   color: black;
   font-size: 20px;
+  vertical-align: middle;
   /* display: flex;
   white-space: nowrap; */
 }
@@ -1438,6 +1439,12 @@ table.dataTable td.focus {
 }
 
 /*end selectize overrrides*/
+
+/* select2 dropdown */
+.select2-container {
+  vertical-align: middle !important;
+  width: 330px !important;
+}
 
 /*form control focus*/
 

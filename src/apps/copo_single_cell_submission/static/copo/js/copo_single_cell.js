@@ -33,6 +33,8 @@ function initialise_checklist_id() {
       }
     });
   }
+  // Refresh select2 dropdown
+  $('.searchable-select').trigger('change.select2');
 }
 
 function reset_value() {
@@ -92,7 +94,9 @@ $(document).on('document_ready', function () {
     } else if (d.action === 'success') {
       // show something on the success div
       // check success div is visible
-      $(element).removeClass('alert-danger alert-info').addClass('alert-success');
+      $(element)
+        .removeClass('alert-danger alert-info')
+        .addClass('alert-success');
       $(element).html(d.message);
       //$("#spinner").fadeOut()
     } else if (d.action === 'warning') {
@@ -161,7 +165,9 @@ $(document).on('document_ready', function () {
     } else if (d.action === 'success') {
       // show something on the success div
       // check success div is visible
-      $(element).removeClass('alert-danger alert-info').addClass('alert-success');
+      $(element)
+        .removeClass('alert-danger alert-info')
+        .addClass('alert-success');
       $(element).html(d.message);
       //$("#spinner").fadeOut()
     } else if (d.action === 'error') {
@@ -395,6 +401,7 @@ $(document).on('document_ready', function () {
   });
 
   $('#checklist_id').change(function () {
+    $('.searchable-select').trigger('change.select2'); // Refresh select2 dropdown
     if ($.fn.dataTable.isDataTable('#' + componentMeta.tableID)) {
       //if table instance already exists, then do refresh
       table = $('#' + componentMeta.tableID).DataTable();

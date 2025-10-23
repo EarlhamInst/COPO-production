@@ -68,15 +68,19 @@ var dialog = new BootstrapDialog({
 
     // Show the confirmation dialog if the close
     // icon in the modal title is clicked
-    dialogRef
+    const $closeButton = dialogRef
       .getModal()
-      .find('.bootstrap-dialog-close-button')
-      .off('click.confirm') // Prevent duplicate handlers
-      .on('click.confirm', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        confirmCloseDialog(dialogRef);
-      });
+      .find('.bootstrap-dialog-close-button');
+
+    // Remove any existing BootstrapDialog handlers
+    $closeButton.off('click');
+
+    // Add your custom confirm logic
+    $closeButton.on('click.confirm', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      confirmCloseDialog(dialogRef);
+    });
 
     // Set focus after a short delay
     setTimeout(function () {
@@ -254,7 +258,7 @@ $(document).on('document_ready', function () {
       load_records(componentMeta, args_dict, columnDefs); // call to load component records
     } else if (d.action === 'file_processing_status') {
       $(element).html(d.message);
-      table = $('#'+ componentMeta.tableID).DataTable();
+      table = $('#' + componentMeta.tableID).DataTable();
       //clear old, set new data
       table.rows().deselect();
       table.clear().draw();
@@ -362,6 +366,7 @@ $(document).on('document_ready', function () {
     });
 
   $('#checklist_id').change(function () {
+    $('.searchable-select').trigger('change.select2'); // Refresh select2 dropdown
     if ($.fn.dataTable.isDataTable('#' + componentMeta.tableID)) {
       //if table instance already exists, then do refresh
       table = $('#' + componentMeta.tableID).DataTable();
@@ -450,7 +455,7 @@ $(document).on('document_ready', function () {
   }
 
   $('body').on('posttablerefresh', function (event) {
-    table = $('#'+ componentMeta.tableID).DataTable();
+    table = $('#' + componentMeta.tableID).DataTable();
     //var numCols = $('#' + component + '_table thead th').length;
     var numCols = table.columns().nodes().length;
     table.rows().nodes().to$().addClass('highlight_accession');

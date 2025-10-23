@@ -40,7 +40,7 @@
         <input
         type="hidden"
         id="component_subtitle"
-        value="<select id='profileType' name='profileType'>{% for profile_type in profile_types %}<option value='{{ profile_type.value }}' title='{{profile_type.label}}' >{{ profile_type.label }}</option>{% endfor %}</select> "
+        value="<select id='profileType' class='searchable-select' name='profileType'>{% for profile_type in profile_types %}<option value='{{ profile_type.value }}' title='{{profile_type.label}}' >{{ profile_type.label }}</option>{% endfor %}</select> "
       />   
         <input type="hidden" id="copo_email" value="{{copo_email}}"/>
         <input type="hidden" id="groups" value="{{groups}}"/>
