@@ -120,6 +120,11 @@
     "platform": "ILLUMINA"
   },
   {
+    "value": "Illumina NovaSeq X Plus",
+    "label": "Illumina NovaSeq X Plus",
+    "platform": "ILLUMINA"
+  },
+  {
     "value": "Illumina NextSeq 500",
     "label": "Illumina NextSeq 500",
     "platform": "ILLUMINA"
@@ -167,6 +172,11 @@
   {
     "value": "Sequel IIe",
     "label": "Sequel IIe",
+    "platform": "PACBIO_SMRT"
+  },
+  {
+    "value": "Vega",
+    "label": "Vega",
     "platform": "PACBIO_SMRT"
   },
   {
@@ -344,6 +354,29 @@
     "value": "BGISEQ-50",
     "label": "BGISEQ-50",
     "platform": "BGISEQ"
+  },
+  {
+    "value": "DNBSEQ-T7",
+    "label": "DNBSEQ-T7",
+    "platform": "DNBSEQ"
+  },
+  { 
+    "value": "DNBSEQ-G400",
+    "label": "DNBSEQ-G400",
+    "platform": "DNBSEQ"
+  },
+  { 
+    "value": "DNBSEQ-G50",
+    "label": "DNBSEQ-G50",
+    "platform": "DNBSEQ"
+  },
+  { "value": "DNBSEQ-G400 FAST",
+    "label": "DNBSEQ-G400 FAST",
+    "platform": "DNBSEQ"
+  },
+  { "value": "DNBSEQ-T10x4RS",
+    "label": "DNBSEQ-T10x4RS",
+    "platform": "DNBSEQ"
   },
   {
     "value": "Complete Genomics",
