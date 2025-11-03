@@ -19,7 +19,6 @@ import inspect
 import math
 from common.schema_versions.lookup import dtol_lookups as lookup
 from common.validators.ena_validators import ena_checklist_validators  as required_validators
-from common.validators.ena_validators.ena_checklist_validators import ManifestChecklistValidator
 from common.validators.validator import Validator
 import json
 from common.dal.profile_da import Profile
@@ -356,17 +355,33 @@ class EnaCheckListSpreadsheet:
             if inspect.isclass(element) and issubclass(element, Validator) and not element.__name__ == "Validator":
                 self.required_validators.append(element)
 
-        # Remove ManifestChecklistValidator if it was already added by the loop (to avoid duplicates)
-        self.required_validators = [
-            v for v in self.required_validators if v is not ManifestChecklistValidator
-        ]
-        # Insert at the beginning
-        self.required_validators.insert(0, ManifestChecklistValidator)
-
         self.required_validators.extend(validators)
 
     def get_filenames_from_manifest(self):
         return list(self.data["File name"])
+
+    def check_manifest_compatibility(self):
+        ''' Checks whether the uploaded manifest's column set
+            matches the expected checklist's columns.
+        '''
+        expected_columns = set(self.checklist['fields'].keys())
+        uploaded_columns = set(self.data.columns)
+        sheet_name = f"<strong>{self.checklist['primary_id']} {self.checklist['name']}</strong>"
+
+        # Determine the number of expected columns that are missing
+        missing = expected_columns - uploaded_columns
+
+        # Calculate the match ratio
+        total_expected = len(expected_columns)
+        match_ratio = (total_expected - len(missing)) / max(total_expected, 1)
+
+        # If almost nothing matches, show a single error message
+        if match_ratio < 0.5:  # Threshold: less than 50% columns match
+            raise Exception(
+                'The uploaded manifest does not appear to match the expected checklist.<br><br>'
+                'Please ensure that you are uploading the correct manifest for the selected checklist '
+                f'(expected {len(expected_columns)} columns, found {len(uploaded_columns)} in sheet {sheet_name}).'
+            )
 
     def loadManifest(self, m_format):
 
@@ -397,6 +412,7 @@ class EnaCheckListSpreadsheet:
                 new_column_name = { value["label"].upper() : key for key, value in self.checklist["fields"].items() }
                 self.new_data.rename(columns=new_column_name, inplace=True)    
 
+                self.check_manifest_compatibility()
             except Exception as e:
                 # if error notify via web socket
                 l.exception(e)
@@ -419,10 +435,6 @@ class EnaCheckListSpreadsheet:
                                                         data=self.new_data, fields=None,
                                                         errors=errors, warnings=warnings, flag=flag,
                                                         isupdate=self.isupdate).validate()
-
-                # Stop executing further validators if uploaded  manifest doesn't match expected checklist
-                if not flag and v is ManifestChecklistValidator:
-                    break
             except Exception as e:
                 l.exception(e)
                 error_message = str(e).replace("<", "").replace(">", "")
