@@ -11,6 +11,7 @@ from lxml import etree as ET
 from django.http import HttpResponse, JsonResponse
 import os
 from common.lookup.lookup import SRA_PROJECT_TEMPLATE,SRA_SETTINGS
+from rest_framework import status
 import subprocess
 from pathlib import Path
 import pandas as pd
@@ -172,7 +173,7 @@ class EnaTaggedSequence:
         checklist_id = request.POST["checklist_id"]
         name = file.name
         ena = EnaCheckListSpreadsheet(
-            file=file, checklist_id=checklist_id, component="tagged_seq"
+            file=file, checklist_id=checklist_id, with_read=False, component="tagged_seq"
         )
         if name.endswith("xlsx") or name.endswith("xls"):
             fmt = 'xls'
@@ -420,15 +421,15 @@ class EnaTaggedSequence:
                     msg="Biomanifest submitting...",
                     action="info",
                     html_id="tagged_seq_info")
-            
+
             enaSubmissionHelper = EnaSubmissionHelper(submission_id=str(sub["_id"]), profile_id=sub["profile_id"])
-            #self.submission_helper = SubmissionHelper(submission_id=str(sub["_id"]))
+            # self.submission_helper = SubmissionHelper(submission_id=str(sub["_id"]))
             self.the_submission = os.path.join(self.submission_path, sub["profile_id"]) 
             try:
                 if not os.path.exists(self.the_submission):
                     os.makedirs(self.the_submission)
 
-                #context = self._get_submission_xml()
+                # context = self._get_submission_xml()
                 context = enaSubmissionHelper.get_submission_xml()
                 submission_xml_path = context['value']
 

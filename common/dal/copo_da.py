@@ -1396,12 +1396,11 @@ class EnaChecklist(DAComponent):
                 df["read_field"] = df["read_field"].fillna(False)
 
             if for_dtol:
-                df["for_dtol"] = df["for_dtol"].fillna(True)
+                df["for_dtol"] = df["for_dtol"].fillna(True) if "for_dtol" in df.columns else True
                 df = df.loc[df["for_dtol"] == True]
             else:
-                if "for_dtol" in df.columns:
-                    df["for_dtol"] = df["for_dtol"].fillna(False)
-                    df = df.loc[df["for_dtol"] == False]
+                df["for_dtol"] = df["for_dtol"].fillna(False) if "for_dtol" in df.columns else False
+                df = df.loc[df["for_dtol"] == False]
 
             if with_sample and with_read:
                 df = df.loc[

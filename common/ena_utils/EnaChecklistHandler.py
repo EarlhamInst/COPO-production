@@ -192,7 +192,18 @@ class ChecklistHandler:
 
                     label = field_elm.find("./LABEL")
                     if label is not None:
-                        field['label'] = label.text.strip()
+                        # It seems like label is uppercase for checklist ID/primary_id
+                        # beginning with 'ERT' so use name (which is sentence case) 
+                        # as the label instead
+                        label_text = label.text.strip()
+                        if label_text.isupper():
+                            l.debug(
+                                f"{primary_id} Field {key} label '{label_text}' replaced with name '{key}'"
+                            )
+                            field['label'] = key
+                        else:
+                            field['label'] = label_text
+
                     else: 
                         l.debug(f"{primary_id} Field {key} does not have a name")
                         field['label'] = key
@@ -361,11 +372,13 @@ class EnaCheckListSpreadsheet:
         return list(self.data["File name"])
 
     def check_manifest_compatibility(self):
-        ''' Checks whether the uploaded manifest's column set
-            matches the expected checklist's columns.
+        '''Checks whether the uploaded manifest's column set matches 
+           the expected checklist's columns and also detects if any of 
+           the column names is different, even if the total 
+           number of columns matches.
         '''
         expected_columns = set(self.checklist['fields'].keys())
-        uploaded_columns = set(self.data.columns)
+        uploaded_columns = set(self.new_data.columns)
         sheet_name = f"<strong>{self.checklist['primary_id']} {self.checklist['name']}</strong>"
 
         # Determine the number of expected columns that are missing
@@ -375,12 +388,15 @@ class EnaCheckListSpreadsheet:
         total_expected = len(expected_columns)
         match_ratio = (total_expected - len(missing)) / max(total_expected, 1)
 
-        # If almost nothing matches, show a single error message
-        if match_ratio < 0.5:  # Threshold: less than 50% columns match
+        # If almost nothing matches, display a single error message
+        # with a threshold of less than 50% columns match
+        if match_ratio < 0.5 and total_expected != len(
+            uploaded_columns
+        ):  
             raise Exception(
                 'The uploaded manifest does not appear to match the expected checklist.<br><br>'
                 'Please ensure that you are uploading the correct manifest for the selected checklist '
-                f'(expected {len(expected_columns)} columns, found {len(uploaded_columns)} in sheet {sheet_name}).'
+                f'(expected {total_expected} columns, found {len(uploaded_columns)} in sheet {sheet_name}).'
             )
 
     def loadManifest(self, m_format):
@@ -470,7 +486,7 @@ class EnaCheckListSpreadsheet:
 
         # if we get here we have a valid spreadsheet
         notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.", 
-            action="success", html_id=self.component_info)
+            action="success", html_id=self.component_info, checklist_id=self.checklist_id)
         notify_ena_object_status(data={"profile_id": self.profile_id}, msg="", action="close", html_id="upload_controls", checklist_id=self.checklist_id)
         notify_ena_object_status(data={"profile_id": self.profile_id}, msg="", action="make_valid", html_id=self.component_info, checklist_id=self.checklist_id)
 
