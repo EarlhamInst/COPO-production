@@ -17,6 +17,8 @@ function initialise_checklist_id() {
         $(this).text('* ' + $(this).text());
         if (first) {
           $(this).prop('selected', true);
+          // Trigger change event for searchable select
+          $('.searchable-select').val($(this).val()).trigger('change');
           first = false;
         }
       }
