@@ -3,6 +3,8 @@ import json
 import datetime
 from common.utils.logger import Logger
 import requests
+import unicodedata
+
 l = Logger()
 
 MESSAGE = {
@@ -111,3 +113,9 @@ def checkNCBITaxonTerm(term):
         if curie == f"NCBITaxon:{term}":
             return True
     return False
+
+def clean_str(s):
+    # Normalise Unicode spaces (e.g. NBSP → normal space)
+    normalised = unicodedata.normalize('NFKC', str(s))
+    # Remove all leading/trailing whitespace (including NBSP, zero-width)
+    return normalised.strip()
