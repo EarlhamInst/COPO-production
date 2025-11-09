@@ -2,6 +2,7 @@ import boto3
 from botocore.config import Config
 from django.conf import settings as s
 from django_tools.middlewares.ThreadLocal import get_current_request
+from common.schemas.utils.data_utils import join_with_and
 from common.utils.helpers import notify_read_status
 from common.utils.logger import Logger
 from boto3.s3.transfer import TransferConfig
@@ -200,8 +201,9 @@ class S3Connection():
                         missing_files.append(file)
             if not just_return_etags and len(missing_files) > 0:
                 # report missing files
-                msg="Files Missing: " + str(missing_files) + ". Please upload these files to COPO."
-              
+                missing_files_text = join_with_and([f"'{x}'" for x in missing_files])
+                msg = f'Data files missing: {missing_files_text}. Please upload them to COPO.'
+
                 notify_read_status(data={"profile_id": profile_id}, msg=msg,
                                    action="error",
                                    html_id="sample_info")
