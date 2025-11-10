@@ -14,13 +14,17 @@
   <input type="hidden" id="profile_id" value="{{ profile_id }}"/>
     <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12">
-            <h3 class="h3">
-                Submit Assembly     <span class="percent"></span>
-            </h3>
-            <p>
-                Upload assembly files and fill in metadata, you must have already created a study in ENA and have
-                uploaded samples and reads. You will be requested the relative accessions.
-            </p>
+            <div class="warning-content">
+                <p>Before uploading assemblies, please upload the following prerequisite data:</p>
+                <ul>
+                    <li>Assembly <strong>data files</strong></li>
+                    <li><strong>Samples</strong></li>
+                    <li><strong>Reads</strong></li>
+                </ul>
+                <p>Uploading these will automatically create a study (or project) in 
+                <span class="hover-text" title="European Nucleotide Archive">ENA</span> and 
+                generate the accessions required to complete this form.</p>
+            </div>
 
 
             <div style="display:none; margin-top: 30px; " id="assembly_info" class="alert alert-info"

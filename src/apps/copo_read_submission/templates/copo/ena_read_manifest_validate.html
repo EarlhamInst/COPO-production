@@ -52,13 +52,7 @@
 
         .saving_status {
             margin-right: 25px
-        }
-        .checklist  {
-            color: black;
-            font-weight: bold;
-            font-size: 1.2em;
-        }        
-
+        }    
     </style>
 {% endblock %}
 
@@ -82,11 +76,19 @@
     <input type="hidden" id="profile_id" value="{{ profile_id }}"/>
     <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12">
-            <p> Please upload a completed  <span class="hover-text" title="European Nucleotide Archive">ENA</span> reads manifest to validate:</p>
+            <div class="warning-content mb-20">
+                <p>Before uploading reads, please upload the following prerequisite data:</p>
+                <ul><li>Read <strong>data files</strong></li><li><strong>Samples</strong></li></ul>
+                <p>Uploading these will automatically create a study (or project) in 
+                <span class="hover-text" title="European Nucleotide Archive">ENA</span> and 
+                generate the accessions required to complete the manifest.</p>
+            </div>
 
-            <h3 class="h3">
-              <span class="checklist" >{{ checklist_id }}: {{ checklist_name }} </span>
-            </h3>
+            <p class="info-content">
+                <span class="info-text">Please upload a completed reads manifest to validate:</span>
+                <br><br>
+                <span class="checklist">{{ checklist_id }}: {{ checklist_name }}</span>
+            </p>
 
             <input id="file" type="file" style="display:none"/>
 

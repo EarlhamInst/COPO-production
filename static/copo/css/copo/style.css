@@ -1083,6 +1083,22 @@ hr {
   margin-top: 0;
 }
 
+.warning-content {
+  background-image: -webkit-linear-gradient(top, #fcf8e3 0%, #f8efc0 100%);
+  border-color: #f5e79e;
+  padding: 10px;
+}
+
+.info-content {
+  display: inline;
+}
+
+.info-content .checklist {
+  color: black;
+  font-weight: bold;
+  font-size: 1.6em !important;
+}
+
 div.pad-it {
   margin-right: 10px;
 }
