@@ -4256,3 +4256,21 @@ function confirmCloseDialog(triggerDialogOrEvent) {
     },
   });
 }
+
+// Fades out warning message in modals and updates
+// info text after manifest validation
+function fadeOutMessages(message, action) {
+  // Relevant actions that trigger info update
+  const shouldFade =
+    ['info', 'warning', 'error', 'success'].includes(action) &&
+    message &&
+    !message.includes('Loading');
+  
+  if (!shouldFade) return;
+
+  // Fade out warning messages
+  $('.warning-content').fadeOut(50);
+  
+  // Update info text if there’s a message that’s not a loading message
+  $('.info-content .info-text').text('Manifest validation completed for:');
+}

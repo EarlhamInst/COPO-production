@@ -354,14 +354,6 @@ $(document).ready(function () {
   // Get element IDs for the close buttons in the 'Upload Spreadsheet' modal
   // only if the modal is present in the DOM
   if ($('#sample_spreadsheet_modal').length) {
-    let sample_spreadsheet_close_btn1 = document.getElementById(
-      'sample_spreadsheet_close_btn1'
-    );
-
-    let sample_spreadsheet_close_btn2 = document.getElementById(
-      'sample_spreadsheet_close_btn2'
-    );
-
     // Add event listeners to the close buttons
     document
       .querySelectorAll('.sample-close-btn')
@@ -426,7 +418,7 @@ $(document).ready(function () {
         if (d.action == 'hide_sub_spinner') {
           $('#sub_spinner').fadeOut(fadeSpeed);
         }
-
+        fadeOutMessages(d.message, d.action); // Fade/update content based on action
         if (d.action === 'close') {
           $('#' + d.html_id).fadeOut('50');
         } else if (d.action === 'make_valid') {
@@ -574,7 +566,6 @@ $(document).ready(function () {
             .addClass('sample-alert-success');
 
           $('#' + d.html_id).html(d.message);
-          $('#export_errors_button').fadeIn();
           $('#spinner').fadeOut();
         } else if (d.action === 'make_images_table') {
           // make table of images matched to
@@ -962,53 +953,4 @@ function download(filename, text) {
   } else {
     pom.click();
   }
-}
-
-function confirmCloseSampleDialog(e) {
-  e.preventDefault();
-
-  BootstrapDialog.show({
-    title: 'Confirm Close',
-    message:
-      'Are you sure that you would like to close the modal? ' +
-      'Any upload progress will be lost.',
-    cssClass: 'copo-modal1',
-    closable: false,
-    animate: true,
-    closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
-    closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
-    type: BootstrapDialog.TYPE_WARNING,
-    buttons: [
-      {
-        id: 'cancelCloseBtnID',
-        label: 'No, cancel',
-        cssClass: 'tiny ui basic button',
-        action: function (dialogRef) {
-          dialogRef.close();
-        },
-      },
-      {
-        id: 'yesCloseBtnID',
-        label: 'Yes, close modal',
-        cssClass: 'tiny ui basic button',
-        action: function (dialogRef) {
-          // Close 'Confirm Close' modal
-          dialogRef.close();
-
-          // Close 'Upload Spreadsheet' modal
-          const modalId = $(e.target).closest('.modal').attr('id');
-          $(`#${modalId}`).modal('hide');
-        },
-      },
-    ],
-    onshown: function (dialogRef) {
-      // Remove aria-hidden before focusing the modal
-      dialogRef.getModal().removeAttr('aria-hidden');
-
-      // Set focus after a short delay
-      setTimeout(function () {
-        dialogRef.getModal().focus();
-      }, 50);
-    },
-  });
 }

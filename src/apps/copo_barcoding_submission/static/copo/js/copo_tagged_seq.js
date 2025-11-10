@@ -98,6 +98,7 @@ $(document).ready(function () {
     } else if (d && d.message && $(element).is(':hidden')) {
       $(element).fadeIn('50');
     }
+    fadeOutMessages(d.message, d.action); // Fade/update content based on action
     //$("#" + d.html_id).html(d.message)
     if (d.action === 'info') {
       // show something on the info div

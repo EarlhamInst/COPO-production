@@ -87,6 +87,7 @@ $(document).on('document_ready', function () {
       }
     }
     //$("#" + d.html_id).html(d.message)
+    fadeOutMessages(d.message, d.action); // Fade/update content based on action
     if (d.action === 'info') {
       // show something on the info div
       // check info div is visible
@@ -152,6 +153,7 @@ $(document).on('document_ready', function () {
     }
 
     //$("#" + d.html_id).html(d.message)
+    fadeOutMessages(d.message, d.action); // Fade/update content based on action
     if (d.action === 'info') {
       // show something on the info div
       // check info div is visible
