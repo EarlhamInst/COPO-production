@@ -4172,32 +4172,67 @@ function initialiseNavToggle() {
   });
 }
 
-function confirmCloseDialog(triggerDialog) {
+function confirmCloseDialog(triggerDialogOrEvent) {
+  // Handle event case
+  if (triggerDialogOrEvent && triggerDialogOrEvent.preventDefault) {
+    triggerDialogOrEvent.preventDefault();
+    triggerDialogOrEvent.stopPropagation();
+  }
+
   BootstrapDialog.show({
-    title: 'Confirm Close',
+    title: '<strong>Confirm close</strong>',
     message:
       'Are you sure that you would like to close the modal? ' +
       'Any upload progress will be lost.',
     cssClass: 'copo-modal1',
     closable: false,
-    animate: true,
+    animate: false,
     closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
     closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
     type: BootstrapDialog.TYPE_WARNING,
     buttons: [
       {
-        label: 'No, cancel',
-        cssClass: 'tiny ui basic button',
+        label: 'No, keep open',
+        cssClass: 'custom-btn tiny btn-default',
         action: function (dialogRef) {
           dialogRef.close();
         },
       },
       {
-        label: 'Yes, close modal',
-        cssClass: 'tiny ui basic button',
-        action: function (dialogRef) {
-          dialogRef.close(); // Close 'Confirm Close' modal
-          triggerDialog.close(); // Close triggered modal
+        label: 'Yes, close',
+        cssClass: 'custom-btn tiny btn-primary',
+        action: function (confirmDialogRef) {
+          let targetDialog = null;
+
+          // Case 1: Modal triggered from a DOM event
+          if (triggerDialogOrEvent && triggerDialogOrEvent.target) {
+            const modalEl = $(triggerDialogOrEvent.target).closest('.modal');
+            if (modalEl.length) targetDialog = modalEl;
+          }
+          // Case 2: Modal triggered with a jQuery modal reference
+          else if (triggerDialogOrEvent instanceof jQuery) {
+            targetDialog = triggerDialogOrEvent;
+          }
+          // Case 3: Modal triggered with a BootstrapDialog instance
+          else if (
+            triggerDialogOrEvent &&
+            typeof triggerDialogOrEvent.close === 'function'
+          ) {
+            targetDialog = triggerDialogOrEvent;
+          }
+
+          // Close the targetDialog modal
+          if (targetDialog) {
+            if (targetDialog.close) {
+              // BootstrapDialog
+              targetDialog.close();
+            } else if (targetDialog.modal) {
+              // jQuery modal
+              targetDialog.modal('hide');
+            }
+          }
+
+          confirmDialogRef.close(); // Close the confirmation modal
         },
       },
     ],

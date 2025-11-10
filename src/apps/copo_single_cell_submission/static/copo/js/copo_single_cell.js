@@ -400,6 +400,17 @@ $(document).on('document_ready', function () {
 
         upload_spreadsheet($(this).prop('files')[0]);
       });
+
+    // Attach listener to close buttons
+    modal
+      .find('.singlecell-close-btn')
+      .off('click')
+      .on('click', function (e) {
+        // Prevent the default close behaviour
+        e.preventDefault();
+        e.stopPropagation();
+        confirmCloseDialog(modal);
+      });
   });
 
   $('#checklist_id').change(function () {

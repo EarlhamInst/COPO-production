@@ -67,7 +67,7 @@
   background-color: #00b5ad !important;
   color: white !important;
   font-weight: bold;
-  box-shadow: 0 0 0 1px rgba(34, 36, 38, .15) inset !important;
+  box-shadow: 0 0 0 1px rgba(34, 36, 38, 0.15) inset !important;
 }
 
 .dataTables_wrapper .ui.basic.teal.button.submit-btn:hover,
@@ -84,7 +84,7 @@
   background-color: #2185d0 !important;
   color: white !important;
   font-weight: bold;
-  box-shadow: 0 0 0 1px rgba(34, 36, 38, .15) inset !important;
+  box-shadow: 0 0 0 1px rgba(34, 36, 38, 0.15) inset !important;
 }
 
 .dataTables_wrapper .ui.basic.blue.button.submit-btn:hover,
@@ -93,4 +93,67 @@
   background-color: #1678c2 !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) inset !important;
   color: white !important;
+}
+
+/* Colour: primary */
+.custom-btn.tiny {
+  display: inline-block;
+  padding: 4px 8px; /* tiny size */
+  font-size: 12px; /* small font */
+  line-height: 1.3;
+  border-radius: 3px;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.custom-btn.tiny.btn-primary {
+  background-color: #286090; /* was hover before */
+  color: #fff;
+  border: 1px solid #204d74;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 1px 1px rgba(0, 0, 0, 0.075);
+  background-image: none;
+}
+
+.custom-btn.tiny.btn-primary:hover {
+  background-color: #204d74; /* slightly darker for hover */
+  border-color: #122b40;
+  color: #fff;
+}
+
+.custom-btn.tiny.btn-primary:active,
+.custom-btn.tiny.btn-primary:focus {
+  background-color: #1b3550; /* even darker for active/focus */
+  border-color: #0f1f30;
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  color: #fff;
+}
+
+/* Colour: default */
+.custom-btn.tiny.btn-default {
+  background-color: #e6e6e6; /* was hover before */
+  color: #333;
+  border: 1px solid #adadad;
+  text-shadow: 0 1px 0 #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 1px 1px rgba(0, 0, 0, 0.075);
+  background-image: none;
+}
+
+.custom-btn.tiny.btn-default:hover {
+  background-color: #d4d4d4; /* slightly darker for hover */
+  border-color: #999;
+  color: #333;
+}
+
+.custom-btn.tiny.btn-default:active,
+.custom-btn.tiny.btn-default:focus {
+  background-color: #c0c0c0; /* even darker for active/focus */
+  border-color: #888;
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
 }

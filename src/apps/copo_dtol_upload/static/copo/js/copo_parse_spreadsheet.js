@@ -363,14 +363,9 @@ $(document).ready(function () {
     );
 
     // Add event listeners to the close buttons
-    sample_spreadsheet_close_btn1.addEventListener(
-      'click',
-      confirmCloseSampleDialog
-    );
-    sample_spreadsheet_close_btn2.addEventListener(
-      'click',
-      confirmCloseSampleDialog
-    );
+    document
+      .querySelectorAll('.sample-close-btn')
+      .forEach((btn) => btn.addEventListener('click', confirmCloseDialog));
   }
 
   var profileId = $('#profile_id').val();
