@@ -487,6 +487,7 @@ def describe_regex(pattern):
             r'^(\\d+\\s*years?)?\\s*(\\d+\\s*weeks?)?\\s*(\\d+\\s*days?)?$': "a duration or age (e.g. '3 years 2 weeks 5 days' or '1 year')",
             r'^(https?|ftp):\\/\\/[^\\s/$.?#].[^\\s]*$': 'a valid HTTP or FTP URL',
             r'^[A-Za-z0-9_]+$': 'an alphanumeric text with underscores only',
+            r'^-?([1-8]?\d(\.\d+)?|90(\.0+)?)$': 'a positive or negative integer or decimal number between -90 and 90, inclusive.',
         }
 
         # Normalise regex patterns to escape slashes
