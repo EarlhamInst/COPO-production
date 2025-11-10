@@ -2,6 +2,7 @@ from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES, SAMPLE
 from common.utils import helpers
 from django.db.models import Q
 import bson.json_util as json_util
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.http import HttpResponse, HttpResponseBadRequest
 from common.utils.copo_lookup_service import COPOLookup
 import json
@@ -689,12 +690,21 @@ def add_user_to_group(request):
     group_id = request.GET.get('group_id','')
     user_id = request.GET.get('user_id','')
     grp_info = CopoGroup().add_user_to_group(group_id=group_id, user_id=user_id)
-    return HttpResponse(json_util.dumps({'resp': grp_info}))
+    result = {
+        'matched_count': grp_info.matched_count,
+        'modified_count': grp_info.modified_count,
+        'upserted_id': str(grp_info.upserted_id) if grp_info.upserted_id else None,
+    }
+    return JsonResponse({'resp': result})
 
 
 def remove_user_from_group(request):
-    group_id = request.GET.get('group_id','')
-    user_id = request.GET.get('user_id','')
-    grp_info = CopoGroup().remove_user_from_group(
-        group_id=group_id, user_id=user_id)
-    return HttpResponse(json_util.dumps({'resp': grp_info}))
+    group_id = request.GET.get('group_id', '')
+    user_id = request.GET.get('user_id', '')
+    grp_info = CopoGroup().remove_user_from_group(group_id=group_id, user_id=user_id)
+    result = {
+        'matched_count': grp_info.matched_count,
+        'modified_count': grp_info.modified_count,
+        'upserted_id': str(grp_info.upserted_id) if grp_info.upserted_id else None,
+    }
+    return JsonResponse({'resp': result})
