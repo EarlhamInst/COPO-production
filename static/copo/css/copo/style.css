@@ -2223,3 +2223,35 @@ div.shown span.side-help-trigger:before {
 .form .requiredField .asteriskField {
   color: red;
 }
+
+/* Page welcome message */
+.page-welcome-message ol {
+  padding-top: 8px;
+}
+
+.page-welcome-message ol li {
+  padding-top: 5px;
+}
+
+.page-welcome-message ol li p i.fa-info-circle {
+  padding-right: 5px;
+}
+
+.page-welcome-message ol li p a {
+  text-decoration: underline;
+}
+
+.page-welcome-message .step-list li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.5rem;
+  align-items: start;
+}
+.page-welcome-message .step-list li i {
+  justify-self: start;
+}
+
+.page-welcome-message .step-list li .content {
+  overflow-wrap: break-word;
+  color: rgba(0, 0, 0, 0.87) !important;
+}

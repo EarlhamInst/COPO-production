@@ -1,20 +1,3 @@
-/* Page welcome message */
-.page-welcome-message ol {
-  padding-top: 8px;
-}
-
-.page-welcome-message ol li {
-  padding-top: 5px;
-}
-
-.page-welcome-message ol li p i.fa-info-circle {
-  padding-right: 5px;
-}
-
-.page-welcome-message ol li p a {
-  text-decoration: underline;
-}
-
 /* Component menu */
 .menu-row {
   margin-top: -7px;
