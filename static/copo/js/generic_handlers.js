@@ -4143,31 +4143,40 @@ function initialiseComponentDropdownMenu() {
 
 function initialiseNavToggle() {
   // Initialise navigation bar on each component page
-  $('#copoGlobalNav .navbar-toggle').on('click', function () {
-    $(this).closest('nav').find('.navbar-nav').toggleClass('active');
-  });
+   const $nav = $('#copoGlobalNav');
 
-  // Handle nav item clicks
-  $('#copoGlobalNav .navbar-nav li a').on('click', function (e) {
-    const $li = $(this).closest('li');
+   $nav.find('.navbar-toggle').on('click', function () {
+     $(this).closest('nav').find('.navbar-nav').toggleClass('active');
+   });
 
-    if ($li.hasClass('dropdown')) {
-      // Prevent the dropdown toggle from collapsing the menu
-      e.preventDefault();
-      e.stopPropagation();
-      $li.siblings().removeClass('open');
-      $li.toggleClass('open');
-    } else {
-      if ($(window).width() < 768) {
-        $(this).closest('.navbar-nav').removeClass('active');
-      }
-    }
-  });
+   // Handle dropdown toggles
+   $nav
+     .find('.navbar-nav li.dropdown > a.dropdown-toggle')
+     .on('click', function (e) {
+       e.preventDefault(); // Prevent default for toggle
+       e.stopPropagation(); // Stop event bubbling
+
+       const $li = $(this).closest('li');
+       $li.siblings().removeClass('open'); // Close other dropdowns
+       $li.toggleClass('open'); // Toggle current dropdown
+     });
+
+   // Handle link clicks (including links inside dropdowns)
+   $nav
+     .find('.navbar-nav li a')
+     .not('.dropdown-toggle')
+     .on('click', function () {
+       if ($(window).width() < 768) {
+         // Collapse menu on small screens after navigation
+         $(this).closest('.navbar-nav').removeClass('active');
+       }
+     });
 
   // Reset menu on window resize
   $(window).on('resize', function () {
     if ($(window).width() >= 768) {
-      $('.navbar-nav').removeClass('active');
+      $nav.find('.navbar-nav').removeClass('active');
+      $nav.find('.navbar-nav li.dropdown').removeClass('open');
     }
   });
 }
