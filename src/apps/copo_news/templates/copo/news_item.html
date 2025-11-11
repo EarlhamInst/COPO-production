@@ -51,15 +51,15 @@
                 <div class="col-md-8 fl-left"> 
                     <ul class="news-meta-col8">
                         <li class="author-div">
-                            <span class="bold-text">Author:</span> {{ news.author }}
+                            <span class="text-bold">Author:</span> {{ news.author }}
                         </li>
                         <br>
                         <li class="date-created-div" date="{{ news.created_date}}">
-                            <span class="bold-text">Date created:</span> {{ news.created_date|date:"D j M Y, H:i T" }}
+                            <span class="text-bold">Date created:</span> {{ news.created_date|date:"D j M Y, H:i T" }}
                         </li>
                         <br>
                         <li class="date-created-div" date="{{ news.updated_date}}">
-                            <span class="bold-text">Date updated:</span> {{ news.updated_date|date:"D j M Y, H:i T" }}
+                            <span class="text-bold">Date updated:</span> {{ news.updated_date|date:"D j M Y, H:i T" }}
                         </li>
                     </ul>
                 </div>
