@@ -20,6 +20,7 @@
   background: transparent;
   border-bottom-color: rgba(38, 38, 38, 0.95);
   border-bottom-width: thin;
+  margin-bottom: 0 !important;
 }
 
 #copoGlobalNav .navbar-nav > li + li {

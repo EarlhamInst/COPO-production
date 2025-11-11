@@ -47,20 +47,22 @@
   font-size: 16px;
 }
 
+.top-banner-light,
+.top-banner-dark {
+  font-size: 4em;
+  font-weight: bold;
+  padding: 20px 7px 7px 50px;
+}
+
 .top-banner-light {
   background-color: #eaf0f0 !important;
   color: #414141 !important;
-  font-size: 4em;
-  font-weight: bold;
-  padding: 80px 7px 7px 50px;
+
 }
 
 .top-banner-dark {
   background-color: rgba(65, 65, 65, 1) !important;
   color: #eaf0f0 !important;
-  font-size: 4em;
-  font-weight: bold;
-  padding: 20px 7px 7px 50px;
 }
 
 .display-flex {
