@@ -1,17 +1,17 @@
-<div class="modal fade" tabindex="-1" role="dialog" id="sample_spreadsheet_modal" style="overflow-y: scroll"
+<div class="modal fade spreadsheet-modal" tabindex="-1" role="dialog" id="sample_spreadsheet_modal" style="overflow-y: scroll"
      data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog modal-lg" role="document" style="width: 1000px">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close sample-close-btn" aria-label="Close"><span
+                <button type="button" class="close modal-close-btn" aria-label="Close"><span
                         aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title">Upload {{ profile.type | upper }} Sample Spreadsheet</h4>
+                <h4 class="modal-title">Upload {{ profile.type | upper }} sample spreadsheet</h4>
             </div>
             <div class="modal-body" style="width: 100%">
                 <div id="upload_buttons">
                     <label class="ui blue button" for="file" id="upload_label">
                         <input id="file" type="file" style="display:none" onchange="upload_spreadsheet(this.files[0])">
-                        Upload Sample Manifest
+                        Upload sample manifest
                     </label>
                     <!--
                         <label class="ui violet button" for="images" id="files_label" disabled>
@@ -107,7 +107,7 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-default sample-close-btn">Close</button>
+                <button type="button" class="btn btn-default modal-close-btn">Close</button>
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->

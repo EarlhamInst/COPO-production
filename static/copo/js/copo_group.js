@@ -260,7 +260,7 @@ $(document).ready(function () {
     });
 
     let dialog = new BootstrapDialog({
-      title: 'Edit Group',
+      title: 'Edit group',
       message: message,
       closable: true,
       animate: true,

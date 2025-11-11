@@ -21,13 +21,16 @@ function getProfilesPerPage() {
   return Number($('#profilesPerPage').val());
 }
 
+// Global variables
+let componentName;
+
 $(document).on('document_ready', function () {
   //****************************** Event handlers block *************************//
-  const component = 'profile';
+  componentName = $('#nav_component_name').val();
   const copoProfileIndexURL = '/copo/';
   const copoAcceptRejectURL = '/copo/dtol_submission/accept_reject_sample';
   const copoVisualsURL = '/copo/copo_visualize/';
-  const componentMeta = get_component_meta(component);
+  const componentMeta = get_component_meta(componentName);
   const csrfToken = $.cookie('csrftoken');
   const tableId = componentMeta.tableID;
   const tableLoader = $('<div class="copo-i-loader"></div>');
@@ -53,7 +56,7 @@ $(document).on('document_ready', function () {
     tableId: tableId,
     copoVisualsURL: copoVisualsURL,
     csrfToken: csrfToken,
-    component: component,
+    component: componentName,
     gridCount: gridCount,
     gridTotal: gridTotal,
     onScroll: false,
@@ -112,7 +115,7 @@ $(document).on('document_ready', function () {
   // Add new profile button
   $(document).on('click', '.new-component-template', function () {
     var argsDict = { profile_type: getProfileType() };
-    initiate_form_call(component, argsDict);
+    initiate_form_call(componentName, argsDict);
   });
 
   $(document).on('click', '#accept_reject_shortcut', function () {
@@ -148,11 +151,11 @@ $(document).on('document_ready', function () {
   gridTotal.text(profilesTotal);
 
   let divGrid = $('div.grid');
-
+  
   appendRecordComponents(divGrid);
   initialiseComponentDropdownMenu(); // Initialise the component dropdown menu
   filterActionMenu();
-  updateCounts(copoVisualsURL, csrfToken, component);
+  updateCounts(copoVisualsURL, csrfToken);
 
   setProfileGridHeading(divGrid, tableId); // Set profile grid heading
 
@@ -331,7 +334,6 @@ $(document).on('document_ready', function () {
 function initialisePopover() {
   // Profile records exist
   // Initialise the popover 'View profile options' for each profile record
-
   let popover = $('#ellipsisId[data-toggle="popover"]')
     .popover({
       sanitize: false,
@@ -357,7 +359,7 @@ function initialisePopover() {
       $content.append($editButton);
       $content.append($deleteButton);
 
-      component_def['profile']['recordActions'].forEach((item) => {
+      component_def[componentName]['recordActions'].forEach((item) => {
         var action = record_action_button_def[item];
         const $button = $(
           '<button id="' +
@@ -392,7 +394,7 @@ function loadProfileRecords(obj) {
     tableId,
     copoVisualsURL,
     csrfToken,
-    component,
+    componentName,
     gridCount,
     gridTotal,
     onScroll,
@@ -459,7 +461,7 @@ function loadProfileRecords(obj) {
 
       // Initialise functions for the profile grids beyond the 8 records that are shown by default
       refresh_tool_tips(); // Refreshes/reloads/reinitialises all popover and dropdown functions
-      initialiseRecords(copoVisualsURL, csrfToken, component);
+      initialiseRecords(copoVisualsURL, csrfToken);
 
       setProfileGridHeading(divGrid, tableId); // Set profile grid heading
       profileInfoPopover(divGrid); // Initialise 'view more' information popover for profile records
@@ -476,7 +478,7 @@ function loadProfileRecords(obj) {
       $(window).scrollTop(scrollPosition);
     },
     error: function () {
-      alert(`Couldn't retrieve ${component}s!`);
+      alert(`Couldn't retrieve ${componentName}s!`);
     },
   });
 }
@@ -516,7 +518,6 @@ function appendRecordComponents(grids) {
 }
 
 function editProfileRecord(profileRecordId, profileType) {
-  const component = 'profile';
   let csrfToken = $.cookie('csrftoken');
 
   // Hide the popover
@@ -528,7 +529,7 @@ function editProfileRecord(profileRecordId, profileType) {
     headers: { 'X-CSRFToken': csrfToken },
     data: {
       task: 'form',
-      component: component,
+      component: componentName,
       target_id: profileRecordId,
       profile_type: profileType,
     },
@@ -536,13 +537,12 @@ function editProfileRecord(profileRecordId, profileType) {
       json2HtmlForm(data);
     },
     error: function () {
-      alert(`Couldn't build ${component} form!`);
+      alert(`Couldn't build ${componentName} form!`);
     },
   });
 }
 
 function deleteProfileRecord(profileRecordId) {
-  const component = 'profile';
   const copoDeleteProfile = '/copo/copo_profile/delete';
   let csrfToken = $.cookie('csrftoken');
 
@@ -577,7 +577,7 @@ function deleteProfileRecord(profileRecordId) {
             headers: { 'X-CSRFToken': csrfToken },
             data: {
               task: 'validate_and_delete',
-              component: component,
+              component: componentName,
               target_id: profileRecordId,
             },
           })
@@ -784,7 +784,7 @@ function setSidebarInfoPadding() {
   }
 }
 
-function updateCounts(copoVisualsURL, csrfToken, component) {
+function updateCounts(copoVisualsURL, csrfToken) {
   $.ajax({
     url: copoVisualsURL,
     type: 'POST',
@@ -793,13 +793,13 @@ function updateCounts(copoVisualsURL, csrfToken, component) {
     },
     data: {
       task: 'profiles_counts',
-      component: component,
+      component: componentName,
     },
     success: function (data) {
       doRenderProfileCounts(data);
     },
     error: function () {
-      alert(`Couldn't retrieve ${component}s information!`);
+      alert(`Couldn't retrieve ${componentName}s information!`);
     },
   });
 }
@@ -968,9 +968,9 @@ function setProfileGridHeading(grids, tableId) {
   setSidebarInfoPadding();
 }
 
-function initialiseRecords(copoVisualsURL, csrfToken, component) {
+function initialiseRecords(copoVisualsURL, csrfToken) {
   filterActionMenu();
-  updateCounts(copoVisualsURL, csrfToken, component);
+  updateCounts(copoVisualsURL, csrfToken);
 
   $('.ui.menu > div').click(function (e) {
     const el = $(e.currentTarget);

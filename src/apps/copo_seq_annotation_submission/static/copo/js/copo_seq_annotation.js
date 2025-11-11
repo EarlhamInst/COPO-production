@@ -7,7 +7,7 @@ $(document).ready(function () {
   var s3socket;
 
   var dialog = new BootstrapDialog({
-    title: 'Add Sequence Annotation',
+    title: 'Add sequence annotation',
     message: '',
     /*
         onshown: function(dialogRef){
@@ -80,9 +80,9 @@ $(document).ready(function () {
     buttons: [
       {
         id: 'submit_annotation_button',
-        label: 'Submit Annotation',
+        label: 'Submit annotation',
         cssClass: 'btn-primary',
-        title: 'Submit Annotation',
+        title: 'Submit annotation',
         action: function () {
           doPost();
           var $button = this; // 'this' here is a jQuery object that wrapping the <button> DOM element.

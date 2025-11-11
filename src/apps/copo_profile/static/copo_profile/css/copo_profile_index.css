@@ -327,14 +327,6 @@
   margin-top: 30px;
 }
 
-.bold-text {
-  font-weight: bold;
-}
-
-.mt-10 {
-  margin-top: 10px;
-}
-
 .profile-info-label {
   font-weight: bold;
   display: block;
@@ -671,7 +663,7 @@ ul.sequencing-centre-ul-tag {
     margin-left: -14px;
   } */
 
-  .date-created-div .bold-text::after {
+  .date-created-div .text-bold::after {
     content: '\A'; /* Inserts a line break */
     white-space: pre; /* Makes the \A behave as a newline */
   }
@@ -691,7 +683,7 @@ ul.sequencing-centre-ul-tag {
     margin-left: -14px;
   } */
 
-  .date-created-div .bold-text::after {
+  .date-created-div .text-bold::after {
     content: '\A'; /* Inserts a line break */
     white-space: pre; /* Makes the \A behave as a newline */
   }
@@ -732,7 +724,7 @@ ul.sequencing-centre-ul-tag {
     padding: 15px 5px 15px 5px !important; /* top right bottom left */
   }
 
-  .date-created-div .bold-text::after {
+  .date-created-div .text-bold::after {
     content: '\A'; /* Inserts a line break */
     white-space: pre; /* Makes the \A behave as a newline */
   }
@@ -759,6 +751,7 @@ ul.sequencing-centre-ul-tag {
     white-space: pre;
     text-overflow: ellipsis;
     appearance: none;
+    padding-bottom:10px;
   }
 }
 

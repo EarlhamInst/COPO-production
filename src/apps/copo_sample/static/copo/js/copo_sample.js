@@ -2370,7 +2370,7 @@ $(document).on('document_ready', function () {
     message.append(feedbackRow);
 
     var dialog = new BootstrapDialog({
-      title: 'Metadata Ingestion',
+      title: 'Metadata ingestion',
       message: message,
       closable: false,
       animate: true,

@@ -1,5 +1,5 @@
 var dialog = new BootstrapDialog({
-  title: 'Upload Barcoding Manifest',
+  title: 'Upload barcoding manifest',
   message: "<div><input type='file' id='fileid' style='display:none' /></div>",
   size: BootstrapDialog.SIZE_WIDE,
   buttons: [
@@ -7,7 +7,7 @@ var dialog = new BootstrapDialog({
       id: 'upload_taggedseq_manifest_button',
       label: 'Upload Barcoding Manifest',
       cssClass: 'btn-primary',
-      title: 'Upload Barcoding Manifest',
+      title: 'Upload barcoding manifest',
       action: function () {
         document.getElementById('file').click();
         //upload_spreadsheet($('#file').prop('files')[0])
@@ -233,6 +233,7 @@ $(document).ready(function () {
         '?checklist_id=' +
         $('#checklist_id').find(':selected').val();
       dialog.realize();
+      dialog.getModal().addClass('spreadsheet-modal');
       dialog.setMessage($('<div></div>').load(url));
       dialog.open();
       dialog.getButton('save_taggedseq_button').disable();
@@ -320,23 +321,23 @@ $(document).ready(function () {
     });
 
     //add task
-    if (task == 'add') {
-      url = '/copo/copo_seq_annotation/ena_annotation/' + profile_id;
-      handle_add_n_edit(url);
-    } else if (task == 'edit') {
-      url =
-        '/copo/copo_seq_annotation/ena_annotation/' +
-        profile_id +
-        '/' +
-        records[0].record_id;
-      handle_add_n_edit(url);
-    } else {
-      var args_dict = {};
-      args_dict['tagged_seq_checklist_id'] = $('#checklist_id')
-        .find(':selected')
-        .val();
-      form_generic_task('taggedseq', task, records, args_dict);
-    }
+    // if (task == 'add') {
+    //   url = '/copo/copo_seq_annotation/ena_annotation/' + profile_id;
+    //   handle_add_n_edit(url);
+    // } else if (task == 'edit') {
+    //   url =
+    //     '/copo/copo_seq_annotation/ena_annotation/' +
+    //     profile_id +
+    //     '/' +
+    //     records[0].record_id;
+    //   handle_add_n_edit(url);
+    // } else {
+    var args_dict = {};
+    args_dict['tagged_seq_checklist_id'] = $('#checklist_id')
+      .find(':selected')
+      .val();
+    form_generic_task('taggedseq', task, records, args_dict);
+    // }
   }
 
   $('body').on('posttablerefresh', function (event) {

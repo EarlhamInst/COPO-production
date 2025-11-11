@@ -378,6 +378,7 @@ function json2HtmlForm(data) {
   */
 
   dialog.realize();
+  dialog.getModal().addClass('form-modal');
   dialog.setMessage($dialogContent);
   dialog.open();
 } //end of json2HTMLForm
@@ -2370,7 +2371,7 @@ function create_attachable_component(formElem) {
     type: BootstrapDialog.TYPE_PRIMARY,
     size: BootstrapDialog.SIZE_NORMAL,
     title: function () {
-      return $('<span>Create & Assign ' + formElem.label + '</span>');
+      return $('<span>Create & assign ' + formElem.label + '</span>');
     },
     closable: false,
     animate: true,

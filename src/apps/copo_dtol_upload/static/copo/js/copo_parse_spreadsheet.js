@@ -209,7 +209,7 @@ $(document).ready(function () {
       return false;
     }
     BootstrapDialog.show({
-      title: 'Submit Samples',
+      title: 'Submit samples',
       message:
         'Are you sure that you would like to submit these samples?</br></br>' +
         '<strong>This must be the definitive version of the manifest.</strong> ' +
@@ -285,7 +285,7 @@ $(document).ready(function () {
       return false;
     }
     BootstrapDialog.show({
-      title: 'Submit Samples',
+      title: 'Submit samples',
       message: 'Do you really want to make these changes to the samples?',
       cssClass: 'copo-modal1',
       closable: true,
@@ -356,7 +356,7 @@ $(document).ready(function () {
   if ($('#sample_spreadsheet_modal').length) {
     // Add event listeners to the close buttons
     document
-      .querySelectorAll('.sample-close-btn')
+      .querySelectorAll('.modal-close-btn')
       .forEach((btn) => btn.addEventListener('click', confirmCloseDialog));
   }
 
@@ -851,8 +851,10 @@ $(document).ready(function () {
 });
 
 $(document).on('click', '.new-samples-spreadsheet-template', function (event) {
+  // Show modal
   $('#sample_spreadsheet_modal').modal('show');
 
+  // Fade out warnings and disable controls
   $('#warning_info').fadeOut('fast');
   $('#warning_info2').fadeOut('fast');
   $('#warning_info3').fadeOut('fast');
@@ -867,13 +869,12 @@ $(document).on('click', '.new-samples-spreadsheet-template', function (event) {
   $('#finish_button').fadeOut('fast');
   $('#confirm_button').fadeOut('fast');
   $('#export_errors_button').fadeOut('fast');
-});
 
-$(document).on('click', '.new-samples-spreadsheet-template', function (event) {
+  // Show 'Code of conduct' modal if profile type is 'erga'
   profile_type = $('#profile_type').val();
   if (profile_type.toLowerCase() == 'erga') {
     BootstrapDialog.show({
-      title: 'Accept Code of Conduct',
+      title: 'Code of conduct',
       message:
         "By uploading a manifest to Collaborative OPen Omics (COPO), you confirm that you are an European Reference Genome Atlas (ERGA) member and thus adhere to ERGA's " +
         'code of conduct.' +

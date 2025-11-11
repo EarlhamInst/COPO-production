@@ -687,6 +687,34 @@ copo-noborders-table.dataTable thead td {
   font-size: 13px;
 }
 
+.form-modal .modal-body {
+  min-height: 400px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.spreadsheet-modal .modal-body {
+  min-height: 70px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Make footer buttons always visible */
+.spreadsheet-modal .modal-footer,
+.form-modal .modal-footer {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  .form-modal .modal-body,
+  .spreadsheet-modal .modal-body {
+    max-height: 65vh;
+  }
+}
+
 .input-copo {
   height: 30px !important;
 }

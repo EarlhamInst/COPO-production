@@ -534,7 +534,7 @@ function json2HtmlForm_SampleDetails(data) {
     size: BootstrapDialog.SIZE_WIDE,
     title: function () {
       return $(
-        '<span>' + 'Sample Details for ' + data['SPECIMEN_ID'] + '</span>'
+        '<span>' + 'Sample details for ' + data['SPECIMEN_ID'] + '</span>'
       ).css('text-align', 'center');
     },
     closable: true,

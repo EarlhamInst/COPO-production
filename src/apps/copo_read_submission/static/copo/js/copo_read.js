@@ -29,15 +29,15 @@ function initialise_checklist_id() {
 var columnDefs = [];
 
 var dialog = new BootstrapDialog({
-  title: 'Upload Read Manifest',
+  title: 'Upload read manifest',
   message: "<div><input type='file' id='fileid' style='display:none' /></div>",
   size: BootstrapDialog.SIZE_WIDE,
   buttons: [
     {
       id: 'upload_read_manifest_button',
-      label: 'Upload Read Manifest',
+      label: 'Upload read manifest',
       cssClass: 'btn-primary',
-      title: 'Upload Read Manifest',
+      title: 'Upload read manifest',
       action: function () {
         document.getElementById('file').click();
         //upload_spreadsheet($('#file').prop('files')[0])

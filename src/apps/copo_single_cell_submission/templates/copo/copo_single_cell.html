@@ -135,12 +135,12 @@
 </div>
 
 
-<div class="modal bootstrap-dialog type-primary fade size-wide" tabindex="-1" role="dialog" id="singlecell_spreadsheet_modal" style="overflow-y: scroll"
+<div class="modal bootstrap-dialog type-primary fade size-wide spreadsheet-modal" tabindex="-1" role="dialog" id="singlecell_spreadsheet_modal" style="overflow-y: scroll"
 data-backdrop="static" data-keyboard="false">
 <div class="modal-dialog modal-lg" role="document" style="width: 1000px">
    <div class="modal-content">
     <div class="modal-header">
-        <button id='singlecell_close_btn' type="button" class="close singlecell-close-btn" aria-label="Close" data-dismiss="modal"><span
+        <button id='singlecell_close_btn' type="button" class="close modal-close-btn" aria-label="Close" data-dismiss="modal"><span
                 aria-hidden="true">&times;</span></button>
         <h4 class="modal-title">Upload a completed manifest for: <span style="color:white;font-size:20px;" id="span_checklist"></span> </h4>
     </div>
@@ -190,10 +190,10 @@ data-backdrop="static" data-keyboard="false">
     </div> 
   
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="upload_singlecell_manifest_button">Upload Single Cell Manifest</button>
-        <button type="button" class="btn btn-primary" id="export_error_button">Export validation Errors</button>
+        <button type="button" class="btn btn-primary" id="upload_singlecell_manifest_button">Upload single-cell manifest</button>
+        <button type="button" class="btn btn-primary" id="export_error_button">Export validation errors</button>
         <button type="button" class="btn btn-primary" id="save_singlecell_button" disabled>Finish</button>
-        <button type="button" class="btn btn-default singlecell-close-btn" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-default modal-close-btn" data-dismiss="modal">Close</button>
     </div>
    </div>
 </div>

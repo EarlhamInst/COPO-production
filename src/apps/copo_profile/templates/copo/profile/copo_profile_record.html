@@ -30,9 +30,9 @@
                             <!-- Row: Profile information-->
                             <div class="profile-info-row">
                                 <div class="date-created-div" date-created="{{ profile.date_created }}">
-                                    <span class="bold-text">Created: </span> {{ profile.date_created }}
+                                    <span class="text-bold">Created: </span> {{ profile.date_created }}
                                 </div>
-                                <div class="bold-text mt-10">Description:</div>
+                                <div class="text-bold mt-10">Description:</div>
                                 <div class="ellipsis-2-lines profile-description">{{ profile.description }}</div>
                                 
                                 {% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status%}
@@ -46,13 +46,13 @@
                                     <div class="popover-content showMoreProfileInfoPopover-content-div">
                                         {% if profile.owner_name %}
                                             <div class="owner-div mt-10">
-                                                <span class="bold-text">Owner: </span> 
+                                                <span class="text-bold">Owner: </span> 
                                                 <span id="ownerID">{{ profile.owner_name }}</span>
                                             </div>
                                         {% endif %}
                                         {% if profile.shared_owner_name %}
                                             <div class="shared-owner-div mt-10">
-                                                <span class="bold-text">Collaborator(s): </span> 
+                                                <span class="text-bold">Collaborator(s): </span> 
                                                 {% with profile.shared_owner_name as shared_owners %}
                                                     <span id="sharedOwnerID">
                                                         {% if shared_owners|length > 3 %}
@@ -96,10 +96,10 @@
                                         {% endif %}
                                         {% if profile.study_status %}
                                             <div class="study-status-div">
-                                                <span class="bold-text">Release Status: </span> 
+                                                <span class="text-bold">Release Status: </span> 
                                                 <span id="study_status_{{profile.id}}">{{ profile.study_status | get_first_value_from_array}}</span>
                                             </div>
-                                            <div><span class="bold-text">Release Date: </span>    
+                                            <div><span class="text-bold">Release Date: </span>    
                                                 <span id="study_release_date_{{profile.id}}">{{ profile.study_release_date | get_first_value_from_array}}</span>
                                             </div>
                                         {% endif %}

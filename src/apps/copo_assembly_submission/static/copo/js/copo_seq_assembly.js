@@ -7,14 +7,14 @@ $(document).ready(function () {
   var s3socket;
 
   var dialog = new BootstrapDialog({
-    title: 'Add Assembly',
+    title: 'Add assembly',
     message: '',
     buttons: [
       {
         id: 'submit_assembly_button',
-        label: 'Submit Assembly',
+        label: 'Submit assembly',
         cssClass: 'btn-primary',
-        title: 'Submit Assembly',
+        title: 'Submit assembly',
         action: function () {
           doPost();
           var $button = this; // 'this' here is a jQuery object that wrapping the <button> DOM element.
@@ -217,7 +217,7 @@ $(document).ready(function () {
   //get component metadata
   var componentMeta = get_component_meta(component);
   var args_dict = {};
-  args_dict['profile_id'] = profile_id,
+  args_dict['profile_id'] = profile_id;
   load_records(componentMeta, args_dict); // call to load component records
 
   //register_resolvers_event(); //register event for publication resolvers
@@ -252,7 +252,7 @@ $(document).ready(function () {
 
   function handle_add_n_edit(url, task) {
     dialog.realize();
-
+    dialog.getModal().addClass('form-modal');
     dialog.getButton('submit_assembly_button').disable();
 
     dialog.setMessage(

@@ -5,9 +5,9 @@ var dialog = new BootstrapDialog({
   buttons: [
     {
       id: 'upload_local_files_button',
-      label: 'Upload Local Files',
+      label: 'Upload local files',
       cssClass: 'btn-primary',
-      title: 'Upload Local Files',
+      title: 'Upload local files',
       action: function () {
         document.getElementById('file').click();
         //upload_spreadsheet($('#file').prop('files')[0])

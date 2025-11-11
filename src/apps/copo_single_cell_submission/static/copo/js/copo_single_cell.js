@@ -405,7 +405,7 @@ $(document).on('document_ready', function () {
 
     // Attach listener to close buttons
     modal
-      .find('.singlecell-close-btn')
+      .find('.modal-close-btn')
       .off('click')
       .on('click', function (e) {
         // Prevent the default close behaviour
