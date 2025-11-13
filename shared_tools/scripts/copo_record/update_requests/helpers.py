@@ -196,7 +196,7 @@ def generate_ena_update_data_json():
         json.dump(result, f, indent=4)
         f.write('\n')
 
-    log.info(f'Added {len(new_deduped)} new ENA update(s) to {OUTPUT_FILE_NAME}.')
+    # log.info(f'Added {len(new_deduped)} new ENA update(s) to {OUTPUT_FILE_NAME}.')
 
 
 def generate_sample_query(sample, fields):
@@ -265,15 +265,33 @@ def get_sample_record_by_source(source_accession, log, sample_collection):
     This is used to get the scientific name since it is not present in the SourceCollection only in SampleCollection.
     Returns the scientific name if found, otherwise returns None.
     '''
-    sample_record = sample_collection.find_one(
-        {
-            '$or': [
-                {'sampleDerivedFrom': source_accession},
-                {'sampleSameAs': source_accession},
-                {'sampleSymbiontOf': source_accession},
+    sample_record = next(
+        sample_collection.aggregate(
+            [
+                {
+                    '$match': {
+                        '$or': [
+                            {'sampleDerivedFrom': source_accession},
+                            {'sampleSameAs': source_accession},
+                            {'sampleSymbiontOf': source_accession},
+                        ]
+                    }
+                },
+                {
+                    '$project': {
+                        '_id': 0,
+                        'SCIENTIFIC_NAME': {
+                            '$ifNull': [
+                                '$SCIENTIFIC_NAME',
+                                '$species_list.SCIENTIFIC_NAME',
+                            ]
+                        },
+                    }
+                },
+                {'$limit': 1},  # Ensures that only one document is returned
             ]
-        },
-        {'_id': 0, 'SCIENTIFIC_NAME': 1},
+        ),
+        None,
     )
 
     if sample_record:
@@ -559,4 +577,4 @@ def write_find_one_query(update):
         f.write('# COPO Find Data\n')
         f.write(find_one_str + '\n')
 
-    log.info(f"Find query written to {OUTPUT_FILE_NAME} for {update['collection']}.")
+    # log.info(f"Find query written to {OUTPUT_FILE_NAME} for {update['collection']}.")

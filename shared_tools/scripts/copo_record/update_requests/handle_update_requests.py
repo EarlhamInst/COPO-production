@@ -192,9 +192,9 @@ def process_update_request(entry):
                 )
                 f.write('\n')
 
-            log.info(
-                f"Update written to {OUTPUT_FILE_NAME} for {update['collection']}. Please check the file for details."
-            )
+            # log.info(
+            #     f"Update written to {OUTPUT_FILE_NAME} for {update['collection']}. Please check the file for details."
+            # )
 
             # Write the corresponding findOne query to the same file
             write_find_one_query(update)
