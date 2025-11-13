@@ -575,7 +575,7 @@ class DtolSpreadsheet:
 
             s["manifest_version"] = settings.MANIFEST_VERSION.get(self.type.upper(), "0")
             s["sample_type"] = self.type.lower()
-            s["tol_project"] = self.type.lower()
+            s["tol_project"] = self.type.upper()
             s["associated_tol_project"] = self.associated_type
             s["biosample_accession"] = []
             s["manifest_id"] = manifest_id
