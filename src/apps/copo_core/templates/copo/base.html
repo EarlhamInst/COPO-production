@@ -12,6 +12,9 @@
     <meta name="description" content="{% block meta_description %}COPO supports members of the life sciences community in brokering, managing, and submitting omics data and metadata to public repositories.{% endblock %}">
     <title>{% block title %}{% endblock %} | COPO</title>
 
+    <!-- Loader overlay style: displays full-page spinner while the page is loading -->
+    <link rel="stylesheet" href="{% static 'copo/css/copo/loader.css' %}">
+
     <!-- Bootstrap -->
     <link rel="stylesheet" media="print" onload="this.media='all'"
           href="{% static 'copo/css/bootstrap/bootstrap.min.css' %}">
@@ -118,6 +121,9 @@
     <link rel="stylesheet" href="{% static 'copo/css/datepicker/jquery.datepick.css' %}">
     <script src="{% static 'copo/js/datepicker/jquery.plugin.min.js' %}"></script>
     <script src="{% static 'copo/js/datepicker/jquery.datepick.min.js' %}"></script>
+    
+    <!-- Displays a spinner overlay until the page fully loads -->
+    <script defer src="{% static 'copo/js/loader.js' %}"></script>
 
     <!-- favicon -->
     <link rel="icon" type="image/png" href="{% static 'copo/img/favicon_black.png' %}"/>
@@ -254,6 +260,13 @@
 </head>
 
 <body class="{% if banner %}has-banner{% endif %}">
+{% block loader_overlay %}
+<!-- Full-page loading overlay -->
+<div id="loaderOverlay">
+    <div class="copo-i-loader"></div>
+</div>
+{% endblock loader_overlay %}
+
 <!-- hidden fields -->
 <input type="hidden" id="elastic_search_ajax" value="{# url 'copo:ajax_search_ontology' ontology_names='999' #}"/>
 <input type="hidden" id="ajax_search_copo_local" value="{# url 'copo:ajax_search_copo_local' data_source='999' #}"/>

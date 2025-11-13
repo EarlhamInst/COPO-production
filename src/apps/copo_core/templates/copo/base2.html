@@ -10,6 +10,9 @@
     <title>{% block title %}{% endblock %} | COPO</title>
 
     <!--REQUIRED STYLE SHEETS-->
+    <!-- Loader overlay style: displays full-page spinner while the page is loading -->
+    <link rel="stylesheet" href="/static/copo/css/copo/loader.css">
+
     <!-- BOOTSTRAP CORE STYLE CSS -->
     <link href="/static/assets/css/bootstrap.css" rel="stylesheet" />
     <!-- FONTAWESOME STYLE CSS -->
@@ -33,6 +36,13 @@
 </head>
 
 <body>
+    {% block loader_overlay %}
+    <!-- Full-page loading overlay -->
+    <div id="loaderOverlay">
+        <div class="copo-i-loader"></div>
+    </div>
+    {% endblock loader_overlay %}
+
     <!-- Top navigation bar -->
     {% if user.is_authenticated %}
         {% include 'nav_authenticated.html' %}
@@ -73,6 +83,9 @@
     <!--End footer section -->
 
     <!-- JAVASCRIPT FILES PLACED AT THE BOTTOM TO REDUCE THE LOADING TIME  -->
+    <!-- Displays a spinner overlay until the page fully loads -->
+    <script defer src="/static/copo/js/loader.js"></script>
+
     <!-- CORE JQUERY  -->
     <script src="/static/copo/js/jquery-3.7.1.js"></script>
     <!-- BOOTSTRAP CORE SCRIPT   -->

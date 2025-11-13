@@ -10,6 +10,8 @@
     <meta name="description" content="{% block meta_description %}COPO supports members of the life sciences community in brokering, managing, and submitting omics data and metadata to public repositories.{% endblock %}">
     <title>{% block title %}{% endblock %} | COPO</title>
 
+    <!-- Loader overlay style: displays full-page spinner while the page is loading -->
+    <link rel="stylesheet" href="{% static 'copo/css/copo/loader.css' %}">
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="{% static 'copo/css/bootstrap/bootstrap.css' %}">
@@ -28,6 +30,8 @@
 
     {% block stylesheet_block %}{% endblock %}
 
+    <!-- Displays a spinner overlay until the page fully loads -->
+    <script defer src="{% static 'copo/js/loader.js' %}"></script>
     <script src="{% static 'copo/js/jquery-3.7.1.min.js' %}"></script>
     <script src="{% static 'copo/js/jquery.cookie.js' %}"></script>
     <script src="{% static 'copo/js/serialize_form_json.js' %}"></script>
@@ -51,6 +55,12 @@
     </style>
 </head>
 <body>
+{% block loader_overlay %}
+<!-- Full-page loading overlay -->
+<div id="loaderOverlay">
+    <div class="copo-i-loader"></div>
+</div>
+{% endblock loader_overlay %}
 
 {% block image_div %}
 <div class="text-center" style="padding:50px">
