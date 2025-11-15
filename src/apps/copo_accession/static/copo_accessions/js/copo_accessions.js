@@ -49,10 +49,10 @@ let dt_options = {
   scrollX: true,
   scrollY: 500,
   select: false,
-  initComplete: function () {
-    // Add filter checkbox under the info panel to the right side of the web page
-    get_filter_accession_titles(this.api());
-  },
+  // initComplete: function () {
+  //   // Add filter checkbox under the info panel to the right side of the web page
+  //   get_filter_accession_titles(this.api());
+  // },
   createdRow: function (row, data, index) {
     // Add the record ID and accession type to each row
     let recordID = index;
@@ -255,7 +255,7 @@ function filter_records_by_accession_type() {
   accessions_table.column(2).search(accession_types, true, false).draw();
 }
 
-function get_filter_accession_titles(api) {
+function get_filter_accession_titles(tableTypes) {
   // Get accession types from the 'accession_type' column in the data table
   // let table_accession_types = api.column(2).data().unique().sort().toArray();
 
@@ -280,7 +280,10 @@ function get_filter_accession_titles(api) {
         //     table_accession_types.includes(item.value)
         //   );
         // }
-        set_filter_checkboxes(data);
+
+        // Filter out accession types NOT in the DataTable
+        let filtered = data.filter((d) => tableTypes.includes(d.value));
+        set_filter_checkboxes(filtered);
       }
     },
     error: function (error) {
@@ -505,6 +508,16 @@ function load_accessions_records() {
           .columns.adjust()
           .draw();
 
+        accessions_table.on('xhr.dt', function () {
+          let json = accessions_table.ajax.json();
+          let tableTypes = [
+            ...new Set(json.data.map((row) => row.accession_type)),
+          ];
+
+          // Update filters using the DataTable page data
+          get_filter_accession_titles(tableTypes);
+        });
+        
         // Add buttons and other things to the table
         customise_accessions_table(accessions_table);
       } else {
