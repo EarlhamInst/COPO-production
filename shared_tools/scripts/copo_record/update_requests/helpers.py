@@ -62,6 +62,8 @@ MAPPINGS = {
 }
 
 ENA_MAPPINGS = {
+    'TAXON_ID': 'TAXON_ID',
+    'SCIENTIFIC_NAME': 'SCIENTIFIC_NAME',
     'sraAccession': 'sample_accession',
     'public_name': 'tolid',
 }
@@ -423,6 +425,59 @@ def parse_update_block(text):
     return metadata, species_list
 
 
+def build_taxonomy_projection(update_json):
+    '''
+    Automatically build a MongoDB $project stage that uses $ifNull
+    to combine top-level fields and species_list.0.* fields.
+    '''
+    # Always include 'sraAccession' and exclude '_id' field
+    projection = {'_id': 0, 'sraAccession': 1}
+
+    # Collect top-level and nested fields
+    top_fields = {}
+    species_fields = {}
+
+    # Skip unwanted keys
+    excluded_fields = OPTIONAL_TAXONOMY_UPDATE + ['sraAccession']
+
+    for key in update_json:
+        if (
+            key in excluded_fields
+            or key.replace('species_list.0.', '') in excluded_fields
+        ):
+            continue
+        elif key.startswith('species_list.0.'):
+            field = key.replace('species_list.0.', '')
+            species_fields[field] = key
+        else:
+            top_fields[key] = key
+
+    # Build the combined projection using $ifNull
+    all_fields = set(top_fields.keys()) | set(species_fields.keys())
+    for field in all_fields:
+        top_level_key = top_fields.get(field)
+        nested_key = species_fields.get(field)
+
+        if top_level_key and nested_key:
+            # Field exists in BOTH places → use $ifNull
+            projection[field] = {
+                '$ifNull': [
+                    f'${top_level_key}',
+                    {
+                        '$getField': {
+                            'field': f'{top_level_key}',
+                            'input': {'$arrayElemAt': ['$species_list', 0]},
+                        }
+                    },
+                ]
+            }
+        else:
+            # Only exists in one place → include directly
+            projection[field] = 1
+
+    return projection
+
+
 def parse_update_query_into_find_query(line):
     # Extract collection name, filter, and update dict from Mongo updateOne line
     match = re.match(
@@ -448,21 +503,20 @@ def parse_update_query_into_find_query(line):
         return None
 
     # Build projection
-    # Always include 'sraAccession' and exclude '_id' field
-    projection = {'_id': 0, 'sraAccession': 1}
-    for key in update_json:
-        # Skip unwanted keys
-        excluded_fields = OPTIONAL_TAXONOMY_UPDATE + ['sraAccession']
-
-        if key.startswith('species_list.0') or key in excluded_fields:
-            continue
-        projection[key] = 1
+    projection = build_taxonomy_projection(update_json)
 
     # Execute find_one MongoDB query
     mongo_collection = (
         source_collection if collection == 'SourceCollection' else sample_collection
     )
-    result = mongo_collection.find_one(filter_json, projection)
+    # result = mongo_collection.find_one(filter_json, projection)
+
+    result = next(
+        mongo_collection.aggregate(
+            [{'$match': filter_json}, {'$project': projection}, {'$limit': 1}]
+        ),
+        None,
+    )
 
     if result:
         if collection == 'SourceCollection':
@@ -472,7 +526,12 @@ def parse_update_query_into_find_query(line):
             if sample_record and 'SCIENTIFIC_NAME' in sample_record:
                 # SCIENTIFIC_NAME is not present in SourceCollection, so it should be retrieved
                 # from the SampleCollection to update it in ENA
-                result['SCIENTIFIC_NAME'] = sample_record.get('SCIENTIFIC_NAME')
+                scientific_name = (
+                    sample_record.get('SCIENTIFIC_NAME')[0]
+                    if isinstance(sample_record.get('SCIENTIFIC_NAME'), list)
+                    else sample_record.get('SCIENTIFIC_NAME')
+                )
+                result['SCIENTIFIC_NAME'] = scientific_name
 
         # Map COPO field names to ENA field names
         for copo_field, ena_field in ENA_MAPPINGS.items():
