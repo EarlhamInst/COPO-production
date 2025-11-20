@@ -7,11 +7,11 @@
 {% block title %}Tree of Life Dashboard{% endblock %}
 
 {% block stylesheet_block %}
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <link id="pagestyle" rel="stylesheet" href="{% static 'tol_dashboard/css/material-dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'tol_dashboard/css/jquery-jvectormap-2.0.5.css' %}"/>
-    <link rel="stylesheet" href="{% static 'tol_dashboard/css/copo_tol_dashboard.css' %}"/>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <link href="{% static 'copo/google/css/google-fonts.css' %}" rel="stylesheet">
+    <link id="pagestyle" rel="stylesheet" href="{% static 'copo/css/material-dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/jquery-jvectormap-2.0.5.css' %}"/>
+    <link rel="stylesheet" href="{% static 'copo/css/copo_tol_dashboard.css' %}"/>
+    <link rel="stylesheet" href="{% static 'copo/jquery/css/jquery-ui-1.13.2.min.css' %}"/>
 
     <style></style>
 {% endblock stylesheet_block %}
@@ -481,14 +481,13 @@
 {% block help_section %}{% endblock %}
 
 {% block js_block %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.2.0/chart.umd.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-    <script src="{% static 'tol_dashboard/js/copo_tol_dashboard.js' %}"></script>
-    <script src="{% static 'tol_dashboard/js/tol_inspection.js' %}"></script>
-    <script src="{% static 'tol_dashboard/js/tol_inspection_by_gal.js' %}"></script>
-    <script src="{% static 'tol_dashboard/js/jquery-jvectormap-2.05.min.js' %}"></script>
-    <script src="{% static 'tol_dashboard/js/jquery-jvectormap-world-mill.js' %}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
+    <script src="{% static 'copo/chart_js/chart.umd.js' %}"></script>
+    <script src="{% static 'copo/datatables/js/moment.min.js' %}"></script>
+    <script src="{% static 'copo/datatables/js/datetime-moment.js' %}"></script>
+    <script src="{% static 'copo/jquery/js/jquery-ui-1.13.2.js' %}"></script>
+    <script src="{% static 'copo/js/copo_tol_dashboard.js' %}"></script>
+    <script src="{% static 'copo/js/tol_inspection.js' %}"></script>
+    <script src="{% static 'copo/js/tol_inspection_by_gal.js' %}"></script>
+    <script src="{% static 'copo/js/jquery-jvectormap-2.05.min.js' %}"></script>
+    <script src="{% static 'copo/js/jquery-jvectormap-world-mill.js' %}"></script>
 {% endblock js_block %}

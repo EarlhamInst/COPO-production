@@ -7,8 +7,8 @@
 {% block meta_description %}View your user information such as ORCID ID associated with your COPO account.{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="{% static 'copo/css/copo/browse_style.css' %}" xmlns="http://www.w3.org/1999/html">
-    <link rel="stylesheet" href="{% static 'copo/css/copo/orcid_profile.css' %}" xmlns="http://www.w3.org/1999/html">
+    <link rel="stylesheet" href="{% static 'copo/css/browse_style.css' %}" xmlns="http://www.w3.org/1999/html">
+    <link rel="stylesheet" href="{% static 'copo/css/orcid_profile.css' %}" xmlns="http://www.w3.org/1999/html">
 {% endblock %}
 
 {% block title_block %}User Information{% endblock %}
@@ -19,7 +19,7 @@
     <div class="orcid-div">
         <h4 class="page-title-custom">User Information</h4>
         <div class="orcid-info">
-            <p><img src="{% static 'copo/img/orcid.png' %}">Linked ORCID iD:
+            <p><img src="{% static 'assets/img/orcid.png' %}">Linked ORCID iD:
                 <a href="{{ orcid.orcid_identifier.uri | replace_underscore }}" target="_blank">{{ orcid.orcid_identifier.path | replace_underscore }}</a>
             </p>
         </div>        

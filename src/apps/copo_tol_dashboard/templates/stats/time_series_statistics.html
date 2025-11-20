@@ -6,7 +6,7 @@
 {% block title %}Time Series Statistics{% endblock %}
 
 {% block stylesheet_block %}
-   <link rel="stylesheet" href="{% static 'tol_dashboard/css/stats_time_series.css' %}">
+   <link rel="stylesheet" href="{% static 'copo/css/stats_time_series.css' %}">
 {% endblock %}
 
 {% block title_block %} Index {% endblock %}
@@ -55,6 +55,6 @@
 {% endblock %}
 
 {% block js_block %}
-    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="{% static 'copo/js/d3-v6.min.js' %}"></script>
     <script src="{% static 'copo/js/stats_time_series.js' %}" defer></script>
 {% endblock %}

@@ -7,20 +7,20 @@
 {% block title %}Samples{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="https://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
+    <link rel="stylesheet" href="{% static 'copo/css/blueimp-gallery.min.css' %}">
     <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
-    <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload.css' %}">
-    <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/jquery/jQuery-File-Upload-master/css/jquery.fileupload.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/jquery/jQuery-File-Upload-master/css/jquery.fileupload-ui.css' %}">
     <!-- CSS adjustments for browsers with JavaScript disabled -->
     <noscript>
-        <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-noscript.css' %}">
+        <link rel="stylesheet" href="{% static 'copo/jquery/jQuery-File-Upload-master/css/jquery.fileupload-noscript.css' %}">
     </noscript>
     <noscript>
         <link rel="stylesheet"
-              href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui-noscript.css' %}">
+              href="{% static 'copo/jquery/jQuery-File-Upload-master/css/jquery.fileupload-ui-noscript.css' %}">
     </noscript>
-    <link rel="stylesheet" href="{% static 'copo/css/copo/copo_wizard.css' %}">
-    <link rel="stylesheet" href="{% static 'copo/css/copo/sample.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/copo_wizard.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/sample.css' %}">
 
     <style>
     </style>
@@ -289,6 +289,6 @@
     <script src="{% static 'copo/js/filesaver.js' %}"></script>
     <script src="{% static 'copo/js/jszip-utils.min.js' %}"></script>
     <script src="{% static 'copo/js/jszip.min.js' %}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
+    <script src="{% static 'copo/datatables/js/moment.min.js' %}"></script>
+    <script src="{% static 'copo/datatables/js/datetime-moment.js' %}"></script>
 {% endblock %}

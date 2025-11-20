@@ -11,31 +11,31 @@
     <title>{% block title %}{% endblock %} | COPO</title>
 
     <!-- Loader overlay style: displays full-page spinner while the page is loading -->
-    <link rel="stylesheet" href="{% static 'copo/css/copo/loader.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/loader.css' %}">
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="{% static 'copo/css/bootstrap/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/bootstrap/css/bootstrap-3.3.7.css' %}">
     <link rel="stylesheet" href="{% static 'assets/css/navbar.css' %}">
-    <link rel="stylesheet" href="{% static 'copo/css/copo/style.css' %}">
-    <link rel="stylesheet" href="{% static 'copo/css/copo/menu.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/menu.css' %}">
 
-    <link rel="shortcut icon" href="{% static 'copo/img/dna_orange.png' %}"/>
+    <link rel="shortcut icon" href="{% static 'assets/img/dna_orange.png' %}"/>
 
     <!-- Google Fonts -->
-    <link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
+    <link href="{% static 'copo/google/css/google-fonts.css' %}" rel="stylesheet" type="text/css">
 
     <!-- Additional stylesheets -->
-    <link rel="stylesheet" href="{% static 'copo/css/copo/smart_table.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/smart_table.css' %}">
 
 
     {% block stylesheet_block %}{% endblock %}
 
     <!-- Displays a spinner overlay until the page fully loads -->
     <script defer src="{% static 'copo/js/loader.js' %}"></script>
-    <script src="{% static 'copo/js/jquery-3.7.1.min.js' %}"></script>
-    <script src="{% static 'copo/js/jquery.cookie.js' %}"></script>
+    <script src="{% static 'copo/jquery/js/jquery-3.7.1.min.js' %}"></script>
+    <script src="{% static 'copo/jquery/js/jquery.cookie.js' %}"></script>
     <script src="{% static 'copo/js/serialize_form_json.js' %}"></script>
-    <script src="{% static 'copo/js/bootstrap.js' %}"></script>
+    <script src="{% static 'copo/bootstrap/js/bootstrap-3.3.7.js' %}"></script>
     <!-- Additional javascripts -->
     {% block js_block %}{% endblock %}
 
@@ -48,7 +48,7 @@
     <![endif]-->
     <style>
         body {
-            background-image: url("{% static 'copo/img/wheat.jpg' %}");
+            background-image: url("{% static 'assets/img/wheat.jpg' %}");
             background-repeat: no-repeat;
             background-size: cover;
         }

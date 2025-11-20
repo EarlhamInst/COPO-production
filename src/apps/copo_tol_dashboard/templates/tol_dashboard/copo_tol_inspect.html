@@ -7,7 +7,7 @@
 {% block title %}Tree of Life Inspection{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="{% static 'tol_dashboard/css/tol_inspection.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/tol_inspection.css' %}">
     <style></style>
 {% endblock %}
 
@@ -126,11 +126,11 @@
 {% endblock %}
 
 {% block js_block %}
-    <script src="{% static 'tol_dashboard/js/tol_inspection.js' %}"></script>
+    <script src="{% static 'copo/js/tol_inspection.js' %}"></script>
     <script src="{% static 'copo/js/fastdom.js' %}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.5.3/bootbox.min.js"></script>
+    <script src="{% static 'copo/datatables/js/moment.min.js' %}"></script>
+    <script src="{% static 'copo/datatables/js/datetime-moment.js' %}"></script>
+    <script src="{% static 'assets/js/bootbox.min.js' %}"></script>
     <script>socket = undefined</script>
 
 {% endblock %}

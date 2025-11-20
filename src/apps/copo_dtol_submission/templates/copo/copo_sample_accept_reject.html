@@ -7,19 +7,19 @@
 {% block meta_description %}Review and manage sample metadata submissions. Sample managers can accept or reject samples based on profile information, images, and permits before they are submitted to public repositories.{% endblock %}
 
 {% block stylesheet_block %}
-  <link rel="stylesheet" href="{% static 'copo/css/copo/blueimp-gallery.min.css' %}">
+  <link rel="stylesheet" href="{% static 'copo/css/blueimp-gallery.min.css' %}">
 
   <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
-  <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload.css' %}">
-  <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui.css' %}">
+  <link rel="stylesheet" href="{% static 'copo/jquery/jQuery-File-Upload-master/css/jquery.fileupload.css' %}">
+  <link rel="stylesheet" href="{% static 'copo/jquery/jQuery-File-Upload-master/css/jquery.fileupload-ui.css' %}">
 
   <!-- CSS adjustments for browsers with JavaScript disabled -->
-  <noscript> <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-noscript.css' %}"></noscript>
-  <noscript> <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui-noscript.css' %}"></noscript>
+  <noscript> <link rel="stylesheet" href="{% static 'copo/jquery/jQuery-File-Upload-master/css/jquery.fileupload-noscript.css' %}"></noscript>
+  <noscript> <link rel="stylesheet" href="{% static 'copo/jquery/jQuery-File-Upload-master/css/jquery.fileupload-ui-noscript.css' %}"></noscript>
 
-  <link rel="stylesheet" href="{% static 'copo/css/copo/copo_wizard.css' %}">
+  <link rel="stylesheet" href="{% static 'copo/css/copo_wizard.css' %}">
   <link rel="stylesheet" href="{% static 'copo_dtol_submission/css/copo_sample_accept_reject.css' %}">
-  <link rel="stylesheet" href="{% static 'copo/css/copo/sample.css' %}">
+  <link rel="stylesheet" href="{% static 'copo/css/sample.css' %}">
   <link rel="stylesheet" href="{% static 'copo/treeview/bootstrap-treeview.min.css' %}">
   <link rel="stylesheet" href="{% static 'copo/datatables/css/fixedHeader.dataTables.min.css' %}">
 
@@ -250,7 +250,7 @@
   <script src="{% static 'copo/js/filesaver.js' %}"></script>
   <script src="{% static 'copo/js/jszip-utils.min.js' %}"></script>
   <script src="{% static 'copo/js/jszip.min.js' %}"></script>
-  <script src="{% static 'copo/js/moment.min.js' %}"></script>
+  <script src="{% static 'copo/datatables/js/moment.min.js' %}"></script>
   <script src="{% static 'copo/datatables/js/datetime-moment.js' %}"></script>
   <script src="{% static 'copo/datatables/js/dataTables.fixedHeader.min.js' %}"></script>
   <script src="{% static 'copo_dtol_submission/js/copo_sample_accept_reject.js' %}"></script>

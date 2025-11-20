@@ -6,7 +6,7 @@
 {% block title %}News{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="{% static 'copo_news/css/copo_news.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/copo_news.css' %}">
 {% endblock %}
 
 {% block carouselblock %}
@@ -16,7 +16,6 @@
 {% endblock header_section %}
 
 {% block content %}
-    <br><br><br><br>
     <div class="news-item-details-container">
         <div class="news-item-details-header">
             <h1 class="news-title news-item-details-title">{{ news.title }}</h1>
@@ -104,5 +103,5 @@
 {% endblock %}
 
 {% block js_block %}
-    <script src="{% static 'copo_news/js/copo_news.js' %}"></script>
+    <script src="{% static 'copo/js/copo_news.js' %}"></script>
 {% endblock %}

@@ -7,7 +7,7 @@
 {% block title %}Accessions{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="{% static 'copo_accessions/css/copo_accessions.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/copo_accessions.css' %}">
     <style></style>
 {% endblock %}
 
@@ -111,9 +111,9 @@
 {% endblock sidebar_custom_section %}
 
 {% block js_block %}
-    <script src="{% static 'copo_accessions/js/copo_accessions.js' %}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
+    <script src="{% static 'copo/js/copo_accessions.js' %}"></script>
+    <script src="{% static 'copo/datatables/js/moment.min.js' %}"></script>
+    <script src="{% static 'copo/datatables/js/datetime-moment.js' %}"></script>
     <script src="{% static 'copo/js/generic_handlers_ext2.js' %}"></script>
     <script src="{% static 'copo/js/generic_handlers.js' %}"></script>
 {% endblock %}

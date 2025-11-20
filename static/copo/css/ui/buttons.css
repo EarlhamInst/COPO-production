@@ -1,0 +1,167 @@
+/* Colour: Bright coral */
+.ui.icon.bright-coral {
+  color: #ff6f61 !important;
+}
+
+.ui.bright-coral.button {
+  box-shadow: 0 0 0 0 rgba(34, 36, 38, 0.15) inset;
+}
+.ui.bright-coral.button,
+.ui.bright-coral.buttons .button {
+  background-color: #ff6f61;
+  color: #fff;
+  text-shadow: none;
+  background-image: none;
+}
+
+.ui.bright-coral.button:hover {
+  background-color: #e65a52;
+  color: #fff;
+  text-shadow: none;
+}
+
+/* Colour: Terra Cotta */
+.ui.icon.terra-cotta {
+  background: radial-gradient(circle at top right, #4a90e2 30%, #e96a64 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ui.terra-cotta.button,
+.ui.terra-cotta.buttons.button {
+  background: radial-gradient(circle at top right, #4a90e2 30%, #e96a64 70%);
+  color: #fff;
+  text-shadow: none;
+}
+
+.ui.terra-cotta.button:hover,
+.ui.terra-cotta.buttons.button:hover {
+  background: radial-gradient(circle at bottom right, #2c6fb6 30%, #c65a55 70%);
+}
+
+/* Colour: Coral-pink */
+.ui.icon.coral-pink {
+  background: radial-gradient(circle at top right, #5c5c5c 30%, #ff8781 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ui.coral-pink.button,
+.ui.coral-pink.buttons.button {
+  background: radial-gradient(circle at top right, #5c5c5c 30%, #ff8781 70%);
+  color: #fff;
+  text-shadow: none;
+}
+
+.ui.coral-pink.button:hover,
+.ui.coral-pink.buttons.button:hover {
+  background: radial-gradient(circle at bottom right, #3d3d3d 30%, #d9736e 70%);
+}
+
+/* Record data table button colours */
+.shepherd-text .ui.basic.teal.button.submit-btn,
+.shepherd-text .ui.teal.button.submit-btn,
+.dataTables_wrapper .ui.basic.teal.button.submit-btn,
+.dataTables_wrapper .ui.teal.button.submit-btn,
+.dataTables_wrapper .ui.teal.buttons .button.submit-btn {
+  background-color: #00b5ad !important;
+  color: white !important;
+  font-weight: bold;
+  box-shadow: 0 0 0 1px rgba(34, 36, 38, 0.15) inset !important;
+}
+
+.shepherd-text .ui.basic.teal.button.submit-btn:hover,
+.shepherd-text .ui.teal.button.submit-btn:hover,
+.dataTables_wrapper .ui.basic.teal.button.submit-btn:hover,
+.dataTables_wrapper .ui.teal.button.submit-btn:hover,
+.dataTables_wrapper .ui.teal.buttons .button.submit-btn:hover {
+  background-color: #00a39c !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) inset !important;
+  color: white !important;
+}
+
+.shepherd-text .ui.basic.blue.button.submit-btn,
+.shepherd-text .ui.blue.button.submit-btn,
+.dataTables_wrapper .ui.basic.blue.button.submit-btn,
+.dataTables_wrapper .ui.blue.button.submit-btn,
+.dataTables_wrapper .ui.blue.buttons .button.submit-btn {
+  background-color: #2185d0 !important;
+  color: white !important;
+  font-weight: bold;
+  box-shadow: 0 0 0 1px rgba(34, 36, 38, 0.15) inset !important;
+}
+
+.shepherd-text .ui.basic.blue.button.submit-btn:hover,
+.shepherd-text .ui.blue.button.submit-btn:hover,
+.dataTables_wrapper .ui.basic.blue.button.submit-btn:hover,
+.dataTables_wrapper .ui.blue.button.submit-btn:hover,
+.dataTables_wrapper .ui.blue.buttons .button.submit-btn:hover {
+  background-color: #1678c2 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) inset !important;
+  color: white !important;
+}
+
+/* Colour: primary */
+.custom-btn.tiny {
+  display: inline-block;
+  padding: 4px 8px; /* tiny size */
+  font-size: 12px; /* small font */
+  line-height: 1.3;
+  border-radius: 3px;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.custom-btn.tiny.btn-primary {
+  background-color: #286090; /* was hover before */
+  color: #fff;
+  border: 1px solid #204d74;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 1px 1px rgba(0, 0, 0, 0.075);
+  background-image: none;
+}
+
+.custom-btn.tiny.btn-primary:hover {
+  background-color: #204d74; /* slightly darker for hover */
+  border-color: #122b40;
+  color: #fff;
+}
+
+.custom-btn.tiny.btn-primary:active,
+.custom-btn.tiny.btn-primary:focus {
+  background-color: #1b3550; /* even darker for active/focus */
+  border-color: #0f1f30;
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  color: #fff;
+}
+
+/* Colour: default */
+.custom-btn.tiny.btn-default {
+  background-color: #e6e6e6; /* was hover before */
+  color: #333;
+  border: 1px solid #adadad;
+  text-shadow: 0 1px 0 #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 1px 1px rgba(0, 0, 0, 0.075);
+  background-image: none;
+}
+
+.custom-btn.tiny.btn-default:hover {
+  background-color: #d4d4d4; /* slightly darker for hover */
+  border-color: #999;
+  color: #333;
+}
+
+.custom-btn.tiny.btn-default:active,
+.custom-btn.tiny.btn-default:focus {
+  background-color: #c0c0c0; /* even darker for active/focus */
+  border-color: #888;
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}

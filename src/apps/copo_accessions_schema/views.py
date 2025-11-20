@@ -14,7 +14,7 @@ def copo_accessions_schema(request, profile_id, ui_component):
     studies = Singlecell(profile_id=profile_id).get_all_records_columns(filter_by={"profile_id": profile_id, "deleted": get_not_deleted_flag()}, projection={"study_id": 1, "checklist_id":1, "schema_name":1 , "_id":0, "components.study": 1})
     for study in studies:
         study["title"] = study["components"]["study"][0].get("title", "")
-    return render(request, 'copo/accessions_schema/copo_accessions_schema.html',
+    return render(request, 'copo/copo_accessions_schema.html',
                 {'profile_id': profile_id, 'profile': profile,  "ui_component": ui_component, "studies": studies})
 
     

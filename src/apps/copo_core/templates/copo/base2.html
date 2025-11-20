@@ -11,12 +11,12 @@
 
     <!--REQUIRED STYLE SHEETS-->
     <!-- Loader overlay style: displays full-page spinner while the page is loading -->
-    <link rel="stylesheet" href="/static/copo/css/copo/loader.css">
+    <link rel="stylesheet" href="/static/copo/css/loader.css">
 
     <!-- BOOTSTRAP CORE STYLE CSS -->
-    <link href="/static/assets/css/bootstrap.css" rel="stylesheet" />
+    <link href="/static/copo/bootstrap/css/bootstrap-3.3.7.css" rel="stylesheet" />
     <!-- FONTAWESOME STYLE CSS -->
-    <link href="/static/copo/css/fontawesome/fontawesome-6.5.1.min.css" rel="stylesheet" />
+    <link href="/static/copo/fontawesome/css/fontawesome-6.5.1.min.css" rel="stylesheet" />
     <!-- CUSTOM STYLE CSS -->
     <link href="/static/assets/css/navbar.css" rel="stylesheet" >
     <link href="/static/assets/css/style.css" rel="stylesheet" />
@@ -25,11 +25,10 @@
     <link href="/static/assets/css/base_banner.css" rel="stylesheet">
 
     <!-- GOOGLE FONT -->
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
-    <link href="https://fonts.googleapis.com/css?family=Raleway|Slabo+27px" rel="stylesheet">
+    <link href='/static/copo/google/css/google-fonts.css' rel='stylesheet' type='text/css'>
 
     <!-- favicon -->
-    <link rel="icon" type="image/png" href="{% static 'copo/img/favicon_black.png' %}" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon_black.png' %}" />
 
     <!-- PAGE LEVEL STYLES -->
     {% block stylesheet_block %}{% endblock %}
@@ -87,7 +86,7 @@
     <script defer src="/static/copo/js/loader.js"></script>
 
     <!-- CORE JQUERY  -->
-    <script src="/static/copo/js/jquery-3.7.1.js"></script>
+    <script src="/static/copo/jquery/js/jquery-3.7.1.js"></script>
     <!-- BOOTSTRAP CORE SCRIPT   -->
     <script src="/static/assets/plugins/bootstrap.js"></script>
     <!-- CUSTOM SCRIPTS -->
