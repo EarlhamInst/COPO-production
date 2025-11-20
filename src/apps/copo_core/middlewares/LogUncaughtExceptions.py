@@ -4,9 +4,9 @@ from common.utils.logger import Logger
 from common.lookup.copo_enums import Loglvl
 from django.http import HttpResponse
 
-import logging
+# import logging
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 class LogUncaughtExceptions:
 
     def __init__(self, get_response):
@@ -19,8 +19,8 @@ class LogUncaughtExceptions:
         except Exception as e:
             Logger().log(e, level=Loglvl.ERROR)
             Logger().log(traceback.format_exc(), level=Loglvl.ERROR)
-            logger.error("Uncaught exception in request", exc_info=True)
-            raise #raise e
-            # return HttpResponse(content="Errors occurred", status=503)
+            # logger.error("Uncaught exception in request", exc_info=True)
+            # raise e
+            return HttpResponse(content="Errors occurred", status=503)
         # finally:
         # logging.info("Processed " + request.build_absolute_uri())
