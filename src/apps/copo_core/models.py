@@ -1,6 +1,10 @@
+import importlib
+import pkgutil
+
 from datetime import datetime, timedelta
 from django.db import transaction
 import pytz
+from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -14,6 +18,7 @@ from rest_framework.authtoken.models import Token
 from asgiref.sync import sync_to_async
 from django.utils.translation import gettext_lazy as _
 from common.dal.copo_base_da import DataSchemas
+from . import tour_configs
 
 
 class UserDetails(models.Model):
@@ -90,6 +95,21 @@ class StatusMessage(models.Model):
 
     class Meta:
         get_latest_by = 'created'
+
+
+class TourProgress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    component = models.CharField(max_length=100)
+    stage = models.CharField(max_length=50)
+    completed = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'component', 'stage')
+        verbose_name_plural = 'TourProgress'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.component}:{self.stage}"
 
 
 class Banner(models.Model):
@@ -241,8 +261,9 @@ class AssociatedProfileType(models.Model):
 
 class TitleButton(models.Model):
     class Meta:
-        ordering = ['name']
+        ordering = ['order']
 
+    order = models.PositiveIntegerField(default=0, editable=False)
     name = models.CharField(max_length=50, unique=True)
     template = models.CharField(max_length=500)
     additional_attr = models.CharField(
@@ -259,6 +280,14 @@ class TitleButton(models.Model):
         self.name = name
         self.template = template
         self.additional_attr = additional_attr
+
+        # Auto-assign the position of the title button
+        if not self.order:
+            last_order = (
+                TitleButton.objects.aggregate(models.Max('order'))['order__max'] or 0
+            )
+            self.order = last_order + 1
+            
         self.save()
         return self
 
@@ -301,12 +330,18 @@ class RecordActionButton(models.Model):
         blank=True,
         null=True,
     )
+    tour_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Optional tour ID for quick tours"
+    )
 
     def __str__(self):
         return self.name + " : " + self.title + " : " + self.type
 
     def create_record_action_button(
-        self, name, title, label, type, error_message, icon_class, action, icon_colour
+        self, name, title, label, type, error_message, icon_class, action, icon_colour, tour_id=None
     ):
         self.name = name
         self.title = title
@@ -316,6 +351,8 @@ class RecordActionButton(models.Model):
         self.icon_class = icon_class
         self.action = action
         self.icon_colour = icon_colour
+        if tour_id:
+            self.tour_id = tour_id
         self.save()
         return self
 
@@ -395,6 +432,7 @@ class Component(models.Model):
     widget_colour = models.CharField(max_length=200, blank=True, null=True)
     recordaction_buttons = models.ManyToManyField(RecordActionButton, blank=True)
     title_buttons = models.ManyToManyField(TitleButton, blank=True)
+    tour_config = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
         return self.name + " : " + self.title
@@ -429,11 +467,50 @@ class Component(models.Model):
 
         # Auto-assign the position of the component
         if not self.order:
-            last_order = Component.objects.aggregate(models.Max('order'))['order__max'] or 0
+            last_order = (
+                Component.objects.aggregate(models.Max('order'))['order__max'] or 0
+            )
             self.order = last_order + 1
 
         self.save()
         return self
+
+    def set_tour_config(self):
+        # Assign or update a quick page tour configuration for a component
+        def load_config_module(module_path):
+            try:
+                module = importlib.import_module(module_path)
+                config = module.get_tour_config()
+
+                component_name = getattr(
+                    module, 'COMPONENT_NAME', module_path.split('.')[-2]
+                )
+                component = Component.objects.get(
+                    name=component_name,
+                )
+                component.tour_config = config
+                component.save()
+            except Component.DoesNotExist:
+                print(
+                    f"Component '{component_name}' not found. Skipping tour config load."
+                )
+            except AttributeError:
+                print(f'{module_path} has no get_tour_config()')
+            except Exception as e:
+                print(f'Error loading {module_path}: {e}')
+
+        # Load configs from 'tour_configs' directory
+        for loader, module_name, _ in pkgutil.iter_modules(tour_configs.__path__):
+            load_config_module(f'src.apps.copo_core.tour_configs.{module_name}')
+
+        # Load configs from each Django app that has a 'tour/config.py' file
+        for app_config in apps.get_app_configs():
+            module_path = f'{app_config.name}.tour.config'
+            try:
+                importlib.import_module(module_path)
+                load_config_module(module_path)
+            except ModuleNotFoundError:
+                continue  # Note: Not every app will have a tour config
 
     def remove_all_components(self):
         Component.objects.all().delete()

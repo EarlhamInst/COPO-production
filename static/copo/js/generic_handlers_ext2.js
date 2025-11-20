@@ -108,6 +108,7 @@ function set_empty_component_message(dataRows, table_id = '*') {
 
     if ($('.page-welcome-message').length) {
       $(table_id).find('.page-welcome-message').show();
+      $('.component-legend[data-template!="true"]').hide();
     }
   } else {
     if ($('.table-parent-div').length) {
@@ -154,7 +155,7 @@ function place_task_buttons(componentMeta) {
   }
   if (
     component == 'study' &&
-    typeof componentMeta.submission_repository != "undefined" &&
+    typeof componentMeta.submission_repository != 'undefined' &&
     componentMeta.submission_repository != null &&
     componentMeta.submission_repository.length
   ) {
@@ -403,7 +404,7 @@ function display_copo_alert(alertType, alertMessage, displayDuration) {
     infoPanelElement.prepend(alertElement);
 
     // adjust the margin-top between sidebar (info) tab content and the profiles legend
-    $('.profiles-legend').css('margin-top', '0');
+    $('.component-legend').css('margin-top', '0');
 
     $('.other-projects-accessions-filter-checkboxes').css('margin-top', '0');
   }
@@ -538,6 +539,9 @@ function do_render_server_side_table(componentMeta) {
               .find('.select-row-message')
               .html(server_side_select[component].length + ' records selected');
           },
+          attr: {
+            'data-tour-id': 'select_visible_button',
+          },
         },
         {
           text: 'Clear selection',
@@ -547,6 +551,9 @@ function do_render_server_side_table(componentMeta) {
             $('#' + tableID + '_info')
               .find('.select-item-1')
               .remove();
+          },
+          attr: {
+            'data-tour-id': 'clear_selection_button',
           },
         },
       ],
@@ -657,6 +664,27 @@ function do_render_server_side_table(componentMeta) {
     .attr('size', 30);
 
   $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
+
+  // Add 'tour-id' attribute to the table wrapper
+  table_wrapper
+    .find('.dataTables_scroll')
+    .attr('data-tour-id', 'component_table');
+
+  // Add component data status legend
+  const $dataStatusLegend = $(
+    '.component-legend[data-template!="true"][data-legend="data_status"]'
+  );
+
+  if ($dataStatusLegend.length) {
+    const $legendTemplate = $(
+      '.component-legend[data-template="true"][data-legend="data_status"]'
+    ).clone();
+    $legendTemplate.removeAttr('data-template');
+    $legendTemplate.attr('data-tour-id', 'component_legend');
+    $dataStatusLegend.replaceWith($legendTemplate);
+  } else {
+    console.warn(`No data status legend found for ${componentMeta.component}`);
+  }
 
   //handle event for table details
   $('#' + tableID + ' tbody')
@@ -907,7 +935,13 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
       scrollX: true,
       scrollY: 'auto', // Adjust height to the content dynamically
       buttons: [
-        'selectAll',
+        {
+          extend: 'selectAll',
+          text: 'Select all',
+          attr: {
+            'data-tour-id': 'select_all_button',
+          },
+        },
         {
           text: 'Select filtered',
           action: function (e, dt, node, config) {
@@ -917,13 +951,25 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
               filteredRows.select();
             }
           },
+          attr: {
+            'data-tour-id': 'select_filtered_button',
+          },
         },
-        'selectNone',
+        {
+          extend: 'selectNone',
+          text: 'Clear selection',
+          attr: {
+            'data-tour-id': 'clear_selection_button',
+          },
+        },
         {
           extend: 'csv',
           text: 'Export CSV',
           title: null,
           filename: 'copo_' + String(tableID) + '_data',
+          attr: {
+            'data-tour-id': 'export_csv_button',
+          },
         },
       ],
       language: {
@@ -1012,6 +1058,27 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
     .attr('size', 30);
 
   $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
+
+  // Add 'tour-id' attribute to the table wrapper
+  table_wrapper
+    .find('.dataTables_scroll')
+    .attr('data-tour-id', 'component_table');
+
+  // Add component data status legend
+  const $dataStatusLegend = $(
+    '.component-legend[data-template!="true"][data-legend="data_status"]'
+  );
+
+  if ($dataStatusLegend.length) {
+    const $legendTemplate = $(
+      '.component-legend[data-template="true"][data-legend="data_status"]'
+    ).clone();
+    $legendTemplate.removeAttr('data-template');
+    $legendTemplate.attr('data-tour-id', 'component_legend');
+    $dataStatusLegend.replaceWith($legendTemplate);
+  } else {
+    console.warn(`No data status legend found for ${componentMeta.component}`);
+  }
 
   //handle event for table details
   $('#' + tableID + ' tbody')

@@ -18,27 +18,32 @@ const media_url = "{{ media_url }}";
 const upload_url = "{{ upload_url }}";
 const image_file_extensions = "{{ image_file_extensions }}";
 
+// Note: 'escapejs' escapes quotes and special characters in the Django variable.
+// Backticks are used instead of single quotes + backslashes to handle
+// multiline strings and embedded template logic safely.
 const record_action_button_def = {
   {% for button in record_action_button_def %}
-    {{ button.name  }}: {
-      template: '<div class=" tiny ui basic dtables-dbuttons  {{ button.icon_colour}} button copo-dt copo-tooltip {% if 'submit' in button.action %}submit-btn{% endif %}" \
-      data-container="body" \
-      data-action="{{ button.action }}" \
-      data-error-message="{{ button.error_message }}" \
-      data-btntype="{{ button.type }}" \
-      title="{{ button.title }}" \
-      tabindex="0"> \
-     <i class="{{ button.icon_class }}"></i> \
-     <span class="action-label" style="padding-left: 3px;">{{ button.label }}</span> \
- </div>',
-      action: '{{ button.action }}',
-      title: '{{ button.title }}',
-      label: '{{ button.label }}',
-      icon_class: '{{ button.icon_class }}',
-      },
-  {% endfor  %}
-}
-
+  {{ button.name }}: {
+    template: [
+      `<div class="tiny ui basic dtables-dbuttons {{ button.icon_colour }} button copo-dt copo-tooltip {% if 'submit' in button.action %}submit-btn{% endif %}"`,
+      ` data-container="body"`,
+      ` data-action="{{ button.action|escapejs }}"`,
+      ` data-error-message="{{ button.error_message|escapejs }}"`,
+      ` data-btntype="{{ button.type|escapejs }}"`,
+      ` {% if button.tour_id %} data-tour-id="{{ button.tour_id|escapejs }}"{% endif %}`,
+      ` title="{{ button.title|escapejs }}"`,
+      ` tabindex="0">`,
+      ` <i class="{{ button.icon_class|escapejs }}"></i>`,
+      ` <span class="action-label" style="padding-left: 3px;">{{ button.label|escapejs }}</span>`,
+      `</div>`
+    ].join(''),
+    action: '{{ button.action|escapejs }}',
+    title: '{{ button.title|escapejs }}',
+    label: '{{ button.label|escapejs }}',
+    icon_class: '{{ button.icon_class|escapejs }}'
+  }{% if not forloop.last %},{% endif %}
+  {% endfor %}
+};
 
 const component_def = {
   {% for component in component_def %}
@@ -62,6 +67,10 @@ const component_def = {
       buttons: [ {% for button in component.title_buttons.all %} '{{ button.name }}', {% endfor %} ],
       recordActions: [ {% for button in component.recordaction_buttons.all %} '{{ button.name }}', {% endfor %} ],
       sidebarPanels: ['copo-sidebar-info'],
+      tourMessages: {{ component.tour_config.messages|default:'{}'|safe }},
+      tourMessageOverrides: {{ component.tour_config.message_overrides|default:'{}'|safe }},
+      tourOrder: {{ component.tour_config.order|default:'[]'|safe }},
+      tourStages: {{ component.tour_config.stages|default:'{}'|safe }},
     },
   {% endfor %}
 }

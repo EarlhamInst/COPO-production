@@ -12,7 +12,7 @@
                         <span id="{{ profile.id }}" class=ellipsis-1-line>{{ profile.title }}&nbsp;</span>
                     </div>
                     <div class="col-sm-2 col-md-2 col-lg-2 row-ellipsis" title="View profile options">
-                        <div id="{{ profile.id }}" class="pull-right ellipsis-div">
+                        <div id="{{ profile.id }}" class="pull-right ellipsis-div" data-tour-id="profile_options_icon">
                             <i id="ellipsisId" class="fa fa-ellipsis-v" data-toggle="popover"
                                data-html="true" role="button"
                                title='<i id="profileOptionsPopoverCloseBtn" class="fa fa-times pull-right"></i>'></i>
@@ -37,7 +37,7 @@
                                 
                                 {% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status%}
                                     <a id="showMoreProfileInfoBtn" class="btn {% if profile.description.strip|length < 56 %}show-more-btn-spacing{% elif profile.description.strip|length >= 56 %}show-more-btn-with-2-line-desc{% endif %}" href="#" rel="popover"
-                                        data-popover-content="#showMoreProfileInfoContent" data-placement="right">View more details</a>                         
+                                        data-popover-content="#showMoreProfileInfoContent" data-placement="right" data-tour-id="profile_addtl_info_button">View more details</a>                         
                                 {% endif %}
 
                                 <!-- Content for 'showMoreProfileInfo' popover -->
@@ -112,7 +112,7 @@
                             <!--Panel expanding menu -->
                             <!-- Row: Profile menu-->
                             <div class="{% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status %}menu-row{% else %}menu-no-addtl-info-row{% endif %}">
-                                <span id="expandingMenu" class="ui compact menu vertical">
+                                <span id="expandingMenu" class="ui compact menu vertical" data-tour-id="profile_component_buttons_menu">
                                     <div class="menu comp" tabindex="-1">
                                         <p id="expandingMenuTitle">Components</p>
                                     </div>

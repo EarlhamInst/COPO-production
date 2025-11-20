@@ -3,7 +3,7 @@ from common.utils import helpers
 from django.db.models import Q
 import bson.json_util as json_util
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.views.decorators.http import require_POST
 from common.utils.copo_lookup_service import COPOLookup
 import json
 from allauth.socialaccount.models import SocialAccount
@@ -13,6 +13,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from jsonpickle import encode
+from rest_framework import status
 from src.apps.api.views.general import *
 from common.dal.mongo_util import cursor_to_list
 from .broker_da import BrokerDA, BrokerVisuals
@@ -20,7 +21,7 @@ from common.dal.copo_da import DataFile, CopoGroup, MetadataTemplate
 from common.dal.profile_da import ProfileInfo, Profile
 from common.dal.sample_da import Sample
 from common.dal.submission_da import Submission
-from common.dal.copo_base_da import   DAComponent
+from common.dal.copo_base_da import DAComponent
 
 from src.apps.copo_barcoding_submission.utils.da import TaggedSequence
 from src.apps.copo_assembly_submission.utils.da import Assembly
@@ -28,7 +29,7 @@ from src.apps.copo_seq_annotation_submission.utils.da import SequenceAnnotation
 from src.apps.copo_single_cell_submission.utils.da import Singlecell
 from common.s3.s3Connection import S3Connection as s3
 from common.lookup.lookup import REPO_NAME_LOOKUP
-from .models import Banner
+from .models import Banner, Component, TourProgress
 from common.schemas.utils import data_utils
 from common.utils.helpers import get_group_membership_asString
 from src.apps.copo_core.models import ProfileType
@@ -82,14 +83,14 @@ def web_page_access_checker(func):
             # 'accept/reject samples' web page, if 'yes', grant web page access if not, deny access
             if any(x.endswith('sample_managers') for x in member_groups) and 'accept_reject' in current_view:
                 return func(request, *args, **kwargs)
-            
+
             profile_id = request.session.get("profile_id", str())
 
             # Access web page if no profile ID exists in the request or session
             if not profile_id:
                 return func(request, *args, **kwargs)
 
-        profile =  Profile().get_record(profile_id)
+        profile = Profile().get_record(profile_id)
 
         # Show web page if profile does not exist but 'profile_id' exists from session <== we should return 403, i.e. invalid profile_id
 
@@ -708,3 +709,86 @@ def remove_user_from_group(request):
         'upserted_id': str(grp_info.upserted_id) if grp_info.upserted_id else None,
     }
     return JsonResponse({'resp': result})
+
+
+@login_required
+def get_tour_progress(request, component):
+    if not Component.objects.filter(name=component).exists():
+        return JsonResponse(
+            {'error': f'Invalid component: {component}'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    completed_stages = list(
+        TourProgress.objects.filter(user=request.user, component=component).values_list(
+            'stage', flat=True
+        )
+    )
+    queued_stage = request.session.get('queued_tours', {}).get(component)
+    return JsonResponse(
+        {'completedStages': completed_stages, 'queuedStage': queued_stage}
+    )
+
+
+@require_POST
+def queue_tour_stage(request, component, stage):
+    '''
+    Queue a tour stage for a given component.
+    It is stored server-side so that on next page load,
+    the watchComponentForTour JS function can detect it.
+    '''
+    if not Component.objects.filter(name=component).exists():
+        return JsonResponse(
+            {'error': f'Invalid component: {component}'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Store the queued stage using session
+    if 'queued_tours' not in request.session:
+        request.session['queued_tours'] = {}
+    request.session['queued_tours'][component] = stage
+    request.session.modified = True
+    return JsonResponse({'status': 'queued', 'component': component, 'stage': stage})
+
+
+@login_required
+@require_POST
+def mark_tour_complete(request, component, stage):
+    if not Component.objects.filter(name=component).exists():
+        return JsonResponse(
+            {'error': f'Invalid component: {component}'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    TourProgress.objects.update_or_create(
+        user=request.user,
+        component=component,
+        stage=stage,
+        defaults={'completed': True},
+    )
+
+    # Remove component from queued tours in session if present
+    queued = request.session.get('queued_tours', {})
+    if component in queued and stage in queued[component]:
+        queued[component].remove(stage)
+        # If no more stages exist for this component,
+        # remove the component key
+        if not queued[component]:
+            queued.pop(component)
+        request.session['queued_tours'] = queued
+        request.session.modified = True
+
+    return JsonResponse({'status': 'ok'})
+
+
+@login_required
+@require_POST
+def reset_tour_progress(request):
+    # Reset all tour progress for the logged-in user
+    deleted_count, _ = TourProgress.objects.filter(user=request.user).delete()
+    if 'queued_tours' in request.session:
+        request.session['queued_tours'] = {}
+        request.session.modified = True
+    return JsonResponse(
+        {'status': 'success', 'message': f'Cleared {deleted_count} tour records.'}
+    )

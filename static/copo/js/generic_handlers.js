@@ -3,9 +3,6 @@ var AnnotationEventAdded = false;
 var selectizeObjects = {}; //stores reference to selectize objects initialised on the page
 var copoVisualsURL = '/copo/copo_visualize/';
 var csrftoken = $.cookie('csrftoken');
-var quickTourMessages = quick_tour_messages(); //holds quick tour messages
-var quickTourArray = []; //holds quick tour elements
-var quickTourFlag = true; //flag to decide whether or not to display quick tour
 
 $(document).ready(function () {
   var componentName = $('#nav_component_name').val();
@@ -15,7 +12,6 @@ $(document).ready(function () {
   //set up global navigation components if component is available
   if (componentName) {
     do_page_controls(componentName);
-    setComponentIcon(componentName);
   }
 
   //global_help_call
@@ -935,7 +931,7 @@ function do_render_table(data) {
           $(this).attr('data-record-action', btnImage.btnAction); //data attribute to signal action type
           $(this).attr('data-action-target', 'rows'); //data attribute to signal batch action
           $(this).attr(
-            'data-copo-tour-id',
+            'data-tour-id',
             data.table_data.table_id + '_' + btnImage.btnAction
           ); //quick tour component: table_id + action type
           //
@@ -2229,7 +2225,7 @@ var auto_complete = function () {
           doc.iri +
           ' - ' +
           desc +
-          '" class="ontology-label label label-info"><span class="ontology-label-text"><img src="/static/copo/img/ontology.png"/>' +
+          '" class="ontology-label label label-info"><span class="ontology-label-text"><img src="/static/assets/img/ontology.png"/>' +
           doc.ontology_prefix +
           ' : ' +
           s +
@@ -2783,7 +2779,7 @@ function get_profile_components() {
       title: 'Work Profiles',
       subtitle: '#component_subtitle',
       buttons: ['quick-tour-template', 'new-component-template'],
-      sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-profiles-legend'],
+      sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-component-legend'],
       tableID: 'copo_profiles_table',
       secondaryTableID: 'copo_shared_profiles_table',
       visibleColumns: 4,
@@ -2935,6 +2931,7 @@ function do_page_controls(componentName) {
   */
   generate_component_control(componentName, profile_type);
   initialiseComponentDropdownMenu();
+  setComponentIcon(componentName);
 } //end of func
 
 function setComponentIcon(componentName) {
@@ -3101,10 +3098,7 @@ function generate_component_control(componentName, profile_type) {
     let profileTitle = $('#profile_title').val();
     let $profileTitleDiv = $('<div/>', {
       class: 'page-title-custom',
-      html:
-        `<span class='profile-title' title=${profileTitle}>Profile: ` +
-        profileTitle +
-        '</span>',
+      html: `<span class='profile-title' title='${profileTitle}' data-tour-id='profile_title'>Profile: ${profileTitle}</span>`,
     });
 
     pageHeaders.append($profileTitleDiv);
@@ -3117,7 +3111,7 @@ function generate_component_control(componentName, profile_type) {
     html:
       `<span class='page-title-text'>${component.title}&nbsp;${componentGroupName}</span>` +
       (component.subtitle
-        ? "<span class='page-subtitle-text'>" +
+        ? "<span class='page-subtitle-text' data-tour-id='component_options'>" +
           $(component.subtitle).val() +
           '</span>'
         : ''),
@@ -3142,8 +3136,8 @@ function generate_component_control(componentName, profile_type) {
         .append(sidebarPanels2.find('.tab-content').find('.' + item));
       /*
       sidebarPanels
-        .find('.profiles-legend')
-        .append(sidebarPanels2.find('.profiles-legend').find('.' + item));
+        .find('.component-legend')
+        .append(sidebarPanels2.find('.component-legend').find('.' + item));
       sidebarPanels
         .find('.accessions-legend')
         .append(sidebarPanels2.find('.accessions-legend').find('.' + item));
@@ -3157,7 +3151,7 @@ function generate_component_control(componentName, profile_type) {
     /*
     // Add 'profile types' legend to profile web page only
     if (component.component == 'profile') {
-      sideBar.append(sidebarPanels.find('.profiles-legend'));
+      sideBar.append(sidebarPanels.find('.component-legend'));
     }
 
     // Add 'accessions types' filter to accessions dashboard and accessions web page only
@@ -3250,7 +3244,6 @@ function generate_component_control(componentName, profile_type) {
   }
 
   //refresh components...
-  quick_tour_event();
   refresh_tool_tips();
 }
 
@@ -3446,11 +3439,6 @@ function do_global_help(component) {
       //set quick tour message and trigger display event
       try {
         do_context_help(data.context_help);
-        // quickTourFlag = data.quick_tour_flag;
-        //
-        // if (quickTourFlag && data.user_has_email) {
-        //     //$(".takeatour").trigger("click");
-        // }
       } catch (err) {}
     },
     error: function () {
@@ -3604,6 +3592,7 @@ function dialog_display(dialog, dTitle, dMessage, dType) {
     '<div class="copo-custom-modal-message">' + messageDiv.html() + '</div>'
   );
   dialog.realize();
+  dialog.getModal().addClass('spreadsheet-modal');
   dialog.setClosable(false);
   dialog.setSize(BootstrapDialog.SIZE_SMALL);
   dialog.getModalHeader().hide();
@@ -3617,234 +3606,6 @@ function dialog_display(dialog, dTitle, dMessage, dType) {
   dialog.getModalBody().addClass('copo-custom-modal-body');
   //dialog.getModalContent().css('border', '4px solid rgba(255, 255, 255, 0.3)');
   dialog.open();
-}
-
-function update_quick_tour_flag() {
-  WebuiPopovers.hideAll(); //hide all shown popovers
-
-  $.ajax({
-    url: copoVisualsURL,
-    type: 'POST',
-    headers: {
-      'X-CSRFToken': csrftoken,
-    },
-    data: {
-      task: 'update_quick_tour_flag',
-      quick_tour_flag: false,
-    },
-    success: function (data) {
-      //set quick tour flag
-      try {
-        quickTourFlag = data.quick_tour_flag;
-      } catch (err) {}
-    },
-    error: function () {
-      alert("Couldn't update settings!");
-    },
-  });
-}
-
-function quick_tour_event() {
-  $('.takeatour').on('click', function (e) {
-    let template = $('.tour-template').clone();
-
-    if (!template.length) {
-      console.log('No tour template found!');
-      return;
-    }
-
-    template.removeClass('tour-template');
-    $(this).webuiPopover('destroy');
-
-    $(this).webuiPopover({
-      title: template.find('.webui-popover-title').html(),
-      content: function () {
-        return template.find('.webui-popover-content').html();
-      },
-      trigger: 'sticky',
-      width: 300,
-      arrow: true,
-      closeable: true,
-      placement: 'bottom-right',
-    });
-  });
-
-  $(document).on('click', '.tour-start-btn', function (e) {
-    quickTourArray = [];
-    WebuiPopovers.hideAll(); //hide all shown popovers
-
-    //retain quick tour elements with defined messages
-    $('[data-copo-tour-id]').each(function () {
-      if (quickTourMessages.hasOwnProperty($(this).attr('data-copo-tour-id'))) {
-        if ($(this).is(':visible')) {
-          //only consider elements that are visible on the DOM
-          quickTourArray.push($(this));
-        }
-      }
-    });
-
-    if (quickTourArray.length > 0) {
-      quick_tour_select();
-    }
-  });
-
-  $(document).on('click', '.tour-next-btn', function () {
-    if (quickTourArray.length > 0) {
-      quick_tour_select();
-    }
-  });
-
-  $(document).on('click', '.tour-end-btn', function () {
-    quickTourArray = [];
-    WebuiPopovers.hideAll(); //hide all shown popovers
-  });
-
-  $(document).on('click', '.tour-dismiss-btn', function () {
-    update_quick_tour_flag();
-  });
-}
-
-function quick_tour_select() {
-  // display tour elements
-
-  const item = quickTourArray[0];
-  const itemMessage = quickTourMessages[item.attr('data-copo-tour-id')];
-
-  let endTour = $('.tour-end-btn-temp')
-    .clone()
-    .removeClass('tour-end-btn-temp');
-
-  let nextTip = endTour;
-
-  if (quickTourArray.length > 1) {
-    nextTip = $('.tour-next-btn-temp')
-      .clone()
-      .removeClass('tour-next-btn-temp');
-    nextTip.add(endTour);
-  }
-
-  const messageContent =
-    itemMessage.content +
-    '<hr/>' +
-    nextTip
-      .map(function () {
-        return this.outerHTML;
-      })
-      .get()
-      .join('');
-
-  item.webuiPopover('destroy');
-  item.webuiPopover({
-    title: itemMessage.title,
-    content: '<div class="webpop-content-div">' + messageContent + '</div>',
-    trigger: 'sticky',
-    width: 300,
-    arrow: true,
-    closeable: true,
-    placement: 'auto-bottom',
-    backdrop: true,
-  });
-
-  for (var i = 0; i < quickTourArray.length; i++) {
-    if (
-      quickTourArray[i].attr('data-copo-tour-id') ===
-      item.attr('data-copo-tour-id')
-    ) {
-      quickTourArray.splice(i, 1);
-      break;
-    }
-  }
-} //end of func
-
-function quick_tour_messages() {
-  var qt = {
-    description:
-      'Provides messages for creating quick tour of system components/elements:',
-    properties: {
-      new_profile_button: {
-        title: 'Create New Profile',
-        content:
-          "Click here to create a new Profile. A COPO Profile is a collection of 'research objects' or components that form part of a research project or study.",
-      },
-      documentation_button: {
-        title: 'Documentation',
-        content: "Click here to access COPO's documentation.",
-      },
-      notifications_button: {
-        title: 'Notifications',
-        content: 'Click here to access notifications.',
-      },
-      global_notification_button: {
-        title: 'Notification Component',
-        content: 'Click this button to view system notifications.',
-      },
-      global_user_authenticated_button: {
-        title: 'Settings',
-        content:
-          'Click here to access the following tasks: <ul><li>View work profile groups</li><li>View account details (e.g. ORCID)</li><li>Logout from COPO website</li></ul>',
-      },
-      about_button: {
-        title: 'About COPO',
-        content:
-          'Click here to view information about CollAborative OPen Omics Project (COPO), including privacy policy and terms of use.',
-      },
-      profile_links_button_group: {
-        title: 'Profile Links',
-        content: 'Shortcut buttons for accessing profile components.',
-      },
-      copo_data_upload_tab: {
-        title: 'File Upload',
-        content:
-          'Select this tab to access the file upload view. <br/>For more information about this control, including a demonstration of its usage, please use the help component.',
-      },
-      copo_data_inspect_tab: {
-        title: 'File Inspect Tab',
-        content:
-          'Select this tab to view files uploaded to COPO. <br/>For more information about this control, including a demonstration of its usage, please use the help component.',
-      },
-      copo_data_describe_tab: {
-        title: 'File Describe Tab',
-        content:
-          'Select this tab to view the file description wizard and files currently being described. <br/>For more information about this control, including a demonstration of its usage, please use the help component.',
-      },
-      copo_data_upload_file_button: {
-        title: 'Upload File Button',
-        content:
-          'Click this button to upload files to COPO. Multiple files can be selected and uploaded at once. <p>Uploaded files are displayed in the <strong>Inspect</strong> pane. ',
-      },
-      datafile_table_describe: {
-        title: 'Describe Button',
-        content:
-          'Use this button to activate the datafile description wizard. Please note that one or more files must be selected before clicking the describe button. Once clicked, the view will change to display the wizard, where the target datafiles may be described.',
-      },
-      profile_details_panel: {
-        title: 'Profile Details',
-        content:
-          'View a profile details here having selected a profile record.',
-      },
-      // "page_context_help_panel": {
-      //     "title": "Help",
-      //     "content": "Interact with the help pane to find help topics relevant to the page and/or current task."
-      // },
-      profile_table: {
-        title: 'Work Profiles',
-        content:
-          "Each profile created is made up of components. <ol><li>Click the <strong>Components</strong> button associated with a desired profile.</li><li>Click any of the components displayed in the popover (e.g. Samples) to access a particular component's page</li><li>Use the table records buttons (e.g., Select all, Add) to interact with profile records</li><li>Use the profile search box to display a filtered listing of records, based on matched terms</li></ol>",
-      },
-      new_publication_button: {
-        title: 'Create New Publication',
-        content:
-          'Click here to create a new Publication. You will be provided with the following options: <ol><li>Manually enter a new publication record using the publication form</li><li>Resolve a Digital Object Identifier (DOI) to retrieve a target publication record from an external service</li><li>Resolve a PubMed ID to retrieve a target publication record from an external service</li></ol>',
-      },
-      page_activity_panel: {
-        title: 'Task',
-        content:
-          'Interact with the task pane to perform available tasks on selected records. <ol><li>Select one or more records by clicking on target rows</li><li>Select the required task from available tasks to perform</li></ol>',
-      },
-    },
-  };
-
-  return qt.properties;
 }
 
 function get_menu_control() {
@@ -3994,7 +3755,7 @@ function get_alert_control_no_close() {
 function get_ajax_loader() {
   let loader = $(
     '<span class="input-group">\n' +
-      '                    <img style="height: 24px; margin-left:5px;" src="/static/copo/img/loading.gif"></span>'
+      '                    <img style="height: 24px; margin-left:5px;" src="/static/assets/img/loading.gif"></span>'
   );
 
   return loader.clone();
@@ -4143,34 +3904,34 @@ function initialiseComponentDropdownMenu() {
 
 function initialiseNavToggle() {
   // Initialise navigation bar on each component page
-   const $nav = $('#copoGlobalNav');
+  const $nav = $('#copoGlobalNav');
 
-   $nav.find('.navbar-toggle').on('click', function () {
-     $(this).closest('nav').find('.navbar-nav').toggleClass('active');
-   });
+  $nav.find('.navbar-toggle').on('click', function () {
+    $(this).closest('nav').find('.navbar-nav').toggleClass('active');
+  });
 
-   // Handle dropdown toggles
-   $nav
-     .find('.navbar-nav li.dropdown > a.dropdown-toggle')
-     .on('click', function (e) {
-       e.preventDefault(); // Prevent default for toggle
-       e.stopPropagation(); // Stop event bubbling
+  // Handle dropdown toggles
+  $nav
+    .find('.navbar-nav li.dropdown > a.dropdown-toggle')
+    .on('click', function (e) {
+      e.preventDefault(); // Prevent default for toggle
+      e.stopPropagation(); // Stop event bubbling
 
-       const $li = $(this).closest('li');
-       $li.siblings().removeClass('open'); // Close other dropdowns
-       $li.toggleClass('open'); // Toggle current dropdown
-     });
+      const $li = $(this).closest('li');
+      $li.siblings().removeClass('open'); // Close other dropdowns
+      $li.toggleClass('open'); // Toggle current dropdown
+    });
 
-   // Handle link clicks (including links inside dropdowns)
-   $nav
-     .find('.navbar-nav li a')
-     .not('.dropdown-toggle')
-     .on('click', function () {
-       if ($(window).width() < 768) {
-         // Collapse menu on small screens after navigation
-         $(this).closest('.navbar-nav').removeClass('active');
-       }
-     });
+  // Handle link clicks (including links inside dropdowns)
+  $nav
+    .find('.navbar-nav li a')
+    .not('.dropdown-toggle')
+    .on('click', function () {
+      if ($(window).width() < 768) {
+        // Collapse menu on small screens after navigation
+        $(this).closest('.navbar-nav').removeClass('active');
+      }
+    });
 
   // Reset menu on window resize
   $(window).on('resize', function () {
@@ -4265,12 +4026,12 @@ function fadeOutMessages(message, action) {
     ['info', 'warning', 'error', 'success'].includes(action) &&
     message &&
     !message.includes('Loading');
-  
+
   if (!shouldFade) return;
 
   // Fade out warning messages
   $('.warning-content').fadeOut(50);
-  
+
   // Update info text if there’s a message that’s not a loading message
   $('.info-content .info-text').text('Manifest validation completed for:');
 }

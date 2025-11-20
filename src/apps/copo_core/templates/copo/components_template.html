@@ -20,18 +20,18 @@
         </div>
     </div>
 
-     <!-- sidebar tabs -->
+     <!-- Sidebar tabs -->
     <div class="copo-sidebar-templates">
         <ul class="nav nav-tabs copo-sidebar-tabs">
             <li class="active copo-sidebar-info"><a data-toggle="tab" href="#copo-sidebar-info"
-                                                    data-copo-tour-id="page_alert_panel">Info</a></li>
+                                                    data-tour-id="page_alert_panel">Info</a></li>
             <li class=" copo-sidebar-upload"><a data-toggle="tab" href="#copo-sidebar-upload"
-                                                data-copo-tour-id="copo_data_upload_tab">Upload</a></li>
+                                                data-tour-id="copo_data_upload_tab">Upload</a></li>
             {#            <li class="active copo-sidebar-help"><a data-toggle="tab" href="#copo-sidebar-help"#}
-            {#                                                    data-copo-tour-id="page_context_help_panel"#}
+            {#                                                    data-tour-id="page_context_help_panel"#}
             {#                                                    id="copo-context-help">Help</a>#}
             <li class="copo-sidebar-annotate"><a data-toggle="tab" href="#copo-sidebar-annotate"
-                                                 data-copo-tour-id="copo_annotation_panel">Annotate</a></li>
+                                                 data-tour-id="copo_annotation_panel">Annotate</a></li>
         </ul>
 
         <div class="tab-content">
@@ -54,7 +54,7 @@
                                 {#                                          action="/rest/receive_data_file_chunked/"#}
                                 {#                                          style="margin-right:40px">#}
                                 {#                                        {% csrf_token %}#}
-                                {#                                        <span data-copo-tour-id="copo_data_upload_file_button"#}
+                                {#                                        <span data-tour-id="copo_data_upload_file_button"#}
                                 {#                                              id="upload_files_button"#}
                                 {#                                              class="tiny ui basic teal button fileinput-button"#}
                                 {#                                              style="background-image: none; border-color:transparent;">#}
@@ -113,10 +113,33 @@
                 </ul>
             </div>
             <div class="accessions-legend">
-                <h4 class="accessions-legend-title">Filter Accession Types</h4>
+                <h4 class="accessions-legend-title">Submission types</h4>
                 <div class="accessions-checkboxes"></div>
             </div>
         </div-->
+    </div>
+
+    <!-- Sidebar tabs: Component data status legend -->
+    <div class="component-legend" data-template="true" data-legend="data_status">
+        <h4 class="component-legend-title">Data status & progress</h4>
+        <ul class="component-legend-group">
+            <li class="component-legend-group-item">
+                <i class="fa fa-info-circle component-legend-info-icon" title="Pending status means that the data is not yet submitted."></i>
+                <span class="component-legend-text">Pending submission</span>
+                <span class="fa fa-circle component-legend-circle" style="color:#ffd700"></span>
+            </li>
+            <li class="component-legend-group-item">
+                <i class="fa fa-info-circle component-legend-info-icon" 
+                title="Error status means that there was a problem with the data submission.&#10;&#10;Refer to the 'STATUS' and 'ENA FILE PROCESSING STATUS' columns in the table for more information."></i>
+                <span class="component-legend-text">Error during submission</span>
+                 <span class="fa fa-circle component-legend-circle" style="color:#f88080"></span>
+            </li>
+            <li class="component-legend-group-item">
+                <i class="fa fa-info-circle component-legend-info-icon" title="Green status means that the data has been successfully submitted."> </i>
+                <span class="component-legend-text">Successful submission</span>
+                 <span class="fa fa-circle component-legend-circle" style="color:#d9e8d9"></span>
+            </li>
+        </ul>
     </div>
 
     <!-- Profile component templates: Component buttons only -->
@@ -188,7 +211,7 @@
 
     <!-- Quick tour template -->
     <!-- Quick tour: Initial popover -->
-    <div class="tour-popover tour-template webui-popover in" id="webuiPopover0">
+    <div id="webuiPopover0" class="tour-popover webui-popover in" data-template="true">
         <div class="webui-arrow"></div>
         <div class="webui-popover-inner">
             <a href="#" class="close"></a>
@@ -243,7 +266,7 @@
             <hr/>
 
             <span class="input-group ajax-loading-div">
-                    <img style="height: 24px; margin-left:5px;" alt="" src="{% static 'copo/img/loading.gif' %}"></span>
+                    <img style="height: 24px; margin-left:5px;" alt="" src="{% static 'assets/img/loading.gif' %}"></span>
             <h5>Choose which collection this item should be added to</h5>
             <div id="table-div-dataverse" class="table table-striped table-bordered"
                  style="padding: 10px;width:100%">
@@ -363,7 +386,7 @@
 
                     <span class="input-group ajax-loading-div"><img
                             style="height: 24px; margin-left:5px;"
-                            src="{% static 'copo/img/loading.gif' %}" alt=""></span>
+                            src="{% static 'assets/img/loading.gif' %}" alt=""></span>
 
 
                 </div> -->
@@ -731,7 +754,7 @@
 
     <!-- quick tour button template -->
     <!--button title="Quick tour"
-            class="big circular ui icon orange button takeatour quick-tour-template copo-tooltip">
+            class="big circular ui icon orange button start-tour quick-tour-template copo-tooltip">
         <i class="icon lightbulb"></i>
     </button-->
 

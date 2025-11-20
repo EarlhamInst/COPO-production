@@ -33,6 +33,8 @@
     {% include "component_navbar.html" %}
 {% endblock page_tile %}
 
+{% block sidebar_custom_section %}
+{% endblock sidebar_custom_section %}
 
 {% block content %}
     <div class="row">
@@ -77,19 +79,21 @@
                 </div>
                 <div class="modal-body">
                     <div id="url_upload_controls">
+                        <p>Please follow the steps below to upload data files via the terminal:</p>
                         <ol>
-                            <li>Navigate to your files (Your files must all be in the same directory with no nesting)
+                            <li>Navigate to the location of your files<br>
+                                <i class="fa fa-info-circle pr-10"></i>All files must be in the same directory; no nesting/subdirectories allowed.
                             </li>
                             <li>Run <kbd>ls -F1</kbd></li>
-                            <li>Paste the result into the box below, and click Process</li>
+                            <li>Paste the result into the box below then, click the <strong>Process</strong> button</li>
                         </ol>
                         <form>
                             <textarea id="url_text_area" class="form-control" rows="10"></textarea>
                         </form>
                     </div>
                     <div id="command_panel">
-                        Navigate to where the files you with to move are and run the following commands.
-                        <div id="command_area" style="overflow-x: scroll; padding:20px  "></div>
+                        Run the following command in the same directory where the files are located:
+                        <div id="command_area" style="overflow-x: scroll; padding:20px"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -169,8 +173,7 @@
     </div>
 
     <!-- files_table -->
-    <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"
-         data-copo-tour-id="files_table"></div> <!-- div used by the quick tour agent -->
+    <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"></div>
     <div class="table-parent-div">
         <table id="files_table" class="ui celled table hover copo-noborders-table"
                cellspacing="0" width="100%">

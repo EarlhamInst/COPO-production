@@ -53,6 +53,7 @@ django-cors-headers==4.4.0
 django-extensions==3.2.3
 django-gollum==1.0.1
 django-html-validator==0.5.1
+django-json-widget==2.1.0
 django-redis-sessions==0.6.2
 django-tools==0.54.0
 django-user-agents==0.4.0

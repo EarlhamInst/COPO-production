@@ -133,8 +133,7 @@
     </div>
 
     <!-- publication_table -->
-    <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"
-         data-copo-tour-id="seqannotation_table"></div> <!-- div used by the quick tour agent -->
+    <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"></div>
     <div class="table-parent-div">
         <table id="seqannotation_table" class="ui celled table hover copo-noborders-table"
                cellspacing="0" width="100%">
@@ -148,6 +147,12 @@
 
 {% block help_section %}
 {% endblock %}
+
+{% block sidebar_custom_section %}
+<!-- Sequence annotation legend -->
+<div class="component-legend" data-tour-id="component_legend" 
+    data-legend="data_status"></div>
+{% endblock sidebar_custom_section %}
 
 {% block component_info %}
     <div style="display:none; margin-top: 30px; " id="annotation_info" class="alert alert-info"

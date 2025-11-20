@@ -42,6 +42,8 @@
           href="{% static 'copo/css/pretty-checkbox.min.css' %}">
     <link rel="stylesheet" media="print" onload="this.media='all'"
           href="{% static 'copo/select2-405/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/tour/css/tour.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/tour/css/shepherd.css' %}">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" media="print" onload="this.media='all'"
@@ -112,6 +114,12 @@
     <script>
     {% include 'copo/copo_profile_types.html' %}
     </script>
+
+    <!-- Displays a spinner overlay until the page fully loads -->
+    <script defer src="{% static 'copo/js/loader.js' %}"></script>
+
+    <!-- Tour js -->
+    <script type='module' src="{% static 'copo/tour/js/tour-handler.js' %}"></script>
 
     <!-- Additional javascripts -->
     {% block js_block %}{% endblock %}

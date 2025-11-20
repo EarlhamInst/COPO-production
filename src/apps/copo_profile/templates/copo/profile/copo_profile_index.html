@@ -140,34 +140,32 @@
         </div>
     </div>
 
-    <!-- profile table -->
-    <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"
-         data-copo-tour-id="profile_table"></div>
-    <!-- div used by the quick tour agent -->
-    <!-- Profile tables div-->
+    <!-- Loader for component table -->
+    <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"></div>
 
     <!-- Sort Work Profiles button-->
     {% if profiles %}
-        <div id="sortProfilesDiv" class="row">
-            <div class="col-xs-2 col-md-3 col-lg-4">
-                <div class="pull-right" style="padding-top: 9px;"> Sort by:</div>
-            </div>
-            <div class="col-xs-2 col-md-2 col-lg-2">
-                <select id="sortProfilesBtn" class="form-control" data-tour-id="sort_profiles_button">
-                    <option value="date_created">Date created</option>
-                    <option value="title">Profile title</option>
-                    <option value="type">Profile type</option>
-                </select>
-            </div>
-            <div class="col-xs-0 col-md-0 col-lg-0">
-                <div class="pull-left"><i id="sortIconId" class="sort-down fa fa-sort-down sort-icon"></i></div>
-
+    <div class="row">
+        <div class="col-lg-9 col-lg-offset-4">
+            <div id="sortProfilesDiv" class="row">
+                <div class="col-lg-6 col-md-6 col-xs-5 sort-by-container">Sort by:</div>
+                <div class="col-lg-3 col-md-3 col-xs-4 sort-dropdown-container">
+                    <select id="sortProfilesBtn" class="form-control" data-tour-id="sort_profiles_button">
+                        <option value="date_created">Date created</option>
+                        <option value="title">Profile title</option>
+                        <option value="type">Profile type</option>
+                    </select>
+                </div>
+                <div class="col-lg-1 col-md-1 col-xs-2 sort-icon-container">
+                    <i id="sortIconId" class="sort-down fa fa-sort-down sort-icon"></i>
+                </div>
             </div>
         </div>
+    </div>
     {% endif %}
-    <br>
-    <!-- COPO profiles' grid -->
-    <div id="copo_profiles_table">
+    
+    <!-- Profile table div -->
+    <div id="copo_profiles_table" data-tour-id="profile_grid">
         {% for profile in profiles %}
             {% include 'copo/profile/copo_profile_record.html' %}
         {% endfor %}
@@ -187,12 +185,13 @@
 {% endblock %}
 
 {% block sidebar_custom_section %}
-    <!-- profiles legend -->
-    <div class="profiles-legend">
-        <h4 class="profiles-legend-title">Profile Types Legend</h4>
-        <ul class="profiles-legend-group">
-        </ul>
-    </div>
+<!-- profiles legend -->
+<div class="component-legend" data-tour-id="component_legend" 
+    data-legend="profile_types">
+    <h4 class="component-legend-title">Profile types</h4>
+    <ul class="component-legend-group">
+    </ul>
+</div>
 {% endblock sidebar_custom_section %}
 
 {% block js_block %}

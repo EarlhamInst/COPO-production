@@ -250,8 +250,7 @@
         </div>
 
         <!-- sample table -->
-        <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"
-             data-copo-tour-id="sample_table"></div> <!-- div used by the quick tour agent -->
+        <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"></div>
         <table id="sample_table"
                class="ui celled table hover copo-noborders-table compact nowrap"
                cellspacing="0" width="100%">
@@ -275,6 +274,9 @@
 {% block help_section %}
 
 {% endblock %}
+
+{% block sidebar_custom_section %}
+{% endblock sidebar_custom_section %}
 
 {% block js_block %}
     <script src="{% static 'copo/js/generic_handlers.js' %}"></script>

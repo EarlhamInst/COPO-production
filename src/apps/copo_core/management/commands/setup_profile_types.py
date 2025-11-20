@@ -1,4 +1,5 @@
 from typing import Any
+from django.db.models import Q
 from django.core.management.base import BaseCommand
 from src.apps.copo_core.models import (
     ProfileType,
@@ -89,7 +90,7 @@ from common.dal.copo_base_da import DataSchemas
  11 | new_singlecell_spreadsheet_template     | <button style="display: inline" title="Add study from Single-cell Spreadsheet" class="big circular ui icon button new-singlecell-spreadsheet-template copo-tooltip"> <i class="icon table sign"></i></button>                                                                                                   | 
  12 | new_taggedseq_spreadsheet_template      | <button style="display: inline" title="Add Tagged Sequence (s) from Tagged Sequence Spreadsheet"             class="big circular ui icon button new-taggedseq-spreadsheet-template copo-tooltip">         <i class="icon table sign"></i>     </button>                                                         | 
  13 | new_terminal_file                       | <button title="Add new file by terminal"             class="big circular ui icon primary button new-terminal-file copo-tooltip">         <i class="icon terminal sign"></i>     </button>                                                                                                                       | 
- 14 | quick_tour_template                     | <button title="Quick tour"             class="big circular ui icon orange button takeatour quick-tour-template copo-tooltip">         <i class="icon lightbulb"></i>     </button>                                                                                                                              | 
+ 14 | quick_tour_template                     | <button title="Quick tour"             class="big circular ui icon orange button start-tour quick-tour-template copo-tooltip">         <i class="icon lightbulb"></i>     </button>                                                                                                                             | 
  15 | tol_inspect                             | <button style="display: none" title="Inspect TOL"             class="big circular ui icon yellow button tol_inspect copo-tooltip">         <i class="icon clipboard list"></i>     </button>                                                                                                                    | 
  16 | tol_inspect_gal                         | <button class="big circular ui icon green button tol_inspect_gal copo-tooltip" title="Inspect TOL by GAL">         <i class="icon building"></i>     </button>                                                                                                                                                  | 
 """
@@ -109,36 +110,6 @@ class Command(BaseCommand):
         RecordActionButton().remove_all_record_action_buttons()
         self.stdout.write("Adding Record Action Button ")
 
-        add_terminal_all = RecordActionButton().create_record_action_button(
-            name="add_terminal_all",
-            title="Add new file by terminal",
-            label="Add",
-            type="",
-            error_message="",
-            icon_class="fa fa-terminal",
-            action="add_files_by_terminal",
-            icon_colour="blue",
-        )
-        download_sample_manifest_single = RecordActionButton().create_record_action_button(
-            name="download_sample_manifest_single",
-            title="Download Sample Manifest",
-            label="Download sample manifest",
-            type="single",
-            error_message="Please select one of samples in the manifest to download",
-            icon_class="fa fa-download",
-            action="download-sample-manifest",
-            icon_colour="blue",
-        )
-        download_singlecell_manifest_single = RecordActionButton().create_record_action_button(
-            name="download_singlecell_manifest_single",
-            title="Download manifest",
-            label="Download manifest",
-            type="single",
-            error_message="Please select one of studies in the manifest to download",
-            icon_class="fa fa-download",
-            action="download-singlecell-manifest",
-            icon_colour="blue",
-        )
         add_local_all = RecordActionButton().create_record_action_button(
             name="add_local_all",
             title="Add new file by browsing local file system",
@@ -148,17 +119,21 @@ class Command(BaseCommand):
             icon_class="fa fa-desktop",
             action="add_files_locally",
             icon_colour="blue",
+            tour_id="add_file_record_button_local",
         )
-        edit_record_single = RecordActionButton().create_record_action_button(
-            name="edit_record_single",
-            title="Edit record",
-            label="Edit",
-            type="single",
-            error_message="Please select a record to edit",
-            icon_class="fa fa-pencil-square",
-            action="edit",
-            icon_colour="green",
+
+        add_terminal_all = RecordActionButton().create_record_action_button(
+            name="add_terminal_all",
+            title="Add new file by terminal",
+            label="Add",
+            type="",
+            error_message="",
+            icon_class="fa fa-terminal",
+            action="add_files_by_terminal",
+            icon_colour="blue",
+            tour_id="add_file_record_button_terminal",
         )
+
         add_record_all = RecordActionButton().create_record_action_button(
             name="add_record_all",
             title="Add new record",
@@ -168,77 +143,21 @@ class Command(BaseCommand):
             icon_class="fa fa-plus-circle",
             action="add",
             icon_colour="blue",
+            tour_id="add_record_button",
         )
-        download_permits_multiple = RecordActionButton().create_record_action_button(
-            name="download_permits_multiple",
-            title="Download Permits",
-            label="Download permits",
-            type="multi",
-            error_message="Please select one or more sample records from the table shown to download permits for",
-            icon_class="fa fa-download",
-            action="download-permits",
-            icon_colour="orange",
+
+        edit_record_single = RecordActionButton().create_record_action_button(
+            name="edit_record_single",
+            title="Edit record",
+            label="Edit",
+            type="single",
+            error_message="Please select a record to edit",
+            icon_class="fa fa-pencil-square",
+            action="edit",
+            icon_colour="green",
+            tour_id="edit_record_button",
         )
-        view_images_multiple = RecordActionButton().create_record_action_button(
-            name="view_images_multiple",
-            title="View Images",
-            label="View images",
-            type="multi",
-            error_message="Please select one or more sample records from the table shown to view images for",
-            icon_class="fa fa-eye",
-            action="view-images",
-            icon_colour="teal",
-        )
-        submit_tagged_seq_multi = RecordActionButton().create_record_action_button(
-            name="submit_tagged_seq_multi",
-            title="Submit Tagged Sequence",
-            label="Submit",
-            type="multi",
-            error_message="Please select one or more record to submit",
-            icon_class="fa fa-info-circle",
-            action="submit_tagged_seq",
-            icon_colour="teal",
-        )
-        submit_read_multi = RecordActionButton().create_record_action_button(
-            name="submit_read_multi",
-            title="Submit Read",
-            label="Submit",
-            type="multi",
-            error_message="Please select one or more record to submit",
-            icon_class="fa fa-info-circle",
-            action="submit_read",
-            icon_colour="teal",
-        )
-        submit_annotation_multi = RecordActionButton().create_record_action_button(
-            name="submit_annotation_multi",
-            title="Submit Annotation",
-            label="Submit",
-            type="multi",
-            error_message="Please select one or more record to submit",
-            icon_class="fa fa-info-circle",
-            action="submit_annotation",
-            icon_colour="teal",
-        )
-        submit_assembly_multi = RecordActionButton().create_record_action_button(
-            name="submit_assembly_multi",
-            title="Submit Assembly",
-            label="Submit",
-            type="multi",
-            error_message="Please select one or more record to submit",
-            icon_class="fa fa-info-circle",
-            action="submit_assembly",
-            icon_colour="teal",
-        )
-        delete_record_multi = RecordActionButton().create_record_action_button(
-            name="delete_record_multi",
-            title="Delete records",
-            label="Delete",
-            type="multi",
-            error_message="Please select one or more records to delete",
-            icon_class="fa fa-trash-can",
-            action="validate_and_delete",
-            icon_colour="red",
-        )
+
         releasestudy = RecordActionButton().create_record_action_button(
             name="releasestudy",
             title="Release Study",
@@ -249,48 +168,7 @@ class Command(BaseCommand):
             action="release_study",
             icon_colour="blue",
         )
-        delete_read_multi = RecordActionButton().create_record_action_button(
-            name="delete_read_multi",
-            title="Delete records",
-            label="Delete",
-            type="multi",
-            error_message="Please select one or more records to delete",
-            icon_class="fa fa-trash-can",
-            action="delete_read",
-            icon_colour="red",
-        )
-        delete_singlecell_multi = RecordActionButton().create_record_action_button(
-            name="delete_singlecell_multi",
-            title="Delete records",
-            label="Delete",
-            type="multi",
-            error_message="Please select one or more records to delete",
-            icon_class="fa fa-trash-can",
-            action="delete_singlecell",
-            icon_colour="red",
-        )
-        submit_singlecell_single_ena = RecordActionButton().create_record_action_button(
-            name="submit_singlecell_single_ena",
-            title="Submit Single-cell Records to ENA",
-            label="Submit to ENA",
-            type="single",
-            error_message="Please select one record to submit",
-            icon_class="fa fa-info-circle",
-            action="submit_singlecell_ena",
-            icon_colour="teal",
-        )
-        submit_singlecell_single_zenodo = (
-            RecordActionButton().create_record_action_button(
-                name="submit_singlecell_single_zenodo",
-                title="Submit Single-cell Records to ZENODO",
-                label="Submit to ZENODO",
-                type="single",
-                error_message="Please select one record to submit",
-                icon_class="fa fa-info-circle",
-                action="submit_singlecell_zenodo",
-                icon_colour="blue",
-            )
-        )
+
         publish_singlecell_single_ena = (
             RecordActionButton().create_record_action_button(
                 name="publish_singlecell_single_ena",
@@ -301,6 +179,7 @@ class Command(BaseCommand):
                 icon_class="fa fa-info-circle",
                 action="publish_singlecell_ena",
                 icon_colour="teal",
+                tour_id="publish_record_button",
             )
         )
         publish_singlecell_single_zenodo = (
@@ -313,6 +192,7 @@ class Command(BaseCommand):
                 icon_class="fa fa-info-circle",
                 action="publish_singlecell_zenodo",
                 icon_colour="blue",
+                tour_id="publish_record_button_zenodo",
             )
         )
 
@@ -327,6 +207,30 @@ class Command(BaseCommand):
             icon_colour="grey",
         )
 
+        view_images_multiple = RecordActionButton().create_record_action_button(
+            name="view_images_multiple",
+            title="View Images",
+            label="View images",
+            type="multi",
+            error_message="Please select one or more sample records from the table shown to view images for",
+            icon_class="fa fa-eye",
+            action="view-images",
+            icon_colour="teal",
+            tour_id="view_images_button",
+        )
+
+        download_permits_multiple = RecordActionButton().create_record_action_button(
+            name="download_permits_multiple",
+            title="Download Permits",
+            label="Download permits",
+            type="multi",
+            error_message="Please select one or more sample records from the table shown to download permits for",
+            icon_class="fa fa-download",
+            action="download-permits",
+            icon_colour="orange",
+            tour_id="download_permits_button",
+        )
+
         download_general_sample_manifest_single = RecordActionButton().create_record_action_button(
             name="download_general_sample_manifest_single",
             title="Download Sample Manifest",
@@ -335,6 +239,42 @@ class Command(BaseCommand):
             error_message="Please select one of samples in the manifest to download",
             icon_class="fa fa-download",
             action="download-sample-manifest",
+            icon_colour="blue",
+            tour_id="download_manifest_record_button",
+        )
+
+        download_sample_manifest_single = RecordActionButton().create_record_action_button(
+            name="download_sample_manifest_single",
+            title="Download Sample Manifest",
+            label="Download sample manifest",
+            type="single",
+            error_message="Please select one of samples in the manifest to download",
+            icon_class="fa fa-download",
+            action="download-sample-manifest",
+            icon_colour="blue",
+            tour_id="download_manifest_record_button",
+        )
+
+        download_tagged_seq_manifest_single = RecordActionButton().create_record_action_button(
+            name="download_tagged_seq_single",
+            title="Download tagged sequence (aka barcoding) manifest",
+            label="Download manifest",
+            type="single",
+            error_message="Please select one of tagged sequences (or barcoding data) in the table to download",
+            icon_class="fa fa-download",
+            action="download-tagged-seq-manifest",
+            icon_colour="blue",
+            tour_id="download_tagged_seq_manifest_record_button",
+        )
+
+        download_singlecell_manifest_single = RecordActionButton().create_record_action_button(
+            name="download_singlecell_manifest_single",
+            title="Download manifest",
+            label="Download manifest",
+            type="single",
+            error_message="Please select one of studies in the manifest to download",
+            icon_class="fa fa-download",
+            action="download-singlecell-manifest",
             icon_colour="blue",
         )
 
@@ -347,6 +287,91 @@ class Command(BaseCommand):
             icon_class="fa fa-trash-can",
             action="delete_sample",
             icon_colour="red",
+            tour_id="delete_record_button",
+        )
+
+        delete_record_multi = RecordActionButton().create_record_action_button(
+            name="delete_record_multi",
+            title="Delete records",
+            label="Delete",
+            type="multi",
+            error_message="Please select one or more records to delete",
+            icon_class="fa fa-trash-can",
+            action="validate_and_delete",
+            icon_colour="red",
+            tour_id="delete_record_button",
+        )
+
+        delete_read_multi = RecordActionButton().create_record_action_button(
+            name="delete_read_multi",
+            title="Delete records",
+            label="Delete",
+            type="multi",
+            error_message="Please select one or more records to delete",
+            icon_class="fa fa-trash-can",
+            action="delete_read",
+            icon_colour="red",
+            tour_id="delete_record_button",
+        )
+
+        delete_singlecell_multi = RecordActionButton().create_record_action_button(
+            name="delete_singlecell_multi",
+            title="Delete records",
+            label="Delete",
+            type="multi",
+            error_message="Please select one or more records to delete",
+            icon_class="fa fa-trash-can",
+            action="delete_singlecell",
+            icon_colour="red",
+            tour_id="delete_record_button",
+        )
+
+        submit_tagged_seq_multi = RecordActionButton().create_record_action_button(
+            name="submit_tagged_seq_multi",
+            title="Submit Tagged Sequence",
+            label="Submit",
+            type="multi",
+            error_message="Please select one or more record to submit",
+            icon_class="fa fa-info-circle",
+            action="submit_tagged_seq",
+            icon_colour="teal",
+            tour_id="submit_record_button",
+        )
+
+        submit_read_multi = RecordActionButton().create_record_action_button(
+            name="submit_read_multi",
+            title="Submit Read",
+            label="Submit",
+            type="multi",
+            error_message="Please select one or more record to submit",
+            icon_class="fa fa-info-circle",
+            action="submit_read",
+            icon_colour="teal",
+            tour_id="submit_record_button",
+        )
+
+        submit_annotation_multi = RecordActionButton().create_record_action_button(
+            name="submit_annotation_multi",
+            title="Submit Annotation",
+            label="Submit",
+            type="multi",
+            error_message="Please select one or more record to submit",
+            icon_class="fa fa-info-circle",
+            action="submit_annotation",
+            icon_colour="teal",
+            tour_id="submit_record_button",
+        )
+
+        submit_assembly_multi = RecordActionButton().create_record_action_button(
+            name="submit_assembly_multi",
+            title="Submit Assembly",
+            label="Submit",
+            type="multi",
+            error_message="Please select one or more record to submit",
+            icon_class="fa fa-info-circle",
+            action="submit_assembly",
+            icon_colour="teal",
+            tour_id="submit_record_button",
         )
 
         submit_sample_multi = RecordActionButton().create_record_action_button(
@@ -358,6 +383,33 @@ class Command(BaseCommand):
             icon_class="fa fa-info-circle",
             action="submit_sample",
             icon_colour="teal",
+            tour_id="submit_record_button",
+        )
+
+        submit_singlecell_single_ena = RecordActionButton().create_record_action_button(
+            name="submit_singlecell_single_ena",
+            title="Submit Single-cell Records to ENA",
+            label="Submit to ENA",
+            type="single",
+            error_message="Please select one record to submit",
+            icon_class="fa fa-info-circle",
+            action="submit_singlecell_ena",
+            icon_colour="teal",
+            tour_id="submit_record_button",
+        )
+
+        submit_singlecell_single_zenodo = (
+            RecordActionButton().create_record_action_button(
+                name="submit_singlecell_single_zenodo",
+                title="Submit Single-cell Records to ZENODO",
+                label="Submit to ZENODO",
+                type="single",
+                error_message="Please select one record to submit",
+                icon_class="fa fa-info-circle",
+                action="submit_singlecell_zenodo",
+                icon_colour="blue",
+                tour_id="submit_record_button_zenodo",
+            )
         )
 
         self.stdout.write("Record Action Button Added")
@@ -372,78 +424,78 @@ class Command(BaseCommand):
 
         accept_reject_samples = TitleButton().create_title_button(
             name="accept_reject_samples",
-            template="<button style=\"display: none\" title=\"Accept/Reject TOL Samples\"             class=\"big circular ui icon teal button accept_reject_samples copo-tooltip\">         <i class=\"icon tasks sign\"></i>     </button>",
-            additional_attr="",
-        )
-        tol_inspect = TitleButton().create_title_button(
-            name="tol_inspect",
-            template="<button style=\"display: none\" title=\"Inspect TOL\"             class=\"big circular ui icon yellow button tol_inspect copo-tooltip\">         <i class=\"icon clipboard list\"></i>     </button>",
-            additional_attr="",
-        )
-        tol_inspect_gal = TitleButton().create_title_button(
-            name="tol_inspect_gal",
-            template="<button class=\"big circular ui icon green button tol_inspect_gal copo-tooltip\" title=\"Inspect TOL by GAL\">         <i class=\"icon building\"></i>     </button>",
+            template="<button style=\"display: none\" title=\"Accept/Reject Tree of Life samples\"             class=\"big circular ui icon teal button accept_reject_samples copo-tooltip\" data-tour-id=\"accept_reject_samples_title_button\">         <i class=\"icon tasks sign\"></i>     </button>",
             additional_attr="",
         )
         copo_accessions = TitleButton().create_title_button(
             name="copo_accessions",
-            template="<button style=\"display: none\" title=\"View Accessions Dashboard\"             class=\"big circular ui icon pink button copo_accessions copo-tooltip\">         <i class=\"icon sitemap\"></i>     </button>",
+            template="<button style=\"display: none\" title=\"View Accessions Dashboard\"             class=\"big circular ui icon pink button copo_accessions copo-tooltip\" data-tour-id=\"accession_dashboard_title_button\">         <i class=\"icon sitemap\"></i>     </button>",
             additional_attr="",
+        )
+        tol_inspect = TitleButton().create_title_button(
+            name="tol_inspect",
+            template="<button style=\"display: none\" title=\"Inspect Tree of Life data\"             class=\"big circular ui icon yellow button tol_inspect copo-tooltip\" data-tour-id=\"tol_inspect_title_button\">         <i class=\"icon clipboard list\"></i>     </button>",
+            additional_attr="",
+        )
+        tol_inspect_gal = TitleButton().create_title_button(
+            name="tol_inspect_gal",
+            template="<button class=\"big circular ui icon green button tol_inspect_gal copo-tooltip\" title=\"Inspect Tree of Life data by GAL\" data-tour-id=\"tol_inspect_gal_title_button\">         <i class=\"icon building\"></i>     </button>",
+            additional_attr="",
+        )
+        download_blank_manifest_template = TitleButton().create_title_button(
+            name="download_blank_manifest_template",
+            template="<a  title=\"Download Blank Manifest Template\"             class=\"big circular ui icon brown button download-blank-manifest-template copo-tooltip\" target=\"_blank\" data-tour-id=\"download_blank_manifest_title_button\">         <i class=\"icon download sign\"></i>     </a>",
+            additional_attr="href:#blank_manifest_url",
+        )
+        download_sop = TitleButton().create_title_button(
+            name="download_sop",
+            template="<a title=\"Download Standard Operating Procedure (SOP)\"         class=\"big circular ui icon yellow button download-sop copo-tooltip\" target=\"_blank\" data-tour-id=\"download_sop_title_button\">         <i class=\"icon download sign\"></i>     </a>",
+            additional_attr="href:#sop_url",
         )
         new_taggedseq_spreadsheet_template = TitleButton().create_title_button(
             name="new_taggedseq_spreadsheet_template",
-            template="<button style=\"display: inline\" title=\"Add Tagged Sequence (s) from Tagged Sequence Spreadsheet\"             class=\"big circular ui icon button new-taggedseq-spreadsheet-template copo-tooltip\">         <i class=\"icon table sign\"></i>     </button>",
-            additional_attr="",
-        )
-        new_terminal_file = TitleButton().create_title_button(
-            name="new_terminal_file",
-            template="<button title=\"Add new file by terminal\"             class=\"big circular ui icon primary button new-terminal-file copo-tooltip\">         <i class=\"icon terminal sign\"></i>     </button>",
+            template="<button style=\"display: inline\" title=\"Add Tagged Sequence (s) from Tagged Sequence Spreadsheet\"             class=\"big circular ui icon button new-taggedseq-spreadsheet-template copo-tooltip\" data-tour-id=\"new_spreadsheet_title_button\">         <i class=\"icon table sign\"></i>     </button>",
             additional_attr="",
         )
         new_local_file = TitleButton().create_title_button(
             name="new_local_file",
-            template="<button title=\"Add new file by browsing local file system\"             class=\"big circular ui icon primary button new-local-file copo-tooltip\">         <i class=\"icon desktop sign\"></i>     </button>",
-            additional_attr="",
+            template="<button title=\"Add new file by browsing local file system\"             class=\"big circular ui icon primary button new-local-file copo-tooltip\" data-tour-id=\"new_file_button_local\">         <i class=\"icon desktop sign\"></i>     </button>",
+            additional_attr=""
+        )
+        new_terminal_file=TitleButton().create_title_button(
+                name="new_terminal_file",
+                template="<button title=\"Add new file by terminal\"             class=\"big circular ui icon primary button new-terminal-file copo-tooltip\"  data-tour-id=\"new_file_button_terminal\">         <i class=\"icon terminal sign\"></i>     </button>",
+                additional_attr="",
         )
         new_reads_spreadsheet_template = TitleButton().create_title_button(
             name="new_reads_spreadsheet_template",
-            template="<button style=\"display: inline\" title=\"Add Read(s) from Read Spreadsheet\"             class=\"big circular ui icon button new-reads-spreadsheet-template copo-tooltip\">         <i class=\"icon table sign\"></i>     </button>",
+            template="<button style=\"display: inline\" title=\"Add Read(s) from Read Spreadsheet\"             class=\"big circular ui icon button new-reads-spreadsheet-template copo-tooltip\" data-tour-id=\"new_spreadsheet_title_button\">         <i class=\"icon table sign\"></i>     </button>",
             additional_attr="",
         )
         new_general_sample_spreadsheet_template = TitleButton().create_title_button(
             name="new_general_sample_spreadsheet_template",
-            template="<button style=\"display: inline\" title=\"Add/Update Sample(s) from Sample Spreadsheet\"             class=\"big circular ui icon button new-general-sample-spreadsheet-template copo-tooltip\">         <i class=\"icon table sign\"></i>     </button>",
+            template="<button style=\"display: inline\" title=\"Add/Update Sample(s) from Sample Spreadsheet\"             class=\"big circular ui icon button new-general-sample-spreadsheet-template copo-tooltip\" data-tour-id=\"new_spreadsheet_title_button\">         <i class=\"icon table sign\"></i>     </button>",
             additional_attr="",
         )
         new_singlecell_spreadsheet_template = TitleButton().create_title_button(
             name="new_singlecell_spreadsheet_template",
-            template="<button style=\"display: inline\" title=\"Add study from Spreadsheet\"             class=\"big circular ui icon button new-singlecell-spreadsheet-template copo-tooltip\">         <i class=\"icon table sign\"></i>     </button>",
+            template="<button style=\"display: inline\" title=\"Add study from Spreadsheet\"             class=\"big circular ui icon button new-singlecell-spreadsheet-template copo-tooltip\" data-tour-id=\"new_spreadsheet_title_button\">         <i class=\"icon table sign\"></i>     </button>",
             additional_attr="",
         )
         new_samples_spreadsheet_template = TitleButton().create_title_button(
             name="new_samples_spreadsheet_template",
-            template="<button   title=\"Add/Update sample(s) from spreadsheet\"             class=\"big circular ui icon button new-samples-spreadsheet-template copo-tooltip\">         <i class=\"icon table sign\"></i>     </button>",
-            additional_attr="",
-        )
-        quick_tour_template = TitleButton().create_title_button(
-            name="quick_tour_template",
-            template="<button title=\"Quick tour\"             class=\"big circular ui icon orange button takeatour quick-tour-template copo-tooltip\">         <i class=\"icon lightbulb\"></i>     </button>",
+            template="<button   title=\"Add/Update sample(s) from spreadsheet\"             class=\"big circular ui icon button new-samples-spreadsheet-template copo-tooltip\" data-tour-id=\"new_samples_button\">         <i class=\"icon table sign\"></i>     </button>",
             additional_attr="",
         )
         new_component_template = TitleButton().create_title_button(
             name="new_component_template",
-            template="<button title=\"Add new profile record\"             class=\"big circular ui icon primary button new-component-template copo-tooltip\">         <i class=\"icon add sign\"></i>     </button>",
+            template="<button title=\"Add new profile record\"             class=\"big circular ui icon primary button new-component-template copo-tooltip\" data-tour-id=\"new_component_title_button\">         <i class=\"icon add sign\"></i>     </button>",
             additional_attr="",
         )
-        download_sop = TitleButton().create_title_button(
-            name="download_sop",
-            template="<a title=\"Download Standard Operating Procedure (SOP)\"         class=\"big circular ui icon yellow button download-sop copo-tooltip\" target=\"_blank\">         <i class=\"icon download sign\"></i>     </a>",
-            additional_attr="href:#sop_url",
-        )
-        download_blank_manifest_template = TitleButton().create_title_button(
-            name="download_blank_manifest_template",
-            template="<a  title=\"Download Blank Manifest Template\"             class=\"big circular ui icon brown button download-blank-manifest-template copo-tooltip\" target=\"_blank\">         <i class=\"icon download sign\"></i>     </a>",
-            additional_attr="href:#blank_manifest_url",
+        quick_tour_template = TitleButton().create_title_button(
+            name="quick_tour_template",
+            template="<button title=\"Take a tour of this page\"             class=\"big circular ui icon orange button start-tour quick-tour-template copo-tooltip\" data-tour-id=\"quick_tour_title_button\">         <i class=\"icon lightbulb\"></i>     </button>",
+            additional_attr="",
         )
 
         self.stdout.write("Title Button Added")
@@ -479,7 +531,7 @@ class Command(BaseCommand):
             table_id="sample_table",
             reverse_url="copo_sample:copo_samples",
             subtitle="",
-            button_label="Manage Sample metadata"
+            button_label="Manage Sample metadata",
         )
 
         general_sample = Component().create_component(
@@ -504,7 +556,7 @@ class Command(BaseCommand):
             reverse_url="copo_read_submission:copo_reads",
             subtitle="#component_subtitle",
         )
-        
+
         reads_schema = Component().create_component(
             name="reads_schema",
             title="Reads",
@@ -517,7 +569,7 @@ class Command(BaseCommand):
             schema_name="COPO_READ",
             base_component="singlecell",
         )
-        
+
         singlecell = Component().create_component(
             name="singlecell",
             title="Single-cell",
@@ -529,7 +581,7 @@ class Command(BaseCommand):
             subtitle="#component_subtitle",
             schema_name="COPO_SINGLE_CELL",
         )
-        
+
         assembly = Component().create_component(
             name="assembly",
             title="Assembly",
@@ -600,9 +652,9 @@ class Command(BaseCommand):
             table_id="accessions_table",
             reverse_url="copo_accession:copo_accessions",
             subtitle="",
-            button_label="View Accessions"
+            button_label="View Accessions",
         )
-        
+
         accessions_schema = Component().create_component(
             name="accessions_schema",
             title="Accessions",
@@ -614,7 +666,7 @@ class Command(BaseCommand):
             subtitle="#component_subtitle",
             button_label="View Accessions",
         )
-        
+
         profile = Component().create_component(
             name="profile",
             title="Work Profiles",
@@ -624,9 +676,9 @@ class Command(BaseCommand):
             table_id="copo_profiles_table",
             reverse_url="",
             subtitle="#component_subtitle",
-            button_label=""
+            button_label="",
         )
-        
+
         # Assign record action buttons and title buttons to components
         assembly.recordaction_buttons.set(
             [
@@ -636,24 +688,29 @@ class Command(BaseCommand):
                 submit_assembly_multi,
             ]
         )
-        assembly.title_buttons.set([new_component_template])
+        assembly.title_buttons.set([new_component_template, quick_tour_template])
 
         taggedseq.recordaction_buttons.set(
             [
-                add_record_all,
-                edit_record_single,
+                download_tagged_seq_manifest_single,
                 delete_record_multi,
                 submit_tagged_seq_multi,
             ]
         )
         taggedseq.title_buttons.set(
-            [new_taggedseq_spreadsheet_template, download_blank_manifest_template]
+            [
+                new_taggedseq_spreadsheet_template,
+                download_blank_manifest_template,
+                quick_tour_template,
+            ]
         )
 
         files.recordaction_buttons.set(
             [add_local_all, add_terminal_all, delete_record_multi]
         )
-        files.title_buttons.set([new_local_file, new_terminal_file])
+        files.title_buttons.set(
+            [new_local_file, new_terminal_file, quick_tour_template]
+        )
 
         seqannotation.recordaction_buttons.set(
             [
@@ -663,22 +720,30 @@ class Command(BaseCommand):
                 submit_annotation_multi,
             ]
         )
-        seqannotation.title_buttons.set([new_component_template])
+        seqannotation.title_buttons.set([new_component_template, quick_tour_template])
 
         general_sample.recordaction_buttons.set(
-            [   
+            [
                 download_general_sample_manifest_single,
                 delete_sample_multi,
                 submit_sample_multi,
             ]
         )
         general_sample.title_buttons.set(
-            [new_general_sample_spreadsheet_template, download_blank_manifest_template]
+            [
+                new_general_sample_spreadsheet_template,
+                download_blank_manifest_template,
+                quick_tour_template,
+            ]
         )
 
         read.recordaction_buttons.set([delete_read_multi, submit_read_multi])
         read.title_buttons.set(
-            [new_reads_spreadsheet_template, download_blank_manifest_template]
+            [
+                new_reads_spreadsheet_template,
+                download_blank_manifest_template,
+                quick_tour_template,
+            ]
         )
 
         singlecell.recordaction_buttons.set(
@@ -688,7 +753,11 @@ class Command(BaseCommand):
             ]
         )
         singlecell.title_buttons.set(
-            [new_singlecell_spreadsheet_template, download_blank_manifest_template]
+            [
+                new_singlecell_spreadsheet_template,
+                download_blank_manifest_template,
+                quick_tour_template,
+            ]
         )
 
         reads_schema.recordaction_buttons.set(
@@ -698,21 +767,33 @@ class Command(BaseCommand):
             ]
         )
         reads_schema.title_buttons.set(
-            [new_singlecell_spreadsheet_template, download_blank_manifest_template]
+            [
+                new_singlecell_spreadsheet_template,
+                download_blank_manifest_template,
+                quick_tour_template,
+            ]
         )
 
         images_rembi.recordaction_buttons.set(
             [delete_singlecell_multi, download_singlecell_manifest_single]
         )
         images_rembi.title_buttons.set(
-            [new_singlecell_spreadsheet_template, download_blank_manifest_template]
+            [
+                new_singlecell_spreadsheet_template,
+                download_blank_manifest_template,
+                quick_tour_template,
+            ]
         )
 
         images_stx_fish.recordaction_buttons.set(
             [delete_singlecell_multi, download_singlecell_manifest_single]
         )
         images_stx_fish.title_buttons.set(
-            [new_singlecell_spreadsheet_template, download_blank_manifest_template]
+            [
+                new_singlecell_spreadsheet_template,
+                download_blank_manifest_template,
+                quick_tour_template,
+            ]
         )
 
         sample.recordaction_buttons.set(
@@ -724,22 +805,43 @@ class Command(BaseCommand):
         )
         sample.title_buttons.set(
             [
-                quick_tour_template,
                 new_samples_spreadsheet_template,
                 download_blank_manifest_template,
                 download_sop,
                 accept_reject_samples,
+                quick_tour_template,
             ]
         )
 
         accessions.title_buttons.set(
-            [copo_accessions, accept_reject_samples, tol_inspect, tol_inspect_gal]
+            [
+                copo_accessions,
+                accept_reject_samples,
+                tol_inspect,
+                tol_inspect_gal,
+                quick_tour_template,
+            ]
         )
 
         profile.recordaction_buttons.set([releasestudy])
-        profile.title_buttons.set([quick_tour_template, new_component_template])
+        profile.title_buttons.set([new_component_template, quick_tour_template])
 
-        self.stdout.write("Component Added")
+        # Assign tour config to components
+        self.stdout.write('\nAdding tour configs to components ')
+        Component().set_tour_config()
+        components_with_config = (
+            Component.objects.filter(tour_config__isnull=False)
+            .exclude(tour_config={})
+            .count()
+        )
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Added {components_with_config} tour configs to components\n\n'
+            )
+        )
+
+        # Confirm components setup
+        self.stdout.write("Components Added")
         records = Component.objects.all()
 
         for record in records:
@@ -747,8 +849,8 @@ class Command(BaseCommand):
 
         self.stdout.write("Removing Existing Profile Types ")
         ProfileType().remove_all_profile_types()
-        
-        # Add Profile Types
+
+        # Add Profile types
         self.stdout.write("Adding Profile Types")
 
         erga = ProfileType().create_profile_type(
@@ -799,7 +901,7 @@ class Command(BaseCommand):
             is_dtol_profile=False,
             is_permission_required=False,
         )
-        
+
         # Assign components to profile types
         erga.components.set(
             [files, sample, read, assembly, seqannotation, taggedseq, accessions]

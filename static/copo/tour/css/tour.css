@@ -1,0 +1,126 @@
+/* Quick tour button CSS */
+.tour-start-btn,
+.tour-next-btn {
+  text-decoration: none;
+  color: #428bca !important;
+  background: none !important;
+  padding: 0 !important;
+}
+
+.tour-start-btn:not(:disabled):hover,
+.tour-next-btn:not(:disabled):hover {
+  color: #3071a9 !important;
+}
+
+.shepherd-note,
+.webpop-content-div span,
+.tour-start-btn i,
+.tour-next-btn i {
+  color: #35637e;
+}
+
+.tour-start-btn::before {
+  content: '\f0eb'; /* Unicode for fa-lightbulb */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  margin-right: 5px;
+}
+
+.tour-next-btn::before {
+  content: '\f0a9'; /* Unicode for fa-arrow-circle-right */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  margin-right: 5px;
+}
+
+.tour-dismiss-btn,
+.tour-end-btn {
+  text-decoration: none;
+  color: #c93c00 !important;
+  background: none !important;
+  padding: 0 !important;
+  margin: 0 auto; /* left align */
+}
+
+.tour-dismiss-btn:not(:disabled):hover,
+.tour-end-btn:not(:disabled):hover {
+  color: #a12f00 !important;
+}
+.tour-dismiss-btn::before,
+.tour-end-btn::before {
+  content: '\f057'; /* Unicode for fa-times-circle */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  margin-right: 5px;
+}
+
+.shepherd-step-custom {
+  max-width: 300px !important;
+  width: 300px !important;
+}
+
+.shepherd-cancel-icon {
+  font-family: arial;
+  margin: 8px 10px 0 0;
+  float: right;
+  font-size: 22px !important;
+  font-weight: bold !important;
+  line-height: 16px;
+  color: #000000 !important;
+  text-shadow: 0 1px 0 #fff;
+  opacity: 0.2;
+  text-decoration: none;
+}
+
+.shepherd-header .shepherd-title {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 18px;
+  word-wrap: break-word !important;
+}
+
+.shepherd-header {
+  padding: 8px 14px !important;
+  margin: 0;
+  border-bottom: 1px solid #f2f2f2;
+  border-radius: 5px 5px 0 0;
+  background-color: #d4e4ed !important;
+}
+
+.shepherd-footer {
+  margin: 0 4px 0 4px;
+  justify-content: space-between !important;
+  padding: 10px 10px 14px !important; /* top right/left bottom */
+}
+
+.shepherd-text {
+  margin: 0 4px 0 4px;
+  padding-bottom: 0 !important;
+  position: relative; /* Needed for ::after pseudo-element */
+}
+
+/* Mimic <hr> div */
+.shepherd-text::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 1px; /* thickness of the hr line */
+  background-color: #eee; /* hr line colour */
+  margin: 10px 0 10px 0;
+}
+
+.shepherd-note {
+  padding-top: 10px;
+}
+
+.shepherd-note::before {
+  content: '\f05a'; /* Unicode for fa-info-circle */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  color: #000;
+  margin-right: 5px;
+}
+
+.shepherd-note a {
+  text-decoration: underline;
+}

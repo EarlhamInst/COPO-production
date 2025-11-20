@@ -50,8 +50,8 @@
 
     <div class="components_custom_templates" style="display: none;">
         <div class="btn-group btn-toggle toggle-view record-action-custom-template">
-            <button class="btn btn-xs btn-success active">Sample Accessions</button>
-            <button class="btn btn-xs btn-default">Other Accessions</button>
+            <button class="btn btn-xs btn-success active" data-tour-id="sample_accessions_tab">Sample accessions</button>
+            <button class="btn btn-xs btn-default" data-tour-id="other_accessions_tab">Other accessions</button>
         </div>
     </div>    
 
@@ -68,22 +68,25 @@
                         <h3 class="copo-webui-popover-title">Getting started</h3>
                         <div class="copo-webui-popover-content">
                             <div class="webpop-content-div">
-                                This page relates to the <strong>Accessions</strong> component 
-                                (<i id="componentIcon" class="ui icon" aria-hidden="true"></i>) of a profile.
-                                It displays the unique identifiers (accessions) assigned to submissions along 
-                                with basic information about each submission. These may include project, biosample,
-                                <span class="hover-text" title="Sequence Read Archive (SRA, previously known as the Short Read Archive)">SRA</span>
-                                and submission accessions associated.
-
-                                {% if showAllCOPOAccessions is False %}
-                                <br><br>
-                                <div><strong>All COPO accessions: </strong>To explore all accessions on COPO,
-                                    click 
-                                    <button class="circular tiny ui icon pink button no-click">
-                                        <i class="icon sitemap"></i>
-                                    </button> above.
-                                </div>
-                                {% endif %}
+                                <p>
+                                    This page relates to the <strong>Accessions</strong> component 
+                                    (<i id="componentIcon" class="ui icon" aria-hidden="true"></i>) of a profile.
+                                    It displays the unique identifiers (accessions) assigned to submissions along 
+                                    with basic information about each submission. These may include project, biosample,
+                                    <span class="hover-text" title="Sequence Read Archive (SRA, previously known as the Short Read Archive)">SRA</span>
+                                    and submission accessions associated.
+                                </p>
+                                <p>
+                                    {% if showAllCOPOAccessions is False %}
+                                    <br><br>
+                                    <div><strong>All COPO accessions: </strong>To explore all accessions on COPO,
+                                        click 
+                                        <button class="circular tiny ui icon pink button no-click">
+                                            <i class="icon sitemap"></i>
+                                        </button> above.
+                                    </div>
+                                    {% endif %}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -92,8 +95,7 @@
         </div>
 
         <!-- accessions table  -->
-        <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"
-            data-copo-tour-id="accessions_table"></div>
+        <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"></div>
         <table id="accessions_table" class="ui celled table hover copo-noborders-table" style="width:100%">
         </table>
     </div>
@@ -103,11 +105,11 @@
 {% endblock %}
 
 {% block sidebar_custom_section %}
-    <!-- accessions legend -->
-    <div class="accessions-legend">
-                <h4 class="accessions-legend-title">Filter Accession Types</h4>
-                <div class="accessions-checkboxes"></div>
-    </div>
+<!-- accessions legend -->
+<div class="accessions-legend" data-tour-id="component_legend">
+    <h4 class="accessions-legend-title">Submission types</h4>
+    <div class="accessions-checkboxes"></div>
+</div>
 {% endblock sidebar_custom_section %}
 
 {% block js_block %}
