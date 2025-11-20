@@ -1,4 +1,6 @@
-import Shepherd from './shepherd.mjs'; // Import Shepherd from local module
+// Import Shepherd from local module.
+// It was originally a .mjs file but, renamed to .js for browser MIME type compatibility.
+import Shepherd from './shepherd.js';
 import { globalTourMessages, globalTourOrder } from './tour-defaults.js'; // Defaults
 
 // Expose functions globally
