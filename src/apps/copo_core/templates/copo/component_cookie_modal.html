@@ -1,4 +1,8 @@
 <style>
+    #cookieModal .modal-dialog {
+        width: 650px;
+    }   
+
     #cookieModalHeader {
         background-color: #5bc0de;
     }
@@ -92,21 +96,41 @@
 <!-- End of Email modal -->
  
 <script>
-    $(document).ready(function () {
-        // Disable 'I agree' button in 'Add Emaill Address' modal if GDPR checkbox is not checked
-        $(document).on("change", "#gdpr_check", function (e) {
-            if ($("#gdpr_check").is(":checked")) {
-                $("#gdpr_check").closest(".modal-dialog").find("button").attr("disabled", false)
-            } else {
-                $("#gdpr_check").closest(".modal-dialog").find("button").attr("disabled", true)
-            }
+    $(window).on('load', function () {
+        const cookiesAccepted = getCookie('cookiesAccepted');
+
+        // Disable 'I agree' button in 'Add Email Address' modal if GDPR checkbox is not checked
+        $(document).on('change', '#gdpr_check', function (e) {
+            const $btn = $(this).closest('.modal-dialog').find('button');
+            $btn.prop('disabled', !this.checked);
         });
 
-        $("#gdpr_check").closest(".modal-dialog").find("button").attr("disabled", true);
+        $('#gdpr_check').closest('.modal-dialog').find('button').attr('disabled', true);
 
         // Show cookie consent modal if cookies have not been accepted yet or if cookies are rejected
-        if (getCookie('cookiesAccepted') === null || getCookie('cookiesAccepted').toLowerCase() === 'null'  || getCookie('cookiesAccepted') === 'false') {
-            $('#cookieModal').modal({ backdrop: 'static', keyboard: false }, 'show');
+        if (!cookiesAccepted || cookiesAccepted === null || cookiesAccepted.toLowerCase() === 'null'  || cookiesAccepted === 'false') {
+            // Check if any modal is currently open
+            const $openModal = $('.modal.in');
+
+            if ($openModal.length === 0) {
+                // Clean up any backdrops if no modal is open
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open');
+
+                // Show cookie modal after cleanup
+                const $cookieModal = $('#cookieModal');
+                if ($cookieModal.length) {
+                    $cookieModal.modal({ backdrop: 'static', keyboard: false }, 'show');
+                }
+            } else {
+                // Wait until the open modal closes, then show cookie modal
+                $openModal.one('hidden.bs.modal', function () {
+                    const $cookieModal = $('#cookieModal');
+                    if ($cookieModal.length && !$cookieModal.hasClass('in')) {
+                        $cookieModal.modal({ backdrop: 'static', keyboard: false });
+                    }
+                });
+            }
         }
 
         // Handle cookie consent choices
@@ -127,17 +151,17 @@
 
     // Cookie consent functions
     function setCookie(name, value, days) {
-        let expires = "";
+        let expires = '';
         if (days) {
             let date = new Date();
             date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            expires = "; expires=" + date.toUTCString();
+            expires = '; expires=' + date.toUTCString();
         }
-        document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=None; Secure";
+        document.cookie = name + '=' + (value || '') + expires + '; path=/; SameSite=None; Secure';
     }
 
     function getCookie(name) {
-        let nameEQ = name + "=";
+        let nameEQ = name + '=';
         let ca = document.cookie.split(';');
         for (let i = 0; i < ca.length; i++) {
             let c = ca[i];
@@ -209,7 +233,9 @@
                             'user_email': emaddres
                         },
                         success: function (data) {
-                            //$(".takeatour").trigger("click");
+                            //$(".start-tour").trigger("click");
+                            // Start 'overview' tour stage based on component name
+                            runTour($('#nav_component_name').val(), 'overview');
                         },
                         error: function () {
                             alert("Couldn't add email address!");
@@ -253,7 +279,7 @@
                             'user_email': emaddres
                         },
                         success: function (data) {
-                            //$(".takeatour").trigger("click");
+                            //$(".start-tour").trigger("click");
                         },
                         error: function () {
                             alert("Couldn't add email address!");
