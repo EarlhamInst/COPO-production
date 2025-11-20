@@ -162,9 +162,10 @@ $(document).ready(function () {
     file_names = JSON.stringify(filenames);
 
     var csrftoken = $.cookie('csrftoken');
-    $('#url_upload_controls').fadeOut();
+    $('#url_upload_controls').hide();
     // pass to get pre-signed urls
-    $('#command_area').html('Please wait ...');
+    $('#command_panel').show();
+    $('#command_area').html('Please wait ...')
     $.ajax({
       url: '/copo/copo_files/process_urls',
       headers: { 'X-CSRFToken': csrftoken },

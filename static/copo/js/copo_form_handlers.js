@@ -2956,7 +2956,7 @@ function get_ontology_span_2(ontologySpan, formElem) {
     class:
       'onto-label ontol-span webpop-content-div alert alert-default copo-tooltip',
     title: 'Ontology field',
-    html: '<span class="ontology-label"><i class="fa fa-align-justify free-text" style="padding-right: 5px; display: none;"></i><img class="non-free-text" src="/static/copo/img/ontology2.png" style="cursor:pointer;"></span><span class="onto-label-span"></span><span class="onto-label-more collapse"></span>',
+    html: '<span class="ontology-label"><i class="fa fa-align-justify free-text" style="padding-right: 5px; display: none;"></i><img class="non-free-text" src="/static/assets/img/ontology2.png" style="cursor:pointer;"></span><span class="onto-label-span"></span><span class="onto-label-more collapse"></span>',
   });
 
   ontologySpan.append(label);

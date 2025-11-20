@@ -170,7 +170,9 @@ $(document).ready(function () {
     } else if (d.action === 'success') {
       // show something on the info div
       // check info div is visible
-      $(element).removeClass('alert-danger alert-info').addClass('alert-success');
+      $(element)
+        .removeClass('alert-danger alert-info')
+        .addClass('alert-success');
       $(element).html(d.message);
       if ('table_data' in d.data) {
         globalDataBuffer = d.data;

@@ -370,7 +370,7 @@ $(document).ready(function () {
   }
 
   function remove_profile_in_group_handler(values) {
-    console.log(values);
+    // console.log(values);
     var group_id = $('#selected_group').data('selected_group_id');
     $.ajax({
       url: '/copo/remove_profile_from_group/',
