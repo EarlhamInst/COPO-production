@@ -5,6 +5,7 @@ $(document).ready(function () {
     window.location = '/copo/tol_dashboard/stats#';
   });
 
+  // Populate current tasks popover in the top navigation bar
   $('#bell_notification').popover({
     html: true,
     content: function () {
@@ -21,14 +22,14 @@ $(document).ready(function () {
         </div>
       `;
     },
-   });
+  });
 
   const image = getRandomInt(images.length);
   $('body').css('background-image', 'url(' + images[image] + ')');
 
   try {
-    var color = getRandomInt(content_classes.length);
-    $('#main_banner').addClass(content_classes[color]);
+    var colour = getRandomInt(content_classes.length);
+    $('#main_banner').addClass(content_classes[colour]);
   } catch (err) {}
 
   $.getJSON('/api/stats/numbers')
@@ -72,31 +73,39 @@ function getRandomInt(max) {
 
 function initialiseNavToggle() {
   // Initialise navigation bar on the Landing page
-  $('#frontpageNav .navbar-toggle').on('click', function () {
+  const $nav = $('#publicNavbar, #authNavbar');
+
+  $nav.find('.navbar-toggle').on('click', function () {
     $(this).closest('nav').find('.navbar-nav').toggleClass('active');
   });
+  // Handle dropdown toggles
+  $nav
+    .find('.navbar-nav li.dropdown > a.dropdown-toggle')
+    .on('click', function (e) {
+      e.preventDefault(); // Prevent default for toggle
+      e.stopPropagation(); // Stop event bubbling
 
-  // Handle nav item clicks
-  $('#frontpageNav .navbar-nav li a').on('click', function (e) {
-    const $li = $(this).closest('li');
+      const $li = $(this).closest('li');
+      $li.siblings().removeClass('open'); // Close other dropdowns
+      $li.toggleClass('open'); // Toggle current dropdown
+    });
 
-    if ($li.hasClass('dropdown')) {
-      // Prevent the dropdown toggle from collapsing the menu
-      e.preventDefault();
-      e.stopPropagation();
-      $li.siblings().removeClass('open');
-      $li.toggleClass('open');
-    } else {
+  // Handle link clicks (including links inside dropdowns)
+  $nav
+    .find('.navbar-nav li a')
+    .not('.dropdown-toggle')
+    .on('click', function () {
       if ($(window).width() < 768) {
+        // Collapse menu on small screens after navigation
         $(this).closest('.navbar-nav').removeClass('active');
       }
-    }
-  });
+    });
 
   // Reset menu on window resize
   $(window).on('resize', function () {
     if ($(window).width() >= 768) {
-      $('.navbar-nav').removeClass('active');
+      $nav.find('.navbar-nav').removeClass('active');
+      $nav.find('.navbar-nav li.dropdown').removeClass('open');
     }
   });
 }

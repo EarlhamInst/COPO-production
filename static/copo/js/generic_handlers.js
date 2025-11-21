@@ -3904,7 +3904,7 @@ function initialiseComponentDropdownMenu() {
 
 function initialiseNavToggle() {
   // Initialise navigation bar on each component page
-  const $nav = $('#copoGlobalNav');
+  const $nav = $('#publicNavbar, #authNavbar');
 
   $nav.find('.navbar-toggle').on('click', function () {
     $(this).closest('nav').find('.navbar-nav').toggleClass('active');

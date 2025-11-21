@@ -109,7 +109,7 @@ $(document).ready(function () {
   $("nav a[href*='#']").click(function () {
     if (
       location.pathname.replace(/^\//, '') ==
-        this.pathname.replace(/^\//, '') &&
+      this.pathname.replace(/^\//, '') &&
       location.hostname == this.hostname
     ) {
       var $target = $(this.hash);
@@ -121,6 +121,25 @@ $(document).ready(function () {
         return false;
       }
     }
+  });
+
+  // Populate current tasks popover in the top navigation bar
+  $('#bell_notification').popover({
+    html: true,
+    content: function () {
+      const created = 'Not available on this page';
+      const latest_message = 'No message loaded';
+
+      return `
+        <div>
+          <div>
+            Message Received:<br/>${created}
+          </div>
+          <br/>
+          <b>${latest_message}</b>
+        </div>
+      `;
+    },
   });
 });
 

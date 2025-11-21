@@ -1,6 +1,6 @@
 {% load web_tags %}
 {% load static %}
-<nav id="copoGlobalNav" class="navbar navbar-default {% if banner %}has-margin-top-neg-12{% endif %}" role="navigation">
+<nav id="authNavbar" class="navbar navbar-default {% if banner %}has-margin-top-neg-12{% endif %}" role="navigation">
     <div class="container-fluid {% if banner %}display-flex{% else %}display-block{% endif %}">
         <div class="navbar-header">
             <a class="navbar-brand" href="{% if user.is_authenticated %} {% url 'copo_profile_index:index' %} {% else %}/{% endif %}">

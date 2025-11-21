@@ -1,5 +1,6 @@
 $(document).ready(function () {
   initialiseOverlays(); // Initialise dropdown menus and tooltips
+  initialiseNavToggle();
   // Prevent date conflicts with other scripts that
   // may have datepicker defined
   $.fn.datepicker.noConflict();
