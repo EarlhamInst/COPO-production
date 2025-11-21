@@ -5,6 +5,24 @@ $(document).ready(function () {
     window.location = '/copo/tol_dashboard/stats#';
   });
 
+  $('#bell_notification').popover({
+    html: true,
+    content: function () {
+      const created = 'Not available on this page';
+      const latest_message = 'No message loaded';
+
+      return `
+        <div>
+          <div>
+            Message Received:<br/>${created}
+          </div>
+          <br/>
+          <b>${latest_message}</b>
+        </div>
+      `;
+    },
+   });
+
   const image = getRandomInt(images.length);
   $('body').css('background-image', 'url(' + images[image] + ')');
 
