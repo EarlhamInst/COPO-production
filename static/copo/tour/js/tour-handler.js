@@ -432,6 +432,36 @@ async function watchComponentForTour(componentName) {
   if (!$el.length) return;
 
   // Evaluate and run tour stage
+  async function waitForInitialModals() {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // Check if any modal is currently open
+        const modalVisible =
+          $('.modal:visible').length > 0 ||
+          $('.ui.modal.visible.active').length > 0 ||
+          $('.modal.in').length > 0;
+
+        if (modalVisible) {
+          // If modal is open, wait until it's closed
+          console.log('Tour paused...waiting for startup modal to close.');
+
+          // Wait for either Bootstrap or Semantic UI modal to close before resuming
+          const resumeTour = () => {
+            console.log('Start up modal closed — resuming tour.');
+            resolve();
+          };
+
+          $(document).one('hidden.bs.modal', resumeTour); // Bootstrap modal close event
+          $('.ui.modal').one('hidden', resumeTour); // Semantic UI modal close event
+        } else {
+          // No modal open, continue the tour
+          resolve();
+          return;
+        }
+      }, 400);
+    });
+  }
+
   async function evaluateTourStage(count, isTable) {
     const stage = getStage({ count, isTable });
     if (!stage) {
@@ -453,9 +483,11 @@ async function watchComponentForTour(componentName) {
     // Check if any modal is currently open
     const modalVisible =
       $('.modal:visible').length > 0 ||
-      $('.ui.modal.visible.active').length > 0;
+      $('.ui.modal.visible.active').length > 0 ||
+      $('.modal.in').length > 0;
 
     if (modalVisible) {
+      // If modal is open, wait until it's closed
       console.log('Tour paused...waiting for modal to close.');
 
       // Wait for either Bootstrap or Semantic UI modal to close before resuming
@@ -480,11 +512,13 @@ async function watchComponentForTour(componentName) {
 
     table.on('draw', async () => {
       const rowCount = table.rows({ filter: 'applied' }).count();
+      await waitForInitialModals();
       await evaluateTourStage(rowCount, true);
     });
 
     // Run immediately in case table already has rows
-    evaluateTourStage(table.rows({ filter: 'applied' }).count(), true);
+    await waitForInitialModals();
+    await evaluateTourStage(table.rows({ filter: 'applied' }).count(), true);
   } else {
     // Disconnect existing observers to prevent duplicates
     const observerInstance = $el.data('observerInstance');
@@ -494,6 +528,7 @@ async function watchComponentForTour(componentName) {
 
     // Handle state on page load
     const visibleChildren = $el.children(':visible').length;
+    await waitForInitialModals();
     await evaluateTourStage(visibleChildren, false);
 
     // Watch changes using MutationObserver
@@ -501,6 +536,7 @@ async function watchComponentForTour(componentName) {
       clearTimeout(observer.debounce);
       observer.debounce = setTimeout(async () => {
         const visibleChildren = $el.children(':visible').length;
+        await waitForInitialModals();
         await evaluateTourStage(visibleChildren, false);
       }, 500);
     });

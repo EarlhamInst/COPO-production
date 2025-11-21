@@ -109,6 +109,10 @@
   margin: 10px 0 10px 0;
 }
 
+.shepherd-text li {
+  margin-bottom: 5px;
+}
+
 .shepherd-note {
   padding-top: 10px;
 }
@@ -121,6 +125,7 @@
   margin-right: 5px;
 }
 
+.shepherd-text a,
 .shepherd-note a {
   text-decoration: underline;
 }

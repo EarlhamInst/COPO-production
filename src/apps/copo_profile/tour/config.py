@@ -43,7 +43,10 @@ def get_tour_config():
                     '<li>Delete profiles</li>'
                     '<li>Release studies (also known as projects or profiles) '
                     'to make the metadata publicly accessible in repositories like '
-                    '<span class="hover-text" title="European Nucleotide Archive">ENA</span>'
+                    '<span class="hover-text" title="European Nucleotide Archive">ENA</span><br><br>'
+                    '<span class="shepherd-note">Read more about '
+                    '<a href="https://copo-docs.readthedocs.io/en/latest/profile/releasing-profiles.html" '
+                    'target="_blank">Releasing Profiles (Studies)</a>.</span>'
                     '</li></ul>'
                 ),
             },
