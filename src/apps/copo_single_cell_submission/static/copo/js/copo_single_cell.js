@@ -518,7 +518,7 @@ $(document).on('document_ready', function () {
       if (
         $(table.column(i).header()).text().toUpperCase().startsWith('STATUS')
       ) {
-        var no_accessiion_indexes = table
+        var no_accession_indices = table
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
@@ -529,7 +529,7 @@ $(document).on('document_ready', function () {
               : false;
           });
         table
-          .rows(no_accessiion_indexes)
+          .rows(no_accession_indices)
           .nodes()
           .to$()
           .addClass('highlight_no_accession');

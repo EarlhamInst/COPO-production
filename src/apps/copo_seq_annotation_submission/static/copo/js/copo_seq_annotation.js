@@ -477,14 +477,14 @@ $(document).ready(function () {
 
     for (var i = 0; i < numCols; i++) {
       if ($(table.column(i).header()).text() == 'ACCESSION') {
-        var no_accessiion_indexes = table
+        var no_accession_indices = table
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
             return table.cell(rowIdx, i).data() === '' ? true : false;
           });
         table
-          .rows(no_accessiion_indexes)
+          .rows(no_accession_indices)
           .nodes()
           .to$()
           .addClass('highlight_no_accession');
