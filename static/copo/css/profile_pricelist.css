@@ -3,8 +3,8 @@ Inspired by the dribble shot http://dribbble.com/shots/1285240-Freebie-Flat-Pric
 */
 
 /*--------- Font ------------*/
-@import url(https://fonts.googleapis.com/css?family=Droid+Sans);
-@import url(https://weloveiconfonts.com/api/?family=fontawesome);
+@import url(../google/css/google-fonts.css);
+@import url(../fontawesome/css/fontawesome-6.5.1.min.css);
 /* fontawesome */
 [class*="fontawesome-"]:before {
   font-family: 'FontAwesome', sans-serif;
@@ -37,12 +37,12 @@ Inspired by the dribble shot http://dribbble.com/shots/1285240-Freebie-Flat-Pric
     zoom: 1;  /*For IE 6/7 (trigger hasLayout) */
 }
 
-body {
+/* body {
 
 }
 .wrapper {
 
-}
+} */
 .pricing-table {
     width: 100%;
     margin: 50px auto;
