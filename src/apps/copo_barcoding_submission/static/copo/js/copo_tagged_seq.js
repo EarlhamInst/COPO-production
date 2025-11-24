@@ -1,6 +1,7 @@
 var dialog = new BootstrapDialog({
   title: 'Upload barcoding manifest',
   message: "<div><input type='file' id='fileid' style='display:none' /></div>",
+  cssClass: 'spreadsheet-modal',
   size: BootstrapDialog.SIZE_WIDE,
   buttons: [
     {

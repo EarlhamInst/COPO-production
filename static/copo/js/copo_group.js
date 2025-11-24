@@ -262,6 +262,7 @@ $(document).ready(function () {
     let dialog = new BootstrapDialog({
       title: 'Edit group',
       message: message,
+      cssClass: 'form-modal',
       closable: true,
       animate: true,
       onhidden: function () {
