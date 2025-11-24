@@ -9,6 +9,7 @@ $(document).ready(function () {
   var dialog = new BootstrapDialog({
     title: 'Add assembly',
     message: '',
+    cssClass: 'form-modal',
     buttons: [
       {
         id: 'submit_assembly_button',

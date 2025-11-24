@@ -855,9 +855,7 @@ $(document).on('click', '.new-samples-spreadsheet-template', function (event) {
   $('#sample_spreadsheet_modal').modal('show');
 
   // Fade out warnings and disable controls
-  $('#warning_info').fadeOut('fast');
-  $('#warning_info2').fadeOut('fast');
-  $('#warning_info3').fadeOut('fast');
+  $('#warning_info, #warning_info2, #warning_info3').fadeOut('fast');
 
   $('#images_label').addClass('disabled');
   $('#images_label').attr('disabled', 'true');

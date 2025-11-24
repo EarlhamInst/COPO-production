@@ -31,7 +31,12 @@ var columnDefs = [];
 var dialog = new BootstrapDialog({
   title: 'Upload sample manifest',
   message: "<div><input type='file' id='fileid' style='display:none;'/></div>",
+  cssClass: 'spreadsheet-modal',
   size: BootstrapDialog.SIZE_WIDE,
+  closable: true,
+  animate: true,
+  closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
+  closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
   buttons: [
     {
       id: 'upload_sample_manifest_button',

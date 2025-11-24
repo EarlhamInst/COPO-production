@@ -8,6 +8,7 @@ $(document).ready(function () {
 
   var dialog = new BootstrapDialog({
     title: 'Add sequence annotation',
+    cssClass: 'form-modal',
     message: '',
     /*
         onshown: function(dialogRef){

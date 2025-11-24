@@ -2,6 +2,7 @@ var dialog = new BootstrapDialog({
   title: 'Upload local files',
   message: "<div><input type='file' id='file' style='display:block' /></div>",
   size: BootstrapDialog.SIZE_WIDE,
+  cssClass: 'file-modal',
   buttons: [
     {
       id: 'upload_local_files_button',

@@ -175,6 +175,7 @@ function json2HtmlForm(data) {
   const dialog = new BootstrapDialog({
     type: BootstrapDialog.TYPE_PRIMARY,
     size: BootstrapDialog.SIZE_WIDE,
+    cssClass: 'form-modal',
     title: function () {
       return $('<span>' + dialog_title + '</span>');
     },
