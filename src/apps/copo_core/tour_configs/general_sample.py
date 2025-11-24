@@ -37,13 +37,6 @@ def get_tour_config():
                 ),
             },
         },
-        'message_overrides': {
-            'component_table': {
-                'title': 'Uploaded samples',
-                'content': 'View and manage the samples uploaded in this data table.',
-                'placement': 'right',
-            },
-        },
         'stages': {
             'overview': [
                 'getting_started',
