@@ -8,32 +8,32 @@ This repository builds on the work of the [COPO](https://github.com/collaborativ
 
 ## Tech stack overview
 
-| Category                 | Tools / Libraries                                     | Purpose / Usage                                               |
-|--------------------------|-------------------------------------------------------|---------------------------------------------------------------|
-| Backend Development      | Python, Django                                        | Core application logic and web framework                      |
-| Scripting & Automation   | Python, Bash                                          | Automation, setup scripts, and server-side utilities          |
-| Web framework            | Django (5.x), Django REST Framework                   | Back-end web development, RESTful API design                  |
-| Task queue & scheduling  | Celery, Redis, aioredis                               | Background task processing, caching, async queues             |
-| Database                 | PostgreSQL, MongoDB                                   | Persistent data storage and querying                          |
-| Deployment & serving     | Docker, Docker Swarm, Gunicorn, Nginx                 | Production-ready app serving and containerisation             |
-| Frontend technologies    | JavaScript (server-side), jQuery                      | Dynamic client-side behaviour and lightweight interactivity   |
-| Testing & QA             | pytest, Selenium, CircleCI, Django Test Framework     | Automated testing and browser interaction validation          |
-| DevOps / CI/CD           | GitHub Actions (CI/CD), Git                           | Version control and automated deployment pipelines            |
-| Data handling            | Pandas, NumPy, openpyxl / XlsxWriter                  | Data manipulation and scientific computing                    |
-| File storage             | Django Storages, S3, MinIO, ECS (deprecated)          | Cloud-based file storage and management                       |
-| Document generation      | Sphinx, ReadTheDocs                                   | Auto-generated user documentation                             |
-| HTML parsing / Scraping  | BeautifulSoup, bs4                                    | HTML content parsing, web scraping                            |
-| User authentication      | django-allauth                                        | OAuth, OpenID, and account authentication                     |
-| Real-time features       | Channels, Daphne                                      | WebSocket support and async communication                     |
-| Styling & forms          | django-crispy-forms, crispy-bootstrap5                | Form rendering and UI styling                                 |
+| Category                | Tools / Libraries                                 | Purpose / Usage                                             |
+| ----------------------- | ------------------------------------------------- | ----------------------------------------------------------- |
+| Backend Development     | Python, Django                                    | Core application logic and web framework                    |
+| Scripting & Automation  | Python, Bash                                      | Automation, setup scripts, and server-side utilities        |
+| Web framework           | Django (5.x), Django REST Framework               | Back-end web development, RESTful API design                |
+| Task queue & scheduling | Celery, Redis, aioredis                           | Background task processing, caching, async queues           |
+| Database                | PostgreSQL, MongoDB                               | Persistent data storage and querying                        |
+| Deployment & serving    | Docker, Docker Swarm, Gunicorn, Nginx             | Production-ready app serving and containerisation           |
+| Frontend technologies   | JavaScript (server-side), jQuery                  | Dynamic client-side behaviour and lightweight interactivity |
+| Testing & QA            | pytest, Selenium, CircleCI, Django Test Framework | Automated testing and browser interaction validation        |
+| DevOps / CI/CD          | GitHub Actions (CI/CD), Git                       | Version control and automated deployment pipelines          |
+| Data handling           | Pandas, NumPy, openpyxl / XlsxWriter              | Data manipulation and scientific computing                  |
+| File storage            | Django Storages, S3, MinIO, ECS (deprecated)      | Cloud-based file storage and management                     |
+| Document generation     | Sphinx, ReadTheDocs                               | Auto-generated user documentation                           |
+| HTML parsing / Scraping | BeautifulSoup, bs4                                | HTML content parsing, web scraping                          |
+| User authentication     | django-allauth                                    | OAuth, OpenID, and account authentication                   |
+| Real-time features      | Channels, Daphne                                  | WebSocket support and async communication                   |
+| Styling & forms         | django-crispy-forms, crispy-bootstrap5            | Form rendering and UI styling                               |
 
 ## Related repositories
 
-- [COPO-production](https://github.com/TGAC/COPO-production) – _This repository (included for reference)_
-- [COPO-schemas](https://github.com/TGAC/COPO-schemas)
-- [COPO-documentation](https://github.com/TGAC/COPO-documentation)
-- [COPO-sample-audit](https://github.com/TGAC/COPO-sample-audit)
-- [SingleCellSchemas](https://github.com/TGAC/SingleCellSchemas)
+- [COPO-production](https://github.com/EarlhamInst/COPO-production) – _This repository (included for reference)_
+- [COPO-schemas](https://github.com/EarlhamInst/COPO-schemas)
+- [COPO-documentation](https://github.com/EarlhamInst/COPO-documentation)
+- [COPO-sample-audit](https://github.com/EarlhamInst/COPO-sample-audit)
+- [SingleCellSchemas](https://github.com/EarlhamInst/SingleCellSchemas)
 
 ## Additional resources
 
@@ -49,4 +49,4 @@ This repository builds on the work of the [COPO](https://github.com/collaborativ
 
 - [Single-cell website](https://singlecellschemas.org/)
 
-- [To report issues](https://github.com/TGAC/COPO-production/issues)
+- [To report issues](https://github.com/EarlhamInst/COPO-production/issues)
