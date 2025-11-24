@@ -149,7 +149,7 @@ class TaxonValidator(Validator):
                     if any(x for x in taxon_id_list):
                         for taxon in taxon_id_list:
                             # check if taxon is submittable
-                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(taxon, by="id")
+                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(taxon, is_binomial_required=False, by="id")
                             if ena_taxon_errors:
                                 self.errors += ena_taxon_errors
                                 self.flag = False
@@ -169,7 +169,7 @@ class TaxonValidator(Validator):
                     if any(x for x in taxon_id_list):
                         for taxon in taxon_id_list:
                             # check if taxon is submittable
-                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(taxon, by="binomial")
+                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(taxon, is_binomial_required=False, by="binomial")
                             if ena_taxon_errors:
                                 self.errors += ena_taxon_errors
                                 self.flag = False
