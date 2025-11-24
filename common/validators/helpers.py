@@ -4,6 +4,8 @@ import datetime
 from common.utils.logger import Logger
 import requests
 import unicodedata
+import common.schemas.utils.data_utils as d_utils
+
 
 l = Logger()
 
@@ -50,7 +52,7 @@ def check_biocollection(voucher_id, qualifier_type):
     return False
 
 
-def check_taxon_ena_submittable(taxon, by="id"):
+def check_taxon_ena_submittable(taxon, is_binomial_required=True, by="id"):
     errors = []
     receipt = None
     taxinfo = None
@@ -73,7 +75,9 @@ def check_taxon_ena_submittable(taxon, by="id"):
             errors.append("TAXON_ID " + taxon + " is not submittable to ENA")
         if taxinfo["rank"] not in ["species", "subspecies"]:
             errors.append("TAXON_ID " + taxon + " is not a 'species' or 'subspecies' level entity.")
-        if taxinfo["binomial"] == "false":  
+        
+        is_taxon_binomial = d_utils.convertStringToBoolean(taxinfo["binomial"])
+        if is_taxon_binomial != is_binomial_required:
             errors.append(MESSAGE['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))    
     except Exception as e:
         l.exception(e)
@@ -91,6 +95,7 @@ def check_taxon_ena_submittable(taxon, by="id"):
         else:
             errors.append(MESSAGE['validation_msg_not_submittable_taxon'] % (taxon))
     return errors, taxinfo
+
 
 def checkOntologyTerm(ontology_id, ancestor, term):
     url = f"https://www.ebi.ac.uk/ols4/api/v2/entities?search={term}&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId={ontology_id}"
