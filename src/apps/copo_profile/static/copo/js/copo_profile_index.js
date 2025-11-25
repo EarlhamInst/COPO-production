@@ -921,7 +921,11 @@ function setProfileGridHeading(grids) {
       .find('.copo-records-panel')
       .each(function (idx, el) {
         const profileType = $(el).attr('profile-type');
-        const components = get_profile_components(profileType);
+        const sharedProfileType = $(el).attr('shared-profile-type');
+        let isShared = !profileType && sharedProfileType;
+
+        const typeForComponents = profileType || sharedProfileType;
+        const components = get_profile_components(typeForComponents);
         if (!components?.length) return; // No components so skip
 
         let recordId = $(this).find('.row-title span').attr('id');
@@ -932,21 +936,21 @@ function setProfileGridHeading(grids) {
         let colour;
         let acronym;
 
-        if (profileType) {
-          acronym = profileType.toUpperCase();
-          colour = profile_type_def[profileType.toLowerCase()]['widget_colour'];
-
-          if ($(el).attr('shared-profile-type') === '') {
-            // Remove 'shared-profile-type' attribute
-            $(el).removeAttr('shared-profile-type');
-          }
-        } else {
+        if (isShared) {
           acronym = 'Shared With Me';
           colour = '#f26202';
 
           // Remove 'profile-type' attribute if it exists
           if ($(el).attr('profile-type') === '') {
             $(el).removeAttr('profile-type');
+          }
+        } else {
+          acronym = profileType.toUpperCase();
+          colour = profile_type_def[profileType.toLowerCase()]['widget_colour'];
+
+          if (sharedProfileType === '') {
+            // Remove 'shared-profile-type' attribute
+            $(el).removeAttr('shared-profile-type');
           }
         }
 
@@ -969,8 +973,7 @@ function setProfileGridHeading(grids) {
             .append('<small> (' + acronym.toUpperCase() + ') </small>');
         } else {
           // If the record is new, set the heading and colour
-          if ($(el).attr('shared-profile-type') === '')
-            $(el).removeAttr('shared-profile-type'); // Remove 'shared-profile-type' attribute if empty
+          if (sharedProfileType === '') $(el).removeAttr('shared-profile-type'); // Remove 'shared-profile-type' attribute if empty
 
           $(el)
             .find('.panel.panel-profile .panel-heading')
