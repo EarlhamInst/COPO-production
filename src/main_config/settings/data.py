@@ -121,15 +121,15 @@ ENA_CHECKLIST_URL = [
     "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/*?type=sample",
 ]
 COPO_SAMPLE_CHECKLIST_URL = [
-    "https://raw.githubusercontent.com/TGAC/COPO-schemas/refs/heads/main/samples/sample_checklist_dwc.xml",
-    "https://raw.githubusercontent.com/TGAC/COPO-schemas/refs/heads/main/samples/sample_checklist_faang.xml",
+    "https://raw.githubusercontent.com/EarlhamInst/COPO-schemas/refs/heads/main/samples/sample_checklist_dwc.xml",
+    "https://raw.githubusercontent.com/EarlhamInst/COPO-schemas/refs/heads/main/samples/sample_checklist_faang.xml",
 ]
 
 SINGLE_CELL_SCHEMAS_URL = {
-    # "COPO_SINGLE_CELL": f"singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx",
-    # "COPO_IMAGE_REMBI": f"rembi_image_schema_main_v{MANIFEST_VERSION['COPO_IMAGE_REMBI']}.xlsx",
-    # "COPO_IMAGE_STX_FISH": f"stx_fish_image_schema_main_v{MANIFEST_VERSION['COPO_IMAGE_STX_FISH']}.xlsx",
-    # "COPO_READ" : f"reads_schema_main_v{MANIFEST_VERSION['COPO_READ']}.xlsx"
+    #"COPO_SINGLE_CELL": f"singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx",
+    #"COPO_IMAGE_REMBI": f"rembi_image_schema_main_v{MANIFEST_VERSION['COPO_IMAGE_REMBI']}.xlsx",
+    #"COPO_IMAGE_STX_FISH": f"stx_fish_image_schema_main_v{MANIFEST_VERSION['COPO_IMAGE_STX_FISH']}.xlsx",
+    #"COPO_READ" : f"reads_schema_main_v{MANIFEST_VERSION['COPO_READ']}.xlsx"
     "COPO_SINGLE_CELL": f"https://github.com/EarlhamInst/COPO-schemas/raw/refs/heads/main/single_cell/singlecell_schema_main_v{MANIFEST_VERSION['COPO_SINGLE_CELL']}.xlsx",
     "COPO_IMAGE_REMBI": f"https://github.com/EarlhamInst/COPO-schemas/raw/refs/heads/main/images/rembi_image_schema_main_v{MANIFEST_VERSION['COPO_IMAGE_REMBI']}.xlsx",
     "COPO_IMAGE_STX_FISH": f"https://github.com/EarlhamInst/COPO-schemas/raw/refs/heads/main/images/stx_fish_image_schema_main_v{MANIFEST_VERSION['COPO_IMAGE_STX_FISH']}.xlsx",
@@ -139,4 +139,4 @@ SINGLE_CELL_SCHEMAS_URL = {
 IMAGE_FILE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.bmp']
 
 # number of days to keep local uploads before deleting them
-LOCAL_UPLOAD_HOUSEKEEPING_DAYS = 10
+LOCAL_UPLOAD_HOUSEKEEPING_DAYS = 3
