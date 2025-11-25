@@ -3201,15 +3201,11 @@ function generate_component_control(componentName, profile_type) {
     var pcomponentHTML = $('.pcomponents-icons-templates')
       .clone()
       .removeClass('pcomponents-icons-templates');
-    var pcomponentAnchor = pcomponentHTML
-      .find('.pcomponents-anchor')
-      .clone()
-      .removeClass('pcomponents-anchor');
     pcomponentHTML.find('.pcomponents-anchor').remove();
-
     pageIcons.append(pcomponentHTML);
 
     var components = get_profile_components(profile_type);
+    if (components.length === 0) return; // No components so skip
 
     // Group components by 'group' field value
     const grouped = groupComponentsByGroupName(components);
