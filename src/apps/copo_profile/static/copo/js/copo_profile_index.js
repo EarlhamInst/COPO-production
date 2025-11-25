@@ -24,6 +24,9 @@ function getProfilesPerPage() {
 // Global variables
 let componentName;
 let csrfToken;
+let $gridCount;
+let $gridTotal;
+let tableId;
 
 $(document).on('document_ready', function () {
   //****************************** Event handlers block *************************//
@@ -33,7 +36,7 @@ $(document).on('document_ready', function () {
   const copoAcceptRejectURL = '/copo/dtol_submission/accept_reject_sample';
   const copoVisualsURL = '/copo/copo_visualize/';
   const componentMeta = get_component_meta(componentName);
-  const tableId = componentMeta.tableID;
+  tableId = componentMeta.tableID;
   const tableLoader = $('<div class="copo-i-loader"></div>');
 
   const profilesTotal = getProfilesTotal();
@@ -45,8 +48,8 @@ $(document).on('document_ready', function () {
   $(document).data('endPagination', false);
   $(document).data('profilesTotal', profilesTotal);
 
-  let gridCount = $('#grid-count');
-  let gridTotal = $('#grid-total');
+  $gridCount = $('#grid-count');
+  $gridTotal = $('#grid-total');
 
   // Create an object to store the arguments to
   // be passed to the function
@@ -54,11 +57,8 @@ $(document).on('document_ready', function () {
     tableLoader: tableLoader,
     copoProfileIndexURL: copoProfileIndexURL,
     page: $(document).data('page'),
-    tableId: tableId,
     copoVisualsURL: copoVisualsURL,
     component: componentName,
-    gridCount: gridCount,
-    gridTotal: gridTotal,
     onScroll: false,
   };
 
@@ -78,14 +78,12 @@ $(document).on('document_ready', function () {
         loadProfileRecords(obj);
 
         // Reload web page if no profiles exist
-        reloadIfNoProfiles(tableId);
+        reloadIfNoProfiles();
 
         // Reload the scroll handler after table refresh
         setProfileDivScroll(obj, tableLoader);
 
-        if (
-          $(document).data('profilesTotal') != Number($('#grid-count').text())
-        ) {
+        if ($(document).data('profilesTotal') != Number($gridCount.text())) {
           $(document).data('endPagination', false);
           $(document).data('blockRequest', false);
         }
@@ -93,7 +91,7 @@ $(document).on('document_ready', function () {
         // Trigger reload of the web page based on the value of 'grid-total'
         // i.e. when one profile record is created
         // to have the change reflected on the web page
-        if ($('#grid-count').text() === '' && $('#grid-total').text() === '') {
+        if ($gridCount.text() === '' && $gridTotal.text() === '') {
           // Queue 'creation' tour stage then, reload the page
           await queueTourStage(componentName, 'creation', () => {
             setTimeout(() => window.location.reload(), 1000);
@@ -106,11 +104,11 @@ $(document).on('document_ready', function () {
   // Trigger reload of the web page when no profile
   // records exist to have the change reflected on
   // the web page
-  $('#grid-total').on('reloadWebPage1', async function () {
+  $gridTotal.on('reloadWebPage1', async function () {
     // reloadIfNoProfiles(tableId);
     // Queue 'overview' tour stage then, reload the page
     await queueTourStage(componentName, 'overview', () => {
-      reloadIfNoProfiles(tableId);
+      reloadIfNoProfiles();
     });
   });
 
@@ -150,10 +148,10 @@ $(document).on('document_ready', function () {
     $('#sortProfilesBtn')[0].selectedIndex = 0;
   }
 
-  gridCount.text(profilesVisibleLength); // Number of profile records visible
+  $gridCount.text(profilesVisibleLength); // Number of profile records visible
 
   //  Total number of profile records for the user
-  gridTotal.text(profilesTotal);
+  $gridTotal.text(profilesTotal);
 
   let divGrid = $('div.grid');
 
@@ -162,7 +160,7 @@ $(document).on('document_ready', function () {
   filterActionMenu();
   updateCounts(copoVisualsURL);
 
-  setProfileGridHeading(divGrid, tableId); // Set profile grid heading
+  setProfileGridHeading(divGrid); // Set profile grid heading
 
   profileInfoPopover(divGrid); // Initialise 'view more' information popover for profile records
 
@@ -283,7 +281,7 @@ $(document).on('document_ready', function () {
   // user can scroll downwards to view more profile records that were created
   let navigateToBottomOfPageBtn = $('#navigateToBottom');
 
-  gridCount.text() < gridTotal.text() && $(window).scrollTop() < 100
+  $gridCount.text() < $gridTotal.text() && $(window).scrollTop() < 100
     ? navigateToBottomOfPageBtn.addClass('show')
     : navigateToBottomOfPageBtn.removeClass('show');
 
@@ -396,11 +394,8 @@ function loadProfileRecords(obj) {
     tableLoader,
     copoProfileIndexURL,
     page,
-    tableId,
     copoVisualsURL,
     componentName,
-    gridCount,
-    gridTotal,
     onScroll,
   } = obj;
 
@@ -412,9 +407,7 @@ function loadProfileRecords(obj) {
     },
     success: function (data) {
       if (data.end_pagination) {
-        if (
-          $(document).data('profilesTotal') === Number($('#grid-count').text())
-        ) {
+        if ($(document).data('profilesTotal') === Number($gridCount.text())) {
           // Stop further fetching of profile records
           $(document).data('endPagination', true);
           $(document).data('blockRequest', true);
@@ -469,17 +462,18 @@ function loadProfileRecords(obj) {
       refresh_tool_tips(); // Refreshes/reloads/reinitialises all popover and dropdown functions
       initialiseRecords(copoVisualsURL);
 
-      setProfileGridHeading(divGrid, tableId); // Set profile grid heading
+      setProfileGridHeading(divGrid); // Set profile grid heading
       profileInfoPopover(divGrid); // Initialise 'view more' information popover for profile records
 
-      gridCount.text(divGrid.length); // Increment the number of profile records displayed
+      $gridCount.text(divGrid.length); // Increment the number of profile records displayed
 
       // Set the total number of profile records
-      gridTotal.text(data.profiles_total);
+      $gridTotal.text(data.profiles_total);
       $(document).data('profilesTotal', data.profiles_total);
 
       // Remove duplicate profile records by ID
-      removeDuplicateProfilesById(tableId, gridCount);
+      removeInvalidAndDuplicateProfiles();
+
       tableLoader.remove(); // Remove loading spinner
 
       // Restore scroll position after the content is loaded
@@ -499,10 +493,18 @@ function appendRecordComponents(grids) {
     let profileType =
       copoRecordsPanel.attr('profile-type') ||
       copoRecordsPanel.attr('shared-profile-type');
+    const components = get_profile_components(profileType);
 
-    if (profileType) {
+    // Ensure the profile type is valid and has components
+    if (components?.length) {
       profileType = profileType.toLowerCase().trim();
+    } else {
+      console.warn(
+        `'${profileType}' profile type is undefined or has no components`
+      );
+      return; // No components so skip
     }
+
     // Add component buttons to the menu for each profile record
     let $menuParentElement = $(this).closest('.grid').find('#expandingMenu');
     let $menuComp = $menuParentElement.find('.comp');
@@ -613,14 +615,14 @@ function deleteProfileRecord(profileRecordId) {
               $('#copo-sidebar-info #page_alert_panel').trigger(event);
 
               // Decrement the total number of profile records displayed
-              $('#grid-total').text(profilesTotal - 1);
+              $gridTotal.text(profilesTotal - 1);
 
               // Update the profile type legend after
               // a profile record has been deleted
               updateLegend();
 
               // Refresh the web page when no profile records exist
-              if ($('#grid-total').text() === '0') {
+              if ($gridTotal.text() === '0') {
                 // Hide divs
                 $('#sortProfilesDiv').hide();
                 $('#bottomPanel').hide();
@@ -628,7 +630,7 @@ function deleteProfileRecord(profileRecordId) {
                 $('.other-projects-accessions-filter-checkboxes').hide();
 
                 var event = jQuery.Event('reloadWebPage1');
-                $('#grid-total').trigger(event);
+                $gridTotal.trigger(event);
               }
             })
             .fail(function (data_response) {
@@ -667,26 +669,40 @@ function deleteProfileRecord(profileRecordId) {
   });
 }
 
-function removeDuplicateProfilesById(tableId, gridCount) {
+function removeInvalidAndDuplicateProfiles() {
   // Remove duplicate .grid DOM nodes that represent the same record id
-  // Strangely, this occurs sometimes.
+  // and remove profile records whose type is non-existent
   const $container = $(`#${tableId}`);
   if (!$container.length) return;
 
   const seen = new Set();
   $container.find('.grid').each(function () {
-    const recordId = $(this).find('.row-title span').attr('id');
-    if (!recordId) return; // Skip if no ID is found
-    if (seen.has(recordId)) {
-      $(this).remove(); // Remove duplicates
-    } else {
-      seen.add(recordId);
+    const $grid = $(this);
+    const recordId = $grid.find('.row-title span').attr('id');
+
+    let profileType =
+      $grid.find('.copo-records-panel').attr('profile-type') ||
+      $grid.find('.copo-records-panel').attr('shared-profile-type');
+    profileType = profileType?.toLowerCase().trim();
+
+    const components = get_profile_components(profileType);
+
+    if (!recordId || seen.has(recordId) || !components?.length) {
+      $gridTotal.text(Number($gridTotal.text()) - 1);
+      $grid.remove();
+      return;
     }
+
+    seen.add(recordId);
   });
 
   // Update counters
-  const visibleCount = $container.find('.grid').length;
-  gridCount.text(visibleCount);
+  const visibleCount = $container.find('.grid:visible').length;
+  const totalInDom = $container.find('.grid').length;
+
+  $gridCount.text(visibleCount);
+  $gridTotal.text(totalInDom);
+  $(document).data('profilesTotal', totalInDom);
 }
 
 function sortProfileRecords(option) {
@@ -833,6 +849,7 @@ function updateCounts(copoVisualsURL) {
 
 function createComponentButtons(recordId, profileType) {
   const components = get_profile_components(profileType);
+  if (components.length === 0) return; // No components so skip
 
   // Group components by 'group' field value
   const grouped = groupComponentsByGroupName(components);
@@ -895,7 +912,7 @@ function filterActionMenu() {
   });
 }
 
-function setProfileGridHeading(grids, tableId) {
+function setProfileGridHeading(grids) {
   let profilesLegendList = [];
   let existingRecords = $(`#${tableId}`).find('.grid');
 
@@ -904,6 +921,8 @@ function setProfileGridHeading(grids, tableId) {
       .find('.copo-records-panel')
       .each(function (idx, el) {
         const profileType = $(el).attr('profile-type');
+        const components = get_profile_components(profileType);
+        if (!components?.length) return; // No components so skip
 
         let recordId = $(this).find('.row-title span').attr('id');
         let existingRecord = existingRecords
@@ -1068,11 +1087,8 @@ function profileInfoPopover(grids) {
   });
 }
 
-function reloadIfNoProfiles(tableId) {
-  if (
-    $('#grid-total').text() === '0' ||
-    $(`#${tableId}`).children().length === 0
-  ) {
+function reloadIfNoProfiles() {
+  if ($gridTotal.text() === '0' || $(`#${tableId}`).children().length === 0) {
     setTimeout(function () {
       window.location.reload();
     }, 1000);
@@ -1089,7 +1105,7 @@ function setProfileDivScroll(obj, tableLoader) {
       let blockRequest = $(document).data('blockRequest');
       let endPagination = $(document).data('endPagination');
       let page = $(document).data('page');
-      let gridCount = Number($('#grid-count').text());
+      let gridCount = Number($gridCount.text());
 
       // Calculate max number of pages
       const profilesPerPage = getProfilesPerPage();

@@ -85,9 +85,17 @@ const profile_type_def = {
   {% endfor %}
 }
 
-
 function get_profile_components(profile_type) {
-  if (profile_type){
-    return profile_type_def[profile_type.toLowerCase()].components.map(component => component_def[component]);
-  }
+  if (!profile_type) return []; // No profile type is provided
+
+  const key = profile_type.toLowerCase();
+
+  if (!(key in profile_type_def)) return []; // Profile type is not defined
+
+  const profile = profile_type_def[key];
+  
+  // Check if 'components' array exists for the profile type
+  if (!profile.components || !Array.isArray(profile.components)) return [];
+
+  return profile.components.map(component => component_def[component]).filter(c => c !== undefined);
 }
