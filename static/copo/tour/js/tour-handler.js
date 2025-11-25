@@ -58,6 +58,16 @@ $(document).ready(async function () {
 
   // Events
   $(document).on('click', '.start-tour', function () {
+    // Prevent multiple intro popovers
+    const activeTour = Shepherd.activeTour;
+    if (
+      activeTour &&
+      activeTour.isActive() &&
+      activeTour.getCurrentStep()?.id === 'intro'
+    ) {
+      return;
+    }
+
     showIntroPopover(startQuickTour);
   });
 });
