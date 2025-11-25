@@ -9,6 +9,7 @@ from src.apps.copo_core.models import (
     AssociatedProfileType,
 )
 from common.dal.copo_base_da import DataSchemas
+from .profile_components_tour_config import COMPONENTS_TOUR_CONFIG
 
 '''
 *** ProfileType ***
@@ -99,10 +100,37 @@ from common.dal.copo_base_da import DataSchemas
 # The class must be named Command, and subclass BaseCommand
 class Command(BaseCommand):
     # Show this when the user types help
-    help = "Add profile type definition to the database "
+    help = "Add profile type definition to the database"
 
     def __init__(self):
         super().__init__()
+
+    def _set_component_tour_config(self):
+        '''
+        Assign or update a quick page tour configuration for a component
+        by loading the configs from 'profile_components_tour_config' file
+        '''
+        try:
+            count = 0
+            for component_name, config in COMPONENTS_TOUR_CONFIG.items():
+                component = Component.objects.get(
+                    name=component_name,
+                )
+                component.tour_config = config
+                component.save()
+                count += 1
+
+            self.stdout.write(
+                self.style.SUCCESS(f'Added {count} tour configs to components\n\n')
+            )
+        except Component.DoesNotExist:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"Component '{component_name}' not found. Skipping tour config load."
+                )
+            )
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error: {e}'))
 
     def handle(self, *args, **options):
 
@@ -460,12 +488,12 @@ class Command(BaseCommand):
         new_local_file = TitleButton().create_title_button(
             name="new_local_file",
             template="<button title=\"Add new file by browsing local file system\"             class=\"big circular ui icon primary button new-local-file copo-tooltip\" data-tour-id=\"new_file_button_local\">         <i class=\"icon desktop sign\"></i>     </button>",
-            additional_attr=""
+            additional_attr="",
         )
-        new_terminal_file=TitleButton().create_title_button(
-                name="new_terminal_file",
-                template="<button title=\"Add new file by terminal\"             class=\"big circular ui icon primary button new-terminal-file copo-tooltip\"  data-tour-id=\"new_file_button_terminal\">         <i class=\"icon terminal sign\"></i>     </button>",
-                additional_attr="",
+        new_terminal_file = TitleButton().create_title_button(
+            name="new_terminal_file",
+            template="<button title=\"Add new file by terminal\"             class=\"big circular ui icon primary button new-terminal-file copo-tooltip\"  data-tour-id=\"new_file_button_terminal\">         <i class=\"icon terminal sign\"></i>     </button>",
+            additional_attr="",
         )
         new_reads_spreadsheet_template = TitleButton().create_title_button(
             name="new_reads_spreadsheet_template",
@@ -828,17 +856,7 @@ class Command(BaseCommand):
 
         # Assign tour config to components
         self.stdout.write('\nAdding tour configs to components ')
-        Component().set_tour_config()
-        components_with_config = (
-            Component.objects.filter(tour_config__isnull=False)
-            .exclude(tour_config={})
-            .count()
-        )
-        self.stdout.write(
-            self.style.SUCCESS(
-                f'Added {components_with_config} tour configs to components\n\n'
-            )
-        )
+        self._set_component_tour_config()
 
         # Confirm components setup
         self.stdout.write("Components Added")
