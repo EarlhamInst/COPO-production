@@ -18,7 +18,6 @@ from rest_framework.authtoken.models import Token
 from asgiref.sync import sync_to_async
 from django.utils.translation import gettext_lazy as _
 from common.dal.copo_base_da import DataSchemas
-from . import tour_configs
 
 
 class UserDetails(models.Model):
@@ -474,43 +473,6 @@ class Component(models.Model):
 
         self.save()
         return self
-
-    def set_tour_config(self):
-        # Assign or update a quick page tour configuration for a component
-        def load_config_module(module_path):
-            try:
-                module = importlib.import_module(module_path)
-                config = module.get_tour_config()
-
-                component_name = getattr(
-                    module, 'COMPONENT_NAME', module_path.split('.')[-2]
-                )
-                component = Component.objects.get(
-                    name=component_name,
-                )
-                component.tour_config = config
-                component.save()
-            except Component.DoesNotExist:
-                print(
-                    f"Component '{component_name}' not found. Skipping tour config load."
-                )
-            except AttributeError:
-                print(f'{module_path} has no get_tour_config()')
-            except Exception as e:
-                print(f'Error loading {module_path}: {e}')
-
-        # Load configs from 'tour_configs' directory
-        for loader, module_name, _ in pkgutil.iter_modules(tour_configs.__path__):
-            load_config_module(f'src.apps.copo_core.tour_configs.{module_name}')
-
-        # Load configs from each Django app that has a 'tour/config.py' file
-        for app_config in apps.get_app_configs():
-            module_path = f'{app_config.name}.tour.config'
-            try:
-                importlib.import_module(module_path)
-                load_config_module(module_path)
-            except ModuleNotFoundError:
-                continue  # Note: Not every app will have a tour config
 
     def remove_all_components(self):
         Component.objects.all().delete()
