@@ -4001,7 +4001,8 @@ function confirmCloseDialog(triggerDialogOrEvent) {
               targetDialog.modal('hide');
             }
           }
-
+          // Reset modal values
+          resetValues();
           confirmDialogRef.close(); // Close the confirmation modal
         },
       },
@@ -4034,4 +4035,14 @@ function fadeOutMessages(message, action) {
 
   // Update info text if there’s a message that’s not a loading message
   $('.info-content .info-text').text('Manifest validation completed for:');
+}
+
+function resetValues() {
+  // Clear previous data in the modal
+  $('#file, #fileid').val('');
+  $('#singlecell_info').empty().hide();
+  $('.warning-content').show();
+  $('#sample_info, #warning_info, #warning_info2, #warning_info3')
+    .empty()
+    .hide();
 }
