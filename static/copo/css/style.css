@@ -227,9 +227,26 @@ copo-noborders-table.dataTable thead td {
   flex-wrap: nowrap;
   overflow-x: auto;
   white-space: nowrap;
-  border-bottom: 2px solid #dee2e6;
   scrollbar-width: thin;
   overflow-y: hidden;
+}
+
+.tabs-container {
+  padding-left: 45px;
+  padding-right: 45px;
+  float: right;
+  margin-bottom: 20px;
+}
+
+/* Show border bottom when tabs exist */
+.copo-main .nav-tabs:has(li),
+.modal .nav-tabs:has(li) {
+  border-bottom: 2px solid #dee2e6 !important;
+}
+
+/* Remove default border bottom of nav-tabs */
+.nav-tabs {
+  border-bottom: 0 !important;
 }
 
 .copo-main .nav-tabs::-webkit-scrollbar,
