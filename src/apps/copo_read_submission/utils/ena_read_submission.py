@@ -1342,8 +1342,8 @@ class EnaReads:
 
         kwargs = dict(submission_id=self.submission_id)
         ghlper.transfer_to_ena(
-            webin_user=self.webin_user,
-            pass_word=self.pass_word,
+            #webin_user=self.webin_user,
+            #pass_word=self.pass_word,
             remote_path=self.remote_location,
             file_paths=mock_file_names,
             **kwargs,
