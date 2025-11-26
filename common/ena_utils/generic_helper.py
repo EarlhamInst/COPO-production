@@ -9,13 +9,16 @@ from channels.layers import get_channel_layer
 from common.lookup.copo_enums import Loglvl, Logtype
 from common.utils import helpers
 from common.utils.logger import Logger
+import subprocess
 
 lg = Logger()
 from common.utils.helpers import get_env
 
 BASE_DIR = settings.BASE_DIR
 # REPOSITORIES = settings.REPOSITORIES
-
+ASPERA_PATH = get_env("ASPERA_PATH")  #"/root/.aspera/cli"
+WEBIN_USER_PASSWORD = get_env('WEBIN_USER_PASSWORD')
+WEBIN_USER = get_env('WEBIN_USER')
 
 def get_submission_handle():  # this can be safely called by forked process
     mongo_client = mutil.get_mongo_client()
@@ -492,8 +495,37 @@ def touch_files(file_paths=list()):
 
     return True
 
+def transfer_to_ena(remote_path, file_paths=list(), **kwargs):
+    if not file_paths:
+        return True
 
-def transfer_to_ena(webin_user, pass_word, remote_path, file_paths=list(), **kwargs):
+    FILE_UPLOAD_CMD = f"ASPERA_SCP_PASS='{WEBIN_USER_PASSWORD}' {ASPERA_PATH}/bin/ascp -l50M -i {ASPERA_PATH}/etc/asperaweb_id_dsa.openssh -d {' '.join(file_paths)} {WEBIN_USER}:{remote_path}"  #keep the file after transfer as it may be needed for re-transfer in case of failure, housekeep will take care of it later
+    submission_id = kwargs.get("submission_id", str())
+    message = f'Commencing transfer of {" ".join(file_paths)} data files to ENA. Progress will be reported.'
+    logging_info(message, submission_id)
+
+    try:
+        output = subprocess.check_output(FILE_UPLOAD_CMD, shell=True)
+        message = (
+            '[Submission: '
+            + submission_id
+            + '] '
+            + "Transfer to remote location "
+            + f"{remote_path} for {' '.join(file_paths)}"
+            + " completed."
+        )
+        lg.log(message)
+        lg.log(output)
+        return True
+    except subprocess.CalledProcessError as e:
+        lg.exception(e)
+        lg.error(e.output)
+        lg.error(f'{" ".join(file_paths)} was not uploaded to ENA')
+        return False
+
+
+
+def transfer_to_ena_old(webin_user, pass_word, remote_path, file_paths=list(), **kwargs):
     """
     function transfers files to ENA using Aspera CLI
     :param webin_user:
