@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from bson import ObjectId
 from common.utils.logger import Logger
 import gzip
-from .generic_helper import transfer_to_ena as to_ena
+from .generic_helper import transfer_to_ena
 from common.utils.helpers import get_env, get_thumbnail_folder, get_datetime
 from datetime import datetime
 from src.apps.copo_core.models import StatusMessage, User
@@ -262,14 +262,19 @@ def process_pending_file_transfers():
                     # Todo - need to do something cleverer here
                     reset_status_counter(tx)
             elif tx_status == 5:
+
                 # EnaFileTransfer().set_processing(tx["_id"])
                 insert_message(
                     message=f'Transfering to ENA: {tx["local_path"]} to {tx["remote_path"]}',
                     user=user,
                 )
+                to_ena(user_details=ud, tx=tx)
+                """
                 log.log("transfering to ENA: " + tx["local_path"])
+
                 thread = ToENA(tx=tx, user_details=ud, pid=pid)
                 thread.start()
+                """
                 # transfer_to_ena(tx)
 
 
@@ -430,6 +435,33 @@ def get_transfer_status(tx):
     else:
         return False
 
+def to_ena(user_details, tx):
+    kwargs = dict()
+    result = transfer_to_ena(
+            tx["remote_path"],
+            [tx["local_path"]],
+            **kwargs,
+        )
+    if not result:
+        reset_status_counter(tx)
+        return
+    # now check if active tasks can be marked False
+    mark_complete(tx)
+    transfers = (
+        EnaFileTransfer().get_collection_handle().find({"profile_id": tx["profile_id"]})
+    )
+    complete = True
+    # if os.path.exists(self.tx["local_path"]):
+    # Logger().log("deleting file after check")
+    # os.remove(self.tx["local_path"])  #don't remove file as need resubmission
+    for t in transfers:
+        if not t["status"] == "complete":
+            complete = False
+            break
+    if complete == True:
+        user_details.active_task = False
+        user_details.save()
+
 
 class ToENA(threading.Thread):
     def __init__(self, tx, user_details, pid):
@@ -477,8 +509,8 @@ class ToENA(threading.Thread):
             self.ud.active_task = False
             self.ud.save()
 
-
-def transfer_to_ena(tx):
+"""
+def transfer_to_ena_deleted(tx):
     # transfer_to_ena(webin_user, pass_word, remote_path, file_paths=list(), **kwargs):
     ena_service = get_env('ENA_SERVICE')
     pass_word = get_env('WEBIN_USER_PASSWORD')
@@ -498,7 +530,7 @@ def transfer_to_ena(tx):
         Logger().exception(e)
         record_error("error transfering to ENA: " + str(e))
         reset_status_counter(tx)
-
+"""
 
 def housekeeping_local_uploads():
     """

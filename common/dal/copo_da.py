@@ -14,6 +14,7 @@ from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from common.utils import helpers
 from common.schemas.utils.cg_core.cg_schema_generator import CgCoreSchemas
 from .copo_base_da import DAComponent, handle_dict
+from random import choice
 
 lg = settings.LOGGER
 
@@ -820,24 +821,33 @@ class EnaFileTransfer(DAComponent):
         result_list = []
         result = (
             self.get_collection_handle()
-            .find({"transfer_status": {"$ne": 2}, "status": "pending"})
-            .limit(10)
+            .find({"transfer_status": {"$nin": [2,5]}, "status": "pending"})
         )
 
-        if result:
-            result_list = list(result)
-        # at most download 2 files at the sametime
-        count = self.get_collection_handle().count_documents(
-            {"transfer_status": 2, "status": "processing"}
-        )
-        if count <= 1:
-            result = (
-                self.get_collection_handle()
-                .find({"transfer_status": 2, "status": "pending"})
-                .limit(2 - count)
+        result_list = list(result)
+
+        # at most download / upload 2 files at the same time and 
+        # select 1 download or 1 upload for every run, trying to slow down the process
+        is_found = False
+        transfer_status = choice([2, 5])
+        i = 0
+        while not is_found and i < 2:
+            i += 1
+            transfer_status = 2 if transfer_status == 5 else 5
+            count = self.get_collection_handle().count_documents(
+                {"transfer_status": transfer_status, "status": "processing"}
             )
-            if result:
-                result_list.extend(list(result))
+            if count <= 1:
+                result = (
+                    self.get_collection_handle()
+                    .find({"transfer_status": transfer_status, "status": "pending"})
+                    .limit(1)
+                )
+                records = list(result)
+                if records:
+                    result_list.extend(records)
+                    is_found = True
+
         return result_list
 
     def get_processing_transfers(self):
