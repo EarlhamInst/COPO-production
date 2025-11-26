@@ -405,15 +405,6 @@ function customise_accessions_table(table) {
     .attr('placeholder', 'Search ' + componentMeta.title)
     .attr('size', 30);
 
-  // Add css to align the buttons to the right
-  table_wrapper.find('.dt-buttons').addClass('pull-right');
-  //table_wrapper.find('.info-rw').hide(); // Hide showing 'x' of 'x' row
-
-  // Insert breakpoints after the toggle button
-  if (table_wrapper.find('br').length === 0) {
-    $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
-  }
-
   // Set height of table to fit the content in the table
   table_wrapper.find('.dataTables_scrollBody').css('height', 'fit-content');
 

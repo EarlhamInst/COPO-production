@@ -138,6 +138,98 @@ div[class*=" col-"] {
   font-size: 12px;
 }
 
+.dataTables_wrapper .dt-buttons.btn-group,
+.dt-buttons.btn-group {
+  float: none !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end;
+  gap: 8px 12px; /* 8px side spacing, 12px row spacing */
+  align-items: flex-start;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  text-align: right !important;
+  padding-right: 12px !important;
+  column-gap: 8px;
+  row-gap: 12px; /* Row spacing when wrapping occurs*/
+}
+
+.dt-buttons.btn-group > * {
+  display: inline-block !important;
+  flex: 0 0 auto;
+  float: none !important;
+  vertical-align: middle !important;
+  margin-left: 8px !important;
+  margin-right: 0 !important;
+}
+
+.copo-table-cbuttons {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  margin-left: 12px !important;
+}
+
+.copo-table-cbuttons > div,
+.dt-buttons.btn-group button,
+.dt-buttons.btn-group .btn,
+.dt-buttons.btn-group .basic.button {
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+}
+
+.dt-buttons.btn-group.nowrap,
+.dt-buttons.btn-group.nowrap > * {
+  white-space: nowrap !important;
+  flex-wrap: nowrap !important;
+}
+
+/* .copo-table-cbuttons {
+  display: inline-block;
+  text-align: right;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 12px 8px;
+  padding-left: 0 !important;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.dt-buttons button,
+.copo-table-cbuttons > div {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.dt-buttons.btn-group {
+  float: none !important;
+  display: flex !important;
+  text-align: right;
+  justify-content: flex-end !important;
+  flex-wrap: nowrap !important;
+  gap: 8px;
+  width: 100%;
+}
+
+.dt-buttons.btn-group button,
+.copo-table-cbuttons,
+.copo-table-cbuttons > div {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Prevent stupid Bootstrap floats */
+/*
+.dt-buttons.btn-group > button {
+  float: none !important;
+}
+
+.dt-buttons.btn-group > * {
+  display: inline-flex !important;
+  align-items: center;
+} */
+
 .dataTables_info {
   padding-bottom: 15px !important;
   padding-top: 15px !important;
@@ -148,6 +240,14 @@ div[class*=" col-"] {
   overflow-y: auto; /* Enable scrolling */
 }
 
+.dataTables_filter{
+  margin-top: 1.5rem; /* Space above search box */
+}
+
+/* Ensure wrapper isn't shrinking container */
+.dataTables_wrapper .dt-buttons {
+  width: 100% !important;
+}
 /*server-side processing styling for datatables*/
 div.dataTables_wrapper div.dataTables_processing {
   background: transparent !important;
@@ -218,28 +318,107 @@ copo-noborders-table.dataTable thead td {
 
 /* Table tab styling */
 .modal .nav-tabs {
-  height: 60px;
-}
-
-.copo-main .nav-tabs,
-.modal .nav-tabs {
   display: flex;
-  flex-wrap: nowrap;
   overflow-x: auto;
-  white-space: nowrap;
+  height: 60px;
   scrollbar-width: thin;
   overflow-y: hidden;
 }
 
-.tabs-container {
-  padding-left: 45px;
-  padding-right: 45px;
-  float: right;
-  margin-bottom: 20px;
+.copo-main .tabs-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 45px;
+}
+
+.copo-main .tabs-container {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.copo-main .tabs-container .nav-tabs {
+  display: inline-flex;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.copo-main .tabs-container .nav-tabs,
+.modal .nav-tabs {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+/* Scrollbar styling */
+.copo-main .tabs-container {
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+.copo-main .tabs-container .nav-tabs::-webkit-scrollbar,
+.modal .nav-tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.copo-main .tabs-container .nav-tabs::-webkit-scrollbar-thumb,
+.modal .nav-tabs::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 3px;
+}
+
+.copo-main .tabs-container::-webkit-scrollbar-thumb:hover,
+.modal .nav-tabs::-webkit-scrollbar-thumb:hover {
+  background-color: #aaa;
+}
+
+.copo-main .tabs-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Nav items */
+.copo-main .tabs-container .nav-tabs .nav-item,
+.modal .nav-tabs .nav-item {
+  flex: 0 0 auto;
+}
+
+.copo-main .tabs-container .nav-tabs .nav-link,
+.modal .nav-tabs .nav-link {
+  padding: 0.75rem 1rem;
+}
+
+.copo-main .tabs-container .nav-tabs .nav-item:not(.active) .nav-link,
+.modal .nav-tabs .nav-item:not(.active) .nav-link {
+  color: #3366cc;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-weight: 500;
+}
+
+.copo-main .tabs-container .nav-tabs .nav-item.active,
+.modal .nav-tabs .nav-item.active {
+  border: 1px solid #ccc;
+  border-bottom: 3px solid #3366cc;
+  background-color: #f5f5f5;
+  border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.copo-main .tabs-container .nav-tabs .nav-item.active .nav-link,
+.modal .nav-tabs .nav-item.active .nav-link {
+  color: #000 !important;
+  border-bottom: 3px solid #3366cc;
+  background-color: transparent !important;
+  border: none !important;
+  font-weight: 600;
+}
+
+.copo-main .tabs-container .nav-tabs > li {
+  float: none;
+  display: inline-block;
 }
 
 /* Show border bottom when tabs exist */
-.copo-main .nav-tabs:has(li),
+.copo-main .tabs-container .nav-tabs:has(li),
 .modal .nav-tabs:has(li) {
   border-bottom: 2px solid #dee2e6 !important;
 }
@@ -248,53 +427,7 @@ copo-noborders-table.dataTable thead td {
 .nav-tabs {
   border-bottom: 0 !important;
 }
-
-.copo-main .nav-tabs::-webkit-scrollbar,
-.modal .nav-tabs::-webkit-scrollbar {
-  height: 6px;
-}
-
-.copo-main .nav-tabs::-webkit-scrollbar-thumb,
-.modal .nav-tabs::-webkit-scrollbar-thumb {
-  background-color: #ccc;
-  border-radius: 3px;
-}
-
-.copo-main .nav-tabs .nav-item,
-.modal .nav-tabs .nav-item {
-  flex: 0 0 auto;
-}
-
-.copo-main .nav-tabs .nav-link,
-.modal .nav-tabs .nav-link {
-  padding: 0.75rem 1rem;
-}
-
-.copo-main .nav-tabs .nav-item:not(.active) .nav-link,
-.modal .nav-tabs .nav-item:not(.active) .nav-link {
-  color: #3366cc;
-  border: none;
-  border-bottom: 3px solid transparent;
-  font-weight: 500;
-}
-
-.copo-main .nav-tabs .nav-item.active,
-.modal .nav-tabs .nav-item.active {
-  border: 1px solid #ccc;
-  border-bottom: 3px solid #3366cc;
-  background-color: #f5f5f5;
-  border-radius: 0.25rem 0.25rem 0 0;
-}
-
-.copo-main .nav-tabs .nav-item.active .nav-link,
-.modal .nav-tabs .nav-item.active .nav-link {
-  color: #000 !important;
-  border-bottom: 3px solid #3366cc;
-  background-color: transparent !important;
-  border: none !important;
-  font-weight: 600;
-}
-/*end table styling*/
+/*end table tab styling*/
 
 /*page title*/
 .global-page-title {
