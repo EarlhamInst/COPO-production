@@ -412,8 +412,6 @@ $(document).ready(function () {
 
     let table_wrapper = $('#' + tableID + '_wrapper');
 
-    table_wrapper.find('.dt-buttons').addClass('pull-right');
-
     table_wrapper
       .find('.dataTables_filter')
       .find('label')
@@ -422,8 +420,6 @@ $(document).ready(function () {
       .removeClass('input-sm')
       .attr('placeholder', 'Search submissions')
       .attr('size', 20);
-
-    $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
 
     //get visible records
     var visibleRows = table.rows({ page: 'current' }).ids().toArray();
@@ -1503,8 +1499,6 @@ $(document).ready(function () {
 
         let table_wrapper = $('#' + tableID + '_wrapper');
 
-        table_wrapper.find('.dt-buttons').addClass('pull-right');
-
         table_wrapper
           .find('.dataTables_filter')
           .find('label')
@@ -1513,8 +1507,6 @@ $(document).ready(function () {
           .removeClass('input-sm')
           .attr('placeholder', 'Search accessions')
           .attr('size', 25);
-
-        $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
       },
       error: function () {
         viewPort.html('');
@@ -1653,8 +1645,6 @@ $(document).ready(function () {
 
         let table_wrapper = $(tableID + '_wrapper');
 
-        table_wrapper.find('.dt-buttons').addClass('pull-right');
-
         table_wrapper
           .find('.dataTables_filter')
           .find('label')
@@ -1663,8 +1653,6 @@ $(document).ready(function () {
           .removeClass('input-sm')
           .attr('placeholder', 'Search files in submission')
           .attr('size', 25);
-
-        $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
 
         //handle event for table details
         $('#' + tableID + ' tbody')

@@ -652,8 +652,6 @@ function do_render_server_side_table(componentMeta) {
 
   let table_wrapper = $('#' + tableID + '_wrapper');
 
-  table_wrapper.find('.dt-buttons').css({ float: 'right' });
-
   table_wrapper
     .find('.dataTables_filter')
     .find('label')
@@ -662,8 +660,6 @@ function do_render_server_side_table(componentMeta) {
     .removeClass('input-sm')
     .attr('placeholder', 'Search ' + componentMeta.title)
     .attr('size', 30);
-
-  $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
 
   // Add 'tour-id' attribute to the table wrapper
   table_wrapper
@@ -1046,8 +1042,6 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
 
   let table_wrapper = $('#' + tableID + '_wrapper');
 
-  table_wrapper.find('.dt-buttons').css({ float: 'right' });
-
   table_wrapper
     .find('.dataTables_filter')
     .find('label')
@@ -1056,8 +1050,6 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
     .removeClass('input-sm')
     .attr('placeholder', 'Search ' + componentMeta.title)
     .attr('size', 30);
-
-  $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
 
   // Add 'tour-id' attribute to the table wrapper
   table_wrapper
