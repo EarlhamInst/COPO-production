@@ -207,9 +207,10 @@ class Command(BaseCommand):
                 icon_class="fa fa-info-circle",
                 action="publish_singlecell_ena",
                 icon_colour="teal",
-                tour_id="publish_record_button",
+                tour_id="publish_record_button publish_study",
             )
         )
+
         publish_singlecell_single_zenodo = (
             RecordActionButton().create_record_action_button(
                 name="publish_singlecell_single_zenodo",

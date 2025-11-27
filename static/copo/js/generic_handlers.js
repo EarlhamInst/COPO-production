@@ -3098,7 +3098,7 @@ function generate_component_control(componentName, profile_type) {
     let profileTitle = $('#profile_title').val();
     let $profileTitleDiv = $('<div/>', {
       class: 'page-title-custom',
-      html: `<span class='profile-title' title='${profileTitle}' data-tour-id='profile_title'>Profile: ${profileTitle}</span>`,
+      html: `<span class='profile-title' title='${profileTitle}' data-tour-id='profile_title release_profile'>Profile: ${profileTitle}</span>`,
     });
 
     pageHeaders.append($profileTitleDiv);

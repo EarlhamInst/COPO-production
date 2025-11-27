@@ -431,6 +431,67 @@ function getStage({ count, isTable }) {
   return null;
 }
 
+function hasSelectedRows(tableId, btnType) {
+  // Determine whether the required number 
+  // of rows are selected in the data table
+  const table = $(`#${tableId}`).DataTable();
+  const selectedCount = table.rows({ selected: true }).count();
+
+  switch (btnType) {
+    case 'single':
+      return selectedCount === 1;
+
+    case 'multi':
+      return selectedCount > 0;
+
+    default:
+      console.warn(`Unknown btntype: ${btnType} for table ${tableId}`);
+      return false;
+  }
+}
+
+function handlePostSubmissionTour(componentName) {
+  // Handle 'submit' button clicks to trigger subsequent tour stages
+  const submitButtons =
+    $(`[data-tour-id*="submit_record_button"]:visible`).toArray() ||
+    $(`[data-action*="submit_${componentName}"]:visible`).toArray();
+
+  const publishButtons =
+    $(`[data-tour-id*="publish_record_button"]:visible`).toArray() ||
+    $(`[data-action*="publish_${componentName}"]:visible`).toArray();
+
+  submitButtons.forEach((button) => {
+    button.addEventListener('click', async () => {
+      const tableId = button.dataset.table;
+      const btnType = button.dataset.btntype;
+      if (!hasSelectedRows(tableId, btnType)) return; // Only proceed if valid row selection is met
+
+      const isSubmit = button.dataset.action?.includes('submit_');
+      const isPublish = publishButtons.length > 0;
+
+      // Submit stage → release profile stage
+      const releaseProcessStep = tourStages?.['release'];
+      if (
+        releaseProcessStep &&
+        isSubmit &&
+        !localTourCache.has(`${componentName}:release`)
+      ) {
+        await runTour(componentName, 'release');
+      }
+
+      // Submit stage → publish  study stage
+      const publishProcessStep = tourStages?.['publish'];
+      if (
+        publishProcessStep &&
+        isPublish &&
+        !localTourCache.has(`${componentName}:publish`)
+      ) {
+        await runTour(componentName, 'publish');
+      }
+    });
+  });
+}
+
 async function watchComponentForTour(componentName) {
   const component = get_component_meta(componentName);
 
@@ -554,44 +615,7 @@ async function watchComponentForTour(componentName) {
     observer.observe($el[0], { childList: true, subtree: true });
   }
 
-  // Manual trigger for publish stage
-  // const submitButtons = document.querySelectorAll(
-  //   `[data-tour-id*="submit_${componentName}"]`
-  // );
-
-  // const publishButtons = document.querySelectorAll(
-  //   `[data-tour-id*="publish_${componentName}"]`
-  // );
-
-  const submitButtons = $(
-    `[data-tour-id*="submit_${componentName}"]:visible`
-  ).toArray();
-  const publishButtons = $(
-    `[data-tour-id*="publish_${componentName}"]:visible`
-  ).toArray();
-
-  submitButtons.forEach((button) => {
-    button.addEventListener('click', async () => {
-      // Publish stage
-      if (publishButtons) {
-        // Prevent rerunning the tour if it already ran
-        if (!localTourCache.has(`${componentName}:publish`)) {
-          if (button.dataset.tourId.includes(`publish_${componentName}`)) {
-            console.log(`Triggering publish tour for ${componentName}`);
-            await runTour(componentName, 'publish');
-          }
-        }
-      }
-      // Submit → release_profile stage
-      if (submitButtons) {
-        // Prevent rerunning the tour if it already ran
-        if (!localTourCache.has(`${componentName}:release`)) {
-          if (button.dataset.tourId.includes(`release_profile`)) {
-            console.log(`Triggering release_profile tour for ${componentName}`);
-            await runTour(componentName, 'release');
-          }
-        }
-      }
-    });
-  });
+  // Handle steps such as releasing the profile and
+  // 'publish' records after the 'submit' button is clicked
+  handlePostSubmissionTour(componentName);
 }

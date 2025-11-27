@@ -62,7 +62,7 @@ export const globalTourMessages = {
       To submit it, select one or more records in this table then, click 
       <button class="tiny ui basic teal button submit-btn no-click">
       <i class="fa fa-info-circle"></i>&nbsp;Submit</button> located 
-      at the top right of the table.<br><br>`,
+      at the top right of the table.`,
 
     placement: 'right',
   },
@@ -146,7 +146,6 @@ export const globalTourMessages = {
     title: 'Notifications',
     content: 'Click this icon to view system notifications.',
   },
-
   profile_component_icon_navigation_pane: {
     title: 'Navigation pane',
     content: `Use this pane to navigate between different pages (or components) associated with the selected profile. 
@@ -170,8 +169,8 @@ export const globalTourMessages = {
     <i class="fa fa-info-circle"></i>&nbsp;Submit</button> then, select <strong> one record</strong> under this
     <strong>STUDY</strong> tab in the table.<br><br>
     The publication will include all the data that relate to the selected record matching the study ID in the <strong>Study ID</strong> column.<br><br>
-    <p class="shepherd-note"> A public repository is a database that stores and shares 
-    research data with the global scientific community. Publishing the study means that </p>`,
+    <p class="shepherd-note">A public repository is a database that stores and shares 
+    research data with the global scientific community.</p>`,
   },
   publish_record_button_zenodo: {
     title: 'Publish study to Zenodo',
@@ -192,8 +191,9 @@ export const globalTourMessages = {
     Releasing a profile makes all the submissions under the profile public and visible in public repositories like European Nucleotide Archive (ENA).<br><br>
     Refer to <a href="https://copo-docs.readthedocs.io/en/latest/profile/releasing-profiles.html#releasing-profiles-studies" target="_blank">Releasing Profiles (Studies) documentation</a> for
     detailed instructions on how to release a profile.<br><br>
-    <p class="shepherd-note">A profile is also known as a study or project. Releasing a profile is an important step in finalising your data submissions
-    and ensuring data integrity.</p>`,
+    Afterwards, click the <strong>View more details</strong> button attached to the profile to view its release status.<br><br>
+    <p class="shepherd-note">A profile is also known as a study or project. There is a brief processing/synchronisation delay between the 
+    release action and the visibility of the data in public repositories.</p>`,
   },
   select_all_button: {
     title: 'Select all',
