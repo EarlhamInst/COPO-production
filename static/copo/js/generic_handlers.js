@@ -2994,12 +2994,12 @@ function groupComponentsByGroupName(components) {
 }
 
 function createComponentAnchor(item, profileId, isIconOnly = false) {
+  const componentGroupName = item.groupName ? ` ${item.groupName}` : '';
   const $templateAnchor = isIconOnly
     ? $('a.pcomponent-icon-template').clone()
     : $('a.pcomponent-button-template').clone();
 
   $templateAnchor.attr('title', function (_, oldTitle) {
-    let componentGroupName = item.groupName ? ` ${item.groupName}` : '';
     return (oldTitle || '') + ` ${item.title}${componentGroupName}`;
   });
   $templateAnchor.attr(
@@ -3016,7 +3016,7 @@ function createComponentAnchor(item, profileId, isIconOnly = false) {
     const $button = $templateAnchor.find('.pcomponent-button');
     $button.addClass(item.color);
     $button.find('.pcomponent-icon').addClass(item.iconClass);
-    $button.find('.pcomponent-name').text(item.buttonLabel);
+    $button.find('.pcomponent-name').text(`${item.buttonLabel}${componentGroupName}`);
     $icon.addClass(item.iconClass);
     $templateAnchor.removeClass('pcomponent-button-template');
   }
