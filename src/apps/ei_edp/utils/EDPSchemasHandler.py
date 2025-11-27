@@ -175,9 +175,11 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
                     
                     worksheet_sample = workbook.create_sheet("sample_metadata")
                     sample_metadata_columns = ["submitter_sample_reference", "taxon_id", "scientific_name","biosampleAccession"]
-                    for r in dataframe_to_rows(component_data_df[sample_metadata_columns], index=False, header=True):
-                        worksheet_sample.append(r)
-                    submitter_sample_reference = component_data_df["submitter_sample_reference"].tolist()
+                    submitter_sample_reference = []
+                    if not component_data_df.empty:
+                        for r in dataframe_to_rows(component_data_df[sample_metadata_columns], index=False, header=True):
+                            worksheet_sample.append(r)
+                        submitter_sample_reference = component_data_df["submitter_sample_reference"].tolist()
                     component_data_df = sapio_component_data_df
 
                 if component_name == "study":

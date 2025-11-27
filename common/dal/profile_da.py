@@ -381,7 +381,7 @@ class Profile(DAComponent):
     def validate_and_delete(self, profile_id):
         # check if any submission object reference this profile, if so do not delete
         condition = {"profile_id": profile_id}
-        for da in ["submission", "sample", "datafile"]:
+        for da in ["submission", "sample", "datafile", "singlecell"]:
             if handle_dict[da].count_documents(condition) > 0:
                 return False
         rec = self.get_record(profile_id)
