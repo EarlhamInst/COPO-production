@@ -664,7 +664,7 @@ function do_render_server_side_table(componentMeta) {
   // Add 'tour-id' attribute to the table wrapper
   table_wrapper
     .find('.dataTables_scroll')
-    .attr('data-tour-id', 'component_table');
+    .attr('data-tour-id', 'component_table component_table_with_accessions');
 
   // Add component data status legend
   const $dataStatusLegend = $(
@@ -1054,7 +1054,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
   // Add 'tour-id' attribute to the table wrapper
   table_wrapper
     .find('.dataTables_scroll')
-    .attr('data-tour-id', 'component_table');
+    .attr('data-tour-id', 'component_table component_table_with_accessions');
 
   // Add component data status legend
   const $dataStatusLegend = $(

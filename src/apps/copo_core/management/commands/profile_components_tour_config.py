@@ -115,6 +115,26 @@ COMPONENTS_TOUR_CONFIG = {
             'quick_tour_title_button',
             'profile_component_icon_navigation_pane',
         ],
+        'messages': {
+            'component_table_with_accessions': {
+                'title': 'Submitted data with accessions',
+                'content': (
+                    'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns:'
+                    '<ul><li><strong>SUBMISSION ERROR</strong></li>'
+                    '</ul><br>'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns:'
+                    '<ul><li><strong>STUDY</strong></li>'
+                    '<li><strong>SAMPLE</strong></li>'
+                    '<li><strong>RUN REF</strong></li>'
+                    '<li><strong>ACCESSION</strong></li>'
+                    '</ul>'
+                    '<p class="shepherd-note">An accession is a unique identifier assigned to the submitted data. '
+                    'The accessions can be used to reference the submitted data in public repositories.</p>'
+                ),
+                'placement': 'right',
+            },
+        },
         'message_overrides': {
             'component_legend': {
                 'title': 'Data submission status legend',
@@ -141,6 +161,10 @@ COMPONENTS_TOUR_CONFIG = {
                 'component_legend',
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
+            ],
+            'release': [
+                'component_table_with_accessions',
+                'release_profile',
             ],
         },
     },
@@ -245,6 +269,23 @@ COMPONENTS_TOUR_CONFIG = {
             'profile_component_icon_navigation_pane',
         ],
         'messages': {
+            'component_table_with_accessions': {
+                'title': 'Submitted data with accessions',
+                'content': (
+                    'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns:'
+                    '<ul><li><strong>STATUS</strong></li>'
+                    '<li><strong>ERROR</strong></li>'
+                    '</ul><br>'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns:'
+                    '<ul><li><strong>SRA ACCESSION</strong></li>'
+                    '<li><strong>BIOSAMPLE ACCESSION</strong></li>'
+                    '</ul>'
+                    '<p class="shepherd-note">An accession is a unique identifier assigned to the submitted data. '
+                    'The accessions can be used to reference the submitted data in public repositories.</p>'
+                ),
+                'placement': 'right',
+            },
             'download_general_sample_manifest_button': {
                 'title': 'Download sample manifest',
                 'content': (
@@ -279,6 +320,10 @@ COMPONENTS_TOUR_CONFIG = {
                 'component_table',
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
+            ],
+            'release': [
+                'component_table_with_accessions',
+                'release_profile',
             ],
         },
     },
@@ -397,6 +442,27 @@ COMPONENTS_TOUR_CONFIG = {
             'quick_tour_title_button',
             'profile_component_icon_navigation_pane',
         ],
+        'messages': {
+            'component_table_with_accessions': {
+                'title': 'Submitted data with accessions',
+                'content': (
+                    'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns:'
+                    '<ul><li><strong>ENA FILE UPLOAD STATUS</strong></li>'
+                    '<li><strong>STATUS</strong></li>'
+                    '<li><strong>ENA FILE PROCESSING STATUS</strong></li>'
+                    '</ul><br>'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns:'
+                    '<ul><li><strong>RUN ACCESSION</strong></li>'
+                    '<li><strong>EXPERIMENT ACCESSION</strong></li>'
+                    '<li><strong>STUDY ACCESSION</strong></li>'
+                    '</ul>'
+                    '<p class="shepherd-note">An accession is a unique identifier assigned to the submitted data. '
+                    'The accessions can be used to reference the submitted data in public repositories.</p>'
+                ),
+                'placement': 'right',
+            },
+        },
         'stages': {
             'overview': [
                 'getting_started',
@@ -413,6 +479,7 @@ COMPONENTS_TOUR_CONFIG = {
                 'quick_tour_title_button',
             ],
             'release': [
+                'component_table_with_accessions',
                 'release_profile',
             ],
         },
@@ -434,6 +501,27 @@ COMPONENTS_TOUR_CONFIG = {
             'quick_tour_title_button',
             'profile_component_icon_navigation_pane',
         ],
+        'messages': {
+            'component_table_with_accessions': {
+                'title': 'Submitted data with accessions',
+                'content': (
+                    'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns:'
+                    '<ul><li><strong>ENA FILE UPLOAD STATUS</strong></li>'
+                    '<li><strong>STATUS</strong></li>'
+                    '<li><strong>ENA FILE PROCESSING STATUS</strong></li>'
+                    '</ul><br>'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns:'
+                    '<ul><li><strong>RUN ACCESSION</strong></li>'
+                    '<li><strong>EXPERIMENT ACCESSION</strong></li>'
+                    '<li><strong>STUDY ACCESSION</strong></li>'
+                    '</ul>'
+                    '<p class="shepherd-note">An accession is a unique identifier assigned to the submitted data. '
+                    'The accessions can be used to reference the submitted data in public repositories.</p>'
+                ),
+                'placement': 'right',
+            },
+        },
         'stages': {
             'overview': [
                 'getting_started',
@@ -448,6 +536,10 @@ COMPONENTS_TOUR_CONFIG = {
                 'component_legend',
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
+            ],
+            'release': [
+                'component_table_with_accessions',
+                'release_profile',
             ],
         },
     },
@@ -508,6 +600,25 @@ COMPONENTS_TOUR_CONFIG = {
             'profile_component_icon_navigation_pane',
         ],
         'messages': {
+            'component_table_with_accessions': {
+                'title': 'Submitted data with accessions',
+                'content': (
+                    'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns:'
+                    '<ul><li><strong>Status</strong></li>'
+                    '<li><strong>Approval Date</strong></li>'
+                    '<li><strong>Error</strong></li>'
+                    '</ul><br>'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns:'
+                    '<ul><li><strong>Biosample Accession</strong></li>'
+                    '<li><strong>SRA Accession</strong></li>'
+                    '<li><strong>Submission Accession</strong></li>'
+                    '</ul>'
+                    '<p class="shepherd-note">An accession is a unique identifier assigned to the submitted data. '
+                    'The accessions can be used to reference the submitted data in public repositories.</p>'
+                ),
+                'placement': 'right',
+            },
             'new_samples_button': {
                 'title': 'Add (or update) samples',
                 'content': (
@@ -560,6 +671,9 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
+            'release': [
+                'component_table_with_accessions',
+            ],
         },
     },
     'seqannotation': {
@@ -579,6 +693,27 @@ COMPONENTS_TOUR_CONFIG = {
             'quick_tour_title_button',
             'profile_component_icon_navigation_pane',
         ],
+        'messages': {
+            'component_table_with_accessions': {
+                'title': 'Submitted data with accessions',
+                'content': (
+                    'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns:'
+                    '<ul><li><strong>SUBMISSION ERROR</strong></li>'
+                    '</ul><br>'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns:'
+                    '<ul><li><strong>STUDY</strong></li>'
+                    '<li><strong>SAMPLE</strong></li>'
+                    '<li><strong>RUN</strong></li>'
+                    '<li><strong>EXPERIMENT</strong></li>'
+                    '<li><strong>ACCESSION</strong></li>'
+                    '</ul>'
+                    '<p class="shepherd-note">An accession is a unique identifier assigned to the submitted data. '
+                    'The accessions can be used to reference the submitted data in public repositories.</p>'
+                ),
+                'placement': 'right',
+            },
+        },
         'message_overrides': {
             'component_legend': {
                 'title': 'Data submission status legend',
@@ -606,6 +741,10 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
+            'release': [
+                'component_table_with_accessions',
+                'release_profile',
+            ],
         },
     },
     'singlecell': {
@@ -629,6 +768,48 @@ COMPONENTS_TOUR_CONFIG = {
             'quick_tour_title_button',
             'profile_component_icon_navigation_pane',
         ],
+        'messages': {
+            'component_table_with_accessions': {
+                'title': 'Submitted data with accessions',
+                'content': (
+                    'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns:'
+                    '<ul><li><strong>Status For Ena</strong></li>'
+                    '<li><strong>Status For Zenodo</strong></li>'
+                    '<li><strong>Error For Ena</strong></li>'
+                    '<li><strong>Error For Zenodo</strong></li>'
+                    '</ul><br>'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns:'
+                    '<ul><li><strong>Accession For Ena</strong></li>'
+                    '<li><strong>Accession For Zenodo</strong></li>'
+                    '</ul>'
+                    '<p class="shepherd-note">An accession is a unique identifier assigned to the submitted data. '
+                    'The accessions can be used to reference the submitted data in public repositories.</p>'
+                ),
+                'placement': 'top',
+            },
+            'publish_study': {
+                'title': 'Publish study',
+                'content': (
+                    'After submitting the data, you can publish the study to any of the following '
+                    'public repositories to make it publicly accessible:<br>'
+                    '<ul><li><strong>European Nucleotide Archive (ENA)</strong> using '
+                    '<button class="tiny ui basic teal button publish-btn no-click">'
+                    '<i class="fa fa-info-circle"></i>&nbsp;Publish to ENA</button></li>'
+                    '<li><strong>Zenodo</strong> using '
+                    '<button class="tiny ui basic blue button publish-btn no-click">'
+                    '<i class="fa fa-info-circle"></i>&nbsp;Publish to Zenodo</button></li>'
+                    '</ul><br>'
+                    'Select <strong>one record</strong> under the <strong>STUDY</strong> tab in the data table '
+                    'then, click any of the buttons to publish the study. '
+                    'The publication will include all data related to the selected record matching the study '
+                    'ID in the <strong>Study ID</strong> column.<br><br>'
+                    '<p class="shepherd-note">Publishing your study is an important step in sharing your '
+                    'research with the scientific community. A public repository is a database that stores and shares '
+                    'research data with the global scientific community.</p>'
+                ),
+            },
+        },
         'stages': {
             'overview': [
                 'getting_started',
@@ -644,6 +825,7 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
+            'publish': ['component_table_with_accessions', 'publish_study'],
         },
     },
     'stx_fish': {
@@ -703,6 +885,24 @@ COMPONENTS_TOUR_CONFIG = {
             'quick_tour_title_button',
             'profile_component_icon_navigation_pane',
         ],
+        'messsages': {
+            'component_table_with_accessions': {
+                'title': 'Submitted data with accessions',
+                'content': (
+                    'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns:'
+                    '<ul><li><strong>STATUS</strong></li>'
+                    '<li><strong>ERROR</strong></li>'
+                    '</ul><br>'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns:'
+                    '<ul><li><strong>ACCESSION</strong></li>'
+                    '</ul>'
+                    '<p class="shepherd-note">An accession is a unique identifier assigned to the submitted data. '
+                    'The accessions can be used to reference the submitted data in public repositories.</p>'
+                ),
+                'placement': 'right',
+            },
+        },
         'message_overrides': {
             'component_legend': {
                 'title': 'Data submission status legend',
@@ -729,6 +929,10 @@ COMPONENTS_TOUR_CONFIG = {
                 'component_legend',
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
+            ],
+            'release': [
+                'component_table_with_accessions',
+                'release_profile',
             ],
         },
     },
