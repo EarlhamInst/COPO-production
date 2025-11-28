@@ -236,11 +236,11 @@ div[class*=" col-"] {
 }
 
 .dataTables_scrollBody {
-  max-height: 350px !important; /* Set max height to 350px */
-  overflow-y: auto; /* Enable scrolling */
+  max-height: 350px !important;
+  overflow-y: auto;
 }
 
-.dataTables_filter{
+.dataTables_filter {
   margin-top: 1.5rem; /* Space above search box */
 }
 
@@ -248,15 +248,23 @@ div[class*=" col-"] {
 .dataTables_wrapper .dt-buttons {
   width: 100% !important;
 }
-/*server-side processing styling for datatables*/
-div.dataTables_wrapper div.dataTables_processing {
-  background: transparent !important;
+
+/* Data table controls row */
+.dataTables-controls-row {
+  width: 100%;
+  margin-bottom: 10px;
+  margin-top: 30px;
+  display: flex;
+  justify-content: flex-end;
 }
 
-div.dataTables_length,
+div.dataTables_length {
+  padding-top: 6px;
+}
+
 div.dataTables_paginate {
-  padding-top: 15px !important;
-  width: 50%;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .modal div .dataTables_wrapper .dataTables_info,
@@ -269,17 +277,13 @@ div.dataTables_paginate {
   width: 100% !important;
 }
 
-div.dataTables_length {
-  float: left;
-}
-
 .modal .tab-content .dataTables_length {
   padding-top: 0 !important;
 }
 
-div.dataTables_paginate {
-  float: right;
-  margin-bottom: 5px !important;
+/*server-side processing styling for datatables*/
+div.dataTables_wrapper div.dataTables_processing {
+  background: transparent !important;
 }
 
 div.dataTables_processing.ui.segment {
