@@ -29,6 +29,10 @@ app.conf.beat_schedule = {
         'task': 'src.apps.copo_core.tasks.update_ena_checklist',
         'schedule': timedelta(days=1),
     },
+    'update_ena_read_platform': {
+        'task': 'src.apps.copo_core.tasks.update_ena_read_platform',
+        'schedule': timedelta(days=1),
+    },
     'update_ena_read_checklist': {
         'task': 'src.apps.copo_core.tasks.update_ena_read_checklist',
         'schedule': timedelta(days=1),

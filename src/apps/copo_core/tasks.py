@@ -8,6 +8,7 @@ import redis
 from functools import wraps
 from django.conf import settings
 from common.ena_utils.EnaChecklistHandler import ChecklistHandler, ReadChecklistHandler
+from common.ena_utils.EnaReadPlatformHandler import EnaReadPlatformHandler
 from common.ena_utils.FileTransferUtils import housekeeping_local_uploads
 
 
@@ -89,4 +90,10 @@ def update_ena_read_checklist(self):
     ReadChecklistHandler().updateCheckList()
     return True
 
- 
+
+@app.task(bind=True, base=CopoBaseClassForTask)
+@only_one(key="update_ena_read_platform", timeout=5)
+def update_ena_read_platform(self):
+    Logger().debug("Running update_ena_read_platform")
+    EnaReadPlatformHandler().update_platform()
+    return True

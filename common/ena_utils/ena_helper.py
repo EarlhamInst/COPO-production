@@ -566,7 +566,7 @@ class EnaSubmissionHelper:
         function creates and submits datafile xml
         :return:
         """
-        instruments = COPOLookup(data_source='sequencing_instrument').broker_data_source()
+        instruments = helpers.get_db_data_sources()['sequencing_instrument'] # COPOLookup(data_source='sequencing_instrument').broker_data_source()
         output_location = tempfile.gettempdir()
         non_attribute_names =[]
 
@@ -1278,7 +1278,6 @@ class EnaSubmissionHelper:
         analysis_submission = {'id': submission_id, "component": analysis_component_name,
                       'analysis_ids': analysis_ids, 'href': href, "study_id":study_id}
         return Submission().update_analysis_submission_async(self.submission_id, analysis_submission)
-
 
 
 class SubmissionHelper:

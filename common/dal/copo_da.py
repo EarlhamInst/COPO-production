@@ -1448,6 +1448,71 @@ class EnaChecklist(DAComponent):
         )
 
 
+class EnaReadPlatformCollection(DAComponent):
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(EnaReadPlatformCollection, self).__init__(
+            profile_id=profile_id,
+            component='ena_read_platform',
+            subcomponent=subcomponent,
+        )
+
+    def get_platform(self, platform_name, instrument_name=None):
+        query = {'platform': platform_name}
+        projection = {'_id': 0, 'platform': 1}
+        pipeline = None
+
+        if instrument_name:
+            if isinstance(instrument_name, str):
+                projection['instruments']= {
+                        '$elemMatch': {'$eq': instrument_name}
+                    }
+            elif isinstance(instrument_name, list):
+                projection['instruments'] = (
+                    {
+                        '$filter': {
+                            'input': '$instruments',
+                            'as': 'inst',
+                            'cond': {'$in': ['$$inst', instrument_name]}
+                        }
+                    },
+                )
+                pipeline = [
+                    {'$match': query},
+                    {'$project': projection},
+                ]
+        else:
+            projection['instruments'] = 1
+
+        platform = (
+            next(self.get_collection_handle().aggregate(pipeline), None)
+            if pipeline
+            else self.get_collection_handle().find_one(query, projection)
+        )
+        return platform
+
+    def get_platforms(self):
+        return cursor_to_list(
+            self.get_collection_handle().find(
+                ({}, {'_id': 0, 'platform': 1, 'instruments': 1})
+            )
+        )
+
+    def get_sequencing_instrument_dropdown(self):
+        platforms = self.get_platforms()
+        dropdown = []
+
+        for x in platforms:
+            platform = x['platform']
+
+            for instrument in x.get('instruments', []):
+                dropdown.append({
+                    'value': instrument,
+                    'label': instrument,
+                    'platform': platform
+                })
+        return dropdown
+
+
 '''
 class EnaObject(DAComponent):
     def __init__(self, profile_id=None):
