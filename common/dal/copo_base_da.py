@@ -91,6 +91,7 @@ AssemblyCollection = 'AssemblyCollection'
 AnnotationCollection = "SeqAnnotationCollection"
 TaggedSequenceCollection = "TagSequenceCollection"
 EnaChecklistCollection = "EnaChecklistCollection"
+EnaReadPlatformCollection = "EnaReadPlatformCollection"
 ReadObjectCollection = "SampleCollection"
 SinglecellSchemasCollection = "SingleCellSchemasCollection"
 SinglecellCollection = "SingleCellCollection"
@@ -124,6 +125,7 @@ handle_dict = dict(audit=get_collection_ref(AuditCollection),
                    submissionQueue=get_collection_ref(
                        SubmissionQueueCollection),
                    taggedseq=get_collection_ref(TaggedSequenceCollection),
+                   ena_read_platform=get_collection_ref(EnaReadPlatformCollection),
                    enaChecklist=get_collection_ref(EnaChecklistCollection),
                    read=get_collection_ref(ReadObjectCollection),
                    singlecellSchemas = get_collection_ref(SinglecellSchemasCollection),

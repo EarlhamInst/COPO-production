@@ -514,3 +514,9 @@ def describe_regex(pattern):
         return 'a value in a required format'
     except Exception as e:
         l.exception(f"Error describing regex pattern '{pattern}': {e}")
+
+
+def get_db_data_sources():
+    from common.dal.copo_da import EnaReadPlatformCollection
+    
+    return {'sequencing_instrument': EnaReadPlatformCollection().get_platforms()}

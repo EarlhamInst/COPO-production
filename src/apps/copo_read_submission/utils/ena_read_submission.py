@@ -14,6 +14,7 @@ from common.utils.helpers import (
     get_datetime,
     json_to_pytype,
     get_not_deleted_flag,
+    get_db_data_sources
 )
 from common.schemas.utils.data_utils import simple_utc
 from django.conf import settings
@@ -1359,9 +1360,10 @@ class EnaReads:
             )
 
         # get sequencing instruments
-        instruments = COPOLookup(
-            data_source='sequencing_instrument'
-        ).broker_data_source()
+        instruments = get_db_data_sources()['sequencing_instrument'] 
+        # COPOLookup(
+        #     data_source='sequencing_instrument'
+        # ).broker_data_source()
 
         for indx in range(len(datafiles_pairs)):
             file1_id = datafiles_pairs.iloc[indx]['_id']
