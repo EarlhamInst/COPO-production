@@ -68,25 +68,32 @@
                         <h3 class="copo-webui-popover-title">Getting started</h3>
                         <div class="copo-webui-popover-content">
                             <div class="webpop-content-div">
-                                <p>
-                                    This page relates to the <strong>Accessions</strong> component 
-                                    (<i id="componentIcon" class="ui icon" aria-hidden="true"></i>) of a profile.
-                                    It displays the unique identifiers (accessions) assigned to submissions along 
+                                <p>This page relates to the <strong>Accessions</strong> component 
+                                   (<i id="componentIcon" class="ui icon" aria-hidden="true"></i>) of a profile.
+                                </p>
+                                <p>It displays the unique identifiers (accessions) assigned to submissions along 
                                     with basic information about each submission. These may include project, biosample,
                                     <span class="hover-text" title="Sequence Read Archive (SRA, previously known as the Short Read Archive)">SRA</span>
-                                    and submission accessions associated.
+                                    and other associated submission accessions.
                                 </p>
-                                <p>
-                                    {% if showAllCOPOAccessions is False %}
-                                    <br><br>
-                                    <div><strong>All COPO accessions: </strong>To explore all accessions on COPO,
-                                        click 
-                                        <button class="circular tiny ui icon pink button no-click">
-                                            <i class="icon sitemap"></i>
-                                        </button> above.
-                                    </div>
-                                    {% endif %}
-                                </p>
+
+                                {% if showAllCOPOAccessions is False %}
+                                <br>
+                                <div>
+                                    <p><strong>All COPO accessions:</strong> To explore all accessions on COPO, click
+                                    <button class="circular tiny ui icon pink button no-click">
+                                        <i class="icon sitemap"></i>
+                                    </button> above.
+                                </div>
+                                {% endif %}
+                                <br>
+                                <div>
+                                    <strong>Quick tour</strong>: To explore various controls on this page, click 
+                                    <button class="circular tiny ui icon orange button no-click">
+                                        <i class="icon lightbulb"></i>
+                                    </button>
+                                    above.
+                                </div>
                             </div>
                         </div>
                     </div>
