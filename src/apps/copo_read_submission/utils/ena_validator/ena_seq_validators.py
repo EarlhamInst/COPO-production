@@ -1,6 +1,7 @@
 from common.validators.validator import Validator
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
+from common.schemas.utils.data_utils import join_with_and
 from .validation_messages import MESSAGES as msg
 from django_tools.middlewares import ThreadLocal
 import os
@@ -25,7 +26,6 @@ class SinglePairedValuesValidator(Validator):
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
 
-
 class FileSuffixValidator(Validator):
     def validate(self):
         for row in self.data.iterrows():
@@ -35,23 +35,26 @@ class FileSuffixValidator(Validator):
             no_of_file = 0
             for f in file_names.split(","):
                 if os.path.dirname(f.strip()) != "":
-                    error_str = f + ": There should be no folder name for the file."
+                    error_str = f'<strong>{f}</strong>: Files should not be placed inside a folder.'
                     self.errors.append(error_str)
                     self.flag = False
                 no_of_file += 1 
                 # unpacking the tuple
                 file_name, file_extension = os.path.splitext(f.strip())
                 if file_extension not in [".gz", ".bz2", ".bam", ".cram"]:
-                    error_str = f + ": File must be a gz / bz2 file for fastq or bam / cram file."
-                    self.errors.append(error_str)
+                    self.errors.append(
+                        msg['validation_msg_file_invalid_name'].format(file_name=f)
+                    )
                     self.flag = False
                 if file_extension in [".bam", ".cram"] and no_of_file > 1:
-                    error_str = f + ": File cannot be in pair for bam / cram type."
-                    self.errors.append(error_str)
+                    self.errors.append(
+                        msg['validation_msg_file_must_be_single'].format(file_name=f)
+                    )
                     self.flag = False
                 if file_extension in [".gz", ".bz2"] and not file_name.endswith(".fastq"):
-                    error_str = f + ": for gz / bz2 file, please make sure it is fastq type"
-                    self.warnings.append(error_str)
+                    self.warnings.append(
+                        msg['validation_msg_file_invalid_fastq'].format(file_name=f)
+                    )
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
 
@@ -66,7 +69,7 @@ class ReadNotInSubmissionQueueValidator(Validator):
             sample_names = list(self.data["sample"])
             samples = Sample(profile_id=self.profile_id).get_all_records_columns(projection=dict(read=1,name=1), filter_by=dict(profile_id=self.profile_id, name={"$in": sample_names}, read={"$exists": True}))
             sampleMap = {sample["name"]: sample.get("read",[]) for sample in samples}
-             
+
         for index, row in self.data.iterrows():
             file_names = row["file_name"]
             sample_name = row["sample"] if "sample" in self.data.columns else row["biosampleAccession"]
@@ -74,12 +77,13 @@ class ReadNotInSubmissionQueueValidator(Validator):
             if reads:
                 for read in reads:
                     if set(read.get("file_name", str()).split(",")) == set(file_names.split(",")) and read.get("status","pending") == "processing":
-                        self.errors.append("File " + file_names + " already in submission queue for sample " + sample_name)
+                        self.errors.append(msg['validation_msg_file_already_in_queue'].format(
+                            file_names=join_with_and(file_names.split(",")), sample_name=sample_name
+                        ))
                         self.flag = False 
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
- 
-    
+
 class DuplicatedDataFile(Validator):
     def _extract_ref_parts(self, ref_string):
         '''
@@ -124,7 +128,7 @@ class DuplicatedDataFile(Validator):
         file = [ x for x in file_name_list if file_name_list.count(x) > 1]
 
         for f in set(file):
-            self.errors.append("File " + f + " is duplicated in manifest")
+            self.errors.append(f'File <strong>{f}</strong> is duplicated in manifest')
             self.flag = False               
 
         for index, row in self.data.iterrows():

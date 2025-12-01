@@ -69,17 +69,27 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
 
     else:
         # bucket is missing, therefore create bucket and notify user to upload files
-        notify_annotation_status(data={"profile_id": profile_id},
-                msg="s3 bucket not found, creating it",
-                action="info",
-                html_id="annotation_info")
-       
-        s3obj.make_s3_bucket(bucket_name=bucket_name)
-        msg='Files not found, please upload these files to COPO and try again',
-        notify_annotation_status(data={"profile_id": profile_id},
-            msg= msg,
+        # msg = "s3 bucket not found, creating it"
+        notify_annotation_status(
+            data={"profile_id": profile_id},
+            msg="No data file storage was found for this profile, creating it now...",
             action="info",
-            html_id="annotation_info")
+            html_id="annotation_info",
+        )
+
+        s3obj.make_s3_bucket(bucket_name=bucket_name)
+        msg = (
+            "No data files were found in COPO.<br>"
+            "To upload them, use the <strong>Manage Data Files</strong> button "
+            "for the relevant profile on the <strong>Work Profiles</strong> page or "
+            "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+        )
+        notify_annotation_status(
+            data={"profile_id": profile_id},
+            msg=msg,
+            action="info",
+            html_id="annotation_info",
+        )
         return {"error": msg}
 
 

@@ -106,11 +106,20 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
                             #return HttpResponse(status=400, content=msg)
                     else:
                         # bucket is missing, therefore create bucket and notify user to upload files
-                        notify_singlecell_status(data={"profile_id": profile_id},
-                                        msg='s3 bucket not found, creating it', action="info",
-                                        html_id="singlecell_info")
+                        # msg='s3 bucket not found, creating it'
+                        notify_singlecell_status(
+                            data={"profile_id": profile_id},
+                            msg='No data file storage was found for this profile, creating it now...',
+                            action="info",
+                            html_id="singlecell_info",
+                        )
                         s3obj.make_s3_bucket(bucket_name=bucket_name)
-                        msg='Files not found, please click "Upload Data into COPO" and follow the instructions.'
+                        msg = (
+                            "No data files were found in COPO.<br>"
+                            "To upload them, use the <strong>Manage Data Files</strong> button "
+                            "for the relevant profile on the <strong>Work Profiles</strong> page or "
+                            "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+                        )
                         is_warning = True
                         notify_singlecell_status(data={"profile_id": profile_id},
                                         msg=msg, action="warning", html_id="singlecell_info")
