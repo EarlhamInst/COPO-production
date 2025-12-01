@@ -121,8 +121,8 @@ $(document).on('document_ready', function () {
       $(element).html(d.message);
       var args_dict = {};
       args_dict['singlecell_checklist_id'] = get_checklist_id();
-      (args_dict['profile_id'] = $('#profile_id').val()),
-        (args_dict['schema_name'] = schema_name);
+      args_dict['profile_id'] = $('#profile_id').val();
+      args_dict['schema_name'] = schema_name;
       load_records(componentMeta, args_dict, columnDefs); // call to load component records
     }
   };
@@ -276,8 +276,8 @@ $(document).on('document_ready', function () {
       $(element).html(d.message);
       var args_dict = {};
       args_dict['singlecell_checklist_id'] = get_checklist_id();
-      (args_dict['profile_id'] = $('#profile_id').val()),
-        (args_dict['schema_name'] = schema_name);
+      args_dict['profile_id'] = $('#profile_id').val();
+      args_dict['schema_name'] = schema_name;
       load_records(componentMeta, args_dict, columnDefs); // call to load component records
     } else if (d.action === 'file_processing_status') {
       $(element).html(d.message);
@@ -315,8 +315,8 @@ $(document).on('document_ready', function () {
     'href',
     $('#blank_manifest_url_' + get_checklist_id()).val()
   );
-  (args_dict['profile_id'] = $('#profile_id').val()),
-    load_records(componentMeta, args_dict, columnDefs); // call to load component records
+  args_dict['profile_id'] = $('#profile_id').val();
+  load_records(componentMeta, args_dict, columnDefs); // call to load component records
 
   //register_resolvers_event(); //register event for publication resolvers
 
