@@ -4182,3 +4182,33 @@ function resetValues() {
     .empty()
     .hide();
 }
+
+function moveDataTableControlsToRow(
+  $tableWrapper,
+  className = 'dataTables_info'
+) {
+  // Move info (or length) and paginate into their own row as columns
+  const infoOrLengthDiv = $tableWrapper.find(`.${className}`);
+  const paginateDiv = $tableWrapper.find('.dataTables_paginate');
+  let rowDiv = $tableWrapper.find('.dataTables-controls-row');
+
+  if (!rowDiv.length) {
+    // Row doesn't exist yet, create it
+    rowDiv = $('<div class="row dataTables-controls-row"></div>');
+    $tableWrapper.append(rowDiv);
+  }
+
+  rowDiv.empty(); // Clear previous contents to avoid duplicates
+
+  // Apply column classes
+  infoOrLengthDiv.addClass('col-sm-4'); // Left half
+  paginateDiv.addClass('col-sm-8 text-right'); // Right half
+
+  // Append existing elements into the row
+  rowDiv.append(infoOrLengthDiv).append(paginateDiv);
+
+  // Add row to wrapper if length control
+  if (className === 'dataTables_length') {
+    $tableWrapper.append(rowDiv);
+  }
+}

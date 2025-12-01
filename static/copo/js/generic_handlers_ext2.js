@@ -682,14 +682,8 @@ function do_render_server_side_table(componentMeta) {
     console.warn(`No data status legend found for ${componentMeta.component}`);
   }
 
-  // Move length and paginate into row as columns
-  const lengthDiv = table_wrapper.find('.dataTables_length');
-  const paginateDiv = table_wrapper.find('.dataTables_paginate');
-  const rowDiv = $('<div class="row dataTables-controls-row"></div>');
-  lengthDiv.addClass('col-sm-4'); // Left half
-  paginateDiv.addClass('col-sm-8 text-right'); // Right half
-  rowDiv.append(lengthDiv).append(paginateDiv);
-  table_wrapper.append(rowDiv);
+  // Reposition info and paginate controls
+  moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
 
   //handle event for table details
   $('#' + tableID + ' tbody')
@@ -1080,15 +1074,9 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
   } else {
     console.warn(`No data status legend found for ${componentMeta.component}`);
   }
-  
-  // Move length and paginate into row as columns
-  const lengthDiv = table_wrapper.find('.dataTables_length');
-  const paginateDiv = table_wrapper.find('.dataTables_paginate');
-  const rowDiv = $('<div class="row dataTables-controls-row"></div>');
-  lengthDiv.addClass('col-sm-4'); // Left half
-  paginateDiv.addClass('col-sm-8 text-right'); // Right half
-  rowDiv.append(lengthDiv).append(paginateDiv);
-  table_wrapper.append(rowDiv);
+
+  // Reposition info and paginate controls
+  moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
 
   //handle event for table details
   $('#' + tableID + ' tbody')

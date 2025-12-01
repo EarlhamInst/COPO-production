@@ -184,52 +184,6 @@ div[class*=" col-"] {
   flex-wrap: nowrap !important;
 }
 
-/* .copo-table-cbuttons {
-  display: inline-block;
-  text-align: right;
-  flex-wrap: nowrap;
-  justify-content: flex-end;
-  gap: 12px 8px;
-  padding-left: 0 !important;
-  margin-top: 12px;
-  width: 100%;
-}
-
-.dt-buttons button,
-.copo-table-cbuttons > div {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-}
-
-.dt-buttons.btn-group {
-  float: none !important;
-  display: flex !important;
-  text-align: right;
-  justify-content: flex-end !important;
-  flex-wrap: nowrap !important;
-  gap: 8px;
-  width: 100%;
-}
-
-.dt-buttons.btn-group button,
-.copo-table-cbuttons,
-.copo-table-cbuttons > div {
-  display: inline-block;
-  vertical-align: middle;
-}
-
-/* Prevent stupid Bootstrap floats */
-/*
-.dt-buttons.btn-group > button {
-  float: none !important;
-}
-
-.dt-buttons.btn-group > * {
-  display: inline-flex !important;
-  align-items: center;
-} */
-
 .dataTables_info {
   padding-bottom: 15px !important;
   padding-top: 15px !important;
@@ -240,8 +194,13 @@ div[class*=" col-"] {
   overflow-y: auto;
 }
 
-.dataTables_filter {
-  margin-top: 1.5rem; /* Space above search box */
+/* Space above search box */
+.modal .dataTables_filter {
+  margin-top: 0 !important  ;
+}
+
+.copo-main .dataTables_filter {
+  margin-top: 1.5rem;
 }
 
 /* Ensure wrapper isn't shrinking container */
@@ -258,8 +217,12 @@ div[class*=" col-"] {
   justify-content: flex-end;
 }
 
-div.dataTables_length {
+.copo-main div.dataTables_length {
   padding-top: 6px;
+}
+
+.modal .dataTables_length {
+  padding-top: 0 !important;
 }
 
 div.dataTables_paginate {
