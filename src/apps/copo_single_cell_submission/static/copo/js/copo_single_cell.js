@@ -259,6 +259,27 @@ $(document).on('document_ready', function () {
             scrollX: true,
           })
           .draw();
+
+        // Move info and paginate into their own row
+        const $tableWrapper = $(`#singlecell_parse_table_${component}_wrapper`);
+        const infoDiv = $tableWrapper.find('.dataTables_info');
+        const paginateDiv = $tableWrapper.find('.dataTables_paginate');
+        let rowDiv = $tableWrapper.find('.dataTables-controls-row');
+
+        if (!rowDiv.length) {
+          // Row doesn't exist yet, create it
+          rowDiv = $('<div class="row dataTables-controls-row"></div>');
+          $tableWrapper.append(rowDiv);
+        }
+
+        rowDiv.empty(); // Clear previous contents to avoid duplicates
+
+        // Apply column classes
+        infoDiv.addClass('col-sm-4'); // Left half
+        paginateDiv.addClass('col-sm-8 text-right'); // Right half
+
+        // Append existing elements into the row
+        rowDiv.append(infoDiv).append(paginateDiv);
       });
 
       $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {

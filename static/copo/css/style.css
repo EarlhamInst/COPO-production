@@ -267,9 +267,8 @@ div.dataTables_paginate {
   justify-content: flex-end;
 }
 
-.modal div .dataTables_wrapper .dataTables_info,
-.modal .dataTables_wrapper .dataTables_info {
-  padding-top: 25px !important;
+.modal .dataTables-controls-row .dataTables_info {
+  padding-top: 8px !important;
 }
 
 .modal div .dataTables_wrapper .dataTables_paginate,
