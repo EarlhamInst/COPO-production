@@ -1,6 +1,6 @@
 import boto3
 from botocore.config import Config
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, EndpointConnectionError, BotoCoreError
 from django.conf import settings as s
 from django_tools.middlewares.ThreadLocal import get_current_request
 from common.schemas.utils.data_utils import join_with_and
@@ -133,7 +133,7 @@ class S3Connection():
                 if bucket["Name"] == uid:
                     return True
             return False
-        except ClientError as e:
+        except (EndpointConnectionError, BotoCoreError, ClientError) as e:
             Logger().exception(f'Error checking S3 buckets for uid {uid}: {str(e)}')
             return False
         except Exception as e:
@@ -149,7 +149,7 @@ class S3Connection():
         try:
             response = self.s3_client.create_bucket(Bucket=str(bucket_name))
             return response
-        except ClientError as e:
+        except (EndpointConnectionError, BotoCoreError, ClientError) as e:
             Logger().exception(f"Failed to create S3 bucket '{bucket_name}': {e}")
             return None
         except Exception as e:
