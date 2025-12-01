@@ -516,7 +516,14 @@ def describe_regex(pattern):
         l.exception(f"Error describing regex pattern '{pattern}': {e}")
 
 
-def get_db_data_sources():
+def get_db_data_sources(source=None):
     from common.dal.copo_da import EnaReadPlatformCollection
+
+    data_sources = {
+        'sequencing_instrument': EnaReadPlatformCollection().get_sequencing_instrument_dropdown()
+    }
     
-    return {'sequencing_instrument': EnaReadPlatformCollection().get_platforms()}
+    if source not in data_sources or source is None:
+        l.error(f'No data source found for: {source}')
+        return []
+    return data_sources[source]

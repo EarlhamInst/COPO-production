@@ -78,12 +78,6 @@ def get_sources_handle():  # this can be safely called by forked process
     return collection_handle
 
 
-def get_ena_read_platform_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['EnaReadPlatformCollection']
-    return collection_handle
-
-
 def logging_info(message=str(), submission_id=str()):
     """
     function provides a consistent way of logging submission status/information

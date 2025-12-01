@@ -1360,7 +1360,7 @@ class EnaReads:
             )
 
         # get sequencing instruments
-        instruments = get_db_data_sources()['sequencing_instrument'] 
+        instruments = get_db_data_sources(source='sequencing_instrument') 
         # COPOLookup(
         #     data_source='sequencing_instrument'
         # ).broker_data_source()
