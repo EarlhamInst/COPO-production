@@ -1,5 +1,6 @@
 import boto3
 from botocore.config import Config
+from botocore.exceptions import ClientError
 from django.conf import settings as s
 from django_tools.middlewares.ThreadLocal import get_current_request
 from common.schemas.utils.data_utils import join_with_and
@@ -125,12 +126,19 @@ class S3Connection():
         :param uid: the name of the bucket
         :return: True if exists, False if not
         '''
-        response = self.s3_client.list_buckets()
-        bucket_list = response['Buckets']
-        for bucket in bucket_list:
-            if bucket["Name"] == uid:
-                return True
-        return False
+        try:
+            response = self.s3_client.list_buckets()
+            bucket_list = response['Buckets']
+            for bucket in bucket_list:
+                if bucket["Name"] == uid:
+                    return True
+            return False
+        except ClientError as e:
+            Logger().exception(f'Error checking S3 buckets for uid {uid}: {str(e)}')
+            return False
+        except Exception as e:
+            Logger().exception(e)
+            return False
 
     def make_s3_bucket(self, bucket_name):
         '''
@@ -138,15 +146,18 @@ class S3Connection():
         :param bucket_name: name of bucket to make
         :return: the bucket
         '''
-
-        # try:
-        return self.s3_client.create_bucket(Bucket=str(bucket_name))
-
-        # except Exception as e:
-        #    Logger().exception(e)
-        #    response = "error"
-        #    print(e)
-        # return bucket
+        try:
+            response = self.s3_client.create_bucket(Bucket=str(bucket_name))
+            return response
+        except ClientError as e:
+            Logger().exception(f"Failed to create S3 bucket '{bucket_name}': {e}")
+            return None
+        except Exception as e:
+            Logger().exception(e)
+            #  response = "error"
+            #  print(e)
+            # return bucket_name
+            return None
 
     def check_s3_bucket_for_files(self, bucket_name, file_list, just_return_etags=False):
         '''
