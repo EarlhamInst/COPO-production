@@ -268,7 +268,7 @@ class S3Connection():
         file_not_deleted = []
         status = False
         for key in target_ids:
-            #ok to delete the file if there is no need to tranfer to ENA
+            # ok to delete the file if there is no need to transfer to ENA
             enaFile = filestatus_map.get(f"{bucket_name}/{key}")
             if not enaFile or get_transfer_status(enaFile) >= TransferStatus.DOWNLOADED_TO_LOCAL:
                 status = True          
