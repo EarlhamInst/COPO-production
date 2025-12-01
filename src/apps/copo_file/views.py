@@ -33,12 +33,18 @@ def process_urls(request):
     s3con = S3Connection()
 
     if not s3con.check_for_s3_bucket(bucket_name):
-        helpers.notify_frontend(data={"profile_id": profile_id},
-                                msg='s3 bucket not found, creating it', action="info",
-                                html_id="file_info", group_name=channels_group_name)
+        # msg='s3 bucket not found, creating it
+        helpers.notify_frontend(
+            data={"profile_id": profile_id},
+            msg='No data file storage was found for this profile, creating it now...',
+            action="info",
+            html_id="file_info",
+            group_name=channels_group_name,
+        )
         s3con.make_s3_bucket(bucket_name)
+        # msg = 's3 bucket created'
         helpers.notify_frontend(data={"profile_id": profile_id},
-                                msg='s3 bucket created', action="info",
+                                msg='A data file storage was created for this profile', action="info",
                                 html_id="file_info", group_name=channels_group_name)
     urls_list = list()
     for file_name in file_list:

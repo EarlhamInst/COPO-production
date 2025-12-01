@@ -8,6 +8,7 @@ import xml.etree.ElementTree as ET
 from Bio import Entrez
 from common.utils.helpers import notify_frontend
 from common.validators.helpers import check_taxon_ena_submittable, checkOntologyTerm
+from .validation_messages import MESSAGES as msg
 
 # check mandatory fields are present in spreadsheet
 # check mandatory fields are not empty
@@ -26,7 +27,7 @@ class MandatoryValuesValidator(Validator):
         for key, field in checklist["fields"].items():
             if field.get("mandatory","") == "mandatory":               
                 if key not in self.data.columns:
-                    self.errors.append("Mandatory column: '" + field["name"] + "' is missing")
+                    self.errors.append(f"Mandatory column <strong>{field['name']}</strong> is missing")
                     self.flag = False
                 else:
                     null_rows=[]
@@ -62,7 +63,22 @@ class IncorrectValueValidator(Validator):
                     if row:
                         if type == "TEXT_CHOICE_FIELD":
                             if row not in field.get("choice"):
-                                self.errors.append("Invalid value '" + row + "' in column : '" + field["label"] + "' at row " + str(i) + ". Valid values are: " + str(field.get("choice")))
+                                valid_values = field.get("choice", [])
+                                popover_html = (
+                                    "<ul>"
+                                    + "".join(f"<li>{v}</li>" for v in valid_values)
+                                    + "</ul>"
+                                )
+                                error_str = msg[
+                                    "validation_msg_invalid_column_value_with_list"
+                                ].format(
+                                    invalid_value=row,
+                                    column_name=field["label"],
+                                    row=str(i),
+                                    html_content=popover_html,
+                                    num_values=len(valid_values),
+                                )
+                                self.errors.append(error_str)
                                 self.flag = False
                         elif type == "TEXT_FIELD":
                             regex = field.get("regex","")
@@ -85,9 +101,12 @@ class IncorrectValueValidator(Validator):
                                             self.flag = False        
                                     else:
                                     '''
-                                    #  self.errors.append("Invalid value '" + row + "' in column : '" + field["label"] + "' at row " + str(i) + ". Valid value should match: " + str(regex))
+                                    
                                     self.errors.append(
-                                        f"Invalid value <strong>{row}</strong> in column <strong>{field['label']}</strong> at row <strong>{str(i)}</strong>.<br>Expected {str(field['regex_description'])}.<br>(Pattern: {str(regex)})"
+                                        f"Invalid value <strong>{row}</strong> in column <strong>{field['label']}</strong> "
+                                        f"at row <strong>{str(i)}</strong>.<br>"
+                                        f"Expected {str(field['regex_description'])}.<br>"
+                                        f"(Pattern: {str(regex)})"
                                     )
                                     self.flag = False
                         elif type == "BIOSAMPLEACCESSION_FIELD":
@@ -103,16 +122,20 @@ class IncorrectValueValidator(Validator):
                                         if taxon_id :
                                             read_taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
                                             if taxon_id != read_taxon_id:
-                                                self.errors.append("Invalid value " + read_taxon_id + " not match with " + taxon_id + " in column: 'TAXON_ID' at row " + str(i)) 
+                                                self.errors.append(
+                                                    f"Invalid value <strong>{read_taxon_id}</strong>.<br>" 
+                                                    f"Value does not match with <strong>{taxon_id}</strong> in column <strong>TAXON_ID</strong> "
+                                                    f"at row <strong>{str(i)}</strong>"
+                                                ) 
                                                 self.flag = False
                                             else:
                                                 self.data[f"{Validator.PREFIX_4_NEW_FIELD}sraAccession"] = sample_accession
                                     else:
-                                        self.errors.append("Invalid value " + row + " in column:'" + field["label"] + "'")
+                                        self.errors.append(f"Invalid value <strong>{row}</strong> in column <strong>{field['label']}</strong>")
                                         self.flag = False
                                 except Exception as e:
                                     lg.exception(e)
-                                    self.errors.append("Invalid value " + row + " in column:'" + field["label"] + "'")
+                                    self.errors.append(f"Invalid value <strong>{row}</strong> in column <strong>{field['label']}</strong>")
                                     self.flag = False
 
                             else:
@@ -122,11 +145,15 @@ class IncorrectValueValidator(Validator):
                                     # taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
                                     sample = biosampleAccessionsMap.get(row)
                                     if key in sample and sample[key] != value:
-                                        self.errors.append("Invalid value " + value + " not match with " + sample.get(key,"")+ " in column: '" + key + "' at row " + str(i)) 
+                                        self.errors.append(
+                                            f"Invalid value <strong>{value}</strong>.<br>"
+                                            f"Value does not match <strong>{sample.get(key,'')}</strong> "
+                                            f"in column <strong>{key}</strong> at row <strong>{str(i)}</strong>"
+                                        )
                                         self.flag = False
 
             else:
-                self.errors.append("Invalid column : '" + column +"'")
+                self.errors.append(f"Invalid column <strong>{column}</strong>")
                 self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
@@ -191,12 +218,13 @@ class OntologyValidator(Validator):
                         ontology =  field.get("ontology","").split(":")
                         if len(ontology) == 2:
                             if not checkOntologyTerm(ontology_id=ontology[0], ancestor=ontology[1], term=self.data[key][i]):
-                                # self.errors.append("Invalid value '" + self.data[key][i] + "' in column : '" + field["label"] + "' at row " + str(i+1) + ". Valid value should match ontology: " + str(field.get("ontology","")))
                                 self.errors.append(
-                                    f"Invalid value <strong>{self.data[key][i]}</strong> in column: <strong>{field['label']}</strong> at row <strong>{i + 1}</strong>.<br>Valid value should match ontology listed for <a target='_blank' href='{field.get('ontology_link','')}'>{str(field.get('ontology',''))}</a>."
+                                    f"Invalid value <strong>{self.data[key][i]}</strong> in column <strong>{field['label']}</strong> "
+                                    f"at row <strong>{i + 1}</strong>.<br>"
+                                    f"Expected a value matching an ontology listed for <a target='_blank' href='{field.get('ontology_link','')}'>{str(field.get('ontology',''))}</a>."
                                 )
                                 self.flag = False
                         else:
-                            self.errors.append("Ontology term reference is missing for column : '" + field["label"] + "'")
+                            self.errors.append(f"Ontology term reference is missing for column <strong>{field['label']}</strong>")
                             self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")

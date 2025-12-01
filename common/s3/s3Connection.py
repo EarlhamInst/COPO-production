@@ -169,9 +169,19 @@ class S3Connection():
             bucket_files = self.list_objects(bucket=bucket_name)
 
             if not bucket_files:
-                msg = "Bucket not found: " + bucket_name
-                notify_read_status(data={"profile_id": profile_id}, msg=msg, action="info",
-                                   html_id="sample_info")                 
+                # msg = "Bucket not found: " + bucket_name
+                msg = (
+                    "No data files were found in COPO.<br>"
+                    "To upload them, use the <strong>Manage Data Files</strong> button "
+                    "for the relevant profile on the <strong>Work Profiles</strong> page or "
+                    "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+                )
+                notify_read_status(
+                    data={"profile_id": profile_id},
+                    msg=msg,
+                    action="info",
+                    html_id="sample_info",
+                )
                 return False, msg
 
             for f in file_list:
@@ -202,24 +212,36 @@ class S3Connection():
             if not just_return_etags and len(missing_files) > 0:
                 # report missing files
                 missing_files_text = join_with_and([f"'{x}'" for x in missing_files])
-                msg = f'Data files missing: {missing_files_text}. Please upload them to COPO.'
+                msg = (
+                    f"Data files missing: {missing_files_text}.<br>"
+                    "To upload them, use the <strong>Manage Data Files</strong> button "
+                    "for the relevant profile on the <strong>Work Profiles</strong> page or "
+                    "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+                )
 
-                notify_read_status(data={"profile_id": profile_id}, msg=msg,
-                                   action="error",
-                                   html_id="sample_info")
-                
+                notify_read_status(
+                    data={"profile_id": profile_id},
+                    msg=msg,
+                    action="error",
+                    html_id="sample_info",
+                )
+
                 # return false to halt execution
                 return False, msg
             else:
                 return etags, ''
 
         except KeyError as e:
-            msg = "Key Error occurred...cannot find key: " + str(e)
-             
-            notify_read_status(data={"profile_id": profile_id}, msg=msg,
-                               action="info",
-                               html_id="sample_info")
-           
+            # msg = "Key Error occurred...cannot find key: " + str(e)
+            msg = f'A required piece of information, {e}, could not be found. Please contact support.'
+
+            notify_read_status(
+                data={"profile_id": profile_id},
+                msg=msg,
+                action="info",
+                html_id="sample_info",
+            )
+
             return False, msg
         except Exception as e:
             Logger().exception(e)
@@ -244,6 +266,18 @@ class S3Connection():
                 file_not_deleted.append(key)
                 
         if status:
-            return dict(status="success", message="File(s) have been deleted " +  ("excepts for following files in use: " + "<br/>".join(file_not_deleted) if file_not_deleted else "")  )
+            return dict(
+                status="success",
+                message="File(s) have been deleted "
+                + (
+                    "except for the following, which are currently in use:<br>"
+                    + "<br>".join(file_not_deleted)
+                    if file_not_deleted
+                    else ""
+                ),
+            )
         else:
-            return dict(status="failure", message="No File has been deleted and all selected file(s) in use")
+            return dict(
+                status="failure",
+                message="No files have been deleted because all selected files are in use.",
+            )

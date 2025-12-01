@@ -95,17 +95,24 @@ def parse_ena_spreadsheet(request):
                     return HttpResponseBadRequest()
             else:
                 # bucket is missing, therefore create bucket and notify user to upload files
+                # msg = 's3 bucket not found, creating it'
                 ghlper.notify_read_status(
                     data={"profile_id": profile_id},
-                    msg='s3 bucket not found, creating it',
+                    msg='No data file storage was found for this profile, creating it now...',
                     action="info",
                     html_id="sample_info",
                 )
                 s3obj.make_s3_bucket(bucket_name=bucket_name)
+                msg = (
+                    "No data files were found in COPO.<br>"
+                    "To upload them, use the <strong>Manage Data Files</strong> button "
+                    "for the relevant profile on the <strong>Work Profiles</strong> page or "
+                    "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+                )
+
                 ghlper.notify_read_status(
                     data={"profile_id": profile_id},
-                    msg='Files not found, please click "Upload Data into COPO" and follow the '
-                    'instructions.',
+                    msg=msg,
                     action="error",
                     html_id="sample_info",
                 )

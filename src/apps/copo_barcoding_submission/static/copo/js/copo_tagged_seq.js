@@ -118,6 +118,7 @@ $(document).ready(function () {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');
       $(element).html(d.message);
+      initialiseModalPopovers(); // Initialise popover in modal
       //$("#spinner").fadeOut()
     } else if (d.action === 'make_table') {
       // make table of metadata parsed from spreadsheet

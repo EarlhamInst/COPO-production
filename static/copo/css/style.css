@@ -782,6 +782,10 @@ copo-noborders-table.dataTable thead td {
 }
 
 /*custom styling of bootstrap dialog*/
+.modal .alert.alert-danger li {
+  margin-bottom: 5px;
+}
+
 .copo-modal2 > .modal-dialog {
   width: 400px;
 }
@@ -1027,6 +1031,22 @@ copo-noborders-table.dataTable thead td {
   border-left-color: #ebebeb;
 }
 
+.valid-enum-trigger {
+  text-decoration: underline;
+  color: #337ab7; /* Bootstrap primary color */
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.valid-enum-container .webui-popover-content {
+  max-height: 200px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+}
+
+.valid-enum-container .webui-popover-content ul {
+  padding-left: 15px !important;
+}
 /* END CUSTOM POPOVERS*/
 
 /*customising Bootstrap badge*/

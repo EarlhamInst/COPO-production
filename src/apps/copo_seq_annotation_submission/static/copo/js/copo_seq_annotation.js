@@ -185,6 +185,7 @@ $(document).ready(function () {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');
       $(element).html(d.message);
+      initialiseModalPopovers(); // Initialise popover in modal
       //$("#spinner").fadeOut()
     } else if (d.action == 'refresh_table') {
       //table data

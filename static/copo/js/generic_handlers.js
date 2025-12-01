@@ -996,6 +996,146 @@ function refresh_tool_tips() {
   setup_datepicker();
 } //end of func
 
+function initialiseModalPopovers() {
+  // Helper function to update popover position and arrow
+  function updatePopoverPosition($el, $popover) {
+    const $modal = $el.closest('.modal');
+    const modalOffset = $modal.offset();
+    const trigOff = $el.offset();
+    const trigW = $el.outerWidth();
+    const trigH = $el.outerHeight();
+    const popW = $popover.outerWidth();
+    const popH = $popover.outerHeight();
+    const gap = 8;
+
+    // Prefer right placement
+    let left = trigOff.left + trigW + gap;
+    let top = trigOff.top + trigH / 2 - popH / 2;
+
+    // Flip left if off viewport
+    const viewportW = $(window).width();
+    let placementClass = 'right';
+    if (left + popW + 10 > viewportW) {
+      left = trigOff.left - popW - gap;
+      placementClass = 'left';
+    }
+
+    // Clamp top
+    const maxTop = $(window).height() - popH - 10;
+    top = Math.max(10, Math.min(top, maxTop));
+
+    // Apply CSS
+    $popover.css({
+      position: 'absolute',
+      top: Math.round(top) + 'px',
+      left: Math.round(left) + 'px',
+    });
+
+    // Apply placement class for arrow
+    $popover.removeClass('left right').addClass(placementClass);
+
+    // Arrow vertically centered
+    const $arrow = $popover.find('.webui-arrow');
+    if ($arrow.length) {
+      const arrowTop = trigOff.top + trigH / 2 - $popover.offset().top;
+      $arrow.css({ top: arrowTop + 'px' });
+    }
+  }
+
+  // Destroy existing popovers and remove click handlers
+  $('.valid-enum-trigger')
+    .each(function () {
+      const $el = $(this);
+      if ($el.data('webui.popover')) {
+        try {
+          $el.webuiPopover('destroy');
+        } catch (e) {}
+      }
+    })
+    .off('click');
+
+  // Initialize new popovers
+  $('.valid-enum-trigger').each(function () {
+    const $el = $(this);
+    const content = $el.attr('data-content') || '';
+    const title = $el.attr('data-title') || 'Valid values';
+
+    const contentHtml = `<div class="webpop-scroll" style="max-height:300px; overflow-y:auto; overflow-x:hidden;">${content}</div>`;
+
+    $el.webuiPopover({
+      title: title,
+      content: contentHtml,
+      closeable: true,
+      cache: false,
+      width: 210,
+      trigger: 'click',
+      arrow: true,
+      animation: 'fade',
+      placement: 'auto-right',
+      dismissible: true,
+      container: $el.closest('.modal'),
+      onShow: function ($popover) {
+        $popover.addClass('valid-enum-container');
+
+        // Close button
+        $popover
+          .find('.close')
+          .off('click')
+          .on('click', function (e) {
+            e.preventDefault();
+            $el.webuiPopover('hide');
+          });
+
+        // Initial position
+        updatePopoverPosition($el, $popover);
+
+        // Store scroll handler
+        $popover.data('scrollHandler', function () {
+          updatePopoverPosition($el, $popover);
+        });
+
+        // Track scroll/resize events for sticky behavior
+        const scrollParents = $el.parents().filter(function () {
+          return (
+            $(this).css('overflow') === 'auto' ||
+            $(this).css('overflow') === 'scroll'
+          );
+        });
+        scrollParents
+          .add(window)
+          .on('scroll.popover resize.popover', $popover.data('scrollHandler'));
+      },
+      onHide: function ($popover) {
+        // Remove all scroll/resize handlers
+        const handler = $popover.data('scrollHandler');
+        if (handler) {
+          const scrollParents = $el.parents().filter(function () {
+            return (
+              $(this).css('overflow') === 'auto' ||
+              $(this).css('overflow') === 'scroll'
+            );
+          });
+          scrollParents
+            .add(window)
+            .off('scroll.popover resize.popover', handler);
+        }
+      },
+    });
+  });
+
+  // Window scroll: update all visible popovers
+  let scrollTimeout;
+  $(window).on('scroll', function () {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(function () {
+      $('.webui-popover.in').each(function () {
+        const handler = $(this).data('scrollHandler');
+        if (handler) handler();
+      });
+    }, 10);
+  });
+}
+
 function setup_datepicker() {
   var format_string;
   // dtol date format and ENA date formats are sadly different, so check if we are dealing with a dtol sample

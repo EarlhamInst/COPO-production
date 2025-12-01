@@ -21,7 +21,7 @@ class MandatoryValuesValidator(Validator):
         for key, field in schema.items():
             if field.get("mandatory","") == "M":               
                 if key not in self.data.columns:
-                    self.errors.append("Sheet " + component + ": Mandatory column '" + key + "' is missing")
+                    self.errors.append("Sheet " + component + ": Mandatory column <strong>" + key + "</strong> is missing")
                     self.flag = False
                 else:
                     null_rows=[]
@@ -59,7 +59,19 @@ class IncorrectValueValidator(Validator):
                         row = str(row).strip()
                         if type == "enum":
                             if row not in field.get("choice", []):
-                                self.errors.append( "Sheet <strong>" + component + "</strong>: Invalid value <strong>" + row + "</strong> in column <strong>" + field["term_label"] + "</strong> at row <strong>" + str(i+2) + "</strong>. Valid values are: " + str(field.get("choice")))
+                                valid_values = field.get("choice")
+                                popover_html = (
+                                    "<ul>"
+                                    + "".join(f"<li>{v}</li>" for v in valid_values)
+                                    + "</ul>"
+                                )
+                                num_values = len(valid_values)
+                                self.errors.append(
+                                    f"Sheet <strong>{component}</strong>: Invalid value <strong>{row}</strong> "
+                                    f"in column <strong>{field['term_label']}</strong> at row <strong>{i+2}</strong>.<br>"
+                                    f"Expected one of "
+                                    f"<span class='valid-enum-trigger' data-content='{popover_html}'>{num_values} valid values (click to view)</span>"
+                                )
                                 self.flag = False
                         elif type == "string":
                             regex = field.get("term_regex","")
@@ -125,7 +137,7 @@ class IncorrectValueValidator(Validator):
                         self.errors.append("Sheet <strong>" + component + "</strong>: Invalid value <strong>" + index + "</strong> in column <strong>" + column + "</strong>: duplicated " + ( "twice" if row == 2 else  str(row) ) +" times." )
                         self.flag = False                                         
             else:
-                self.errors.append("Sheet <strong>" + component + "</strong>: Invalid column '" + column +"'")
+                self.errors.append("Sheet <strong>" + component + "</strong>: Invalid column <strong>" + column + "</strong>")
                 self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
