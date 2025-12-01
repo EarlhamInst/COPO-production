@@ -202,6 +202,11 @@ $(document).on('document_ready', function () {
         scrollY: 'auto',
         scrollX: true,
       });
+
+      // Reposition info and paginate controls
+      const $tableWrapper = $(`#sample_parse_table_wrapper`);
+      moveDataTableControlsToRow($tableWrapper);
+
       $('#table_div').fadeIn(1000);
       $('#sample_parse_table').DataTable().draw();
       $('#tabs').fadeIn();

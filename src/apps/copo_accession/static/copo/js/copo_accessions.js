@@ -413,14 +413,8 @@ function customise_accessions_table(table) {
     .find('.dataTables_scroll')
     .attr('data-tour-id', 'component_table');
   
-  // Move length and paginate into row as columns
-  const lengthDiv = table_wrapper.find('.dataTables_length');
-  const paginateDiv = table_wrapper.find('.dataTables_paginate');
-  const rowDiv = $('<div class="row dataTables-controls-row"></div>');
-  lengthDiv.addClass('col-sm-4'); // Left half
-  paginateDiv.addClass('col-sm-8 text-right'); // Right half
-  rowDiv.append(lengthDiv).append(paginateDiv);
-  table_wrapper.append(rowDiv);
+  // Reposition info and paginate controls
+  moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
 }
 
 function do_accessions_table_records_exist() {
