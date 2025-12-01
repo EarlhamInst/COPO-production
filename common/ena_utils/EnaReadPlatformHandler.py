@@ -121,7 +121,7 @@ class EnaReadPlatformHandler:
                 type_name = type_ref.split(':')[-1]
                 instrument_values = model_map.get(type_name, [])
                 
-                # Omit 'unspecified' from the list if of instruments if present
+                # Omit 'unspecified' from the list of instruments if present
                 instrument_values = [v for v in instrument_values if v.lower() != 'unspecified']
 
                 platform = {
