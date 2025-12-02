@@ -49,6 +49,16 @@
 }
 
 /*summary table styling*/
+.extra-table-info .fa-stack {
+  color: forestgreen;
+  font-size: 8px;
+  padding-bottom: 20px;
+}
+
+.extra-table-info .fa.fa-plus {
+  font-size: 20px;
+  margin-top: -2px;
+}
 
 td.summary-details-control {
     position: relative;
@@ -61,8 +71,8 @@ td.summary-details-control:before {
     font-weight: 900;
     content: "\f055";
     color: forestgreen;
-    top: 30%;
-    left: 20%;
+    top: 13px; /* 30%; */
+    right: 4px; /* left: 20%; */
 }
 
 tr.shown td.summary-details-control {
@@ -76,7 +86,7 @@ tr.shown td.summary-details-control:before {
     font-weight: 900;
     content: "\f056";
     color: darkred;
-    top: 30%;
+    /* top: 30%; */
     left: 20%;
 
 }
