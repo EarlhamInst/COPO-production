@@ -390,6 +390,8 @@ $(document).on('document_ready', function () {
         $(this).prop('disabled', true);
         modal.find('#upload_singlecell_manifest_button').prop('disabled', true);
         save_singlecell_data();
+        reset_value();
+        resetValues();
       });
 
     modal
