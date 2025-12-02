@@ -75,7 +75,7 @@ def api_studies(request, profile_id, schema_name):
         if response.status_code != 200:
             return JsonResponse({"status": "error", "message":  response.content.decode()}, status=response.status_code)
         else:
-            return JsonResponse({"status": "success", "message": "Single Cell records saved successfully."}, status=200)
+            return JsonResponse({"status": "success", "message": "Records saved successfully."}, status=200)
     
 
 @api_view(['GET', 'POST'])
@@ -111,7 +111,7 @@ def api_study_accessions(request, profile_id, schema_name, study_id):
         accessions = copo_single_cell_utils.get_accession(profile_id=profile_id, study_id=study_id, schema_name=schema_name, repository=repository)
 
         if not accessions:
-            result = { "status" : "error", "message": "No record found"}
+            result = { "status" : "error", "message": "No records found"}
             return JsonResponse(result, status=400, safe=False)
         
         if return_type == "csv":
