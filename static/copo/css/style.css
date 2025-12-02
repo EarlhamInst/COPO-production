@@ -2378,6 +2378,20 @@ div.shown span.side-help-trigger:before {
   color: red;
 }
 
+/* Asterisk styles */
+.asterisk {
+  color: red;
+  font-weight: bold;
+  margin-right: 2px;
+}
+
+.select2-results__option .asterisk,
+.select2-selection__rendered .asterisk {
+  color: red;
+  font-weight: bold;
+  margin-right: 2px;
+}
+
 /* Page welcome message */
 .page-welcome-message ol {
   padding-top: 8px;
