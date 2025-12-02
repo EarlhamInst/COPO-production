@@ -4025,6 +4025,29 @@ function initialiseComponentDropdownMenu() {
   $selectOption.select2({
     placeholder: 'Choose an option',
     allowClear: false,
+    templateSelection: function (data) {
+      if (!data || !data.id || !data.text) return data.text || '';
+      // Check if the selected option begins with an asterisk (*)
+      // If yes, render a red asterisk and display the rest of the text
+      if (/^\*\s*/.test(data.text)) {
+        const text = data.text.replace(/^\*\s*/, '');
+        return `<span class="asterisk" aria-hidden="true">*</span>${text}`;
+      }
+      return data.text;
+    },
+    templateResult: function (data) {
+      if (!data || !data.id || !data.text) return data.text || ''; // placeholder or empty
+      // Check if any of the dropdown options begin with an asterisk (*)
+      // If yes, render a red asterisk and display the rest of the text
+      if (/^\*\s*/.test(data.text)) {
+        const text = data.text.replace(/^\*\s*/, '');
+        return `<span class="asterisk" aria-hidden="true">*</span>${text}`;
+      }
+      return data.text;
+    },
+    escapeMarkup: function (markup) {
+      return markup; // Allow HTML elements
+    },
   });
 
   const $firstOption = $('.searchable-select option')
