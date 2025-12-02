@@ -684,6 +684,7 @@ function do_render_server_side_table(componentMeta) {
 
   // Reposition info and paginate controls
   moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
+  hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
 
   //handle event for table details
   $('#' + tableID + ' tbody')
@@ -724,8 +725,12 @@ function do_render_server_side_table(componentMeta) {
               var contentHtml = $('<table/>', {
                 cellspacing: '0',
                 border: '0',
-                class: 'ui compact definition selectable celled table',
+                class:
+                  'ui compact definition selectable celled table summary-details-table',
               });
+
+              // Create <tbody> inside contentHtml
+              var tbody = $('<tbody/>').appendTo(contentHtml);
 
               for (
                 var i = 0;
@@ -735,20 +740,23 @@ function do_render_server_side_table(componentMeta) {
                 var colVal = data.component_attributes.columns[i];
 
                 var colTR = $('<tr/>');
-                contentHtml.append(colTR);
+                // contentHtml.append(colTR);
+                tbody.append(colTR); // Append tr to tbody
 
                 colTR
                   .append($('<td/>').append(colVal.title))
                   .append(
                     $('<td/>').append(
                       "<div style='width:300px; word-wrap: break-word;'>" +
-                        data.component_attributes.data_set[colVal.data] +
+                        (data.component_attributes.data_set[colVal.data] ||
+                          '') +
                         '</div>'
                     )
                   );
               }
 
-              row.child($('<div></div>').append(contentHtml).html()).show();
+              // row.child($('<div></div>').append(contentHtml).html()).show();
+              row.child($('<div></div>').append(contentHtml)).show();
               tr.removeClass('showing');
               tr.addClass('shown');
             }
@@ -1077,6 +1085,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
 
   // Reposition info and paginate controls
   moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
+  hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
 
   //handle event for table details
   $('#' + tableID + ' tbody')
@@ -1128,6 +1137,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
                 // cellpadding: "5",
                 cellspacing: '0',
                 border: '0',
+                class: 'summary-details-table',
                 // style: "padding-left:50px;"
               });
 
@@ -1145,7 +1155,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
                   .append($('<td/>').append(colVal.title))
                   .append(
                     $('<td/>').append(
-                      data.component_attributes.data_set[colVal.data]
+                      data.component_attributes.data_set[colVal.data] || ''
                     )
                   );
               }

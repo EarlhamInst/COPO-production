@@ -1689,6 +1689,7 @@ $(document).ready(function () {
                     var contentHtml = $('<table/>', {
                       cellspacing: '0',
                       border: '0',
+                      class: 'summary-details-table',
                     });
 
                     for (

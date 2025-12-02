@@ -415,6 +415,7 @@ function customise_accessions_table(table) {
   
   // Reposition info and paginate controls
   moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
+  hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
 }
 
 function do_accessions_table_records_exist() {
