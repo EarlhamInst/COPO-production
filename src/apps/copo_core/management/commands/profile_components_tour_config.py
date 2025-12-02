@@ -492,8 +492,12 @@ COMPONENTS_TOUR_CONFIG = {
             'select_filtered_button',
             'clear_selection_button',
             'export_csv_button',
+            'download_manifest_record_button',
             'delete_record_button',
             'submit_record_button',
+            'publish_record_button',
+            'submit_record_button_zenodo',
+            'publish_record_button_zenodo',
             'profile_title',
             'component_options',
             'download_blank_manifest_title_button',
@@ -507,19 +511,54 @@ COMPONENTS_TOUR_CONFIG = {
                 'content': (
                     'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
                     'To view the <strong>status</strong> of the submissions, refer to any of the following columns:'
-                    '<ul><li><strong>ENA FILE UPLOAD STATUS</strong></li>'
-                    '<li><strong>STATUS</strong></li>'
-                    '<li><strong>ENA FILE PROCESSING STATUS</strong></li>'
+                    '<ul><li><strong>Status For Ena</strong></li>'
+                    '<li><strong>Status For Zenodo</strong></li>'
+                    '<li><strong>Error For Ena</strong></li>'
+                    '<li><strong>Error For Zenodo</strong></li>'
                     '</ul><br>'
                     'To view the <strong>accessions</strong>, refer to any of the following columns:'
-                    '<ul><li><strong>RUN ACCESSION</strong></li>'
-                    '<li><strong>EXPERIMENT ACCESSION</strong></li>'
-                    '<li><strong>STUDY ACCESSION</strong></li>'
+                    '<ul><li><strong>Accession For Ena</strong></li>'
+                    '<li><strong>Accession For Zenodo</strong></li>'
                     '</ul>'
                     '<p class="shepherd-note">An accession is a unique identifier assigned to the submitted data. '
                     'The accessions can be used to reference the submitted data in public repositories.</p>'
                 ),
-                'placement': 'right',
+                'placement': 'top',
+            },
+            'publish_study': {
+                'title': 'Publish study',
+                'content': (
+                    'After submitting the data, you can publish the study to any of the following '
+                    'public repositories to make it publicly accessible:<br>'
+                    '<ul><li><strong>European Nucleotide Archive (ENA)</strong> using '
+                    '<button class="tiny ui basic teal button publish-btn no-click">'
+                    '<i class="fa fa-info-circle"></i>&nbsp;Publish to ENA</button></li>'
+                    '<li><strong>Zenodo</strong> using '
+                    '<button class="tiny ui basic blue button publish-btn no-click">'
+                    '<i class="fa fa-info-circle"></i>&nbsp;Publish to Zenodo</button></li>'
+                    '</ul><br>'
+                    'Select <strong>one record</strong> under the <strong>STUDY</strong> tab in the data table '
+                    'then, click any of the buttons to publish the study. '
+                    'The publication will include all data related to the selected record matching the study '
+                    'ID in the <strong>Study ID</strong> column.<br><br>'
+                    '<p class="shepherd-note">Publishing your study is an important step in sharing your '
+                    'research with the scientific community. A public repository is a database that stores and shares '
+                    'research data with the global scientific community.</p>'
+                ),
+            },
+        },
+        'message_overrides': {
+            'component_legend': {
+                'title': 'Data submission status legend',
+                'content': (
+                    'This legend explains the meaning of different colours that highlight the rows in the table.<br><br>'
+                    'Hover over each <i class="fa fa-info-circle"></i> for detailed information.<br><br>'
+                    '<div class="shepherd-note">To track the status of your data submissions, refer to the following columns in the table:'
+                    '<ul><li><strong>Status For Ena</strong></li>'
+                    '<li><strong>Status For Zenodo</strong></li>'
+                    '</ul></div>'
+                ),
+                'placement': 'left',
             },
         },
         'stages': {
@@ -537,10 +576,7 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
-            'release': [
-                'component_table_with_accessions',
-                'release_profile',
-            ],
+            'publish': ['component_table_with_accessions', 'publish_study'],
         },
     },
     'rembi': {
@@ -589,8 +625,8 @@ COMPONENTS_TOUR_CONFIG = {
             'clear_selection_button',
             'export_csv_button',
             'download_manifest_record_button',
-            'download_permits_button',
-            'view_images_button',
+            'download_permits_record_button',
+            'view_images_record_button',
             'profile_title',
             'accept_reject_samples_title_button',
             'download_blank_manifest_title_button',
@@ -808,6 +844,20 @@ COMPONENTS_TOUR_CONFIG = {
                     'research with the scientific community. A public repository is a database that stores and shares '
                     'research data with the global scientific community.</p>'
                 ),
+            },
+        },
+        'message_overrides': {
+            'component_legend': {
+                'title': 'Data submission status legend',
+                'content': (
+                    'This legend explains the meaning of different colours that highlight the rows in the table.<br><br>'
+                    'Hover over each <i class="fa fa-info-circle"></i> for detailed information.<br><br>'
+                    '<div class="shepherd-note">To track the status of your data submissions, refer to the following columns in the table:'
+                    '<ul><li><strong>Status For Ena</strong></li>'
+                    '<li><strong>Status For Zenodo</strong></li>'
+                    '</ul></div>'
+                ),
+                'placement': 'left',
             },
         },
         'stages': {

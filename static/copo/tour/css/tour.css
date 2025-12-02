@@ -19,6 +19,11 @@
   color: #35637e;
 }
 
+.shepherd-asterisk {
+  color: red;
+  font-weight: bold;
+}
+
 .tour-start-btn::before {
   content: '\f0eb'; /* Unicode for fa-lightbulb */
   font-family: 'Font Awesome 6 Free';
