@@ -324,6 +324,7 @@ COMPONENTS_TOUR_CONFIG = {
             'release': [
                 'component_table_with_accessions',
                 'release_profile',
+                'component_options_with_data_uploaded',
             ],
         },
     },
@@ -510,13 +511,15 @@ COMPONENTS_TOUR_CONFIG = {
                 'title': 'Submitted data with accessions',
                 'content': (
                     'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
-                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns:'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns '
+                    'under the <strong>STUDY</strong> tab:'
                     '<ul><li><strong>Status For Ena</strong></li>'
                     '<li><strong>Status For Zenodo</strong></li>'
                     '<li><strong>Error For Ena</strong></li>'
                     '<li><strong>Error For Zenodo</strong></li>'
                     '</ul><br>'
-                    'To view the <strong>accessions</strong>, refer to any of the following columns:'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns '
+                    'under the <strong>STUDY</strong> tab:'
                     '<ul><li><strong>Accession For Ena</strong></li>'
                     '<li><strong>Accession For Zenodo</strong></li>'
                     '</ul>'
@@ -553,7 +556,8 @@ COMPONENTS_TOUR_CONFIG = {
                 'content': (
                     'This legend explains the meaning of different colours that highlight the rows in the table.<br><br>'
                     'Hover over each <i class="fa fa-info-circle"></i> for detailed information.<br><br>'
-                    '<div class="shepherd-note">To track the status of your data submissions, refer to the following columns in the table:'
+                    '<div class="shepherd-note">To track the status of your data submissions, refer to the following columns '
+                    'under the <strong>STUDY</strong> tab in the table:'
                     '<ul><li><strong>Status For Ena</strong></li>'
                     '<li><strong>Status For Zenodo</strong></li>'
                     '</ul></div>'
@@ -576,7 +580,11 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
-            'publish': ['component_table_with_accessions', 'publish_study'],
+            'publish': [
+                'component_table_with_accessions',
+                'publish_study',
+                'component_options_with_data_uploaded',
+            ],
         },
     },
     'rembi': {
@@ -809,13 +817,15 @@ COMPONENTS_TOUR_CONFIG = {
                 'title': 'Submitted data with accessions',
                 'content': (
                     'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
-                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns:'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns '
+                    'under the <strong>STUDY</strong> tab:'
                     '<ul><li><strong>Status For Ena</strong></li>'
                     '<li><strong>Status For Zenodo</strong></li>'
                     '<li><strong>Error For Ena</strong></li>'
                     '<li><strong>Error For Zenodo</strong></li>'
                     '</ul><br>'
-                    'To view the <strong>accessions</strong>, refer to any of the following columns:'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns '
+                    'under the <strong>STUDY</strong> tab:'
                     '<ul><li><strong>Accession For Ena</strong></li>'
                     '<li><strong>Accession For Zenodo</strong></li>'
                     '</ul>'
@@ -852,7 +862,8 @@ COMPONENTS_TOUR_CONFIG = {
                 'content': (
                     'This legend explains the meaning of different colours that highlight the rows in the table.<br><br>'
                     'Hover over each <i class="fa fa-info-circle"></i> for detailed information.<br><br>'
-                    '<div class="shepherd-note">To track the status of your data submissions, refer to the following columns in the table:'
+                    '<div class="shepherd-note">To track the status of your data submissions, refer to the following columns '
+                    'under the <strong>STUDY</strong> tab in the table:'
                     '<ul><li><strong>Status For Ena</strong></li>'
                     '<li><strong>Status For Zenodo</strong></li>'
                     '</ul></div>'
@@ -875,7 +886,11 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
-            'publish': ['component_table_with_accessions', 'publish_study'],
+            'publish': [
+                'component_table_with_accessions',
+                'publish_study',
+                'component_options_with_data_uploaded',
+            ],
         },
     },
     'stx_fish': {

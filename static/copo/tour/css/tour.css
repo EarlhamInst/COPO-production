@@ -23,6 +23,24 @@
   color: red;
   font-weight: bold;
 }
+.data-table-details-plus-icon {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+}
+
+.data-table-details-plus-icon::before {
+  content: '\f055';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  color: forestgreen;
+  font-size: 14px;
+  position: absolute;
+  top: 75%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 
 .tour-start-btn::before {
   content: '\f0eb'; /* Unicode for fa-lightbulb */
