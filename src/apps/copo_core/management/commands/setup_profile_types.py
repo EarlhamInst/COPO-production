@@ -61,14 +61,14 @@ from .profile_components_tour_config import COMPONENTS_TOUR_CONFIG
   9 | download_permits_multiple               | Download Permits                           | Download permits         | multi  | Please select one or more sample records from the table shown to download permits for | fa fa-download        | download-permits         | orange
  10 | download_sample_manifest_single         | Download Sample Manifest                   | Download sample manifest | single | Please select one of samples in the manifest to download                              | fa fa-download        | download-sample-manifest | blue
  11 | edit_record_single                      | Edit record                                | Edit                     | single | Please select a record to edit                                                        | fa fa-pencil-square-o | edit                     | green
- 12 | publish_singlecell_single_ena           | Publish Single-cell Records to ENA         | Publish to ENA           | single | Please select one record to publish                                                   | fa fa-info-circle     | publish_singlecell_ena   | teal
- 13 | publish_singlecell_single_zenodo        | Publish Single-cell Records to ZENODO      | Publish to ZENODO        | single | Please select one record to publish                                                   | fa fa-info-circle     | publish_singlecell_zenodo| blue
+ 12 | publish_singlecell_single_ena           | Publish record to ENA                      | Publish to ENA           | single | Please select one record to publish                                                   | fa fa-info-circle     | publish_singlecell_ena   | teal
+ 13 | publish_singlecell_single_zenodo        | Publish record to ZENODO                   | Publish to ZENODO        | single | Please select one record to publish                                                   | fa fa-info-circle     | publish_singlecell_zenodo| blue
  14 | releasestudy                            | Release Study                              | Release Study            | single |                                                                                       | fa fa-globe           | release_study            | blue
  15 | submit_annotation_multi                 | Submit Annotation                          | Submit                   | multi  | Please select one or more record to submit                                            | fa fa-info            | submit_annotation        | teal
  16 | submit_assembly_multi                   | Submit Assembly                            | Submit                   | multi  | Please select one or more record to submit                                            | fa fa-info            | submit_assembly          | teal
  17 | submit_read_multi                       | Submit Read                                | Submit                   | multi  | Please select one or more record to submit                                            | fa fa-info            | submit_read              | teal
- 18 | submit_singlecell_single_ena            | Submit Single-cell Records to ENA          | Submit to ENA            | single | Please select one record to submit                                                    | fa fa-info-circle     | submit_singlecell_ena    | teal
- 19 | submit_singlecell_single_zenodo         | Submit Single-cell Records to ZENODO       | Submit to ZENODO         | single | Please select one record to submit                                                    | fa fa-info-circle     | submit_singlecell_zenodo | blue
+ 18 | submit_singlecell_single_ena            | Submit record to ENA                       | Submit to ENA            | single | Please select one record to submit                                                    | fa fa-info-circle     | submit_singlecell_ena    | teal
+ 19 | submit_singlecell_single_zenodo         | Submit record to ZENODO                    | Submit to ZENODO         | single | Please select one record to submit                                                    | fa fa-info-circle     | submit_singlecell_zenodo | blue
  20 | submit_tagged_seq_multi                 | Submit Tagged Sequence                     | Submit                   | multi  | Please select one or more record to submit                                            | fa fa-info            | submit_tagged_seq        | teal
  21 | view_images_multiple                    | View Images                                | View images              | multi  | Please select one or more sample records from the table shown to view images for      | fa fa-eye             | view-images              | teal  
 """
@@ -201,7 +201,7 @@ class Command(BaseCommand):
         publish_singlecell_single_ena = (
             RecordActionButton().create_record_action_button(
                 name="publish_singlecell_single_ena",
-                title="Publish Single-cell Records to ENA",
+                title="Publish record to ENA",
                 label="Publish to ENA",
                 type="single",
                 error_message="Please select one record to publish",
@@ -215,7 +215,7 @@ class Command(BaseCommand):
         publish_singlecell_single_zenodo = (
             RecordActionButton().create_record_action_button(
                 name="publish_singlecell_single_zenodo",
-                title="Publish Single-cell Records to ZENODO",
+                title="Publish record to ZENODO",
                 label="Publish to ZENODO",
                 type="single",
                 error_message="Please select one record to publish",
@@ -420,7 +420,7 @@ class Command(BaseCommand):
 
         submit_singlecell_single_ena = RecordActionButton().create_record_action_button(
             name="submit_singlecell_single_ena",
-            title="Submit Single-cell Records to ENA",
+            title="Submit record to ENA",
             label="Submit to ENA",
             type="single",
             error_message="Please select one record to submit",
@@ -433,7 +433,7 @@ class Command(BaseCommand):
         submit_singlecell_single_zenodo = (
             RecordActionButton().create_record_action_button(
                 name="submit_singlecell_single_zenodo",
-                title="Submit Single-cell Records to ZENODO",
+                title="Submit record to ZENODO",
                 label="Submit to ZENODO",
                 type="single",
                 error_message="Please select one record to submit",
