@@ -681,7 +681,7 @@ function save_singlecell_data() {
     .done(function (data) {
       result_dict = {};
       result_dict['status'] = 'success';
-      result_dict['message'] = 'Single Cell records are saved';
+      result_dict['message'] = 'Records are saved';
       do_crud_action_feedback(result_dict);
       $('#singlecell_spreadsheet_modal').modal('hide');
       globalDataBuffer = data;
