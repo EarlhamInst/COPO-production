@@ -978,7 +978,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
         select: {
           rows: {
             _: '%d records selected',
-            0: "<span class='extra-table-info'>Click <span class='fa-stack' style='color:green; font-size:10px;'><i class='fa fa-circle fa-stack-2x'></i><i class='fa fa-plus fa-stack-1x fa-inverse'></i></span> beside a record to view extra details</span>",
+            0: "<span class='extra-table-info'>Click <span class='fa-stack'><i class='fa fa-circle fa-stack-2x'></i><i class='fa fa-plus fa-stack-1x fa-inverse'></i></span> beside a record to view extra details</span>",
             1: '%d record selected',
           },
         },

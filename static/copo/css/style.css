@@ -1854,6 +1854,16 @@ input[data-autocomplete] {
 /* end webui styling */
 
 /*summary table styling*/
+.extra-table-info .fa-stack {
+  color: forestgreen;
+  font-size: 8px;
+  padding-bottom: 20px;
+}
+
+.extra-table-info .fa.fa-plus {
+  font-size: 20px;
+  margin-top: -2px;
+}
 
 td.summary-details-control {
   position: relative;
@@ -1866,8 +1876,8 @@ td.summary-details-control:before {
   font-family: 'Font Awesome 6 Free';
   font-weight: 900;
   font-size: 14px;
-  /*top: 30%;*/
-  left: 50%;
+  top: 13px; /* 30%; */
+  right: 4px; /* left: 20%; */
   position: absolute;
 }
 
@@ -2373,7 +2383,7 @@ div.shown span.side-help-trigger:before {
   vertical-align: bottom;
 }
 
-/* Forms */
+/* Asterisk styles in forms */
 .form .requiredField .asteriskField {
   color: red;
 }
