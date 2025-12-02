@@ -3156,7 +3156,9 @@ function createComponentAnchor(item, profileId, isIconOnly = false) {
     const $button = $templateAnchor.find('.pcomponent-button');
     $button.addClass(item.color);
     $button.find('.pcomponent-icon').addClass(item.iconClass);
-    $button.find('.pcomponent-name').text(`${item.buttonLabel}${componentGroupName}`);
+    $button
+      .find('.pcomponent-name')
+      .text(`${item.buttonLabel}${componentGroupName}`);
     $icon.addClass(item.iconClass);
     $templateAnchor.removeClass('pcomponent-button-template');
   }
@@ -4201,9 +4203,17 @@ function resetValues() {
   $('#file, #fileid').val('');
   $('#singlecell_info').empty().hide();
   $('.warning-content').show();
-  $('#sample_info, #warning_info, #warning_info2, #warning_info3')
+  $(
+    '.modal .alert.alert-info',
+    '.modal .alert.alert-warning',
+    '.modal .alert.alert-danger',
+    '.modal .alert.alert-success'
+  )
     .empty()
     .hide();
+
+  $('.modal .nav-tabs').empty();
+  $('.modal .tab-content').empty();
 }
 
 function moveDataTableControlsToRow(
