@@ -2632,6 +2632,7 @@ function build_attributes_display(data) {
     // cellpadding: "5",
     cellspacing: '0',
     border: '0',
+    class: 'summary-details-table',
     // style: "padding-left:50px;"
   });
 
@@ -3253,7 +3254,7 @@ function generate_component_control(componentName, profile_type) {
     html:
       `<span class='page-title-text'>${component.title}&nbsp;${componentGroupName}</span>` +
       (component.subtitle
-        ? "<span class='page-subtitle-text' data-tour-id='component_options'>" +
+        ? "<span class='page-subtitle-text' data-tour-id='component_options component_options_with_data_uploaded'>" +
           $(component.subtitle).val() +
           '</span>'
         : ''),
@@ -4244,4 +4245,25 @@ function moveDataTableControlsToRow(
   if (className === 'dataTables_length') {
     $tableWrapper.append(rowDiv);
   }
+}
+
+function hideExtraDetailsHint(tableID) {
+  // Hides extra details hint if plus icons for more
+  // details are not present in the data table body
+  const tableElement = document.getElementById(tableID);
+  if (!tableElement) return;
+
+  const observer = new MutationObserver(() => {
+    const $tableBody = $(`#${tableID} tbody`);
+    const $info = $(`#${tableID}_info`);
+    const $extraInfoDiv = $info.find('.extra-table-info');
+
+    if ($tableBody.find('.summary-details-control').length === 0) {
+      $extraInfoDiv.remove();
+    } else {
+      $extraInfoDiv.show();
+    }
+  });
+
+  observer.observe(tableElement, { childList: true, subtree: true });
 }

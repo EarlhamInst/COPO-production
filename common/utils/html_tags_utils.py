@@ -239,7 +239,8 @@ def generate_copo_form(da_object=DAComponent(), target_id=str(), component_dict=
 
 # @register.filter("get_labels")
 def get_labels():
-    label_dict = dict(publication=dict(label="Publication"),
+    label_dict = dict(assembly=dict(label="Assembly"),
+                      publication=dict(label="Publication"),
                       person=dict(label="Person"),
                       sample=dict(label="Sample"),
                       source=dict(label="Source"),

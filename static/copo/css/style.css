@@ -1854,6 +1854,12 @@ input[data-autocomplete] {
 /* end webui styling */
 
 /*summary table styling*/
+.summary-details-table {
+  width: auto !important;
+  max-width: 500px;
+  display: inline-table;
+}
+
 .extra-table-info .fa-stack {
   color: forestgreen;
   font-size: 8px;

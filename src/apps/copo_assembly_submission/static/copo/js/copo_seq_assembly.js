@@ -244,11 +244,9 @@ $(document).ready(function () {
   });
 
   //details button hover
-  /*
-    $(document).on("mouseover", ".detail-hover-message", function (event) {
-        $(this).prop('title', 'Click to view ' + component + ' details');
-    });
-    */
+  $(document).on("mouseover", ".detail-hover-message", function (event) {
+      $(this).prop('title', 'Click to view ' + component + ' details');
+  });
 
   //******************************Functions Block******************************//
 
