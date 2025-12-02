@@ -51,6 +51,8 @@ export const globalTourMessages = {
   component_options: {
     title: 'Checklist options',
     content: `Use this dropdown to select the checklist that you would like to work with.<br><br>
+    An asterisk (<span class="shepherd-asterisk" aria-hidden="true">*</span>) next to a checklist option
+    means that data has already been uploaded for that checklist.<br><br>
     <p class="shepherd-note">A checklist defines the metadata fields required for your data
     submission based on the type of data you are submitting.<br><br>
     Metadata is information that describes your data such as collection
@@ -85,7 +87,7 @@ export const globalTourMessages = {
     The SOP provides detailed instructions for completing the sample manifest, including explanations of each field,
     how to fill them, and acceptable values for the sample metadata.`,
   },
-  download_permits_button: {
+  download_permits_record_button: {
     title: 'Download permits',
     content: `Click this button to download permit files.<br><br>
     Select <strong>at least one record</strong> in the table first. The download will include permits linked
@@ -232,7 +234,7 @@ export const globalTourMessages = {
     <p class="shepherd-note"> A public repository is a database that stores and shares 
     research data with the global scientific community.</p>`,
   },
-  view_images_button: {
+  view_images_record_button: {
     title: 'View images',
     content: `Select <strong>at least one record</strong> in the table first. Then, click this 
     button to view images associated with the uploaded data if available.<br><br>

@@ -195,6 +195,7 @@ class Command(BaseCommand):
             icon_class="fa fa-globe",
             action="release_study",
             icon_colour="blue",
+            tour_id="release_study_record_button",
         )
 
         publish_singlecell_single_ena = (
@@ -234,6 +235,7 @@ class Command(BaseCommand):
             icon_class="fa fa-camera-retro",
             action="make_snapshot",
             icon_colour="grey",
+            tour_id="make_snapshot_record_button",
         )
 
         view_images_multiple = RecordActionButton().create_record_action_button(
@@ -245,7 +247,7 @@ class Command(BaseCommand):
             icon_class="fa fa-eye",
             action="view-images",
             icon_colour="teal",
-            tour_id="view_images_button",
+            tour_id="view_images_record_button",
         )
 
         download_permits_multiple = RecordActionButton().create_record_action_button(
@@ -257,7 +259,7 @@ class Command(BaseCommand):
             icon_class="fa fa-download",
             action="download-permits",
             icon_colour="orange",
-            tour_id="download_permits_button",
+            tour_id="download_permits_record_button",
         )
 
         download_general_sample_manifest_single = RecordActionButton().create_record_action_button(
@@ -293,7 +295,7 @@ class Command(BaseCommand):
             icon_class="fa fa-download",
             action="download-tagged-seq-manifest",
             icon_colour="blue",
-            tour_id="download_tagged_seq_manifest_record_button",
+            tour_id="download_manifest_record_button",
         )
 
         download_singlecell_manifest_single = RecordActionButton().create_record_action_button(
@@ -305,6 +307,7 @@ class Command(BaseCommand):
             icon_class="fa fa-download",
             action="download-singlecell-manifest",
             icon_colour="blue",
+            tour_id="download_manifest_record_button",
         )
 
         delete_sample_multi = RecordActionButton().create_record_action_button(
