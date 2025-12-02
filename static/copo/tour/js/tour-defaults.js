@@ -51,12 +51,15 @@ export const globalTourMessages = {
   component_options: {
     title: 'Checklist options',
     content: `Use this dropdown to select the checklist that you would like to work with.<br><br>
-    An asterisk (<span class="shepherd-asterisk" aria-hidden="true">*</span>) next to a checklist option
-    means that data has already been uploaded for that checklist.<br><br>
     <p class="shepherd-note">A checklist defines the metadata fields required for your data
     submission based on the type of data you are submitting.<br><br>
     Metadata is information that describes your data such as collection
     date, instrument model or specimen ID.</p>`,
+  },
+  component_options_with_data_uploaded: {
+    title: 'Checklist options (with data uploaded)',
+    content: `An asterisk (<span class="shepherd-asterisk" aria-hidden="true">*</span>) next to a checklist option
+    means that data has already been uploaded for that checklist.`,
   },
   component_table: {
     title: 'Uploaded data',
@@ -64,8 +67,9 @@ export const globalTourMessages = {
       To submit it, select one or more records in this table then, click 
       <button class="tiny ui basic teal button submit-btn no-click">
       <i class="fa fa-info-circle"></i>&nbsp;Submit</button> located 
-      at the top right of the table.`,
-
+      at the top right of the table.<br><br>
+      Click <span class="data-table-details-plus-icon no-click"></span> at the 
+      start of a table row (if visible) to view more details about the uploaded data.`,
     placement: 'right',
   },
   delete_record_button: {
