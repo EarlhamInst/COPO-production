@@ -54,6 +54,8 @@ $(document).ready(function () {
 
   initialiseNavToggle();
 
+  moveComponentInfoToTabContent();
+
   var event = jQuery.Event('document_ready'); //individual components can trap and handle this event as they so wish
   $(document).trigger(event);
 });
@@ -4298,4 +4300,75 @@ function hideExtraDetailsHint(tableID) {
 
   // Store observer reference
   $container.data('hideExtraDetailsObserver', observer);
+}
+
+function moveComponentInfoToTabContent() {
+  // Ensure that component info alerts are displayed with
+  // the other alerts in the sidebar info tab
+  const $container = $('#componentInfoContainer');
+  const $tab = $('#copo-sidebar-info .panel-body');
+
+  if (!$container.length || !$tab.length) return;
+
+  // Move all children of the block into the tab
+  const $children = $container.children().appendTo($tab);
+
+  // Remove the now-empty container
+  $container.remove();
+
+  $children.each(function () {
+    const $child = $(this);
+    // Add dismissible class if missing
+    if (!$child.hasClass('alert-dismissible')) {
+      $child.addClass('alert-dismissible fade');
+    }
+
+    // Add close button if missing
+    if (!$child.find('.close').length) {
+      const $closeBtn = $('<button>', {
+        type: 'button',
+        class: 'close',
+        'aria-label': 'Close',
+        html: '<span aria-hidden="true">&times;</span>',
+      });
+
+      $closeBtn.on('click', function (e) {
+        // Prevent Bootstrap default removal
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        // Empty content then hide alert
+        $child.find('.alert-message').empty();
+        $child.hide().removeClass('in');
+      });
+      $child.prepend($closeBtn);
+    }
+
+    // Wrap text nodes in alert-message span
+    $child
+      .contents()
+      .filter(function () {
+        return this.nodeType === 3; // text nodes
+      })
+      .wrap('<span class="alert-message"></span>');
+    
+    // Observe style changes to add/remove 'in' class for fade effect
+    const observer = new MutationObserver((mutationsList) => {
+      mutationsList.forEach((mutation) => {
+        if (mutation.attributeName === 'style') {
+          const display = $child.css('display');
+          if (display !== 'none') {
+            $child.addClass('in');
+          } else {
+            $child.removeClass('in');
+          }
+        }
+      });
+    });
+
+    // $child.data('inClassObserverInstance', observer);
+    observer.observe($child[0], {
+      attributes: true,
+      attributeFilter: ['style'],
+    });
+  });
 }
