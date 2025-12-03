@@ -464,6 +464,19 @@ COMPONENTS_TOUR_CONFIG = {
                 'placement': 'right',
             },
         },
+        'message_overrides': {
+            'component_table': {
+                'title': 'Uploaded data',
+                'content': (
+                    'View and manage the data that you have uploaded in this table.<br><br>'
+                    'To submit it, select one or more records in this table then, click '
+                    '<button class="tiny ui basic teal button submit-btn no-click">'
+                    '<i class="fa fa-info-circle"></i>&nbsp;Submit</button> located '
+                    'at the top right of the table.'
+                ),
+                'placement': 'right',
+            },
+        },
         'stages': {
             'overview': [
                 'getting_started',
