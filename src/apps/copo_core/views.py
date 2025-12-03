@@ -744,9 +744,13 @@ def queue_tour_stage(request, component, stage):
         )
 
     # Store the queued stage using session
-    if 'queued_tours' not in request.session:
-        request.session['queued_tours'] = {}
-    request.session['queued_tours'][component] = stage
+    queued = request.session.setdefault('queued_tours', {})
+    if component not in queued:
+        queued[component] = []
+        
+    if stage not in queued[component]:
+        queued[component].append(stage)
+
     request.session.modified = True
     return JsonResponse({'status': 'queued', 'component': component, 'stage': stage})
 
@@ -769,14 +773,22 @@ def mark_tour_complete(request, component, stage):
 
     # Remove component from queued tours in session if present
     queued = request.session.get('queued_tours', {})
-    if component in queued and stage in queued[component]:
-        queued[component].remove(stage)
+    if component in queued:
+        stages = queued[component]
+
+        if isinstance(stages, str):
+            stages = [stages]
+
+        if stage in stages:
+            stages.remove(stage)
+
         # If no more stages exist for this component,
         # remove the component key
-        if not queued[component]:
+        if not stages:
             queued.pop(component)
-        request.session['queued_tours'] = queued
-        request.session.modified = True
+            
+    request.session['queued_tours'] = queued
+    request.session.modified = True
 
     return JsonResponse({'status': 'ok'})
 
