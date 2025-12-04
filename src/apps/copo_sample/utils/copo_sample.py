@@ -125,14 +125,14 @@ def delete_sample_records(profile_id, target_ids=list(), target_id=None):
     sample_with_processing = [f'{s["name"]}' for s in result if s.get("status", "") == "processing"]
     message = str()
     if sample_with_biosample:
-        message= "Sample record/s have been submitted to ENA. Cannot be deleted! : " + ",".join(sample_with_biosample)
+        message= "Sample records have been submitted to ENA. Cannot be deleted! : " + ",".join(sample_with_biosample)
     if sample_with_processing:
-        message += "\nSample record/s are being processed. Cannot be deleted! : " + ",".join(sample_with_processing)
+        message += "\nSample records are being processed. Cannot be deleted! : " + ",".join(sample_with_processing)
     if message:
         return dict(status='error', message=message)
 
     Sample(profile_id=profile_id).get_collection_handle().delete_many({"_id": {"$in": sample_obj_ids}})
-    return dict(status='success', message="Read record/s have been deleted!")
+    return dict(status='success', message="Read records have been deleted!")
 
 
 def process_pending_submission():

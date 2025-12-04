@@ -44,11 +44,11 @@ class Email:
         self.messages = {
             "sample_accepted": sample_accepted_msg_content,
             "sample_rejected": "<h4>Following samples are rejected by ENA</h4><h5>{} - {}</h5><ul>{}</ul>",
-            "pending_samples": "<h4>Samples Available for Approval</h4><p>The following sample(s) has/have been approved by the Biodiversity Genomics Europe (BGE) checkers. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
-            "bge_pending_samples": "<h4>Samples Available for Approval</h4><p>The previous rejected sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
-            "associated_project_samples": "<h4>Samples Available for Approval</h4><p>The following sample(s) are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
+            "pending_samples": "<h4>Samples Available for Approval</h4><p>The following samples have been approved by the Biodiversity Genomics Europe (BGE) checkers. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
+            "bge_pending_samples": "<h4>Samples Available for Approval</h4><p>The previous rejected samples are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
+            "associated_project_samples": "<h4>Samples Available for Approval</h4><p>The following samples are now ready for approval. Please follow the link to proceed</p><h5>{} - {}</h5><p><a href='{}'>{}</a></p>",
             "associated_project_samples_reminder": """
-                <p>The following profile(s) have {associated_profile_type} as the associated profile type and have samples pending review. Please follow the link to proceed: </p>
+                <p>The following profiles have {associated_profile_type} as the associated profile type and have samples pending review. Please follow the link to proceed: </p>
                 <p><a href='{link}'>{link_text}</a></p>
                 <br>
                 {html_list}
@@ -100,8 +100,8 @@ class Email:
                 Persons who should receive an email are:
                     1. User who submitted the manifest/samples ('to' email recipient)
                        i.e. the owner of the profile through which the manifest/sample has been accepted
-                    2. Sequencing centre contact person(s) ('cc' email recipient)
-                    3. Person(s) within the erga_accepted_samples_notifiers Django group ('cc' email recipient)
+                    2. Sequencing centre contact persons ('cc' email recipient)
+                    3. Persons within the erga_accepted_samples_notifiers Django group ('cc' email recipient)
             '''
 
             # Get list of persons who should be notified by default
@@ -135,11 +135,11 @@ class Email:
             ]
 
             if user:
-                # 'to' email address recipient(s)
+                # 'to' email address recipients
                 to_email_addresses = set([user.email])
                 to_email_addresses.update(
                     shared_profile_users_emails
-                )  # Add shared profile user(s) email address(es)
+                )  # Add shared profile users email address(es)
 
                 # Get profile owner name and shared profile user name
                 profile_owner_name = f"{user.first_name} {user.last_name}"

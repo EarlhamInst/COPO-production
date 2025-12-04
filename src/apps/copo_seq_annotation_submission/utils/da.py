@@ -40,7 +40,7 @@ class SequenceAnnotation(DAComponent):
 
         submission = Submission().get_collection_handle().find_one({"profile_id": self.profile_id, "repository":"ena", "seq_annotations": {"$in": target_ids}},{"_id": 1})
         if submission:
-            return dict(status='error', message="One or more sequence annotation record/s have been submitting!")
+            return dict(status='error', message="One or more sequence annotation records have been submitted!")
         
         seq_annotation_obj_ids = [ObjectId(id) for id in target_ids]
 
@@ -49,11 +49,11 @@ class SequenceAnnotation(DAComponent):
         annotations = self.get_collection_handle().find({"_id": {"$in": seq_annotation_obj_ids}},{"accession":1, "files": 1})
         for annotation in annotations:
             if annotation.get("accession",""):
-                return dict(status='error', message="One or more sequence annotation record/s have been accessed!")
+                return dict(status='error', message="One or more sequence annotation records have been accessed!")
             file_ids.extend(annotation.get('files', []))
         EnaFileTransfer(profile_id=self.profile_id).get_collection_handle().delete_many({"file_id": {"$in": file_ids}})   
         DataFile(profile_id=self.profile_id).get_collection_handle().delete_many({"_id": {"$in": [ObjectId(id) for id in file_ids]}})
 
         self.get_collection_handle().delete_many(
             {"_id": {"$in": seq_annotation_obj_ids}})
-        return dict(status='success', message="Sequence annotation record/s have been deleted!")
+        return dict(status='success', message="Sequence annotation records have been deleted!")

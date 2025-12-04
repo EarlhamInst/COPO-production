@@ -439,7 +439,7 @@ class PopGenomicsAssociatedTypeValidator(Validator):
                 and len(associated_p_type_lst) == 1
             ):
                 if (self.data['PURPOSE_OF_SPECIMEN'] == 'RESEQUENCING').all():
-                    # Associated tol project(s) for the manifest is 'POP_GENOMICS'
+                    # Associated tol projects for the manifest is 'POP_GENOMICS'
                     for index, row in self.data.iterrows():
                         # Set default value for the optional column if it was left blank
                         for (
@@ -482,7 +482,7 @@ class PopGenomicsAssociatedTypeValidator(Validator):
                 'POP_GENOMICS' not in associated_p_type_lst
                 and 'RESEQUENCING' in self.data['PURPOSE_OF_SPECIMEN'].unique()
             ):
-                # Display error message if associated tol project(s) for the manifest is not
+                # Display error message if associated tol projects for the manifest is not
                 # 'POP_GENOMICS' but the value of 'PURPOSE_OF_SPECIMEN' column is 'RESEQUENCING'
                 # Truncate profile name to 25 characters
                 p_name = f'{p_name[:25]}...' if len(p_name) > 28 else p_name
@@ -496,7 +496,7 @@ class PopGenomicsAssociatedTypeValidator(Validator):
                 'POP_GENOMICS' in associated_p_type_lst
                 and len(associated_p_type_lst) != 1
             ):
-                # Display error message if associated tol project(s) for the manifest is 'POP_GENOMICS'
+                # Display error message if associated tol projects for the manifest is 'POP_GENOMICS'
                 # but the manifest is associated with more than one tol project
                 p_name = f'{p_name[:25]}...' if len(p_name) > 28 else p_name
 

@@ -123,7 +123,7 @@ MESSAGES = {
     'validation_msg_original_field_missing': 'Missing data: ORIGINAL_GEOGRAPHIC_LOCATION missing at row '
                                              '<strong>%s</strong>. If ORIGINAL_COLLECTION_DATE is provided, '
                                              'ORIGINAL_GEOGRAPHIC_LOCATION must also be provided.',
-    'validation_msg_orphaned_symbiont': 'Symbiont(s) found with TUBE_OR_WELL_ID: <strong>%s</strong> has no associated '
+    'validation_msg_orphaned_symbiont': 'Symbionts found with TUBE_OR_WELL_ID: <strong>%s</strong> has no associated '
                                         'Target',
     'validation_msg_overwrite_symbionts': '<strong>Warning: COPO will overwrite any <strong>SYMBIONT</strong> field '
                                           'to match the corresponding TARGET, unless otherwise stated in the SOP</br>'

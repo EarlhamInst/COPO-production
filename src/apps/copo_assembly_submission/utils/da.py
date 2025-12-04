@@ -24,7 +24,7 @@ class Assembly(DAComponent):
 
         submission = Submission().get_collection_handle().find_one({"profile_id": self.profile_id, "assemblies": {"$in": target_ids}},{"_id": 1})
         if submission:
-            return dict(status='error', message="One or more assembly record/s have been submitting!")
+            return dict(status='error', message="One or more assembly records have been submitted!")
         
         assembly_obj_ids = [ObjectId(id) for id in target_ids]
         
@@ -33,7 +33,7 @@ class Assembly(DAComponent):
         assemblies = self.get_collection_handle().find({"_id": {"$in": assembly_obj_ids}},{"accession":1, "files": 1})
         for assembly in assemblies:
             if assembly.get("accession",""):
-                return dict(status='error', message="One or more assembly record/s have been accessed!")
+                return dict(status='error', message="One or more assembly records have been accessed!")
             file_ids.extend(assembly.get('files', []))
         EnaFileTransfer(profile_id=self.profile_id).get_collection_handle().delete_many({"file_id": {"$in": file_ids}})   
         DataFile(profile_id=self.profile_id).get_collection_handle().delete_many({"_id": {"$in": [ObjectId(id) for id in file_ids]}})
@@ -41,4 +41,4 @@ class Assembly(DAComponent):
 
         self.get_collection_handle().delete_many(
             {"_id": {"$in": assembly_obj_ids}})
-        return dict(status='success', message="Assembly record/s have been deleted!")
+        return dict(status='success', message="Assembly records have been deleted!")
