@@ -374,7 +374,7 @@ def submit_assembly(profile_id, target_ids=list(),  target_id=str()):
             target_obj_ids = [ObjectId(x) for x in target_ids]
             count = Assembly().get_collection_handle().count_documents({"profile_id": profile_id, "accession": "", "_id" : {"$in": target_obj_ids}})
             if count < len(target_ids):
-                return dict(status='error', message="One or more Assembly has been submitted! Cannot submitted again.")        
+                return dict(status='error', message="One or more assemblies have been submitted! They cannot be resubmitted.")        
             
             if target_ids:
                 return Submission().make_assembly_submission_uploading(sub_id, target_ids)
