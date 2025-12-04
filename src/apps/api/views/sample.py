@@ -104,7 +104,7 @@ def format_date(input_date):
 
 
 def filter_for_API(sample_list, add_all_fields=False):
-    # Add field(s) here that should be datetime formatted
+    # Add fields here that should be datetime formatted
     time_fields = ['time_created', 'time_updated', 'last_bioimage_submitted']
     excluded_export_fields = ['copo_audit_type']
     profile_type = None
@@ -440,7 +440,7 @@ def get_project_samples(request, project):
     if not projects or not all(x in valid_projects for x in projects):
         return HttpResponse(
             status=status.HTTP_400_BAD_REQUEST,
-            content=f'Invalid project(s) provided! Accepted values are {d_utils.join_with_and(valid_projects)}.',
+            content=f'Invalid projects provided! Accepted values are {d_utils.join_with_and(valid_projects)}.',
         )
 
     samples = Sample().get_project_samples(projects)
@@ -539,7 +539,7 @@ def get_by_associated_project_type(request):
     ):
         return HttpResponse(
             status=status.HTTP_400_BAD_REQUEST,
-            content=f'Invalid associated project type(s) provided! Accepted values are {d_utils.join_with_and(valid_associated_types)}.',
+            content=f'Invalid associated project types provided! Accepted values are {d_utils.join_with_and(valid_associated_types)}.',
         )
 
     samples = Sample().get_project_samples_by_associated_project(

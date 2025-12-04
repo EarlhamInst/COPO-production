@@ -1,6 +1,6 @@
 MESSAGES = {
     'validation_msg_file_already_in_queue': (
-        'The file(s) <strong>{file_names}</strong> are already in the submission queue '
+        'The files <strong>{file_names}</strong> are already in the submission queue '
         'for sample <strong>{sample_name}</strong>.'
     ),
     'validation_msg_file_must_be_single': (

@@ -1521,11 +1521,11 @@ class EnaObject(DAComponent):
         result = self.execute_query({"_id": {"$in": tagged_seq_ids},  "$or": [{"accession": {
                                     "$exists": True, "$ne": ""}}, {"status": {"$exists": True, "$ne": "pending"}}]})
         if result:
-            return dict(status='error', message="One or more Ena object/s have been accessed or scheduled to submit!")
+            return dict(status='error', message="One or more Ena objects have been accessed or scheduled to submit!")
 
         self.get_collection_handle().delete_many(
             {"_id": {"$in":   tagged_seq_ids}})
-        return dict(status='success', message="Ena object/s have been deleted!")
+        return dict(status='success', message="Ena objects have been deleted!")
 
     def update_ena_object_processing(self, profile_id=str(), tagged_seq_ids=list()):
         tagged_seq_obj_ids = [ObjectId(id) for id in tagged_seq_ids]

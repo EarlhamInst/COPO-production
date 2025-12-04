@@ -120,9 +120,9 @@ def contains_existing_updates(new_updates: list) -> tuple[bool, list]:
     # === Case 2: Some updates already exist not all ===
     elif duplicates:
         log.warning(
-            f'{len(duplicates)} duplicate update(s) found. These will be skipped.'
+            f'{len(duplicates)} duplicate updates found. These will be skipped.'
         )
-        print(f'{len(duplicates)} duplicate update(s) skipped.')
+        print(f'{len(duplicates)} duplicate updates skipped.')
 
         # Retain only non-duplicates
         non_duplicates = [
@@ -198,7 +198,7 @@ def generate_ena_update_data_json():
         json.dump(result, f, indent=4)
         f.write('\n')
 
-    # log.info(f'Added {len(new_deduped)} new ENA update(s) to {OUTPUT_FILE_NAME}.')
+    # log.info(f'Added {len(new_deduped)} new ENA updates to {OUTPUT_FILE_NAME}.')
 
 
 def generate_sample_query(sample, fields):
@@ -558,7 +558,7 @@ def remove_existing_update_request_logs():
             return
 
         print(
-            f'Found {len(log_files)} update request file(s) and {len(error_files)} update request error file(s):'
+            f'Found {len(log_files)} update request files and {len(error_files)} update request error files:'
         )
         for f in all_files:
             print(f'  - {f}')

@@ -668,7 +668,7 @@ HTML_TAGS = {
 UI_INFO = {
     'study_type_add_info': "Use this form to add new study types",
     'study_type_clone_info': "Use this form to clone existing study types",
-    'sample_add_info': "Use this form to add/edit study sample and assign to studies",
+    'sample_add_info': "Use this form to add or edit study samples and assign them to studies",
     'sample_assign_info': "View allows for assigning samples to current study",
     'sample_unassign_warning': 'Assigned samples about to be deleted!.',
     'add_form_title': "<h4 class='modal-title'>Add New <span style='text-transform: capitalize;'>{component_name!s}</span></h4>",

@@ -598,7 +598,7 @@ def create_group(request):
 
     if not name or not description:
         return HttpResponseBadRequest(
-            'Error Creating Group - Form field(s) cannot be empty!')
+            'Error Creating Group - Form fields cannot be empty!')
 
     uid = CopoGroup().create_shared_group(name=name, description=description)
 
@@ -615,7 +615,7 @@ def edit_group(request):
 
     if not name or not description:
         return HttpResponseBadRequest(
-            'Error Updating Group - Form field(s) cannot be empty!')
+            'Error Updating Group - Form fields cannot be empty!')
 
     if name and description:
         document = CopoGroup().edit_group(

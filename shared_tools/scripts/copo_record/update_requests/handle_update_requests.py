@@ -145,12 +145,11 @@ def process_update_request(entry):
 
     # Check for valid samples and sources
     if not samples and not sources:
-        log.error(f'No sample(s) and source found in entry: {entry}')
+        log.error(f'No sample and source found in entry: {entry}')
         return
 
     if not samples:
-        log.info(f'No sample(s) found in entry: {entry}')
-
+        log.info(f'No sample found in entry: {entry}')
     if not sources:
         log.info(f'No source found in entry: {entry}')
 
@@ -291,7 +290,7 @@ def rearrange_update_request_file():
 
     if len(deduped_data) < len(combined_data):
         removed = len(combined_data) - len(deduped_data)
-        message = f'Removed {removed} duplicate record(s) from ENA update data.'
+        message = f'Removed {removed} duplicate records from ENA update data.'
         log.warning(message)
         print(message)
 

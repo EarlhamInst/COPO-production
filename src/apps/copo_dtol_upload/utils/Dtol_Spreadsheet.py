@@ -142,7 +142,7 @@ class DtolSpreadsheet:
         self.current_schema_version = settings.MANIFEST_VERSION.get(
             self.type, "")
  
-        # Get associated type(s) as string separated by '|' symbol
+        # Get associated types as string separated by '|' symbol
         self.associated_type = " | ".join(associated_type_lst)
 
         '''
@@ -679,7 +679,7 @@ class DtolSpreadsheet:
         request = ThreadLocal.get_current_request()
         profile_id = request.session["profile_id"]
         # Update the associated tol project for each sample in the manifest
-        # get associated profile type(s) of manifest
+        # get associated profile types of manifest
         profile = Profile().get_record(profile_id)
         associated_profiles = profile.get("associated_type", [])
 
@@ -773,7 +773,7 @@ class DtolSpreadsheet:
 
             uri = request.build_absolute_uri('/')
 
-            # Get associated type(s) as string separated by '|' symbol
+            # Get associated types as string separated by '|' symbol
             # then, update the associated tol project field in the sample
             associated_type = " | ".join(associated_profiles)
             
