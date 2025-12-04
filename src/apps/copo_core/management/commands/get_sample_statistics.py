@@ -32,7 +32,7 @@ class Command(BaseCommand):
         self.get_sample_statistics_by_associated_project()
         self.get_distinct_items()
         self.get_sample_statistics_between_dates()
-        self.rank_genomic_profiles_and_get_owner_email()
+        # self.rank_genomic_profiles_and_get_owner_email()
 
         # Get ERGA related statistics
         # self.get_sample_statistics_between_dates(sample_type='erga')
@@ -138,6 +138,16 @@ class Command(BaseCommand):
             for item in associated_projects
         ]
 
+        # Match BIOBLITZ | BGE → BIOBLITZ
+        regex_conditions.append(
+            {
+                'associated_tol_project': {
+                    '$regex': '(?=.*BIOBLITZ)(?=.*BGE)',
+                    '$options': 'i',
+                }
+            }
+        )
+
         pipeline = [
             # Step 2: Match documents that are either in the base list OR have base + SANGER
             {
@@ -155,17 +165,31 @@ class Command(BaseCommand):
                     'normalised_associated_tol_project': {
                         '$switch': {
                             'branches': [
+                                # SANGER mapping
+                                *[
+                                    {
+                                        'case': {
+                                            '$regexMatch': {
+                                                'input': "$associated_tol_project",
+                                                'regex': f'(?=.*{item})(?=.*SANGER)',
+                                                'options': 'i',
+                                            }
+                                        },
+                                        'then': item,
+                                    }
+                                    for item in associated_projects
+                                ],
+                                # BIOBLITZ | BGE mapping
                                 {
                                     'case': {
                                         '$regexMatch': {
                                             'input': "$associated_tol_project",
-                                            'regex': f'(?=.*{item})(?=.*SANGER)',
+                                            'regex': '(?=.*BIOBLITZ)(?=.*BGE)',
                                             'options': 'i',
                                         }
                                     },
-                                    'then': item,
+                                    'then': "BIOBLITZ",
                                 }
-                                for item in associated_projects
                             ],
                             'default': "$associated_tol_project",
                         }
