@@ -50,9 +50,9 @@ from .profile_components_tour_config import COMPONENTS_TOUR_CONFIG
 
  id |              name                       |                   title                    |          label           |  type  |                                     error_message                                     |      icon_class       |          action          | icon_colour 
 ----+-----------------------------------------+--------------------------------------------+--------------------------+--------+---------------------------------------------------------------------------------------+-----------------------+--------------------------+-------------
-  1 | add_local_all                           | Add new file by browsing local file system | Add                      |        | Add new file by browsing local file system                                            | fa fa-desktop         | add_files_locally        | blue
-  2 | add_record_all                          | Add new record                             | Add                      |        |                                                                                       | fa fa-plus            | add                      | blue
-  3 | add_terminal_all                        | Add new file by terminal                   | Add                      |        |                                                                                       | fa fa-terminal        | add_files_by_terminal    | blue
+  1 | add_local_all                           | Add file by browsing local file system     | Add                      |        | Add file by browsing local file system                                                | fa fa-desktop         | add_files_locally        | blue
+  2 | add_record_all                          | Add record                                 | Add                      |        |                                                                                       | fa fa-plus            | add                      | blue
+  3 | add_terminal_all                        | Add file by terminal                       | Add                      |        |                                                                                       | fa fa-terminal        | add_files_by_terminal    | blue
   4 | delete_images_multi                     | Delete records                             | Delete                   | multi  | Please select one or more records to delete                                           | fa fa-trash-can       | delete_images            | red
   5 | delete_read_multi                       | Delete records                             | Delete                   | multi  | Please select one or more records to delete                                           | fa fa-trash-can       | delete_read              | red
   6 | delete_record_multi                     | Delete records                             | Delete                   | multi  | Please select one or more records to delete                                           | fa fa-trash-can       | validate_and_delete      | red
@@ -80,17 +80,17 @@ from .profile_components_tour_config import COMPONENTS_TOUR_CONFIG
 ----+-----------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------
   1 | accept_reject_samples                   | <button style="display: none" title="Accept/Reject TOL Samples"             class="big circular ui icon teal button accept_reject_samples copo-tooltip">         <i class="icon tasks sign"></i>     </button>                                                                                                  | 
   2 | copo_accessions                         | <button style="display: none" title="View Accessions Dashboard"             class="big circular ui icon pink button copo_accessions copo-tooltip">         <i class="icon sitemap"></i>     </button>                                                                                                           | 
-  3 | download_blank_manifest_template        | <a  title="Download Blank Manifest Template"             class="big circular ui icon brown button download-blank-manifest-template copo-tooltip" target="_blank">         <i class="icon download sign"></i>     </a>                                                                                           | href:#blank_manifest_url
+  3 | download_blank_manifest_template        | <a title="Download Blank Manifest Template"             class="big circular ui icon brown button download-blank-manifest-template copo-tooltip" target="_blank">         <i class="icon download sign"></i>     </a>                                                                                           | href:#blank_manifest_url
   4 | download_general_sample_manifest_single | <button style="display: inline" title="Download Sample Manifest" label="Download sample manifest" type="single" error_message="Please select one of samples in the manifest to download" class="big circular ui icon button download-sample-manifest copo-tooltip"> <i class="icon download sign"></i></button> | 
   5 | download_sop                            | <a title="Download Standard Operating Procedure (SOP)"         class="big circular ui icon yellow button download-sop copo-tooltip" target="_blank">         <i class="icon download sign"></i>     </a>                                                                                                        | href:#sop_url
-  6 | new_component_template                  | <button title="Add new profile record"             class="big circular ui icon primary button new-component-template copo-tooltip">         <i class="icon add sign"></i>     </button>                                                                                                                         | 
+  6 | new_component_template                  | <button title="Add record"             class="big circular ui icon primary button new-component-template copo-tooltip">         <i class="icon add sign"></i>     </button>                                                                                                                         | 
   7 | new_image_spreadsheet_template          | <button style="display: inline" title="Add study from Image Spreadsheet"  class="big circular ui icon button new-singlecell-spreadsheet-template copo-tooltip"> <i class="icon table sign"></i></button>                                                                                                        | 
-  8 | new_local_file                          | <button title="Add new file by browsing local file system"             class="big circular ui icon primary button new-local-file copo-tooltip">         <i class="icon desktop sign"></i>     </button>                                                                                                         | 
+  8 | new_local_file                          | <button title="Add file by browsing local file system"             class="big circular ui icon primary button new-local-file copo-tooltip">         <i class="icon desktop sign"></i>     </button>                                                                                                         | 
   9 | new_reads_spreadsheet_template          | <button style="display: inline" title="Add Read(s) from Read Spreadsheet"             class="big circular ui icon button new-reads-spreadsheet-template copo-tooltip">         <i class="icon table sign"></i>     </button>                                                                                    | 
  10 | new_samples_spreadsheet_template        | <button   title="Add/Update sample(s) from spreadsheet"             class="big circular ui icon button new-samples-spreadsheet-template copo-tooltip">         <i class="icon table sign"></i>     </button>                                                                                                    | 
  11 | new_singlecell_spreadsheet_template     | <button style="display: inline" title="Add study from Single-cell Spreadsheet" class="big circular ui icon button new-singlecell-spreadsheet-template copo-tooltip"> <i class="icon table sign"></i></button>                                                                                                   | 
  12 | new_taggedseq_spreadsheet_template      | <button style="display: inline" title="Add Tagged Sequence (s) from Tagged Sequence Spreadsheet"             class="big circular ui icon button new-taggedseq-spreadsheet-template copo-tooltip">         <i class="icon table sign"></i>     </button>                                                         | 
- 13 | new_terminal_file                       | <button title="Add new file by terminal"             class="big circular ui icon primary button new-terminal-file copo-tooltip">         <i class="icon terminal sign"></i>     </button>                                                                                                                       | 
+ 13 | new_terminal_file                       | <button title="Add file by terminal"             class="big circular ui icon primary button new-terminal-file copo-tooltip">         <i class="icon terminal sign"></i>     </button>                                                                                                                       | 
  14 | quick_tour_template                     | <button title="Quick tour"             class="big circular ui icon orange button start-tour quick-tour-template copo-tooltip">         <i class="icon lightbulb"></i>     </button>                                                                                                                             | 
  15 | tol_inspect                             | <button style="display: none" title="Inspect TOL"             class="big circular ui icon yellow button tol_inspect copo-tooltip">         <i class="icon clipboard list"></i>     </button>                                                                                                                    | 
  16 | tol_inspect_gal                         | <button class="big circular ui icon green button tol_inspect_gal copo-tooltip" title="Inspect TOL by GAL">         <i class="icon building"></i>     </button>                                                                                                                                                  | 
@@ -140,10 +140,10 @@ class Command(BaseCommand):
 
         add_local_all = RecordActionButton().create_record_action_button(
             name="add_local_all",
-            title="Add new file by browsing local file system",
+            title="Add file by browsing local file system",
             label="Add",
             type="",
-            error_message="Add new file by browsing local file system",
+            error_message="Add file by browsing local file system",
             icon_class="fa fa-desktop",
             action="add_files_locally",
             icon_colour="blue",
@@ -152,7 +152,7 @@ class Command(BaseCommand):
 
         add_terminal_all = RecordActionButton().create_record_action_button(
             name="add_terminal_all",
-            title="Add new file by terminal",
+            title="Add file by terminal",
             label="Add",
             type="",
             error_message="",
@@ -164,7 +164,7 @@ class Command(BaseCommand):
 
         add_record_all = RecordActionButton().create_record_action_button(
             name="add_record_all",
-            title="Add new record",
+            title="Add record",
             label="Add",
             type="",
             error_message="",
@@ -188,8 +188,8 @@ class Command(BaseCommand):
 
         releasestudy = RecordActionButton().create_record_action_button(
             name="releasestudy",
-            title="Release Study",
-            label="Release Study",
+            title="Release study",
+            label="Release study",
             type="single",
             error_message="",
             icon_class="fa fa-globe",
@@ -228,8 +228,8 @@ class Command(BaseCommand):
 
         make_snapshot = RecordActionButton().create_record_action_button(
             name="make_snapshot",
-            title="Make Snapshot",
-            label="Make Snapshot",
+            title="Make snapshot",
+            label="Make snapshot",
             type="single",
             error_message="Please select one record to make snapshot",
             icon_class="fa fa-camera-retro",
@@ -240,7 +240,7 @@ class Command(BaseCommand):
 
         view_images_multiple = RecordActionButton().create_record_action_button(
             name="view_images_multiple",
-            title="View Images",
+            title="View images",
             label="View images",
             type="multi",
             error_message="Please select one or more sample records from the table shown to view images for",
@@ -252,7 +252,7 @@ class Command(BaseCommand):
 
         download_permits_multiple = RecordActionButton().create_record_action_button(
             name="download_permits_multiple",
-            title="Download Permits",
+            title="Download permits",
             label="Download permits",
             type="multi",
             error_message="Please select one or more sample records from the table shown to download permits for",
@@ -264,8 +264,8 @@ class Command(BaseCommand):
 
         download_general_sample_manifest_single = RecordActionButton().create_record_action_button(
             name="download_general_sample_manifest_single",
-            title="Download Sample Manifest",
-            label="Download sample manifest",
+            title="Download manifest",
+            label="Download manifest",
             type="single",
             error_message="Please select one of samples in the manifest to download",
             icon_class="fa fa-download",
@@ -276,8 +276,8 @@ class Command(BaseCommand):
 
         download_sample_manifest_single = RecordActionButton().create_record_action_button(
             name="download_sample_manifest_single",
-            title="Download Sample Manifest",
-            label="Download sample manifest",
+            title="Download manifest",
+            label="Download manifest",
             type="single",
             error_message="Please select one of samples in the manifest to download",
             icon_class="fa fa-download",
@@ -288,7 +288,7 @@ class Command(BaseCommand):
 
         download_tagged_seq_manifest_single = RecordActionButton().create_record_action_button(
             name="download_tagged_seq_single",
-            title="Download tagged sequence (aka barcoding) manifest",
+            title="Download manifest",
             label="Download manifest",
             type="single",
             error_message="Please select one of tagged sequences (or barcoding data) in the table to download",
@@ -360,7 +360,7 @@ class Command(BaseCommand):
 
         submit_tagged_seq_multi = RecordActionButton().create_record_action_button(
             name="submit_tagged_seq_multi",
-            title="Submit Tagged Sequence",
+            title="Submit Tagged sequence",
             label="Submit",
             type="multi",
             error_message="Please select one or more record to submit",
@@ -372,7 +372,7 @@ class Command(BaseCommand):
 
         submit_read_multi = RecordActionButton().create_record_action_button(
             name="submit_read_multi",
-            title="Submit Read",
+            title="Submit read",
             label="Submit",
             type="multi",
             error_message="Please select one or more record to submit",
@@ -384,7 +384,7 @@ class Command(BaseCommand):
 
         submit_annotation_multi = RecordActionButton().create_record_action_button(
             name="submit_annotation_multi",
-            title="Submit Annotation",
+            title="Submit annotation",
             label="Submit",
             type="multi",
             error_message="Please select one or more record to submit",
@@ -396,7 +396,7 @@ class Command(BaseCommand):
 
         submit_assembly_multi = RecordActionButton().create_record_action_button(
             name="submit_assembly_multi",
-            title="Submit Assembly",
+            title="Submit assembly",
             label="Submit",
             type="multi",
             error_message="Please select one or more record to submit",
@@ -408,7 +408,7 @@ class Command(BaseCommand):
 
         submit_sample_multi = RecordActionButton().create_record_action_button(
             name="submit_general_sample_multi",
-            title="Submit Sample to ENA",
+            title="Submit sample to ENA",
             label="Submit to ENA",
             type="multi",
             error_message="Please select one or more record to submit",
@@ -456,12 +456,12 @@ class Command(BaseCommand):
 
         accept_reject_samples = TitleButton().create_title_button(
             name="accept_reject_samples",
-            template="<button style=\"display: none\" title=\"Accept/Reject Tree of Life samples\"             class=\"big circular ui icon teal button accept_reject_samples copo-tooltip\" data-tour-id=\"accept_reject_samples_title_button\">         <i class=\"icon tasks sign\"></i>     </button>",
+            template="<button style=\"display: none\" title=\"Accept or reject Tree of Life samples\"             class=\"big circular ui icon teal button accept_reject_samples copo-tooltip\" data-tour-id=\"accept_reject_samples_title_button\">         <i class=\"icon tasks sign\"></i>     </button>",
             additional_attr="",
         )
         copo_accessions = TitleButton().create_title_button(
             name="copo_accessions",
-            template="<button style=\"display: none\" title=\"View Accessions Dashboard\"             class=\"big circular ui icon pink button copo_accessions copo-tooltip\" data-tour-id=\"accession_dashboard_title_button\">         <i class=\"icon sitemap\"></i>     </button>",
+            template="<button style=\"display: none\" title=\"View accessions dashboard\"             class=\"big circular ui icon pink button copo_accessions copo-tooltip\" data-tour-id=\"accession_dashboard_title_button\">         <i class=\"icon sitemap\"></i>     </button>",
             additional_attr="",
         )
         tol_inspect = TitleButton().create_title_button(
@@ -471,12 +471,12 @@ class Command(BaseCommand):
         )
         tol_inspect_gal = TitleButton().create_title_button(
             name="tol_inspect_gal",
-            template="<button class=\"big circular ui icon green button tol_inspect_gal copo-tooltip\" title=\"Inspect Tree of Life data by GAL\" data-tour-id=\"tol_inspect_gal_title_button\">         <i class=\"icon building\"></i>     </button>",
+            template="<button class=\"big circular ui icon green button tol_inspect_gal copo-tooltip\" title=\"Inspect Tree of Life data by Genome Acquisition Labs\" data-tour-id=\"tol_inspect_gal_title_button\">         <i class=\"icon building\"></i>     </button>",
             additional_attr="",
         )
         download_blank_manifest_template = TitleButton().create_title_button(
             name="download_blank_manifest_template",
-            template="<a  title=\"Download Blank Manifest Template\"             class=\"big circular ui icon brown button download-blank-manifest-template copo-tooltip\" target=\"_blank\" data-tour-id=\"download_blank_manifest_title_button\">         <i class=\"icon download sign\"></i>     </a>",
+            template="<a  title=\"Download manifest template\"             class=\"big circular ui icon brown button download-blank-manifest-template copo-tooltip\" target=\"_blank\" data-tour-id=\"download_blank_manifest_title_button\">         <i class=\"icon download sign\"></i>     </a>",
             additional_attr="href:#blank_manifest_url",
         )
         download_sop = TitleButton().create_title_button(
@@ -486,42 +486,42 @@ class Command(BaseCommand):
         )
         new_taggedseq_spreadsheet_template = TitleButton().create_title_button(
             name="new_taggedseq_spreadsheet_template",
-            template="<button style=\"display: inline\" title=\"Add Tagged Sequence (s) from Tagged Sequence Spreadsheet\"             class=\"big circular ui icon button new-taggedseq-spreadsheet-template copo-tooltip\" data-tour-id=\"new_spreadsheet_title_button\">         <i class=\"icon table sign\"></i>     </button>",
+            template="<button style=\"display: inline\" title=\"Add tagged sequences from spreadsheet\"             class=\"big circular ui icon button new-taggedseq-spreadsheet-template copo-tooltip\" data-tour-id=\"new_spreadsheet_title_button\">         <i class=\"icon table sign\"></i>     </button>",
             additional_attr="",
         )
         new_local_file = TitleButton().create_title_button(
             name="new_local_file",
-            template="<button title=\"Add new file by browsing local file system\"             class=\"big circular ui icon primary button new-local-file copo-tooltip\" data-tour-id=\"new_file_button_local\">         <i class=\"icon desktop sign\"></i>     </button>",
+            template="<button title=\"Add file by browsing local file system\"             class=\"big circular ui icon primary button new-local-file copo-tooltip\" data-tour-id=\"new_file_button_local\">         <i class=\"icon desktop sign\"></i>     </button>",
             additional_attr="",
         )
         new_terminal_file = TitleButton().create_title_button(
             name="new_terminal_file",
-            template="<button title=\"Add new file by terminal\"             class=\"big circular ui icon primary button new-terminal-file copo-tooltip\"  data-tour-id=\"new_file_button_terminal\">         <i class=\"icon terminal sign\"></i>     </button>",
+            template="<button title=\"Add file by terminal\"             class=\"big circular ui icon primary button new-terminal-file copo-tooltip\"  data-tour-id=\"new_file_button_terminal\">         <i class=\"icon terminal sign\"></i>     </button>",
             additional_attr="",
         )
         new_reads_spreadsheet_template = TitleButton().create_title_button(
             name="new_reads_spreadsheet_template",
-            template="<button style=\"display: inline\" title=\"Add Read(s) from Read Spreadsheet\"             class=\"big circular ui icon button new-reads-spreadsheet-template copo-tooltip\" data-tour-id=\"new_spreadsheet_title_button\">         <i class=\"icon table sign\"></i>     </button>",
+            template="<button style=\"display: inline\" title=\"Add reads from spreadsheet\"             class=\"big circular ui icon button new-reads-spreadsheet-template copo-tooltip\" data-tour-id=\"new_spreadsheet_title_button\">         <i class=\"icon table sign\"></i>     </button>",
             additional_attr="",
         )
         new_general_sample_spreadsheet_template = TitleButton().create_title_button(
             name="new_general_sample_spreadsheet_template",
-            template="<button style=\"display: inline\" title=\"Add/Update Sample(s) from Sample Spreadsheet\"             class=\"big circular ui icon button new-general-sample-spreadsheet-template copo-tooltip\" data-tour-id=\"new_spreadsheet_title_button\">         <i class=\"icon table sign\"></i>     </button>",
+            template="<button style=\"display: inline\" title=\"Add or update samples from spreadsheet\"             class=\"big circular ui icon button new-general-sample-spreadsheet-template copo-tooltip\" data-tour-id=\"new_spreadsheet_title_button\">         <i class=\"icon table sign\"></i>     </button>",
             additional_attr="",
         )
         new_singlecell_spreadsheet_template = TitleButton().create_title_button(
             name="new_singlecell_spreadsheet_template",
-            template="<button style=\"display: inline\" title=\"Add study from Spreadsheet\"             class=\"big circular ui icon button new-singlecell-spreadsheet-template copo-tooltip\" data-tour-id=\"new_spreadsheet_title_button\">         <i class=\"icon table sign\"></i>     </button>",
+            template="<button style=\"display: inline\" title=\"Add study from spreadsheet\"             class=\"big circular ui icon button new-singlecell-spreadsheet-template copo-tooltip\" data-tour-id=\"new_spreadsheet_title_button\">         <i class=\"icon table sign\"></i>     </button>",
             additional_attr="",
         )
         new_samples_spreadsheet_template = TitleButton().create_title_button(
             name="new_samples_spreadsheet_template",
-            template="<button   title=\"Add/Update sample(s) from spreadsheet\"             class=\"big circular ui icon button new-samples-spreadsheet-template copo-tooltip\" data-tour-id=\"new_samples_button\">         <i class=\"icon table sign\"></i>     </button>",
+            template="<button   title=\"Add or update samples from spreadsheet\"             class=\"big circular ui icon button new-samples-spreadsheet-template copo-tooltip\" data-tour-id=\"new_samples_button\">         <i class=\"icon table sign\"></i>     </button>",
             additional_attr="",
         )
         new_component_template = TitleButton().create_title_button(
             name="new_component_template",
-            template="<button title=\"Add new profile record\"             class=\"big circular ui icon primary button new-component-template copo-tooltip\" data-tour-id=\"new_component_title_button\">         <i class=\"icon add sign\"></i>     </button>",
+            template="<button title=\"Add record\"             class=\"big circular ui icon primary button new-component-template copo-tooltip\" data-tour-id=\"new_component_title_button\">         <i class=\"icon add sign\"></i>     </button>",
             additional_attr="",
         )
         quick_tour_template = TitleButton().create_title_button(
@@ -545,7 +545,7 @@ class Command(BaseCommand):
         # Components
         files = Component().create_component(
             name="files",
-            title="Data Files",
+            title="Data files",
             widget_icon="file",
             widget_colour="blue",
             widget_icon_class="fa fa-file",
@@ -627,7 +627,7 @@ class Command(BaseCommand):
 
         seqannotation = Component().create_component(
             name="seqannotation",
-            title="Sequence Annotations",
+            title="Sequence annotations",
             widget_icon="tag",
             widget_colour="yellow",
             widget_icon_class="fa fa-tag",
@@ -638,7 +638,7 @@ class Command(BaseCommand):
 
         taggedseq = Component().create_component(
             name="taggedseq",
-            title="Barcoding Manifests",
+            title="Barcoding manifests",
             widget_icon="barcode",
             widget_colour="red",
             widget_icon_class="fa fa-barcode",
@@ -701,7 +701,7 @@ class Command(BaseCommand):
 
         profile = Component().create_component(
             name="profile",
-            title="Work Profiles",
+            title="Work profiles",
             widget_icon="",
             widget_colour="",
             widget_icon_class="",
