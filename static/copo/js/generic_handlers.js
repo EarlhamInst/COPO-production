@@ -4148,21 +4148,19 @@ function confirmCloseDialog(triggerDialogOrEvent) {
     triggerDialogOrEvent.stopPropagation();
   }
 
-  // If 'info-content' is visible, 'Submit' button is visible 
+  // If alert is visible, 'Submit' button is disabled 
   // or 'Finish' button is disabled, skip confirmation
-  const isInfoVisible =
-    $('.info-content').is(':visible') &&
-    $('.info-content').find('.info-text').text().trim() !== '';
+  const $modalAlert = $('.modal .alert, .modal .sample-alert');
+  const isModalAlertVisible =
+     $modalAlert.is(':visible') &&
+     $modalAlert.text().trim() !== '';
   
-  const isParseInfoVisible =
-    !$('#parse_info').is(':visible') && $('#parse_info').text().trim() !== '';
-  
-  const isFinishDisabled = $(
+  const isFinishButtonDisabled = $(
     '.modal-footer .btn-finish, .modal-footer .btn-submit'
   ).is(':disabled');
   const targetDialog = getTargetDialog(triggerDialogOrEvent);
   
-  if (isInfoVisible || isFinishDisabled || isParseInfoVisible) {
+  if (!isModalAlertVisible || isFinishButtonDisabled) {
     // Skip confirmation
     closeDialog(targetDialog);
     return;
