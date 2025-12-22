@@ -80,7 +80,8 @@ const profile_type_def = {
     {{ profile_type.type|lower }}:  {
       title: '{{ profile_type.type | upper }}',
       widget_colour: '{{ profile_type.widget_colour }}',
-      components: [ {% for component in profile_type.components.all  %} '{{ component.name }}', {% endfor %} ]
+      components: [ {% for component in profile_type.components.all  %} '{{ component.name }}', {% endfor %} ],
+      recordActions: {{ profile_type.record_action_buttons|default:'[]'|safe }},
     },    
   {% endfor %}
 }

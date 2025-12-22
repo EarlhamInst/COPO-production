@@ -335,71 +335,78 @@ $(document).on('document_ready', function () {
 //****************************** Functions block ******************************//
 
 function initialisePopover() {
-  // Profile records exist
-  // Initialise the popover 'View profile options' for each profile record
-  let popover = $('.profile-ellipsis[data-toggle="popover"]')
-    .popover({
-      sanitize: false,
-    })
-    .click(function (e) {
-      $(this).popover('toggle');
-      $('.profile-ellipsis[data-toggle="popover"]').not(this).popover('hide');
-      e.stopPropagation();
-    })
-    .on('show.bs.popover', function (e) {
-      const profileType = $(this)
-        .closest('.grid')
-        .find('.copo-records-panel')
-        .attr('profile-type');
+  $('.grid').each(function () {
+    const $grid = $(this);
+    const $panel = $grid.find('.copo-records-panel');
+    const profileType = $panel.attr('profile-type');
+    const sharedProfileType = $panel.attr('shared-profile-type');
+    const isShared = !profileType && sharedProfileType;
+    const typeForComponents = profileType || sharedProfileType;
+    let hasRecordActions = false;
 
-      const sharedProfileType = $(this)
-        .closest('.grid')
-        .find('.copo-records-panel')
-        .attr('shared-profile-type');
+    // Actions exist for non-shared profiles
+    if (!isShared) {
+      hasRecordActions = true;
+    }
 
-      const isShared = !profileType && sharedProfileType;
+    // Determine if there are any record action buttons defined
+    const recordActions =
+      profile_type_def[typeForComponents?.toLowerCase()]?.recordActions || [];
+    if (recordActions.length) {
+      hasRecordActions = true;
+    }
 
-      $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
+    // Remove the ellipsis div if no actions exist
+    if (!hasRecordActions) {
+      $grid.find('.row-ellipsis').remove();
+      return;
+    }
 
-      // Set content of the popover
-      const $content = $('<div></div>');
-      const $editButton = $(
-        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil"></i>&nbsp;Edit</button>'
-      );
-      const $deleteButton = $(
-        '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
-      );
+    // Otherwise, initialise the popover, 'View profile options', for each profile record
+    const $ellipsis = $grid.find('.profile-ellipsis[data-toggle="popover"]');
 
-      $deleteButton.css('margin-left', '15px');
+    $ellipsis
+      .popover({ sanitize: false })
+      .click(function (e) {
+        $(this).popover('toggle');
+        $('.profile-ellipsis[data-toggle="popover"]').not(this).popover('hide');
+        e.stopPropagation();
+      })
+      .on('show.bs.popover', function () {
+        // Hide 'View profile options' title from the popover on hover
+        $('.row-ellipsis').attr('title', '');
 
-      // Do not show edit and delete options
-      // for shared profiles
-      if (!isShared) {
-        $content.append($editButton);
-        $content.append($deleteButton);
-      }
+        const $content = $('<div></div>');
 
-      component_def[componentName]['recordActions'].forEach((item) => {
-        var action = record_action_button_def[item];
-        const $button = $(
-          '<button id="' +
-            item +
-            '" class="btn btn-sm btn-primary" title="' +
-            action['title'] +
-            '"><i class="' +
-            action['icon_class'] +
-            ' "></i>&nbsp;' +
-            action['label'] +
-            '</button>'
-        );
-        $button.css('margin-top', '10px');
-        $content.append($button);
-        $content.append($button);
+        // Add edit and delete buttons for non-shared profiles
+        // i.e. shared profiles cannot be edited or deleted
+        if (!isShared) {
+          const $editButton = $(
+            '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil"></i>&nbsp;Edit</button>'
+          );
+          const $deleteButton = $(
+            '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
+          );
+          $deleteButton.css('margin-left', '15px');
+          $content.append($editButton, $deleteButton);
+        }
+
+        // Add record action buttons
+        recordActions.forEach((item) => {
+          const action = record_action_button_def[item];
+          const $button = $(
+            `<button id="${item}" class="btn btn-sm btn-primary" title="${action.title}">
+              <i class="${action.icon_class}"></i>&nbsp;${action.label}
+            </button>`
+          );
+          $button.css('margin-top', '10px');
+          $content.append($button);
+        });
+
+        // Apply content to the popover
+        $(this).attr('data-content', $content.html());
       });
-
-      // Apply the content to the popover
-      popover.attr('data-content', $content.html());
-    });
+  });
 }
 
 function loadProfileRecords(obj) {

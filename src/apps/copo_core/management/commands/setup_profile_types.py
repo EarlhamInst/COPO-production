@@ -855,7 +855,7 @@ class Command(BaseCommand):
             ]
         )
 
-        profile.recordaction_buttons.set([releasestudy])
+        # profile.recordaction_buttons.set([releasestudy]) # Add 'Release study' button to all profiles
         profile.title_buttons.set([new_component_template, quick_tour_template])
 
         # Assign tour config to components
@@ -881,6 +881,7 @@ class Command(BaseCommand):
             widget_colour="#E61A8D",
             is_dtol_profile=True,
             is_permission_required=True,
+            record_action_buttons=["releasestudy"],
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
             pre_save_action="src.apps.copo_profile.utils.profile_utils.pre_save_erga_profile",
         )
@@ -890,6 +891,7 @@ class Command(BaseCommand):
             widget_colour="#5829bb",
             is_dtol_profile=True,
             is_permission_required=True,
+            record_action_buttons=["releasestudy"],
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
         )
         dtolenv = ProfileType().create_profile_type(
@@ -898,6 +900,7 @@ class Command(BaseCommand):
             widget_colour="#fb7d0d",
             is_dtol_profile=True,
             is_permission_required=True,
+            record_action_buttons=["releasestudy"],
         )
         dtol = ProfileType().create_profile_type(
             type="dtol",
@@ -905,6 +908,7 @@ class Command(BaseCommand):
             widget_colour="#16ab39",
             is_dtol_profile=True,
             is_permission_required=True,
+            record_action_buttons=["releasestudy"],
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
         )
         genomics = ProfileType().create_profile_type(
@@ -914,6 +918,7 @@ class Command(BaseCommand):
             is_dtol_profile=False,
             is_permission_required=False,
             is_deprecated=True,
+            record_action_buttons=["releasestudy"],
         )
 
         biodata = ProfileType().create_profile_type(
@@ -922,6 +927,7 @@ class Command(BaseCommand):
             widget_colour="#00AAFF",
             is_dtol_profile=False,
             is_permission_required=False,
+            record_action_buttons=[],
         )
 
         # Assign components to profile types
