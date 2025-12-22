@@ -19,16 +19,18 @@ from pymongo import ReturnDocument
 
 l = Logger()
 
-@web_page_access_checker
+
 @login_required
+@web_page_access_checker
 def copo_samples(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
     groups = get_group_membership_asString()
     return render(request, 'copo/copo_sample.html', {'profile_id': profile_id, 'profile': profile, 'groups': groups, 'ui_component': ui_component})
 
-@web_page_access_checker
+
 @login_required
+@web_page_access_checker
 def copo_general_samples(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
@@ -38,8 +40,9 @@ def copo_general_samples(request, profile_id, ui_component):
         profile_checklist_ids = []
     return render(request, 'copo/copo_general_sample.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids, 'ui_component': ui_component})
 
+
+@login_required
 @web_page_access_checker
-@login_required()
 def sample_manifest_validate(request, profile_id):
     request.session["profile_id"] = profile_id
     checklist_id = request.GET.get("checklist_id")
@@ -52,8 +55,9 @@ def sample_manifest_validate(request, profile_id):
             
     return render(request, "copo/sample_manifest_validate.html", data)
 
+
+@login_required
 @web_page_access_checker
-@login_required()
 def parse_sample_spreadsheet(request):
     profile_id = request.session["profile_id"]
     #ghlper.notify_read_status(data={"profile_id": profile_id}, msg="Loading", action="info",
@@ -93,8 +97,9 @@ def parse_sample_spreadsheet(request):
     else:
         return HttpResponse(status=400)
 
+
+@login_required
 @web_page_access_checker
-@login_required()
 def save_sample_records(request):
     # create mongo sample objects from info parsed from manifest and saved to session variable
     sample_data = request.session.get("sample_data")

@@ -15,8 +15,8 @@ from .utils.da import SequenceAnnotation
 from .utils import EnaAnnotation
 
 
-@web_page_access_checker
 @login_required
+@web_page_access_checker
 def copo_seq_annotation(request, profile_id="", ui_component=None):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)

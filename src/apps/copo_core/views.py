@@ -284,8 +284,9 @@ def _core_visualize(request):
     out = jsonpickle.encode(context, unpicklable=False)
     return HttpResponse(out, content_type='application/json')
 
-@web_page_access_checker
+
 @login_required
+@web_page_access_checker
 def copo_forms(request):
     context = dict()
     task = request.POST.get("task", str())

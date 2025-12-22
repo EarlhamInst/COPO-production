@@ -402,8 +402,9 @@ def save_singlecell_records(request, profile_id, schema_name):
     result = {"table_data": table_data, "component": "singlecell"}
     return JsonResponse(status=200, data=result)
 
-@web_page_access_checker
+
 @login_required
+@web_page_access_checker
 def copo_singlecell(request, schema_name, profile_id, ui_component):
     request.session["profile_id"] = profile_id
 

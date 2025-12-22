@@ -156,8 +156,8 @@ def ena_assembly(request, profile_id, assembly_id=None):
         )
 
 
-@web_page_access_checker
 @login_required
+@web_page_access_checker
 def copo_assembly(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)

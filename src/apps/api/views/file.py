@@ -1,11 +1,14 @@
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from rest_framework.views import APIView
 from common.s3.s3Connection import S3Connection as s3
 from src.apps.copo_core.views import web_page_access_checker
 from rest_framework.decorators import api_view
 
+
 @api_view(['GET'])
-@web_page_access_checker    
+@login_required
+@web_page_access_checker
 def api_files(request, profile_id):
     if request.method == 'GET':
         s3obj = s3()
@@ -21,10 +24,11 @@ def api_files(request, profile_id):
                 row_data["S3_ETag"] = file["ETag"].replace('"', '')
                 result.append(row_data)
         return JsonResponse(result, safe=False)
- 
+
 
 @api_view(['POST'])
-@web_page_access_checker       
+@login_required
+@web_page_access_checker
 def api_file_presigned_urls(request, profile_id):
     if request.method == 'POST':
         bucket_name = profile_id
