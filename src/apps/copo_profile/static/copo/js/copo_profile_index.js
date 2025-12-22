@@ -347,6 +347,18 @@ function initialisePopover() {
       e.stopPropagation();
     })
     .on('show.bs.popover', function (e) {
+      const profileType = $(this)
+        .closest('.grid')
+        .find('.copo-records-panel')
+        .attr('profile-type');
+      
+      const sharedProfileType = $(this)
+        .closest('.grid')
+        .find('.copo-records-panel')
+        .attr('shared-profile-type');
+      
+      const isShared = !profileType && sharedProfileType;
+
       $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
 
       // Set content of the popover
@@ -359,8 +371,13 @@ function initialisePopover() {
       );
 
       $deleteButton.css('margin-left', '15px');
-      $content.append($editButton);
-      $content.append($deleteButton);
+
+      // Do not show edit and delete options 
+      // for shared profiles
+      if (!isShared) { 
+        $content.append($editButton);
+        $content.append($deleteButton);
+      }
 
       component_def[componentName]['recordActions'].forEach((item) => {
         var action = record_action_button_def[item];
