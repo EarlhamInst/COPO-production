@@ -233,17 +233,17 @@ $(document).on('document_ready', function () {
   // on hover of the profile options ellipsis icon and unhighlight
   // focus on desired profile grid
   $(document).on('click', `#${tableId}`, function () {
-    $('#ellipsisId[data-toggle="popover"]').popover('hide');
+    $('.profile-ellipsis[data-toggle="popover"]').popover('hide');
     $('.row-ellipsis').attr('title', $(document).data('profileOptionsTitle'));
   });
 
   $(document).on('click', '.copo-main', function () {
-    $('#ellipsisId[data-toggle="popover"]').popover('hide');
+    $('.profile-ellipsis[data-toggle="popover"]').popover('hide');
     $('.row-ellipsis').attr('title', $(document).data('profileOptionsTitle'));
   });
 
   $(document).on('click', '.copo-sidebar', function () {
-    $('#ellipsisId[data-toggle="popover"]').popover('hide');
+    $('.profile-ellipsis[data-toggle="popover"]').popover('hide');
     $('.row-ellipsis').attr('title', $(document).data('profileOptionsTitle'));
   });
 
@@ -266,7 +266,7 @@ $(document).on('document_ready', function () {
   });
 
   $(document).on('click', '#profileOptionsPopoverCloseBtn', function () {
-    $('#ellipsisId[data-toggle="popover"]').popover('hide');
+    $('.profile-ellipsis[data-toggle="popover"]').popover('hide');
   });
 
   $(document).on('click', '#showMoreProfileInfoCloseBtn', function () {
@@ -337,13 +337,13 @@ $(document).on('document_ready', function () {
 function initialisePopover() {
   // Profile records exist
   // Initialise the popover 'View profile options' for each profile record
-  let popover = $('#ellipsisId[data-toggle="popover"]')
+  let popover = $('.profile-ellipsis[data-toggle="popover"]')
     .popover({
       sanitize: false,
     })
     .click(function (e) {
       $(this).popover('toggle');
-      $('#ellipsisId[data-toggle="popover"]').not(this).popover('hide');
+      $('.profile-ellipsis[data-toggle="popover"]').not(this).popover('hide');
       e.stopPropagation();
     })
     .on('show.bs.popover', function (e) {
@@ -351,12 +351,12 @@ function initialisePopover() {
         .closest('.grid')
         .find('.copo-records-panel')
         .attr('profile-type');
-      
+
       const sharedProfileType = $(this)
         .closest('.grid')
         .find('.copo-records-panel')
         .attr('shared-profile-type');
-      
+
       const isShared = !profileType && sharedProfileType;
 
       $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
@@ -372,9 +372,9 @@ function initialisePopover() {
 
       $deleteButton.css('margin-left', '15px');
 
-      // Do not show edit and delete options 
+      // Do not show edit and delete options
       // for shared profiles
-      if (!isShared) { 
+      if (!isShared) {
         $content.append($editButton);
         $content.append($deleteButton);
       }
@@ -546,7 +546,7 @@ function appendRecordComponents(grids) {
 
 function editProfileRecord(profileRecordId, profileType) {
   // Hide the popover
-  $('#ellipsisId[data-toggle="popover"]').popover('hide');
+  $('.profile-ellipsis[data-toggle="popover"]').popover('hide');
 
   $.ajax({
     url: copoFormsURL,
@@ -571,7 +571,7 @@ function deleteProfileRecord(profileRecordId) {
   const copoDeleteProfile = '/copo/copo_profile/delete';
 
   // Hide the popover
-  $('#ellipsisId[data-toggle="popover"]').popover('hide');
+  $('.profile-ellipsis[data-toggle="popover"]').popover('hide');
 
   // Show a modal dialog to confirm if a user would like to delete the profile
   BootstrapDialog.show({
@@ -1045,7 +1045,7 @@ function initialiseRecords(copoVisualsURL) {
   });
 
   $('#profileOptionsPopoverCloseBtn').click(function () {
-    $('#ellipsisId[data-toggle="popover"]').popover('hide');
+    $('.profile-ellipsis[data-toggle="popover"]').popover('hide');
   });
 
   $('#showMoreProfileInfoCloseBtn').click(function () {
