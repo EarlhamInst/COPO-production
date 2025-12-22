@@ -82,7 +82,7 @@ $(document).ready(function () {
       {
         id: 'submit_annotation_button',
         label: 'Submit annotation',
-        cssClass: 'btn-primary',
+        cssClass: 'btn-primary btn-submit',
         title: 'Submit annotation',
         action: function () {
           doPost();

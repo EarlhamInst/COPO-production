@@ -4107,80 +4107,107 @@ function initialiseNavToggle() {
 }
 
 function confirmCloseDialog(triggerDialogOrEvent) {
+  function getTargetDialog(trigger) {
+    if (!trigger) return null;
+
+    // Case 1: Modal triggered from a DOM event
+    if (trigger.target) {
+      const modalEl = $(trigger.target).closest('.modal');
+      return modalEl.length ? modalEl : null;
+    }
+
+    // Case 2: Modal triggered with a jQuery modal reference
+    if (trigger instanceof jQuery) {
+      return trigger;
+    }
+
+    // Case 3: Modal triggered with a BootstrapDialog instance
+    if (typeof trigger.close === 'function') {
+      return trigger;
+    }
+
+    return null;
+  }
+
+  function closeDialog(dialog) {
+    if (!dialog) return;
+
+    // Close the target dialog modal
+    if (dialog.close) {
+      // BootstrapDialog
+      dialog.close();
+    } else if (dialog.modal) {
+      // jQuery modal
+      dialog.modal('hide');
+    }
+  }
+
   // Handle event case
   if (triggerDialogOrEvent && triggerDialogOrEvent.preventDefault) {
     triggerDialogOrEvent.preventDefault();
     triggerDialogOrEvent.stopPropagation();
   }
 
-  BootstrapDialog.show({
-    title: '<strong>Confirm close</strong>',
-    message:
-      'Are you sure that you would like to close the modal? ' +
-      'Any upload progress will be lost.',
-    cssClass: 'copo-modal1',
-    closable: false,
-    animate: false,
-    closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
-    closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
-    type: BootstrapDialog.TYPE_WARNING,
-    buttons: [
-      {
-        label: 'No, keep open',
-        cssClass: 'custom-btn tiny btn-default',
-        action: function (dialogRef) {
-          dialogRef.close();
+  // If 'info-content' is visible, 'Submit' button is visible 
+  // or 'Finish' button is disabled, skip confirmation
+  const isInfoVisible =
+    $('.info-content').is(':visible') &&
+    $('.info-content').find('.info-text').text().trim() !== '';
+  
+  const isParseInfoVisible =
+    !$('#parse_info').is(':visible') && $('#parse_info').text().trim() !== '';
+  
+  const isFinishDisabled = $(
+    '.modal-footer .btn-finish, .modal-footer .btn-submit'
+  ).is(':disabled');
+  const targetDialog = getTargetDialog(triggerDialogOrEvent);
+  
+  if (isInfoVisible || isFinishDisabled || isParseInfoVisible) {
+    // Skip confirmation
+    closeDialog(targetDialog);
+    return;
+  } else {
+    // Show confirmation dialog
+    BootstrapDialog.show({
+      title: '<strong>Confirm close</strong>',
+      message:
+        'Are you sure that you would like to close the modal? ' +
+        'Any upload progress will be lost.',
+      cssClass: 'copo-modal1',
+      closable: false,
+      animate: false,
+      closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
+      closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
+      type: BootstrapDialog.TYPE_WARNING,
+      buttons: [
+        {
+          label: 'No, keep open',
+          cssClass: 'custom-btn tiny btn-default',
+          action: function (dialogRef) {
+            dialogRef.close();
+          },
         },
-      },
-      {
-        label: 'Yes, close',
-        cssClass: 'custom-btn tiny btn-primary',
-        action: function (confirmDialogRef) {
-          let targetDialog = null;
-
-          // Case 1: Modal triggered from a DOM event
-          if (triggerDialogOrEvent && triggerDialogOrEvent.target) {
-            const modalEl = $(triggerDialogOrEvent.target).closest('.modal');
-            if (modalEl.length) targetDialog = modalEl;
-          }
-          // Case 2: Modal triggered with a jQuery modal reference
-          else if (triggerDialogOrEvent instanceof jQuery) {
-            targetDialog = triggerDialogOrEvent;
-          }
-          // Case 3: Modal triggered with a BootstrapDialog instance
-          else if (
-            triggerDialogOrEvent &&
-            typeof triggerDialogOrEvent.close === 'function'
-          ) {
-            targetDialog = triggerDialogOrEvent;
-          }
-
-          // Close the targetDialog modal
-          if (targetDialog) {
-            if (targetDialog.close) {
-              // BootstrapDialog
-              targetDialog.close();
-            } else if (targetDialog.modal) {
-              // jQuery modal
-              targetDialog.modal('hide');
-            }
-          }
-          // Reset modal values
-          resetValues();
-          confirmDialogRef.close(); // Close the confirmation modal
+        {
+          label: 'Yes, close',
+          cssClass: 'custom-btn tiny btn-primary',
+          action: function (confirmDialogRef) {
+            closeDialog(targetDialog);
+            resetValues(); // Reset modal values
+            confirmDialogRef.close(); // Close the confirmation modal
+          },
         },
-      },
-    ],
-    onshown: function (dialogRef) {
-      // Remove aria-hidden before focusing the modal
-      dialogRef.getModal().removeAttr('aria-hidden');
+      ],
+      onshown: function (dialogRef) {
+        // Remove aria-hidden before focusing the modal
+        dialogRef.getModal().removeAttr('aria-hidden');
 
-      // Set focus after a short delay
-      setTimeout(function () {
-        dialogRef.getModal().focus();
-      }, 50);
-    },
-  });
+        // Set focus after a short delay
+        setTimeout(function () {
+          dialogRef.getModal().focus();
+        }, 50);
+      },
+    });
+  }
 }
 
 // Fades out warning message in modals and updates

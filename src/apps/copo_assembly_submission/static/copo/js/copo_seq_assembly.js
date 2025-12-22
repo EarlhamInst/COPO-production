@@ -14,7 +14,7 @@ $(document).ready(function () {
       {
         id: 'submit_assembly_button',
         label: 'Submit assembly',
-        cssClass: 'btn-primary',
+        cssClass: 'btn-primary btn-submit',
         title: 'Submit assembly',
         action: function () {
           doPost();

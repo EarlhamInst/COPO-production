@@ -51,7 +51,7 @@ var dialog = new BootstrapDialog({
     {
       id: 'save_read_button',
       label: 'Finish',
-      cssClass: 'btn-primary',
+      cssClass: 'btn-primary btn-finish',
       title: 'Finish',
       disabled: true,
       action: function () {
