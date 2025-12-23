@@ -75,9 +75,9 @@ def check_taxon_ena_submittable(taxon, is_binomial_required=True, by="id"):
             errors.append("TAXON_ID " + taxon + " is not submittable to ENA")
         if taxinfo["rank"] not in ["species", "subspecies"]:
             errors.append("TAXON_ID " + taxon + " is not a 'species' or 'subspecies' level entity.")
-        
+
         is_taxon_binomial = d_utils.convertStringToBoolean(taxinfo["binomial"])
-        if is_taxon_binomial != is_binomial_required:
+        if is_binomial_required and not is_taxon_binomial:
             errors.append(MESSAGE['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))    
     except Exception as e:
         l.exception(e)
