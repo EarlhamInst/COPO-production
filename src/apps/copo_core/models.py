@@ -500,6 +500,7 @@ class ProfileType(models.Model):
         base_field=models.CharField(max_length=50),
         default=list,
         blank=True,
+        null=True
     )
     post_save_action = models.CharField(max_length=100, blank=True, null=True)
     pre_save_action = models.CharField(max_length=100, blank=True, null=True)
