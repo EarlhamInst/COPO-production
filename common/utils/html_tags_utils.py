@@ -326,10 +326,6 @@ def generate_table_columns(da_object=None):
 
     columns = list()
     columns.append(dict(data="record_id", visible=False))
-    detail_dict = dict(className='summary-details-control detail-hover-message', orderable=False, data=None,
-                       title='', defaultContent='', width="5%")
-
-    columns.insert(0, detail_dict)
 
     # get indexed fields - only fields that are indexed can be ordered when using server-side processing
     # indexed_fields = list()
@@ -513,10 +509,6 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
         df = df.drop('_id', axis='columns')
 
         columns.append(dict(data="record_id", visible=False))
-        detail_dict = dict(className='summary-details-control detail-hover-message', orderable=False, data=None,
-                           title='', defaultContent='', width="5%")
-
-        columns.insert(0, detail_dict)
 
         df_columns = list(df.columns)
 
@@ -1187,8 +1179,6 @@ def generate_submission_datafiles_data(submission_id=str()):
     columns = list()
     data_set = list()
 
-    columns.append(dict(className='summary-details-control detail-hover-message', orderable=False, data=None,
-                        title='', defaultContent='', width="5%"))
     columns.append(dict(data="record_id", visible=False))
     columns.append(dict(data="name", title="Name"))
 
