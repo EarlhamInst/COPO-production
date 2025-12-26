@@ -370,44 +370,94 @@ function button_event_alert(title, message) {
   });
 }
 
-function display_copo_alert(alertType, alertMessage, displayDuration) {
-  //function displays alert or info to the user
-  //alertType:  'success', 'warning', 'info', 'danger' - modelled after bootstrap alert classes
-  //alertMessage: the actual message to be displayed to the user
-  //displayDuration: how long should the alert be displayed for before taking it down
+function observeAlerts() {
+  // Observe back-end alert divs
+  // Ensure that component alerts are displayed with
+  // the other alerts in the sidebar 'Info' tab
+  const alertMessages = document.querySelectorAll('.component-alert');
+
+  alertMessages.forEach((alertDiv) => {
+    const observer = new MutationObserver((mutationsList) => {
+      mutationsList.forEach((mutation) => {
+        if (
+          (mutation.type === 'childList' ||
+            mutation.type === 'characterData') &&
+          alertDiv.textContent.trim() !== ''
+        ) {
+          // Get alert type from class
+          // (e.g. alert-success, alert-warning, alert-info, alert-danger)
+          const alertType =
+            Array.from(alertDiv.classList)
+              .find((cls) => cls.startsWith('alert-') && cls !== 'alert')
+              ?.replace('alert-', '') || 'info';
+
+          const alertMessage = alertDiv.textContent.trim();
+          displayAlert(alertType, alertMessage);
+
+          // Clear the backend alert div after displaying
+          alertDiv.textContent = '';
+          alertDiv.style.display = 'none';
+        }
+      });
+    });
+
+    observer.observe(alertDiv, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+  });
+}
+
+function displayAlert(alertType, alertMessage, displayDuration = 0) {
+  // alertType:  'success', 'warning', 'info', 'danger'
+  // alertMessage: the message to display
+  // displayDuration: duration in milliseconds to display the alert (e.g. 5000 for 5 seconds)
 
   // Strangely, calling the 'Info' tab with the ID, '#page_alert_panel' doesn't work,
-  // so the class, '.copo-sidebar-info' is used instead.
-  let info_sidebar_tab = $('.copo-sidebar-info');
-  let infoPanelElement = info_sidebar_tab.find('.panel-body'); // $('#page_alert_panel');
+  // so the class, '.copo-sidebar-info', is used instead.
+  let $infoSidebarTab = $('.copo-sidebar-info');
+  let $infoPanel = $infoSidebarTab.find('.panel-body');
 
-  if (infoPanelElement.length) {
-    //reveal tab if not already shown
-    $('.copo-sidebar-tabs a[href="#copo-sidebar-info"]').tab('show');
+  if (!$infoPanel.length) return;
 
-    // Remove fade class if present
-    if (info_sidebar_tab.hasClass('fade')) info_sidebar_tab.removeClass('fade');
+  // Show the sidebar info tab
+  $('.copo-sidebar-tabs a[href="#copo-sidebar-info"]').tab('show');
 
-    // Reveal tab content if it is not already shown
-    if (!info_sidebar_tab.find('.panel-body').hasClass('in'))
-      info_sidebar_tab.find('.panel-body').addClass('in');
+  // Ensure the tab content is visible
+  if (!$infoPanel.hasClass('in')) $infoPanel.addClass('in');
 
-    const alertElement = $('.alert-templates')
-      .find('.alert-' + alertType)
-      .clone();
+  const $alertElement = $('.alert-templates')
+    .find('.alert-' + alertType)
+    .clone();
 
-    // Remove fade class if present
-    if (alertElement.hasClass('fade')) alertElement.removeClass('fade');
+  // Remove fade class if present
+  if ($alertElement.hasClass('fade')) $alertElement.removeClass('fade');
 
-    alertElement.find('.alert-message').html(alertMessage);
+  const $closeBtn = $alertElement.find('.close');
+  $closeBtn.on('click', function (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    $alertElement.remove();
+  });
 
-    infoPanelElement.prepend(alertElement);
+  $alertElement.find('.alert-message').html(alertMessage);
+  $infoPanel.prepend($alertElement);
 
-    // adjust the margin-top between sidebar (info) tab content and the profiles legend
-    $('.component-legend').css('margin-top', '0');
-
-    $('.other-projects-accessions-filter-checkboxes').css('margin-top', '0');
+  // Auto-remove after displayDuration
+  if (displayDuration > 0) {
+    setTimeout(() => {
+      $alertElement.removeClass('in').fadeOut(200, () => {
+        $alertElement.remove();
+      });
+    }, displayDuration);
   }
+
+  // Adjust spacing
+  $('.component-legend, .other-projects-accessions-filter-checkboxes').css(
+    'margin-top',
+    '0'
+  );
 }
 
 function deselect_records(tableID) {

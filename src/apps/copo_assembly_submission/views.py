@@ -77,7 +77,7 @@ def ena_assembly(request, profile_id, assembly_id=None):
         if form.is_valid():
             notify_assembly_status(
                 data={"profile_id": profile_id},
-                msg="Intitialising Assembly Submission",
+                msg="Initialising Assembly Submission",
                 action="info",
                 html_id="assembly_info",
             )
