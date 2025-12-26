@@ -568,7 +568,29 @@ function do_render_server_side_table(componentMeta) {
         },
         processing: "<div class='copo-i-loader'></div>",
       },
-      dom: 'Bfr<"row"><"row info-rw" i>tlp',
+      /* 'dom' results in:
+      <div>
+        {Buttons}
+        {filter}
+        {processing}
+      </div>
+      <div class="row info-rw">
+        {information}
+      </div>
+      <div>
+        {table}
+      </div>
+      <div class="row dataTables-controls-row">
+        <div class="col-sm-4">
+          {length}
+        </div>
+        <div class="col-sm-8">
+          {pagination}
+        </div>
+      </div>
+      <div class="clear"></div>
+      */
+      dom: 'Bfr<"row"><"row info-rw" i>t<"row dataTables-controls-row"<"col-sm-4" l><"col-sm-8 text-right" p>><"clear">',
     });
 
     table
@@ -682,8 +704,6 @@ function do_render_server_side_table(componentMeta) {
     console.warn(`No data status legend found for ${componentMeta.component}`);
   }
 
-  // Reposition info and paginate controls
-  moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
   hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
 
   //handle event for table details
@@ -1034,8 +1054,29 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
         ); //individual components can trap and handle this event as they so wish
         $('body').trigger(event);
       },
-
-      dom: 'Bfr<"row"><"row info-rw" i>tlp',
+      /* 'dom' results in:
+      <div>
+        {Buttons}
+        {filter}
+        {processing}
+      </div>
+      <div class="row info-rw">
+        {information}
+      </div>
+      <div>
+        {table}
+      </div>
+      <div class="row dataTables-controls-row">
+        <div class="col-sm-4">
+          {length}
+        </div>
+        <div class="col-sm-8">
+          {pagination}
+        </div>
+      </div>
+      <div class="clear"></div>
+      */
+      dom: 'Bfr<"row"><"row info-rw" i>t<"row dataTables-controls-row"<"col-sm-4" l><"col-sm-8 text-right" p>><"clear">',
     });
 
     table
@@ -1083,8 +1124,6 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
     console.warn(`No data status legend found for ${componentMeta.component}`);
   }
 
-  // Reposition info and paginate controls
-  moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
   hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
 
   //handle event for table details

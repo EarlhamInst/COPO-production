@@ -36,7 +36,29 @@ let dt_options = {
       },
     },
   ],
-  dom: 'Bfr<"row"><"row info-rw" i>tlp',
+  /* 'dom' results in:
+  <div>
+    {Buttons}
+    {filter}
+    {processing}
+  </div>
+  <div class="row info-rw">
+    {information}
+  </div>
+  <div>
+    {table}
+  </div>
+  <div class="row dataTables-controls-row">
+    <div class="col-sm-4">
+      {length}
+    </div>
+    <div class="col-sm-8">
+      {pagination}
+    </div>
+  </div>
+  <div class="clear"></div>
+  */
+  dom: 'Bfr<"row"><"row info-rw" i>t<"row dataTables-controls-row"<"col-sm-4" l><"col-sm-8 text-right" p>><"clear">',
   lengthChange: true,
   lengthMenu: [10, 25, 50, 75, 100, 500, 1000, 2000, 3000, 4000, 5000],
   ordering: true,
@@ -412,9 +434,7 @@ function customise_accessions_table(table) {
   table_wrapper
     .find('.dataTables_scroll')
     .attr('data-tour-id', 'component_table');
-  
-  // Reposition info and paginate controls
-  moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
+
   hideExtraDetailsHint(componentMeta.tableID); // Hide extra details hint if no details column
 }
 
