@@ -15,6 +15,7 @@ window.resetAllTours = resetAllTours;
 const csrfToken = getCookie('csrftoken');
 const tourUrl = '/copo/tour-progress/';
 const localTourCache = new Set();
+const componentMap = new WeakMap();
 let activeTour = null;
 let quickTourOrder = [];
 let tourOverrides = {}; // Component-specific overrides
@@ -371,7 +372,6 @@ async function resetAllTours() {
 // window.resetTours = resetAllTours;
 // resetTours();
 
-// Begin tour only if needed
 async function runTour(componentName, stage) {
   const cacheKey = `${componentName}:${stage}`;
   if (localTourCache.has(cacheKey)) return;
@@ -432,7 +432,7 @@ function getStage({ count, isTable }) {
 }
 
 function hasSelectedRows(tableId, btnType) {
-  // Determine whether the required number 
+  // Determine whether the required number
   // of rows are selected in the data table
   const table = $(`#${tableId}`).DataTable();
   const selectedCount = table.rows({ selected: true }).count();
@@ -450,45 +450,54 @@ function hasSelectedRows(tableId, btnType) {
   }
 }
 
+async function postSubmissionHandler(event) {
+  const button = event.currentTarget;
+  const tableId = button.dataset.table;
+  const btnType = button.dataset.btntype;
+  const componentName = componentMap.get(button);
+  if (!hasSelectedRows(tableId, btnType)) return; // Only proceed if valid row selection is met
+
+  const isSubmit = button.dataset.action?.includes('submit_');
+
+  const publishButtons = [
+    ...$(`[data-tour-id*="publish_record_button"]:visible`).toArray(),
+    ...$(`[data-action*="publish_${componentName}"]:visible`).toArray(),
+  ];
+
+  const isPublish = publishButtons.length > 0;
+
+  // Submit stage → release profile stage
+  const releaseProcessStep = tourStages?.['release'];
+  if (
+    releaseProcessStep &&
+    isSubmit &&
+    !localTourCache.has(`${componentName}:release`)
+  ) {
+    await runTour(componentName, 'release');
+  }
+
+  // Submit stage → publish  study stage
+  const publishProcessStep = tourStages?.['publish'];
+  if (
+    publishProcessStep &&
+    isPublish &&
+    !localTourCache.has(`${componentName}:publish`)
+  ) {
+    await runTour(componentName, 'publish');
+  }
+}
+
 function handlePostSubmissionTour(componentName) {
   // Handle 'submit' button clicks to trigger subsequent tour stages
-  const submitButtons =
-    $(`[data-tour-id*="submit_record_button"]:visible`).toArray() ||
-    $(`[data-action*="submit_${componentName}"]:visible`).toArray();
-
-  const publishButtons =
-    $(`[data-tour-id*="publish_record_button"]:visible`).toArray() ||
-    $(`[data-action*="publish_${componentName}"]:visible`).toArray();
+  const submitButtons = [
+    ...$(`[data-tour-id*="submit_record_button"]:visible`).toArray(),
+    ...$(`[data-action*="submit_${componentName}"]:visible`).toArray(),
+  ];
 
   submitButtons.forEach((button) => {
-    button.addEventListener('click', async () => {
-      const tableId = button.dataset.table;
-      const btnType = button.dataset.btntype;
-      if (!hasSelectedRows(tableId, btnType)) return; // Only proceed if valid row selection is met
-
-      const isSubmit = button.dataset.action?.includes('submit_');
-      const isPublish = publishButtons.length > 0;
-
-      // Submit stage → release profile stage
-      const releaseProcessStep = tourStages?.['release'];
-      if (
-        releaseProcessStep &&
-        isSubmit &&
-        !localTourCache.has(`${componentName}:release`)
-      ) {
-        await runTour(componentName, 'release');
-      }
-
-      // Submit stage → publish  study stage
-      const publishProcessStep = tourStages?.['publish'];
-      if (
-        publishProcessStep &&
-        isPublish &&
-        !localTourCache.has(`${componentName}:publish`)
-      ) {
-        await runTour(componentName, 'publish');
-      }
-    });
+    componentMap.set(button, componentName);
+    button.removeEventListener('click', postSubmissionHandler);
+    button.addEventListener('click', postSubmissionHandler);
   });
 }
 
@@ -518,7 +527,7 @@ async function watchComponentForTour(componentName) {
 
           // Wait for either Bootstrap or Semantic UI modal to close before resuming
           const resumeTour = () => {
-            console.log('Start up modal closed — resuming tour.');
+            console.log('Start up modal closed...resuming tour.');
             resolve();
           };
 
@@ -563,7 +572,7 @@ async function watchComponentForTour(componentName) {
 
       // Wait for either Bootstrap or Semantic UI modal to close before resuming
       const resumeTour = async () => {
-        console.log('Modal closed — resuming tour.');
+        console.log('Modal closed...resuming tour.');
         await runTour(componentName, stage);
       };
 

@@ -307,6 +307,19 @@ COMPONENTS_TOUR_CONFIG = {
                 ),
             },
         },
+        'message_overrides': {
+            'component_table': {
+                'title': 'Uploaded data',
+                'content': (
+                    'View and manage the data that you have uploaded in this table.<br><br>'
+                    'To submit it, select one or more records in this table then, click '
+                    '<button class="tiny ui basic teal button submit-btn no-click">'
+                    '<i class="fa fa-info-circle"></i>&nbsp;Submit to ENA</button> located '
+                    'at the top right of the table.'
+                ),
+                'placement': 'right',
+            },
+        },
         'stages': {
             'overview': [
                 'getting_started',
@@ -367,7 +380,7 @@ COMPONENTS_TOUR_CONFIG = {
                     'Click to view options to:<br>'
                     '<ul><li>Edit profiles</li>'
                     '<li>Delete profiles</li>'
-                    '<li>Release studies (also known as projects or profiles) '
+                    '<li>Release studies (also known as projects or profiles) (if applicable) '
                     'to make the metadata publicly accessible in repositories like '
                     '<span class="hover-text" title="European Nucleotide Archive">ENA</span><br><br>'
                     '<span class="shepherd-note">Read more about '

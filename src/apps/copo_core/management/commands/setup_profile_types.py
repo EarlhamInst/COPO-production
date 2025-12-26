@@ -883,6 +883,7 @@ class Command(BaseCommand):
             is_permission_required=True,
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
             pre_save_action="src.apps.copo_profile.utils.profile_utils.pre_save_erga_profile",
+            tour_id="profile_title release_profile",
         )
         asg = ProfileType().create_profile_type(
             type="asg",
@@ -891,6 +892,7 @@ class Command(BaseCommand):
             is_dtol_profile=True,
             is_permission_required=True,
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
+            tour_id="profile_title release_profile",
         )
         dtolenv = ProfileType().create_profile_type(
             type="dtolenv",
@@ -898,6 +900,7 @@ class Command(BaseCommand):
             widget_colour="#fb7d0d",
             is_dtol_profile=True,
             is_permission_required=True,
+            tour_id="profile_title release_profile",
         )
         dtol = ProfileType().create_profile_type(
             type="dtol",
@@ -906,6 +909,7 @@ class Command(BaseCommand):
             is_dtol_profile=True,
             is_permission_required=True,
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
+            tour_id="profile_title release_profile",
         )
         genomics = ProfileType().create_profile_type(
             type="genomics",
@@ -914,6 +918,7 @@ class Command(BaseCommand):
             is_dtol_profile=False,
             is_permission_required=False,
             is_deprecated=True,
+            tour_id="profile_title release_profile",
         )
 
         biodata = ProfileType().create_profile_type(
@@ -922,6 +927,7 @@ class Command(BaseCommand):
             widget_colour="#00AAFF",
             is_dtol_profile=False,
             is_permission_required=False,
+            tour_id="profile_title",
         )
 
         # Assign components to profile types

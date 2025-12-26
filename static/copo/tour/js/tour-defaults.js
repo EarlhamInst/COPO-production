@@ -69,7 +69,7 @@ export const globalTourMessages = {
       <i class="fa fa-info-circle"></i>&nbsp;Submit</button> located 
       at the top right of the table.<br><br>
       Click <span class="data-table-details-plus-icon no-click"></span> at the 
-      start of a table row (if visible) to view more details about the uploaded data.`,
+      start of a table row to view more details about the uploaded data.`,
     placement: 'right',
   },
   delete_record_button: {

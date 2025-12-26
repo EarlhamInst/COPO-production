@@ -3240,10 +3240,11 @@ function generate_component_control(componentName, profile_type) {
 
   //add profile title
   if ($('#profile_title').length) {
+    const tourId = profile_type_def[profile_type.toLowerCase()]?.tourId || '';
     let profileTitle = $('#profile_title').val();
     let $profileTitleDiv = $('<div/>', {
       class: 'page-title-custom',
-      html: `<span class='profile-title' title='${profileTitle}' data-tour-id='profile_title release_profile'>Profile: ${profileTitle}</span>`,
+      html: `<span class='profile-title' title='${profileTitle}' data-tour-id='${tourId}'>Profile: ${profileTitle}</span>`,
     });
 
     pageHeaders.append($profileTitleDiv);
