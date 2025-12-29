@@ -67,9 +67,7 @@ export const globalTourMessages = {
       To submit it, select one or more records in this table then, click 
       <button class="tiny ui basic teal button submit-btn no-click">
       <i class="fa fa-info-circle"></i>&nbsp;Submit</button> located 
-      at the top right of the table.<br><br>
-      Click <span class="data-table-details-plus-icon no-click"></span> at the 
-      start of a table row (if visible) to view more details about the uploaded data.`,
+      at the top right of the table.`,
     placement: 'right',
   },
   delete_record_button: {
