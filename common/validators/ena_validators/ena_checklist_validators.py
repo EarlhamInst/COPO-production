@@ -35,8 +35,11 @@ class MandatoryValuesValidator(Validator):
                     null_rows.extend(self.data[self.data[key] == ""].index.tolist())
                     null_rows.extend(self.data[self.data[key].isna()].index.tolist())
                     for row in null_rows:
-                        self.errors.append("Missing data detected in column <strong>%s</strong> at row <strong>%s</strong>." % (
-                            field["name"], str(row + 1)))
+                        error_msg = msg["missing_value"].format( 
+                            column_name=field["label"],
+                            row=row+2
+                        )
+                        self.errors.append(error_msg)
                         self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
@@ -64,19 +67,18 @@ class IncorrectValueValidator(Validator):
                         if type == "TEXT_CHOICE_FIELD":
                             if row not in field.get("choice"):
                                 valid_values = field.get("choice", [])
-                                popover_html = (
+                                valid_values  = (
                                     "<ul>"
                                     + "".join(f"<li>{v}</li>" for v in valid_values)
                                     + "</ul>"
                                 )
                                 error_str = msg[
-                                    "validation_msg_invalid_column_value_with_list"
+                                    "invalid_column_value_with_list"
                                 ].format(
                                     invalid_value=row,
                                     column_name=field["label"],
-                                    row=str(i),
-                                    html_content=popover_html,
-                                    num_values=len(valid_values),
+                                    row=i,
+                                    valid_values=valid_values,
                                 )
                                 self.errors.append(error_str)
                                 self.flag = False
@@ -85,29 +87,13 @@ class IncorrectValueValidator(Validator):
                             if regex:
                                 lg.debug("Regex: " + str(regex) + "| Row: " + str(row)+ "| Column: " + column)
                                 if not re.match(regex, row):
-                                    '''
-                                    if column == 'collection date':
-                                        # Remove the time part from the date string if it is present
-                                        try:
-                                            result = bool(datetime.strptime(row, "%Y-%m-%d %H:%M:%S"))
-                                        except ValueError:
-                                               result = False
-
-                                        if result:
-                                            row = row.split(' ')[0]
-                                            self.data.at[i-2, column] = row
-                                        else:
-                                            self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i))
-                                            self.flag = False        
-                                    else:
-                                    '''
-                                    
-                                    self.errors.append(
-                                        f"Invalid value <strong>{row}</strong> in column <strong>{field['label']}</strong> "
-                                        f"at row <strong>{str(i)}</strong>.<br>"
-                                        f"Expected {str(field['regex_description'])}.<br>"
-                                        f"(Pattern: {str(regex)})"
+                                    error_str = msg["invalid_column_value_generic"].format(
+                                        invalid_value=row,
+                                        column_name=field["label"],
+                                        row=i,
+                                        expected_value=field.get("regex_description","") or f'a valid value with patten <strong> {field.get("regex","")} </strong>',
                                     )
+                                    self.errors.append(error_str)
                                     self.flag = False
                         elif type == "BIOSAMPLEACCESSION_FIELD":
                             if row not in biosampleAccessionsMap.keys():
@@ -122,20 +108,33 @@ class IncorrectValueValidator(Validator):
                                         if taxon_id :
                                             read_taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
                                             if taxon_id != read_taxon_id:
-                                                self.errors.append(
-                                                    f"Invalid value <strong>{read_taxon_id}</strong>.<br>" 
-                                                    f"Value does not match with <strong>{taxon_id}</strong> in column <strong>TAXON_ID</strong> "
-                                                    f"at row <strong>{str(i)}</strong>"
-                                                ) 
+                                                error_msg = msg["mismatched_value"].format(
+                                                    invalid_value=read_taxon_id,
+                                                    column_name="TAXON_ID",
+                                                    biosampeAccession=row,
+                                                    row=i
+                                                )
+                                                self.errors.append(error_msg)
                                                 self.flag = False
                                             else:
                                                 self.data[f"{Validator.PREFIX_4_NEW_FIELD}sraAccession"] = sample_accession
                                     else:
-                                        self.errors.append(f"Invalid value <strong>{row}</strong> in column <strong>{field['label']}</strong>")
+                                        error_msg = msg["invalid_column_value_generic"].format(
+                                            invalid_value=row,
+                                            column_name=field["label"],
+                                            row=i,
+                                            expected_value="a valid BioSample Accession")
+    
+                                        self.errors.append(error_msg)
                                         self.flag = False
                                 except Exception as e:
                                     lg.exception(e)
-                                    self.errors.append(f"Invalid value <strong>{row}</strong> in column <strong>{field['label']}</strong>")
+                                    error_msg = msg["biosampleAccession_validation_exception"].format(
+                                        biosampleAccession=row,
+                                        column_name=field["label"],
+                                        row=i
+                                    )
+                                    self.errors.append(error_msg)
                                     self.flag = False
 
                             else:
@@ -145,11 +144,13 @@ class IncorrectValueValidator(Validator):
                                     # taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
                                     sample = biosampleAccessionsMap.get(row)
                                     if key in sample and sample[key] != value:
-                                        self.errors.append(
-                                            f"Invalid value <strong>{value}</strong>.<br>"
-                                            f"Value does not match <strong>{sample.get(key,'')}</strong> "
-                                            f"in column <strong>{key}</strong> at row <strong>{str(i)}</strong>"
+                                        error_msg = msg["mismatched_value"].format(
+                                            invalid_value=value,
+                                            column_name=key,
+                                            biosampeAccession=row,
+                                            row=i
                                         )
+                                        self.errors.append(error_msg)
                                         self.flag = False
 
             else:
@@ -218,11 +219,14 @@ class OntologyValidator(Validator):
                         ontology =  field.get("ontology","").split(":")
                         if len(ontology) == 2:
                             if not checkOntologyTerm(ontology_id=ontology[0], ancestor=ontology[1], term=self.data[key][i]):
-                                self.errors.append(
-                                    f"Invalid value <strong>{self.data[key][i]}</strong> in column <strong>{field['label']}</strong> "
-                                    f"at row <strong>{i + 1}</strong>.<br>"
-                                    f"Expected a value matching an ontology listed for <a target='_blank' href='{field.get('ontology_link','')}'>{str(field.get('ontology',''))}</a>."
+                                error_msg = msg["invalid_column_value_ontology"].format(
+                                    invalid_value=self.data[key][i],
+                                    column_name=field["label"],
+                                    row=i + 1,
+                                    ontology_name=field.get("ontology","")
                                 )
+                                
+                                self.errors.append(error_msg)
                                 self.flag = False
                         else:
                             self.errors.append(f"Ontology term reference is missing for column <strong>{field['label']}</strong>")
