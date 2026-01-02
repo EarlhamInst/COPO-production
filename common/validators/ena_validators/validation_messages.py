@@ -6,7 +6,10 @@ MESSAGES = {
     'invalid_column_value_generic': (
         'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'
         'Expected {expected_value}'),
-                            
+    'invalid_column_value_regex': (
+        'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'
+        'Expected {expected_value}, <details><summary>regex patten</summary>{regex_pattern}</details> ' ),
+
     'invalid_column_value_ontology': (
         'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'
         'Expected value from ontology <strong>{ontology_name}</strong>'),
