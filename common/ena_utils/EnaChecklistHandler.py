@@ -13,6 +13,7 @@ from common.utils.helpers import (
     get_env,
     notify_ena_object_status,
     describe_regex,
+    extract_exact_phrases_from_regex
 )
 from django_tools.middlewares import ThreadLocal
 import inspect
@@ -229,8 +230,15 @@ class ChecklistHandler:
 
                     regex = field_elm.find("./FIELD_TYPE/TEXT_FIELD/REGEX_VALUE")
                     if regex is not None:
-                        field['regex'] = regex.text.strip()
-                        field['regex_description'] = describe_regex(field['regex'])
+                        regex_str = regex.text.strip()
+                        if regex_str:
+                            field['regex'] = regex_str
+                            field['regex_description'] = describe_regex(regex_str)
+                            exact_phrases = extract_exact_phrases_from_regex(regex_str)
+                            if exact_phrases:
+                                field['choice'] = exact_phrases
+                            l.debug('regex '+ regex_str + ' description ' + field['regex_description'] + " choices " + str(field.get('choice',[])))
+                            
                     ontology = field_elm.find("./FIELD_TYPE/ONTOLOGY")
                     if ontology is not None:
                         field['ontology'] = ontology.text.strip()
@@ -730,7 +738,7 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
                 cell_format.set_num_format('@')
             writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
 
-            if type == "TEXT_CHOICE_FIELD" and "choice" in field:
+            if "choice" in field:
                 choice = field["choice"]
                 column_letter = get_column_letter(column_index + 1)
                 cell_start_end = '%s2:%s1048576' % (column_letter, column_letter)
@@ -747,11 +755,12 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
                         writer.sheets["data_values"].set_column(data_validation_column_index, data_validation_column_index, column_length)
                         source = "=%s!$%s$2:$%s$%s" % ("data_values", column_letter, column_letter, str(len(choice) + 1))
                         data_validation_column_index = data_validation_column_index + 1
+                    
                     writer.sheets[sheet_name].data_validation(cell_start_end,
                                                             {'validate': 'list',
-                                                            'source': source})
-
-
+                                                            'source': source,
+                                                            'show_error': 1 if type == "TEXT_CHOICE_FIELD" else 0,
+                                                            })
         sheet_name = 'field_descriptions'           
         df.to_excel(writer, sheet_name=sheet_name)
 
