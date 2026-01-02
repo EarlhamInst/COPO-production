@@ -87,11 +87,12 @@ class IncorrectValueValidator(Validator):
                             if regex:
                                 lg.debug("Regex: " + str(regex) + "| Row: " + str(row)+ "| Column: " + column)
                                 if not re.match(regex, row):
-                                    error_str = msg["invalid_column_value_generic"].format(
+                                    error_str = msg["invalid_column_value_regex"].format(
                                         invalid_value=row,
                                         column_name=field["label"],
                                         row=i,
-                                        expected_value=field.get("regex_description","") or f'a valid value with patten <strong> {field.get("regex","")} </strong>',
+                                        expected_value=field.get("regex_description","") or f'<strong> {field.get("description","")} </strong>',
+                                        regex_pattern=regex
                                     )
                                     self.errors.append(error_str)
                                     self.flag = False

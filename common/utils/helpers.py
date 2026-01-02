@@ -518,7 +518,7 @@ def extract_exact_phrases_from_regex(pattern: str) -> List[str]:
         ['hello', 'world']
     """
     # Pattern to find exact matches: (^text$)
-    exact_phrase_pattern = r'\(\^([^$\)]+)\$\)'
+    exact_phrase_pattern = r'\(\^([^$\)\]\}\+\?]+)\$\)'
     matches = re.findall(exact_phrase_pattern, pattern)
     return matches
 
