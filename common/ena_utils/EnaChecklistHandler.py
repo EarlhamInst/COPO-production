@@ -12,7 +12,6 @@ from common.utils.helpers import (
     get_not_deleted_flag,
     get_env,
     notify_ena_object_status,
-    describe_regex,
     extract_exact_phrases_from_regex
 )
 from django_tools.middlewares import ThreadLocal
@@ -233,11 +232,10 @@ class ChecklistHandler:
                         regex_str = regex.text.strip()
                         if regex_str:
                             field['regex'] = regex_str
-                            field['regex_description'] = describe_regex(regex_str)
+                            #field['regex_description'] = describe_regex(regex_str)
                             exact_phrases = extract_exact_phrases_from_regex(regex_str)
                             if exact_phrases:
                                 field['choice'] = exact_phrases
-                            l.debug('regex '+ regex_str + ' description ' + field['regex_description'] + " choices " + str(field.get('choice',[])))
                             
                     ontology = field_elm.find("./FIELD_TYPE/ONTOLOGY")
                     if ontology is not None:
@@ -428,7 +426,7 @@ class EnaCheckListSpreadsheet:
                             is_found = True
                             break
                     if not is_found:
-                        raise Exception(f"Please make sure to upload the correct manifest for {self.checklist_id}") 
+                        raise Exception(f"Please make sure to upload the correct manifest for <strong>{self.checklist_id}</strong> checklist.") 
                                                
                 #elif m_format == "csv":
                 #    self.data = pd.read_csv(self.file, keep_default_na=False,

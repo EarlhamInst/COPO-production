@@ -429,7 +429,7 @@ def get_thumbnail_folder(profile_id):
         os.makedirs(thumbnail_folder)
     return thumbnail_folder
 
-
+"""
 def describe_regex(pattern):
     cleaned = re.sub(r'\|\(\^[^$]+\$\)', '', pattern)
     cleaned = re.sub(r'\(\^[^$]+\$\)\|', '', cleaned)
@@ -502,7 +502,7 @@ def describe_regex(pattern):
         main_parts = description_parts[:-1]
         last_part = description_parts[-1]
         return f"{', '.join(main_parts)}, and {last_part}."
-
+"""
 
 def extract_exact_phrases_from_regex(pattern: str) -> List[str]:
     """
