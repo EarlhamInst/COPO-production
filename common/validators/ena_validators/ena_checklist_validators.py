@@ -91,7 +91,8 @@ class IncorrectValueValidator(Validator):
                                         invalid_value=row,
                                         column_name=field["label"],
                                         row=i,
-                                        expected_value=field.get("regex_description","") or f'<strong> {field.get("description","")} </strong>',
+                                        #expected_value=field.get("regex_description","") or f'<strong> {field.get("description","")} </strong>',
+                                        field_description =  field.get("description",""),
                                         regex_pattern=regex
                                     )
                                     self.errors.append(error_str)
