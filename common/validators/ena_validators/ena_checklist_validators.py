@@ -113,7 +113,7 @@ class IncorrectValueValidator(Validator):
                                                 error_msg = msg["mismatched_value"].format(
                                                     invalid_value=read_taxon_id,
                                                     column_name="TAXON_ID",
-                                                    biosampeAccession=row,
+                                                    biosampleAccession=row,
                                                     row=i
                                                 )
                                                 self.errors.append(error_msg)
@@ -149,7 +149,7 @@ class IncorrectValueValidator(Validator):
                                         error_msg = msg["mismatched_value"].format(
                                             invalid_value=value,
                                             column_name=key,
-                                            biosampeAccession=row,
+                                            biosampleAccession=row,
                                             row=i
                                         )
                                         self.errors.append(error_msg)
