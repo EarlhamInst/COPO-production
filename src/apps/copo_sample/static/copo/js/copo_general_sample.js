@@ -563,6 +563,7 @@ function upload_spreadsheet(file) {
       dialog.setClosable(true);
       dialog.getButton('upload_sample_manifest_button').stopSpin();
       console.log(data);
+      $('#file').val('');
       responseText = data.responseText;
       if (responseText != '') {
         BootstrapDialog.show({
@@ -580,6 +581,7 @@ function upload_spreadsheet(file) {
         .hide();
       dialog.getButton('save_sample_button').enable();
       dialog.setClosable(true);
+      $('#file').val('');
     });
 }
 
