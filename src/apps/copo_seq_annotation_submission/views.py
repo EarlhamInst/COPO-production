@@ -13,7 +13,7 @@ from src.apps.copo_core.views import web_page_access_checker
 from .forms import AnnotationFilesForm, AnnotationForm
 from .utils.da import SequenceAnnotation
 from .utils import EnaAnnotation
-
+from common.validators.ena_validators.validation_messages import MESSAGES
 
 @web_page_access_checker
 @login_required
@@ -139,7 +139,7 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
                 html_id="annotation_info",
             )
         return HttpResponse(
-            content="Validation Error", status=status.HTTP_400_BAD_REQUEST
+            content=MESSAGES["form_validation_error"], status=status.HTTP_400_BAD_REQUEST 
         )
 
     else:

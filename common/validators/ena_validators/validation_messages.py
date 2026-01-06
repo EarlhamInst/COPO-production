@@ -9,7 +9,7 @@ MESSAGES = {
 
     'invalid_column_value_regex': (
         'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'
-        'Expected: {field_description}<details><summary>regex patten</summary>{regex_pattern}</details> ' ),
+        'Expected: {field_description}<details><summary>regex pattern</summary>{regex_pattern}</details> ' ),
 
     'invalid_column_value_ontology': (
         'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'
@@ -23,8 +23,11 @@ MESSAGES = {
 
     "biosampleAccession_validation_exception": (
         'Biosample Accession <strong>{biosampleAccession}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong> '
-        'could not be validated due to an unexpected error. Please try again later or contact support if the issue persists.'
-    ),
+        'could not be validated due to an unexpected error. Please try again later or contact support if the issue persists.'),
+
+    'form_validation_error': "Some information is missing or incorrect. Please check the top of the form for a summary of errors.",
+
+    'duplicate_file_error': "File <strong>{file_name}</strong> has been specified multiple times in the form. Each file should be unique.",
 }
 
                                                 

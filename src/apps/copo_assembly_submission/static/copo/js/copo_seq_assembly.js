@@ -180,7 +180,7 @@ $(document).ready(function () {
         $('.modal-dialog').find('#loading_span').fadeOut();
         BootstrapDialog.show({
           title: 'Error',
-          message: 'Error ' + data.responseText,
+          message: data.responseText,
           type: BootstrapDialog.TYPE_DANGER,
         });
       })
@@ -298,7 +298,8 @@ $(document).ready(function () {
                   .fail(function (data) {
                     BootstrapDialog.show({
                       title: 'Error',
-                      message: 'Error ' + data.responseText,
+                      message: data.responseText,
+                      type: BootstrapDialog.TYPE_DANGER,
                     });
                   })
                   .done(function (data) {
