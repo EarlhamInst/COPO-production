@@ -17,7 +17,7 @@ MESSAGES = {
 
     'mismatched_value': (
         'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'
-        'It does not match with the Taxon ID of your biosample <strong>{biosampeAccession}</strong>',),
+        'It does not match with the Taxon ID of your biosample <strong>{biosampleAccession}</strong>',),
          
     'missing_value': ('Missing data detected in column <strong>{column_name}</strong> at row <strong>{row}</strong>.'),
 

@@ -495,6 +495,7 @@ function upload_spreadsheet(file) {
       dialog.getButton('upload_read_manifest_button').stopSpin();
       console.log(data);
       responseText = data.responseText;
+      $('#file').val('');
       if (responseText != '') {
         BootstrapDialog.show({
           title: 'Error',
@@ -511,6 +512,7 @@ function upload_spreadsheet(file) {
         .hide();
       dialog.getButton('save_read_button').enable();
       dialog.setClosable(true);
+      $('#file').val('');
     });
 }
 

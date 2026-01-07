@@ -428,9 +428,6 @@ class EnaCheckListSpreadsheet:
                     if not is_found:
                         raise Exception(f"Please make sure to upload the correct manifest for <strong>{self.checklist_id}</strong> checklist.") 
                                                
-                #elif m_format == "csv":
-                #    self.data = pd.read_csv(self.file, keep_default_na=False,
-                #                                na_values=lookup.NA_VALS)
                 else:
                     raise Exception("Unknown file format")
                 if self.data.empty:
