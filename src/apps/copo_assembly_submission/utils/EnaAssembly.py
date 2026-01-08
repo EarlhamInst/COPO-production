@@ -22,6 +22,7 @@ import pandas as pd
 from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_project
 from common.dal.mongo_util import cursor_to_list
 from common.ena_utils.ena_helper import EnaSubmissionHelper
+from common.validators.ena_validators.validation_messages import MESSAGES
 
 l = Logger()
 # other types of assemblies (not individualss or cultured isolates):
@@ -112,6 +113,9 @@ def validate_assembly(form, profile_id, assembly_id):
     for field in file_fields:
         if not form[field]:
             continue
+        if form[field] in files:
+            error_message = MESSAGES['duplicate_file_error'].format(file_name=form[field])
+            return {"error": error_message}
         files.append(form[field])
 
     if not files:   
