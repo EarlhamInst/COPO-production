@@ -613,6 +613,7 @@ async function watchComponentForTour(componentName) {
     });
 
     observer.observe($el[0], { childList: true, subtree: true });
+    $el.data('observerInstance', observer); // Store observer instance
   }
 
   // Handle steps such as releasing the profile and
