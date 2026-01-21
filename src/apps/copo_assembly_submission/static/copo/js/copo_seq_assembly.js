@@ -73,36 +73,36 @@ $(document).ready(function () {
   };
   s3socket.onmessage = function (e) {
     d = JSON.parse(e.data);
-    element = element = $('#' + d.html_id);
-    if ($('.modal-dialog').is(':visible')) {
-      elem = $('.modal-dialog').find('#' + d.html_id);
-      if (elem) {
-        element = elem;
-      }
+    const { $el: $alertElement, inModal: isModalVisible } = getAlertElement(
+      d.html_id
+    );
+    const message = typeof d.message === 'string' ? d.message.trim() : '';
+
+    if (isModalVisible && message) {
+      // If modal is visible then, show an alert inside it
+      const allAlertClasses = Object.values(alertClassMap).join(' ');
+      $alertElement
+        .html(message)
+        .removeClass(allAlertClasses)
+        .addClass(alertClassMap[d.action] || 'alert-info')
+        .fadeIn(50);
+    } else if (d.action && message) {
+      // else, show an alert message in the 'Info' sidebar tab
+      displayAlert(d.action, message);
+    } else if (!message) {
+      // No message to be shown so fade out, to prevent empty alerts
+      $alertElement.fadeOut(50);
     }
 
-    if (!d && !$(element).is(':hidden')) {
-      $(element).fadeOut('50');
-    } else if (d && d.message && $(element).is(':hidden')) {
-      $(element).fadeIn('50');
-    }
-    //$("#" + d.html_id).html(d.message)
+    // Special handling for actions
     if (d.action === 'info') {
-      // show something on the info div
-      // check info div is visible
-      $(element).removeClass('alert-danger').addClass('alert-info');
-      $(element).html(d.message);
       if ('table_data' in d.data) {
         globalDataBuffer = d.data;
         var event = jQuery.Event('refreshtable');
         $('body').trigger(event);
       }
     } else if (d.action === 'error') {
-      // check info div is visible
-      $(element).removeClass('alert-info').addClass('alert-danger');
-      $(element).html(d.message);
       initialiseModalPopovers(); // Initialise popover in modal
-      //$("#spinner").fadeOut()
     }
   };
   window.addEventListener('beforeunload', function (event) {

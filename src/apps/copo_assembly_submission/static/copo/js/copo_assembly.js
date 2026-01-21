@@ -23,37 +23,33 @@ $(document).on("document_ready", function() {
   };
   s3socket.onmessage = function (e) {
     d = JSON.parse(e.data);
-    if (!d && $('#' + d.html_id).is(':visible')) {
-      $('#' + d.html_id).fadeOut('50');
-    } else if (d && d.message && !$('#' + d.html_id).is(':visible')) {
-      $('#' + d.html_id).fadeIn('50');
+    const { $el: $alertElement, inModal: isModalVisible } = getAlertElement(
+      d.html_id
+    );
+    const message = typeof d.message === 'string' ? d.message.trim() : '';
+    
+    // Dismiss helper content if applicable
+    hideModalInstructionText(message, d.action);
+
+    if (isModalVisible && message) {
+      // If modal is visible then, show an alert inside it
+      const allAlertClasses = Object.values(alertClassMap).join(' ');
+      $alertElement
+        .html(message)
+        .removeClass(allAlertClasses)
+        .addClass(alertClassMap[d.action] || 'alert-info')
+        .fadeIn(50);
+    } else if (d.action && message) {
+      // else, show an alert message in the 'Info' sidebar tab
+      displayAlert(d.action, message);
+    } else if (!message) {
+      // No message to be shown so fade out, to prevent empty alerts
+      $alertElement.fadeOut(50);
     }
-    $('#' + d.html_id).html(d.message);
-    fadeOutMessages(d.message, d.action); // Fade/update content based on action
-    if (d.action === 'info') {
-      // show something on the info div
-      // check info div is visible
-      $('#' + d.html_id)
-        .removeClass('alert-danger')
-        .addClass('alert-info');
-      //$("#" + d.html_id).html(d.message)
-      //$("#spinner").fadeOut()
-    } else if (d.action === 'success') {
-      // show something on the success div
-      // check success div is visible
-      $('#' + d.html_id)
-        .removeClass('alert-info alert-danger')
-        .addClass('alert-success');
-      //$('#' + d.html_id).html(d.message);
-      //$("#spinner").fadeOut()
-    } else if (d.action === 'error') {
-      // check info div is visible
-      $('#' + d.html_id)
-        .removeClass('alert-info')
-        .addClass('alert-danger');
+
+    // Special handling for actions
+    if (d.action === 'error') {
       initialiseModalPopovers(); // Initialise popover in modal
-      //$("#" + d.html_id).html(d.message)
-      //$("#spinner").fadeOut()
     }
   };
   window.addEventListener('beforeunload', function (event) {

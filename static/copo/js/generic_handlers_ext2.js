@@ -3,6 +3,13 @@ var copoFormsURL = '/copo/copo_forms/';
 var copoVisualsURL = '/copo/copo_visualize/';
 var server_side_select = {}; //holds selected ids for table data - needed in server-side processing
 
+const alertClassMap = {
+  info: 'alert-info',
+  warning: 'alert-warning',
+  success: 'alert-success',
+  error: 'alert-danger',
+};
+
 // Set custom page length options for the DataTables dropdown menu
 $.extend($.fn.dataTable.defaults, {
   language: {
@@ -370,49 +377,22 @@ function button_event_alert(title, message) {
   });
 }
 
-function observeAlerts() {
-  // Observe back-end alert divs
-  // Ensure that component alerts are displayed with
-  // the other alerts in the sidebar 'Info' tab
-  const alertMessages = document.querySelectorAll('.component-alert');
-
-  alertMessages.forEach((alertDiv) => {
-    const observer = new MutationObserver((mutationsList) => {
-      mutationsList.forEach((mutation) => {
-        if (
-          (mutation.type === 'childList' ||
-            mutation.type === 'characterData') &&
-          alertDiv.textContent.trim() !== ''
-        ) {
-          // Get alert type from class
-          // (e.g. alert-success, alert-warning, alert-info, alert-danger)
-          const alertType =
-            Array.from(alertDiv.classList)
-              .find((cls) => cls.startsWith('alert-') && cls !== 'alert')
-              ?.replace('alert-', '') || 'info';
-
-          const alertMessage = alertDiv.textContent.trim();
-          displayAlert(alertType, alertMessage);
-
-          // Clear the backend alert div after displaying
-          alertDiv.textContent = '';
-          alertDiv.style.display = 'none';
-        }
-      });
-    });
-
-    observer.observe(alertDiv, {
-      childList: true,
-      characterData: true,
-      subtree: true,
-    });
-  });
+function getAlertElement(htmlId) {
+  // Return an empty jQuery object if there's no html ID
+  if (!htmlId) {
+    return { $el: $(), inModal: false };
+  }
+  // Determine if it's a modal element or a page element
+  const $modalElement = $('.modal-dialog:visible').find(`#${htmlId}`);
+  if ($modalElement.length) {
+    return { $el: $modalElement, inModal: true };
+  }
+  return { $el: $(`#${htmlId}`), inModal: false };
 }
 
-function displayAlert(alertType, alertMessage, displayDuration = 0) {
+function displayAlert(alertType, alertMessage) {
   // alertType:  'success', 'warning', 'info', 'danger'
-  // alertMessage: the message to display
-  // displayDuration: duration in milliseconds to display the alert (e.g. 5000 for 5 seconds)
+  // alertMessage: the message to be displayed
 
   // Strangely, calling the 'Info' tab with the ID, '#page_alert_panel' doesn't work,
   // so the class, '.copo-sidebar-info', is used instead.
@@ -428,12 +408,13 @@ function displayAlert(alertType, alertMessage, displayDuration = 0) {
   if (!$infoPanel.hasClass('in')) $infoPanel.addClass('in');
 
   const $alertElement = $('.alert-templates')
-    .find('.alert-' + alertType)
+    .find(`.alert-${alertType}`)
     .clone();
 
   // Remove fade class if present
   if ($alertElement.hasClass('fade')) $alertElement.removeClass('fade');
 
+  // Apply close button functionality since Bootstrap's JS isn't being used
   const $closeBtn = $alertElement.find('.close');
   $closeBtn.on('click', function (e) {
     e.preventDefault();
@@ -444,16 +425,7 @@ function displayAlert(alertType, alertMessage, displayDuration = 0) {
   $alertElement.find('.alert-message').html(alertMessage);
   $infoPanel.prepend($alertElement);
 
-  // Auto-remove after displayDuration
-  if (displayDuration > 0) {
-    setTimeout(() => {
-      $alertElement.removeClass('in').fadeOut(200, () => {
-        $alertElement.remove();
-      });
-    }, displayDuration);
-  }
-
-  // Adjust spacing
+  // Adjust margin spacing
   $('.component-legend, .other-projects-accessions-filter-checkboxes').css(
     'margin-top',
     '0'

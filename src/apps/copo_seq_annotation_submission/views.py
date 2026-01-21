@@ -97,7 +97,7 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
         if form.is_valid() and formset.is_valid():
             notify_annotation_status(
                 data={"profile_id": profile_id},
-                msg="Intitialising Annotation Submission",
+                msg="Initialising Annotation Submission",
                 action="info",
                 html_id="annotation_info",
             )

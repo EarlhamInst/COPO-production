@@ -54,8 +54,6 @@ $(document).ready(function () {
 
   initialiseNavToggle();
 
-  observeAlerts();
-
   var event = jQuery.Event('document_ready'); //individual components can trap and handle this event as they so wish
   $(document).trigger(event);
 });
@@ -4185,12 +4183,12 @@ function confirmCloseDialog(triggerDialogOrEvent) {
 
 // Fades out warning message in modals and updates
 // info text after manifest validation
-function fadeOutMessages(message, action) {
+function hideModalInstructionText(message, action) {
   // Relevant actions that trigger info update
   const shouldFade =
-    ['info', 'warning', 'error', 'success'].includes(action) &&
-    message &&
-    !message.includes('Loading');
+    Object.keys(alertClassMap).includes(String(action).toLowerCase()) &&
+    Boolean(message) &&
+    !message.toLowerCase().includes('loading');
 
   if (!shouldFade) return;
 
