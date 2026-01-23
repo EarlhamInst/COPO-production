@@ -26,14 +26,16 @@ $(document).on("document_ready", function() {
     const { $el: $alertElement, inModal: isModalVisible } = getAlertElement(
       d.html_id
     );
-    const message =
-      typeof d.message === 'string' && d.message.trim().length > 0;
+    const rawMessage = d.message;
+    const hasMessage =
+      typeof rawMessage === 'string' && rawMessage.trim().length > 0;
+    const message = hasMessage ? rawMessage.trim() : '';
 
-    // Dismiss helper content if applicable
-    hideModalInstructionText(message, d.action);
+    // Only show an alert if a message exists
+    if (hasMessage) {
+      // Dismiss helper content if applicable
+      hideModalInstructionText(message, d.action);
 
-    // Only show an alert if there is a message to be shown
-    if (message) {
       if (isModalVisible) {
         // If modal is visible then, show an alert inside it
         const allAlertClasses = Object.values(alertClassMap).join(' ');

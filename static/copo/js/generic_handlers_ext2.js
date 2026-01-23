@@ -391,7 +391,8 @@ function getAlertElement(htmlId) {
 }
 
 function displayAlert(alertType, alertMessage) {
-  // alertType:  'success', 'warning', 'info', 'danger'
+  // alertType:  'success', 'warning', 'info', 
+  //             'danger' ('error' action is mapped to 'danger')
   // alertMessage: the message to be displayed
 
   // Strangely, calling the 'Info' tab with the ID, '#page_alert_panel' doesn't work,
@@ -407,8 +408,9 @@ function displayAlert(alertType, alertMessage) {
   // Ensure the tab content is visible
   if (!$infoPanel.hasClass('in')) $infoPanel.addClass('in');
 
+  const alertClass = alertClassMap[alertType] || 'alert-info';
   const $alertElement = $('.alert-templates')
-    .find(`.alert-${alertType}`)
+    .find(`.${alertClass}`)
     .clone();
 
   // Remove fade class if present
