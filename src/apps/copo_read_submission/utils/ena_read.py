@@ -206,6 +206,17 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
     label_set = set()
     data_map = dict()
     run_accession_number_map = dict()
+    
+    # Remove the details
+    detail_dict = dict(
+        className1='summary-details-control detail-hover-message',
+        orderable=False,
+        data=None,
+        title='',
+        defaultContent='',
+        width="5%",
+    )
+    columns.insert(0, detail_dict)
 
     columns.append(dict(data="record_id", visible=False))
     columns.append(dict(data="DT_RowId", visible=False))

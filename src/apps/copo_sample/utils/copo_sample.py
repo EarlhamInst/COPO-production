@@ -39,6 +39,34 @@ def generate_table_records(profile_id=str(), checklist_id=str()):
     #data_set = []
     columns = []
     data_map = dict()
+    
+    # Remove the details
+    detail_dict = dict(
+        className1='summary-details-control detail-hover-message',
+        orderable=False,
+        data=None,
+        title='',
+        defaultContent='',
+        width="5%",
+    )
+    columns.insert(0, detail_dict)
+    columns.append(dict(data="record_id", visible=False))
+    columns.append(dict(data="DT_RowId", visible=False))
+    columns.extend(
+        [
+            dict(
+                data=x,
+                title=fields[x]["label"],
+                defaultContent='',
+                render=(
+                    "render_ena_accession_function"
+                    if x.lower().endswith("accession")
+                    else ""
+                ),
+            )
+            for x in label
+        ]
+    )
 
     columns.append(dict(data="record_id", visible=False))
     columns.append(dict(data="DT_RowId", visible=False))
@@ -193,8 +221,3 @@ def process_pending_submission():
                 message = "Sample submission has been submitted to ENA."
                 notify_submission_status(data={"profile_id": profile_id}, msg=message, action="info",
                                 html_id="submission_info")
-
-
-
-
-

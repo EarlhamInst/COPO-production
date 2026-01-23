@@ -1507,6 +1507,80 @@ $(document).ready(function () {
           .removeClass('input-sm')
           .attr('placeholder', 'Search accessions')
           .attr('size', 25);
+        
+        //handle event for table details
+        $('#' + tableID + ' tbody')
+          .off('click', 'td.summary-details-control')
+          .on('click', 'td.summary-details-control', function (event) {
+            event.preventDefault();
+
+            var tr = $(this).closest('tr');
+            var row = table.row(tr);
+            tr.addClass('showing');
+
+            if (row.child.isShown()) {
+              // This row is already open - close it
+              row.child('');
+              row.child.hide();
+              tr.removeClass('showing');
+              tr.removeClass('shown');
+            } else {
+              $.ajax({
+                url: copoVisualsURL,
+                type: 'POST',
+                headers: {
+                  'X-CSRFToken': csrftoken,
+                },
+                data: {
+                  task: 'attributes_display',
+                  component: 'datafile',
+                  target_id: row.data().record_id,
+                },
+                success: function (data) {
+                  if (data.component_attributes.columns) {
+                    // expand row
+
+                    var contentHtml = $('<table/>', {
+                      cellspacing: '0',
+                      border: '0',
+                      class: 'summary-details-table',
+                    });
+
+                    for (
+                      var i = 0;
+                      i < data.component_attributes.columns.length;
+                      ++i
+                    ) {
+                      var colVal = data.component_attributes.columns[i];
+
+                      var colTR = $('<tr/>');
+                      contentHtml.append(colTR);
+
+                      colTR
+                        .append($('<td/>').append(colVal.title))
+                        .append(
+                          $('<td/>').append(
+                            "<div style='width:300px; word-wrap: break-word;'>" +
+                              data.component_attributes.data_set[colVal.data] +
+                              '</div>'
+                          )
+                        );
+                    }
+
+                    row
+                      .child($('<div></div>').append(contentHtml).html())
+                      .show();
+                    tr.removeClass('showing');
+                    tr.addClass('shown');
+                  }
+                },
+                error: function () {
+                  alert("Couldn't retrieve " + component + ' attributes!');
+                  return '';
+                },
+              });
+            }
+          });
       },
       error: function () {
         viewPort.html('');

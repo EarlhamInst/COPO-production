@@ -1152,6 +1152,83 @@ $(document).on('document_ready', function () {
               .find('input')
               .removeClass('input-sm')
               .attr('placeholder', 'Search sample source');
+            
+            // Handle event for table details
+            $('#' + tableID + ' tbody')
+              .off('click', 'td.summary-details-control')
+              .on('click', 'td.summary-details-control', function (event) {
+                event.preventDefault();
+
+                var event = jQuery.Event('posttablerefresh'); // Individual components can trap and handle this event as they so wish
+                $('body').trigger(event);
+
+                var tr = $(this).closest('tr');
+                var row = table.row(tr);
+                tr.addClass('showing');
+
+                if (row.child.isShown()) {
+                  // This row is already open - close it
+                  row.child('');
+                  row.child.hide();
+                  tr.removeClass('showing');
+                  tr.removeClass('shown');
+                } else {
+                  $.ajax({
+                    url: copoVisualsURL,
+                    type: 'POST',
+                    headers: {
+                      'X-CSRFToken': csrftoken,
+                    },
+                    data: {
+                      task: 'attributes_display',
+                      component: 'source',
+                      profile_id: $('#profile_id').val(),
+                      target_id: row.data().record_id,
+                    },
+                    success: function (data) {
+                      if (data.component_attributes.columns) {
+                        // expand row
+
+                        var contentHtml = $('<table/>', {
+                          // cellpadding: "5",
+                          cellspacing: '0',
+                          border: '0',
+                          // style: "padding-left:50px;"
+                        });
+
+                        for (
+                          var i = 0;
+                          i < data.component_attributes.columns.length;
+                          ++i
+                        ) {
+                          var colVal = data.component_attributes.columns[i];
+
+                          var colTR = $('<tr/>');
+                          contentHtml.append(colTR);
+
+                          colTR
+                            .append($('<td/>').append(colVal.title))
+                            .append(
+                              $('<td/>').append(
+                                data.component_attributes.data_set[colVal.data]
+                              )
+                            );
+                        }
+
+                        row
+                          .child($('<div></div>').append(contentHtml).html())
+                          .show();
+                        tr.removeClass('showing');
+                        tr.addClass('shown');
+                      }
+                    },
+                    error: function () {
+                      alert("Couldn't retrieve " + component + ' attributes!');
+                      return '';
+                    },
+                  });
+                }
+              });
           },
           error: function () {
             alert("Couldn't sample source!");
