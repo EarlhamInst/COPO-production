@@ -17,7 +17,8 @@ from tenacity import (
     wait_exponential,
     retry_if_exception_type,
 )
-
+import re
+from typing import List
 
 def get_class(kls):
     parts = kls.split('.')
@@ -428,92 +429,98 @@ def get_thumbnail_folder(profile_id):
         os.makedirs(thumbnail_folder)
     return thumbnail_folder
 
-
+"""
 def describe_regex(pattern):
-    '''Return a human-readable description for a regex pattern'''
+    cleaned = re.sub(r'\|\(\^[^$]+\$\)', '', pattern)
+    cleaned = re.sub(r'\(\^[^$]+\$\)\|', '', cleaned)
+    cleaned = cleaned.strip('|')
+    
+    # Check for common patterns
+    description_parts = []
+    
+    # Date/time patterns
+    if re.search(r'\[12\]\[0-9\]\{3\}', cleaned):
+        description_parts.append("year (1000-2999)")
+    
+    if re.search(r'0\[1-9\]\|1\[0-2\]', cleaned):
+        description_parts.append("month (01-12)")
+    
+    if re.search(r'0\[1-9\]\|\[12\]\[0-9\]\|3\[01\]', cleaned):
+        description_parts.append("day (01-31)")
+    
+    if re.search(r'T\[0-9\]\{2\}:\[0-9\]\{2\}', cleaned):
+        description_parts.append("time (HH:MM)")
+    
+    if re.search(r':\[0-9\]\{2\}\)', cleaned) and 'time' in ' '.join(description_parts):
+        # Seconds are optional
+        idx = description_parts.index("time (HH:MM)")
+        description_parts[idx] = "time (HH:MM or HH:MM:SS)"
+    
+    if 'Z?' in cleaned:
+        description_parts.append("optional UTC indicator (Z)")
+    
+    if re.search(r'\[\+-\]\[0-9\]', cleaned):
+        description_parts.append("optional timezone offset (±N)")
+    
+    if re.search(r'/', cleaned) and description_parts:
+        description_parts.append("optional date range (using /)")
+    
+    # Numeric patterns
+    if re.search(r'\\d\+', cleaned) and not description_parts:
+        description_parts.append("one or more digits")
+    
+    if re.search(r'\[0-9\]\+', cleaned) and not description_parts:
+        description_parts.append("numeric values")
+    
+    # Decimal patterns
+    if re.search(r'\\\.\)', cleaned) or re.search(r'\[0-9\]\*\\\.\?', cleaned):
+        description_parts.append("decimal numbers")
+    
+    # Scientific notation
+    if re.search(r'\[Ee\]\[\+-\]', cleaned):
+        description_parts.append("scientific notation (E±N)")
+    
+    # Word patterns
+    if re.search(r'\\w\+', cleaned) and not description_parts:
+        description_parts.append("word characters")
+    
+    # Alphanumeric patterns
+    if re.search(r'\[A-Za-z0-9\]\+', cleaned) and not description_parts:
+        description_parts.append("alphanumeric characters")
 
-    def normalise_pattern(p):
-        if not isinstance(p, str):
-            return p
-        try:
-            return p.encode('utf-8').decode('unicode_escape')
-        except Exception:
-            return p
+    # Email patterns
+    if '@' in cleaned and '\\.' in cleaned:
+        description_parts.append("email format")
+    
+    # Build sentence
+    if not description_parts:
+        return ""
+    
+    if len(description_parts) == 1:
+        return description_parts[0]
+    else:
+        main_parts = description_parts[:-1]
+        last_part = description_parts[-1]
+        return f"{', '.join(main_parts)}, and {last_part}."
+"""
 
-    try:
-        # Known regex patterns
-        known_patterns = {
-            r'\\d+': 'a whole number (digits only)',
-            r'[+-]?[0-9]+.?[0-9]*': 'a positive or negative integer or decimal number',
-            r'(0|((0\\.)|([1-9][0-9]*\\.?))[0-9]*)([Ee][+-]?[0-9]+)?': 'a number in standard or scientific notation',
-            r'(^[12][0-9]{3}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01])(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?)?$)|(^not applicable$)|(^not collected$)|(^not provided$)|(^restricted access$)|(^missing: control sample$)|(^missing: sample group$)|(^missing: synthetic construct$)|(^missing: lab stock$)|(^missing: third party data$)|(^missing: data agreement established pre-2023$)|(^missing: endangered species$)|(^missing: human-identifiable$)|(^missing$)': 'A date/time value or one of the allowed missing-data keywords (e.g. not provided, missing, restricted access).<br> If the date includes an unadded "00:00:00" time component, follow <a target="_blank" href="https://copo-docs.readthedocs.io/en/latest/help/faq/faq-errors-and-solutions.html#invalid-date-in-column">solution option 2</a> for resolution',
-            r'((0|((0\\.)|([1-9][0-9]*\\.?))[0-9]*)([Ee][+-]?[0-9]+)?)|((^not collected$)|(^not provided$)|(^restricted access$)|(^missing: control sample$)|(^missing: sample group$)|(^missing: synthetic construct$)|(^missing: lab stock$)|(^missing: third party data$)|(^missing: data agreement established pre-2023$)|(^missing: endangered species$)|(^missing: human-identifiable$)|(^missing$))': 'a numeric value or one of several allowed missing-data keywords (e.g. not provided, missing, restricted access)',
-            r'^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$': 'a year, year and month, or a full date (YYYY, YYYY-MM or YYYY-MM-DD)',
-            r'[+-]?(0|((0\\.)|([1-9][0-9]*\\.?))[0-9]*)([Ee][+-]?[0-9]+)?': 'a positive or negative number with an optional decimal or exponent',
-            r'(^(E|D|S)RZ[0-9]{6,}$)|(^GC(A|F)_[0-9]{9}.[0-9]+$|^[A-Z]{1}[0-9]{5}.[0-9]+$|^[A-Z]{2}[0-9]{6}.[0-9]+$|^[A-Z]{2}[0-9]{8}$|^[A-Z]{4}[0-9]{2}S?[0-9]{6,8}$|^[A-Z]{6}[0-9]{2}S?[0-9]{7,9}$)': 'an accession or reference code (e.g. ENA, GenBank, GCF, GCA)',
-            r'(^[+-]?[0-9]+.?[0-9]{0,8}$)|(^not applicable$)|(^not collected$)|(^not provided$)|(^restricted access$)|(^missing: control sample$)|(^missing: sample group$)|(^missing: synthetic construct$)|(^missing: lab stock$)|(^missing: third party data$)|(^missing: data agreement established pre-2023$)|(^missing: endangered species$)|(^missing: human-identifiable$)|(^missing$)': 'a decimal number (up to 8 digits) or missing-data keyword (e.g. not provided, missing, restricted access)',
-            r'[+-]?[0-9]+': 'a positive or negative integer number',
-            r'^(\\d|[1-9]\\d|\\d\\.\\d{1,2}|[1-9]\\d\\.\\d{1,2}|100)$': 'a percentage or numeric value between 0 and 100 (up to two decimals)',
-            r'([+-]?(0|((0\\.)|([1-9][0-9]*\\.?))[0-9]*)([Ee][+-]?[0-9]+)?)|((^not collected$)|(^not provided$)|(^restricted access$)|(^missing: control sample$)|(^missing: sample group$)|(^missing: synthetic construct$)|(^missing: lab stock$)|(^missing: third party data$)|(^missing: data agreement established pre-2023$)|(^missing: endangered species$)|(^missing: human-identifiable$)|(^missing$))': 'a numeric or allowed missing-data value (e.g. not provided, missing, restricted access)',
-            r'(^[ESD]R[SR]\\d{6,}(,[ESD]R[SR]\\d{6,})*$)|(^SAM[END][AG]?\\d+(,SAM[END][AG]?\\d+)*$)|(^EGA[NR]\\d{11}(,EGA[NR]\\d{11})*$)|(^[ESD]R[SR]\\d{6,}-[ESD]R[SR]\\d{6,}$)|(^SAM[END][AG]?\\d+-SAM[END][AG]?\\d+$)|(^EGA[NR]\\d{11}-EGA[NR]\\d{11}$)': 'a list or range of accession IDs (e.g. ENA, SRA, or EGA)',
-            r'((0|((0\\.)|([1-9][0-9]*\\.?))[0-9]*)([Ee][+-]?[0-9]+)?)|((^not collected$)|(^not provided$)|(^restricted access$)|(^missing: control sample$)|(^missing: sample group$)|(^missing: synthetic construct$)|(^missing: lab stock$)|(^missing: third party data$)|(^missing: data agreement established pre-2023$)|(^missing: endangered species$)|(^missing: human-identifiable$))': 'a numeric value or missing-data keyword (e.g. not provided, missing, restricted access)',
-            r'(0|((0\\.)|([1-9][0-9]*\\.?))[0-9]*)': 'a non-negative integer or decimal number',
-            r'[1-9][0-9]*\\.?[0-9]*([Ee][+-]?[0-9]+)?': 'a positive number with no leading zeros, optional decimal/exponent',
-            r'[0-9]+': 'a whole number (digits only)',
-            r'^[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?$': 'a date or datetime in ISO 8601 format (YYYY-MM-DD or extended)',
-            r'[0-9]+(\\.[0-9]*)?': 'an integer or decimal number',
-            r'[0-9]*(\\.[0-9]*)?': 'an optional integer or decimal number',
-            r'(0|((0\\.)|([1-9][0-9]*)))': 'a whole number with no leading zeros',
-            r'^150|1[0-4][0-9]|[1-9][0-9]|[0-9]|not provided$': "an integer between 0 and 150 or 'not provided'",
-            r'[\\d][0-4]?(\\.[\\d]{1,10})?': 'a number with one or two digits before the decimal (second digit can be 0-4) and an optional decimal part of up to 10 digits',
-            r'([0-9]*)': 'any number of digits or an empty/blank string',
-            r'(^[ESD]RS\\d{6,}$)|(^SAM[END][AG]?\\d+$)|(^EGAN\\d{11}$)': 'a single accession ID (ENA/SRA/EGA format)',
-            r'(^[ESD]RS\\d{6,}(,[ESD]RS\\d{6,})*$)|(^SAM[END][AG]?\\d+(,SAM[END][AG]?\\d+)*$)|(^EGAN\\d{11}(,EGAN\\d{11})*$)': 'multiple accession IDs, comma-separated (ENA/SRA/EGA format)',
-            r'^[12][0-9]{3}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01])(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?)?$': 'ISO date or date range (e.g. 2023-05-01 or 2024-01-01)',
-            r'(^[+-]?[0-9]+.?[0-9]{0,8}$)': 'a decimal number up to 8 digits',
-            r'^[a-zA-Z0-9]+$': 'alphanumeric characters only (with no spaces)',
-            r'^[A-Za-z]+(?: [A-Za-z]+)*[a-z]+$': 'letters and spaces, ending with lowercase letter',
-            r'^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$': 'a date in YYYY-MM-DD (year-month-day) or YYYY-MM (year-month) format',
-            r'^-?(180(\\.0+)?|((1[0-7]\\d)|(\\d{1,2}))(\\.\\d+)?)$': 'a value between -180 and 180',
-            r'^[A-Za-z]+(?: [A-Za-z]+)*$': 'alphabetic words with optional spaces',
-            r'^[A-Za-z. ]*[a-z]+$': 'an alphabetic text with periods/spaces, ending in lowercase',
-            r'^[a-zA-Z0-9]+(?: [a-zA-Z0-9]+)*$': 'alphanumeric words separated by spaces',
-            r'^[A-Za-z]*[a-z]+(?:[0-9]+)*$': 'letters followed optionally by digits',
-            r'^[A-Za-z\\s]+[a-z]+$': 'letters with spaces, ending in lowercase',
-            r'^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)+(?: \\| https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)*)*$': "One or more valid URLs separated by '|'",
-            r'^((\\d{4})(-\\d{2}(-\\d{2}(T\\d{2}:\\d{2}(:\\d{2})?(Z|[+-]\\d{2}:?\\d{2})?)?)?)?(/(\\d{4}|(\\d{2}(-\\d{2}(T\\d{2}:\\d{2}(:\\d{2})?(Z|[+-]\\d{2}:?\\d{2})?)?)?)?))?)$': 'a date or date range in extended ISO 8601 format',
-            r'^-?\\d+(\\.\\d+)?$': 'an integer or decimal number (may be negative)',
-            r'^\\d{4}-(0[1-9]|1[0-2])(-([0-2]\\d|3[01]))?$': 'a date in YYYY-MM-DD (year-month-day) or YYYY-MM (year-month) format',
-            r'^(\\d+\\s*years?)?\\s*(\\d+\\s*weeks?)?\\s*(\\d+\\s*days?)?$': "a duration or age (e.g. '3 years 2 weeks 5 days' or '1 year')",
-            r'^(https?|ftp):\\/\\/[^\\s/$.?#].[^\\s]*$': 'a valid HTTP or FTP URL',
-            r'^[A-Za-z0-9_]+$': 'an alphanumeric text with underscores only',
-            r'^-?([1-8]?\d(\.\d+)?|90(\.0+)?)$': 'a positive or negative integer or decimal number between -90 and 90, inclusive.',
-        }
-
-        # Normalise regex patterns to escape slashes
-        known_patterns = {normalise_pattern(k): v for k, v in known_patterns.items()}
-
-        if pattern in known_patterns:
-            return known_patterns[pattern]
-        else:
-            l.log(f'Missing regex pattern: {pattern}. No regex description found.')
-
-        # Heuristic checks for similar regex patterns
-        if '@' in pattern and '\\.' in pattern:
-            return 'a valid email address'
-        if '\\d{4}' in pattern and '-' in pattern:
-            return 'a date in YYYY-MM-DD format'
-        if any([protocol in pattern for protocol in ['https?', 'http?', 'ftp']]):
-            return 'a valid URL'
-        if '[A-Z]' in pattern and '\\d' in pattern:
-            return 'an alphanumeric code'
-        if '\\d' in pattern:
-            return 'a numeric value'
-
-        # Fallback for unknown patterns
-        return 'a value in a required format'
-    except Exception as e:
-        l.exception(f"Error describing regex pattern '{pattern}': {e}")
+def extract_exact_phrases_from_regex(pattern: str) -> List[str]:
+    """
+    Extract all exact text phrases from a regex pattern.
+    Looks for patterns like (^exact text$) which match complete strings exactly.
+    Args:
+        pattern: The regex pattern to analyze
+    Returns:
+        List of exact text phrases found in the pattern
+    Example:
+        >>> pattern = r"(^hello$)|(^world$)|(\d+)"
+        >>> extract_exact_phrases(pattern)
+        ['hello', 'world']
+    """
+    # Pattern to find exact matches: (^text$)
+    exact_phrase_pattern = r'\(\^([^$\)\]\}\+\?]+)\$\)'
+    matches = re.findall(exact_phrase_pattern, pattern)
+    return matches
 
 
 def get_db_data_sources(source=None):

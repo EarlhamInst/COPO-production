@@ -85,29 +85,15 @@ class IncorrectValueValidator(Validator):
                             if regex:
                                 lg.debug("Regex: " + str(regex) + "| Row: " + str(row)+ "| Column: " + column)
                                 if not re.match(regex, row):
-                                    '''
-                                    if column == 'collection date':
-                                        # Remove the time part from the date string if it is present
-                                        try:
-                                            result = bool(datetime.strptime(row, "%Y-%m-%d %H:%M:%S"))
-                                        except ValueError:
-                                               result = False
-
-                                        if result:
-                                            row = row.split(' ')[0]
-                                            self.data.at[i-2, column] = row
-                                        else:
-                                            self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i))
-                                            self.flag = False        
-                                    else:
-                                    '''
-                                    
-                                    self.errors.append(
-                                        f"Invalid value <strong>{row}</strong> in column <strong>{field['label']}</strong> "
-                                        f"at row <strong>{str(i)}</strong>.<br>"
-                                        f"Expected {str(field['regex_description'])}.<br>"
-                                        f"(Pattern: {str(regex)})"
+                                    error_str = msg["invalid_column_value_regex"].format(
+                                        invalid_value=row,
+                                        column_name=field["label"],
+                                        row=i,
+                                        #expected_value=field.get("regex_description","") or f'<strong> {field.get("description","")} </strong>',
+                                        field_description =  field.get("description",""),
+                                        regex_pattern=regex
                                     )
+                                    self.errors.append(error_str)
                                     self.flag = False
                         elif type == "BIOSAMPLEACCESSION_FIELD":
                             if row not in biosampleAccessionsMap.keys():

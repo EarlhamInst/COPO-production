@@ -12,7 +12,7 @@ from common.utils.helpers import (
     get_not_deleted_flag,
     get_env,
     notify_ena_object_status,
-    describe_regex,
+    extract_exact_phrases_from_regex
 )
 from django_tools.middlewares import ThreadLocal
 import inspect
@@ -229,8 +229,14 @@ class ChecklistHandler:
 
                     regex = field_elm.find("./FIELD_TYPE/TEXT_FIELD/REGEX_VALUE")
                     if regex is not None:
-                        field['regex'] = regex.text.strip()
-                        field['regex_description'] = describe_regex(field['regex'])
+                        regex_str = regex.text.strip()
+                        if regex_str:
+                            field['regex'] = regex_str
+                            #field['regex_description'] = describe_regex(regex_str)
+                            exact_phrases = extract_exact_phrases_from_regex(regex_str)
+                            if exact_phrases:
+                                field['choice'] = exact_phrases
+                            
                     ontology = field_elm.find("./FIELD_TYPE/ONTOLOGY")
                     if ontology is not None:
                         field['ontology'] = ontology.text.strip()
@@ -408,11 +414,21 @@ class EnaCheckListSpreadsheet:
             try:
                 # read excel and convert all to string
                 if m_format == "xls":
-                    self.data = pd.read_excel(self.file, keep_default_na=False,
-                                                  na_values=lookup.NA_VALS)
-                elif m_format == "csv":
-                    self.data = pd.read_csv(self.file, keep_default_na=False,
-                                                na_values=lookup.NA_VALS)
+                    xl = pd.ExcelFile(self.file)
+                    sheetnames = xl.sheet_names
+                    is_found = False
+                    for sheet in sheetnames:
+                        if sheet.startswith(self.checklist_id):
+                            self.data = xl.parse(sheet, keep_default_na=False,
+                                            na_values=lookup.NA_VALS)
+                            is_found = True
+                            break
+                    if not is_found:
+                        raise Exception(f"Please make sure to upload the correct manifest for <strong>{self.checklist_id}</strong> checklist.") 
+                                               
+                #elif m_format == "csv":
+                #    self.data = pd.read_csv(self.file, keep_default_na=False,
+                #                                na_values=lookup.NA_VALS)
                 else:
                     raise Exception("Unknown file format")
                 if self.data.empty:
