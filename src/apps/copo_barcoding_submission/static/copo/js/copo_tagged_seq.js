@@ -86,28 +86,29 @@ $(document).ready(function () {
   };
   s3socket.onmessage = function (e) {
     d = JSON.parse(e.data);
-        const { $el: $alertElement, inModal: isModalVisible } = getAlertElement(
+    const { $el: $alertElement, inModal: isModalVisible } = getAlertElement(
       d.html_id
     );
-    const message = typeof d.message === 'string' ? d.message.trim() : '';
-    
+    const message =
+      typeof d.message === 'string' && d.message.trim().length > 0;
+
     // Dismiss helper content if applicable
     hideModalInstructionText(message, d.action);
 
-    if (isModalVisible && message) {
-      // If modal is visible then, show an alert inside it
-      const allAlertClasses = Object.values(alertClassMap).join(' ');
-      $alertElement
-        .html(message)
-        .removeClass(allAlertClasses)
-        .addClass(alertClassMap[d.action] || 'alert-info')
-        .fadeIn(50);
-    } else if (d.action && message) {
-      // else, show an alert message in the 'Info' sidebar tab
-      displayAlert(d.action, message);
-    } else if (!message) {
-      // No message to be shown so fade out, to prevent empty alerts
-      $alertElement.fadeOut(50);
+    // Only show an alert if there is a message to be shown
+    if (message) {
+      if (isModalVisible) {
+        // If modal is visible then, show an alert inside it
+        const allAlertClasses = Object.values(alertClassMap).join(' ');
+        $alertElement
+          .html(message)
+          .removeClass(allAlertClasses)
+          .addClass(alertClassMap[d.action] || 'alert-info')
+          .fadeIn(50);
+      } else if (d.action) {
+        // else, show an alert message within the 'Info' sidebar tab on the page
+        displayAlert(d.action, message);
+      }
     }
 
     // Special handling for actions

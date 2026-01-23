@@ -126,25 +126,25 @@ $(document).on('document_ready', function () {
     const { $el: $alertElement, inModal: isModalVisible } = getAlertElement(
       d.html_id
     );
-    const message = typeof d.message === 'string' ? d.message.trim() : '';
+    const message =
+      typeof d.message === 'string' && d.message.trim().length > 0;
 
     // Dismiss helper content if applicable
     hideModalInstructionText(message, d.action);
 
-    if (isModalVisible && message) {
-      // If modal is visible then, show an alert inside it
-      const allAlertClasses = Object.values(alertClassMap).join(' ');
-      $alertElement
-        .html(message)
-        .removeClass(allAlertClasses)
-        .addClass(alertClassMap[d.action] || 'alert-info')
-        .fadeIn(50);
-    } else if (d.action && message) {
-      // else, show an alert message in the 'Info' sidebar tab
-      displayAlert(d.action, message);
-    } else if (!message) {
-      // No message to be shown so fade out, to prevent empty alerts
-      $alertElement.fadeOut(50);
+    if (message) {
+      if (isModalVisible) {
+        // If modal is visible then, show an alert inside it
+        const allAlertClasses = Object.values(alertClassMap).join(' ');
+        $alertElement
+          .html(message)
+          .removeClass(allAlertClasses)
+          .addClass(alertClassMap[d.action] || 'alert-info')
+          .fadeIn(50);
+      } else if (d.action) {
+        // else, show an alert message within the 'Info' sidebar tab on the page
+        displayAlert(d.action, message);
+      }
     }
 
     // Special handling for actions
@@ -165,25 +165,25 @@ $(document).on('document_ready', function () {
     const { $el: $alertElement, inModal: isModalVisible } = getAlertElement(
       d.html_id
     );
-    const message = typeof d.message === 'string' ? d.message.trim() : '';
+    const message =
+      typeof d.message === 'string' && d.message.trim().length > 0;
 
     // Dismiss helper content if applicable
     hideModalInstructionText(message, d.action);
 
-    if (isModalVisible && message) {
-      // If modal is visible then, show an alert inside it
-      const allAlertClasses = Object.values(alertClassMap).join(' ');
-      $alertElement
-        .html(message)
-        .removeClass(allAlertClasses)
-        .addClass(alertClassMap[d.action] || 'alert-info')
-        .fadeIn(50);
-    } else if (d.action && message) {
-      // else, show an alert message in the 'Info' sidebar tab
-      displayAlert(d.action, message);
-    } else if (!message) {
-      // No message to be shown so fade out, to prevent empty alerts
-      $alertElement.fadeOut(50);
+    if (message) {
+      if (isModalVisible) {
+        // If modal is visible then, show an alert inside it
+        const allAlertClasses = Object.values(alertClassMap).join(' ');
+        $alertElement
+          .html(message)
+          .removeClass(allAlertClasses)
+          .addClass(alertClassMap[d.action] || 'alert-info')
+          .fadeIn(50);
+      } else if (d.action) {
+        // else, show an alert message within the 'Info' sidebar tab on the page
+        displayAlert(d.action, message);
+      }
     }
 
     // Special handling for actions
