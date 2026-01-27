@@ -965,6 +965,18 @@ class Command(BaseCommand):
             ]
         )
 
+        # Assign action buttons to profile types
+        erga.action_buttons.set([releasestudy])
+        asg.action_buttons.set([releasestudy])
+        dtolenv.action_buttons.set([releasestudy])
+        dtol.action_buttons.set([releasestudy])
+        genomics.action_buttons.set([releasestudy])
+        biodata.action_buttons.set([])
+        self.stdout.write(
+            self.style.SUCCESS(f'Assigned action buttons to profile types\n\n')
+        )
+        
+        # Define associated profile types
         at_asg = AssociatedProfileType.objects.get(name="ASG")
         at_bge = AssociatedProfileType.objects.get(name="BGE")
         at_bioblitz = AssociatedProfileType.objects.get(name="BIOBLITZ")
@@ -976,7 +988,8 @@ class Command(BaseCommand):
         at_erga_community = AssociatedProfileType.objects.get(name="ERGA_COMMUNITY")
         at_pop_genomics = AssociatedProfileType.objects.get(name="POP_GENOMICS")
         at_sanger = AssociatedProfileType.objects.get(name="SANGER")
-
+        
+        # Assign associated profile types to profile types
         erga.associated_profile_types.set(
             [
                 at_bge,

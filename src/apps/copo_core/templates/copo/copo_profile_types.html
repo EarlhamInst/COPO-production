@@ -81,6 +81,11 @@ const profile_type_def = {
       title: '{{ profile_type.type | upper }}',
       widget_colour: '{{ profile_type.widget_colour }}',
       components: [ {% for component in profile_type.components.all  %} '{{ component.name }}', {% endfor %} ],
+      actionButtons:[
+        {% for action in profile_type.action_buttons.all %}
+          '{{ action.name }}'{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ],
       {% if profile_type.tour_id %}
         tourId: '{{ profile_type.tour_id|escapejs }}'
       {% endif %},
