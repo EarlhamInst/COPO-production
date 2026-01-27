@@ -473,39 +473,18 @@ class ProfileType(models.Model):
 
     associated_profile_types = models.ManyToManyField(AssociatedProfileType, blank=True)
     components = models.ManyToManyField(Component, blank=True)
+    action_buttons = models.ManyToManyField(RecordActionButton, blank=True)
     type = models.CharField(max_length=20, unique=True)
     description = models.CharField(max_length=100)
     widget_colour = models.CharField(max_length=200, blank=True, null=True)
     is_dtol_profile = models.BooleanField(default=False)
     is_permission_required = models.BooleanField(default=True)
-    record_action_buttons = ArrayField(
-        base_field=models.CharField(max_length=50),
-        default=list,
-        blank=True,
-        null=True
-    )
     post_save_action = models.CharField(max_length=100, blank=True, null=True)
     pre_save_action = models.CharField(max_length=100, blank=True, null=True)
     is_deprecated = models.BooleanField(default=False, blank=True, null=True)
 
     def __str__(self):
         return self.type + " : " + self.description
-
-    def validate_record_action_buttons(self, record_action_buttons):
-        if not record_action_buttons:
-            return  True
-
-        valid_buttons = RecordActionButton.objects.filter(name__in=record_action_buttons).values_list('name', flat=True)
-        valid_buttons = set(valid_buttons)
-        invalid_buttons = [x for x in record_action_buttons if x not in valid_buttons]
-
-        if invalid_buttons:
-            invalid_buttons = [str(x) for x in invalid_buttons]
-            raise ValidationError(
-                f"Invalid record action buttons: {join_with_and(invalid_buttons, conjunction='and')}"
-            )
-        else:
-            return True
 
     def create_profile_type(
         self,
@@ -514,7 +493,6 @@ class ProfileType(models.Model):
         widget_colour,
         is_dtol_profile,
         is_permission_required,
-        record_action_buttons=[],
         post_save_action=None,
         pre_save_action=None,
         is_deprecated=False,
@@ -528,8 +506,6 @@ class ProfileType(models.Model):
         self.pre_save_action = pre_save_action
         self.is_deprecated = is_deprecated
 
-        if self.validate_record_action_buttons(record_action_buttons):
-            self.record_action_buttons = record_action_buttons
         self.save()
         return self
 

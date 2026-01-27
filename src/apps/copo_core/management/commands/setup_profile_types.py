@@ -881,7 +881,6 @@ class Command(BaseCommand):
             widget_colour="#E61A8D",
             is_dtol_profile=True,
             is_permission_required=True,
-            record_action_buttons=["releasestudy"],
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
             pre_save_action="src.apps.copo_profile.utils.profile_utils.pre_save_erga_profile",
         )
@@ -891,7 +890,6 @@ class Command(BaseCommand):
             widget_colour="#5829bb",
             is_dtol_profile=True,
             is_permission_required=True,
-            record_action_buttons=["releasestudy"],
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
         )
         dtolenv = ProfileType().create_profile_type(
@@ -900,7 +898,6 @@ class Command(BaseCommand):
             widget_colour="#fb7d0d",
             is_dtol_profile=True,
             is_permission_required=True,
-            record_action_buttons=["releasestudy"],
         )
         dtol = ProfileType().create_profile_type(
             type="dtol",
@@ -908,7 +905,6 @@ class Command(BaseCommand):
             widget_colour="#16ab39",
             is_dtol_profile=True,
             is_permission_required=True,
-            record_action_buttons=["releasestudy"],
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
         )
         genomics = ProfileType().create_profile_type(
@@ -917,9 +913,7 @@ class Command(BaseCommand):
             widget_colour="#009c95",
             is_dtol_profile=False,
             is_permission_required=False,
-            is_deprecated=True,
-            record_action_buttons=["releasestudy"],
-        )
+            is_deprecated=True,        )
 
         biodata = ProfileType().create_profile_type(
             type="biodata",
@@ -927,7 +921,6 @@ class Command(BaseCommand):
             widget_colour="#00AAFF",
             is_dtol_profile=False,
             is_permission_required=False,
-            record_action_buttons=[],
         )
 
         # Assign components to profile types
@@ -965,6 +958,18 @@ class Command(BaseCommand):
             ]
         )
 
+        # Assign action buttons to profile types
+        erga.action_buttons.set([releasestudy])
+        asg.action_buttons.set([releasestudy])
+        dtolenv.action_buttons.set([releasestudy])
+        dtol.action_buttons.set([releasestudy])
+        genomics.action_buttons.set([releasestudy])
+        biodata.action_buttons.set([])
+        self.stdout.write(
+            self.style.SUCCESS(f'Assigned action buttons to profile types\n\n')
+        )
+        
+        # Define associated profile types
         at_asg = AssociatedProfileType.objects.get(name="ASG")
         at_bge = AssociatedProfileType.objects.get(name="BGE")
         at_bioblitz = AssociatedProfileType.objects.get(name="BIOBLITZ")
@@ -976,7 +981,8 @@ class Command(BaseCommand):
         at_erga_community = AssociatedProfileType.objects.get(name="ERGA_COMMUNITY")
         at_pop_genomics = AssociatedProfileType.objects.get(name="POP_GENOMICS")
         at_sanger = AssociatedProfileType.objects.get(name="SANGER")
-
+        
+        # Assign associated profile types to profile types
         erga.associated_profile_types.set(
             [
                 at_bge,
