@@ -248,15 +248,13 @@ $(document).on('document_ready', function () {
   });
 
   $(document).on('click', '#editProfileBtn', function (e) {
-    const profileId = $(e.currentTarget).closest('.ellipsis-div').attr('id');
-    const profileType = $(e.currentTarget)
-      .closest('.copo-records-panel')
-      .data('profile-type');
+    const profileId = $(this).data('profile-id');
+    const profileType = $(this).data('profile-type');
     editProfileRecord(profileId, profileType);
   });
 
   $(document).on('click', '#deleteProfileBtn', function (e) {
-    const profileId = $(e.currentTarget).closest('.ellipsis-div').attr('id');
+    const profileId = $(this).data('profile-id');
     deleteProfileRecord(profileId);
   });
 
@@ -383,13 +381,19 @@ function initialiseProfileActionsPopover() {
         // Add edit and delete buttons to non-shared profiles only
         // i.e. shared profiles cannot be edited or deleted
         if (!isShared) {
+          const profileId = $grid.find('.row-title span').attr('id');
+          const profileType = $panel.data('profile-type');
+
           const $editButton = $(
-            `<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record">
+            `<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"
+              data-profile-id="${profileId}"
+              data-profile-type="${profileType}">
               <i class="fa fa-pencil"></i>&nbsp;Edit</button>`
           );
 
           const $deleteButton = $(
-            `<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record">
+            `<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"
+              data-profile-id="${profileId}">
               <i class="fa fa-trash-can"></i>&nbsp;Delete</button>`
           );
 
@@ -422,7 +426,7 @@ function enableExpandableMenuOnHover() {
     .off('mouseenter.menuExpand mouseleave.menuExpand')
     .on('mouseenter.menuExpand', '.menu.comp.many-items', function () {
       const $menu = $(this);
-      
+
       // Adjust grid to show expanded menu
       $menu.closest('.grid').css({
         overflow: 'visible',
@@ -727,8 +731,6 @@ function deleteProfileRecord(profileRecordId) {
 }
 
 function removeInvalidAndDuplicateProfiles() {
-  // Remove duplicate .grid DOM nodes that represent the same record id
-  // and remove profile records whose type is non-existent
   const $container = $(`#${tableId}`);
   if (!$container.length) return;
 
@@ -736,20 +738,30 @@ function removeInvalidAndDuplicateProfiles() {
   $container.find('.grid').each(function () {
     const $grid = $(this);
     const recordId = $grid.find('.row-title span').attr('id');
-    const profileType = $grid
-      .find('.copo-records-panel')
-      .data('profile-type')
-      ?.toLowerCase()
-      .trim();
-    const components = get_profile_components(profileType);
 
-    if (!recordId || seen.has(recordId) || !components?.length) {
+    // Remove duplicate .grid DOM nodes that represent the same record id
+    if (!recordId || seen.has(recordId)) {
       $gridTotal.text(Number($gridTotal.text()) - 1);
       $grid.remove();
       return;
     }
 
     seen.add(recordId);
+
+    //  Remove .grid DOM nodes that do not have profile types
+    const profileType = $grid.find('.copo-records-panel').data('profile-type');
+    if (!profileType) {
+      console.warn('Grid missing profileType — skipped', recordId);
+      return;
+    }
+    // Display warning if a profile has no components
+    const components = get_profile_components(profileType.toLowerCase().trim());
+    if (!components || !components.length) {
+      console.warn(
+        `${profileType} profile with ID, ${recordId} profile has no components`
+      );
+      return;
+    }
   });
 
   // Update counters
