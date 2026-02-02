@@ -260,9 +260,8 @@ class AssociatedProfileType(models.Model):
 
 class TitleButton(models.Model):
     class Meta:
-        ordering = ['order']
+        ordering = ['id']
 
-    order = models.PositiveIntegerField(default=0, editable=False)
     name = models.CharField(max_length=50, unique=True)
     template = models.CharField(max_length=500)
     additional_attr = models.CharField(
@@ -279,14 +278,6 @@ class TitleButton(models.Model):
         self.name = name
         self.template = template
         self.additional_attr = additional_attr
-
-        # Auto-assign the position of the title button
-        if not self.order:
-            last_order = (
-                TitleButton.objects.aggregate(models.Max('order'))['order__max'] or 0
-            )
-            self.order = last_order + 1
-            
         self.save()
         return self
 
@@ -414,9 +405,8 @@ class SidebarPanel(models.Model):
 
 class Component(models.Model):
     class Meta:
-        ordering = ['order']
+        ordering = ['id']
 
-    order = models.PositiveIntegerField(default=0, editable=False)
     base_component = models.CharField(max_length=100, null=True)
     name = models.CharField(max_length=100, unique=True)
     title = models.CharField(max_length=100)
@@ -463,14 +453,6 @@ class Component(models.Model):
         self.schema_name = schema_name
         self.base_component = base_component or self.name
         self.group_name = group_name
-
-        # Auto-assign the position of the component
-        if not self.order:
-            last_order = (
-                Component.objects.aggregate(models.Max('order'))['order__max'] or 0
-            )
-            self.order = last_order + 1
-
         self.save()
         return self
 
