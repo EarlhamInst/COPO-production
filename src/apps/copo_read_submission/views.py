@@ -578,7 +578,7 @@ def get_manifest_submission_list(request):
     return HttpResponse(out)
 
 
-@login_required()
+@login_required
 def init_manifest_submission(request):
     submission_id = request.POST["submission_id"]
     submission_repo = "ena"
@@ -614,7 +614,7 @@ def init_manifest_submission(request):
     return HttpResponse()
 
 
-@login_required()
+@login_required
 def get_manifest_submission_list(request):
     profile_id = request.session["profile_id"]
     docs = (
@@ -635,7 +635,7 @@ def get_manifest_submission_list(request):
     return HttpResponse(out)
 
 
-@login_required()
+@login_required
 def get_submission_status(request):
     """
     function returns the status of a submission record
@@ -695,7 +695,7 @@ def get_submission_status(request):
     return HttpResponse(jsonpickle.encode(context), content_type='application/json')
 
 
-@login_required()
+@login_required
 def get_read_accessions(request, sample_accession):
     samples = Sample().get_all_records_columns(
         filter_by={"sraAccession": sample_accession},

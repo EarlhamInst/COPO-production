@@ -22,7 +22,7 @@ def copo_seq_annotation(request, profile_id="", ui_component=None):
     profile = Profile().get_record(profile_id)
     return render(request, 'copo/copo_seq_annotation.html', {'profile_id': profile_id, 'profile': profile, "ui_component": ui_component})
 
-@login_required()
+@login_required
 def ena_annotation(request, profile_id, seq_annotation_id=None):
     request.session["profile_id"] = profile_id
     is_error = False

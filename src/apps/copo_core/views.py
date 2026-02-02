@@ -151,17 +151,14 @@ def web_page_access_checker(func):
 
 
 def test(request):
-    return render(request, template_name='copo/test.html')
+    return render(request, 'copo/test.html', {})
 
 
 def error_page(request):
     return render(request, context={}, template_name="copo/error_page.html")
 
 
-def test(request):
-    return render(request, "copo/test.html")
-
-
+@login_required
 def forward_to_info(request):
     message = request.GET['message']
     control = request.GET['control']
@@ -196,6 +193,8 @@ def copo_repositories(request):
     user = request.user.id
     return render(request, 'copo/my_repositories.html')
 
+
+@login_required
 def resolve_submission_id(request, submission_id):
     sub = Submission().get_record(submission_id)
     # get all file metadata
@@ -370,7 +369,7 @@ def copo_forms(request):
 
 
 """
-@login_required()
+@login_required
 def delete_profile(request):
     context = dict()
     task = request.POST.get("task", str())
@@ -483,7 +482,7 @@ def view_user_info(request):
     return render(request, 'copo/user_info.html', data_dict)
 
 
-@login_required()
+@login_required
 def view_groups(request):
     # g = Group().create_group(description="test description")
     member_groups = helpers.get_group_membership_asString()
@@ -516,7 +515,7 @@ def view_groups(request):
                   {'request': request, 'profile_list': profile_list,'profile_tab_title': profile_tab_title, 'group_list': group_list})
 
 """
-# @login_required()
+# @login_required
 @user_is_staff
 def administer_repos(request):
     return render(request, 'copo/copo_repository.html', {'request': request})
@@ -563,6 +562,7 @@ def get_source_count(self):
     return HttpResponse(encode({'num_sources': num_sources}))
 
 
+@login_required
 def search_copo_components(request, data_source):
     """
     function does local lookup of items given data_source

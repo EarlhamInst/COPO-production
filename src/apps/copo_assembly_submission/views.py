@@ -13,7 +13,7 @@ from .utils import EnaAssembly
 from .utils.da import Assembly
 
 
-@login_required()
+@login_required
 def ena_assembly(request, profile_id, assembly_id=None):
     is_error = False
     request.session["profile_id"] = profile_id
