@@ -102,6 +102,7 @@ COMPONENTS_TOUR_CONFIG = {
         'order': [
             'component_table',
             'component_legend',
+            'sidebar_alert_message',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -162,9 +163,10 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
-            'release': [
+            'publish': [
                 'component_table_with_accessions',
-                'release_profile',
+                'publish_profile',
+                'quick_tour_title_button',
             ],
         },
     },
@@ -258,6 +260,8 @@ COMPONENTS_TOUR_CONFIG = {
     'general_sample': {
         'order': [
             'component_table',
+            'component_legend',
+            'sidebar_alert_message',
             'profile_title',
             'component_options',
             'download_blank_manifest_title_button',
@@ -334,10 +338,11 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
-            'release': [
+            'publish': [
                 'component_table_with_accessions',
-                'release_profile',
+                'publish_profile',
                 'component_options_with_data_uploaded',
+                'quick_tour_title_button',
             ],
         },
     },
@@ -380,12 +385,12 @@ COMPONENTS_TOUR_CONFIG = {
                     'Click to view options to:<br>'
                     '<ul><li>Edit profiles</li>'
                     '<li>Delete profiles</li>'
-                    '<li>Release studies (also known as projects or profiles) (if applicable) '
+                    '<li>Publish studies (also known as projects or profiles) (if applicable) '
                     'to make the metadata publicly accessible in repositories like '
                     '<span class="hover-text" title="European Nucleotide Archive">ENA</span><br><br>'
                     '<span class="shepherd-note">Read more about '
                     '<a href="https://copo-docs.readthedocs.io/en/latest/profile/releasing-profiles.html" '
-                    'target="_blank">Releasing Profiles (Studies)</a>.</span>'
+                    'target="_blank">Making a Profile (Study) Public</a>.</span>'
                     '</li></ul>'
                 ),
             },
@@ -443,6 +448,7 @@ COMPONENTS_TOUR_CONFIG = {
         'order': [
             'component_table',
             'component_legend',
+            'sidebar_alert_message',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -505,9 +511,10 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
-            'release': [
+            'publish': [
                 'component_table_with_accessions',
-                'release_profile',
+                'publish_profile',
+                'quick_tour_title_button',
             ],
         },
     },
@@ -515,6 +522,7 @@ COMPONENTS_TOUR_CONFIG = {
         'order': [
             'component_table',
             'component_legend',
+            'sidebar_alert_message',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -610,6 +618,7 @@ COMPONENTS_TOUR_CONFIG = {
                 'component_table_with_accessions',
                 'publish_study',
                 'component_options_with_data_uploaded',
+                'quick_tour_title_button',
             ],
         },
     },
@@ -617,6 +626,7 @@ COMPONENTS_TOUR_CONFIG = {
         'order': [
             'component_table',
             'component_legend',
+            'sidebar_alert_message',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -741,8 +751,9 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
-            'release': [
+            'publish': [
                 'component_table_with_accessions',
+                'quick_tour_title_button',
             ],
         },
     },
@@ -750,6 +761,7 @@ COMPONENTS_TOUR_CONFIG = {
         'order': [
             'component_table',
             'component_legend',
+            'sidebar_alert_message',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -811,9 +823,10 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
-            'release': [
+            'publish': [
                 'component_table_with_accessions',
-                'release_profile',
+                'publish_profile',
+                'quick_tour_title_button',
             ],
         },
     },
@@ -821,6 +834,7 @@ COMPONENTS_TOUR_CONFIG = {
         'order': [
             'component_table',
             'component_legend',
+            'sidebar_alert_message',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -915,7 +929,9 @@ COMPONENTS_TOUR_CONFIG = {
             'publish': [
                 'component_table_with_accessions',
                 'publish_study',
+                'sidebar_alert_message',
                 'component_options_with_data_uploaded',
+                'quick_tour_title_button',
             ],
         },
     },
@@ -923,6 +939,7 @@ COMPONENTS_TOUR_CONFIG = {
         'order': [
             'component_table',
             'component_legend',
+            'sidebar_alert_message',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -961,6 +978,7 @@ COMPONENTS_TOUR_CONFIG = {
         'order': [
             'component_table',
             'component_legend',
+            'sidebar_alert_message',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -1021,9 +1039,10 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
-            'release': [
+            'publish': [
                 'component_table_with_accessions',
-                'release_profile',
+                'publish_profile',
+                'quick_tour_title_button',
             ],
         },
     },

@@ -188,14 +188,14 @@ class Command(BaseCommand):
 
         releasestudy = RecordActionButton().create_record_action_button(
             name="releasestudy",
-            title="Release study",
-            label="Release study",
+            title="Publish study",
+            label="Publish study",
             type="single",
             error_message="",
             icon_class="fa fa-globe",
             action="release_study",
             icon_colour="blue",
-            tour_id="release_study_record_button",
+            tour_id="publish_record_button",
         )
 
         publish_singlecell_single_ena = (
@@ -883,7 +883,7 @@ class Command(BaseCommand):
             is_permission_required=True,
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
             pre_save_action="src.apps.copo_profile.utils.profile_utils.pre_save_erga_profile",
-            tour_id="profile_title release_profile",
+            tour_id="profile_title publish_profile",
         )
         asg = ProfileType().create_profile_type(
             type="asg",
@@ -892,7 +892,7 @@ class Command(BaseCommand):
             is_dtol_profile=True,
             is_permission_required=True,
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
-            tour_id="profile_title release_profile",
+            tour_id="profile_title publish_profile",
         )
         dtolenv = ProfileType().create_profile_type(
             type="dtolenv",
@@ -900,7 +900,7 @@ class Command(BaseCommand):
             widget_colour="#fb7d0d",
             is_dtol_profile=True,
             is_permission_required=True,
-            tour_id="profile_title release_profile",
+            tour_id="profile_title publish_profile",
         )
         dtol = ProfileType().create_profile_type(
             type="dtol",
@@ -909,7 +909,7 @@ class Command(BaseCommand):
             is_dtol_profile=True,
             is_permission_required=True,
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
-            tour_id="profile_title release_profile",
+            tour_id="profile_title publish_profile",
         )
         genomics = ProfileType().create_profile_type(
             type="genomics",
@@ -918,7 +918,7 @@ class Command(BaseCommand):
             is_dtol_profile=False,
             is_permission_required=False,
             is_deprecated=True,
-            tour_id="profile_title release_profile",
+            tour_id="profile_title publish_profile",
         )
 
         biodata = ProfileType().create_profile_type(

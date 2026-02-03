@@ -15,7 +15,6 @@ window.resetAllTours = resetAllTours;
 const csrfToken = getCookie('csrftoken');
 const tourUrl = '/copo/tour-progress/';
 const localTourCache = new Set();
-const componentMap = new WeakMap();
 let activeTour = null;
 let quickTourOrder = [];
 let tourOverrides = {}; // Component-specific overrides
@@ -233,6 +232,14 @@ function startComponentTour(componentName, processName = 'overview') {
   });
   activeTour = tour;
 
+  // Clear activeTour when the tour ends
+  const clearActiveTour = () => {
+    activeTour = null;
+  };
+
+  tour.on('complete', clearActiveTour);
+  tour.on('cancel', clearActiveTour);
+
   // Get step IDs for the component and process
   const processSteps = tourStages?.[processName] || tourOrder;
 
@@ -253,7 +260,6 @@ function startComponentTour(componentName, processName = 'overview') {
   // Build tour steps
   processSteps.forEach((id, index) => {
     const message = mergedMessages[id];
-    // const element = document.querySelector(`[data-tour-id~="${id}"]`);
     const $element = $(`[data-tour-id~="${id}"]:visible`);
     const element = $element.get(0);
     if (!message || !element) {
@@ -454,48 +460,36 @@ async function postSubmissionHandler(event) {
   const button = event.currentTarget;
   const tableId = button.dataset.table;
   const btnType = button.dataset.btntype;
-  const componentName = componentMap.get(button);
+  const componentName = $('#nav_component_name').val();
   if (!hasSelectedRows(tableId, btnType)) return; // Only proceed if valid row selection is met
 
-  const isSubmit = button.dataset.action?.includes('submit_');
-
-  const publishButtons = [
-    ...$(`[data-tour-id*="publish_record_button"]:visible`).toArray(),
-    ...$(`[data-action*="publish_${componentName}"]:visible`).toArray(),
-  ];
-
-  const isPublish = publishButtons.length > 0;
-
-  // Submit stage → release profile stage
-  const releaseProcessStep = tourStages?.['release'];
-  if (
-    releaseProcessStep &&
-    isSubmit &&
-    !localTourCache.has(`${componentName}:release`)
-  ) {
-    await runTour(componentName, 'release');
-  }
-
-  // Submit stage → publish  study stage
+  // Submit stage → publish stage
   const publishProcessStep = tourStages?.['publish'];
-  if (
-    publishProcessStep &&
-    isPublish &&
-    !localTourCache.has(`${componentName}:publish`)
-  ) {
-    await runTour(componentName, 'publish');
+  if (publishProcessStep && !localTourCache.has(`${componentName}:publish`)) {
+    // Run tour only after the current tour has finished
+    const currentTour = activeTour;
+
+    if (currentTour) {
+      currentTour.once('complete', async () => {
+        await runTour(componentName, 'publish');
+      });
+
+      currentTour.once('cancel', async () => {
+        await runTour(componentName, 'publish');
+      });
+    } else {
+      await runTour(componentName, 'publish');
+    }
   }
 }
 
-function handlePostSubmissionTour(componentName) {
+function handlePostSubmissionTour() {
   // Handle 'submit' button clicks to trigger subsequent tour stages
-  const submitButtons = [
-    ...$(`[data-tour-id*="submit_record_button"]:visible`).toArray(),
-    ...$(`[data-action*="submit_${componentName}"]:visible`).toArray(),
-  ];
+  const submitButtons = $(
+    `[data-tour-id*="submit_record_button"]:visible`
+  ).toArray();
 
   submitButtons.forEach((button) => {
-    componentMap.set(button, componentName);
     button.removeEventListener('click', postSubmissionHandler);
     button.addEventListener('click', postSubmissionHandler);
   });
@@ -624,7 +618,7 @@ async function watchComponentForTour(componentName) {
     observer.observe($el[0], { childList: true, subtree: true });
   }
 
-  // Handle steps such as releasing the profile and
-  // 'publish' records after the 'submit' button is clicked
-  handlePostSubmissionTour(componentName);
+  // Handle steps such as publishing profiles and
+  // records after the 'submit' button is clicked
+  handlePostSubmissionTour();
 }
