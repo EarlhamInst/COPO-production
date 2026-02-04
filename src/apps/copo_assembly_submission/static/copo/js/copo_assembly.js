@@ -51,7 +51,6 @@ $(document).on("document_ready", function() {
       $('#' + d.html_id)
         .removeClass('alert-info')
         .addClass('alert-danger');
-      initialiseModalPopovers(); // Initialise popover in modal
       //$("#" + d.html_id).html(d.message)
       //$("#spinner").fadeOut()
     }

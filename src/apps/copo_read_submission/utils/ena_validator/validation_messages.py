@@ -14,14 +14,17 @@ MESSAGES = {
         f'''
             Invalid file name <strong>{{file_name}}</strong>.<br>
             Expected one of 
-            <span class="valid-enum-trigger" 
-                data-content="<ul>
+            <details class='valid-enum'>
+                <summary class='valid-enum-trigger'>3 valid file formats (click to view).</summary>
+                <div class='valid-enum-container'>
+                    <h3 class='valid-enum-title'>Valid values</h3>
+                    <ul>
                         <li><strong>.gz</strong> for FASTQ files</li>
                         <li><strong>.bam</strong> or <strong>.bz2</strong> for BAM files</li>
                         <li><strong>.cram</strong> or <strong>.bz2</strong> for CRAM files</li>
-                    </ul>">
-                3 valid file formats (click to view)
-            </span>.
+                    </ul>
+                </div>
+            </details>
         '''
     ),
     'validation_msg_sample_duplication_error': (

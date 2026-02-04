@@ -992,24 +992,100 @@ copo-noborders-table.dataTable thead td {
   border-right-width: 0;
   border-left-color: #ebebeb;
 }
+/* END CUSTOM POPOVERS*/
 
-.valid-enum-trigger {
+/* Styling for enum "valid values" details/summary toggle */
+details.valid-enum {
+  display: inline;
+  padding-left: 5px;
+}
+
+details.valid-enum summary {
+  display: inline;
+  list-style: none; /* Hides marker */
+}
+
+details.valid-enum summary::marker {
+  content: ''; /* Hides marker */
+}
+
+/* Add custom marker/arrow */
+/* NB: It has to be added because 'display: inline' on 
+the 'summary' tag is used which removes the default marker */
+details.valid-enum summary::before {
+  content: '\25B8'; /* '▸' */
+  display: inline-block;
+  font-size: 18px;
+  margin-right: 0.25em;
+  transition: transform 0.2s ease;
+}
+
+details.valid-enum[open] summary {
+  display: inline;
+}
+
+details.valid-enum[open] summary::before {
+  transform: rotate(90deg);
+}
+
+details.valid-enum ul {
+  display: block;
+  margin: 0.5em 0 0 0;
+}
+
+details.valid-enum[open] ul {
+  padding-left: 15px;
+}
+
+details.valid-enum ul {
+  display: block;
+  margin: 0.5em 0 0 0.5em;
+}
+
+details.valid-enum[open] ul li {
+  list-style-type: disc;
+}
+
+details.valid-enum .valid-enum-trigger {
   text-decoration: underline;
-  color: #337ab7; /* Bootstrap primary color */
+  color: #337ab7;
   cursor: pointer;
   font-weight: normal;
 }
 
-.valid-enum-container .webui-popover-content {
+details.valid-enum .valid-enum-container {
+  min-width: 50px;
+  min-height: 32px;
   max-height: 200px !important;
   overflow-y: auto !important;
   overflow-x: hidden;
+  padding: 1px;
+  text-align: left;
+  white-space: normal;
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  width: 210px;
+  font-family: Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.4285em;
+  color: rgba(0, 0, 0, 0.87);
+  margin-top: 5px;
 }
 
-.valid-enum-container .webui-popover-content ul {
-  padding-left: 15px !important;
+details.valid-enum .valid-enum-title {
+  padding: 8px 14px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 18px;
+  border-bottom: 1px solid #f2f2f2;
+  border-radius: 5px 5px 0 0;
+  word-wrap: break-word !important;
+  background-color: #d4e4ed !important;
 }
-/* END CUSTOM POPOVERS*/
+/* End of enum/valid values details styling */
 
 /*customising Bootstrap badge*/
 
