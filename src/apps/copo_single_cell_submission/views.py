@@ -65,6 +65,7 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
         l.log("Single cell manifest loaded")
         validate_result, errors =  singlecell.validate()
         if validate_result:
+            is_warning = False
             l.log("About to collect Single cell manifest")
             
             # check s3 for bucket and files files
@@ -92,7 +93,6 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
                     if not file_name_map[file_name] or hash != file_name_map[file_name]:  
                         s3_checking_file_names.append(file_name)
 
-                is_warning = False
                 if s3_checking_file_names:
                     if s3obj.check_for_s3_bucket(bucket_name):
                         # get filenames from manifest
