@@ -998,146 +998,6 @@ function refresh_tool_tips() {
   setup_datepicker();
 } //end of func
 
-function initialiseModalPopovers() {
-  // Helper function to update popover position and arrow
-  function updatePopoverPosition($el, $popover) {
-    const $modal = $el.closest('.modal');
-    const modalOffset = $modal.offset();
-    const trigOff = $el.offset();
-    const trigW = $el.outerWidth();
-    const trigH = $el.outerHeight();
-    const popW = $popover.outerWidth();
-    const popH = $popover.outerHeight();
-    const gap = 8;
-
-    // Prefer right placement
-    let left = trigOff.left + trigW + gap;
-    let top = trigOff.top + trigH / 2 - popH / 2;
-
-    // Flip left if off viewport
-    const viewportW = $(window).width();
-    let placementClass = 'right';
-    if (left + popW + 10 > viewportW) {
-      left = trigOff.left - popW - gap;
-      placementClass = 'left';
-    }
-
-    // Clamp top
-    const maxTop = $(window).height() - popH - 10;
-    top = Math.max(10, Math.min(top, maxTop));
-
-    // Apply CSS
-    $popover.css({
-      position: 'absolute',
-      top: Math.round(top) + 'px',
-      left: Math.round(left) + 'px',
-    });
-
-    // Apply placement class for arrow
-    $popover.removeClass('left right').addClass(placementClass);
-
-    // Arrow vertically centered
-    const $arrow = $popover.find('.webui-arrow');
-    if ($arrow.length) {
-      const arrowTop = trigOff.top + trigH / 2 - $popover.offset().top;
-      $arrow.css({ top: arrowTop + 'px' });
-    }
-  }
-
-  // Destroy existing popovers and remove click handlers
-  $('.valid-enum-trigger')
-    .each(function () {
-      const $el = $(this);
-      if ($el.data('webui.popover')) {
-        try {
-          $el.webuiPopover('destroy');
-        } catch (e) {}
-      }
-    })
-    .off('click');
-
-  // Initialize new popovers
-  $('.valid-enum-trigger').each(function () {
-    const $el = $(this);
-    const content = $el.attr('data-content') || '';
-    const title = $el.attr('data-title') || 'Valid values';
-
-    const contentHtml = `<div class="webpop-scroll" style="max-height:300px; overflow-y:auto; overflow-x:hidden;">${content}</div>`;
-
-    $el.webuiPopover({
-      title: title,
-      content: contentHtml,
-      closeable: true,
-      cache: false,
-      width: 210,
-      trigger: 'click',
-      arrow: true,
-      animation: 'fade',
-      placement: 'auto-right',
-      dismissible: true,
-      container: $el.closest('.modal'),
-      onShow: function ($popover) {
-        $popover.addClass('valid-enum-container');
-
-        // Close button
-        $popover
-          .find('.close')
-          .off('click')
-          .on('click', function (e) {
-            e.preventDefault();
-            $el.webuiPopover('hide');
-          });
-
-        // Initial position
-        updatePopoverPosition($el, $popover);
-
-        // Store scroll handler
-        $popover.data('scrollHandler', function () {
-          updatePopoverPosition($el, $popover);
-        });
-
-        // Track scroll/resize events for sticky behavior
-        const scrollParents = $el.parents().filter(function () {
-          return (
-            $(this).css('overflow') === 'auto' ||
-            $(this).css('overflow') === 'scroll'
-          );
-        });
-        scrollParents
-          .add(window)
-          .on('scroll.popover resize.popover', $popover.data('scrollHandler'));
-      },
-      onHide: function ($popover) {
-        // Remove all scroll/resize handlers
-        const handler = $popover.data('scrollHandler');
-        if (handler) {
-          const scrollParents = $el.parents().filter(function () {
-            return (
-              $(this).css('overflow') === 'auto' ||
-              $(this).css('overflow') === 'scroll'
-            );
-          });
-          scrollParents
-            .add(window)
-            .off('scroll.popover resize.popover', handler);
-        }
-      },
-    });
-  });
-
-  // Window scroll: update all visible popovers
-  let scrollTimeout;
-  $(window).on('scroll', function () {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(function () {
-      $('.webui-popover.in').each(function () {
-        const handler = $(this).data('scrollHandler');
-        if (handler) handler();
-      });
-    }, 10);
-  });
-}
-
 function setup_datepicker() {
   var format_string;
   // dtol date format and ENA date formats are sadly different, so check if we are dealing with a dtol sample
@@ -3240,10 +3100,11 @@ function generate_component_control(componentName, profile_type) {
 
   //add profile title
   if ($('#profile_title').length) {
+    const tourId = profile_type_def[profile_type.toLowerCase()]?.tourId || '';
     let profileTitle = $('#profile_title').val();
     let $profileTitleDiv = $('<div/>', {
       class: 'page-title-custom',
-      html: `<span class='profile-title' title='${profileTitle}' data-tour-id='profile_title release_profile'>Profile: ${profileTitle}</span>`,
+      html: `<span class='profile-title' title='${profileTitle}' data-tour-id='${tourId}'>Profile: ${profileTitle}</span>`,
     });
 
     pageHeaders.append($profileTitleDiv);
@@ -4107,80 +3968,105 @@ function initialiseNavToggle() {
 }
 
 function confirmCloseDialog(triggerDialogOrEvent) {
+  function getTargetDialog(trigger) {
+    if (!trigger) return null;
+
+    // Case 1: Modal triggered from a DOM event
+    if (trigger.target) {
+      const modalEl = $(trigger.target).closest('.modal');
+      return modalEl.length ? modalEl : null;
+    }
+
+    // Case 2: Modal triggered with a jQuery modal reference
+    if (trigger instanceof jQuery) {
+      return trigger;
+    }
+
+    // Case 3: Modal triggered with a BootstrapDialog instance
+    if (typeof trigger.close === 'function') {
+      return trigger;
+    }
+
+    return null;
+  }
+
+  function closeDialog(dialog) {
+    if (!dialog) return;
+
+    // Close the target dialog modal
+    if (dialog.close) {
+      // BootstrapDialog
+      dialog.close();
+    } else if (dialog.modal) {
+      // jQuery modal
+      dialog.modal('hide');
+    }
+  }
+
   // Handle event case
   if (triggerDialogOrEvent && triggerDialogOrEvent.preventDefault) {
     triggerDialogOrEvent.preventDefault();
     triggerDialogOrEvent.stopPropagation();
   }
 
-  BootstrapDialog.show({
-    title: '<strong>Confirm close</strong>',
-    message:
-      'Are you sure that you would like to close the modal? ' +
-      'Any upload progress will be lost.',
-    cssClass: 'copo-modal1',
-    closable: false,
-    animate: false,
-    closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
-    closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
-    type: BootstrapDialog.TYPE_WARNING,
-    buttons: [
-      {
-        label: 'No, keep open',
-        cssClass: 'custom-btn tiny btn-default',
-        action: function (dialogRef) {
-          dialogRef.close();
+  // If alert is visible, 'Submit' button is disabled 
+  // or 'Finish' button is disabled, skip confirmation
+  const $modalAlert = $('.modal .alert, .modal .sample-alert');
+  const isModalAlertVisible =
+     $modalAlert.is(':visible') &&
+     $modalAlert.text().trim() !== '';
+  
+  const isFinishButtonDisabled = $(
+    '.modal-footer .btn-finish, .modal-footer .btn-submit'
+  ).is(':disabled');
+  const targetDialog = getTargetDialog(triggerDialogOrEvent);
+  
+  if (!isModalAlertVisible || isFinishButtonDisabled) {
+    // Skip confirmation
+    closeDialog(targetDialog);
+    return;
+  } else {
+    // Show confirmation dialog
+    BootstrapDialog.show({
+      title: '<strong>Confirm close</strong>',
+      message:
+        'Are you sure that you would like to close the modal? ' +
+        'Any upload progress will be lost.',
+      cssClass: 'copo-modal1',
+      closable: false,
+      animate: false,
+      closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
+      closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
+      type: BootstrapDialog.TYPE_WARNING,
+      buttons: [
+        {
+          label: 'No, keep open',
+          cssClass: 'custom-btn tiny btn-default',
+          action: function (dialogRef) {
+            dialogRef.close();
+          },
         },
-      },
-      {
-        label: 'Yes, close',
-        cssClass: 'custom-btn tiny btn-primary',
-        action: function (confirmDialogRef) {
-          let targetDialog = null;
-
-          // Case 1: Modal triggered from a DOM event
-          if (triggerDialogOrEvent && triggerDialogOrEvent.target) {
-            const modalEl = $(triggerDialogOrEvent.target).closest('.modal');
-            if (modalEl.length) targetDialog = modalEl;
-          }
-          // Case 2: Modal triggered with a jQuery modal reference
-          else if (triggerDialogOrEvent instanceof jQuery) {
-            targetDialog = triggerDialogOrEvent;
-          }
-          // Case 3: Modal triggered with a BootstrapDialog instance
-          else if (
-            triggerDialogOrEvent &&
-            typeof triggerDialogOrEvent.close === 'function'
-          ) {
-            targetDialog = triggerDialogOrEvent;
-          }
-
-          // Close the targetDialog modal
-          if (targetDialog) {
-            if (targetDialog.close) {
-              // BootstrapDialog
-              targetDialog.close();
-            } else if (targetDialog.modal) {
-              // jQuery modal
-              targetDialog.modal('hide');
-            }
-          }
-          // Reset modal values
-          resetValues();
-          confirmDialogRef.close(); // Close the confirmation modal
+        {
+          label: 'Yes, close',
+          cssClass: 'custom-btn tiny btn-primary',
+          action: function (confirmDialogRef) {
+            closeDialog(targetDialog);
+            resetValues(); // Reset modal values
+            confirmDialogRef.close(); // Close the confirmation modal
+          },
         },
-      },
-    ],
-    onshown: function (dialogRef) {
-      // Remove aria-hidden before focusing the modal
-      dialogRef.getModal().removeAttr('aria-hidden');
+      ],
+      onshown: function (dialogRef) {
+        // Remove aria-hidden before focusing the modal
+        dialogRef.getModal().removeAttr('aria-hidden');
 
-      // Set focus after a short delay
-      setTimeout(function () {
-        dialogRef.getModal().focus();
-      }, 50);
-    },
-  });
+        // Set focus after a short delay
+        setTimeout(function () {
+          dialogRef.getModal().focus();
+        }, 50);
+      },
+    });
+  }
 }
 
 // Fades out warning message in modals and updates

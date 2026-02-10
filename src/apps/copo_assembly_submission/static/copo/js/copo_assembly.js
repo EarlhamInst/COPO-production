@@ -51,7 +51,6 @@ $(document).on("document_ready", function() {
       $('#' + d.html_id)
         .removeClass('alert-info')
         .addClass('alert-danger');
-      initialiseModalPopovers(); // Initialise popover in modal
       //$("#" + d.html_id).html(d.message)
       //$("#spinner").fadeOut()
     }
@@ -98,7 +97,7 @@ function upload_assembly_files() {
       console.log(data);
       BootstrapDialog.show({
         title: 'Error',
-        message: 'Error ' + data.responseText,
+        message: data.responseText,
         type: BootstrapDialog.TYPE_DANGER,
       });
     })

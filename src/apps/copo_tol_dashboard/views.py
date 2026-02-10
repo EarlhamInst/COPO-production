@@ -9,7 +9,6 @@ from common.utils.helpers import get_group_membership_asString
 from common.utils.logger import Logger
 from common.utils import helpers
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -92,6 +91,7 @@ def copo_tol_inspect_gal(request):
         raise PermissionDenied()
 
 
+@login_required
 def gal_and_partners(request):
     # Field name: "PARTNER"
     partner_enums = DTOL_ENUMS.get("PARTNER", str())
@@ -156,6 +156,7 @@ def gal_and_partners(request):
     return HttpResponse(json.dumps(out))
 
 
+@login_required
 def get_gal_names(request):
     projects = TOL_PROFILE_TYPES
     gal_names = Sample().get_gal_names(projects)
@@ -189,6 +190,7 @@ def get_number_of_samples_produced(field_name, field_value):
     return Sample().get_collection_handle().count_documents({field_name: field_value})
 
 
+@login_required
 def get_profile_titles_nav_tabs(request):
     queryUserProfileRecords = request.GET['queryUserProfileRecords']
     #regex = r'\((.*?)\)'  # value within enclosed parentheses regex
@@ -217,6 +219,7 @@ def get_profile_titles_nav_tabs(request):
     return HttpResponse(json_util.dumps(profile_types))
 
 
+@login_required
 def get_profiles_for_tol_inspection(request):
     data = request.POST["data"]  # "project" or "samples_data"
     searchByFaceting = data_utils.convertStringToBoolean(
@@ -254,6 +257,7 @@ def get_profiles_for_tol_inspection(request):
     return HttpResponse(json_util.dumps(out))
 
 
+@login_required
 def get_profiles_based_on_sample_data(request):
     samples_data = request.POST["samples_data"]
     # Convert string array to a list of dictionaries
@@ -270,6 +274,7 @@ def get_profiles_based_on_sample_data(request):
         json_util.dumps({'profiles': profiles, 'profile_samples_count': profile_samples_count}))
 
 
+@login_required
 def get_sample_details(request):
     sample_id = ObjectId(request.POST["sample_id"])
     sample_data = Sample().get_sample_by_id(sample_id)
@@ -288,6 +293,7 @@ def get_sample_details(request):
     return HttpResponse(json_util.dumps(sorted_sample_data_with_blank_field_values))
 
 
+@login_required
 def get_samples_by_search_faceting(request):
     url = request.build_absolute_uri()
 

@@ -10,79 +10,11 @@ $(document).ready(function () {
     title: 'Add sequence annotation',
     cssClass: 'form-modal',
     message: '',
-    /*
-        onshown: function(dialogRef){
- 
-            $(".modal-dialog").find("#id_sample").off('change').on("change", (function(event){
-                console.log("changed")
-                event.preventDefault()
-                //var $el =  $(".modal-dialog").find("#id_run");
-                //$el.empty(); // remove old options
-                //$el =  $(".modal-dialog").find("#id_experiment");
-                //$el.empty(); // remove old options
-                value = $(".modal-dialog").find("#id_sample").find(":selected").val()
-                if (value == undefined || value === "") {
-                  var $el =  $(".modal-dialog").find("#id_run");
-                  $el.empty(); // remove old options
-                  $el =  $(".modal-dialog").find("#id_experiment");
-                  $el.empty(); // remove old options
-                  return
-                }   
-        
-                jQuery.ajax({
-                    url: '/copo/copo_reads/' + value + "/get_read_accessions",
-                    type: 'GET', // For jQuery < 1.9
-                    headers:
-                        {
-                            "X-CSRFToken": csrftoken
-                        },
-                }).fail(function (data) {
-                    BootstrapDialog.show({
-                        title: 'Error',
-                        message: "Error " + data.responseText
-                    });
-                }).done(function (data) {
-                    var $el =  $(".modal-dialog").find("#id_run");
-                    run = $el.find(":selected").val()
-                    $el.empty();
-                    $.each(data["run_accessions"], function(index, value) {
-                      $el.append($("<option></option>")
-                         .attr("value", value)
-                         .attr("selected", run!= undefined && run.includes(value)).text(value));
-                    });
-        
-                    $el =  $(".modal-dialog").find("#id_experiment");
-                    experiment = $el.find(":selected").val()
-                    $el.empty(); // remove old options
-                    $.each(data["experiment_accessions"], function(index, value) {
-                      $el.append($("<option></option>")
-                        .attr("value", value)
-                        .attr("selected", experiment != undefined && experiment.includes(value)).text(value));
-                    });  
-        
-                });
-                
-            }));
-            
-            selected_sample = $(".modal-dialog").find("#id_sample").find(":selected").val()
-            if ( selected_sample == "") {
-                var $el =  $(".modal-dialog").find("#id_run");
-                $el.empty(); // remove old options
-                $el =  $(".modal-dialog").find("#id_experiment");
-                $el.empty(); // remove old options             
-            } else {
-                var event = jQuery.Event("change");
-                $(".modal-dialog").find("#id_sample").val(selected_sample).trigger(event);
-                console.log("triggered")
-            }
-
-        },
-        */
     buttons: [
       {
         id: 'submit_annotation_button',
         label: 'Submit annotation',
-        cssClass: 'btn-primary',
+        cssClass: 'btn-primary btn-submit',
         title: 'Submit annotation',
         action: function () {
           doPost();
@@ -185,7 +117,6 @@ $(document).ready(function () {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');
       $(element).html(d.message);
-      initialiseModalPopovers(); // Initialise popover in modal
       //$("#spinner").fadeOut()
     } else if (d.action == 'refresh_table') {
       //table data
@@ -252,7 +183,8 @@ $(document).ready(function () {
         $('.modal-dialog').find('#loading_span').fadeOut();
         BootstrapDialog.show({
           title: 'Error',
-          message: 'Error ' + data.responseText,
+          message: data.responseText,
+          type: BootstrapDialog.TYPE_DANGER,
         });
       })
       .done(function (data) {
@@ -372,7 +304,8 @@ $(document).ready(function () {
                   .fail(function (data) {
                     BootstrapDialog.show({
                       title: 'Error',
-                      message: 'Error ' + data.responseText,
+                      message: data.responseText,
+                      type: BootstrapDialog.TYPE_DANGER,
                     });
                   })
                   .done(function (data) {

@@ -51,7 +51,7 @@ var dialog = new BootstrapDialog({
     {
       id: 'save_read_button',
       label: 'Finish',
-      cssClass: 'btn-primary',
+      cssClass: 'btn-primary btn-finish',
       title: 'Finish',
       disabled: true,
       action: function () {
@@ -163,7 +163,6 @@ $(document).on('document_ready', function () {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');
       $(element).html(d.message);
-      initialiseModalPopovers(); // Initialise popover in modal
       //$("#spinner").fadeOut()
     } else if (d.action === 'make_table') {
       // make table of metadata parsed from spreadsheet
@@ -495,6 +494,7 @@ function upload_spreadsheet(file) {
       dialog.getButton('upload_read_manifest_button').stopSpin();
       console.log(data);
       responseText = data.responseText;
+      $('#file').val('');
       if (responseText != '') {
         BootstrapDialog.show({
           title: 'Error',
@@ -511,6 +511,7 @@ function upload_spreadsheet(file) {
         .hide();
       dialog.getButton('save_read_button').enable();
       dialog.setClosable(true);
+      $('#file').val('');
     });
 }
 

@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.http import  HttpResponse, JsonResponse
 from rest_framework.views import APIView
 from src.apps.copo_single_cell_submission.utils.SingleCellSchemasHandler import SinglecellschemasSpreadsheet, SingleCellSchemasHandler
@@ -24,17 +25,20 @@ def get_current_supported_checklists(request,schema_name):
     df = df.fillna("")
     return JsonResponse(list(df.to_dict("index").values()), safe=False)
 
+
 @api_view(['GET'])
-@web_page_access_checker    
+@login_required
+@web_page_access_checker
 def api_download_study(request, profile_id, schema_name, study_id):
     if request.method == 'GET':
         format = request.GET.get("return_type", "xlsx")
         schema_name = schema_name.upper()
         return views.download_manifest(request, schema_name, profile_id, study_id, format=format)
-    
+
 
 @api_view(['GET', 'POST'])
-@web_page_access_checker  
+@login_required
+@web_page_access_checker
 def api_studies(request, profile_id, schema_name):
     if request.method == 'GET':
         """
@@ -76,10 +80,11 @@ def api_studies(request, profile_id, schema_name):
             return JsonResponse({"status": "error", "message":  response.content.decode()}, status=response.status_code)
         else:
             return JsonResponse({"status": "success", "message": "Records saved successfully."}, status=200)
-    
+
 
 @api_view(['GET', 'POST'])
-@web_page_access_checker  
+@login_required
+@web_page_access_checker
 def api_submit_study(request, profile_id, schema_name, study_id):
     if request.method == 'POST':
         repository = request.GET.get("repository", "ena")
@@ -100,9 +105,11 @@ def api_submit_study(request, profile_id, schema_name, study_id):
             return JsonResponse(result, status=400, safe=False)
         else:
             return JsonResponse(result, status=200, safe=False)
-        
+
+
 @api_view(['GET'])
-@web_page_access_checker          
+@login_required
+@web_page_access_checker
 def api_study_accessions(request, profile_id, schema_name, study_id):
     if request.method == 'GET':
         schema_name = schema_name.upper()
@@ -123,8 +130,10 @@ def api_study_accessions(request, profile_id, schema_name, study_id):
         elif return_type == "json":     
             return JsonResponse(accessions, status=200, safe=False)
 
+
 @api_view(['POST'])
-@web_page_access_checker  
+@login_required
+@web_page_access_checker
 def api_publish_study(request, profile_id, schema_name, study_id):
     if request.method == 'POST':
         schema_name = schema_name.upper()

@@ -1,6 +1,7 @@
 from datetime import datetime
+from django.contrib.auth.decorators import login_required
 
-
+@login_required
 def latest_message(request):
     '''
     sm = StatusMessage(message_owner=request.user, message="")

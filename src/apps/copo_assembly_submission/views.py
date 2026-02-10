@@ -11,9 +11,9 @@ from src.apps.copo_core.views import web_page_access_checker
 from .forms import AssemblyForm
 from .utils import EnaAssembly
 from .utils.da import Assembly
+from common.validators.ena_validators.validation_messages import MESSAGES
 
-
-@login_required()
+@login_required
 def ena_assembly(request, profile_id, assembly_id=None):
     is_error = False
     request.session["profile_id"] = profile_id
@@ -128,7 +128,7 @@ def ena_assembly(request, profile_id, assembly_id=None):
             # messages.error(request, form.errors)
         # if is_error:
         return HttpResponse(
-            content="Validation Error", status=status.HTTP_400_BAD_REQUEST
+            content=MESSAGES["form_validation_error"], status=status.HTTP_400_BAD_REQUEST 
         )
 
     else:
@@ -156,8 +156,8 @@ def ena_assembly(request, profile_id, assembly_id=None):
         )
 
 
-@web_page_access_checker
 @login_required
+@web_page_access_checker
 def copo_assembly(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)

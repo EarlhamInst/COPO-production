@@ -7,6 +7,7 @@ from common.validators.helpers import checkOntologyTerm, checkNCBITaxonTerm, cle
 import requests
 from common.utils.helpers import get_env
 import xml.etree.ElementTree as ET
+from .validation_messages import MESSAGES as msg
 
 ena_sample_service = get_env("ENA_V1_SAMPLE_SERVICE")
 session = requests.Session()
@@ -60,17 +61,20 @@ class IncorrectValueValidator(Validator):
                         if type == "enum":
                             if row not in field.get("choice", []):
                                 valid_values = field.get("choice")
-                                popover_html = (
+                                content = (
                                     "<ul>"
                                     + "".join(f"<li>{v}</li>" for v in valid_values)
                                     + "</ul>"
                                 )
-                                num_values = len(valid_values)
                                 self.errors.append(
-                                    f"Sheet <strong>{component}</strong>: Invalid value <strong>{row}</strong> "
-                                    f"in column <strong>{field['term_label']}</strong> at row <strong>{i+2}</strong>.<br>"
-                                    f"Expected one of "
-                                    f"<span class='valid-enum-trigger' data-content='{popover_html}'>{num_values} valid values (click to view)</span>"
+                                    msg["validation_msg_invalid_enum"].format(
+                                        component=component,
+                                        value=row,
+                                        column=field['term_label'],
+                                        row=i + 2,
+                                        num_values=len(valid_values),
+                                        content=content,
+                                    )
                                 )
                                 self.flag = False
                         elif type == "string":
