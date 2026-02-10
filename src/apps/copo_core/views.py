@@ -151,17 +151,14 @@ def web_page_access_checker(func):
 
 
 def test(request):
-    return render(request, template_name='copo/test.html')
+    return render(request, 'copo/test.html', {})
 
 
 def error_page(request):
     return render(request, context={}, template_name="copo/error_page.html")
 
 
-def test(request):
-    return render(request, "copo/test.html")
-
-
+@login_required
 def forward_to_info(request):
     message = request.GET['message']
     control = request.GET['control']
@@ -196,6 +193,8 @@ def copo_repositories(request):
     user = request.user.id
     return render(request, 'copo/my_repositories.html')
 
+
+@login_required
 def resolve_submission_id(request, submission_id):
     sub = Submission().get_record(submission_id)
     # get all file metadata
@@ -284,8 +283,9 @@ def _core_visualize(request):
     out = jsonpickle.encode(context, unpicklable=False)
     return HttpResponse(out, content_type='application/json')
 
-@web_page_access_checker
+
 @login_required
+@web_page_access_checker
 def copo_forms(request):
     context = dict()
     task = request.POST.get("task", str())
@@ -369,7 +369,7 @@ def copo_forms(request):
 
 
 """
-@login_required()
+@login_required
 def delete_profile(request):
     context = dict()
     task = request.POST.get("task", str())
@@ -482,7 +482,7 @@ def view_user_info(request):
     return render(request, 'copo/user_info.html', data_dict)
 
 
-@login_required()
+@login_required
 def view_groups(request):
     # g = Group().create_group(description="test description")
     member_groups = helpers.get_group_membership_asString()
@@ -515,7 +515,7 @@ def view_groups(request):
                   {'request': request, 'profile_list': profile_list,'profile_tab_title': profile_tab_title, 'group_list': group_list})
 
 """
-# @login_required()
+# @login_required
 @user_is_staff
 def administer_repos(request):
     return render(request, 'copo/copo_repository.html', {'request': request})
@@ -562,6 +562,7 @@ def get_source_count(self):
     return HttpResponse(encode({'num_sources': num_sources}))
 
 
+@login_required
 def search_copo_components(request, data_source):
     """
     function does local lookup of items given data_source
@@ -592,6 +593,7 @@ def search_copo_components(request, data_source):
     return HttpResponse(jsonpickle.encode(data), content_type='application/json')
 
 
+@login_required
 def create_group(request):
     name = request.POST['group_name']
     description = request.POST['description']
@@ -608,6 +610,7 @@ def create_group(request):
         return HttpResponseBadRequest('Forbidden - Group with the same name already exists!')
 
 
+@login_required
 def edit_group(request):
     group_id = request.POST['group_id']
     name = request.POST['group_name']
@@ -627,6 +630,7 @@ def edit_group(request):
             return HttpResponseBadRequest('Forbidden - Group with the same name already exists!')
 
 
+@login_required
 def delete_group(request):
     id = request.GET.get('group_id','')
     deleted = CopoGroup().delete_group(group_id=id)
@@ -636,6 +640,7 @@ def delete_group(request):
         return HttpResponseBadRequest('Error Deleting Group - Try Again')
 
 
+@login_required
 def view_group(request):
     id = request.GET.get('group_id','')
     group_info = CopoGroup().view_shared_group(group_id=id)
@@ -645,6 +650,7 @@ def view_group(request):
         return HttpResponseBadRequest('Error Viewing Group - Try Again')
 
 
+@login_required
 def add_profile_to_group(request):
     group_id = request.GET.get('group_id','')
     profile_id = request.GET.get('profile_id','')
@@ -655,6 +661,7 @@ def add_profile_to_group(request):
         return HttpResponseBadRequest(json.dumps({'resp': 'Server Error - Try again'}))
 
 
+@login_required
 def remove_profile_from_group(request):
     group_id = request.GET.get('group_id','')
     profile_id = request.GET.get('profile_id','')
@@ -665,18 +672,21 @@ def remove_profile_from_group(request):
         return HttpResponseBadRequest(json.dumps({'resp': 'Server Error - Try again'}))
 
 
+@login_required
 def get_profiles_in_group(request):
     group_id = request.GET.get('group_id','')
     grp_info = CopoGroup().get_profiles_for_group_info(group_id=group_id)
     return HttpResponse(json_util.dumps({'resp': grp_info}))
 
 
+@login_required
 def get_users_in_group(request):
     group_id = request.GET.get('group_id','')
     usr_info = CopoGroup().get_users_for_group_info(group_id=group_id)
     return HttpResponse(json_util.dumps({'resp': usr_info}))
 
 
+@login_required
 def get_users(request):
     q = request.GET['q']
     x = list(User.objects.filter(
@@ -687,6 +697,7 @@ def get_users(request):
     return HttpResponse(json.dumps(x))
 
 
+@login_required
 def add_user_to_group(request):
     group_id = request.GET.get('group_id','')
     user_id = request.GET.get('user_id','')
@@ -699,6 +710,7 @@ def add_user_to_group(request):
     return JsonResponse({'resp': result})
 
 
+@login_required
 def remove_user_from_group(request):
     group_id = request.GET.get('group_id', '')
     user_id = request.GET.get('user_id', '')
@@ -730,6 +742,7 @@ def get_tour_progress(request, component):
     )
 
 
+@login_required
 @require_POST
 def queue_tour_stage(request, component, stage):
     '''

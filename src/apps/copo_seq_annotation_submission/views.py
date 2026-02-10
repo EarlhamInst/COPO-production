@@ -15,14 +15,14 @@ from .utils.da import SequenceAnnotation
 from .utils import EnaAnnotation
 from common.validators.ena_validators.validation_messages import MESSAGES
 
-@web_page_access_checker
 @login_required
+@web_page_access_checker
 def copo_seq_annotation(request, profile_id="", ui_component=None):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
     return render(request, 'copo/copo_seq_annotation.html', {'profile_id': profile_id, 'profile': profile, "ui_component": ui_component})
 
-@login_required()
+@login_required
 def ena_annotation(request, profile_id, seq_annotation_id=None):
     request.session["profile_id"] = profile_id
     is_error = False
