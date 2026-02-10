@@ -1940,22 +1940,11 @@ input[data-autocomplete] {
 
 /* end webui styling */
 
-/*summary table styling*/
+/* Summary table styling */
 .summary-details-table {
   width: auto !important;
   max-width: 500px;
   display: inline-table;
-}
-
-.extra-table-info .fa-stack {
-  color: forestgreen;
-  font-size: 8px;
-  padding-bottom: 20px;
-}
-
-.extra-table-info .fa.fa-plus {
-  font-size: 20px;
-  margin-top: -2px;
 }
 
 td.summary-details-control {
@@ -2050,8 +2039,7 @@ div.shown span.panel-details-control:before {
   font-weight: 900;
   font-size: 14px;
 }
-
-/*end summary table styling*/
+/* End of summary table styling*/
 
 /*help side panel styling*/
 span.side-help-trigger {

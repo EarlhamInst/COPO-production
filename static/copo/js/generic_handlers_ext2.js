@@ -582,11 +582,12 @@ function do_render_server_side_table(componentMeta) {
     do_table_buttons_events_server_side(component);
 
     table.on('click', 'tr >td', function () {
+      // Do not select columns with any of these classes
       var classList = [
         'annotate-datafile',
         'summary-details-control',
         'detail-hover-message',
-      ]; //don't select on columns with these classes
+      ];
       var foundClass = false;
 
       var tdList = this.className.split(' ');
@@ -684,90 +685,6 @@ function do_render_server_side_table(componentMeta) {
 
   // Reposition info and paginate controls
   moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
-  hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
-
-  //handle event for table details
-  $('#' + tableID + ' tbody')
-    .off('click', 'td.summary-details-control')
-    .on('click', 'td.summary-details-control', function (event) {
-      event.preventDefault();
-
-      var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
-      event.tableID = tableID;
-      $('body').trigger(event);
-
-      var tr = $(this).closest('tr');
-      var row = table.row(tr);
-      tr.addClass('showing');
-
-      if (row.child.isShown()) {
-        // This row is already open - close it
-        row.child('');
-        row.child.hide();
-        tr.removeClass('showing');
-        tr.removeClass('shown');
-      } else {
-        $.ajax({
-          url: copoVisualsURL,
-          type: 'POST',
-          headers: {
-            'X-CSRFToken': csrftoken,
-          },
-          data: {
-            task: 'attributes_display',
-            component: componentMeta.component,
-            target_id: row.data().record_id,
-          },
-          success: function (data) {
-            if (data.component_attributes.columns) {
-              // expand row
-
-              var contentHtml = $('<table/>', {
-                cellspacing: '0',
-                border: '0',
-                class:
-                  'ui compact definition selectable celled table summary-details-table',
-              });
-
-              // Create <tbody> inside contentHtml
-              var tbody = $('<tbody/>').appendTo(contentHtml);
-
-              for (
-                var i = 0;
-                i < data.component_attributes.columns.length;
-                ++i
-              ) {
-                var colVal = data.component_attributes.columns[i];
-
-                var colTR = $('<tr/>');
-                // contentHtml.append(colTR);
-                tbody.append(colTR); // Append tr to tbody
-
-                colTR
-                  .append($('<td/>').append(colVal.title))
-                  .append(
-                    $('<td/>').append(
-                      "<div style='width:300px; word-wrap: break-word;'>" +
-                        (data.component_attributes.data_set[colVal.data] ||
-                          '') +
-                        '</div>'
-                    )
-                  );
-              }
-
-              // row.child($('<div></div>').append(contentHtml).html()).show();
-              row.child($('<div></div>').append(contentHtml)).show();
-              tr.removeClass('showing');
-              tr.addClass('shown');
-            }
-          },
-          error: function () {
-            alert("Couldn't retrieve " + component + ' attributes!');
-            return '';
-          },
-        });
-      }
-    });
 
   //handle event for annotation of of datafile
   $('#' + tableID + ' tbody')
@@ -986,7 +903,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
         select: {
           rows: {
             _: '%d records selected',
-            0: "<span class='extra-table-info'>Click <span class='fa-stack'><i class='fa fa-circle fa-stack-2x'></i><i class='fa fa-plus fa-stack-1x fa-inverse'></i></span> beside a record to view extra details</span>",
+            0: 'Click a row to select it',
             1: '%d record selected',
           },
         },
@@ -1085,15 +1002,14 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
 
   // Reposition info and paginate controls
   moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
-  hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
 
-  //handle event for table details
+  // Handle event for table details
   $('#' + tableID + ' tbody')
     .off('click', 'td.summary-details-control')
     .on('click', 'td.summary-details-control', function (event) {
       event.preventDefault();
 
-      var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
+      var event = jQuery.Event('posttablerefresh'); // Individual components can trap and handle this event as they so wish
       event.tableID = tableID;
       $('body').trigger(event);
 

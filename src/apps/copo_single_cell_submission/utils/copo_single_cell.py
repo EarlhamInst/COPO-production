@@ -101,12 +101,18 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
 
             if not identifier_df.empty:
                 identifier_map[component_name]= identifier_df.iloc[0]
-
-            #no details button for component with no submission button
+                
+            # There will be not be a details button for 
+            # components that do not have submission buttons
             if submission_repository.get(component_name, []):
-                detail_dict = dict(className='summary-details-control detail-hover-message', orderable=False, data=None,
-                            title='', defaultContent='', width="5%")
-                columns[component_name].insert(0, detail_dict)
+                detail_dict = dict(
+                    className='summary-details-control detail-hover-message',
+                    orderable=False,
+                    data=None,
+                    title='',
+                    defaultContent='',
+                    width="5%",
+                )
 
             columns[component_name].append(dict(data="record_id", visible=False))
             columns[component_name].append(dict(data="DT_RowId", visible=False))

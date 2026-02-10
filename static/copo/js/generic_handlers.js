@@ -4135,59 +4135,6 @@ function moveDataTableControlsToRow(
   }
 }
 
-function hideExtraDetailsHint(tableID) {
-  const $tableWrapper = $(`#${tableID}_wrapper`);
-  const $container = $tableWrapper.length ? $tableWrapper : $(`#${tableID}`);
-
-  if (!$container.length) return;
-
-  function checkAndToggleHint() {
-    const $tableBody = $(`#${tableID} tbody`);
-    const $infoEl = $(`#${tableID}_info`).length
-      ? $(`#${tableID}_info`)
-      : $(`#${tableID}_wrapper_info`);
-
-    if (!$infoEl.length) return;
-
-    const $extraInfoDiv = $infoEl.find('.extra-table-info');
-
-    if ($tableBody.find('.summary-details-control').length === 0) {
-      $extraInfoDiv.remove();
-    } else {
-      $extraInfoDiv.show();
-    }
-  }
-
-  checkAndToggleHint();
-
-  // Disconnect existing observers
-  const prevObserver = $container.data('hideExtraDetailsObserver');
-  if (prevObserver) {
-    try {
-      prevObserver.disconnect();
-    } catch (e) {
-      console.error('Error disconnecting previous observer:', e);
-    }
-  }
-
-  // Observe the data table info element if it exists
-  // If not, observe the data table wrapper
-  const observeTarget = $(`#${tableID}_info`)[0] || $container[0];
-
-  const observer = new MutationObserver((mutations) => {
-    checkAndToggleHint();
-  });
-
-  observer.observe(observeTarget, {
-    childList: true,
-    subtree: true,
-    characterData: true,
-  });
-
-  // Store observer reference
-  $container.data('hideExtraDetailsObserver', observer);
-}
-
 function moveComponentInfoToTabContent() {
   // Ensure that component info alerts are displayed with
   // the other alerts in the sidebar info tab
