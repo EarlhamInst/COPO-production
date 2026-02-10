@@ -23,8 +23,8 @@ from .utils.copo_email import Email
 lg = settings.LOGGER
 
 
-@web_page_access_checker
 @login_required
+@web_page_access_checker
 def copo_sample_accept_reject(request):
     sample_manager_groups = list()
     associated_profiles_type_approval_for = [
@@ -57,8 +57,8 @@ def get_samples_column_names(request):
     return HttpResponse(json_util.dumps(column_names))
 
 
-@web_page_access_checker
 @login_required
+@web_page_access_checker
 def update_pending_samples_table(request):
     profile_filter = request.GET.get("profiles", "")
     group_filter = request.GET.get("group", "")
@@ -86,8 +86,8 @@ def update_pending_samples_table(request):
     return HttpResponse(json_util.dumps(result))
 
 
-@web_page_access_checker
 @login_required
+@web_page_access_checker
 def get_dtol_samples_for_profile(request):
     url = request.build_absolute_uri()
     if not ViewLock().isViewLockedCreate(url=url):
@@ -159,8 +159,8 @@ def get_dtol_samples_for_profile(request):
         return HttpResponse(json_util.dumps({"locked": True}))
 
 
-@web_page_access_checker
 @login_required
+@web_page_access_checker
 def mark_sample_rejected(request):
     sample_ids = request.GET.get("sample_ids")
     sample_ids = json.loads(sample_ids)
@@ -172,8 +172,8 @@ def mark_sample_rejected(request):
     )
 
 
-@web_page_access_checker
 @login_required
+@web_page_access_checker
 def add_sample_to_dtol_submission(request):
     user = get_current_user()
     sample_ids = request.POST.get("sample_ids")
@@ -288,8 +288,8 @@ def add_sample_to_dtol_submission(request):
         return HttpResponse(status=500, content="Sample IDs or profile_id not provided")
 
 
-@web_page_access_checker
 @login_required
+@web_page_access_checker
 def delete_dtol_samples(request):
     ids = json.loads(request.POST.get("sample_ids"))
     report = list()

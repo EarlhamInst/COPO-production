@@ -188,7 +188,7 @@ $(document).on('document_ready', function () {
       id = id.split('_')[1];
 
       if (actionType === 'release_study') {
-        result = confirm('Are you sure to release the study?');
+        result = confirm('Are you sure you would like to publish the study?');
         if (result) {
           url = '/copo/copo_profile/' + id + '/release_study';
           $.ajax({

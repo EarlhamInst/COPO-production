@@ -89,6 +89,42 @@ Notes:
       as well as optional fields - GENUS, ORDER_OR_GROUP and FAMILY.
 '''
 
+'''
+# Useful MongoDB queries for data verification:
+
+db.SourceCollection.find(
+  {
+    "biosampleAccession": {
+      "$in": [
+        "SAMEAxxxx",
+        "SAMEAxxxx",
+      ],
+    },
+  },
+  {" _id": 0, "biosampleAccession": 1 }
+)
+
+
+db.SourceCollection.countDocuments(
+  {
+    "biosampleAccession": {
+      "$in": ["SAMEAxxxx"],
+    },
+  },{}
+)
+
+db.SampleCollection.countDocuments(
+  {
+    "biosampleAccession": {
+      "$in": [
+        "SAMEAxxxx",
+        "SAMEAxxxx",
+      ],
+    },
+  },{}
+)
+'''
+
 import json
 import os
 import sys
