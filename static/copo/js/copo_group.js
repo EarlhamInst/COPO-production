@@ -167,7 +167,7 @@ $(document).ready(function () {
             // Show success alert in the 'Info' panel
             const alertType = 'success';
             const alertMessage = 'Group created!';
-            display_copo_alert(alertType, alertMessage);
+            displayAlert(alertType, alertMessage);
           })
           .fail(function (data) {
             $('.helpDivRow').show();
@@ -221,7 +221,7 @@ $(document).ready(function () {
                 // Show success alert in the 'Info' panel
                 const alertType = 'success';
                 const alertMessage = 'Group deleted!';
-                display_copo_alert(alertType, alertMessage);
+                displayAlert(alertType, alertMessage);
               })
               .fail(function (e) {
                 console.log(e);
@@ -296,7 +296,7 @@ $(document).ready(function () {
                 // Show success alert in the 'Info' panel
                 const alertType = 'success';
                 const alertMessage = 'Group updated!';
-                display_copo_alert(alertType, alertMessage);
+                displayAlert(alertType, alertMessage);
                 dialogRef.close();
               })
               .fail(function (data) {

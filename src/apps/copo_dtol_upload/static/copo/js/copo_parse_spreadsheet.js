@@ -420,7 +420,7 @@ $(document).ready(function () {
         if (d.action == 'hide_sub_spinner') {
           $('#sub_spinner').fadeOut(fadeSpeed);
         }
-        fadeOutMessages(d.message, d.action); // Fade/update content based on action
+        hideModalInstructionText(d.message, d.action); // Dismiss helper content if applicable
         if (d.action === 'close') {
           $('#' + d.html_id).fadeOut('50');
         } else if (d.action === 'make_valid') {

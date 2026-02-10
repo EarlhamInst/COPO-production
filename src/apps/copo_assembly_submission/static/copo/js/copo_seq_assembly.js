@@ -73,35 +73,39 @@ $(document).ready(function () {
   };
   s3socket.onmessage = function (e) {
     d = JSON.parse(e.data);
-    element = element = $('#' + d.html_id);
-    if ($('.modal-dialog').is(':visible')) {
-      elem = $('.modal-dialog').find('#' + d.html_id);
-      if (elem) {
-        element = elem;
+    const { $el: $alertElement, inModal: isModalVisible } = getAlertElement(
+      d.html_id
+    );
+    const rawMessage = d.message;
+    const hasMessage =
+      typeof rawMessage === 'string' && rawMessage.trim().length > 0;
+    const message = hasMessage ? rawMessage.trim() : '';
+
+    // Only show an alert if a message exists
+    if (hasMessage) {
+      if (isModalVisible) {
+        // If modal is visible then, show an alert inside it
+        const allAlertClasses = Object.values(alertClassMap).join(' ');
+        $alertElement
+          .html(message)
+          .removeClass(allAlertClasses)
+          .addClass(alertClassMap[d.action] || 'alert-info')
+          .fadeIn(50);
+      } else if (d.action) {
+        // else, show an alert message within the 'Info' sidebar tab on the page
+        displayAlert(d.action, message);
       }
     }
 
-    if (!d && !$(element).is(':hidden')) {
-      $(element).fadeOut('50');
-    } else if (d && d.message && $(element).is(':hidden')) {
-      $(element).fadeIn('50');
-    }
-    //$("#" + d.html_id).html(d.message)
+    // Special handling for actions
     if (d.action === 'info') {
-      // show something on the info div
-      // check info div is visible
-      $(element).removeClass('alert-danger').addClass('alert-info');
-      $(element).html(d.message);
       if ('table_data' in d.data) {
         globalDataBuffer = d.data;
         var event = jQuery.Event('refreshtable');
         $('body').trigger(event);
       }
     } else if (d.action === 'error') {
-      // check info div is visible
-      $(element).removeClass('alert-info').addClass('alert-danger');
-      $(element).html(d.message);
-      //$("#spinner").fadeOut()
+      initialiseModalPopovers(); // Initialise popover in modal
     }
   };
   window.addEventListener('beforeunload', function (event) {

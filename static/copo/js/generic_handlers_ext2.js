@@ -3,6 +3,13 @@ var copoFormsURL = '/copo/copo_forms/';
 var copoVisualsURL = '/copo/copo_visualize/';
 var server_side_select = {}; //holds selected ids for table data - needed in server-side processing
 
+const alertClassMap = {
+  info: 'alert-info',
+  warning: 'alert-warning',
+  success: 'alert-success',
+  error: 'alert-danger',
+};
+
 // Set custom page length options for the DataTables dropdown menu
 $.extend($.fn.dataTable.defaults, {
   language: {
@@ -370,44 +377,61 @@ function button_event_alert(title, message) {
   });
 }
 
-function display_copo_alert(alertType, alertMessage, displayDuration) {
-  //function displays alert or info to the user
-  //alertType:  'success', 'warning', 'info', 'danger' - modelled after bootstrap alert classes
-  //alertMessage: the actual message to be displayed to the user
-  //displayDuration: how long should the alert be displayed for before taking it down
+function getAlertElement(htmlId) {
+  // Return an empty jQuery object if there's no html ID
+  if (!htmlId) {
+    return { $el: $(), inModal: false };
+  }
+  // Determine if it's a modal element or a page element
+  const $modalElement = $('.modal-dialog:visible').find(`#${htmlId}`);
+  if ($modalElement.length) {
+    return { $el: $modalElement, inModal: true };
+  }
+  return { $el: $(`#${htmlId}`), inModal: false };
+}
+
+function displayAlert(alertType, alertMessage) {
+  // alertType:  'success', 'warning', 'info', 
+  //             'danger' ('error' action is mapped to 'danger')
+  // alertMessage: the message to be displayed
 
   // Strangely, calling the 'Info' tab with the ID, '#page_alert_panel' doesn't work,
-  // so the class, '.copo-sidebar-info' is used instead.
-  let info_sidebar_tab = $('.copo-sidebar-info');
-  let infoPanelElement = info_sidebar_tab.find('.panel-body'); // $('#page_alert_panel');
+  // so the class, '.copo-sidebar-info', is used instead.
+  let $infoSidebarTab = $('.copo-sidebar-info');
+  let $infoPanel = $infoSidebarTab.find('.panel-body');
 
-  if (infoPanelElement.length) {
-    //reveal tab if not already shown
-    $('.copo-sidebar-tabs a[href="#copo-sidebar-info"]').tab('show');
+  if (!$infoPanel.length) return;
 
-    // Remove fade class if present
-    if (info_sidebar_tab.hasClass('fade')) info_sidebar_tab.removeClass('fade');
+  // Show the sidebar info tab
+  $('.copo-sidebar-tabs a[href="#copo-sidebar-info"]').tab('show');
 
-    // Reveal tab content if it is not already shown
-    if (!info_sidebar_tab.find('.panel-body').hasClass('in'))
-      info_sidebar_tab.find('.panel-body').addClass('in');
+  // Ensure the tab content is visible
+  if (!$infoPanel.hasClass('in')) $infoPanel.addClass('in');
 
-    const alertElement = $('.alert-templates')
-      .find('.alert-' + alertType)
-      .clone();
+  const alertClass = alertClassMap[alertType] || 'alert-info';
+  const $alertElement = $('.alert-templates')
+    .find(`.${alertClass}`)
+    .clone();
 
-    // Remove fade class if present
-    if (alertElement.hasClass('fade')) alertElement.removeClass('fade');
+  // Remove fade class if present
+  if ($alertElement.hasClass('fade')) $alertElement.removeClass('fade');
 
-    alertElement.find('.alert-message').html(alertMessage);
+  // Apply close button functionality since Bootstrap's JS isn't being used
+  const $closeBtn = $alertElement.find('.close');
+  $closeBtn.on('click', function (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    $alertElement.remove();
+  });
 
-    infoPanelElement.prepend(alertElement);
+  $alertElement.find('.alert-message').html(alertMessage);
+  $infoPanel.prepend($alertElement);
 
-    // adjust the margin-top between sidebar (info) tab content and the profiles legend
-    $('.component-legend').css('margin-top', '0');
-
-    $('.other-projects-accessions-filter-checkboxes').css('margin-top', '0');
-  }
+  // Adjust margin spacing
+  $('.component-legend, .other-projects-accessions-filter-checkboxes').css(
+    'margin-top',
+    '0'
+  );
 }
 
 function deselect_records(tableID) {
