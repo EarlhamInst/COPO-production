@@ -471,6 +471,7 @@ class ProfileType(models.Model):
 
     associated_profile_types = models.ManyToManyField(AssociatedProfileType, blank=True)
     components = models.ManyToManyField(Component, blank=True)
+    action_buttons = models.ManyToManyField(RecordActionButton, blank=True)
     type = models.CharField(max_length=20, unique=True)
     description = models.CharField(max_length=100)
     widget_colour = models.CharField(max_length=200, blank=True, null=True)
@@ -479,6 +480,12 @@ class ProfileType(models.Model):
     post_save_action = models.CharField(max_length=100, blank=True, null=True)
     pre_save_action = models.CharField(max_length=100, blank=True, null=True)
     is_deprecated = models.BooleanField(default=False, blank=True, null=True)
+    tour_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Optional tour ID for quick tours"
+    )
 
     def __str__(self):
         return self.type + " : " + self.description
@@ -493,6 +500,7 @@ class ProfileType(models.Model):
         post_save_action=None,
         pre_save_action=None,
         is_deprecated=False,
+        tour_id=None,
     ):
         self.type = type
         self.description = description
@@ -502,6 +510,8 @@ class ProfileType(models.Model):
         self.post_save_action = post_save_action
         self.pre_save_action = pre_save_action
         self.is_deprecated = is_deprecated
+        if tour_id:
+            self.tour_id = tour_id
         self.save()
         return self
 

@@ -69,7 +69,7 @@ export const globalTourMessages = {
       <i class="fa fa-info-circle"></i>&nbsp;Submit</button> located 
       at the top right of the table.<br><br>
       Click <span class="data-table-details-plus-icon no-click"></span> at the 
-      start of a table row (if visible) to view more details about the uploaded data.`,
+      start of a table row to view more details about the uploaded data.`,
     placement: 'right',
   },
   delete_record_button: {
@@ -191,15 +191,15 @@ export const globalTourMessages = {
     content:
       'To explore additional controls on this page, click this button to start a guided tour of the COPO platform.',
   },
-  release_profile: {
-    title: 'Release profile',
-    content: `Now that you have made submissions, refer to this profile on the <strong>Work Profiles</strong> page to release it.<br><br>
-    Releasing a profile makes all the submissions under the profile public and visible in public repositories like European Nucleotide Archive (ENA).<br><br>
-    Refer to <a href="https://copo-docs.readthedocs.io/en/latest/profile/releasing-profiles.html#releasing-profiles-studies" target="_blank">Releasing Profiles (Studies) documentation</a> for
-    detailed instructions on how to release a profile.<br><br>
-    Afterwards, click the <strong>View more details</strong> button attached to the profile to view its release status.<br><br>
-    <p class="shepherd-note">A profile is also known as a study or project. There is a brief processing/synchronisation delay between the 
-    release action and the visibility of the data in public repositories.</p>`,
+  publish_profile: {
+    title: 'Publish profile',
+    content: `Now that you have made submissions, refer to this profile on the <strong>Work Profiles</strong> page to publish it.<br><br>
+    Publishing a profile makes all the submissions under the profile public and visible in public repositories like European Nucleotide Archive (ENA).<br><br>
+    Refer to the <a href="https://copo-docs.readthedocs.io/en/latest/profile/releasing-profiles.html" target="_blank">Making a Profile (Study) Public</a>
+    documentation for step-by-step instructions on publishing a profile.<br><br>
+    Afterwards, click the <strong>View more details</strong> button attached to the profile to view its published status.<br><br>
+    <p class="shepherd-note">A profile is also known as a study or project. There is a brief processing or synchronisation delay between the 
+    publish action and the visibility of the data in public repositories.</p>`,
   },
   select_all_button: {
     title: 'Select all',
@@ -237,6 +237,14 @@ export const globalTourMessages = {
     all selected records.<br><br>
     <p class="shepherd-note"> A public repository is a database that stores and shares 
     research data with the global scientific community.</p>`,
+  },
+  sidebar_alert_message: {
+    title: 'Alert messages',
+    content: `This section under the <strong>Info</strong> tab highlights important information 
+    about your data uploads and submissions.<br><br>
+    <p class="shepherd-note">Use it together with the <b>Data status & progress</b> legend
+    below to track submission progress and confirm successful uploads.</p>`,
+    placement: 'left',
   },
   view_images_record_button: {
     title: 'View images',

@@ -232,6 +232,14 @@ function startComponentTour(componentName, processName = 'overview') {
   });
   activeTour = tour;
 
+  // Clear activeTour when the tour ends
+  const clearActiveTour = () => {
+    activeTour = null;
+  };
+
+  tour.on('complete', clearActiveTour);
+  tour.on('cancel', clearActiveTour);
+
   // Get step IDs for the component and process
   const processSteps = tourStages?.[processName] || tourOrder;
 
@@ -252,7 +260,6 @@ function startComponentTour(componentName, processName = 'overview') {
   // Build tour steps
   processSteps.forEach((id, index) => {
     const message = mergedMessages[id];
-    // const element = document.querySelector(`[data-tour-id~="${id}"]`);
     const $element = $(`[data-tour-id~="${id}"]:visible`);
     const element = $element.get(0);
     if (!message || !element) {
@@ -371,7 +378,6 @@ async function resetAllTours() {
 // window.resetTours = resetAllTours;
 // resetTours();
 
-// Begin tour only if needed
 async function runTour(componentName, stage) {
   const cacheKey = `${componentName}:${stage}`;
   if (localTourCache.has(cacheKey)) return;
@@ -432,7 +438,7 @@ function getStage({ count, isTable }) {
 }
 
 function hasSelectedRows(tableId, btnType) {
-  // Determine whether the required number 
+  // Determine whether the required number
   // of rows are selected in the data table
   const table = $(`#${tableId}`).DataTable();
   const selectedCount = table.rows({ selected: true }).count();
@@ -450,45 +456,42 @@ function hasSelectedRows(tableId, btnType) {
   }
 }
 
-function handlePostSubmissionTour(componentName) {
-  // Handle 'submit' button clicks to trigger subsequent tour stages
-  const submitButtons =
-    $(`[data-tour-id*="submit_record_button"]:visible`).toArray() ||
-    $(`[data-action*="submit_${componentName}"]:visible`).toArray();
+async function postSubmissionHandler(event) {
+  const button = event.currentTarget;
+  const tableId = button.dataset.table;
+  const btnType = button.dataset.btntype;
+  const componentName = $('#nav_component_name').val();
+  if (!hasSelectedRows(tableId, btnType)) return; // Only proceed if valid row selection is met
 
-  const publishButtons =
-    $(`[data-tour-id*="publish_record_button"]:visible`).toArray() ||
-    $(`[data-action*="publish_${componentName}"]:visible`).toArray();
+  // Submit stage → publish stage
+  const publishProcessStep = tourStages?.['publish'];
+  if (publishProcessStep && !localTourCache.has(`${componentName}:publish`)) {
+    // Run tour only after the current tour has finished
+    const currentTour = activeTour;
+
+    if (currentTour) {
+      currentTour.once('complete', async () => {
+        await runTour(componentName, 'publish');
+      });
+
+      currentTour.once('cancel', async () => {
+        await runTour(componentName, 'publish');
+      });
+    } else {
+      await runTour(componentName, 'publish');
+    }
+  }
+}
+
+function handlePostSubmissionTour() {
+  // Handle 'submit' button clicks to trigger subsequent tour stages
+  const submitButtons = $(
+    `[data-tour-id*="submit_record_button"]:visible`
+  ).toArray();
 
   submitButtons.forEach((button) => {
-    button.addEventListener('click', async () => {
-      const tableId = button.dataset.table;
-      const btnType = button.dataset.btntype;
-      if (!hasSelectedRows(tableId, btnType)) return; // Only proceed if valid row selection is met
-
-      const isSubmit = button.dataset.action?.includes('submit_');
-      const isPublish = publishButtons.length > 0;
-
-      // Submit stage → release profile stage
-      const releaseProcessStep = tourStages?.['release'];
-      if (
-        releaseProcessStep &&
-        isSubmit &&
-        !localTourCache.has(`${componentName}:release`)
-      ) {
-        await runTour(componentName, 'release');
-      }
-
-      // Submit stage → publish  study stage
-      const publishProcessStep = tourStages?.['publish'];
-      if (
-        publishProcessStep &&
-        isPublish &&
-        !localTourCache.has(`${componentName}:publish`)
-      ) {
-        await runTour(componentName, 'publish');
-      }
-    });
+    button.removeEventListener('click', postSubmissionHandler);
+    button.addEventListener('click', postSubmissionHandler);
   });
 }
 
@@ -518,7 +521,7 @@ async function watchComponentForTour(componentName) {
 
           // Wait for either Bootstrap or Semantic UI modal to close before resuming
           const resumeTour = () => {
-            console.log('Start up modal closed — resuming tour.');
+            console.log('Start up modal closed...resuming tour.');
             resolve();
           };
 
@@ -563,7 +566,7 @@ async function watchComponentForTour(componentName) {
 
       // Wait for either Bootstrap or Semantic UI modal to close before resuming
       const resumeTour = async () => {
-        console.log('Modal closed — resuming tour.');
+        console.log('Modal closed...resuming tour.');
         await runTour(componentName, stage);
       };
 
@@ -616,7 +619,7 @@ async function watchComponentForTour(componentName) {
     $el.data('observerInstance', observer); // Store observer instance
   }
 
-  // Handle steps such as releasing the profile and
-  // 'publish' records after the 'submit' button is clicked
-  handlePostSubmissionTour(componentName);
+  // Handle steps such as publishing profiles and
+  // records after the 'submit' button is clicked
+  handlePostSubmissionTour();
 }

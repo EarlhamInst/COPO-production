@@ -141,7 +141,7 @@ $(document).on('document_ready', function () {
     return false;
   }
 
-  initialisePopover();
+  initialiseProfileActionsPopover();
 
   if ($('#sortProfilesBtn').length) {
     // Set first option of sort menu
@@ -188,7 +188,7 @@ $(document).on('document_ready', function () {
       id = id.split('_')[1];
 
       if (actionType === 'release_study') {
-        result = confirm('Are you sure to release the study?');
+        result = confirm('Are you sure you would like to publish the study?');
         if (result) {
           url = '/copo/copo_profile/' + id + '/release_study';
           $.ajax({
@@ -248,20 +248,15 @@ $(document).on('document_ready', function () {
   });
 
   $(document).on('click', '#editProfileBtn', function (e) {
-    let profileId = $(e.currentTarget).closest('.ellipsis-div').attr('id');
-    let profileType = $(e.currentTarget)
+    const profileId = $(e.currentTarget).closest('.ellipsis-div').attr('id');
+    const profileType = $(e.currentTarget)
       .closest('.copo-records-panel')
-      .attr('profile-type');
-    if (profileType == undefined) {
-      profileType = $(e.currentTarget)
-        .closest('.copo-records-panel')
-        .attr('shared-profile-type');
-    }
+      .data('profile-type');
     editProfileRecord(profileId, profileType);
   });
 
   $(document).on('click', '#deleteProfileBtn', function (e) {
-    let profileId = $(e.currentTarget).closest('.ellipsis-div').attr('id');
+    const profileId = $(e.currentTarget).closest('.ellipsis-div').attr('id');
     deleteProfileRecord(profileId);
   });
 
@@ -334,54 +329,118 @@ $(document).on('document_ready', function () {
 
 //****************************** Functions block ******************************//
 
-function initialisePopover() {
-  // Profile records exist
-  // Initialise the popover 'View profile options' for each profile record
-  let popover = $('#ellipsisId[data-toggle="popover"]')
-    .popover({
-      sanitize: false,
-    })
-    .click(function (e) {
-      $(this).popover('toggle');
-      $('#ellipsisId[data-toggle="popover"]').not(this).popover('hide');
-      e.stopPropagation();
-    })
-    .on('show.bs.popover', function (e) {
-      $('.row-ellipsis').attr('title', ''); // Hide 'View profile options' title from appearing in the popover on hover
+function initialiseProfileActionsPopover() {
+  $('.grid').each(function () {
+    const $grid = $(this);
+    const $panel = $grid.find('.copo-records-panel');
+    const profileType = $panel.data('profile-type')?.toLowerCase().trim();
+    const isShared = $panel.data('is-shared-profile');
 
-      // Set content of the popover
-      const $content = $('<div></div>');
-      const $editButton = $(
-        '<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"><i class="fa fa-pencil"></i>&nbsp;Edit</button>'
-      );
-      const $deleteButton = $(
-        '<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"><i class="fa fa-trash-can"></i>&nbsp;Delete</button>'
-      );
+    const actionButtons =
+      profileType && profile_type_def
+        ? profile_type_def[profileType]?.actionButtons || []
+        : [];
+    const hasActions = !isShared || actionButtons.length > 0;
 
-      $deleteButton.css('margin-left', '15px');
-      $content.append($editButton);
-      $content.append($deleteButton);
+    // Remove the ellipsis div if no actions exist
+    if (!hasActions) {
+      $grid.find('.row-ellipsis').remove();
+      return;
+    }
 
-      component_def[componentName]['recordActions'].forEach((item) => {
-        var action = record_action_button_def[item];
-        const $button = $(
-          '<button id="' +
-            item +
-            '" class="btn btn-sm btn-primary" title="' +
-            action['title'] +
-            '"><i class="' +
-            action['icon_class'] +
-            ' "></i>&nbsp;' +
-            action['label'] +
-            '</button>'
-        );
-        $button.css('margin-top', '10px');
-        $content.append($button);
-        $content.append($button);
+    // Otherwise, initialise the popover, 'View profile options', for each profile record
+    const $ellipsis = $grid.find('.profile-ellipsis[data-toggle="popover"]');
+
+    $ellipsis
+      .popover({ sanitize: false, container: 'body' })
+      .click(function (e) {
+        $(this).popover('toggle');
+        $('.profile-ellipsis[data-toggle="popover"]').not(this).popover('hide');
+        e.stopPropagation();
+      })
+      .on('inserted.bs.popover', function () {
+        const $trigger = $(this);
+        const $popover = $trigger.data('bs.popover').tip();
+
+        // Move popover to body
+        $('body').append($popover);
+
+        // Position popover
+        const offset = $trigger.offset();
+        $popover.css({
+          top: offset.top,
+          left: offset.left + $trigger.outerWidth() + 10,
+          position: 'absolute',
+          zIndex: 1050,
+        });
+      })
+      .on('show.bs.popover', function () {
+        // Hide 'View profile options' title from the popover on hover
+        $('.row-ellipsis').attr('title', '');
+
+        const $content = $('<div></div>');
+
+        // Add edit and delete buttons to non-shared profiles only
+        // i.e. shared profiles cannot be edited or deleted
+        if (!isShared) {
+          const $editButton = $(
+            `<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record">
+              <i class="fa fa-pencil"></i>&nbsp;Edit</button>`
+          );
+
+          const $deleteButton = $(
+            `<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record">
+              <i class="fa fa-trash-can"></i>&nbsp;Delete</button>`
+          );
+
+          $content.append($editButton, $deleteButton);
+        }
+
+        // Add action buttons for both shared and non-shared profiles
+        actionButtons.forEach((item) => {
+          const action = record_action_button_def[item];
+          if (!action) {
+            console.warn(`Unknown ${componentName} action button: ${item}`);
+            return;
+          }
+          const $button = $(
+            `<button id="${item}" class="btn btn-sm btn-primary" title="${action.title}">
+            <i class="${action.icon_class}"></i>&nbsp;${action.label}
+          </button>`
+          );
+          $content.append($button);
+        });
+
+        // Apply content to the popover
+        $(this).attr('data-content', $content.html());
+      });
+  });
+}
+
+function enableExpandableMenuOnHover() {
+  $(document)
+    .off('mouseenter.menuExpand mouseleave.menuExpand')
+    .on('mouseenter.menuExpand', '.menu.comp.many-items', function () {
+      const $menu = $(this);
+      
+      // Adjust grid to show expanded menu
+      $menu.closest('.grid').css({
+        overflow: 'visible',
+        zIndex: 9999,
       });
 
-      // Apply the content to the popover
-      popover.attr('data-content', $content.html());
+      $menu.addClass('menu-expanded');
+    })
+    .on('mouseleave.menuExpand', '.menu.comp.many-items', function () {
+      const $menu = $(this);
+
+      $menu.removeClass('menu-expanded');
+
+      // Restore grid
+      $menu.closest('.grid').css({
+        overflow: '',
+        zIndex: '',
+      });
     });
 }
 
@@ -488,11 +547,9 @@ function loadProfileRecords(obj) {
 function appendRecordComponents(grids) {
   // Loop through each grid
   grids.each(function () {
-    let recordId = $(this).closest('.grid').find('.row-title span').attr('id');
-    let copoRecordsPanel = $(this).closest('.grid').find('.copo-records-panel');
-    let profileType =
-      copoRecordsPanel.attr('profile-type') ||
-      copoRecordsPanel.attr('shared-profile-type');
+    const $grid = $(this).closest('.grid');
+    let recordId = $grid.find('.row-title span').attr('id');
+    let profileType = $grid.find('.copo-records-panel').data('profile-type');
     const components = get_profile_components(profileType);
 
     // Ensure the profile type is valid and has components
@@ -506,7 +563,7 @@ function appendRecordComponents(grids) {
     }
 
     // Add component buttons to the menu for each profile record
-    let $menuParentElement = $(this).closest('.grid').find('#expandingMenu');
+    let $menuParentElement = $grid.find('#expandingMenu');
     let $menuComp = $menuParentElement.find('.comp');
     let $componentButtons = createComponentButtons(recordId, profileType);
     let $newIndicator = $(
@@ -634,7 +691,7 @@ function deleteProfileRecord(profileRecordId) {
               }
             })
             .fail(function (data_response) {
-              email = $('#copo_email').val();
+              const email = $('#copo_email').val();
               const message =
                 'Profile could not be removed. Only profiles that have no datafiles or' +
                 ' samples associated can be deleted.';
@@ -679,12 +736,11 @@ function removeInvalidAndDuplicateProfiles() {
   $container.find('.grid').each(function () {
     const $grid = $(this);
     const recordId = $grid.find('.row-title span').attr('id');
-
-    let profileType =
-      $grid.find('.copo-records-panel').attr('profile-type') ||
-      $grid.find('.copo-records-panel').attr('shared-profile-type');
-    profileType = profileType?.toLowerCase().trim();
-
+    const profileType = $grid
+      .find('.copo-records-panel')
+      .data('profile-type')
+      ?.toLowerCase()
+      .trim();
     const components = get_profile_components(profileType);
 
     if (!recordId || seen.has(recordId) || !components?.length) {
@@ -888,17 +944,12 @@ function createComponentButtons(recordId, profileType) {
 
 function filterActionMenu() {
   $('.copo-records-panel').each(function (idx, el) {
-    let t = $(el).attr('profile-type');
-    let sharedType = $(el).attr('shared-profile-type');
+    let t = $(el).data('profile-type');
     let s = $(el).attr('study-status');
     studyStatus = '';
 
     if (s != undefined) {
       studyStatus = s.toUpperCase();
-    }
-
-    if (sharedType && !t) {
-      t = sharedType;
     }
 
     $(el).find('a[profile_component]').hide();
@@ -920,80 +971,55 @@ function setProfileGridHeading(grids) {
     $(this)
       .find('.copo-records-panel')
       .each(function (idx, el) {
-        const profileType = $(el).attr('profile-type');
-        const sharedProfileType = $(el).attr('shared-profile-type');
-        let isShared = !profileType && sharedProfileType;
+        const $panel = $(el);
+        const isShared = $panel.data('is-shared-profile');
 
-        const typeForComponents = profileType || sharedProfileType;
-        const components = get_profile_components(typeForComponents);
+        const profileType = $panel.data('profile-type');
+        if (!profileType) return; // No profile type so skip
+
+        const components = get_profile_components(profileType);
         if (!components?.length) return; // No components so skip
 
-        let recordId = $(this).find('.row-title span').attr('id');
+        let recordId = $panel.find('.row-title span').attr('id');
         let existingRecord = existingRecords
           .find(`#${recordId}`)
           .closest('.grid');
 
         let colour;
         let acronym;
+        let legendData;
 
         if (isShared) {
           acronym = 'Shared With Me';
           colour = '#f26202';
 
-          // Remove 'profile-type' attribute if it exists
-          if ($(el).attr('profile-type') === '') {
-            $(el).removeAttr('profile-type');
-          }
+          legendData = {
+            profileType: acronym,
+            profileTypeAcronym: 'SHARED',
+            profileTypeColour: colour,
+          };
         } else {
           acronym = profileType.toUpperCase();
           colour = profile_type_def[profileType.toLowerCase()]['widget_colour'];
 
-          if (sharedProfileType === '') {
-            // Remove 'shared-profile-type' attribute
-            $(el).removeAttr('shared-profile-type');
-          }
+          legendData = {
+            profileType:
+              getTitleByValue(profileType) || toTitleCase(profileType),
+            profileTypeAcronym: acronym.toUpperCase(),
+            profileTypeColour: colour,
+          };
         }
 
-        if (existingRecord.length) {
-          // If the record already exists, update the heading and colour
-          existingRecord
-            .find('.panel.panel-profile .panel-heading')
-            .css('background-color', colour);
+        // If the record exists then, update the heading and colour else, set it
+        const $targetElement = existingRecord.length ? existingRecord : $(el);
+        const $heading = $targetElement.find(
+          '.panel.panel-profile .panel-heading'
+        );
+        const $titleSpan = $heading.find('.row-title span');
 
-          // Remove existing acronym if it exists
-          existingRecord
-            .find('.panel.panel-profile .panel-heading')
-            .find('.row-title span small')
-            .remove();
-
-          // Add new acronym
-          existingRecord
-            .find('.panel.panel-profile .panel-heading')
-            .find('.row-title span')
-            .append('<small> (' + acronym.toUpperCase() + ') </small>');
-        } else {
-          // If the record is new, set the heading and colour
-          if (sharedProfileType === '') $(el).removeAttr('shared-profile-type'); // Remove 'shared-profile-type' attribute if empty
-
-          $(el)
-            .find('.panel.panel-profile .panel-heading')
-            .find('.row-title span')
-            .append('<small> (' + acronym.toUpperCase() + ') </small>');
-          $(el)
-            .find('.panel.panel-profile .panel-heading')
-            .css('background-color', colour);
-        }
-
-        // Add profile type legend item if it is not already included or displayed
-        let legendData = {
-          profileType: acronym.includes('Shared')
-            ? acronym
-            : getTitleByValue(profileType) || toTitleCase(profileType),
-          profileTypeAcronym: acronym.includes('Shared')
-            ? 'SHARED'
-            : acronym.toUpperCase(),
-          profileTypeColour: colour,
-        };
+        $heading.css('background-color', colour); // Set heading colour
+        $titleSpan.find('small').remove(); // Replace acronym
+        $titleSpan.append(`<small> (${acronym.toUpperCase()}) </small>`);
 
         // Convert the string to a list separated by commas
         let currentProfileLegendData = $('.component-legend-group-item')
@@ -1039,7 +1065,10 @@ function initialiseRecords(copoVisualsURL) {
   initialiseComponentDropdownMenu();
 
   // Initialise the popover 'View profile options' for each profile record
-  initialisePopover();
+  initialiseProfileActionsPopover();
+
+  // Enable hover for menus with 'many-items' class
+  enableExpandableMenuOnHover();
 }
 
 function profileInfoPopover(grids) {
@@ -1153,26 +1182,11 @@ function fetchVisibleProfileTypes() {
   let profileTypesLst = [];
 
   $('.copo-records-panel').each(function () {
-    // Get the 'profile-type' and 'shared-profile-type' attributes
-    let profileType = $(this).attr('profile-type');
-    let sharedProfileType = $(this).attr('shared-profile-type');
+    // Get non-empty profile type value
+    const profileType = $(this).data('profile-type');
 
-    // Check if profileType is not undefined or empty
-    if (
-      profileType !== undefined &&
-      profileType !== '' &&
-      !profileTypesLst.includes(profileType)
-    ) {
+    if (profileType && !profileTypesLst.includes(profileType)) {
       profileTypesLst.push(profileType);
-    }
-
-    // Check if sharedProfileType is not undefined or empty
-    if (
-      sharedProfileType !== undefined &&
-      sharedProfileType !== '' &&
-      !profileTypesLst.includes(sharedProfileType)
-    ) {
-      profileTypesLst.push(sharedProfileType);
     }
   });
 
