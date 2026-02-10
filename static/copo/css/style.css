@@ -293,8 +293,9 @@ copo-noborders-table.dataTable thead td {
 
 .copo-main .tabs-row {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   padding: 0 45px;
+  position: relative;
 }
 
 .copo-main .tabs-container {
@@ -384,16 +385,26 @@ copo-noborders-table.dataTable thead td {
 }
 
 /* Show border bottom when tabs exist */
-.copo-main .tabs-container .nav-tabs:has(li),
 .modal .nav-tabs:has(li) {
   border-bottom: 2px solid #dee2e6 !important;
+}
+
+.copo-main .tabs-row:has(.tabs-container .nav-tabs li)::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 45px;
+  /* 100% - (left spacing} + right spacing)*/
+  width: calc(100% - 90px); /* 100% - (45px + 45px) = 100% - 90px */
+  height: 2px;
+  background-color: #dee2e6;
 }
 
 /* Remove default border bottom of nav-tabs */
 .nav-tabs {
   border-bottom: 0 !important;
 }
-/*end table tab styling*/
+/* End table tab styling */
 
 /*page title*/
 .global-page-title {
