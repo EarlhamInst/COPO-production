@@ -262,10 +262,6 @@ $(document).on('document_ready', function () {
             scrollX: true,
           })
           .draw();
-
-        // Reposition info and paginate controls
-        const $tableWrapper = $(`#singlecell_parse_table_${component}_wrapper`);
-        moveDataTableControlsToRow($tableWrapper);
       });
 
       $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {

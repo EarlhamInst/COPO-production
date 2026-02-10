@@ -568,7 +568,29 @@ function do_render_server_side_table(componentMeta) {
         },
         processing: "<div class='copo-i-loader'></div>",
       },
-      dom: 'Bfr<"row"><"row info-rw" i>tlp',
+      /* 'dom' results in:
+      <div>
+        {Buttons}
+        {filter}
+        {processing}
+      </div>
+      <div class="row info-rw">
+        {information}
+      </div>
+      <div>
+        {table}
+      </div>
+      <div class="row dataTables-controls-row">
+        <div class="col-sm-4">
+          {length}
+        </div>
+        <div class="col-sm-8">
+          {pagination}
+        </div>
+      </div>
+      <div class="clear"></div>
+      */
+      dom: 'Bfr<"row"><"row info-rw" i>t<"row dataTables-controls-row"<"col-sm-4" l><"col-sm-8 text-right" p>><"clear">',
     });
 
     table
@@ -683,8 +705,90 @@ function do_render_server_side_table(componentMeta) {
     console.warn(`No data status legend found for ${componentMeta.component}`);
   }
 
-  // Reposition info and paginate controls
-  moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
+  hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
+
+  //handle event for table details
+  $('#' + tableID + ' tbody')
+    .off('click', 'td.summary-details-control')
+    .on('click', 'td.summary-details-control', function (event) {
+      event.preventDefault();
+
+      var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
+      event.tableID = tableID;
+      $('body').trigger(event);
+
+      var tr = $(this).closest('tr');
+      var row = table.row(tr);
+      tr.addClass('showing');
+
+      if (row.child.isShown()) {
+        // This row is already open - close it
+        row.child('');
+        row.child.hide();
+        tr.removeClass('showing');
+        tr.removeClass('shown');
+      } else {
+        $.ajax({
+          url: copoVisualsURL,
+          type: 'POST',
+          headers: {
+            'X-CSRFToken': csrftoken,
+          },
+          data: {
+            task: 'attributes_display',
+            component: componentMeta.component,
+            target_id: row.data().record_id,
+          },
+          success: function (data) {
+            if (data.component_attributes.columns) {
+              // expand row
+
+              var contentHtml = $('<table/>', {
+                cellspacing: '0',
+                border: '0',
+                class:
+                  'ui compact definition selectable celled table summary-details-table',
+              });
+
+              // Create <tbody> inside contentHtml
+              var tbody = $('<tbody/>').appendTo(contentHtml);
+
+              for (
+                var i = 0;
+                i < data.component_attributes.columns.length;
+                ++i
+              ) {
+                var colVal = data.component_attributes.columns[i];
+
+                var colTR = $('<tr/>');
+                // contentHtml.append(colTR);
+                tbody.append(colTR); // Append tr to tbody
+
+                colTR
+                  .append($('<td/>').append(colVal.title))
+                  .append(
+                    $('<td/>').append(
+                      "<div style='width:300px; word-wrap: break-word;'>" +
+                        (data.component_attributes.data_set[colVal.data] ||
+                          '') +
+                        '</div>'
+                    )
+                  );
+              }
+
+              // row.child($('<div></div>').append(contentHtml).html()).show();
+              row.child($('<div></div>').append(contentHtml)).show();
+              tr.removeClass('showing');
+              tr.addClass('shown');
+            }
+          },
+          error: function () {
+            alert("Couldn't retrieve " + component + ' attributes!');
+            return '';
+          },
+        });
+      }
+    });
 
   //handle event for annotation of of datafile
   $('#' + tableID + ' tbody')
@@ -951,8 +1055,29 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
         ); //individual components can trap and handle this event as they so wish
         $('body').trigger(event);
       },
-
-      dom: 'Bfr<"row"><"row info-rw" i>tlp',
+      /* 'dom' results in:
+      <div>
+        {Buttons}
+        {filter}
+        {processing}
+      </div>
+      <div class="row info-rw">
+        {information}
+      </div>
+      <div>
+        {table}
+      </div>
+      <div class="row dataTables-controls-row">
+        <div class="col-sm-4">
+          {length}
+        </div>
+        <div class="col-sm-8">
+          {pagination}
+        </div>
+      </div>
+      <div class="clear"></div>
+      */
+      dom: 'Bfr<"row"><"row info-rw" i>t<"row dataTables-controls-row"<"col-sm-4" l><"col-sm-8 text-right" p>><"clear">',
     });
 
     table
@@ -1000,8 +1125,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
     console.warn(`No data status legend found for ${componentMeta.component}`);
   }
 
-  // Reposition info and paginate controls
-  moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
+  hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
 
   // Handle event for table details
   $('#' + tableID + ' tbody')

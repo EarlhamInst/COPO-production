@@ -184,11 +184,6 @@ div[class*=" col-"] {
   flex-wrap: nowrap !important;
 }
 
-.dataTables_info {
-  padding-bottom: 15px !important;
-  padding-top: 15px !important;
-}
-
 .dataTables_scrollBody {
   max-height: 350px !important;
   overflow-y: auto;
@@ -218,20 +213,23 @@ div[class*=" col-"] {
 }
 
 .copo-main div.dataTables_length {
-  padding-top: 6px;
+  padding-top: 5px;
 }
 
 .modal .dataTables_length {
   padding-top: 0 !important;
 }
+.modal .dataTables_info {
+  padding-top: 15px !important;
+}
+
+.modal .dataTables_paginate {
+  padding-top: 8px !important;
+}
 
 div.dataTables_paginate {
   display: flex;
   justify-content: flex-end;
-}
-
-.modal .dataTables-controls-row .dataTables_info {
-  padding-top: 8px !important;
 }
 
 .modal div .dataTables_wrapper .dataTables_paginate,

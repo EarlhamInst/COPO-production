@@ -168,10 +168,6 @@ $(document).ready(function () {
         scrollX: true,
       });
       
-      // Reposition info and paginate controls
-      const $tableWrapper = $(`#sample_parse_table_wrapper`);
-      moveDataTableControlsToRow($tableWrapper);
-
       $('#table_div').fadeIn(1000);
       $('#' + d.html_id)
         .DataTable()
