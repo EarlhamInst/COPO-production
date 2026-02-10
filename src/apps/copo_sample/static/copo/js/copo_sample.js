@@ -1152,14 +1152,14 @@ $(document).on('document_ready', function () {
               .find('input')
               .removeClass('input-sm')
               .attr('placeholder', 'Search sample source');
-
-            //handle event for table details
+            
+            // Handle event for table details
             $('#' + tableID + ' tbody')
               .off('click', 'td.summary-details-control')
               .on('click', 'td.summary-details-control', function (event) {
                 event.preventDefault();
 
-                var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
+                var event = jQuery.Event('posttablerefresh'); // Individual components can trap and handle this event as they so wish
                 $('body').trigger(event);
 
                 var tr = $(this).closest('tr');

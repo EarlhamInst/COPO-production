@@ -14,7 +14,7 @@ $(document).ready(function () {
       {
         id: 'submit_assembly_button',
         label: 'Submit assembly',
-        cssClass: 'btn-primary',
+        cssClass: 'btn-primary btn-submit',
         title: 'Submit assembly',
         action: function () {
           doPost();
@@ -183,7 +183,7 @@ $(document).ready(function () {
         $('.modal-dialog').find('#loading_span').fadeOut();
         BootstrapDialog.show({
           title: 'Error',
-          message: 'Error ' + data.responseText,
+          message: data.responseText,
           type: BootstrapDialog.TYPE_DANGER,
         });
       })
@@ -301,7 +301,8 @@ $(document).ready(function () {
                   .fail(function (data) {
                     BootstrapDialog.show({
                       title: 'Error',
-                      message: 'Error ' + data.responseText,
+                      message: data.responseText,
+                      type: BootstrapDialog.TYPE_DANGER,
                     });
                   })
                   .done(function (data) {

@@ -1,4 +1,5 @@
 import bson.json_util as jsonb
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from common.dal.mongo_util import cursor_to_list
@@ -53,10 +54,11 @@ def api_profiles(request):
                 {'title': el['title'], "description":el['description'],'type': el['type'],  'id': str(el['_id'])}
             )
         return JsonResponse(status=200, data=out, safe=False)
-    
+
 
 @api_view(['GET', 'PUT'])
-@web_page_access_checker         
+@login_required
+@web_page_access_checker
 def api_profile(request, profile_id):
     if request.method == 'PUT':
         request_data = request.data

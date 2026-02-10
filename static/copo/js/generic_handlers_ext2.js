@@ -592,7 +592,29 @@ function do_render_server_side_table(componentMeta) {
         },
         processing: "<div class='copo-i-loader'></div>",
       },
-      dom: 'Bfr<"row"><"row info-rw" i>tlp',
+      /* 'dom' results in:
+      <div>
+        {Buttons}
+        {filter}
+        {processing}
+      </div>
+      <div class="row info-rw">
+        {information}
+      </div>
+      <div>
+        {table}
+      </div>
+      <div class="row dataTables-controls-row">
+        <div class="col-sm-4">
+          {length}
+        </div>
+        <div class="col-sm-8">
+          {pagination}
+        </div>
+      </div>
+      <div class="clear"></div>
+      */
+      dom: 'Bfr<"row"><"row info-rw" i>t<"row dataTables-controls-row"<"col-sm-4" l><"col-sm-8 text-right" p>><"clear">',
     });
 
     table
@@ -606,11 +628,12 @@ function do_render_server_side_table(componentMeta) {
     do_table_buttons_events_server_side(component);
 
     table.on('click', 'tr >td', function () {
+      // Do not select columns with any of these classes
       var classList = [
         'annotate-datafile',
         'summary-details-control',
         'detail-hover-message',
-      ]; //don't select on columns with these classes
+      ];
       var foundClass = false;
 
       var tdList = this.className.split(' ');
@@ -706,8 +729,6 @@ function do_render_server_side_table(componentMeta) {
     console.warn(`No data status legend found for ${componentMeta.component}`);
   }
 
-  // Reposition info and paginate controls
-  moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
   hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
 
   //handle event for table details
@@ -1010,7 +1031,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
         select: {
           rows: {
             _: '%d records selected',
-            0: "<span class='extra-table-info'>Click <span class='fa-stack'><i class='fa fa-circle fa-stack-2x'></i><i class='fa fa-plus fa-stack-1x fa-inverse'></i></span> beside a record to view extra details</span>",
+            0: 'Click a row to select it',
             1: '%d record selected',
           },
         },
@@ -1058,8 +1079,29 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
         ); //individual components can trap and handle this event as they so wish
         $('body').trigger(event);
       },
-
-      dom: 'Bfr<"row"><"row info-rw" i>tlp',
+      /* 'dom' results in:
+      <div>
+        {Buttons}
+        {filter}
+        {processing}
+      </div>
+      <div class="row info-rw">
+        {information}
+      </div>
+      <div>
+        {table}
+      </div>
+      <div class="row dataTables-controls-row">
+        <div class="col-sm-4">
+          {length}
+        </div>
+        <div class="col-sm-8">
+          {pagination}
+        </div>
+      </div>
+      <div class="clear"></div>
+      */
+      dom: 'Bfr<"row"><"row info-rw" i>t<"row dataTables-controls-row"<"col-sm-4" l><"col-sm-8 text-right" p>><"clear">',
     });
 
     table
@@ -1107,17 +1149,15 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
     console.warn(`No data status legend found for ${componentMeta.component}`);
   }
 
-  // Reposition info and paginate controls
-  moveDataTableControlsToRow(table_wrapper, 'dataTables_length');
   hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
 
-  //handle event for table details
+  // Handle event for table details
   $('#' + tableID + ' tbody')
     .off('click', 'td.summary-details-control')
     .on('click', 'td.summary-details-control', function (event) {
       event.preventDefault();
 
-      var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
+      var event = jQuery.Event('posttablerefresh'); // Individual components can trap and handle this event as they so wish
       event.tableID = tableID;
       $('body').trigger(event);
 

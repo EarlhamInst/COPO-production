@@ -5,8 +5,9 @@ from src.apps.copo_core.views import web_page_access_checker
 from src.apps.copo_single_cell_submission.utils.da import Singlecell
 from common.utils.helpers import get_not_deleted_flag
 
-@web_page_access_checker
+
 @login_required
+@web_page_access_checker
 def copo_accessions_schema(request, profile_id, ui_component):
     request.session['profile_id'] = profile_id
     profile = Profile().get_record(profile_id)

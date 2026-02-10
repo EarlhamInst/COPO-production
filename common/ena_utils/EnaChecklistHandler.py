@@ -377,6 +377,7 @@ class EnaCheckListSpreadsheet:
     def get_filenames_from_manifest(self):
         return list(self.data["File name"])
 
+    """ revoked the changes 
     def check_manifest_compatibility(self):
         '''Checks whether the uploaded manifest's column set matches 
            the expected checklist's columns and also detects if any of 
@@ -404,6 +405,7 @@ class EnaCheckListSpreadsheet:
                 'Please ensure that you are uploading the correct manifest for the selected checklist '
                 f'(expected {total_expected} columns, found {len(uploaded_columns)} in sheet {sheet_name}).'
             )
+    """
 
     def loadManifest(self, m_format):
 
@@ -426,9 +428,6 @@ class EnaCheckListSpreadsheet:
                     if not is_found:
                         raise Exception(f"Please make sure to upload the correct manifest for <strong>{self.checklist_id}</strong> checklist.") 
                                                
-                #elif m_format == "csv":
-                #    self.data = pd.read_csv(self.file, keep_default_na=False,
-                #                                na_values=lookup.NA_VALS)
                 else:
                     raise Exception("Unknown file format")
                 if self.data.empty:
@@ -444,7 +443,6 @@ class EnaCheckListSpreadsheet:
                 new_column_name = { value["label"].upper() : key for key, value in self.checklist["fields"].items() }
                 self.new_data.rename(columns=new_column_name, inplace=True)    
 
-                self.check_manifest_compatibility()
             except Exception as e:
                 # if error notify via web socket
                 l.exception(e)
@@ -735,7 +733,7 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
                 cell_format.set_num_format('@')
             writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
 
-            if type == "TEXT_CHOICE_FIELD" and "choice" in field:
+            if "choice" in field:
                 choice = field["choice"]
                 column_letter = get_column_letter(column_index + 1)
                 cell_start_end = '%s2:%s1048576' % (column_letter, column_letter)
@@ -752,11 +750,12 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
                         writer.sheets["data_values"].set_column(data_validation_column_index, data_validation_column_index, column_length)
                         source = "=%s!$%s$2:$%s$%s" % ("data_values", column_letter, column_letter, str(len(choice) + 1))
                         data_validation_column_index = data_validation_column_index + 1
+                    
                     writer.sheets[sheet_name].data_validation(cell_start_end,
                                                             {'validate': 'list',
-                                                            'source': source})
-
-
+                                                            'source': source,
+                                                            'show_error': 1 if type == "TEXT_CHOICE_FIELD" else 0,
+                                                            })
         sheet_name = 'field_descriptions'           
         df.to_excel(writer, sheet_name=sheet_name)
 

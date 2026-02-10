@@ -996,146 +996,6 @@ function refresh_tool_tips() {
   setup_datepicker();
 } //end of func
 
-function initialiseModalPopovers() {
-  // Helper function to update popover position and arrow
-  function updatePopoverPosition($el, $popover) {
-    const $modal = $el.closest('.modal');
-    const modalOffset = $modal.offset();
-    const trigOff = $el.offset();
-    const trigW = $el.outerWidth();
-    const trigH = $el.outerHeight();
-    const popW = $popover.outerWidth();
-    const popH = $popover.outerHeight();
-    const gap = 8;
-
-    // Prefer right placement
-    let left = trigOff.left + trigW + gap;
-    let top = trigOff.top + trigH / 2 - popH / 2;
-
-    // Flip left if off viewport
-    const viewportW = $(window).width();
-    let placementClass = 'right';
-    if (left + popW + 10 > viewportW) {
-      left = trigOff.left - popW - gap;
-      placementClass = 'left';
-    }
-
-    // Clamp top
-    const maxTop = $(window).height() - popH - 10;
-    top = Math.max(10, Math.min(top, maxTop));
-
-    // Apply CSS
-    $popover.css({
-      position: 'absolute',
-      top: Math.round(top) + 'px',
-      left: Math.round(left) + 'px',
-    });
-
-    // Apply placement class for arrow
-    $popover.removeClass('left right').addClass(placementClass);
-
-    // Arrow vertically centered
-    const $arrow = $popover.find('.webui-arrow');
-    if ($arrow.length) {
-      const arrowTop = trigOff.top + trigH / 2 - $popover.offset().top;
-      $arrow.css({ top: arrowTop + 'px' });
-    }
-  }
-
-  // Destroy existing popovers and remove click handlers
-  $('.valid-enum-trigger')
-    .each(function () {
-      const $el = $(this);
-      if ($el.data('webui.popover')) {
-        try {
-          $el.webuiPopover('destroy');
-        } catch (e) {}
-      }
-    })
-    .off('click');
-
-  // Initialize new popovers
-  $('.valid-enum-trigger').each(function () {
-    const $el = $(this);
-    const content = $el.attr('data-content') || '';
-    const title = $el.attr('data-title') || 'Valid values';
-
-    const contentHtml = `<div class="webpop-scroll" style="max-height:300px; overflow-y:auto; overflow-x:hidden;">${content}</div>`;
-
-    $el.webuiPopover({
-      title: title,
-      content: contentHtml,
-      closeable: true,
-      cache: false,
-      width: 210,
-      trigger: 'click',
-      arrow: true,
-      animation: 'fade',
-      placement: 'auto-right',
-      dismissible: true,
-      container: $el.closest('.modal'),
-      onShow: function ($popover) {
-        $popover.addClass('valid-enum-container');
-
-        // Close button
-        $popover
-          .find('.close')
-          .off('click')
-          .on('click', function (e) {
-            e.preventDefault();
-            $el.webuiPopover('hide');
-          });
-
-        // Initial position
-        updatePopoverPosition($el, $popover);
-
-        // Store scroll handler
-        $popover.data('scrollHandler', function () {
-          updatePopoverPosition($el, $popover);
-        });
-
-        // Track scroll/resize events for sticky behavior
-        const scrollParents = $el.parents().filter(function () {
-          return (
-            $(this).css('overflow') === 'auto' ||
-            $(this).css('overflow') === 'scroll'
-          );
-        });
-        scrollParents
-          .add(window)
-          .on('scroll.popover resize.popover', $popover.data('scrollHandler'));
-      },
-      onHide: function ($popover) {
-        // Remove all scroll/resize handlers
-        const handler = $popover.data('scrollHandler');
-        if (handler) {
-          const scrollParents = $el.parents().filter(function () {
-            return (
-              $(this).css('overflow') === 'auto' ||
-              $(this).css('overflow') === 'scroll'
-            );
-          });
-          scrollParents
-            .add(window)
-            .off('scroll.popover resize.popover', handler);
-        }
-      },
-    });
-  });
-
-  // Window scroll: update all visible popovers
-  let scrollTimeout;
-  $(window).on('scroll', function () {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(function () {
-      $('.webui-popover.in').each(function () {
-        const handler = $(this).data('scrollHandler');
-        if (handler) handler();
-      });
-    }, 10);
-  });
-}
-
 function setup_datepicker() {
   var format_string;
   // dtol date format and ENA date formats are sadly different, so check if we are dealing with a dtol sample
@@ -3238,10 +3098,11 @@ function generate_component_control(componentName, profile_type) {
 
   //add profile title
   if ($('#profile_title').length) {
+    const tourId = profile_type_def[profile_type.toLowerCase()]?.tourId || '';
     let profileTitle = $('#profile_title').val();
     let $profileTitleDiv = $('<div/>', {
       class: 'page-title-custom',
-      html: `<span class='profile-title' title='${profileTitle}' data-tour-id='profile_title release_profile'>Profile: ${profileTitle}</span>`,
+      html: `<span class='profile-title' title='${profileTitle}' data-tour-id='${tourId}'>Profile: ${profileTitle}</span>`,
     });
 
     pageHeaders.append($profileTitleDiv);
@@ -4105,80 +3966,105 @@ function initialiseNavToggle() {
 }
 
 function confirmCloseDialog(triggerDialogOrEvent) {
+  function getTargetDialog(trigger) {
+    if (!trigger) return null;
+
+    // Case 1: Modal triggered from a DOM event
+    if (trigger.target) {
+      const modalEl = $(trigger.target).closest('.modal');
+      return modalEl.length ? modalEl : null;
+    }
+
+    // Case 2: Modal triggered with a jQuery modal reference
+    if (trigger instanceof jQuery) {
+      return trigger;
+    }
+
+    // Case 3: Modal triggered with a BootstrapDialog instance
+    if (typeof trigger.close === 'function') {
+      return trigger;
+    }
+
+    return null;
+  }
+
+  function closeDialog(dialog) {
+    if (!dialog) return;
+
+    // Close the target dialog modal
+    if (dialog.close) {
+      // BootstrapDialog
+      dialog.close();
+    } else if (dialog.modal) {
+      // jQuery modal
+      dialog.modal('hide');
+    }
+  }
+
   // Handle event case
   if (triggerDialogOrEvent && triggerDialogOrEvent.preventDefault) {
     triggerDialogOrEvent.preventDefault();
     triggerDialogOrEvent.stopPropagation();
   }
 
-  BootstrapDialog.show({
-    title: '<strong>Confirm close</strong>',
-    message:
-      'Are you sure that you would like to close the modal? ' +
-      'Any upload progress will be lost.',
-    cssClass: 'copo-modal1',
-    closable: false,
-    animate: false,
-    closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
-    closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
-    type: BootstrapDialog.TYPE_WARNING,
-    buttons: [
-      {
-        label: 'No, keep open',
-        cssClass: 'custom-btn tiny btn-default',
-        action: function (dialogRef) {
-          dialogRef.close();
+  // If alert is visible, 'Submit' button is disabled 
+  // or 'Finish' button is disabled, skip confirmation
+  const $modalAlert = $('.modal .alert, .modal .sample-alert');
+  const isModalAlertVisible =
+     $modalAlert.is(':visible') &&
+     $modalAlert.text().trim() !== '';
+  
+  const isFinishButtonDisabled = $(
+    '.modal-footer .btn-finish, .modal-footer .btn-submit'
+  ).is(':disabled');
+  const targetDialog = getTargetDialog(triggerDialogOrEvent);
+  
+  if (!isModalAlertVisible || isFinishButtonDisabled) {
+    // Skip confirmation
+    closeDialog(targetDialog);
+    return;
+  } else {
+    // Show confirmation dialog
+    BootstrapDialog.show({
+      title: '<strong>Confirm close</strong>',
+      message:
+        'Are you sure that you would like to close the modal? ' +
+        'Any upload progress will be lost.',
+      cssClass: 'copo-modal1',
+      closable: false,
+      animate: false,
+      closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
+      closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
+      type: BootstrapDialog.TYPE_WARNING,
+      buttons: [
+        {
+          label: 'No, keep open',
+          cssClass: 'custom-btn tiny btn-default',
+          action: function (dialogRef) {
+            dialogRef.close();
+          },
         },
-      },
-      {
-        label: 'Yes, close',
-        cssClass: 'custom-btn tiny btn-primary',
-        action: function (confirmDialogRef) {
-          let targetDialog = null;
-
-          // Case 1: Modal triggered from a DOM event
-          if (triggerDialogOrEvent && triggerDialogOrEvent.target) {
-            const modalEl = $(triggerDialogOrEvent.target).closest('.modal');
-            if (modalEl.length) targetDialog = modalEl;
-          }
-          // Case 2: Modal triggered with a jQuery modal reference
-          else if (triggerDialogOrEvent instanceof jQuery) {
-            targetDialog = triggerDialogOrEvent;
-          }
-          // Case 3: Modal triggered with a BootstrapDialog instance
-          else if (
-            triggerDialogOrEvent &&
-            typeof triggerDialogOrEvent.close === 'function'
-          ) {
-            targetDialog = triggerDialogOrEvent;
-          }
-
-          // Close the targetDialog modal
-          if (targetDialog) {
-            if (targetDialog.close) {
-              // BootstrapDialog
-              targetDialog.close();
-            } else if (targetDialog.modal) {
-              // jQuery modal
-              targetDialog.modal('hide');
-            }
-          }
-          // Reset modal values
-          resetValues();
-          confirmDialogRef.close(); // Close the confirmation modal
+        {
+          label: 'Yes, close',
+          cssClass: 'custom-btn tiny btn-primary',
+          action: function (confirmDialogRef) {
+            closeDialog(targetDialog);
+            resetValues(); // Reset modal values
+            confirmDialogRef.close(); // Close the confirmation modal
+          },
         },
-      },
-    ],
-    onshown: function (dialogRef) {
-      // Remove aria-hidden before focusing the modal
-      dialogRef.getModal().removeAttr('aria-hidden');
+      ],
+      onshown: function (dialogRef) {
+        // Remove aria-hidden before focusing the modal
+        dialogRef.getModal().removeAttr('aria-hidden');
 
-      // Set focus after a short delay
-      setTimeout(function () {
-        dialogRef.getModal().focus();
-      }, 50);
-    },
-  });
+        // Set focus after a short delay
+        setTimeout(function () {
+          dialogRef.getModal().focus();
+        }, 50);
+      },
+    });
+  }
 }
 
 // Fades out warning message in modals and updates
@@ -4217,85 +4103,103 @@ function resetValues() {
   $('.modal .tab-content').empty();
 }
 
-function moveDataTableControlsToRow(
-  $tableWrapper,
-  className = 'dataTables_info'
-) {
-  // Move info (or length) and paginate into their own row as columns
-  const infoOrLengthDiv = $tableWrapper.find(`.${className}`);
-  const paginateDiv = $tableWrapper.find('.dataTables_paginate');
-  let rowDiv = $tableWrapper.find('.dataTables-controls-row');
+// function moveDataTableControlsToRow(
+//   $tableWrapper,
+//   className = 'dataTables_info'
+// ) {
+//   // Move info (or length) and paginate into their own row as columns
+//   const infoOrLengthDiv = $tableWrapper.find(`.${className}`);
+//   const paginateDiv = $tableWrapper.find('.dataTables_paginate');
+//   let rowDiv = $tableWrapper.find('.dataTables-controls-row');
 
-  if (!rowDiv.length) {
-    // Row doesn't exist yet, create it
-    rowDiv = $('<div class="row dataTables-controls-row"></div>');
-    $tableWrapper.append(rowDiv);
-  }
+//   if (!rowDiv.length) {
+//     // Row doesn't exist yet, create it
+//     rowDiv = $('<div class="row dataTables-controls-row"></div>');
+//     $tableWrapper.append(rowDiv);
+//   }
 
-  rowDiv.empty(); // Clear previous contents to avoid duplicates
+//   rowDiv.empty(); // Clear previous contents to avoid duplicates
 
-  // Apply column classes
-  infoOrLengthDiv.addClass('col-sm-4'); // Left half
-  paginateDiv.addClass('col-sm-8 text-right'); // Right half
+//   // Apply column classes
+//   infoOrLengthDiv.addClass('col-sm-4'); // Left half
+//   paginateDiv.addClass('col-sm-8 text-right'); // Right half
 
-  // Append existing elements into the row
-  rowDiv.append(infoOrLengthDiv).append(paginateDiv);
+//   // Append existing elements into the row
+//   rowDiv.append(infoOrLengthDiv).append(paginateDiv);
 
-  // Add row to wrapper if length control
-  if (className === 'dataTables_length') {
-    $tableWrapper.append(rowDiv);
-  }
-}
+//   // Add row to wrapper if length control
+//   if (className === 'dataTables_length') {
+//     $tableWrapper.append(rowDiv);
+//   }
+// }
 
-function hideExtraDetailsHint(tableID) {
-  const $tableWrapper = $(`#${tableID}_wrapper`);
-  const $container = $tableWrapper.length ? $tableWrapper : $(`#${tableID}`);
+function moveComponentInfoToTabContent() {
+  // Ensure that component info alerts are displayed with
+  // the other alerts in the sidebar info tab
+  const $container = $('#componentInfoContainer');
+  const $tab = $('#copo-sidebar-info .panel-body');
 
-  if (!$container.length) return;
+  if (!$container.length || !$tab.length) return;
 
-  function checkAndToggleHint() {
-    const $tableBody = $(`#${tableID} tbody`);
-    const $infoEl = $(`#${tableID}_info`).length
-      ? $(`#${tableID}_info`)
-      : $(`#${tableID}_wrapper_info`);
+  // Move all children of the block into the tab
+  const $children = $container.children().appendTo($tab);
 
-    if (!$infoEl.length) return;
+  // Remove the now-empty container
+  $container.remove();
 
-    const $extraInfoDiv = $infoEl.find('.extra-table-info');
-
-    if ($tableBody.find('.summary-details-control').length === 0) {
-      $extraInfoDiv.remove();
-    } else {
-      $extraInfoDiv.show();
+  $children.each(function () {
+    const $child = $(this);
+    // Add dismissible class if missing
+    if (!$child.hasClass('alert-dismissible')) {
+      $child.addClass('alert-dismissible fade');
     }
-  }
 
-  checkAndToggleHint();
+    // Add close button if missing
+    if (!$child.find('.close').length) {
+      const $closeBtn = $('<button>', {
+        type: 'button',
+        class: 'close',
+        'aria-label': 'Close',
+        html: '<span aria-hidden="true">&times;</span>',
+      });
 
-  // Disconnect existing observers
-  const prevObserver = $container.data('hideExtraDetailsObserver');
-  if (prevObserver) {
-    try {
-      prevObserver.disconnect();
-    } catch (e) {
-      console.error('Error disconnecting previous observer:', e);
+      $closeBtn.on('click', function (e) {
+        // Prevent Bootstrap default removal
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        // Empty content then hide alert
+        $child.find('.alert-message').empty();
+        $child.hide().removeClass('in');
+      });
+      $child.prepend($closeBtn);
     }
-  }
 
-  // Observe the data table info element if it exists
-  // If not, observe the data table wrapper
-  const observeTarget = $(`#${tableID}_info`)[0] || $container[0];
+    // Wrap text nodes in alert-message span
+    $child
+      .contents()
+      .filter(function () {
+        return this.nodeType === 3; // text nodes
+      })
+      .wrap('<span class="alert-message"></span>');
+    
+    // Observe style changes to add/remove 'in' class for fade effect
+    const observer = new MutationObserver((mutationsList) => {
+      mutationsList.forEach((mutation) => {
+        if (mutation.attributeName === 'style') {
+          const display = $child.css('display');
+          if (display !== 'none') {
+            $child.addClass('in');
+          } else {
+            $child.removeClass('in');
+          }
+        }
+      });
+    });
 
-  const observer = new MutationObserver((mutations) => {
-    checkAndToggleHint();
+    // $child.data('inClassObserverInstance', observer);
+    observer.observe($child[0], {
+      attributes: true,
+      attributeFilter: ['style'],
+    });
   });
-
-  observer.observe(observeTarget, {
-    childList: true,
-    subtree: true,
-    characterData: true,
-  });
-
-  // Store observer reference
-  $container.data('hideExtraDetailsObserver', observer);
 }

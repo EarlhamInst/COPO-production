@@ -1,12 +1,14 @@
 # FS - 30/10/2019
 from django.http import HttpResponse
 from common.dal.copo_da import MetadataTemplate
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from bson import json_util
 import pandas as pd
 import common.lookup.lookup as lkup
 
 
+@login_required
 def new_metadata_template(request):
     template_name = request.GET["template_name"]
     # record = MetadataTemplate()._new(profile_id=request.session["profile_id"], user_id=request.user.id, template_name=template_name)
@@ -17,6 +19,7 @@ def new_metadata_template(request):
     return HttpResponse(url)
 
 
+@login_required
 def update_metadata_template_name(request):
     template_name = request.GET["template_name"]
     template_id = request.GET["template_id"]
@@ -24,6 +27,7 @@ def update_metadata_template_name(request):
     return HttpResponse(new_name)
 
 
+@login_required
 def update_template(request):
     data = json_util.loads(request.POST["data"])
     template_id = request.POST["template_id"]
@@ -34,6 +38,7 @@ def update_template(request):
         return HttpResponse(status=500)
 
 
+@login_required
 def load_metadata_template_terms(request):
     template_id = request.GET["template_id"]
     terms = MetadataTemplate().get_terms_by_template_id(template_id)
@@ -43,6 +48,7 @@ def load_metadata_template_terms(request):
         return HttpResponse(status=500)
 
 
+@login_required
 def export_template(request):
     template_id = json_util.loads(request.body)["template_id"]
     template = MetadataTemplate().get_terms_by_template_id(template_id)
@@ -69,7 +75,7 @@ def get_wizard_types(request):
                 out.append({"key": title, "value": names[el]})
     return HttpResponse(json_util.dumps(out))
 """
-
+@login_required
 def get_primer_fields(request):
     filename = request.GET["filename"]
     with open(filename) as jason:
@@ -78,6 +84,7 @@ def get_primer_fields(request):
     return HttpResponse(json_util.dumps(fields))
 
 
+@login_required
 def add_primer_fields(request):
     outlist = list()
     fields = request.POST["fields"]
