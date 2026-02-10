@@ -217,13 +217,13 @@
   max-height: 1.5em; /*1.5em x 1 = 1.5em*/ /* fallback */
 }
 
-#ellipsisId {
+.profile-ellipsis {
   font-size: 14px;
   cursor: pointer;
 }
 
 /* mouse over link */
-#ellipsisId:hover {
+.profile-ellipsis:hover {
   color: black !important;
 }
 

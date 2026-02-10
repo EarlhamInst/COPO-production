@@ -7,6 +7,7 @@ import pytz
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save
@@ -18,6 +19,7 @@ from rest_framework.authtoken.models import Token
 from asgiref.sync import sync_to_async
 from django.utils.translation import gettext_lazy as _
 from common.dal.copo_base_da import DataSchemas
+from common.schemas.utils.data_utils import join_with_and
 
 
 class UserDetails(models.Model):
@@ -510,8 +512,7 @@ class ProfileType(models.Model):
         self.post_save_action = post_save_action
         self.pre_save_action = pre_save_action
         self.is_deprecated = is_deprecated
-        if tour_id:
-            self.tour_id = tour_id
+
         self.save()
         return self
 

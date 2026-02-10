@@ -855,7 +855,7 @@ class Command(BaseCommand):
             ]
         )
 
-        profile.recordaction_buttons.set([releasestudy])
+        # profile.recordaction_buttons.set([releasestudy]) # Add 'Release study' button to all profiles
         profile.title_buttons.set([new_component_template, quick_tour_template])
 
         # Assign tour config to components
@@ -917,9 +917,7 @@ class Command(BaseCommand):
             widget_colour="#009c95",
             is_dtol_profile=False,
             is_permission_required=False,
-            is_deprecated=True,
-            tour_id="profile_title publish_profile",
-        )
+            is_deprecated=True,        )
 
         biodata = ProfileType().create_profile_type(
             type="biodata",

@@ -86,9 +86,6 @@ const profile_type_def = {
           '{{ action.name }}'{% if not forloop.last %},{% endif %}
         {% endfor %}
       ],
-      {% if profile_type.tour_id %}
-        tourId: '{{ profile_type.tour_id|escapejs }}'
-      {% endif %},
     },    
   {% endfor %}
 }
