@@ -28,6 +28,7 @@ from common.schema_versions.lookup import dtol_lookups as lookup
 from common.utils.logger import Logger
 import numpy as np
 from PIL import ImageFile, Image
+import unicodedata
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -432,8 +433,6 @@ class DtolSpreadsheet:
                 for chunk in file.chunks():
                     destination.write(chunk)
 
-            filename = os.path.splitext(file.name)[0].upper()
-            # now iterate through samples data to see if there is a match between specimen_id and permit name
         permit_path = Path(settings.MEDIA_ROOT) / \
             "sample_permits" / self.profile_id
         fail_flag = False
@@ -443,6 +442,9 @@ class DtolSpreadsheet:
 
             file_list = [f for f in os.listdir(
                 permit_path) if isfile(join(permit_path, f))]
+            
+            #to handle unicode filename issues on different OS
+            file_list = [unicodedata.normalize('NFC', fn) for fn in file_list]
             file_list = set(file_list)  # Remove duplicate filenames
 
             if sample[ethics_permits_required_index] == "Y":

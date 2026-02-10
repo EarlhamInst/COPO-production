@@ -9,7 +9,7 @@ from common.utils import helpers
 import json
 
 
-@login_required()
+@login_required
 def copo_files(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)
@@ -20,7 +20,7 @@ def copo_files(request, profile_id, ui_component):
     return render(request, "copo/copo_files.html", {"profile_id": profile_id, "profile_title": profile_title, "profile_type": profile_type, "ui_component": ui_component})
 
 
-@login_required()
+@login_required
 def process_urls(request):
     profile_id = helpers.get_current_request().session['profile_id']
     channels_group_name = "s3_" + profile_id
@@ -56,7 +56,7 @@ def process_urls(request):
     return HttpResponse(json.dumps(urls_list))
 
 
-@login_required()
+@login_required
 def upload_ecs_files(request, profile_id):
     channels_group_name = "s3_" + profile_id
     files = request.FILES

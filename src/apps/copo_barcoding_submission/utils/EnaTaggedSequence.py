@@ -970,7 +970,7 @@ class EnaTaggedSequence:
         label = [x for x in fields.keys() if fields[x]["type"] != "TEXT_AREA_FIELD"]
         data_set = []
         columns = []
-
+        
         detail_dict = dict(
             className='summary-details-control detail-hover-message',
             orderable=False,
@@ -980,6 +980,7 @@ class EnaTaggedSequence:
             width="5%",
         )
         columns.insert(0, detail_dict)
+        
         columns.append(dict(data="record_id", visible=False))
         columns.append(dict(data="DT_RowId", visible=False))
 

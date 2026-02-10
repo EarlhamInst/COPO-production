@@ -24,7 +24,8 @@ from django.urls import reverse
 
 l = Logger()
 
-@login_required()
+
+@login_required
 @web_page_access_checker
 def parse_singlecell_spreadsheet(request, profile_id, schema_name):
     #profile_id = request.session["profile_id"]
@@ -65,6 +66,7 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
         l.log("Single cell manifest loaded")
         validate_result, errors =  singlecell.validate()
         if validate_result:
+            is_warning = False
             l.log("About to collect Single cell manifest")
             
             # check s3 for bucket and files files
@@ -92,7 +94,6 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
                     if not file_name_map[file_name] or hash != file_name_map[file_name]:  
                         s3_checking_file_names.append(file_name)
 
-                is_warning = False
                 if s3_checking_file_names:
                     if s3obj.check_for_s3_bucket(bucket_name):
                         # get filenames from manifest
@@ -145,8 +146,9 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
 
 def is_image_file(filename):
     return any(filename.lower().endswith(ext) for ext in settings.IMAGE_FILE_EXTENSIONS)
- 
-@login_required()
+
+
+@login_required
 @web_page_access_checker
 def save_singlecell_records(request, profile_id, schema_name):
     # create mongo sample objects from info parsed from manifest and saved to session variable
@@ -402,8 +404,9 @@ def save_singlecell_records(request, profile_id, schema_name):
     result = {"table_data": table_data, "component": "singlecell"}
     return JsonResponse(status=200, data=result)
 
-@web_page_access_checker
+
 @login_required
+@web_page_access_checker
 def copo_singlecell(request, schema_name, profile_id, ui_component):
     request.session["profile_id"] = profile_id
 

@@ -244,7 +244,7 @@ def copo_profile_visualise(request):
 """
 
 
-@login_required()
+@login_required
 def delete_profile(request):
     profile_id = request.POST.get("target_id", "")
 

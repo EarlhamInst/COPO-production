@@ -119,7 +119,6 @@ $(document).on('document_ready', function () {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');
       $(element).html(d.message);
-      initialiseModalPopovers(); // Initialise popover in modal
       //$("#spinner").fadeOut()
     } else if (d.action === 'refresh_table') {
       $(element).removeClass('alert-danger').addClass('alert-info');
@@ -185,7 +184,6 @@ $(document).on('document_ready', function () {
       $(element).removeClass('alert-info').addClass('alert-danger');
       $(element).html(d.message);
       $('#export_error_button').prop('disabled', false);
-      initialiseModalPopovers(); // Initialise popover in modal
       //$("#spinner").fadeOut()
     } else if (d.action === 'make_table') {
       tabs = $('#singlecell-tabs');

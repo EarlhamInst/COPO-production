@@ -23,11 +23,11 @@ function release_study(profile_id) {
         return;
     } 
     if (element.text() == 'PUBLIC') {
-        alert('Study is already released.');
+        alert('Study is already published.');
         return;
     }
 
-    result = confirm('Are you sure to release the study?');
+    result = confirm('Are you sure you would like to publish the study?');
     if (result) {
         url = '/copo/copo_profile/' + profile_id + '/release_study';
         $.ajax({
@@ -39,7 +39,7 @@ function release_study(profile_id) {
             el.hide();
             /*
                     el.attr('aria-disabled', true).attr("role","link").css("pointer-events", "none").css("color", "grey")
-                    alert("Study released successfully")
+                    alert("Study published successfully")
                     */
         })
         .fail(function (data) {

@@ -23,6 +23,7 @@ import json
 from bson import ObjectId
 from common.utils.helpers import notify_annotation_status
 import pandas as pd
+from common.validators.ena_validators.validation_messages import MESSAGES 
 
 l = Logger() 
 pass_word = get_env('WEBIN_USER_PASSWORD')
@@ -53,7 +54,8 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
                 files_type_list.append(type)
                 file_types[f_name] = type
             else:
-                return {"error": f'File {f_name} is duplicated, please make sure file names are unique'}
+                error_message = MESSAGES['duplicate_file_error'].format(file_name=f_name)
+                return {"error": error_message}
             
     if len(files) == 0:
         return {"error": 'At least one annotation file is required'}

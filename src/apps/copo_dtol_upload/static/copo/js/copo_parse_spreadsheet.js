@@ -164,6 +164,7 @@ function upload_spreadsheet(file = file) {
       $('#sample_info').fadeOut('fast');
       $('#upload_controls').fadeIn();
       console.log(data);
+      $('#file').val('');
       BootstrapDialog.show({
         title: 'Error',
         message: 'Error ' + data.status + ': ' + data.responseText,
@@ -171,6 +172,7 @@ function upload_spreadsheet(file = file) {
       });
     })
     .done(function (data) {
+      $('#file').val('');
       // $('#sample_info').fadeOut('fast');
     });
 }

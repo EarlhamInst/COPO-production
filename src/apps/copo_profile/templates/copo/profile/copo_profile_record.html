@@ -2,7 +2,7 @@
 {% load static %}
 {% load web_tags %}
 <div class="grid">
-    <div class="copo-records-panel" profile-type="{{ profile.type }}" shared-profile-type="{{ profile.shared_type }}"  study-status="{{ profile.study_status | get_first_value_from_array }}" study_release_date="{{ profile.study_release_date | get_first_value_from_array }}">
+    <div class="copo-records-panel" data-profile-type="{{ profile|coalesce:'type,shared_type' }}" data-is-shared-profile="{{ profile.shared_type|yesno:'true,false' }}"  study-status="{{ profile.study_status | get_first_value_from_array }}" study_release_date="{{ profile.study_release_date | get_first_value_from_array }}">
         <!--Panel -->
         <div class="panel panel-profile">
             <!--Panel heading -->
@@ -13,7 +13,7 @@
                     </div>
                     <div class="col-sm-2 col-md-2 col-lg-2 row-ellipsis" title="View profile options">
                         <div id="{{ profile.id }}" class="pull-right ellipsis-div" data-tour-id="profile_options_icon">
-                            <i id="ellipsisId" class="fa fa-ellipsis-v" data-toggle="popover"
+                            <i class="fa fa-ellipsis-v profile-ellipsis" data-toggle="popover"
                                data-html="true" role="button"
                                title='<i id="profileOptionsPopoverCloseBtn" class="fa fa-times pull-right"></i>'></i>
                         </div>

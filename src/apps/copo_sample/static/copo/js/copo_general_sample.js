@@ -51,7 +51,7 @@ var dialog = new BootstrapDialog({
     {
       id: 'save_sample_button',
       label: 'Finish',
-      cssClass: 'btn-primary',
+      cssClass: 'btn-primary btn-finish',
       title: 'Finish',
       disabled: true,
       action: function () {
@@ -160,7 +160,6 @@ $(document).on('document_ready', function () {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');
       $(element).html(d.message);
-      initialiseModalPopovers(); // Initialise popover in modal
       //$("#spinner").fadeOut()
     }
   };
@@ -217,7 +216,6 @@ $(document).on('document_ready', function () {
       // check info div is visible
       $(element).removeClass('alert-info').addClass('alert-danger');
       $(element).html(d.message);
-      initialiseModalPopovers(); // Initialise popover in modal
       //$("#spinner").fadeOut()
     } else if (d.action === 'make_table') {
       // make table of metadata parsed from spreadsheet
@@ -559,6 +557,7 @@ function upload_spreadsheet(file) {
       dialog.setClosable(true);
       dialog.getButton('upload_sample_manifest_button').stopSpin();
       console.log(data);
+      $('#file').val('');
       responseText = data.responseText;
       if (responseText != '') {
         BootstrapDialog.show({
@@ -576,6 +575,7 @@ function upload_spreadsheet(file) {
         .hide();
       dialog.getButton('save_sample_button').enable();
       dialog.setClosable(true);
+      $('#file').val('');
     });
 }
 

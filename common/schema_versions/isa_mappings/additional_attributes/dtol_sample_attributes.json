@@ -519,8 +519,6 @@
             "VEGETATIVE_CELL",
             "VEGETATIVE_STRUCTURE",
             "ZYGOTE",
-            "NOT_APPLICABLE",
-            "NOT_COLLECTED",
             "NOT_PROVIDED"
         ],
         "order": 14,
@@ -565,9 +563,7 @@
             "FEMALE",
             "MALE",
             "SEXUAL_MORPH",
-            "NOT_APPLICABLE",
-            "NOT_COLLECTED",
-            "NOT_PROVIDED"
+            "NOT_COLLECTED"
         ],
         "order": 15,
         "ref": "",
@@ -1991,9 +1987,7 @@
             "M",
             "L",
             "SINGLE_CELL",
-            "NOT_APPLICABLE",
-            "NOT_COLLECTED",
-            "NOT_PROVIDED"
+            "NOT_APPLICABLE"
         ],
         "order": 50,
         "ref": "",
