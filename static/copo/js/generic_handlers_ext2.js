@@ -729,8 +729,6 @@ function do_render_server_side_table(componentMeta) {
     console.warn(`No data status legend found for ${componentMeta.component}`);
   }
 
-  hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
-
   //handle event for table details
   $('#' + tableID + ' tbody')
     .off('click', 'td.summary-details-control')
@@ -1148,8 +1146,6 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
   } else {
     console.warn(`No data status legend found for ${componentMeta.component}`);
   }
-
-  hideExtraDetailsHint(tableID); // Hide extra details hint if no details column
 
   // Handle event for table details
   $('#' + tableID + ' tbody')

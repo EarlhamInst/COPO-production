@@ -434,8 +434,6 @@ function customise_accessions_table(table) {
   table_wrapper
     .find('.dataTables_scroll')
     .attr('data-tour-id', 'component_table');
-
-  hideExtraDetailsHint(componentMeta.tableID); // Hide extra details hint if no details column
 }
 
 function do_accessions_table_records_exist() {
