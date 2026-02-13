@@ -3241,6 +3241,10 @@ function generate_component_control(componentName, profile_type) {
         });
       }
     });
+  } else {
+    // Do not display the profile component icons container
+    // if profile type is not defined
+    pageIcons.hide();
   }
 
   //refresh components...
