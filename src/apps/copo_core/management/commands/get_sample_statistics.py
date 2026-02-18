@@ -12,6 +12,30 @@ from tabulate import tabulate
 
 from src.apps.api.utils import validate_date_from_api
 
+'''
+To call an individual function from this Django command, 
+execute the following in the terminal:
+# Open Django interactive shell
+$ python manage.py shell
+
+# Import the Command class
+from src.apps.copo_core.management.commands.get_sample_statistics import Command
+
+# Allow breakpoints. Ensure that the function to be called has breakpoints set
+import pdb; pdb.set_trace()
+
+cmd = Command() # Instantiate the Command class
+cmd.initialise_db()  # Initialise the database
+cmd.my_function(args_here) # Call any method inside the class
+# e.g. cmd.rank_users_by_samples_and_data_files_submitted()
+'''
+
+'''
+To clear terminal in Python interactive shell, use the following command:
+import os
+os.system('cls' if os.name == 'nt' else 'clear')
+'''
+
 
 # The class must be named Command, and subclass BaseCommand
 class Command(BaseCommand):
@@ -32,9 +56,18 @@ class Command(BaseCommand):
         self.get_sample_statistics_by_associated_project()
         self.get_distinct_items()
         self.get_sample_statistics_between_dates()
-        # self.rank_genomic_profiles_and_get_owner_email()
 
-        # Get ERGA related statistics
+        # self.rank_genomic_profiles_and_get_owner_email()
+        # self.rank_users_by_samples_and_data_files_submitted(
+        #     start_from='samples', max_users=10
+        # )
+        # self.rank_users_by_samples_and_data_files_submitted(
+        #     start_from='data_files', max_users=10
+        # )
+        # self.get_email_addresses_of_registered_users()
+        self.get_average_samples_submitted_per_user()
+
+        # ERGA related statistics
         # self.get_sample_statistics_between_dates(sample_type='erga')
         # self.get_sample_statistics(sample_type='erga')
         # self.get_sample_statistics_by_associated_project(sample_type='erga')
@@ -45,14 +78,26 @@ class Command(BaseCommand):
     def initialise_db(self):
         username = urllib.parse.quote_plus('copo_user')
         password = urllib.parse.quote_plus('password')
-        myclient = pymongo.MongoClient(
-            'mongodb://%s:%s@copo_mongo:27017/' % (username, password)
-        )
-        mydb = myclient['copo_mongo']
 
-        self.profile_collection = mydb['Profiles']
-        self.sample_collection = mydb['SampleCollection']
-        self.source_collection = mydb['SourceCollection']
+        try:
+            mongodb_client = pymongo.MongoClient(
+                'mongodb://%s:%s@copo_mongo:27017/' % (username, password)
+            )
+            # Attempt an operation to trigger authentication
+            mongodb_client.admin.command('ping')
+        except pymongo.errors.OperationFailure as e:
+            # Raised when authentication fails
+            raise PermissionError(f"MongoDB authentication failed: {e}")
+        except pymongo.errors.ServerSelectionTimeoutError as e:
+            # Raised if server cannot be reached
+            raise ConnectionError(f"Cannot connect to MongoDB: {e}")
+
+        database = mongodb_client['copo_mongo']
+
+        self.profile_collection = database['Profiles']
+        self.sample_collection = database['SampleCollection']
+        self.source_collection = database['SourceCollection']
+        self.ena_file_collection = database['EnaFileTransferCollection']
 
         self.profile_types = self.profile_collection.distinct('type')
         self.sample_status = ['accepted', 'pending', 'rejected']
@@ -189,7 +234,7 @@ class Command(BaseCommand):
                                         }
                                     },
                                     'then': "BIOBLITZ",
-                                }
+                                },
                             ],
                             'default': "$associated_tol_project",
                         }
@@ -291,8 +336,14 @@ class Command(BaseCommand):
         # Get number of samples brokered between certain dates
         # Replace the date strings with the desired date range
         # Date period: between April 2017 and March 2023
-        d_from_str = '2017-04-01T00:00:00+00:00'  # Earliest possible date e.g.: datetime.min.isoformat()
-        d_to_str = '2023-04-01T00:00:00+00:00'  # Current UTC datetime e.g.: datetime.now(timezone.utc).isoformat()
+        COPO_START_DATE = '2014-09-14T00:00:00+00:00'
+        CURRENT_DATE = datetime.now(timezone.utc).isoformat()  # Current UTC datetime
+
+        # Earliest possible date e.g.: datetime.min.isoformat()
+        d_from_str = COPO_START_DATE  # '2017-04-01T00:00:00+00:00'
+
+        # Current UTC datetime e.g.: datetime.now(timezone.utc).isoformat()
+        d_to_str = CURRENT_DATE  # '2023-04-01T00:00:00+00:00'
 
         # Validate required date fields
         result = validate_date_from_api(d_from_str, d_to_str)
@@ -344,13 +395,12 @@ class Command(BaseCommand):
     # ______________________________________
 
     # Group and rank samples by Genomics/Biodata profile and fetch owner's email address
-    ''' 
-    NB: This function uses the 'tabulate' library to display the table in the terminal.
-        The displayed output can be copied and used in the script, 'convert_tabular_data_to_spreadsheet.py',
-        which is located in the 'shared_tools/scripts' directory, to generate an Excel file
-    '''
-
     def rank_genomic_profiles_and_get_owner_email(self):
+        ''' 
+        NB: This function uses the 'tabulate' library to display the table in the terminal.
+            The displayed output can be copied and used in the script, 'convert_tabular_data_to_spreadsheet.py',
+            which is located in the 'shared_tools/scripts' directory, to generate an Excel file
+        '''
         label = d_utils.join_with_and(
             [item.title() for item in self.non_tol_sample_types_list]
         )
@@ -431,5 +481,340 @@ class Command(BaseCommand):
         # os.remove(file_path)
         # df.to_excel(file_path, index=False)
         # print(f'   Excel file \'{file_path}\' has been created.')
+
+        print('\n________________________________________\n')
+
+    # ______________________________________
+
+    # Rank users by submitted samples and/ data files
+    def rank_users_by_samples_and_data_files_submitted(
+        self, start_from='samples', max_users=10
+    ):
+        '''
+        :param start_from: 'samples' or 'data_files' — defines the primary metric for ranking
+        
+        NB: This function uses the 'tabulate' library to display the table in the terminal.
+            The displayed output can be copied and used in the script, 'convert_tabular_data_to_spreadsheet.py',
+            which is located in the 'shared_tools/scripts' directory, to generate an Excel file
+        '''
+        if start_from not in ('samples', 'data_files'):
+            raise ValueError("'start_from' field must be 'samples' or 'data_files'")
+
+        # Define base collection which can be either be 'SampleCollection'
+        # or 'EnaFileTransferCollection' depending on the starting point of the ranking.
+        sort_by = {}
+        projection = {'_id': 1}
+        table_header_map = {
+            'User ID':'_id',
+            'First name': 'first_name',
+            'Last name': 'last_name',
+            'Email address': 'email'
+        }
+
+        if start_from == 'samples':
+            base_collection = self.sample_collection
+            primary_field = 'sample_count'
+            secondary_field = 'data_file_count'
+            # Sort by sample_count in descending order,
+            # then by data_file_count in descending order
+            sort_by = {primary_field: -1, secondary_field: -1}  
+            projection['sample_count'] = 1
+            projection['data_file_count'] = 1
+            table_header_map.update(
+                {'Sample count': 'sample_count', 'Data file count': 'data_file_count'}
+            )
+        else:
+            base_collection = self.ena_file_collection
+            primary_field = 'data_file_count'
+            sort_by = {primary_field: -1}
+            projection['data_file_count'] = 1
+            table_header_map['Data file count'] = 'data_file_count'
+
+        pipeline = []
+
+        if start_from == 'samples':
+            # Default logic: start from SampleCollection
+            pipeline.extend(
+                [
+                    {
+                        '$lookup': {
+                            'from': 'Profiles',
+                            # SampleCollection.profile_id
+                            'let': {'pid': '$profile_id'},
+                            'pipeline': [
+                                {
+                                    '$match': {
+                                        '$expr': {
+                                            # Profiles._id
+                                            '$eq': [
+                                                '$_id',
+                                                {'$toObjectId': '$$pid'},
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            'as': 'profile_doc',
+                        }
+                    },
+                    # Unwind profile_doc to access user_id field
+                    {'$unwind': '$profile_doc'},
+                    # Only documents with valid profiles and with 'accepted' i.e. submitted samples will proceed
+                    # This ensures that samples with associated profiles are counted for.
+                    {'$match': {'profile_doc': {'$ne': None}, 'status': 'accepted'}},
+                    # Group samples by user_id within the profile document
+                    {
+                        '$group': {
+                            '_id': '$profile_doc.user_id',
+                            'profile_ids': {'$addToSet': '$profile_doc._id'},
+                            'sample_count': {'$sum': 1},
+                            'data_file_count': {
+                                '$sum': {'$ifNull': ['$data_files_count', 0]}
+                            },
+                        }
+                    },
+                    # Lookup data files in the collection, EnaFileTransferCollection, per profile_id
+                    {
+                        '$lookup': {
+                            'from': 'EnaFileTransferCollection',
+                            'let': {'pids': '$profile_ids'},
+                            'pipeline': [
+                                {
+                                    '$match': {
+                                        '$expr': {
+                                            '$and': [
+                                                {
+                                                    '$in': [
+                                                        '$profile_id',
+                                                        {
+                                                            '$map': {
+                                                                'input': '$$pids',
+                                                                'as': 'pid',
+                                                                'in': {
+                                                                    '$toString': '$$pid'
+                                                                },
+                                                            }
+                                                        },
+                                                    ]
+                                                },
+                                                # For 'is_archived' field, '0' means not archived, '1' means archived.
+                                                # Submitted data files that have been successfully transferred to ENA are considered as archived data files.
+                                                # {'$eq': ['$is_archived', '1']},
+                                                # For 'status' field, these are the possible values: 'pending', 'processing', 'complete' and 'ena_complete'
+                                                {'$eq': ['$status', 'ena_complete']},
+                                                # For 'transfer_status' field, these are the possible values:
+                                                # 2 which means get file from minio, 3 which means NIL, 4 which means NIL and 5 which means transfer file to ENA
+                                                {'$eq': ['$transfer_status', 5]},
+                                            ]
+                                        }
+                                    }
+                                },
+                                {'$count': 'file_count'},
+                            ],
+                            'as': 'ena_files',
+                        }
+                    },
+                    # Flatten the data file count
+                    {
+                        '$addFields': {
+                            'data_file_count': {
+                                '$ifNull': [
+                                    {'$arrayElemAt': ['$ena_files.file_count', 0]},
+                                    0,
+                                ]
+                            }
+                        }
+                    },
+                ]
+            )
+        else:
+            # Reverse logic: start from EnaFileTransferCollection
+            pipeline.extend(
+                [
+                    {
+                        '$match': {
+                            # For 'is_archived' field, '0' means not archived, '1' means archived.
+                            # Submitted data files that have been successfully transferred to ENA are considered as archived data files.
+                            # 'is_archived': '1',
+                            # For 'status' field, these are the possible values: 'pending', 'processing', 'complete' and 'ena_complete'
+                            'status': 'ena_complete',
+                            # For 'transfer_status' field, these are the possible values:
+                            # 2 which means get file from minio, 3 which means NIL, 4 which means NIL and 5 which means transfer file to ENA
+                            'transfer_status': 5,
+                        }
+                    },
+                    {
+                        '$lookup': {
+                            'from': 'Profiles',
+                            # EnaFileTransferCollection.profile_id
+                            'let': {'pid': '$profile_id'},
+                            'pipeline': [
+                                {
+                                    '$match': {
+                                        '$expr': {
+                                            # Profiles._id
+                                            '$eq': ['$_id', {'$toObjectId': '$$pid'}]
+                                        }
+                                    }
+                                }
+                            ],
+                            'as': 'profile_doc',
+                        }
+                    },
+                    # Unwind profile_doc to access user_id field
+                    {'$unwind': '$profile_doc'},
+                    # Only documents with valid profiles will proceed. This ensures that data
+                    # files with associated profiles are counted for.
+                    {'$match': {'profile_doc': {'$ne': None}}},
+                    # Group by user_id and count ENA files
+                    {
+                        '$group': {
+                            '_id': '$profile_doc.user_id',
+                            'profile_ids': {'$addToSet': '$profile_doc._id'},
+                            'data_file_count': {'$sum': 1},
+                        }
+                    },
+                ]
+            )
+
+        # Sort, limit, project
+        pipeline.extend(
+            [
+                # Sort by number of samples and data files submitted in descending order
+                {'$sort': sort_by},
+                # Limit to what is set as max_users (default: 10)
+                {'$limit': max_users},
+                # Project fields
+                {'$project': projection},
+            ]
+        )
+
+        # Execute the MongoDB aggregation pipeline
+        users_with_samples = list(base_collection.aggregate(pipeline))
+
+        # Get details of the ranked users
+        user_ids = [x['_id'] for x in users_with_samples]
+        users = User.objects.filter(id__in=user_ids).values(
+            'id', 'first_name', 'last_name', 'email'
+        )
+        user_map = {x['id']: x for x in users}
+
+        for x in users_with_samples:
+            user_info = user_map.get(x['_id'], {})
+            x.update(user_info)
+
+        # Define table headers and data
+        table_data = []
+
+        for user in users_with_samples:
+            row = []
+            for key in table_header_map.values():
+                value = user.get(key, '')
+                # Convert '_id' to string
+                if key == '_id':
+                    value = str(value)  
+                row.append(value)
+            table_data.append(row)
+
+        print(
+            f"\nTop {max_users} users ranked by {primary_field.replace('_', ' ')}:\n"
+        )
+
+        # Print the table using the 'tabulate' library
+        table_headers = list(table_header_map.keys())
+
+        print(tabulate(table_data, headers=table_headers, tablefmt='grid'))
+
+        # Uncomment the code below to generate an Excel file from the table data
+        # Create a DataFrame from the table data
+        # df = pd.DataFrame(table_data, columns=table_headers)
+
+        # Write the DataFrame to an Excel file
+        # file_path = f'top_{max_users}_users_rank_by_{primary_field}.xlsx'
+
+        # Check if the file exists and remove it if it does
+        # if os.path.exists(file_path):
+        # os.remove(file_path)
+        # df.to_excel(file_path, index=False, sheet_name=f"Top {max_users} users ranked by {primary_field.replace('_', ' ')}"")
+        # print(
+        #     f"\n   Excel file '{file_path}' has been created in '{os.getcwd()}' directory."
+        # )
+
+        print('\n________________________________________\n')
+
+    # ______________________________________
+
+    # Get list of registered owners' email addresses
+    def get_email_addresses_of_registered_users(self):
+        ''' 
+        NB: This function uses the 'tabulate' library to display the table in the terminal.
+            The displayed output can be copied and used in the script, 'convert_tabular_data_to_spreadsheet.py',
+            which is located in the 'shared_tools/scripts' directory, to generate an Excel file
+        '''
+        user_ids = self.profile_collection.distinct('user_id')
+        users = User.objects.filter(id__in=user_ids).values('id', 'email')
+
+        # Convert to a dictionary e.g. {user_id: email_address}
+        user_email_map = {
+            user['id']: user['email'] for user in users
+        }  
+        # Define table headers and data
+        table_data = []
+        table_headers = ['User ID', 'Email address']
+
+        for user_id, email in user_email_map.items():
+            table_data.append([str(user_id), email])
+
+        print(
+            f'\nEmail addresses of {len(user_email_map)} registered COPO users:\n'
+        )
+
+        # Print the table using the 'tabulate' library
+        print(tabulate(table_data, headers=table_headers, tablefmt='grid'))
+
+        # Uncomment the code below to generate an Excel file from the table data
+        # Create a DataFrame from the table data
+        # df = pd.DataFrame(table_data, columns=table_headers)
+
+        # Write the DataFrame to an Excel file
+        # file_path = 'copo_registered_users_email_addresses.xlsx'
+
+        # Check if the file exists and remove it if it does
+        # if os.path.exists(file_path):
+        #     os.remove(file_path)
+        # df.to_excel(file_path, index=False, sheet_name=f"{len(user_email_map)} COPO registered users' email addresses")
+        # print(f"\n   Excel file '{file_path}' has been created in '{os.getcwd()}' directory.")
+
+        print('\n________________________________________\n')
+
+    def get_average_samples_submitted_per_user(self):
+        print('\nAverage number of samples submitted per user:\n')
+        pipeline = [
+            # Only get samples that have been accepted i.e. been submitted already
+            {'$match': {'status': 'accepted'}},
+            # Group by 'created_by' which is the email address of
+            # the person who submitted the samples
+            {
+                '$group': {
+                    '_id': {'$toLower': '$created_by'},
+                    'sample_count': {'$sum': 1},
+                }
+            },
+            # Compute average across users
+            {
+                '$group': {
+                    '_id': None,
+                    'average_samples_per_user': {'$avg': '$sample_count'},
+                    'total_users': {'$sum': 1},
+                }
+            },
+        ]
+
+        result = list(self.sample_collection.aggregate(pipeline))
+        if result:
+            average_samples = result[0]['average_samples_per_user']
+            print(f'   Average samples submitted per user: {average_samples:.2f}')
+        else:
+            print('   No sample data found to calculate average.')
 
         print('\n________________________________________\n')
