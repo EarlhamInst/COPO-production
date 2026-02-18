@@ -13,7 +13,25 @@ from tabulate import tabulate
 from src.apps.api.utils import validate_date_from_api
 
 '''
-To call an individual function from this Django command, 
+Purpose: To fetch statistics of records in COPO.
+To run the script: $ python shared_tools/scripts/get_sample_statistics.py
+
+Alternatively, to execute the script via VSCode configuration, set the following in `launch.json` file:
+{
+    "name": "Python: Get sample statistics",
+    "type": "debugpy",
+    "request": "launch",
+    "program": "${workspaceFolder}/manage.py",
+    "env": {
+    "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
+    },
+    "args": ["get_sample_statistics"],
+    "django": true,
+    "justMyCode": false
+}
+________________________________________
+    
+To call an individual function from this Django command, get_sample_statistics,
 execute the following in the terminal:
 # Open Django interactive shell
 $ python manage.py shell
@@ -25,12 +43,13 @@ from src.apps.copo_core.management.commands.get_sample_statistics import Command
 import pdb; pdb.set_trace()
 
 cmd = Command() # Instantiate the Command class
-cmd.initialise_db()  # Initialise the database
-cmd.my_function(args_here) # Call any method inside the class
-# e.g. cmd.rank_users_by_samples_and_data_files_submitted()
-'''
+cmd.initialise_db() # Initialise the database
 
-'''
+# Call any method inside the class
+# e.g. cmd.rank_users_by_samples_and_data_files_submitted()
+cmd.my_function(args_here) 
+________________________________________
+
 To clear terminal in Python interactive shell, use the following command:
 import os
 os.system('cls' if os.name == 'nt' else 'clear')
@@ -64,7 +83,10 @@ class Command(BaseCommand):
         # self.rank_users_by_samples_and_data_files_submitted(
         #     start_from='data_files', max_users=10
         # )
+        ## Get only email address of users linked to profiles
         # self.get_email_addresses_of_registered_users()
+        ## Get all users' email addresses
+        # self.get_email_addresses_of_registered_users(only_with_profiles=False)
         self.get_average_samples_submitted_per_user()
 
         # ERGA related statistics
@@ -744,15 +766,26 @@ class Command(BaseCommand):
 
     # ______________________________________
 
-    # Get list of registered owners' email addresses
-    def get_email_addresses_of_registered_users(self):
+    # Get a list of registered users' email address
+    def get_email_addresses_of_registered_users(self,  only_with_profiles=True):
         ''' 
         NB: This function uses the 'tabulate' library to display the table in the terminal.
             The displayed output can be copied and used in the script, 'convert_tabular_data_to_spreadsheet.py',
             which is located in the 'shared_tools/scripts' directory, to generate an Excel file
         '''
-        user_ids = self.profile_collection.distinct('user_id')
-        users = User.objects.filter(id__in=user_ids).values('id', 'email')
+        if only_with_profiles:
+            msg = ' email addresses of registered users linked to profiles'
+            file_path_suffix = (
+                'copo_registered_users_with_profiles_email_addresses.xlsx'
+            )
+            sheet_name = 'Registered users linked to profiles email addresses'
+            user_ids = self.profile_collection.distinct('user_id')
+            users = User.objects.filter(id__in=user_ids).values('id', 'email')
+        else:
+            msg = ' email addresses of all registered users'
+            file_path_suffix = 'copo_registered_users_email_addresses.xlsx'
+            sheet_name = 'All registered users email addresses'
+            users = User.objects.all().values('id', 'email')
 
         # Convert to a dictionary e.g. {user_id: email_address}
         user_email_map = {
@@ -762,27 +795,38 @@ class Command(BaseCommand):
         table_data = []
         table_headers = ['User ID', 'Email address']
 
-        for user_id, email in user_email_map.items():
-            table_data.append([str(user_id), email])
+        # Identify user IDs with no email address
+        users_with_no_email = [user_id for user_id, email in user_email_map.items() if not email]
 
-        print(
-            f'\nEmail addresses of {len(user_email_map)} registered COPO users:\n'
-        )
+        # Only include users with email addresses in the table data
+        for user_id, email in user_email_map.items():
+            if email:
+                table_data.append([str(user_id), email])
+
+        users_with_email_count = len(table_data)
+        print(f'\n{users_with_email_count}{msg}:\n')
 
         # Print the table using the 'tabulate' library
+        # Table: Users with email address
         print(tabulate(table_data, headers=table_headers, tablefmt='grid'))
+
+        # Table: Users with no email address
+        if users_with_no_email:
+            msg_suffix = 'linked to profiles' if only_with_profiles else 'in the system'
+            print(f"\nWarning: {len(users_with_no_email)} user IDs have no email address {msg_suffix}:\n")
+            print(tabulate([[str(user_id)] for user_id in users_with_no_email], headers=['User ID'], tablefmt='grid'))
 
         # Uncomment the code below to generate an Excel file from the table data
         # Create a DataFrame from the table data
         # df = pd.DataFrame(table_data, columns=table_headers)
 
         # Write the DataFrame to an Excel file
-        # file_path = 'copo_registered_users_email_addresses.xlsx'
+        # file_path = f'{users_with_email_count}_{file_path_suffix}'
 
         # Check if the file exists and remove it if it does
         # if os.path.exists(file_path):
         #     os.remove(file_path)
-        # df.to_excel(file_path, index=False, sheet_name=f"{len(user_email_map)} COPO registered users' email addresses")
+        # df.to_excel(file_path, index=False, sheet_name=f'{users_with_email_count} {sheet_name}')
         # print(f"\n   Excel file '{file_path}' has been created in '{os.getcwd()}' directory.")
 
         print('\n________________________________________\n')
