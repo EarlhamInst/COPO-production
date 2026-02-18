@@ -91,7 +91,6 @@ def copo_tol_inspect_gal(request):
         raise PermissionDenied()
 
 
-@login_required
 def gal_and_partners(request):
     # Field name: "PARTNER"
     partner_enums = DTOL_ENUMS.get("PARTNER", str())
@@ -156,7 +155,6 @@ def gal_and_partners(request):
     return HttpResponse(json.dumps(out))
 
 
-@login_required
 def get_gal_names(request):
     projects = TOL_PROFILE_TYPES
     gal_names = Sample().get_gal_names(projects)
@@ -190,7 +188,6 @@ def get_number_of_samples_produced(field_name, field_value):
     return Sample().get_collection_handle().count_documents({field_name: field_value})
 
 
-@login_required
 def get_profile_titles_nav_tabs(request):
     queryUserProfileRecords = request.GET['queryUserProfileRecords']
     #regex = r'\((.*?)\)'  # value within enclosed parentheses regex

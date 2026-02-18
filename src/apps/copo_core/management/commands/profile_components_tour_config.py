@@ -4,10 +4,10 @@ COMPONENTS_TOUR_CONFIG = {
     'accessions': {
         'order': [
             'component_table',
+            'component_legend',
             'export_csv_button',
             'sample_accessions_tab',
             'other_accessions_tab',
-            'component_legend',
             'profile_title',
             'accept_reject_samples_title_button',
             'accession_dashboard_title_button',
@@ -94,6 +94,14 @@ COMPONENTS_TOUR_CONFIG = {
                 'accession_dashboard_title_button',
                 'tol_inspect_title_button',
                 'tol_inspect_gal_title_button',
+                'quick_tour_title_button',
+            ],
+            'creation': [
+                'component_table',
+                'component_legend',
+                'sample_accessions_tab',
+                'other_accessions_tab',
+                'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
         },

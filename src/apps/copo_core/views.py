@@ -723,7 +723,6 @@ def remove_user_from_group(request):
     return JsonResponse({'resp': result})
 
 
-@login_required
 def get_tour_progress(request, component):
     if not Component.objects.filter(name=component).exists():
         return JsonResponse(
@@ -731,18 +730,25 @@ def get_tour_progress(request, component):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    completed_stages = list(
-        TourProgress.objects.filter(user=request.user, component=component).values_list(
-            'stage', flat=True
+    completed_stages = []
+
+    if request.user.is_authenticated:
+        # Authenticated users use database
+        completed_stages = list(
+            TourProgress.objects.filter(
+                user=request.user, component=component
+            ).values_list('stage', flat=True)
         )
-    )
+    else:
+        # Anonymous users use session only
+        completed_stages = request.session.get('completed_tours', {}).get(component, [])
+
     queued_stage = request.session.get('queued_tours', {}).get(component)
     return JsonResponse(
         {'completedStages': completed_stages, 'queuedStage': queued_stage}
     )
 
 
-@login_required
 @require_POST
 def queue_tour_stage(request, component, stage):
     '''
@@ -768,7 +774,6 @@ def queue_tour_stage(request, component, stage):
     return JsonResponse({'status': 'queued', 'component': component, 'stage': stage})
 
 
-@login_required
 @require_POST
 def mark_tour_complete(request, component, stage):
     if not Component.objects.filter(name=component).exists():
@@ -777,12 +782,26 @@ def mark_tour_complete(request, component, stage):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    TourProgress.objects.update_or_create(
-        user=request.user,
-        component=component,
-        stage=stage,
-        defaults={'completed': True},
-    )
+    if request.user.is_authenticated:
+        # Authenticated users use database
+        TourProgress.objects.update_or_create(
+            user=request.user,
+            component=component,
+            stage=stage,
+            defaults={'completed': True},
+        )
+    else:
+        # Anonymous users use session only
+        completed = request.session.get('completed_tours', {})
+        component_stages = completed.get(component, [])
+
+        # Add stage if not already present
+        if stage not in component_stages:
+            component_stages.append(stage)
+
+        completed[component] = component_stages
+        request.session['completed_tours'] = completed
+        request.session.modified = True
 
     # Remove component from queued tours in session if present
     queued = request.session.get('queued_tours', {})
@@ -799,7 +818,7 @@ def mark_tour_complete(request, component, stage):
         # remove the component key
         if not stages:
             queued.pop(component)
-            
+
     request.session['queued_tours'] = queued
     request.session.modified = True
 
