@@ -123,7 +123,7 @@ $(document).on('document_ready', function () {
 
   submissionSocket.onmessage = function (e) {
     d = JSON.parse(e.data);
-    const { $el: $alertElement, inModal: isModalVisible } = getAlertElement(
+    const { $el: $element, inModal: isModalVisible } = getAlertElement(
       d.html_id
     );
     const rawMessage = d.message;
@@ -139,7 +139,7 @@ $(document).on('document_ready', function () {
       if (isModalVisible) {
         // If modal is visible then, show an alert inside it
         const allAlertClasses = Object.values(alertClassMap).join(' ');
-        $alertElement
+        $element
           .html(message)
           .removeClass(allAlertClasses)
           .addClass(alertClassMap[d.action] || 'alert-info')
@@ -148,11 +148,6 @@ $(document).on('document_ready', function () {
         // else, show an alert message within the 'Info' sidebar tab on the page
         displayAlert(d.action, message);
       }
-    }
-
-    // Special handling for actions
-    if (d.action === 'error') {
-      initialiseModalPopovers(); // Initialise popover in modal
     }
   };
 
@@ -165,7 +160,7 @@ $(document).on('document_ready', function () {
 
   s3socket.onmessage = function (e) {
     d = JSON.parse(e.data);
-    const { $el: $alertElement, inModal: isModalVisible } = getAlertElement(
+    const { $el: $element, inModal: isModalVisible } = getAlertElement(
       d.html_id
     );
     const rawMessage = d.message;
@@ -181,7 +176,7 @@ $(document).on('document_ready', function () {
       if (isModalVisible) {
         // If modal is visible then, show an alert inside it
         const allAlertClasses = Object.values(alertClassMap).join(' ');
-        $alertElement
+        $element
           .html(message)
           .removeClass(allAlertClasses)
           .addClass(alertClassMap[d.action] || 'alert-info')
@@ -193,9 +188,7 @@ $(document).on('document_ready', function () {
     }
 
     // Special handling for actions
-    if (d.action === 'error') {
-      initialiseModalPopovers(); // Initialise popover in modal
-    } else if (d.action === 'make_table') {
+    if (d.action === 'make_table') {
       // make table of metadata parsed from spreadsheet
       if ($.fn.DataTable.isDataTable('#sample_parse_table')) {
         $('#sample_parse_table').DataTable().clear().destroy();
@@ -238,14 +231,14 @@ $(document).on('document_ready', function () {
       $('#tabs').fadeIn();
       $('#ena_finish_button').fadeIn();
     } else if (d.action === 'refresh_table') {
-      $(element).removeClass('alert-danger').addClass('alert-info');
-      $(element).html(d.message);
+      $element.removeClass('alert-danger').addClass('alert-info');
+      $element.html(d.message);
       var args_dict = {};
       args_dict['sample_checklist_id'] = get_checklist_id();
       args_dict['profile_id'] = $('#profile_id').val();
       load_records(componentMeta, args_dict, columnDefs); // call to load component records
     } else if (d.action === 'file_processing_status') {
-      $(element).html(d.message);
+      $element.html(d.message);
       table = $('#' + componentMeta.tableID).DataTable();
       //clear old, set new data
       table.rows().deselect();
@@ -253,7 +246,7 @@ $(document).on('document_ready', function () {
       table.rows.add(d.data['table_data']).draw();
       table.columns.adjust().draw();
       table.search('').columns().search('').draw();
-      $(element).html(d.message + ' ... Done');
+      $element.html(d.message + ' ... Done');
 
       /*
         table = $('#read_table').DataTable();

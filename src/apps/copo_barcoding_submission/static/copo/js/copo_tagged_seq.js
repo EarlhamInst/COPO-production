@@ -86,7 +86,7 @@ $(document).ready(function () {
   };
   s3socket.onmessage = function (e) {
     d = JSON.parse(e.data);
-    const { $el: $alertElement, inModal: isModalVisible } = getAlertElement(
+    const { $el: $element, inModal: isModalVisible } = getAlertElement(
       d.html_id
     );
     const rawMessage = d.message;
@@ -102,7 +102,7 @@ $(document).ready(function () {
       if (isModalVisible) {
         // If modal is visible then, show an alert inside it
         const allAlertClasses = Object.values(alertClassMap).join(' ');
-        $alertElement
+        $element
           .html(message)
           .removeClass(allAlertClasses)
           .addClass(alertClassMap[d.action] || 'alert-info')
@@ -114,9 +114,7 @@ $(document).ready(function () {
     }
 
     // Special handling for actions
-    if (d.action === 'error') {
-      initialiseModalPopovers(); // Initialise popover in modal
-    } else if (d.action === 'make_table') {
+    if (d.action === 'make_table') {
       // make table of metadata parsed from spreadsheet
       if ($.fn.DataTable.isDataTable('#' + d.html_id)) {
         $('#' + d.html_id)
