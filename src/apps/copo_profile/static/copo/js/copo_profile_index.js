@@ -3,10 +3,17 @@ function getProfileType() {
 }
 
 function getGroups() {
-  // Parse the stringified list to an array
-  let stringList = $('#groups').val();
-  stringList = stringList.replace(/'/g, '"');
-  return JSON.parse(stringList);
+  // Parse the stringified list into an array
+  const value = $('#groups').val();
+
+  // Return value if it is already an array
+  if (Array.isArray(value)) return value;
+
+  // Parse string list
+  return value
+    .slice(1, -1)
+    .split(',')
+    .map((s) => s.trim().replace(/^'|'$/g, ''));
 }
 
 function getProfilesVisibleLength() {
@@ -27,6 +34,7 @@ let csrfToken;
 let $gridCount;
 let $gridTotal;
 let tableId;
+let groups;
 
 $(document).on('document_ready', function () {
   //****************************** Event handlers block *************************//
@@ -41,7 +49,7 @@ $(document).on('document_ready', function () {
 
   const profilesTotal = getProfilesTotal();
   const profilesVisibleLength = getProfilesVisibleLength();
-  const groups = getGroups();
+  groups = getGroups();
 
   $(document).data('page', 1);
   $(document).data('blockRequest', false);
@@ -127,6 +135,8 @@ $(document).on('document_ready', function () {
 
   // Display 'Accept/reject' button for sample managers
   if (groups.some((g) => g.includes('sample_managers'))) {
+    const pageIcons = $('.copo-page-icons');
+    if (!pageIcons.is(':visible')) pageIcons.show();
     $('#accept_reject_shortcut').show();
   }
 
@@ -338,7 +348,13 @@ function initialiseProfileActionsPopover() {
       profileType && profile_type_def
         ? profile_type_def[profileType]?.actionButtons || []
         : [];
-    const hasActions = !isShared || actionButtons.length > 0;
+
+    // Display edit and delete buttons for shared profiles if the user is a data manager,
+    // otherwise, only show them for non-shared profiles
+    const canEditDelete =
+      !isShared || (isShared && groups.some((g) => g === 'data_managers'));
+
+    const hasActions = canEditDelete || actionButtons.length > 0;
 
     // Remove the ellipsis div if no actions exist
     if (!hasActions) {
@@ -377,26 +393,23 @@ function initialiseProfileActionsPopover() {
         $('.row-ellipsis').attr('title', '');
 
         const $content = $('<div></div>');
+        const profileId = $grid.find('.row-title span').attr('id');
+        const profileType = $panel.data('profile-type');
 
-        // Add edit and delete buttons to non-shared profiles only
-        // i.e. shared profiles cannot be edited or deleted
-        if (!isShared) {
-          const profileId = $grid.find('.row-title span').attr('id');
-          const profileType = $panel.data('profile-type');
-
-          const $editButton = $(
-            `<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"
+        const $editButton = $(
+          `<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"
               data-profile-id="${profileId}"
               data-profile-type="${profileType}">
               <i class="fa fa-pencil"></i>&nbsp;Edit</button>`
-          );
+        );
 
-          const $deleteButton = $(
-            `<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"
+        const $deleteButton = $(
+          `<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"
               data-profile-id="${profileId}">
               <i class="fa fa-trash-can"></i>&nbsp;Delete</button>`
-          );
+        );
 
+        if (canEditDelete) {
           $content.append($editButton, $deleteButton);
         }
 
