@@ -1,5 +1,3 @@
-
-
 from common.dal.copo_da import  APIValidationReport
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
@@ -17,7 +15,7 @@ from common.utils.helpers import notify_frontend
 from urllib.error import HTTPError
 from common.schemas.utils.data_utils import get_compliant_fields, json_to_pytype
 from common.lookup import lookup as lk
-import jsonpath_rw_ext as jp
+from jsonpath_ng.ext import parse as jp
 from common.utils.helpers import map_to_dict
 from common.utils.logger import Logger
 from django.conf import settings
@@ -213,9 +211,9 @@ class ProcessValidationQueue:
                 s = json_to_pytype(lk.WIZARD_FILES["sample_details"], compatibility_mode=False)
                 
                 # Required fields' validation
-                self.fields = jp.match(
+                self.fields = [match.value for match in jp(
                     '$.properties[?(@.specifications[*] == "' + self.type.lower() + '" & @.required=="true" & @.manifest_version[*]== "' + self.current_schema_version + '")].versions[0]',
-                    s)
+                    ).find(s)]
 
                 # validate for required fields
                 for v in self.required_field_validators:
@@ -229,9 +227,9 @@ class ProcessValidationQueue:
 
                 # All fields' validation
                 # get list of all DTOL fields from schemas
-                self.fields = jp.match(
-                    '$.properties[?(@.specifications[*] == "' + self.type.lower() + '"& @.manifest_version[*]=="' + self.current_schema_version + '")].versions[0]',
-                    s)
+                self.fields = [match.value for match in jp(
+                    '$.properties[?(@.specifications[*] == "' + self.type.lower() + '"& @.manifest_version[*]=="' + self.current_schema_version + '")].versions[0]'
+                    ).find(s)]
 
                 # validate for optional dtol fields
                 for v in self.optional_field_validators:

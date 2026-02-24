@@ -5,7 +5,7 @@ import pickle
 from os.path import join, isfile
 from pathlib import Path
 from shutil import rmtree
-import jsonpath_rw_ext as jp
+from jsonpath_ng.ext import parse as jp
 import pandas
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -547,11 +547,11 @@ class DtolSpreadsheet:
         public_name_list = list()
         x = json_to_pytype(
             lk.WIZARD_FILES["sample_details"], compatibility_mode=False)
-        self.fields = jp.match(
+        self.fields = [match.value for match in jp(
             '$.properties[?(@.specifications[*] == "' + self.type.lower() +
             '"& @.manifest_version[*]=="' +
             self.current_schema_version + '")].versions[0]',
-            x)
+            ).find(x)]
 
         # Create a permit filename mapping
         permit_filename_mapping = dict()

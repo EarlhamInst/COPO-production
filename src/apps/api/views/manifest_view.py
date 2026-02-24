@@ -1,5 +1,5 @@
 import json
-import jsonpath_rw_ext as jp
+from jsonpath_ng.ext import parse as jp
 import os
 import numpy as np
 import operator
@@ -247,45 +247,42 @@ def get_manifest_fields(request):
         lk.WIZARD_FILES['sample_details'], compatibility_mode=False
     )
 
-    field_lst = jp.match(
-        '$.properties[?(@.specifications[*] == "'
-        + manifest_type
-        + '"& @.manifest_version[*]=="'
-        + current_schema_version
-        + '")].versions['
-        '0]',
-        s,
-    )
+    field_lst = [match.value for match in jp(
+            '$.properties[?(@.specifications[*] == "'
+            + manifest_type
+            + '"& @.manifest_version[*]=="'
+            + current_schema_version
+            + '")].versions['
+            '0]'
+        ).find(s)
+    ]
 
     # Get sample fields' order number
-    order_num_lst = jp.match(
+    order_num_lst = [match.value for match in jp(
         '$.properties[?(@.specifications[*] == "'
         + manifest_type
         + '"& @.manifest_version[*]=="'
         + current_schema_version
-        + '")].order',
-        s,
-    )
+        + '")].order'
+     ).find(s)]
 
     # Get sample fields' MS Excel column letter
-    excel_col_lst = jp.match(
+    excel_col_lst = [match.value for match in jp(
         '$.properties[?(@.specifications[*] == "'
         + manifest_type
         + '"& @.manifest_version[*]=="'
         + current_schema_version
-        + '")].excel_col',
-        s,
-    )
+        + '")].excel_col'
+    ).find(s)]
 
     # Get sample fields' colour
-    colour_lst = jp.match(
+    colour_lst = [match.value for match in jp(
         '$.properties[?(@.specifications[*] == "'
         + manifest_type
         + '"& @.manifest_version[*]=="'
         + current_schema_version
-        + '")].colour',
-        s,
-    )
+        + '")].colour'
+    ).find(s)]
 
     # Combine the information in a tuple
     sample_fields_tuple = tuple(
