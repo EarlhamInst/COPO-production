@@ -135,6 +135,8 @@ $(document).on('document_ready', function () {
 
   // Display 'Accept/reject' button for sample managers
   if (groups.some((g) => g.includes('sample_managers'))) {
+    const pageIcons = $('.copo-page-icons');
+    if (!pageIcons.is(':visible')) pageIcons.show();
     $('#accept_reject_shortcut').show();
   }
 
