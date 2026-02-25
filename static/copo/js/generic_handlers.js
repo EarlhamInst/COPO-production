@@ -3090,6 +3090,7 @@ function generate_component_control(componentName, profile_type) {
   var pageHeaders = $('.copo-page-headers'); //page header/icons
   var pageIcons = $('.copo-page-icons'); //profile component icons
   var sideBar = $('.copo-sidebar'); //sidebar panels
+  const invalidValues = ['none', 'null', 'undefined', ''];
 
   var profile_id = '';
   if ($('#profile_id').length) {
@@ -3097,9 +3098,13 @@ function generate_component_control(componentName, profile_type) {
   }
 
   //add profile title
-  if ($('#profile_title').length) {
-    const tourId = profile_type_def[profile_type.toLowerCase()]?.tourId || '';
-    let profileTitle = $('#profile_title').val();
+  const $profileTitleElement = $('#profile_title');
+  if ($profileTitleElement.length && !invalidValues.includes($profileTitleElement.val().toLowerCase())) {
+    const tourId =
+      profile_type ?
+        profile_type_def[profile_type.toLowerCase()]?.tourId || ''
+      : '';
+    let profileTitle = $profileTitleElement.val();
     let $profileTitleDiv = $('<div/>', {
       class: 'page-title-custom',
       html: `<span class='profile-title' title='${profileTitle}' data-tour-id='${tourId}'>Profile: ${profileTitle}</span>`,
