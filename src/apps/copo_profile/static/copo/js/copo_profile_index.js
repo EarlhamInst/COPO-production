@@ -207,7 +207,7 @@ $(document).on('document_ready', function () {
             .done(function (data) {
               $('#studyStatus_' + id).html('PUBLIC');
               $('#studyReleaseDate_' + id).html(data['study_release_date']);
-              $el.hide(); // Hide the 'Publish study' button after the study has been released
+              $el.hide(); // Hide the 'Publish study' button after the study has been published
             })
             .fail(function (data) {
               alert(data.responseText);
