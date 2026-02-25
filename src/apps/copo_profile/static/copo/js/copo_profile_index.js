@@ -189,13 +189,13 @@ $(document).on('document_ready', function () {
       .removeClass('grid-panel-body-selected');
   });
 
-  $(document).on('click', '.item a', function (e) {
+  $(document).on('click', 'button.action', function (e) {
     let url;
-    const el = $(e.currentTarget);
-    if (el.hasClass('action')) {
-      const actionType = el.data('actionType');
-      let id = el.closest('.ui.menu').attr('id');
-      id = id.split('_')[1];
+    const $el = $(e.currentTarget);
+    const actionType = $el.data('action-type');
+
+    if (actionType) {
+      let id = $el.data('profile-id'); // Profile ID
 
       if (actionType === 'release_study') {
         result = confirm('Are you sure you would like to publish the study?');
@@ -206,17 +206,27 @@ $(document).on('document_ready', function () {
           })
             .done(function (data) {
               $('#studyStatus_' + id).html('PUBLIC');
-              $('#study_release_date_' + id).html(data['study_release_date']);
-              el.hide();
+              $('#studyReleaseDate_' + id).html(data['study_release_date']);
+              $el.hide(); // Hide the 'Publish study' button after the study has been released
             })
             .fail(function (data) {
               alert(data.responseText);
             });
         }
-      } else {
-        url = '/copo/copo_' + actionType + '/' + id + '/view';
-        document.location = url;
       }
+    }
+  });
+
+  $(document).on('click', '.item a', function (e) {
+    let url;
+    const $el = $(e.currentTarget);
+    const $btn = $el.find('.pcomponent-button');
+
+    if ($btn.length) {
+      let id = $el.closest('.ui.menu').attr('id');
+      id = id.split('_')[1];
+      url = '/copo/copo_' + actionType + '/' + id + '/view';
+      document.location = url;
     }
   });
 
@@ -421,7 +431,8 @@ function initialiseProfileActionsPopover() {
             return;
           }
           const $button = $(
-            `<button id="${item}" class="btn btn-sm btn-primary" title="${action.title}">
+          `<button id="${item}" class="btn btn-sm btn-primary action" title="${action.title}"
+            data-action-type="${action.action}" data-profile-id="${profileId}">
             <i class="${action.icon_class}"></i>&nbsp;${action.label}
           </button>`
           );
