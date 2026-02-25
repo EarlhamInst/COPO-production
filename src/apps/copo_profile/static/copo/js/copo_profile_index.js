@@ -225,7 +225,7 @@ $(document).on('document_ready', function () {
     if ($btn.length) {
       let id = $el.closest('.ui.menu').attr('id');
       id = id.split('_')[1];
-      url = '/copo/copo_' + actionType + '/' + id + '/view';
+      url = '/copo/copo_' + id + '/' + id + '/view';
       document.location = url;
     }
   });
