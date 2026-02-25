@@ -25,7 +25,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     python-is-python3 && \
     gem install sass && \
-    pip install --upgrade pip setuptools && \
+    pip install --upgrade pip && \
+    pip install "setuptools<82" && \
     apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 COPY ./requirements/ /tmp/requirements/
