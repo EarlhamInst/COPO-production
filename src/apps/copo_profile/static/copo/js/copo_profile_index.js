@@ -216,19 +216,7 @@ $(document).on('document_ready', function () {
       }
     }
   });
-
-  $(document).on('click', '.item a', function (e) {
-    let url;
-    const $el = $(e.currentTarget);
-    const $btn = $el.find('.pcomponent-button');
-
-    if ($btn.length) {
-      let id = $el.closest('.ui.menu').attr('id');
-      id = id.split('_')[1];
-      url = '/copo/copo_' + id + '/' + id + '/view';
-      document.location = url;
-    }
-  });
+  
 
   // Toggle the visibility of the button to
   // sort in ascending order or descending order
