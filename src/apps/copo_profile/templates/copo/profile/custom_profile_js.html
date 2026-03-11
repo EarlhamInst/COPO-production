@@ -10,14 +10,14 @@ $(document).ready(function () {
     });
 
     $(document).on('click', '#releasestudy', function (e) {
-        let profile_id = $(e.currentTarget).closest('.ellipsis-div').attr('id');
+        let profile_id = $(e.currentTarget).data('profile-id');
         //let profile_type = $(e.currentTarget).closest('.copo-records-panel').attr('profile_type');
         release_study(profile_id);
     });
 });
 
 function release_study(profile_id) {
-    element = $('#study_status_' + profile_id);
+    element = $('#studyStatus_' + profile_id);
     if (element.length == 0) {
         alert('Unable to process the request.');
         return;
@@ -34,8 +34,8 @@ function release_study(profile_id) {
         url: url,
         })
         .done(function (data) {
-            $('#study_status_' + profile_id).html('PUBLIC');
-            $('#study_release_date_' + profile_id).html(data['study_release_date']);
+            $('#studyStatus_' + profile_id).html('PUBLIC');
+            $('#studyReleaseDate_' + profile_id).html(data['study_release_date']);
             el.hide();
             /*
                     el.attr('aria-disabled', true).attr("role","link").css("pointer-events", "none").css("color", "grey")

@@ -97,10 +97,10 @@
                                         {% if profile.study_status %}
                                             <div class="study-status-div">
                                                 <span class="text-bold">Release Status: </span> 
-                                                <span id="study_status_{{profile.id}}">{{ profile.study_status | get_first_value_from_array}}</span>
+                                                <span id="studyStatus_{{profile.id}}">{{ profile.study_status | get_first_value_from_array}}</span>
                                             </div>
                                             <div><span class="text-bold">Release Date: </span>    
-                                                <span id="study_release_date_{{profile.id}}">{{ profile.study_release_date | get_first_value_from_array}}</span>
+                                                <span id="studyReleaseDate_{{profile.id}}">{{ profile.study_release_date | get_first_value_from_array}}</span>
                                             </div>
                                         {% endif %}
                                     
