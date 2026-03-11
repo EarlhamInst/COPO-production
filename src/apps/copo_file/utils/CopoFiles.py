@@ -15,8 +15,21 @@ def generate_files_record(profile_id=str()):
                        title='', defaultContent='', width="5%")
 
     columns.insert(0, detail_dict)
+    size_render = (
+        "(function(data, type, row) {"
+        "  if (type !== 'display' || data == null) return data;"
+        "  if (data < 1024) return data + ' B';"
+        "  if (data < 1048576) return (data / 1024).toFixed(1) + ' KB';"
+        "  if (data < 1073741824) return (data / 1048576).toFixed(1) + ' MB';"
+        "  return (data / 1073741824).toFixed(2) + ' GB';"
+        "})"
+    )
     for x in label:
-        columns.append(dict(data=x, title=x.upper().replace("_", " ")))
+        col = dict(data=x, title=x.upper().replace("_", " "))
+        if x == "size_in_bytes":
+            col["title"] = "Size"
+            col["render"] = size_render
+        columns.append(col)
 
     s3obj = s3()
     #user = User.objects.get(pk=user_id)
