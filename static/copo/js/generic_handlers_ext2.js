@@ -1237,13 +1237,14 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
 function load_records(componentMeta, args_dict, columnDefs = null) {
   var csrftoken = $.cookie('csrftoken');
 
-  //loader
+  // Show spinner while waiting for data
   var tableLoader = null;
   if ($('#component_table_loader').length) {
     tableLoader = $('<div class="copo-i-loader"></div>');
     $('#component_table_loader').append(tableLoader);
   }
 
+  // Merge any caller-supplied params, then add required task fields
   var post_data = {};
   if (args_dict != null) {
     post_data = args_dict;
@@ -1263,6 +1264,7 @@ function load_records(componentMeta, args_dict, columnDefs = null) {
       alert("Couldn't retrieve " + componentMeta.component + ' data!');
     },
   }).done(function (data) {
+    // Multi-component response → tabbed layout; otherwise a single flat table
     if (
       typeof data.table_data != 'undefined' &&
       typeof data.table_data.components != 'undefined'
@@ -1271,9 +1273,8 @@ function load_records(componentMeta, args_dict, columnDefs = null) {
     } else {
       do_render_component_table(data, componentMeta, columnDefs);
     }
-    //remove loader
     if (tableLoader) {
-      tableLoader.remove();
+      tableLoader.remove(); // Hide spinner once rendered
     }
   });
 }
