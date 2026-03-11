@@ -1,26 +1,58 @@
-#it is for mac, change some of the docker images if you want to use it for linux environment
-#1. export $(cat .env) > /dev/null 2>&1; docker compose -f local-docker-compose-mac.yaml up -d
+## Note: This setup is for Mac OS only. However, they can be 
+## adapted for a Linux OS by changing the Docker images.
 #
-#2. for new deployment with empty db, run the following command
-##python manage.py makemigrations
-##python manage.py makemigrations allauth
-#python manage.py setup_groups
-###python manage.py migrate
-#python manage.py createcachetable
-#python manage.py setup_sequencing_centres
-##python manage.py social_accounts
-##python manage.py setup_schemas
-##python manage.py setup_associated_profile_types
-##python manage.py setup_profile_types
-##python manage.py createsuperuser
-##python manage.py setup_news
 #
-##run rs.initiate() in mongo shell as copo_admin
+## To deploy a local COPO instance, follow the steps below:
+#
+## Step #1 - Create local Docker images
+## The .env file contains environment variables. Ensure that both the .env file and the 
+## local.copo.compose.mac.yaml file are in the same directory before running the command below.
+#
+# $ export $(cat .env) > /dev/null 2>&1; docker compose -f local.copo.compose.mac.yaml up -d
+#
+## Step #2  - Run Django management commands in the terminal 
+## to set up the database and create a superuser (for a new deployment with empty DB only)
+# $ docker ps
+# $ docker exec -it <copo-web-container-id> bash
+
+# $ python manage.py makemigrations
+# $ python manage.py makemigrations allauth
+# $ python manage.py migrate
+# $ python manage.py setup_groups
+# $ python manage.py createcachetable
+# $ python manage.py setup_sequencing_centres
+# $ python manage.py social_accounts
+
+## Step #3 - Initialise MongoDB replica set as 'copo_admin' user.
+# $ docker ps
+# $ docker exec -it <mongo-container-id> bash
+#
+# :/# mongosh
+# > use admin
+# admin> db.auth("copo_admin", "password")
+# admin> rs.initiate()
+#
+## Step #4 - Return to the "copo-web-container" to run 
+## the other Django management commands
+#
+## Exit the <mongo-container> by inputting:
+#  CTRL + P then CTRL + Q
+#
+## Enter the <copo-web-container>
+# $ docker ps
+# $ docker exec -it <copo-web-container-id> bash
+
+# $ python manage.py setup_schemas
+# $ python manage.py setup_associated_profile_types
+# $ python manage.py setup_profile_types
+# $ python manage.py setup_news
+#
+# $ python manage.py createsuperuser
 
 version: "3.9"
 services:
   copo_web:
-    image: debbyku/copo_new:v24.04.01
+    image: local_copo_web:v1.0.0 # Replace with your local image name
     command: >
       sleep infinity
     ports:
@@ -88,7 +120,9 @@ services:
       retries: 3
       start_period: 30s
     volumes:
-      - /Users/zef22hak/development/COPO_refactoring/COPO-production:/copo
+      # Replace with the absolute path to your local COPO project directory
+      - /<path-to-project-directory>/COPO-production:/copo
+  
   copo_redis:
     image: redis:6.2.8
 
@@ -133,7 +167,6 @@ services:
       - "9000:9000"
       - "9001:9001"
 
-
   #copo_browser:
   #  image: debbyku/browserless.chrome
   #  ports: 
@@ -154,6 +187,7 @@ services:
   #    - MAX_CONCURRENT_SESSIONS=5
   #    - MAX_QUEUE_LENGTH=10
   #    - PREBOOT_QUANTITY=2
+  
   #copo_browser:
   #  image: debbyku/browserless.chrome
   #  ports: 
@@ -175,14 +209,14 @@ services:
   #    - MAX_QUEUE_LENGTH=10
   #    - PREBOOT_QUANTITY=2
 
-  edp:
-    image: python:3.10.13-bullseye
-    command: sleep infinity
-    volumes:
-      - /Users/zef22hak/development/EDP:/EDP
-    environment:
-      - SAPIOURL=${SAPIOURL}
-      - SAPIOGUID=${SAPIOGUID}
-      - SAPIOTOKEN=${SAPIOTOKEN}
-      - ZENODOURL=https://zenodo.org/api
-      - ZENODOTOKEN=${ZENODOTOKEN}
+  # edp:
+  #   image: python:3.10.13-bullseye
+  #   command: sleep infinity
+  #   volumes:
+  #     - /Users/zef22hak/development//EDP:/EDP
+  #   environment:
+  #     - SAPIOURL=${SAPIOURL}
+  #     - SAPIOGUID=${SAPIOGUID}
+  #     - SAPIOTOKEN=${SAPIOTOKEN}
+  #     - ZENODOURL=https://zenodo.org/api
+  #     - ZENODOTOKEN=${ZENODOTOKEN}

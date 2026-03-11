@@ -1,0 +1,168 @@
+## Note: This setup is for Linux OS only. However, they can be 
+## adapted for a Mac OS by changing the Docker images.
+#
+#
+## To deploy a local COPO instance, follow the steps below:
+#
+## Step #1 - Create local Docker images
+## The .env file contains environment variables. Ensure that both the .env file and the 
+## local.copo.compose.linux.yaml file are in the same directory before running the command below.
+#
+# $ export $(cat .env) > /dev/null 2>&1; docker compose -f local.copo.compose.linux.yaml up -d
+#
+## Step #2  - Run Django management commands in the terminal 
+## to set up the database and create a superuser (for a new deployment with empty DB only)
+# $ docker ps
+# $ docker exec -it <copo-web-container-id> bash
+
+# $ python manage.py makemigrations
+# $ python manage.py makemigrations allauth
+# $ python manage.py migrate
+# $ python manage.py setup_groups
+# $ python manage.py createcachetable
+# $ python manage.py setup_sequencing_centres
+# $ python manage.py social_accounts
+
+## Step #3 - Initialise MongoDB replica set as 'copo_admin' user.
+# $ docker ps
+# $ docker exec -it <mongo-container-id> bash
+#
+# :/# mongosh
+# > use admin
+# admin> db.auth("copo_admin", "password")
+# admin> rs.initiate()
+#
+## Step #4 - Return to the "copo-web-container" to run 
+## the other Django management commands
+#
+## Exit the <mongo-container> by inputting:
+#  CTRL + P then CTRL + Q
+#
+## Enter the <copo-web-container>
+# $ docker ps
+# $ docker exec -it <copo-web-container-id> bash
+
+# $ python manage.py setup_schemas
+# $ python manage.py setup_associated_profile_types
+# $ python manage.py setup_profile_types
+# $ python manage.py setup_news
+#
+# $ python manage.py createsuperuser
+
+version: "3.9"
+services:
+  web:
+    image: local_copo_web:v1.0.0 # Replace with your local image name
+    command: >
+      bash -c "code-server serve-local --disable-telemetry --auth  none --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT_TYPE=local
+      - ASPERA_PLUGIN_DIRECTORY=aspera_linux_plugin
+      - SECRET_KEY=${vault_copo_web_secret_key}
+      - MEDIA_PATH=media/
+      - DEBUG=true
+      - REDIS_HOST=copo_redis
+      - REDIS_PORT=6379
+      - WEBIN_USER=${vault_copo_webin_user}
+      - WEBIN_USER_PASSWORD=${vault_copo_webin_user_password}
+      - ENA_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/
+      - MONGO_USER=copo_user
+      - MONGO_USER_PASSWORD=password
+      - MONGO_DB=copo_mongo
+      - MONGO_HOST=copo_mongo
+      - MONGO_PORT=27017
+      - MONGO_MAX_POOL_SIZE=100
+      - POSTGRES_DB=copo
+      - POSTGRES_USER=copo_user
+      - POSTGRES_PORT=5432
+      - POSTGRES_SERVICE=copo_postgres
+      - POSTGRES_PASSWORD=password
+      - ORCID_SECRET=${vault_copo_orcid_secret_key}
+      - ORCID_CLIENT=${vault_copo_orcid_client_id}
+      - NIH_API_KEY=${vault_copo_nih_api_key}
+      - PUBLIC_NAME_SERVICE_API_KEY=${vault_copo_public_name_service_api_key}
+      - MAIL_PASSWORD=${vault_copo_mail_password}
+      - MAIL_PORT=587
+      - MAIL_ADDRESS=data@earlham.ac.uk
+      - MAIL_SERVER=outlook.office365.com
+      - MAIL_USERNAME=eidata@nbi.ac.uk
+      - ALLOWED_HOSTS=
+      - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
+      - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
+      - ASPERA_PATH=/root/.aspera/cli
+      - BIOIMAGE_PATH=${vault_copo_bioimage_path}
+      - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
+      - BIOIMAGE_PASSWORD=${vault_copo_bioimage_password}
+      - ECS_SECRET_KEY=${vault_ecs_secret_key}
+      - ECS_ACCESS_KEY_ID=${vault_ecs_access_key}
+      - ECS_ENDPOINT=http://minio.copodev.cyverseuk.org
+      - ECS_ENDPOINT_EXTERNAL=http://minio.copodev.cyverseuk.org
+      - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
+      - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
+      - ENA_V1_SAMPLE_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples
+      - B2DROP_PERMITS=/copo/b2drop/permits
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_PASSWORD=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@test.com
+      - http_protocol=http
+      - ZENODOURL=https://zenodo.org/api
+      - ZENODOTOKEN=${ZENODOTOKEN}    
+    depends_on:
+      - copo_redis
+      - copo_postgres
+      - copo_mongo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s  
+    volumes:
+      # Replace with the absolute path to your local COPO project directory
+      - /<path-to-project-directory>/COPO-production:/copo
+  
+  copo_redis:
+    image: redis:6.2.8
+  
+  copo_postgres:
+    image: postgres:15
+    ports:
+      - "5432:5432"  
+    environment:
+      - POSTGRES_DB=copo
+      - POSTGRES_USER=copo_user
+      - POSTGRES_PASSWORD=password
+  
+  copo_mongo:
+    image: copo/copo-mongo-mac:v8.0.1
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
+    entrypoint:
+       - bash
+       - -c
+       - |
+          openssl rand -base64 756 > /data/replica.key
+          chmod 400 /data/replica.key
+          chown 999:999 /data/replica.key
+          exec docker-entrypoint.sh $$@
+    hostname: copo-mongo-server
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=copo_admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_USER=copo_user
+      - MONGO_USER_PASSWORD=password
+      - MONGO_DB=copo_mongo
+  
+  copo_minio:
+    image: quay.io/minio/minio 
+    command: server /data --console-address ":9001"
+    hostname: minio
+    environment:
+      MINIO_ROOT_USER: copo@nbi.ac.uk
+      MINIO_ROOT_PASSWORD: ${vault_ecs_secret_key}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
