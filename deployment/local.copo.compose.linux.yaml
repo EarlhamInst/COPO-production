@@ -48,6 +48,16 @@
 # $ python manage.py setup_news
 #
 # $ python manage.py createsuperuser
+#
+## Step #5 - Run Celery commands to populate data in the database
+## Switch to root user if not already it
+# sudo -i
+
+# Execute various celery commands...which relate to reads, single-cell etc.
+# celery -A src call src.apps.copo_single_cell_submission.tasks.update_singlecell_schema
+# celery -A src call src.apps.copo_core.tasks.update_ena_read_checklist
+# celery -A src call src.apps.copo_core.tasks.update_ena_checklist
+# celery -A src call src.apps.copo_core.tasks.update_ena_read_platform
 
 version: "3.9"
 services:
