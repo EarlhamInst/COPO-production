@@ -382,20 +382,27 @@ function getAlertElement(htmlId) {
   if (!htmlId) {
     return { $el: $(), inModal: false };
   }
+
   // Determine if it's a modal element or a page element
   const $modalElement = $('.modal-dialog:visible').find(`#${htmlId}`);
   if ($modalElement.length) {
     return { $el: $modalElement, inModal: true };
   }
-  return { $el: $(`#${htmlId}`), inModal: false };
+
+  const $pageElement = $('.copo-sidebar').find(`#${htmlId}`);
+  if ($pageElement.length) {
+    return { $el: $pageElement, inModal: false };
+  }
+
+  return { $el: $(), inModal: false };
 }
 
 function displayAlert(alertType, alertMessage) {
   // alertType:  'success', 'warning', 'info', 
-  //             'danger' ('error' action is mapped to 'danger')
+  //             'danger' (Note: 'error' action is mapped to 'danger' alert type)
   // alertMessage: the message to be displayed
 
-  // Strangely, calling the 'Info' tab with the ID, '#page_alert_panel' doesn't work,
+  // Strangely, calling the 'Info' tab with the ID, '#page_alert_panel', doesn't work,
   // so the class, '.copo-sidebar-info', is used instead.
   let $infoSidebarTab = $('.copo-sidebar-info');
   let $infoPanel = $infoSidebarTab.find('.panel-body');
