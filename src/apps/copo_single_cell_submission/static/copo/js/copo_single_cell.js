@@ -101,7 +101,7 @@ $(document).on('document_ready', function () {
           .removeClass(allAlertClasses)
           .addClass(alertClassMap[d.action] || 'alert-info')
           .fadeIn(50);
-      } else if (d.action) {
+      } else if (d.action && $element.length) {
         // else, show an alert message within the 'Info' sidebar tab on the page
         displayAlert(d.action, message);
       }
@@ -109,8 +109,6 @@ $(document).on('document_ready', function () {
 
     // Special handling for actions
     if (d.action === 'refresh_table') {
-      $element.removeClass('alert-danger').addClass('alert-info');
-      $element.html(d.message);
       var args_dict = {};
       args_dict['singlecell_checklist_id'] = get_checklist_id();
       args_dict['profile_id'] = $('#profile_id').val();
@@ -148,7 +146,7 @@ $(document).on('document_ready', function () {
           .removeClass(allAlertClasses)
           .addClass(alertClassMap[d.action] || 'alert-info')
           .fadeIn(50);
-      } else if (d.action) {
+      } else if (d.action && $element.length) {
         // else, show an alert message within the 'Info' sidebar tab on the page
         displayAlert(d.action, message);
       }
@@ -247,15 +245,12 @@ $(document).on('document_ready', function () {
       $('#table_div').fadeIn(1000);
       $('#ena_finish_button').fadeIn();
     } else if (d.action === 'refresh_table') {
-      $element.removeClass('alert-danger').addClass('alert-info');
-      $element.html(d.message);
       var args_dict = {};
       args_dict['singlecell_checklist_id'] = get_checklist_id();
       args_dict['profile_id'] = $('#profile_id').val();
       args_dict['schema_name'] = schema_name;
       load_records(componentMeta, args_dict, columnDefs); // call to load component records
     } else if (d.action === 'file_processing_status') {
-      $element.html(d.message);
       table = $('#singlecell_table').DataTable();
       //clear old, set new data
       table.rows().deselect();
@@ -263,7 +258,15 @@ $(document).on('document_ready', function () {
       table.rows.add(d.data['table_data']).draw();
       table.columns.adjust().draw();
       table.search('').columns().search('').draw();
-      $element.html(d.message + ' ... Done');
+      
+      $('.alert:visible .alert-message')
+        .filter((_, el) => {
+          // Prevent duplicate '... Done' suffix
+          const t = el.innerText.trim();
+          return t === message && !t.endsWith('... Done');
+        })
+        .first()
+        .html(`${message}... Done`);
     }
   };
   window.addEventListener('beforeunload', function (event) {

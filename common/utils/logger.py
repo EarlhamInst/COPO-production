@@ -40,8 +40,11 @@ class Logger():
 
     def _log_to_file(self, msg, lvl=Loglvl.WARNING):
         msg = str(msg)
+        log_dir = os.path.join(settings.BASE_DIR, self.logfile_path)
+        os.makedirs(log_dir, exist_ok=True) # Ensure that 'logs' directory exists
+        
         if settings.DEBUG or lvl != Loglvl.DEBUG:
-            with open(os.path.join(settings.BASE_DIR, self.logfile_path, str(datetime.now().date()) + '.log'), 'a+', encoding='utf-8') as file:
+            with open(os.path.join(log_dir, f'{datetime.now().date()}.log'), 'a+', encoding='utf-8') as file:
                 time = datetime.now()
                 # time = str(time.hour) + "-" + str(time.minute) + "-" + str(time.second)
                 file.write(lvl.name + " - [" + str(time) + "]: " + msg + "\n")
