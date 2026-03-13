@@ -56,11 +56,25 @@ $(document).ready(function () {
     do_record_task(event);
   });
 
+  // Runs after each DataTable draw. Used to attach column-header tooltips and
+  // compute the aggregate bucket size shown above the search box.
   $('body').on('posttablerefresh', function (event) {
     table = $('#' + componentMeta.tableID).DataTable();
     var numCols = table.columns().nodes().length;
 
     for (var i = 0; i < numCols; i++) {
+      // Attach a tooltip to the Checksum header explaining S3 ETag semantics.
+      // For single-part uploads the ETag is a plain MD5; for multipart uploads
+      // it is an MD5-of-MD5s suffixed with -N (number of parts) and cannot be
+      // used to verify raw file integrity against other systems.
+      if ($(table.column(i).header()).text().trim() == 'Checksum') {
+        $(table.column(i).header()).attr(
+          'title',
+          'S3 ETag. For multipart-uploaded files this ends in -N and is not a plain MD5 \u2014 it cannot be used to verify file integrity against other systems. The MD5 used for ENA submission is computed separately when the file is downloaded for transfer.'
+        );
+      }
+      // Sum the raw byte values in the hidden SIZE IN BYTES column to display
+      // a human-readable total above the DataTable search box.
       if ($(table.column(i).header()).text() == 'SIZE IN BYTES') {
         var bucket_size_in_GB = table
           .column(i)
@@ -70,6 +84,7 @@ $(document).ready(function () {
 
         let table_wrapper = $('#' + componentMeta.tableID + '_wrapper');
 
+        // Create the total-size span once; reuse it on subsequent redraws.
         total_size = table_wrapper.find('#total_size');
         if (total_size.length == 0) {
           $('<span id="total_size"/>')
@@ -84,7 +99,7 @@ $(document).ready(function () {
             Math.round((bucket_size_in_GB / 1024 / 1024 / 1024) * 100) / 100 +
             'GB'
         );
-        break;
+        break; // No need to inspect remaining columns once size is processed.
       }
     }
   });
@@ -123,6 +138,8 @@ $(document).ready(function () {
     }
   }
 
+  // Open the presigned-URL upload modal in its initial state (input visible,
+  // copy button hidden until URLs have been generated).
   function do_add_record() {
     $('#url_upload_controls').show();
     $('#presigned_url_modal').modal('show');
@@ -149,12 +166,16 @@ $(document).ready(function () {
     }
   );
 
+  // Send the pasted file list to the server to generate presigned S3 PUT URLs.
+  // The server returns [{name, url}] objects; we build a nohup curl command
+  // string the user can copy and run in their terminal to upload the files.
   $(document).on('click', '#process_urls_button', function (evt) {
-    // get list of files output from ls -F1
+    // Expect one filename per line (e.g. output of ls -F1).
     var data = $('#url_text_area').val();
     filenames = data.split('\n');
     for (var i = 0; i < filenames.length; i++) {
       filenames[i] = filenames[i].trim();
+      // S3 keys with spaces cause curl quoting issues; reject them early.
       if (filenames[i].indexOf(' ') > -1) {
         alert('File name cannot contain spaces');
         return;
@@ -164,7 +185,6 @@ $(document).ready(function () {
 
     var csrftoken = $.cookie('csrftoken');
     $('#url_upload_controls').hide();
-    // pass to get pre-signed urls
     $('#command_panel').show();
     $('#command_area').html('Please wait ...')
     $.ajax({
@@ -177,8 +197,9 @@ $(document).ready(function () {
       .done(function (d) {
         $('#copy_urls_button').fadeIn();
         $('#process_urls_button').fadeOut();
+        // Build a single nohup curl command containing one upload per file.
+        // piping through cat forces curl to flush progress output line-by-line.
         var out = '<kbd> nohup ';
-        // display each url in <kbd> tag
         $(d).each(function (idx, obj) {
           out =
             out +
@@ -207,6 +228,8 @@ $(document).ready(function () {
     doDL($('#command_area').text());
   });
 
+  // Trigger a browser download of the curl command string as a plain-text file
+  // by opening it as a data URI, so the user can save and run it directly.
   function doDL(s) {
     function dataUrl(data) {
       return 'data:x-application/text,' + encodeURI(data);
@@ -220,11 +243,16 @@ $(document).ready(function () {
   });
 });
 
+// Upload files selected via the local file picker directly to S3 through the
+// Django upload endpoint. Progress is shown as a percentage while the XHR
+// transfer is in flight; on completion the files table is refreshed.
 function upload_files(files) {
   $('#warning_info').fadeOut('fast');
   $('#warning_info2').fadeOut('fast');
 
   var csrftoken = $.cookie('csrftoken');
+  // Append each file under its index as the field name; the server iterates
+  // request.FILES by key to reconstruct the list.
   form = new FormData();
   for (var i = 0; i < files.length; i++) {
     form.append(i.toString(), files[i]);
@@ -242,18 +270,18 @@ function upload_files(files) {
       files: files,
       cache: false,
       dataType: 'json',
-      contentType: false,
-      processData: false,
+      contentType: false,  // Let the browser set multipart/form-data with boundary.
+      processData: false,  // Prevent jQuery serialising the FormData object.
       method: 'POST',
       type: 'POST', // For jQuery < 1.9
       headers: { 'X-CSRFToken': csrftoken },
 
+      // Override the XHR factory to wire up upload progress reporting.
       xhr: function () {
         var xhr = jQuery.ajaxSettings.xhr();
         xhr.upload.onprogress = function (evt) {
           var percentVal = Math.round((evt.loaded / evt.total) * 100);
           percent.html('<b>' + percentVal + '%</b>');
-          //console.log('progress', percentVal);
         };
         xhr.upload.onload = function () {
           percent.html('');
@@ -265,7 +293,8 @@ function upload_files(files) {
     .fail(function (jqXHR, status, error) {
       $('#upload_local_files_button').fadeIn();
       $('#ss_upload_spinner').fadeOut('fast');
-      //console.log(jqXHR)
+      // status 0 means the request was aborted (e.g. browser navigation); use
+      // a generic message rather than exposing a raw HTTP error in that case.
       var message = 'Cannot upload files, please check your file size';
       if (jqXHR.status != '0') {
         message = jqXHR.status + ' ' + error;
@@ -286,6 +315,7 @@ function upload_files(files) {
       result_dict['message'] = 'File(s) have been uploaded!';
       do_crud_action_feedback(result_dict);
       globalDataBuffer = data;
+      // If the response includes updated table data, trigger a full table redraw.
       if (data.hasOwnProperty('table_data')) {
         var event = jQuery.Event('refreshtable');
         $('body').trigger(event);
