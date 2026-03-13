@@ -505,10 +505,8 @@ class EnaReads:
         if study_attributes.get("name", str()):
             etree.SubElement(project, 'NAME').text = study_attributes.get("name", str())
 
-        if study_attributes.get("title", str()):
-            etree.SubElement(project, 'TITLE').text = study_attributes.get(
-                "title", str()
-            )
+        # TITLE is required by ENA schema and must precede DESCRIPTION and SUBMISSION_PROJECT
+        etree.SubElement(project, 'TITLE').text = study_attributes.get("title", str())
 
         if study_attributes.get("description", str()):
             etree.SubElement(project, 'DESCRIPTION').text = study_attributes.get(
