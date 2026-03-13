@@ -656,8 +656,8 @@ class EnaTaggedSequence:
         if study_attributes.get("name", str()):
             ET.SubElement(project, 'NAME').text = study_attributes.get("name", str())
 
-        if study_attributes.get("title", str()):
-            ET.SubElement(project, 'TITLE').text = study_attributes.get("title", str())
+        # TITLE is required by ENA schema and must precede DESCRIPTION and SUBMISSION_PROJECT
+        ET.SubElement(project, 'TITLE').text = study_attributes.get("title", str())
 
         if study_attributes.get("description", str()):
             ET.SubElement(project, 'DESCRIPTION').text = study_attributes.get(
