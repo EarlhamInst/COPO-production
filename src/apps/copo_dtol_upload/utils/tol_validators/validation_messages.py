@@ -62,10 +62,22 @@ MESSAGES = {
                                                      '<strong>RESEQUENCING</strong> and vice versa. Please update/edit the '
                                                      'associated profile type then, reupload the '
                                                      'manifest.',
-                                    
-
-    'validation_msg_invalid_data': 'Invalid data: <strong>%s</strong> in column <strong>%s</strong> at row '
-                                   '<strong>%s</strong>. Allowed values are <strong>%s</strong>',
+    'validation_msg_invalid_data': (
+        'Invalid value <strong>%s</strong> in column <strong>%s</strong> at row <strong>%s</strong>.<br>'
+        'Expected %s.'
+    ),                      
+    'validation_msg_invalid_enum': (
+        f'''
+        Invalid value <strong>{{value}}</strong> in column <strong>{{column}}</strong> at row <strong>{{row}}</strong>.<br>
+        Expected one of 
+        <details class='valid-enum'>
+            <summary class='valid-enum-trigger'>{{num_values}} valid values (click to view).</summary>
+            <div class='valid-enum-container'>
+                <h3 class='valid-enum-title'>Valid values</h3>{{content}}
+            </div>
+        </details>
+        '''
+    ),
     'validation_msg_invalid_date': 'Invalid date: <strong>%s</strong> in column <strong>%s</strong> at row '
                                    '<strong>%s</strong>. Dates should be in format YYYY-MM-DD',
     'validation_msg_invalid_link': 'Invalid URL: <strong>%s</strong> in column <strong>%s</strong> at row '
