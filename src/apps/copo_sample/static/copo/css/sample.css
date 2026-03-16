@@ -75,6 +75,13 @@ hr {
 }
 
 /* Information messages */
+details.valid-enum .valid-enum-trigger {
+    font-weight: bold;
+}
+
+details.valid-enum .valid-enum-container {
+    overflow-x: auto;
+}
 
 .sample-alert-info {
     /* The typewriter cursor effect */
