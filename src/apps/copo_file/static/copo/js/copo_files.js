@@ -73,9 +73,9 @@ $(document).ready(function () {
           'S3 ETag. For multipart-uploaded files this ends in -N and is not a plain MD5 \u2014 it cannot be used to verify file integrity against other systems. The MD5 used for ENA submission is computed separately when the file is downloaded for transfer.'
         );
       }
-      // Sum the raw byte values in the hidden SIZE IN BYTES column to display
+      // Sum the raw byte values in the 'Size (bytes)' column to display
       // a human-readable total above the DataTable search box.
-      if ($(table.column(i).header()).text() == 'SIZE IN BYTES') {
+      if ($(table.column(i).header()).text().trim() == 'Size (bytes)') {
         var bucket_size_in_GB = table
           .column(i)
           .data()
