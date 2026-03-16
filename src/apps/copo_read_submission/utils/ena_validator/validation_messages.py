@@ -8,7 +8,7 @@ MESSAGES = {
     ),
     'validation_msg_file_invalid_fastq': (
         'Expected a FASTQ file for <strong>{file_name}</strong> because '
-        'it uses the strong>.gz</strong> or <strong>.bz2</strong> extension.'
+        'it uses the <strong>.gz</strong> or <strong>.bz2</strong> extension.'
     ),
     'validation_msg_file_invalid_name': (
         f'''
