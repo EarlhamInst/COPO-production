@@ -29,6 +29,11 @@
   font-family: 'Open Sans', sans-serif !important;
 }
 
+#authNavbar .global-warning-banner h1:hover,
+#publicNavbar .global-warning-banner h1:hover {
+  cursor: help;
+}
+
 #authNavbar .global-warning-banner h1 {
   font-weight: 500 !important;
   font-size: 2em !important;
