@@ -425,8 +425,9 @@ class EnaSubmissionHelper:
         project_description = study.get("description", str())
 
         if project_title:
-            etree.SubElement(project, 'NAME').text = project_title 
-            etree.SubElement(project, 'TITLE').text = project_title
+            etree.SubElement(project, 'NAME').text = project_title
+        # TITLE is required by ENA schema and must precede DESCRIPTION and SUBMISSION_PROJECT
+        etree.SubElement(project, 'TITLE').text = project_title
         if project_description:
             etree.SubElement(project, 'DESCRIPTION').text = project_description
 
