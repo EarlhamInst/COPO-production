@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 l = Logger()
 
 def generate_files_record(profile_id=str()):
-    label = ['file_name', "S3_ETag", "last_uploaded", "size_in_bytes"]
+    label = ['file_name', "S3_ETag", "last_uploaded", "size_in_bytes", "size_bytes"]
     data_set = []
     columns = []
     columns.append(dict(data="record_id", visible=False))
@@ -24,11 +24,22 @@ def generate_files_record(profile_id=str()):
         "  return (data / 1073741824).toFixed(2) + ' GB';"
         "})"
     )
+    bytes_render = (
+        "(function(data, type, row) {"
+        "  if (type !== 'display' || data == null) return data;"
+        "  return data.toLocaleString('en-GB') + ' B';"
+        "})"
+    )
     for x in label:
         col = dict(data=x, title=x.upper().replace("_", " "))
         if x == "size_in_bytes":
             col["title"] = "Size"
             col["render"] = size_render
+        elif x == "size_bytes":
+            col["title"] = "Size (bytes)"
+            col["render"] = bytes_render
+        elif x == "S3_ETag":
+            col["title"] = "Checksum"
         columns.append(col)
 
     s3obj = s3()
@@ -48,6 +59,7 @@ def generate_files_record(profile_id=str()):
                 row_data["file_name"] = file["Key"].replace("/", "_")
                 row_data["DT_RowId"] = "row_" + file["Key"].replace("/", "_")
                 row_data["size_in_bytes"] = file["Size"]
+                row_data["size_bytes"] = file["Size"]
                 row_data["last_uploaded"] = file["LastModified"]
                 row_data["S3_ETag"] = file["ETag"].replace('"', '')
                 data_set.append(row_data)

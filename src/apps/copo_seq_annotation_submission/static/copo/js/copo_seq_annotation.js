@@ -92,7 +92,7 @@ $(document).ready(function () {
           .removeClass(allAlertClasses)
           .addClass(alertClassMap[d.action] || 'alert-info')
           .fadeIn(50);
-      } else if (d.action) {
+      } else if (d.action && $element.length) {
         // else, show an alert message within the 'Info' sidebar tab on the page
         displayAlert(d.action, message);
       }
