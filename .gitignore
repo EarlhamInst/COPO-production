@@ -162,4 +162,11 @@ logs/*
 
 # Ignore update log files produced by the 'handle_update_requests.py' script
 update_request_*.txt
+
+# Ignore temporary files folder
+tmp/
+
+# Ignore Claude AI worktrees and local upload files
+.claude/
+local_uploads/
 update_request_errors*.log
