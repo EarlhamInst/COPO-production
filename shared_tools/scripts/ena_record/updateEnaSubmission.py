@@ -8,7 +8,7 @@ f = open("./data.json")
 config = json.load(f)
 session = None
 submit_url = config["submit_url"]
-retrive_url = config["retrive_url"]
+retrieve_url = config["retrieve_url"]
 add_new_attribute = config.get("add_new_attribute",False)
 
 webin = ET.Element("WEBIN")
@@ -20,7 +20,7 @@ modify = ET.SubElement(action, "MODIFY")
 
 def update_xml(data):
  print("\nDoing Sample Accession:", data["sample_accession"])
- response = session.get(f'{retrive_url}{data["sample_accession"]}')
+ response = session.get(f'{retrieve_url}{data["sample_accession"]}')
  not_found = False
  if response.status_code == requests.codes.ok:
     root = ET.fromstring(response.text)
