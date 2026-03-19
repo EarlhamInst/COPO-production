@@ -204,7 +204,7 @@ $(document).ready(function () {
         $('#process_urls_button').fadeOut();
         var inner = '';
         $(d).each(function (idx, obj) {
-          inner += "curl -k -T '" + obj.name + "' '" + obj.url + "'; ";
+          inner += "curl -k -v -T '" + obj.name + "' '" + obj.url + "'; ";
         });
         var out = "<kbd>nohup bash -c \"" + inner + "\" > upload.log 2>&1 &</kbd>";
         $('#command_area').html(out);
