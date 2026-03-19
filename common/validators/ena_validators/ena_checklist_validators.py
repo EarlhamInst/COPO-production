@@ -171,43 +171,94 @@ class TaxonValidator(Validator):
             match type:
                 case "TAXON_ID_FIELD":
                     taxon_id_set = set([x for x in self.data[key].tolist() if x])
-                    #notify_frontend(data={"profile_id": self.profile_id},
+                    # notify_frontend(data={"profile_id": self.profile_id},
                     #                msg="Querying NCBI for TAXON_IDs in manifest",
                     #                action="info",
                     #                html_id="sample_info")
                     taxon_id_list = list(taxon_id_set)
                     if any(x for x in taxon_id_list):
                         for taxon in taxon_id_list:
+                            # Check if taxon ID is an integer
+                            if not re.match('^[0-9]+$', taxon):
+                                matching_rows = self.data.index[
+                                    self.data[key] == taxon
+                                ].tolist()
+                                
+                                for row in matching_rows:
+                                    self.errors.append(
+                                        msg['invalid_column_value_generic'].format(
+                                            invalid_value=taxon,
+                                            column_name=field['label'],
+                                            row=row + 2,
+                                            expected_value='a whole number (integer) that is a valid NCBI taxon ID',
+                                        )
+                                    )
+                                    self.flag = False
+                                continue
+
                             # check if taxon is submittable
-                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(taxon, is_binomial_required=False, by="id")
+                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(
+                                taxon, is_binomial_required=False, by="id"
+                            )
                             if ena_taxon_errors:
                                 self.errors += ena_taxon_errors
                                 self.flag = False
                             else:
                                 if not taxid_column_name in self.data.columns:
                                     self.data[taxid_column_name] = ""
-                                self.data.loc[ self.data[key]==taxon, taxid_column_name] = taxinfo["taxId"]
-                                self.data.loc[ self.data[key]==taxon, scientific_name_column_name] = taxinfo["scientificName"]
+                                self.data.loc[
+                                    self.data[key] == taxon, taxid_column_name
+                                ] = taxinfo["taxId"]
+                                self.data.loc[
+                                    self.data[key] == taxon, scientific_name_column_name
+                                ] = taxinfo["scientificName"]
 
                 case "SCIENTIFIC_NAME_FIELD":
-                    taxon_id_set = set([x for x in self.data[key].tolist() if x])
-                    #notify_frontend(data={"profile_id": self.profile_id},
+                    scientific_name_set = set([x for x in self.data[key].tolist() if x])
+                    # notify_frontend(data={"profile_id": self.profile_id},
                     #                msg="Querying NCBI for TAXON_IDs in manifest",
                     #                action="info",
                     #                html_id="sample_info")
-                    taxon_id_list = list(taxon_id_set)
-                    if any(x for x in taxon_id_list):
-                        for taxon in taxon_id_list:
+                    scientific_name_list = list(scientific_name_set)
+                    if any(x for x in scientific_name_list):
+                        for scientific_name in scientific_name_list:
+                            # Check if scientific name is a string
+                            if not re.match('^[A-Za-z\s]+$', scientific_name):
+                                matching_rows = self.data.index[
+                                    self.data[key] == scientific_name
+                                ].tolist()
+
+                                for row in matching_rows:
+                                    self.errors.append(
+                                        msg['invalid_column_value_generic'].format(
+                                            invalid_value=scientific_name,
+                                            column_name=field['label'],
+                                            row=row + 2,
+                                            expected_value='a valid scientific name',
+                                        )
+                                    )
+                                    self.flag = False
+                                continue
+
                             # check if taxon is submittable
-                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(taxon, is_binomial_required=False, by="binomial")
+                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(
+                                scientific_name,
+                                is_binomial_required=False,
+                                by="binomial",
+                            )
                             if ena_taxon_errors:
                                 self.errors += ena_taxon_errors
                                 self.flag = False
                             else:
                                 if not taxid_column_name in self.data.columns:
                                     self.data[taxid_column_name] = ""
-                                self.data.loc[ self.data[key]==taxon, taxid_column_name] = taxinfo["taxId"]
-                                self.data.loc[ self.data[key]==taxon, scientific_name_column_name] = taxinfo["scientificName"]
+                                self.data.loc[
+                                    self.data[key] == scientific_name, taxid_column_name
+                                ] = taxinfo["taxId"]
+                                self.data.loc[
+                                    self.data[key] == scientific_name,
+                                    scientific_name_column_name,
+                                ] = taxinfo["scientificName"]
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
 class OntologyValidator(Validator): 
