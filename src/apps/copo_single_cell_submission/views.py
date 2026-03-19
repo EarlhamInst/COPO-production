@@ -56,7 +56,7 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
     if name.endswith("xlsx") or name.endswith("xls"):
         fmt = 'xls'
     else:
-        msg = "Please make sure your manifest is in xlxs format"
+        msg = "Please make sure your manifest is in xls or xlsx format"
         notify_singlecell_status(data={"profile_id": profile_id}, msg=msg,
                 action="error",
                 html_id="singlecell_info", checklist_id=checklist_id)
