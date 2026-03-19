@@ -83,7 +83,7 @@ def parse_sample_spreadsheet(request):
     if name.endswith("xlsx") or name.endswith("xls"):
         fmt = 'xls'
     else:
-        return HttpResponse(status=415, content="Please make sure your manifest is in xlxs format")
+        return HttpResponse(status=415, content="Please make sure your manifest is in xls or xlsx format")
 
     if ena.loadManifest(fmt):
         l.log("Sample manifest loaded")
