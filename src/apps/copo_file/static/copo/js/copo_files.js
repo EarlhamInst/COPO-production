@@ -149,7 +149,7 @@ $(document).ready(function () {
     $('#url_upload_controls').show();
     $('#presigned_url_modal').modal('show');
     $('#command_area').html('');
-    $('#copy_urls_button').fadeOut();
+    $('#copy_command_button').fadeOut();
     $('#process_urls_button').fadeIn();
   }
 
@@ -200,50 +200,35 @@ $(document).ready(function () {
       dataType: 'json',
     })
       .done(function (d) {
-        $('#copy_urls_button').fadeIn();
+        $('#copy_command_button').fadeIn();
         $('#process_urls_button').fadeOut();
-        // Build a single nohup curl command containing one upload per file.
-        // piping through cat forces curl to flush progress output line-by-line.
-        var out = '<kbd> nohup ';
+        var inner = '';
         $(d).each(function (idx, obj) {
-          out =
-            out +
-            "curl --progress-bar -v -k -T '" +
-            obj.name +
-            "' '" +
-            obj.url +
-            "' | cat;";
+          inner += "curl -k -v -T '" + obj.name + "' '" + obj.url + "'; ";
         });
-        out = out + '</kbd>';
+        var out = "<kbd>nohup bash -c \"" + inner + "\" > upload.log 2>&1 &</kbd>";
         $('#command_area').html(out);
         $('#command_panel').show();
       })
       .fail(function (d) {
         $('#command_area').html(d.responseText);
-        $('#copy_urls_button').fadeOut();
+        $('#copy_command_button').fadeOut();
         $('#process_urls_button').fadeIn();
         console.log(d);
       });
   });
 
-  $(document).on('click', '#copy_urls_button', function (evt) {
-    //  $("#command_area").select()
-    //navigator.clipboard.writeText($("#command_area").text());
-    //navigator.clipboard.writeText($("#command_area").text());
-    doDL($('#command_area').text());
+  $(document).on('click', '#copy_command_button', function () {
+    var btn = $(this);
+    navigator.clipboard.writeText($('#command_area').text().trim()).then(function () {
+      btn.text('Copied!').prop('disabled', true);
+      setTimeout(function () {
+        btn.text('Copy command').prop('disabled', false);
+      }, 2000);
+    });
   });
 
-  // Trigger a browser download of the curl command string as a plain-text file
-  // by opening it as a data URI, so the user can save and run it directly.
-  function doDL(s) {
-    function dataUrl(data) {
-      return 'data:x-application/text,' + encodeURI(data);
-    }
-    window.open(dataUrl(s));
-  }
-
   $(document).on('click', '#upload_local_files_button', function (evt) {
-    //  $("#command_area").select()
     $('#uploadModal').find('#file').click();
   });
 });
