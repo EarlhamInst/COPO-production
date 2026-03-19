@@ -47,7 +47,7 @@ services:
           - "node.labels.minio-service==true"
 
   web:
-    image: copo/copo-new-web:v3.0.0.1
+    image: copo/copo-new-web:v3.1.13.3
     entrypoint:
       - bash
       - -c
@@ -98,7 +98,7 @@ services:
       - BIOIMAGE_PASSWORD_FILE=/run/secrets/copo_bioimage_password
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
       - ECS_ACCESS_KEY_ID_FILE=/run/secrets/ecs_access_key
-      - ECS_ENDPOINT=http://minio:9000
+      - ECS_ENDPOINT=http://minio.copodev.cyverseuk.org
       - ECS_ENDPOINT_EXTERNAL=https://minio.copodev.cyverseuk.org
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
@@ -157,12 +157,12 @@ services:
       retries: 3
       start_period: 50s
   celery_job:
-    image: copo/copo-new-web:v3.0.0.1
+    image: copo/copo-new-web:v3.1.13.3
     entrypoint:
       - bash
       - -c
       - |
-        rsync -avhW --no-compress --progress --exclude 'static' --exclude 'logs' /code/ /copo/ && rm -rf /code/ && supervisord -c src/celery.conf && supervisorctl -c src/celery.conf start all && sleep infinity   
+        rsync -avhW --no-compress --progress --exclude 'static' --exclude 'logs' /code/ /copo/ && rm -rf /code/ && supervisord -c src/celery.conf && supervisorctl -c src/celery.conf start all && sleep infinity
     volumes:
       - web-data:/copo/media
       - logs-data:/copo/logs
@@ -253,8 +253,8 @@ services:
       - copo_bioimage_path
       - copo_bioimage_password
       - ecs_secret_key
-      - ecs_access_key    
-      - copo_zenodo_token  
+      - ecs_access_key
+      - copo_zenodo_token
   nginx:
     image: copo/copo-nginx-minio:v1.25.3.3
     networks:
@@ -528,8 +528,10 @@ secrets:
     external: true
   copo-project.crt:
     external: true
+    name: copo-project.crt.v2
   copo-project.key:
     external: true
+    name: copo-project.key.v2
   copo_bioimage_path:
     external: true
   ecs_secret_key:
@@ -537,7 +539,7 @@ secrets:
   copo_bioimage_password:
     external: true
   ecs_access_key:
-    external: true    
+    external: true
   minio_access_key:
     external: true
   minio_secret_key:
