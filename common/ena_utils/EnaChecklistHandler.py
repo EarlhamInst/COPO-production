@@ -416,6 +416,8 @@ class EnaCheckListSpreadsheet:
             try:
                 # read excel and convert all to string
                 if m_format == "xls":
+                    # Check whether the uploaded manifest matches the intended
+                    # manifest checklist dropdown menu option
                     xl = pd.ExcelFile(self.file)
                     sheetnames = xl.sheet_names
                     is_found = False
@@ -426,8 +428,16 @@ class EnaCheckListSpreadsheet:
                             is_found = True
                             break
                     if not is_found:
-                        raise Exception(f"Please make sure to upload the correct manifest for <strong>{self.checklist_id}</strong> checklist.") 
-                                               
+                        checklist_name = f"{self.checklist_id}: {self.checklist.get('name',str())}"
+                        raise Exception(
+                            (
+                                'The uploaded manifest does not match the '
+                                'checklist selected from the dropdown menu, '
+                                f'<strong>{checklist_name}</strong>. '
+                                'Please upload the correct manifest or '
+                                'choose the appropriate checklist option.'
+                            )
+                        )
                 else:
                     raise Exception("Unknown file format")
                 if self.data.empty:

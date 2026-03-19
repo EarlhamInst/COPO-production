@@ -879,6 +879,17 @@ class SinglecellschemasSpreadsheet:
                     .get_collection_handle()
                     .find_one({"name": self.schema_name}, {"schemas": 1, "enums": 1})
                 )
+                
+                # Retrieve the name of the checklist based on the checklist ID 
+                singlecell_checklists = (
+                    SinglecellSchemas()
+                    .get_checklists(self.schema_name, checklist_id=self.checklist_id)
+                )
+                checklist_name = (
+                    singlecell_checklists
+                    .get(self.checklist_id, {})
+                    .get('name')
+                )
                 self.schemas = singlecell["schemas"]
 
                 if self.schemas:
@@ -908,6 +919,29 @@ class SinglecellschemasSpreadsheet:
                     for component, df in self.data.items():
                         if not component in self.schemas.keys():
                             raise Exception("Invalid worksheet: " + component)
+
+                        # Check whether the uploaded manifest matches the intended
+                        # manifest checklist dropdown menu option
+                        expected_columns = set(
+                            item['term_label'] for item in self.schemas[component].values()
+                        )
+                        uploaded_columns = set(set(df.columns.str.replace(' (optional)','', regex=False)))
+                        missing = expected_columns - uploaded_columns
+                        total_expected = len(expected_columns)
+                        match_ratio = (total_expected - len(missing)) / max(total_expected, 1)
+
+                        if missing or match_ratio < 0.5:
+                            raise Exception(
+                                (
+                                    'The uploaded manifest does not match the '
+                                    'checklist selected from the dropdown menu, '
+                                    f'<strong>{checklist_name}</strong>. '
+                                    'Please upload the correct manifest or '
+                                    'choose the appropriate checklist option.'
+                                )
+                            )
+
+                        # Continue with processing the dataframe
                         new_column_name = {
                             name: name.replace(" (optional)", "", -1)
                             for name in df.columns.values.tolist()
