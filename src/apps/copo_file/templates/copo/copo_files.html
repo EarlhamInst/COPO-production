@@ -92,13 +92,17 @@
                         </form>
                     </div>
                     <div id="command_panel">
-                        Run the following command in the same directory where the files are located:
+                        <p>Run the following command in the same directory where the files are located:</p>
                         <div id="command_area" style="overflow-x: scroll; padding:20px"></div>
+                        <div class="alert alert-info" style="margin-top:10px;">
+                            The upload runs in the background — you can safely close the terminal.
+                            To monitor progress, run: <code>tail -f upload.log</code>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" id="copy_urls_button" class="btn btn-primary">Download</button>
+                    <button type="button" id="copy_command_button" class="btn btn-success" style="display:none;">Copy command</button>
                     <button type="button" id="process_urls_button" class="btn btn-primary">Process</button>
                 </div>
             </div><!-- /.modal-content -->
