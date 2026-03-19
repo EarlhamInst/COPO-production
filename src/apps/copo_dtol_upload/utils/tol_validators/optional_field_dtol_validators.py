@@ -309,13 +309,18 @@ class DtolEnumerationValidator(Validator):
                             # special check for piped values
                             for part in str(c).split('|'):
                                 if part.strip() not in allowed_vals:
+                                    content = (
+                                        "<ul>"
+                                        + "".join(f"<li>{v}</li>" for v in allowed_vals)
+                                        + "</ul>"
+                                    )
                                     self.errors.append(
-                                        msg["validation_msg_invalid_data"]
-                                        % (
-                                            part,
-                                            header,
-                                            str(cellcount + 1),
-                                            allowed_vals,
+                                        msg["validation_msg_invalid_enum"].format(
+                                            value=part,
+                                            column=header,
+                                            row=str(cellcount + 1),
+                                            num_values=len(allowed_vals),
+                                            content=content,
                                         )
                                     )
                                     self.flag = False
@@ -353,13 +358,19 @@ class DtolEnumerationValidator(Validator):
                                     )
                                 )
                             else:
+                                content = (
+                                    "<ul>"
+                                    + "".join(f"<li>{v}</li>" for v in allowed_vals)
+                                    + "</ul>"
+                                )
+
                                 self.errors.append(
-                                    msg["validation_msg_invalid_data"]
-                                    % (
-                                        c_value,
-                                        header,
-                                        str(cellcount + 1),
-                                        allowed_vals,
+                                    msg["validation_msg_invalid_enum"].format(
+                                        value=c_value,
+                                        column=header,
+                                        row=str(cellcount + 1),
+                                        num_values=len(allowed_vals),
+                                        content=content,
                                     )
                                 )
                                 self.flag = False
@@ -386,7 +397,7 @@ class DtolEnumerationValidator(Validator):
                             regex_rule, c.replace("_", " "), re.IGNORECASE
                         ):
                             self.errors.append(
-                                msg["validation_msg_invalid_data"]
+                                msg["validation_msg_invalid_regex_match"]
                                 % (c, header, str(cellcount + 1), regex_human_readable)
                             )
                             self.flag = False
@@ -441,7 +452,7 @@ class DtolEnumerationValidator(Validator):
                         except ValueError:
                             self.errors.append(
                                 msg["validation_msg_invalid_data"]
-                                % (c, header, str(cellcount + 1), "integers")
+                                % (c, header, str(cellcount + 1), "a whole number (integer)")
                             )
                             self.flag = False
                     elif header == "TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION":
@@ -450,13 +461,14 @@ class DtolEnumerationValidator(Validator):
                             try:
                                 float(c_value)
                             except ValueError:
+                                expected_vals = ['a whole number (integer)'] + lookup.BLANK_VALS
                                 self.errors.append(
                                     msg["validation_msg_invalid_data"]
                                     % (
                                         c_value,
                                         header,
                                         str(cellcount + 1),
-                                        "integer or " + ", ".join(lookup.BLANK_VALS),
+                                        d_utils.join_with_and(expected_vals, conjunction='or'),
                                     )
                                 )
                                 self.flag = False

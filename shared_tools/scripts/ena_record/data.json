@@ -1,6 +1,6 @@
 {
     "submit_url": "https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit",
-    "retrive_url": "https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/sample/",
+    "retrieve_url": "https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/sample/",
     "username": "",
     "password": "",
     "add_new_attribute": true,
