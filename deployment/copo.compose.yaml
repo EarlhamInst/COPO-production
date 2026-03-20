@@ -63,7 +63,7 @@ services:
       - ASPERA_PLUGIN_DIRECTORY=aspera_linux_plugin
       - SECRET_KEY_FILE=/run/secrets/copo_web_secret_key
       - MEDIA_PATH=media/
-      - DEBUG=true
+      - DEBUG=false
       - REDIS_HOST=copo_redis
       - REDIS_PORT=6379
       - WEBIN_USER_FILE=/run/secrets/copo_webin_user
@@ -173,7 +173,7 @@ services:
       - ASPERA_PLUGIN_DIRECTORY=aspera_linux_plugin
       - SECRET_KEY_FILE=/run/secrets/copo_web_secret_key
       - MEDIA_PATH=media/
-      - DEBUG=true
+      - DEBUG=false
       - REDIS_HOST=copo_redis
       - REDIS_PORT=6379
       - WEBIN_USER_FILE=/run/secrets/copo_webin_user
