@@ -1,0 +1,969 @@
+/*
+ * COPO Modern Design System
+ * --------------------------
+ * Scoped to pages that use base_modern.html.
+ * Additive — does not remove Bootstrap/SemanticUI; simply provides a new
+ * visual language for the modernised views.
+ *
+ * Naming convention:  .copo-* for shell/layout
+ *                     .copo-nav-* for the top navigation bar
+ *                     .copo-card-* for profile cards
+ *                     .copo-filter-* for filter chips
+ *                     .copo-btn-* for standalone buttons
+ *
+ * data-testid attributes live in the templates, not here.
+ */
+
+/* ── Reset & base ────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Override Bootstrap's body margin/padding on modern pages */
+body.copo-modern-body {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  background: #f4f5f7;
+  color: #1a1d23;
+  min-height: 100vh;
+  /* remove the top padding that base.html adds for the old navbar */
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* ── CSS Custom Properties ───────────────────────────────────────────── */
+:root {
+  --copo-accent:       #4f6ef7;
+  --copo-accent-hover: #3b5bdb;
+  --copo-accent-bg:    #eef1fd;
+  --copo-surface:      #ffffff;
+  --copo-bg:           #f4f5f7;
+  --copo-border:       #e2e5ea;
+  --copo-border-card:  #e8eaed;
+  --copo-text-primary: #1a1d23;
+  --copo-text-secondary: #4b5563;
+  --copo-text-muted:   #6b7280;
+  --copo-text-faint:   #9ca3af;
+  --copo-nav-bg:       #2d3a5c;
+  --copo-radius-sm:    6px;
+  --copo-radius:       8px;
+  --copo-radius-lg:    14px;
+  --copo-radius-pill:  20px;
+  --copo-shadow-sm:    0 1px 4px rgba(0,0,0,0.05);
+  --copo-shadow-hover: 0 6px 20px rgba(0,0,0,0.09);
+  --copo-transition:   0.15s ease;
+
+  /* Component action colours */
+  --copo-c-files:      #4f6ef7;
+  --copo-c-files-bg:   #eef1fd;
+  --copo-c-samples:    #16a34a;
+  --copo-c-samples-bg: #dcfce7;
+  --copo-c-reads:      #ea580c;
+  --copo-c-reads-bg:   #ffedd5;
+  --copo-c-single:     #7c3aed;
+  --copo-c-single-bg:  #ede9fe;
+  --copo-c-accessions: #db2777;
+  --copo-c-accessions-bg: #fce7f3;
+  --copo-c-images:     #0891b2;
+  --copo-c-images-bg:  #cffafe;
+  --copo-c-assembly:   #b45309;
+  --copo-c-assembly-bg:#fef3c7;
+  --copo-c-barcoding:  #0f766e;
+  --copo-c-barcoding-bg:#ccfbf1;
+  --copo-c-annotation: #9333ea;
+  --copo-c-annotation-bg:#f3e8ff;
+}
+
+/* ── Top Navigation Bar ──────────────────────────────────────────────── */
+.copo-nav {
+  background: var(--copo-nav-bg);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 1040; /* above Bootstrap modals */
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* Hide the old Bootstrap navbar on modern pages */
+body.copo-modern-body #authNavbar {
+  display: none !important;
+}
+
+.copo-nav__logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.copo-nav__logo-icon {
+  width: 32px;
+  height: 32px;
+  display: block;
+  flex-shrink: 0;
+  /* invert black logomark to white for dark navbar */
+  filter: brightness(0) invert(1);
+}
+
+.copo-nav__logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+.copo-nav__spacer {
+  flex: 1;
+}
+
+.copo-nav__icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--copo-radius);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--copo-text-faint);
+  transition: background var(--copo-transition), color var(--copo-transition);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.copo-nav__icon-btn:hover,
+.copo-nav__icon-btn:focus {
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
+  outline: none;
+}
+
+.copo-nav__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--copo-accent);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 4px;
+  text-decoration: none;
+  flex-shrink: 0;
+  border: none;
+}
+.copo-nav__avatar:hover {
+  background: var(--copo-accent-hover);
+  color: #ffffff;
+}
+
+/* Nav dropdown for user menu */
+.copo-nav__dropdown {
+  position: relative;
+}
+.copo-nav__dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background: var(--copo-surface);
+  border: 1px solid var(--copo-border);
+  border-radius: var(--copo-radius);
+  box-shadow: var(--copo-shadow-hover);
+  min-width: 180px;
+  z-index: 1050;
+  overflow: hidden;
+}
+.copo-nav__dropdown:hover .copo-nav__dropdown-menu,
+.copo-nav__dropdown:focus-within .copo-nav__dropdown-menu {
+  display: block;
+}
+.copo-nav__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--copo-text-primary);
+  text-decoration: none;
+  transition: background var(--copo-transition);
+}
+.copo-nav__dropdown-item:hover {
+  background: var(--copo-bg);
+  color: var(--copo-text-primary);
+}
+.copo-nav__dropdown-divider {
+  height: 1px;
+  background: var(--copo-border);
+  margin: 4px 0;
+}
+
+/* ── Page Shell ──────────────────────────────────────────────────────── */
+.copo-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* ── Page Header ─────────────────────────────────────────────────────── */
+.copo-page__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+.copo-page__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--copo-text-primary);
+  letter-spacing: -0.4px;
+  white-space: nowrap;
+}
+
+.copo-page__spacer { flex: 1; min-width: 8px; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
+.copo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--copo-radius);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--copo-transition), transform 0.1s, border-color var(--copo-transition), color var(--copo-transition);
+  border: 1.5px solid transparent;
+  white-space: nowrap;
+  text-decoration: none;
+  line-height: 1;
+}
+.copo-btn:active { transform: scale(0.98); }
+
+.copo-btn--primary {
+  background: var(--copo-accent);
+  color: #ffffff;
+  border-color: var(--copo-accent);
+}
+.copo-btn--primary:hover { background: var(--copo-accent-hover); border-color: var(--copo-accent-hover); color: #ffffff; }
+
+.copo-btn--outline {
+  background: var(--copo-surface);
+  color: var(--copo-accent);
+  border-color: var(--copo-accent);
+}
+.copo-btn--outline:hover { background: var(--copo-accent-bg); color: var(--copo-accent); }
+
+.copo-btn--ghost {
+  background: transparent;
+  color: var(--copo-text-secondary);
+  border-color: var(--copo-border);
+}
+.copo-btn--ghost:hover { border-color: var(--copo-accent); color: var(--copo-accent); background: var(--copo-surface); }
+
+.copo-btn--icon {
+  padding: 7px;
+  min-width: 34px;
+  justify-content: center;
+}
+
+/* ── Sort Controls ───────────────────────────────────────────────────── */
+.copo-sort-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.copo-sort-label {
+  font-size: 13px;
+  color: var(--copo-text-muted);
+  white-space: nowrap;
+}
+
+/* ── Sort select (native <select>, NOT selectized) ───────────────────── */
+.copo-sort-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--copo-surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  border: 1.5px solid var(--copo-border);
+  border-radius: var(--copo-radius);
+  padding: 6px 32px 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--copo-text-secondary);
+  cursor: pointer;
+  min-width: 0;
+  height: 36px;
+  transition: border-color var(--copo-transition);
+}
+.copo-sort-select:hover,
+.copo-sort-select:focus {
+  border-color: var(--copo-accent);
+  outline: none;
+}
+/* Keep .copo-select and .copo-select--sm for any other usages */
+.copo-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--copo-surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  border: 1.5px solid var(--copo-border);
+  border-radius: var(--copo-radius);
+  padding: 8px 36px 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--copo-text-secondary);
+  cursor: pointer;
+  min-width: 140px;
+  transition: border-color var(--copo-transition);
+  height: 36px;
+}
+.copo-select:hover,
+.copo-select:focus {
+  border-color: var(--copo-accent);
+  outline: none;
+}
+.copo-select--sm {
+  font-size: 13px;
+  padding: 7px 32px 7px 12px;
+  min-width: 0;
+  height: 34px;
+}
+
+/* ── Filter Bar ──────────────────────────────────────────────────────── */
+.copo-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+.copo-filter-bar__label {
+  font-size: 13px;
+  color: var(--copo-text-muted);
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.copo-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--copo-surface);
+  border: 1.5px solid var(--copo-border);
+  border-radius: var(--copo-radius-pill);
+  padding: 5px 14px 5px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--copo-text-secondary);
+  transition: border-color var(--copo-transition), background var(--copo-transition), color var(--copo-transition);
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.copo-filter-chip:hover {
+  border-color: var(--copo-accent);
+}
+.copo-filter-chip.is-active,
+.copo-filter-chip[aria-pressed="true"] {
+  background: var(--copo-accent-bg);
+  border-color: var(--copo-accent);
+  color: var(--copo-accent);
+}
+
+.copo-filter-chip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Card Grid ───────────────────────────────────────────────────────── */
+.copo-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+/* Responsive: stack to single column on small screens */
+@media (max-width: 480px) {
+  .copo-card-grid {
+    grid-template-columns: 1fr;
+  }
+  .copo-page {
+    padding: 20px 16px 60px;
+  }
+  .copo-page__header {
+    gap: 8px;
+  }
+}
+
+/* ── Profile Card ────────────────────────────────────────────────────── */
+.copo-profile-card {
+  background: var(--copo-surface);
+  border-radius: var(--copo-radius-lg);
+  border: 1.5px solid var(--copo-border-card);
+  box-shadow: var(--copo-shadow-sm);
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.15s;
+  display: flex;
+  flex-direction: column;
+}
+.copo-profile-card:hover {
+  box-shadow: var(--copo-shadow-hover);
+  transform: translateY(-2px);
+}
+
+/* Card top: badge + title + menu button */
+.copo-card__top {
+  display: flex;
+  align-items: center;
+  padding: 18px 20px 0;
+  gap: 10px;
+}
+
+.copo-card__type-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  background: var(--copo-accent-bg);
+  color: var(--copo-accent);
+  border-radius: var(--copo-radius-sm);
+  padding: 3px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Badge colour variants per profile type — set via inline style or modifier class */
+.copo-card__type-badge--genomics   { background: #dcfce7; color: #16a34a; }
+.copo-card__type-badge--proteomics { background: #ffedd5; color: #ea580c; }
+.copo-card__type-badge--standard   { background: var(--copo-accent-bg); color: var(--copo-accent); }
+
+.copo-card__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--copo-text-primary);
+  letter-spacing: -0.2px;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.copo-card__menu-btn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  border-radius: var(--copo-radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--copo-text-faint);
+  transition: background var(--copo-transition), color var(--copo-transition);
+  flex-shrink: 0;
+  padding: 0;
+}
+.copo-card__menu-btn:hover { background: #f3f4f6; color: var(--copo-text-secondary); }
+
+/* Card meta: date + description */
+.copo-card__meta {
+  padding: 8px 20px 16px;
+  flex: 1;
+}
+
+.copo-card__meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #111;
+  margin-top: 4px;
+}
+.copo-card__meta-row svg { flex-shrink: 0; }
+
+.copo-card__description {
+  font-size: 13.5px;
+  color: #111;
+  margin-top: 8px;
+  line-height: 1.5;
+  /* 2-line clamp */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Card actions: component buttons */
+.copo-card__actions {
+  border-top: none;
+  padding: 16px 20px;
+}
+
+.copo-card__actions-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9ca3af;
+  margin-bottom: 10px;
+}
+
+/* .copo-card__actions-grid wraps the JS-injected #expandingMenu.
+   The 2-col grid is applied to the injected .item div (see override below). */
+.copo-card__actions-grid {
+  display: block;
+}
+
+/* Individual action button */
+.copo-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: var(--copo-radius);
+  border: 1.5px solid var(--copo-border-card);
+  background: #fafafa;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--copo-transition), background var(--copo-transition), color var(--copo-transition);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  line-height: 1;
+}
+.copo-action-btn:hover {
+  border-color: var(--btn-accent, var(--copo-accent));
+  background: var(--copo-surface);
+  color: var(--btn-accent, var(--copo-accent));
+}
+
+.copo-action-btn__icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+/* Colour modifiers per component type */
+.copo-action-btn--files       { --btn-accent: var(--copo-c-files); }
+.copo-action-btn--files       .copo-action-btn__icon { background: var(--copo-c-files-bg);      color: var(--copo-c-files); }
+
+.copo-action-btn--samples     { --btn-accent: var(--copo-c-samples); }
+.copo-action-btn--samples     .copo-action-btn__icon { background: var(--copo-c-samples-bg);    color: var(--copo-c-samples); }
+
+.copo-action-btn--reads       { --btn-accent: var(--copo-c-reads); }
+.copo-action-btn--reads       .copo-action-btn__icon { background: var(--copo-c-reads-bg);      color: var(--copo-c-reads); }
+
+.copo-action-btn--singlecell  { --btn-accent: var(--copo-c-single); }
+.copo-action-btn--singlecell  .copo-action-btn__icon { background: var(--copo-c-single-bg);     color: var(--copo-c-single); }
+
+.copo-action-btn--accessions  { --btn-accent: var(--copo-c-accessions); }
+.copo-action-btn--accessions  .copo-action-btn__icon { background: var(--copo-c-accessions-bg); color: var(--copo-c-accessions); }
+
+.copo-action-btn--images      { --btn-accent: var(--copo-c-images); }
+.copo-action-btn--images      .copo-action-btn__icon { background: var(--copo-c-images-bg);     color: var(--copo-c-images); }
+
+.copo-action-btn--assembly    { --btn-accent: var(--copo-c-assembly); }
+.copo-action-btn--assembly    .copo-action-btn__icon { background: var(--copo-c-assembly-bg);   color: var(--copo-c-assembly); }
+
+.copo-action-btn--barcoding   { --btn-accent: var(--copo-c-barcoding); }
+.copo-action-btn--barcoding   .copo-action-btn__icon { background: var(--copo-c-barcoding-bg);  color: var(--copo-c-barcoding); }
+
+.copo-action-btn--annotation  { --btn-accent: var(--copo-c-annotation); }
+.copo-action-btn--annotation  .copo-action-btn__icon { background: var(--copo-c-annotation-bg); color: var(--copo-c-annotation); }
+
+/* Card footer: view details link */
+.copo-card__footer {
+  padding: 10px 20px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.copo-btn--details {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--copo-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: gap var(--copo-transition);
+  text-decoration: none;
+}
+.copo-btn--details:hover {
+  gap: 10px;
+  color: var(--copo-accent-hover);
+  text-decoration: none;
+}
+
+/* ── Shared profile variant ──────────────────────────────────────────── */
+.copo-profile-card--shared {
+  border-left: 3px solid #f59e0b;
+}
+
+/* ── Page Footer / Count Row ─────────────────────────────────────────── */
+.copo-page__footer {
+  margin-top: 32px;
+  font-size: 13px;
+  color: var(--copo-text-faint);
+  text-align: center;
+}
+
+/* ── Scroll navigation buttons ───────────────────────────────────────── */
+#navigateToTop,
+#navigateToBottom {
+  position: fixed;
+  right: 24px;
+  width: 40px;
+  height: 40px;
+  background: var(--copo-accent);
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 500;
+  transition: background var(--copo-transition), box-shadow var(--copo-transition);
+}
+#navigateToTop  { bottom: 72px; }
+#navigateToBottom { bottom: 24px; }
+#navigateToTop.show,
+#navigateToBottom.show { display: flex; }
+#navigateToTop:hover,
+#navigateToBottom:hover { background: var(--copo-accent-hover); box-shadow: var(--copo-shadow-hover); }
+
+/* ── Card action buttons: override Semantic UI injected menu ─────────── */
+/*
+ * copo_profile_index.js injects component buttons into #expandingMenu as:
+ *   span#expandingMenu.ui.compact.menu.vertical
+ *     div.menu.comp
+ *       div.item
+ *         a > div.tiny.ui.button.pcomponent-button.[color]
+ *             i.pcomponent-icon.[fa classes]
+ *             span.pcomponent-name
+ * We override the Semantic UI chrome and restyle to match the prototype.
+ */
+
+/* 1. Reset the outer Semantic UI menu wrapper */
+.copo-card__actions .ui.compact.menu,
+.copo-card__actions .ui.compact.menu.vertical {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  display: block !important;
+}
+
+.copo-card__actions #expandingMenu,
+.copo-card__actions #expandingMenu .menu.comp,
+.copo-card__actions #expandingMenu .item,
+.copo-card__actions .ui.vertical.menu .item,
+.copo-card__actions .ui.menu .item {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.copo-card__actions .ui.vertical.menu .item:before,
+.copo-card__actions .ui.menu .item:before {
+  display: none !important;
+  content: none !important;
+}
+
+/* 2. The injected .item div becomes the 2-col grid */
+.copo-card__actions .comp > .item {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* 3. Each injected anchor — action-button look */
+.copo-card__actions .comp .item > a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 9px 12px !important;
+  border-radius: 8px !important;
+  border: 1.5px solid #e8eaed !important;
+  background: #fafafa !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  transition: border-color 0.15s, background 0.15s, color 0.15s !important;
+}
+.copo-card__actions .comp .item > a:hover {
+  border-color: var(--a-accent, #4f6ef7) !important;
+  background: #fff !important;
+  color: var(--a-accent, #4f6ef7) !important;
+}
+
+/* 4. Reset the Semantic UI .tiny.ui.button wrapper — make it transparent
+      so its children (.pcomponent-icon, .pcomponent-name) participate
+      directly in the <a> flexbox */
+.copo-card__actions .pcomponent-button {
+  display: contents !important;
+}
+
+/* 5. Icon box: a small rounded swatch containing the FA icon */
+.copo-card__actions .pcomponent-icon {
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  border-radius: 5px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 11px !important;
+  background: var(--icon-bg, #eef1fd) !important;
+  color: var(--icon-color, #4f6ef7) !important;
+  flex-shrink: 0 !important;
+}
+
+/* 6. Button label */
+.copo-card__actions .pcomponent-name {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 13px !important;
+  color: #374151 !important;
+}
+
+/* 7. Semantic UI color → prototype palette mapping.
+      Using :has() to set the hover accent on the parent <a>.
+      Icon bg/color set via CSS custom properties on .pcomponent-button. */
+
+/* blue */
+.copo-card__actions .pcomponent-button.blue { --icon-bg:#eef1fd; --icon-color:#4f6ef7; }
+.copo-card__actions .comp .item > a:has(.pcomponent-button.blue):hover { --a-accent:#4f6ef7; }
+
+/* green */
+.copo-card__actions .pcomponent-button.green { --icon-bg:#dcfce7; --icon-color:#16a34a; }
+.copo-card__actions .comp .item > a:has(.pcomponent-button.green):hover { --a-accent:#16a34a; }
+
+/* orange */
+.copo-card__actions .pcomponent-button.orange { --icon-bg:#ffedd5; --icon-color:#ea580c; }
+.copo-card__actions .comp .item > a:has(.pcomponent-button.orange):hover { --a-accent:#ea580c; }
+
+/* violet */
+.copo-card__actions .pcomponent-button.violet { --icon-bg:#ede9fe; --icon-color:#7c3aed; }
+.copo-card__actions .comp .item > a:has(.pcomponent-button.violet):hover { --a-accent:#7c3aed; }
+
+/* pink */
+.copo-card__actions .pcomponent-button.pink { --icon-bg:#fce7f3; --icon-color:#db2777; }
+.copo-card__actions .comp .item > a:has(.pcomponent-button.pink):hover { --a-accent:#db2777; }
+
+/* teal */
+.copo-card__actions .pcomponent-button.teal { --icon-bg:#cffafe; --icon-color:#0891b2; }
+.copo-card__actions .comp .item > a:has(.pcomponent-button.teal):hover { --a-accent:#0891b2; }
+
+/* yellow */
+.copo-card__actions .pcomponent-button.yellow { --icon-bg:#fef3c7; --icon-color:#b45309; }
+.copo-card__actions .comp .item > a:has(.pcomponent-button.yellow):hover { --a-accent:#b45309; }
+
+/* red */
+.copo-card__actions .pcomponent-button.red { --icon-bg:#fee2e2; --icon-color:#dc2626; }
+.copo-card__actions .comp .item > a:has(.pcomponent-button.red):hover { --a-accent:#dc2626; }
+
+/* bright-coral (Semantic UI custom) */
+.copo-card__actions .pcomponent-button.bright-coral { --icon-bg:#ffedd5; --icon-color:#ea580c; }
+.copo-card__actions .comp .item > a:has(.pcomponent-button.bright-coral):hover { --a-accent:#ea580c; }
+
+/* 8. Match /tmp feather-style icon glyphs exactly for core component buttons.
+      JS tags each action with .copo-action-kind-* so mapping is explicit. */
+.copo-card__actions .pcomponent-button[class*='copo-action-kind-'] .pcomponent-icon {
+  font-size: 0 !important;
+  line-height: 0 !important;
+}
+
+.copo-card__actions .pcomponent-button[class*='copo-action-kind-'] .pcomponent-icon.fa::before {
+  content: none !important;
+}
+
+.copo-card__actions .pcomponent-button[class*='copo-action-kind-'] .pcomponent-icon::after {
+  content: "";
+  width: 11px;
+  height: 11px;
+  background: currentColor;
+  -webkit-mask-image: var(--icon-mask);
+  mask-image: var(--icon-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+/* Data files */
+.copo-card__actions .pcomponent-button.copo-action-kind-files {
+  --icon-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M14%202H6a2%202%200%200%200-2%202v16a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2V8z'/%3E%3Cpolyline%20points='14%202%2014%208%2020%208'/%3E%3C/svg%3E");
+}
+
+/* Sample metadata */
+.copo-card__actions .pcomponent-button.copo-action-kind-samples {
+  --icon-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpolygon%20points='22%203%202%203%2010%2012.46%2010%2019%2014%2021%2014%2012.46%2022%203'/%3E%3C/svg%3E");
+}
+
+/* Reads */
+.copo-card__actions .pcomponent-button.copo-action-kind-reads {
+  --icon-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpolyline%20points='16%203%2021%203%2021%208'/%3E%3Cline%20x1='4'%20y1='20'%20x2='21'%20y2='3'/%3E%3Cpolyline%20points='21%2016%2021%2021%2016%2021'/%3E%3Cline%20x1='15'%20y1='15'%20x2='21'%20y2='21'/%3E%3C/svg%3E");
+}
+
+/* Single-cell */
+.copo-card__actions .pcomponent-button.copo-action-kind-singlecell {
+  --icon-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Ccircle%20cx='12'%20cy='12'%20r='3'/%3E%3Ccircle%20cx='12'%20cy='12'%20r='9'/%3E%3C/svg%3E");
+}
+
+/* Accessions */
+.copo-card__actions .pcomponent-button.copo-action-kind-accessions {
+  --icon-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M17%2021v-2a4%204%200%200%200-4-4H5a4%204%200%200%200-4%204v2'/%3E%3Ccircle%20cx='9'%20cy='7'%20r='4'/%3E%3Cpath%20d='M23%2021v-2a4%204%200%200%200-3-3.87'/%3E%3Cpath%20d='M16%203.13a4%204%200%200%201%200%207.75'/%3E%3C/svg%3E");
+}
+
+/* Images */
+.copo-card__actions .pcomponent-button.copo-action-kind-images {
+  --icon-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='3'%20y='3'%20width='18'%20height='18'%20rx='2'/%3E%3Ccircle%20cx='8.5'%20cy='8.5'%20r='1.5'/%3E%3Cpolyline%20points='21%2015%2016%2010%205%2021'/%3E%3C/svg%3E");
+}
+
+/* ── Profile type legend (sidebar replacement) ───────────────────────── */
+.copo-legend {
+  margin-top: 32px;
+}
+.copo-legend__title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--copo-text-faint);
+  margin-bottom: 10px;
+}
+.copo-legend__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.copo-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--copo-text-secondary);
+}
+
+/* ── Notifications Panel ─────────────────────────────────────────────── */
+.copo-notifications-panel {
+  background: var(--copo-surface);
+  border: 1.5px solid var(--copo-border);
+  border-radius: var(--copo-radius);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+.copo-notifications-panel__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--copo-text-primary);
+  margin-bottom: 8px;
+}
+
+/* ── Getting started / welcome popover (keeping existing class names) ─── */
+.copo-welcome {
+  background: var(--copo-surface);
+  border: 1.5px solid var(--copo-border);
+  border-radius: var(--copo-radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  max-width: 560px;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────── */
+.copo-empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--copo-text-muted);
+}
+.copo-empty-state__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  color: var(--copo-text-faint);
+}
+.copo-empty-state__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--copo-text-primary);
+  margin-bottom: 8px;
+}
+.copo-empty-state__text {
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+/* ── Accept/reject shortcut button ───────────────────────────────────── */
+#accept_reject_shortcut {
+  /* keep Semantic UI class but ensure it's positioned correctly */
+  position: fixed;
+  bottom: 120px;
+  right: 24px;
+  z-index: 500;
+}
+
+/* ── Loader overlay (keep existing loader.css hooks) ─────────────────── */
+/* No overrides needed — loader.css is still loaded */
+
+/* ── Utility: visually hidden (for screen readers) ───────────────────── */
+.copo-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Inline SVG helper ───────────────────────────────────────────────── */
+svg { display: block; }

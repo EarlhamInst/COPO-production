@@ -1,0 +1,392 @@
+{% extends 'copo/base_modern.html' %}
+
+{% load static %}
+{% load web_tags %}
+
+{% block title %}Profiles{% endblock %}
+{% block meta_description %}Manage and explore work profiles (aka studies or projects) seamlessly. Create, edit or delete profiles and navigate to related components like samples, reads, and files. Infinite scroll lets you view more profiles effortlessly.{% endblock %}
+
+{% block extra_head %}
+  <!-- Profile-page design system + existing profile-specific overrides -->
+  <link rel="stylesheet"
+        href="{% static 'copo/css/copo_design_system.css' %}">
+{% endblock %}
+
+{% block page_content %}
+
+<!-- Hidden config inputs required by copo_profile_index.js -->
+<div hidden id="hidden_attrs" data-testid="hidden-attrs">
+  {% csrf_token %}
+  <input type="hidden" id="nav_component_name" value="profile"/>
+  <input type="hidden"
+         value="{ % url 'copo_sample:copo_samples' profile_id='999' %}"
+         name="sample_url" id="sample_url"/>
+  <input type="hidden"
+         value="{ % url 'copo_accession:copo_accessions' profile_id='999' %}"
+         name="accessions_url" id="accessions_url"/>
+  <input type="hidden"
+         value="{ % url 'copo_seq_annotation_submission:copo_seq_annotation' profile_id='999' %}"
+         name="seqannotation_url" id="seqannotation_url"/>
+  <input type="hidden"
+         value="{ % url 'copo_assembly_submission:copo_assembly' profile_id='999' %}"
+         name="assembly_url" id="assembly_url"/>
+  <input type="hidden"
+         value="{ % url 'copo_read_submission:copo_reads' profile_id='999' %}"
+         name="read_url" id="read_url"/>
+  <input type="hidden"
+         value="{ % url 'copo_file:copo_files' profile_id='999' %}"
+         name="files_url" id="files_url"/>
+  <input type="hidden"
+         value="{ % url 'copo_barcoding_submission:copo_taggedseq' profile_id='999' %}"
+         name="taggedseq_url" id="taggedseq_url"/>
+  <!-- Profile type select — value read by getProfileType() in JS -->
+  <input
+    type="hidden"
+    id="component_subtitle"
+    value="<select id='profileType' class='searchable-select' name='profileType'>{% for profile_type in profile_types %}<option value='{{ profile_type.value }}' title='{{ profile_type.label }}'>{{ profile_type.label }}</option>{% endfor %}</select>"
+  />
+  <input type="hidden" id="copo_email"              value="{{ copo_email }}"/>
+  <input type="hidden" id="groups"                  value="{{ groups }}"/>
+  <input type="hidden" id="profilesVisibleLength"   value="{{ profiles_visible_length }}"/>
+  <input type="hidden" id="profilesTotal"           value="{{ profiles_total }}"/>
+  <input type="hidden" id="profilesPerPage"         value="{{ profiles_per_page }}"/>
+</div>
+
+<!-- ── Accept / reject shortcut (shown by JS when applicable) ──────────── -->
+<button id="accept_reject_shortcut"
+        style="display:none"
+        class="big circular ui icon teal button pull-right accept_reject_samples copo-tooltip"
+        title="Accept or Reject Tree of Life Samples"
+        type="button"
+        data-testid="profile-page--accept-reject-btn">
+  <i class="icon tasks sign" aria-hidden="true"></i>
+</button>
+
+<!-- ── Global notifications panel (collapsed by default) ─────────────────── -->
+<div id="global-notifications" class="row collapse" data-testid="global-notifications">
+  <div class="col-sm-12" style="margin-bottom: 32px;">
+    <div class="copo-notifications-panel">
+      <div class="copo-notifications-panel__title">Notifications</div>
+      <div class="notifications-body"
+           style="border-bottom: 2px solid rgba(38,38,38,0.2);"
+           data-testid="notifications-body">
+        No notifications
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main page container ───────────────────────────────────────────────── -->
+<main class="copo-page" role="main" data-testid="profile-page--main">
+
+  <!-- profileType select is required by getProfileType() in copo_profile_index.js.
+     It is kept hidden here; the visible filter chips below sync to it. -->
+  <select id="profileType"
+          name="profileType"
+          aria-hidden="true"
+          data-tour-id="profile_type_select"
+          data-testid="profile-page--type-select"
+          style="display:none">
+    {% for profile_type in profile_types %}
+      <option value="{{ profile_type.value }}"
+              title="{{ profile_type.label }}">
+        {{ profile_type.label }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <!-- ── Page header row ─────────────────────────────────────────────────── -->
+  <div class="copo-page__header" data-testid="profile-page--header">
+    <h1 class="copo-page__title"
+        data-testid="profile-page--title">
+      Work Profiles
+    </h1>
+
+    <!-- New Profile button -->
+    <button class="copo-btn copo-btn--primary"
+            id="addProfileBtn"
+            type="button"
+            data-tour-id="add_profile_button"
+            data-testid="profile-page--new-profile-btn"
+            aria-label="Create a new profile">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      New Profile
+    </button>
+
+    <!-- Info / getting-started button -->
+    <button class="copo-btn copo-btn--outline"
+            id="showGettingStartedBtn"
+            type="button"
+            data-testid="profile-page--info-btn"
+            aria-label="Show getting started guide">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      Info
+    </button>
+
+    <span class="copo-page__spacer" aria-hidden="true"></span>
+
+    <!-- ── Sort controls — keep existing IDs so JS can bind to them ─────── -->
+    <div class="copo-sort-row"
+         id="sortProfilesDiv"
+         data-tour-id="sort_profiles_button"
+         data-testid="profile-page--sort-row">
+      <span class="copo-sort-label" aria-hidden="true">Sort by</span>
+      <select class="copo-sort-select"
+              id="sortProfilesBtn"
+              aria-label="Sort profiles by"
+              data-testid="profile-page--sort-select">
+        <option value="date_created">Date created</option>
+        <option value="title">Profile title</option>
+        <option value="type">Profile type</option>
+      </select>
+      <button class="copo-btn copo-btn--ghost copo-btn--icon"
+              id="sortIconId"
+              type="button"
+              title="Toggle sort direction"
+              aria-label="Toggle sort direction"
+              data-testid="profile-page--sort-dir-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m3 16 4 4 4-4"/><path d="M7 20V4"/>
+          <path d="m21 8-4-4-4 4"/><path d="M17 4v16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Filter chips bar ────────────────────────────────────────────────── -->
+  <div class="copo-filter-bar"
+       id="profileFilterBar"
+       role="group"
+       aria-label="Filter profiles by type"
+       data-testid="profile-page--filter-bar">
+    <span class="copo-filter-bar__label" aria-hidden="true">Type:</span>
+    <!-- "All" chip -->
+    <button class="copo-filter-chip is-active"
+            type="button"
+            data-filter-value="all"
+            aria-pressed="true"
+            data-testid="filter-chip--all">
+      <span class="copo-filter-chip__dot"
+            style="background: #4f6ef7;"
+            aria-hidden="true"></span>
+      All
+    </button>
+    <!-- Per-type chips generated from context -->
+    {% for profile_type in profile_types %}
+      <button class="copo-filter-chip"
+              type="button"
+              data-filter-value="{{ profile_type.value }}"
+              aria-pressed="false"
+              data-testid="filter-chip--{{ profile_type.value }}">
+        <span class="copo-filter-chip__dot"
+              style="background: {{ profile_type.colour|default:'#6b7280' }};"
+              aria-hidden="true"></span>
+        {{ profile_type.label|upper }}
+      </button>
+    {% endfor %}
+  </div>
+
+  <!-- ── Getting started popover (hidden by default, shown on info btn click) -->
+  <div id="getting-started-panel"
+       class="copo-welcome"
+       style="display: none;"
+       data-tour-id="getting_started"
+       data-testid="profile-page--getting-started">
+    <div class="copo-webui-popover">
+      <div class="webui-popover-inner">
+        <h3 class="copo-webui-popover-title">Getting started</h3>
+        <div class="copo-webui-popover-content">
+          <div class="webpop-content-div">
+            Here are a few quick steps to get you started with the Collaborative
+            OPen Omics (COPO) platform.
+            <ol>
+              <li>
+                <strong>COPO profile</strong>
+                <p>The first step is to create a work profile. A profile is a
+                   collection of research objects that form part of your project.
+                </p>
+                <p><b>To create a new profile:</b> choose a profile type from
+                   the dropdown, then click
+                   <button class="circular tiny ui icon primary button no-click"
+                           type="button">
+                     <i class="icon add sign" aria-hidden="true"></i>
+                   </button>
+                   next to it.
+                </p>
+                <p>
+                  <i class="fa fa-info-circle" aria-hidden="true"></i>
+                  If your desired profile type is not listed, please
+                  <a href="mailto:{{ copo_email }}">contact the COPO team</a>.
+                </p>
+              </li>
+              <li>
+                <strong>Profile components</strong>
+                <p>After creating a work profile you can start adding metadata
+                   by clicking any of the available components (files, samples,
+                   reads, annotations, etc.).</p>
+              </li>
+              <li>
+                <strong>Quick tour</strong>
+                <p>To explore the controls on this page click the
+                   <button class="circular tiny ui icon orange button no-click"
+                           type="button">
+                     <i class="icon lightbulb" aria-hidden="true"></i>
+                   </button>
+                   button.
+                </p>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Profile card grid ───────────────────────────────────────────────── -->
+  <div id="copo_profiles_table"
+       class="copo-card-grid"
+       data-tour-id="profile_grid"
+       data-testid="profile-page--card-grid">
+    {% if profiles %}
+      {% for profile in profiles %}
+        {% include 'copo/profile/copo_profile_record_modern.html' %}
+      {% endfor %}
+    {% else %}
+      <!-- Empty state — shown when user has no profiles yet -->
+      <div class="copo-empty-state"
+           id="noProfilesMessage"
+           data-testid="profile-page--empty-state"
+           style="grid-column: 1 / -1;">
+        <div class="copo-empty-state__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8m-4-4v4"/>
+          </svg>
+        </div>
+        <p class="copo-empty-state__title">No profiles yet</p>
+        <p class="copo-empty-state__text">
+          Create your first work profile to start managing your research data.
+        </p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Pagination / count row ──────────────────────────────────────────── -->
+  <p class="copo-page__footer"
+     id="bottomPanel"
+     data-testid="profile-page--count-row">
+    Showing
+    <strong><span id="grid-count" data-testid="profile-page--grid-count">{{ profiles_visible_length }}</span></strong>
+    /
+    <strong><span id="grid-total" data-testid="profile-page--grid-total">{{ profiles_total }}</span></strong>
+    profiles
+  </p>
+
+  <!-- ── Profile type legend (populated by JS, kept for backwards compat) ── -->
+  <div class="copo-legend component-legend"
+       data-tour-id="component_legend"
+       data-legend="profile_types"
+       data-testid="profile-page--legend">
+    <p class="copo-legend__title">Profile types</p>
+    <ul class="copo-legend__list component-legend-group" role="list"></ul>
+  </div>
+
+</main>
+
+<!-- ── Scroll navigation buttons ─────────────────────────────────────────── -->
+<a href="javascript:void(0);"
+   id="navigateToBottom"
+   class="navigate-to-bottom"
+   title="Scroll down to view more profiles"
+   aria-label="Scroll down to view more profiles"
+   data-testid="profile-page--scroll-down-btn">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2.5"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="m6 9 6 6 6-6"/>
+  </svg>
+</a>
+<a href="javascript:void(0);"
+   id="navigateToTop"
+   class="navigate-to-top"
+   title="Navigate to top of the page"
+   aria-label="Navigate to top of the page"
+   data-testid="profile-page--scroll-top-btn">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2.5"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="m18 15-6-6-6 6"/>
+  </svg>
+</a>
+
+<!-- ── page_tile / copo-page-headers hidden shims (JS compatibility) ─────── -->
+<div class="copo-page-headers" style="display:none;"
+     data-testid="compat--page-headers"></div>
+<div class="copo-page-icons"
+     data-tour-id="profile_component_icon_navigation_pane"
+     style="display:none;"
+     data-testid="compat--page-icons"></div>
+
+{% endblock page_content %}
+
+{% block extra_scripts %}
+  <script src="{% static 'copo/js/generic_handlers_ext2.js' %}"></script>
+  <script src="{% static 'copo/js/generic_handlers.js' %}"></script>
+  <script src="{% static 'copo/js/copo_form_handlers.js' %}"></script>
+  <script src="{% static 'copo/js/copo_profile_index.js' %}"></script>
+  {% include 'copo/profile/custom_profile_js.html' %}
+
+  <script>
+    /*
+     * Modern UI enhancements for the profile page.
+     * These are purely cosmetic / UX additions — they do not replace any
+     * existing copo_profile_index.js behaviour.
+     */
+    $(document).ready(function () {
+
+      // ── Info / getting-started toggle ──────────────────────────────────
+      $('#showGettingStartedBtn').on('click', function () {
+        var $panel = $('#getting-started-panel');
+        var visible = $panel.is(':visible');
+        $panel.toggle(!visible);
+        $(this).attr('aria-expanded', !visible);
+      });
+
+      // ── Filter chips ───────────────────────────────────────────────────
+      // The chips update the hidden #profileType select so that existing JS
+      // (getProfileType()) continues to work without modification.
+      $(document).on('click', '#profileFilterBar .copo-filter-chip', function () {
+        var $chip = $(this);
+        var filterVal = $chip.data('filter-value');
+
+        // Update chip active state
+        $('#profileFilterBar .copo-filter-chip')
+          .removeClass('is-active')
+          .attr('aria-pressed', 'false');
+        $chip.addClass('is-active').attr('aria-pressed', 'true');
+
+        // Sync the existing profileType select
+        if (filterVal && filterVal !== 'all') {
+          $('#profileType').val(filterVal).trigger('change');
+        } else {
+          $('#profileType').prop('selectedIndex', 0).trigger('change');
+        }
+      });
+
+    });
+  </script>
+{% endblock extra_scripts %}

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load compress %}
+{% load static %}
+{% load html_tags %}
+{% load web_tags %}
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=10">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author"
+        content="Collaborative OPen Omics (COPO) project team">
+  <meta name="description"
+        content="{% block meta_description %}COPO supports members of the life sciences community in brokering, managing, and submitting omics data and metadata to public repositories.{% endblock %}">
+  <title>{% block title %}{% endblock %} | COPO</title>
+
+  <!-- ── Loading overlay CSS (must be first so the spinner shows immediately) -->
+  <link rel="stylesheet" href="{% static 'copo/css/loader.css' %}">
+
+  <!-- ── Bootstrap 3 (kept — required by existing JS components) ─────────── -->
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/bootstrap/css/bootstrap-3.3.7.min.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/bootstrap/css/bootstrap-dialog.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/bootstrap/css/dropdowns-enhancement.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/bootstrap/css/bootstrap-theme.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/bootstrap/bootstrap_switch/css/bootstrap-switch.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/bootstrap/css/bootstrap-select.min.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/fuelux/css/fuelux.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/rangeslider/rangeslider.css' %}">
+
+  <!-- ── Core COPO stylesheets ─────────────────────────────────────────────── -->
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/css/style.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'assets/css/navbar.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/css/menu.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/autocomplete.js-2.1.0/autocomplete.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/webui_popover/jquery.webui-popover.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/css/pretty-checkbox.min.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/select2-405/css/select2.min.css' %}">
+  <link rel="stylesheet" href="{% static 'copo/tour/css/tour.css' %}">
+  <link rel="stylesheet" href="{% static 'copo/tour/css/shepherd.css' %}">
+
+  <!-- ── Font Awesome ──────────────────────────────────────────────────────── -->
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/fontawesome/css/fontawesome-6.5.1.min.css' %}">
+
+  <!-- ── Selectize ─────────────────────────────────────────────────────────── -->
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/selectize/selectize.bootstrap3.css' %}">
+
+  <!-- ── DataTables ────────────────────────────────────────────────────────── -->
+  <link rel="stylesheet" type="text/css"
+        href="{% static 'copo/datatables/css/datatables.min.css' %}"/>
+
+  <!-- ── Google Fonts (Inter + existing weights) ───────────────────────────── -->
+  <link href="{% static 'copo/google/css/google-fonts.css' %}"
+        rel="stylesheet" type="text/css">
+
+  <!-- ── Semantic UI ───────────────────────────────────────────────────────── -->
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/semantic_ui/semantic.min.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/semantic_ui/components/icon.min.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/semantic_ui/components/dropdown.min.css' %}">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="{% static 'copo/semantic_ui/components/popup.min.css' %}">
+
+  <!-- ── COPO UI components ────────────────────────────────────────────────── -->
+  <link href="/static/assets/css/base_banner.css" rel="stylesheet"/>
+  <link href="{% static 'copo/css/ui/buttons.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'copo/css/ui/icons.css' %}">
+
+  <!-- ── jQuery (must load before other scripts) ──────────────────────────── -->
+  <script src="{% static 'copo/jquery/js/jquery-3.7.1.min.js' %}"></script>
+  <script src="{% static 'copo/jquery/js/jquery-ui-1.13.2.min.js' %}"></script>
+
+  <!-- ── Remaining JS dependencies ─────────────────────────────────────────── -->
+  <script src="{% static 'copo/semantic_ui/semantic.min.js' %}"></script>
+  <script src="{% static 'copo/autocomplete.js-2.1.0/autocomplete.min.js' %}"></script>
+  <script src="{% static 'copo/jquery/js/jquery.cookie.js' %}"></script>
+  <script src="{% static 'copo/js/serialize_form_json.js' %}"></script>
+  <script src="{% static 'copo/bootstrap/js/bootstrap-3.3.7.js' %}"></script>
+  <script src="{% static 'copo/bootstrap/js/bootstrap-dialog.js' %}"></script>
+  <script src="{% static 'copo/bootstrap/js/bootstrap-select.min.js' %}"></script>
+  <script src="{% static 'copo/bootstrap/js/dropdowns-enhancement.js' %}"></script>
+  <script src="{% static 'copo/selectize/standalone/selectize.min.js' %}"></script>
+  <script src="{% static 'copo/bootstrap/bootstrap_switch/js/bootstrap-switch.js' %}"></script>
+  <script src="{% static 'copo/fuelux/js/fuelux.min.js' %}"></script>
+  <script src="{% static 'copo/validator1000hz/validator.min.js' %}"></script>
+  <script src="{% static 'copo/rangeslider/rangeslider.min.js' %}"></script>
+  <script src="{% static 'copo/jquery/js/jquery.alterclass.js' %}"></script>
+  <script src="{% static 'copo/js/base.js' %}"></script>
+  <script type="text/javascript"
+          src="{% static 'copo/datatables/js/datatables.min.js' %}"></script>
+  <script src="{% static 'copo/search_highlight/dataTables.searchHighlight.min.js' %}"></script>
+  <script src="{% static 'copo/search_highlight/jquery.highlight.js' %}"></script>
+  <script src="{% static 'copo/bootstrap/bootstrap-datepicker-1.6.4-dist/js/bootstrap-datepicker.min.js' %}"></script>
+  <script src="{% static 'copo/webui_popover/jquery.webui-popover.min.js' %}"></script>
+  <script src="{% static 'copo/select2-405/js/select2.min.js' %}"></script>
+  <script src="{% static 'copo/semantic_ui/components/dropdown.min.js' %}"></script>
+  <script src="{% static 'copo/semantic_ui/components/popup.min.js' %}"></script>
+  <script src="{% static 'copo/reconnecting-websocket-master/reconnecting-websocket.min.js' %}"></script>
+  <script src="{% static 'copo/js/fastdom.js' %}"></script>
+
+  <!-- ── Tour ──────────────────────────────────────────────────────────────── -->
+  <script type="module" src="{% static 'copo/tour/js/tour-handler.js' %}"></script>
+
+  <!-- ── Profile type definitions (inline; shared by profile JS) ──────────── -->
+  <script>
+  {% include 'copo/copo_profile_types.html' %}
+  </script>
+
+  <!-- ── Date picker ───────────────────────────────────────────────────────── -->
+  <link rel="stylesheet" href="{% static 'copo/jquery/css/jquery-ui-1.13.2.min.css' %}">
+  <link rel="stylesheet" href="{% static 'copo/jquery/datepicker/css/jquery.datepick.css' %}">
+  <script src="{% static 'copo/jquery/datepicker/js/jquery.plugin.min.js' %}"></script>
+  <script src="{% static 'copo/jquery/datepicker/js/jquery.datepick.min.js' %}"></script>
+
+  <!-- ── Favicon ───────────────────────────────────────────────────────────── -->
+  <link rel="icon" type="image/png"
+        href="{% static 'assets/img/favicon_black.png' %}"/>
+
+  <!-- ── NEW: Modern design system CSS ────────────────────────────────────── -->
+  <link rel="stylesheet"
+        href="{% static 'copo/css/copo_design_system.css' %}">
+
+  <!-- ── Page-level stylesheets injected by child templates ───────────────── -->
+  {% block extra_head %}{% endblock %}
+
+  <!-- ── Page-level scripts that must load in <head> ──────────────────────── -->
+  {% block js_block %}{% endblock %}
+
+  <!-- ── Inline style overrides kept from base.html ───────────────────────── -->
+  <style>
+    .selectize-control.onto-select::before,
+    .selectize-control.copo-lookup::before,
+    .selectize-control.general-onto::before {
+      -moz-transition: opacity 0.2s;
+      -webkit-transition: opacity 0.2s;
+      transition: opacity 0.2s;
+      content: ' ';
+      z-index: 2;
+      position: absolute;
+      display: block;
+      top: 12px;
+      right: 34px;
+      width: 16px;
+      height: 16px;
+      background-size: 16px 16px;
+      opacity: 0;
+    }
+    .selectize-control.onto-select::before,
+    .selectize-control.copo-lookup::before {
+      background: url("{% static 'assets/img/ajax_loader1.gif' %}");
+    }
+    .selectize-control.general-onto::before {
+      background: url("{% static 'assets/img/loading.gif' %}");
+    }
+    .selectize-control.onto-select.loading::before,
+    .selectize-control.copo-lookup.loading::before  { opacity: 0.4; }
+    .selectize-control.general-onto.loading::before { opacity: 0.9; }
+    .hidden { display: none; }
+    .navbar-header { max-height: 55px; }
+    .empty_colour  { background-color: #f7eded; }
+  </style>
+
+  <!-- ── Loading overlay JS (deferred) ────────────────────────────────────── -->
+  <script defer src="{% static 'copo/js/loader.js' %}"></script>
+
+  <!-- ── Base jQuery event handlers (carried over from base.html) ─────────── -->
+  <script>
+    $(document).ready(function () {
+      // Notifications popover
+      $("#bell_notification").popover({
+        html: true,
+        content: function () { return $("#hidden_notification").html(); }
+      });
+
+      // Global search box
+      $("#global_search_form").submit(function (event) {
+        event.preventDefault();
+        $(this).find("input:text").each(function () { $(this).val(''); });
+      });
+
+      // Keep dropdown open when clicking inside it
+      $(document).on('click', '.dropdown-menu', function (e) {
+        if ($(this).hasClass('keep-open-on-click')) { e.stopPropagation(); }
+      });
+
+      // Global notification trigger
+      $(document).on("click", "#trigger-notifications", function () {
+        trigger_global_notification();
+      });
+    });
+
+    function trigger_global_notification() {
+      var infoPanelElement = $("#page_alert_panel");
+      if (infoPanelElement.length) {
+        $('.copo-sidebar-tabs a[href="#copo-sidebar-info"]').tab('show');
+        return infoPanelElement;
+      }
+    }
+  </script>
+</head>
+
+<body class="copo-modern-body{% if banner %} has-banner{% endif %}"
+      data-testid="body">
+
+  <!-- ── Loading overlay ───────────────────────────────────────────────────── -->
+  <div id="loaderOverlay" data-testid="loader-overlay">
+    <div class="copo-i-loader"></div>
+  </div>
+
+  <!-- ── Hidden fields used by base.js / notifications ─────────────────────── -->
+  <input type="hidden" id="elastic_search_ajax"
+         value="<!-- url 'copo:ajax_search_ontology' ontology_names='999' -->"/>
+  <input type="hidden" id="ajax_search_copo_local"
+         value="<!-- url 'copo:ajax_search_copo_local' data_source='999' -->"/>
+
+  <!-- ── Notification hidden content (used by bell popover) ───────────────── -->
+  <div id="hidden_notification" class="hidden">
+    <div>Message Received:<br/>{{ created }}</div>
+    <br/>
+    <b>{{ latest_message }}</b>
+  </div>
+
+  <!-- ── Template components (dialogs, modals, etc.) ───────────────────────── -->
+  {% include "components_template.html" %}
+
+  <!-- ── Cookie consent modal ──────────────────────────────────────────────── -->
+  {% include "component_cookie_modal.html" %}
+
+  <!-- ── New modern navigation bar ────────────────────────────────────────── -->
+  {% include "copo/nav_modern.html" %}
+
+  <!-- ── Old navbar is included but hidden by .copo-modern-body #authNavbar ── -->
+  <!-- (Kept so that any JS that references authNavbar still finds the element) -->
+  {% include "nav_authenticated.html" %}
+
+  <!-- ── Page content — child templates fill this block ───────────────────── -->
+  {% block page_content %}{% endblock %}
+
+  <!-- ── Page-level scripts at bottom of body ─────────────────────────────── -->
+  {% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,223 @@
+{% load web_tags %}
+{% load static %}
+<!-- ─────────────────────────────────────────────────────────────────────────
+   COPO Modern Navigation Bar
+   
+   Replaces the Bootstrap navbar (nav_authenticated.html) with a minimal dark
+   sticky bar.  The old #authNavbar is hidden via copo_design_system.css when
+   body.copo-modern-body is present.
+
+   data-testid attributes are provided on every element for Selenium testing.
+   ───────────────────────────────────────────────────────────────────────── -->
+
+<nav class="copo-nav" role="navigation" aria-label="Main navigation"
+     data-testid="nav--bar">
+
+  <!-- ── Logo ─────────────────────────────────────────────────────────────── -->
+  <a href="{% if user.is_authenticated %}{% url 'copo_profile_index:index' %}{% else %}/{% endif %}"
+     class="copo-nav__logo"
+     aria-label="COPO home"
+     data-testid="nav--logo">
+    <img src="{% static 'assets/img/COPO-logomark-48x48px-CMYK-black.png' %}"
+         alt=""
+         class="copo-nav__logo-icon"
+         aria-hidden="true">
+    <span class="copo-nav__logo-text">COPO</span>
+  </a>
+
+  <!-- ── Banner slot (rendered when a site-wide banner is active) ─────────── -->
+  {% if banner %}
+    <div class="copo-nav__banner" role="alert" title="{{ banner.body }}"
+         data-testid="nav--banner">
+      <span>{{ banner.header }}</span>
+    </div>
+  {% endif %}
+
+  <span class="copo-nav__spacer" aria-hidden="true"></span>
+
+  <!-- ── Notifications ─────────────────────────────────────────────────────── -->
+  <button class="copo-nav__icon-btn" id="bell_notification"
+          title="Notifications" aria-label="View current tasks"
+          data-tour-id="notifications_icon"
+          data-testid="nav--notifications-btn"
+          type="button">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+  </button>
+
+  <!-- ── Home ─────────────────────────────────────────────────────────────── -->
+  <a href="/" class="copo-nav__icon-btn"
+     title="Home" aria-label="Home"
+     data-tour-id="home_icon"
+     data-testid="nav--home-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  </a>
+
+  <!-- ── Analytics dropdown ───────────────────────────────────────────────── -->
+  <div class="copo-nav__dropdown" data-tour-id="analytics_icon"
+       data-testid="nav--analytics-dropdown">
+    <button class="copo-nav__icon-btn" id="analyticsDropdown"
+            title="Analytics" aria-label="Analytics menu"
+            aria-haspopup="true" aria-expanded="false"
+            type="button"
+            data-testid="nav--analytics-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="20" x2="18" y2="10"/>
+        <line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+    </button>
+    <div class="copo-nav__dropdown-menu" role="menu"
+         aria-labelledby="analyticsDropdown"
+         data-testid="nav--analytics-menu">
+      <a href="/copo/tol_dashboard/stats" class="copo-nav__dropdown-item"
+         role="menuitem" aria-label="Statistics"
+         data-testid="nav--analytics-statistics">
+        <i class="fa fa-bar-chart" aria-hidden="true"></i> Statistics
+      </a>
+      <a href="/copo/tol_dashboard/tol" class="copo-nav__dropdown-item"
+         role="menuitem" aria-label="Tree of Life Dashboard"
+         data-testid="nav--analytics-tol">
+        <i class="fa fa-chart-pie" aria-hidden="true"></i> Tree of Life Dashboard
+      </a>
+      <a href="/copo/copo_accessions/dashboard" class="copo-nav__dropdown-item"
+         role="menuitem" aria-label="Accessions Dashboard"
+         data-testid="nav--analytics-accessions">
+        <i class="fa fa-sitemap" aria-hidden="true"></i> Accessions Dashboard
+      </a>
+      <a href="/api" class="copo-nav__dropdown-item"
+         role="menuitem" aria-label="API Endpoints"
+         data-testid="nav--analytics-api">
+        <i class="fa fa-plug" aria-hidden="true"></i> API Endpoints
+      </a>
+    </div>
+  </div>
+
+  <!-- ── News ─────────────────────────────────────────────────────────────── -->
+  <a href="/news" class="copo-nav__icon-btn"
+     title="News" aria-label="News"
+     data-tour-id="news_icon"
+     data-testid="nav--news-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+      <path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/>
+    </svg>
+  </a>
+
+  <!-- ── Help dropdown ────────────────────────────────────────────────────── -->
+  <div class="copo-nav__dropdown" data-tour-id="help_icon"
+       data-testid="nav--help-dropdown">
+    <button class="copo-nav__icon-btn" id="helpDropdown"
+            title="Help" aria-label="Help menu"
+            aria-haspopup="true" aria-expanded="false"
+            type="button"
+            data-testid="nav--help-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </button>
+    <div class="copo-nav__dropdown-menu" role="menu"
+         aria-labelledby="helpDropdown"
+         data-testid="nav--help-menu">
+      <a href="/manifests/index" class="copo-nav__dropdown-item"
+         role="menuitem" aria-label="Manifests"
+         data-testid="nav--help-manifests">
+        <i class="fa fa-table" aria-hidden="true"></i> Manifests
+      </a>
+      <a href="https://copo-docs.readthedocs.io/en/latest/"
+         class="copo-nav__dropdown-item"
+         role="menuitem" target="_blank" rel="noopener noreferrer"
+         aria-label="Documentation"
+         data-testid="nav--help-docs">
+        <i class="fa fa-book" aria-hidden="true"></i> Documentation
+      </a>
+      <a href="/contact" class="copo-nav__dropdown-item"
+         role="menuitem" aria-label="Contact COPO"
+         data-testid="nav--help-contact">
+        <i class="fa fa-envelope" aria-hidden="true"></i> Contact Us
+      </a>
+    </div>
+  </div>
+
+  <!-- ── About ────────────────────────────────────────────────────────────── -->
+  <a href="/about" class="copo-nav__icon-btn"
+     title="About COPO" aria-label="About COPO"
+     data-tour-id="about_icon"
+     data-testid="nav--about-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+  </a>
+
+  <!-- ── User avatar / settings ───────────────────────────────────────────── -->
+  <div class="copo-nav__dropdown" data-tour-id="settings_icon"
+       data-testid="nav--user-dropdown">
+    <button class="copo-nav__avatar"
+            title="{{ user }}"
+            aria-label="User menu for {{ user }}"
+            aria-haspopup="true" aria-expanded="false"
+            type="button"
+            id="settingsDropdown"
+            data-testid="nav--user-avatar">
+      {% if user.is_authenticated %}
+        {% if user.first_name %}{{ user.first_name|first|upper }}{% else %}{{ user.username|first|upper }}{% endif %}{% if user.last_name %}{{ user.last_name|first|upper }}{% endif %}
+      {% else %}
+        <i class="fa fa-sign-in-alt" aria-hidden="true"></i>
+      {% endif %}
+    </button>
+    <div class="copo-nav__dropdown-menu" role="menu"
+         aria-labelledby="settingsDropdown"
+         data-testid="nav--user-menu">
+      {% if user.is_authenticated %}
+        {% if request.user.is_staff %}
+          <a href="<!-- url 'copo:copo_repositories' -->"
+             class="copo-nav__dropdown-item" role="menuitem"
+             data-testid="nav--user-admin-repos">
+            <i class="fa fa-database" aria-hidden="true"></i> Administer Repositories
+          </a>
+          <div class="copo-nav__dropdown-divider" role="separator"></div>
+        {% endif %}
+        <a href="{% url 'copo:groups' %}" class="copo-nav__dropdown-item"
+           role="menuitem" data-testid="nav--user-groups">
+          <i class="fa fa-users" aria-hidden="true"></i> View Groups
+        </a>
+        <a href="{% url 'copo:view_user_info' %}" class="copo-nav__dropdown-item"
+           role="menuitem" data-testid="nav--user-info">
+          <i class="fa fa-eye" aria-hidden="true"></i> User Info
+        </a>
+        <div class="copo-nav__dropdown-divider" role="separator"></div>
+        <a href="{% url 'copo_login:logout' %}" class="copo-nav__dropdown-item"
+           role="menuitem" data-testid="nav--user-logout">
+          <i class="fa fa-sign-out-alt" aria-hidden="true"></i> Logout
+        </a>
+      {% else %}
+        <a href="{% url 'copo_login:login' %}" class="copo-nav__dropdown-item"
+           role="menuitem" data-testid="nav--user-login">
+          <i class="fa fa-sign-in-alt" aria-hidden="true"></i> Login
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+</nav>

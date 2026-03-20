@@ -154,7 +154,7 @@ def copo_profile_index(request):
         context['profile_types'] = get_all_profile_types_for_options_for_user(
             request.user
         )
-        return render(request, 'copo/profile/copo_profile_index.html', context)
+        return render(request, 'copo/profile/copo_profile_index_modern.html', context)
     else:
         # Set up the profile grids that are loaded when a user scrolls down the web page
         output = dict()
@@ -162,7 +162,7 @@ def copo_profile_index(request):
 
         for profile in profile_page:
             content += render_to_string(
-                'copo/profile/copo_profile_record.html',
+                'copo/profile/copo_profile_record_modern.html',
                 {
                     'profile': profile,
                     'profile_types': get_all_profile_types_for_options_for_user(

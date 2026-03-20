@@ -927,8 +927,46 @@ function updateCounts(copoVisualsURL) {
   });
 }
 
+function getPrototypeCardActionKind(item) {
+  const key = [item.component, item.title, item.buttonLabel, item.url]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  if (key.includes('single') || key.includes('cell')) return 'singlecell';
+  if (key.includes('accession')) return 'accessions';
+  if (key.includes('image')) return 'images';
+  if (key.includes('sample')) return 'samples';
+  if (key.includes('read')) return 'reads';
+  if (key.includes('file') || key.includes('datafile')) return 'files';
+
+  return null;
+}
+
+function normaliseComponentForPrototypeCard(item) {
+  const kind = getPrototypeCardActionKind(item);
+  if (!kind) return item;
+
+  const mapping = {
+    files: { buttonLabel: 'Data files', color: 'blue' },
+    samples: { buttonLabel: 'Sample metadata', color: 'green' },
+    reads: { buttonLabel: 'Reads', color: 'orange' },
+    singlecell: { buttonLabel: 'Single-cell', color: 'violet' },
+    accessions: { buttonLabel: 'Accessions', color: 'pink' },
+    images: { buttonLabel: 'Images', color: 'teal' },
+  };
+
+  return {
+    ...item,
+    ...mapping[kind],
+    _prototypeKind: kind,
+  };
+}
+
 function createComponentButtons(recordId, profileType) {
-  const components = get_profile_components(profileType);
+  const components = get_profile_components(profileType).map((item) =>
+    normaliseComponentForPrototypeCard(item)
+  );
   if (components.length === 0) return; // No components so skip
 
   // Group components by 'group' field value
@@ -940,14 +978,18 @@ function createComponentButtons(recordId, profileType) {
 
   Object.entries(grouped).forEach(([groupName, groupItems]) => {
     if (groupItems.length === 0) return;
+    const normalisedGroupItems = groupItems.map((item) =>
+      normaliseComponentForPrototypeCard(item)
+    );
+
     // Components with subcomponents i.e. dropdown menus
     // Render as dropdown if group is non-empty and has more than one subcomponent
-    const isDropdownMenu = groupName && groupItems.length > 1;
+    const isDropdownMenu = groupName && normalisedGroupItems.length > 1;
 
     if (isDropdownMenu && groupName) {
       const dropdown = createDropdownWrapper(
         groupName,
-        groupItems,
+        normalisedGroupItems,
         recordId,
         false
       );
@@ -956,8 +998,14 @@ function createComponentButtons(recordId, profileType) {
       // Single/Standalone component
       // These are components that do not have
       // subcomponents or a dropdown menu and are not parent components.
-      groupItems.forEach((item) => {
+      normalisedGroupItems.forEach((item) => {
         const anchor = createComponentAnchor(item, recordId, false);
+        if (item._prototypeKind) {
+          anchor.addClass(`copo-action-kind-${item._prototypeKind}`);
+          anchor
+            .find('.pcomponent-button')
+            .addClass(`copo-action-kind-${item._prototypeKind}`);
+        }
         componentsDIV.append(anchor);
       });
     }

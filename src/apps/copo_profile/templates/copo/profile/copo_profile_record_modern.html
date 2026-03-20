@@ -1,0 +1,215 @@
+{% spaceless %}
+{% load static %}
+{% load web_tags %}
+
+<div class="grid">
+  <div class="copo-records-panel"
+       data-profile-type="{{ profile|coalesce:'type,shared_type' }}"
+       data-is-shared-profile="{{ profile.shared_type|yesno:'true,false' }}"
+       study-status="{{ profile.study_status|get_first_value_from_array }}"
+       study_release_date="{{ profile.study_release_date|get_first_value_from_array }}"
+       data-testid="profile-card--{{ profile.id }}">
+
+    <article class="copo-profile-card{% if profile.shared_type %} copo-profile-card--shared{% endif %}"
+             aria-label="Profile: {{ profile.title }}">
+
+      <!-- ── Card top: type badge + title + ⋮ menu ────────────────────────── -->
+      <div class="copo-card__top" data-testid="profile-card--top--{{ profile.id }}">
+
+        <!-- Type badge -->
+        <span class="copo-card__type-badge"
+              data-testid="profile-card--type-badge--{{ profile.id }}">
+          {{ profile|coalesce:'type,shared_type'|upper }}
+        </span>
+
+        <!-- row-title wrapper required by copo_profile_index.js: $grid.find('.row-title span').attr('id') -->
+        <span class="row-title" style="display:contents">
+          <span id="{{ profile.id }}"
+                class="copo-card__title"
+                title="{{ profile.title }}"
+                data-testid="profile-card--title--{{ profile.id }}">
+            {{ profile.title }}&nbsp;
+          </span>
+        </span>
+
+        <!-- ⋮ options menu — div#{{ profile.id }}.ellipsis-div required by JS -->
+        <div id="{{ profile.id }}"
+             class="copo-card__menu-btn ellipsis-div"
+             role="button"
+             tabindex="0"
+             title="View profile options"
+             data-toggle="popover"
+             data-html="true"
+             aria-label="Profile options for {{ profile.title }}"
+             data-tour-id="profile_options_icon"
+             data-testid="profile-card--menu-btn--{{ profile.id }}">
+          <svg width="16" height="16" viewBox="0 0 24 24"
+               fill="currentColor" aria-hidden="true">
+            <circle cx="12" cy="5" r="1.5"/>
+            <circle cx="12" cy="12" r="1.5"/>
+            <circle cx="12" cy="19" r="1.5"/>
+          </svg>
+        </div>
+
+      </div>
+
+      <!-- ── Card meta: date + description ───────────────────────────────── -->
+      <div class="copo-card__meta" data-testid="profile-card--meta--{{ profile.id }}">
+
+        <div class="copo-card__meta-row date-created-div"
+             date-created="{{ profile.date_created }}"
+             data-testid="profile-card--date--{{ profile.id }}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          {{ profile.date_created }}
+        </div>
+
+        <p class="copo-card__description profile-description"
+           data-testid="profile-card--description--{{ profile.id }}">
+          {{ profile.description }}
+        </p>
+
+        <!-- ── More details (owner, collaborators, seq centre, study status) -->
+        {% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status %}
+          <a id="showMoreProfileInfoBtn"
+             class="copo-btn--details"
+             href="#"
+             rel="popover"
+             data-popover-content="#showMoreProfileInfoContent"
+             data-placement="right"
+             data-tour-id="profile_addtl_info_button"
+             data-testid="profile-card--more-info-btn--{{ profile.id }}"
+             style="font-size: 12px; gap: 4px;">
+            View more details
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </a>
+
+          <!-- Hidden popover content -->
+          <div id="showMoreProfileInfoContent" class="hidden">
+            <div class="popover-heading"></div>
+            <div class="popover-content showMoreProfileInfoPopover-content-div">
+              {% if profile.owner_name %}
+                <div class="owner-div mt-10">
+                  <span class="text-bold">Owner: </span>
+                  <span id="ownerID">{{ profile.owner_name }}</span>
+                </div>
+              {% endif %}
+              {% if profile.shared_owner_name %}
+                <div class="shared-owner-div mt-10">
+                  <span class="text-bold">Collaborator(s): </span>
+                  {% with profile.shared_owner_name as shared_owners %}
+                    <span id="sharedOwnerID">
+                      {% if shared_owners|length > 3 %}
+                        {{ shared_owners|slice:":3"|join:", " }}&hellip;
+                        <i class="fa fa-info-circle shared-owner-info-icon"
+                           title="{{ shared_owners|format_list_with_and }}"
+                           aria-hidden="true"></i>
+                      {% else %}
+                        {{ shared_owners|format_list_with_and }}
+                      {% endif %}
+                    </span>
+                  {% endwith %}
+                </div>
+              {% endif %}
+              {% if profile.associated_type %}
+                <div class="profile-info-label">Associated Profile Type(s):</div>
+                <div class="associated-type-div-value">
+                  <ul class="associated-type-ul-tag">
+                    {% for element in profile.associated_type %}
+                      <li>{{ element }}
+                        <i class="fa fa-info-circle associated_type_info_icon"
+                           title="{{ element|get_associated_type_label }}"
+                           aria-hidden="true"></i>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+              {% if profile.sequencing_centre|is_list_empty %}
+                <div class="profile-info-label">Associated Sequencing Centre(s):</div>
+                <div class="sequencing_centre_div_value">
+                  <ul class="sequencing_centre_ulTag">
+                    {% for element in profile.sequencing_centre %}
+                      <li>{{ element }}
+                        <i class="fa fa-info-circle sequencing-centre-info-icon"
+                           title="{{ element|get_sequencing_centre_label }}"
+                           aria-hidden="true"></i>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+              {% if profile.study_status %}
+                <div class="study-status-div">
+                  <span class="text-bold">Release Status: </span>
+                  <span id="studyStatus_{{ profile.id }}"
+                        data-testid="profile-card--study-status--{{ profile.id }}">
+                    {{ profile.study_status|get_first_value_from_array }}
+                  </span>
+                </div>
+                <div>
+                  <span class="text-bold">Release Date: </span>
+                  <span id="studyReleaseDate_{{ profile.id }}"
+                        data-testid="profile-card--release-date--{{ profile.id }}">
+                    {{ profile.study_release_date|get_first_value_from_array }}
+                  </span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+
+      </div>
+
+      <!-- ── Component action buttons (injected by expandingMenu JS hook) ── -->
+      <div class="copo-card__actions"
+           data-testid="profile-card--actions--{{ profile.id }}">
+        <p class="copo-card__actions-label">Components</p>
+        <div class="copo-card__actions-grid"
+             data-testid="profile-card--actions-grid--{{ profile.id }}">
+          <span id="expandingMenu"
+                class="ui compact menu vertical"
+                data-tour-id="profile_component_buttons_menu"
+                data-testid="profile-card--expanding-menu--{{ profile.id }}">
+            <div class="menu comp" tabindex="-1">
+              <p id="expandingMenuTitle" class="copo-sr-only">Components</p>
+            </div>
+          </span>
+        </div>
+      </div>
+
+      <!-- ── Card footer: view details ─────────────────────────────────────── -->
+      <div class="copo-card__footer"
+           data-testid="profile-card--footer--{{ profile.id }}">
+        <button class="copo-btn--details"
+                type="button"
+                data-profile-id="{{ profile.id }}"
+                data-profile-type="{{ profile|coalesce:'type,shared_type' }}"
+                data-tour-id="profile_details_button"
+                data-testid="profile-card--view-details--{{ profile.id }}"
+                aria-label="View details for {{ profile.title }}">
+          View details
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      </div>
+
+    </article>
+  </div>
+</div>
+{% endspaceless %}
