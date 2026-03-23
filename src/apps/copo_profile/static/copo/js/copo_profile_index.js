@@ -180,6 +180,7 @@ $(document).on('document_ready', function () {
   });
 
   $(document).data('sortByDescendingOrder', true);
+  $('#sortIconId').addClass('sort-down'); // initial state: descending
 
   $(document).on('click', '.ui.menu > div', function (e) {
     const el = $(e.currentTarget);
@@ -223,10 +224,9 @@ $(document).on('document_ready', function () {
   $(document).on('click', '#sortIconId', function (e) {
     let option = $('#sortProfilesBtn').val();
 
-    $(this).toggleClass('sort-down fa fa-sort-down');
-    $(this).toggleClass('sort-up fa fa-sort-up');
+    $(this).toggleClass('sort-down sort-up');
 
-    if ($('i.sort-down').length) {
+    if ($(this).hasClass('sort-down')) {
       $(document).data('sortByDescendingOrder', true);
       sortProfileRecords(option);
     } else {
@@ -255,13 +255,38 @@ $(document).on('document_ready', function () {
     $('.row-ellipsis').attr('title', $(document).data('profileOptionsTitle'));
   });
 
+  // Global click-away close for profile popovers.
+  $(document).on('click', function (e) {
+    const $target = $(e.target);
+
+    if (
+      $target.closest('.bootstrap-dialog').length ||
+      $target.closest('.modal').length ||
+      $target.closest('.profile-ellipsis[data-toggle="popover"]').length ||
+      $target.closest('.row-ellipsis').length ||
+      $target.closest('.copo-profile-options-popover').length ||
+      $target.closest('#showMoreProfileInfoBtn[rel="popover"]').length ||
+      $target.closest('.popover').length
+    ) {
+      return;
+    }
+
+    $('.profile-ellipsis[data-toggle="popover"]').popover('hide');
+    $('#showMoreProfileInfoBtn[rel="popover"]').popover('hide');
+    $('.row-ellipsis').attr('title', $(document).data('profileOptionsTitle'));
+  });
+
   $(document).on('click', '#editProfileBtn', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
     const profileId = $(this).data('profile-id');
     const profileType = $(this).data('profile-type');
     editProfileRecord(profileId, profileType);
   });
 
   $(document).on('click', '#deleteProfileBtn', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
     const profileId = $(this).data('profile-id');
     deleteProfileRecord(profileId);
   });
@@ -373,6 +398,7 @@ function initialiseProfileActionsPopover() {
       .on('inserted.bs.popover', function () {
         const $trigger = $(this);
         const $popover = $trigger.data('bs.popover').tip();
+        $popover.addClass('copo-profile-options-popover');
 
         // Move popover to body
         $('body').append($popover);
@@ -390,21 +416,29 @@ function initialiseProfileActionsPopover() {
         // Hide 'View profile options' title from the popover on hover
         $('.row-ellipsis').attr('title', '');
 
-        const $content = $('<div></div>');
+        const $content = $('<div class="copo-profile-options-actions"></div>');
         const profileId = $grid.find('.row-title span').attr('id');
         const profileType = $panel.data('profile-type');
 
         const $editButton = $(
-          `<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"
+          `<button id="editProfileBtn"
+              class="copo-popover-btn copo-popover-btn--edit"
+              title="Edit record"
               data-profile-id="${profileId}"
               data-profile-type="${profileType}">
-              <i class="fa fa-pencil"></i>&nbsp;Edit</button>`
+              <span class="copo-popover-btn__icon"><i class="fa fa-pencil" aria-hidden="true"></i></span>
+              <span class="copo-popover-btn__label">Edit</span>
+           </button>`
         );
 
         const $deleteButton = $(
-          `<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"
+          `<button id="deleteProfileBtn"
+              class="copo-popover-btn copo-popover-btn--delete"
+              title="Delete record"
               data-profile-id="${profileId}">
-              <i class="fa fa-trash-can"></i>&nbsp;Delete</button>`
+              <span class="copo-popover-btn__icon"><i class="fa fa-trash-can" aria-hidden="true"></i></span>
+              <span class="copo-popover-btn__label">Delete</span>
+           </button>`
         );
 
         if (canEditDelete) {
@@ -419,9 +453,13 @@ function initialiseProfileActionsPopover() {
             return;
           }
           const $button = $(
-          `<button id="${item}" class="btn btn-sm btn-primary action" title="${action.title}"
-            data-action-type="${action.action}" data-profile-id="${profileId}">
-            <i class="${action.icon_class}"></i>&nbsp;${action.label}
+          `<button id="${item}"
+            class="copo-popover-btn copo-popover-btn--action action"
+            title="${action.title}"
+            data-action-type="${action.action}"
+            data-profile-id="${profileId}">
+            <span class="copo-popover-btn__icon"><i class="${action.icon_class}" aria-hidden="true"></i></span>
+            <span class="copo-popover-btn__label">${action.label}</span>
           </button>`
           );
           $content.append($button);

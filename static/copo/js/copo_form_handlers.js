@@ -171,6 +171,43 @@ function json2HtmlForm(data) {
   };
 
   let dialog_title = get_form_title(data);
+  const isProfileDialog = dialog_title.includes('Add Profile') || dialog_title.includes('Edit Profile');
+
+  const formDialogButtons = [
+    {
+      id: 'btnFormCancel',
+      label: 'Cancel',
+      cssClass: 'tiny ui basic button',
+      action: function (dialogRef) {
+        doTidyClose['closeIt'](dialogRef);
+        // Close any other dialog that might have been opened
+        $.each(BootstrapDialog.dialogs, function (id, dialog) {
+          dialog.close();
+        });
+      },
+    },
+    {
+      id: 'btnFormSave',
+      label:
+        '<i class="copo-components-icons glyphicon glyphicon-save"></i> Save',
+      cssClass: 'tiny ui basic primary button',
+      action: function (dialogRef) {
+        validate_forms(htmlForm.find('form'));
+      },
+    },
+  ];
+
+  if (!isProfileDialog) {
+    formDialogButtons.push({
+      id: 'btnFormClose',
+      label:
+        '<i class="copo-components-icons glyphicon glyphicon-close"></i> Close',
+      cssClass: 'tiny ui basic button',
+      action: function (dialogRef) {
+        window.location.reload();
+      },
+    });
+  }
 
   const dialog = new BootstrapDialog({
     type: BootstrapDialog.TYPE_PRIMARY,
@@ -191,7 +228,10 @@ function json2HtmlForm(data) {
       $dialogElement.attr('aria-hidden', 'false');
       $dialogElement.attr('aria-modal', 'true');
 
-      dialog.getButton('btnFormClose').disable();
+      const closeButton = dialog.getButton('btnFormClose');
+      if (closeButton) {
+        closeButton.disable();
+      }
 
       //prevent enter keypress from submitting form automatically
       $('form').keypress(function (e) {
@@ -294,38 +334,7 @@ function json2HtmlForm(data) {
       }
       */
     },
-    buttons: [
-      {
-        id: 'btnFormCancel',
-        label: 'Cancel',
-        cssClass: 'tiny ui basic button',
-        action: function (dialogRef) {
-          doTidyClose['closeIt'](dialogRef);
-          // Close any other dialog that might have been opened
-          $.each(BootstrapDialog.dialogs, function (id, dialog) {
-            dialog.close();
-          });
-        },
-      },
-      {
-        id: 'btnFormSave',
-        label:
-          '<i class="copo-components-icons glyphicon glyphicon-save"></i> Save',
-        cssClass: 'tiny ui basic primary button',
-        action: function (dialogRef) {
-          validate_forms(htmlForm.find('form'));
-        },
-      },
-      {
-        id: 'btnFormClose',
-        label:
-          '<i class="copo-components-icons glyphicon glyphicon-close"></i> Close',
-        cssClass: 'tiny ui basic button',
-        action: function (dialogRef) {
-          window.location.reload();
-        },
-      },
-    ],
+    buttons: formDialogButtons,
   });
 
   const $dialogContent = $('<div/>');
@@ -3580,7 +3589,9 @@ function save_form(formJSON, dialogRef) {
   const btnClose = dialogRef.getButton('btnFormClose');
   btnSave.disable();
   btnCancel.disable();
-  btnClose.disable();
+  if (btnClose) {
+    btnClose.disable();
+  }
   btnSave.spin();
 
   $.ajax({
@@ -3652,7 +3663,9 @@ function save_form(formJSON, dialogRef) {
             .find('.formMessageDiv')
             .html(feedbackControl);
 
-          btnClose.enable();
+          if (btnClose) {
+            btnClose.enable();
+          }
           btnSave.enable();
           btnCancel.disable();
           btnSave.stopSpin();
@@ -3674,6 +3687,15 @@ function save_form(formJSON, dialogRef) {
           });
 
           refresh_tool_tips();
+
+          // Keep profile list consistent after a successful profile creation.
+          // Must run before do_crud_action_feedback so a JS error in that
+          // function (e.g. missing #page_alert_panel on the modern page) cannot
+          // block the reload.
+          if (task === 'save' && formJSON.component_name === 'profile') {
+            window.location.reload();
+            return true;
+          }
 
           do_crud_action_feedback(data.action_feedback);
 

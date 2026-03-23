@@ -213,6 +213,9 @@
         $('.copo-sidebar-tabs a[href="#copo-sidebar-info"]').tab('show');
         return infoPanelElement;
       }
+      // Modern page has no sidebar panel — return a detached element so
+      // callers like do_crud_action_feedback() don't throw a TypeError.
+      return $('<div/>');
     }
   </script>
 </head>

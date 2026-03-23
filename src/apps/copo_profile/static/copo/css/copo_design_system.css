@@ -311,6 +311,15 @@ body.copo-modern-body #authNavbar {
   border-color: var(--copo-accent);
   outline: none;
 }
+
+/* Sort direction button – rotate SVG 180° when ascending (.sort-up) */
+#sortIconId svg {
+  transition: transform 0.2s ease;
+}
+#sortIconId.sort-up svg {
+  transform: rotate(180deg);
+}
+
 /* Keep .copo-select and .copo-select--sm for any other usages */
 .copo-select {
   appearance: none;
@@ -903,6 +912,196 @@ body.copo-modern-body #authNavbar {
   font-weight: 700;
   color: var(--copo-text-primary);
   margin-bottom: 8px;
+}
+
+/* ── Profile options popover (ellipsis menu) ─────────────────────────── */
+.copo-profile-options-popover {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.16);
+  max-width: 264px;
+}
+
+.copo-profile-options-popover .popover-content {
+  padding: 10px;
+}
+
+.copo-profile-options-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 236px;
+}
+
+.copo-popover-btn {
+  width: 114px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 10px;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.copo-popover-btn:hover,
+.copo-popover-btn:focus {
+  outline: none;
+  border-color: #cfd4dc;
+  background: #f9fafb;
+}
+
+.copo-popover-btn__icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.copo-popover-btn__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copo-popover-btn--edit .copo-popover-btn__icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.copo-popover-btn--delete .copo-popover-btn__icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.copo-popover-btn--action .copo-popover-btn__icon {
+  background: #eef1fd;
+  color: #4f6ef7;
+}
+
+/* ── Modern modal skin for profile page dialogs ───────────────────────── */
+body.copo-modern-body .modal-backdrop.in {
+  opacity: 0.5;
+}
+
+body.copo-modern-body .bootstrap-dialog .modal-dialog,
+body.copo-modern-body .form-modal .modal-dialog,
+body.copo-modern-body .copo-modal1 .modal-dialog {
+  width: min(92vw, 760px);
+}
+
+body.copo-modern-body .bootstrap-dialog .modal-content,
+body.copo-modern-body .form-modal .modal-content,
+body.copo-modern-body .copo-modal1 .modal-content {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(17, 24, 39, 0.22);
+  overflow: hidden;
+}
+
+body.copo-modern-body .bootstrap-dialog .modal-header,
+body.copo-modern-body .form-modal .modal-header,
+body.copo-modern-body .copo-modal1 .modal-header {
+  border-bottom: 1px solid #eef1f4;
+  padding: 14px 18px;
+  background: #f9fafb;
+}
+
+body.copo-modern-body .bootstrap-dialog .bootstrap-dialog-title,
+body.copo-modern-body .bootstrap-dialog .modal-title,
+body.copo-modern-body .form-modal .modal-title,
+body.copo-modern-body .copo-modal1 .modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.2px;
+}
+
+body.copo-modern-body .bootstrap-dialog .modal-body,
+body.copo-modern-body .form-modal .modal-body,
+body.copo-modern-body .copo-modal1 .modal-body {
+  padding: 18px;
+  color: #111827;
+  line-height: 1.55;
+}
+
+body.copo-modern-body .bootstrap-dialog .bootstrap-dialog-message,
+body.copo-modern-body .form-modal .bootstrap-dialog-message,
+body.copo-modern-body .copo-modal1 .bootstrap-dialog-message {
+  font-size: 14px;
+  color: #374151;
+}
+
+body.copo-modern-body .bootstrap-dialog .modal-footer,
+body.copo-modern-body .form-modal .modal-footer,
+body.copo-modern-body .copo-modal1 .modal-footer {
+  border-top: 1px solid #eef1f4;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+}
+
+/* Normalise footer button look (BootstrapDialog + semantic class combos). */
+body.copo-modern-body .bootstrap-dialog .modal-footer button,
+body.copo-modern-body .form-modal .modal-footer button,
+body.copo-modern-body .copo-modal1 .modal-footer button {
+  border: 1px solid #d5dae2;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 12px;
+  min-width: 84px;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+body.copo-modern-body .bootstrap-dialog .modal-footer button:hover,
+body.copo-modern-body .form-modal .modal-footer button:hover,
+body.copo-modern-body .copo-modal1 .modal-footer button:hover {
+  border-color: #bec6d2;
+  background: #f9fafb;
+  color: #111827;
+}
+
+/* Primary/confirm actions */
+body.copo-modern-body .bootstrap-dialog .modal-footer .dialog_confirm,
+body.copo-modern-body .bootstrap-dialog .modal-footer .primary.button,
+body.copo-modern-body .form-modal .modal-footer .primary.button,
+body.copo-modern-body .copo-modal1 .modal-footer .dialog_confirm {
+  border-color: #4f6ef7;
+  background: #4f6ef7;
+  color: #ffffff;
+}
+
+body.copo-modern-body .bootstrap-dialog .modal-footer .dialog_confirm:hover,
+body.copo-modern-body .bootstrap-dialog .modal-footer .primary.button:hover,
+body.copo-modern-body .form-modal .modal-footer .primary.button:hover,
+body.copo-modern-body .copo-modal1 .modal-footer .dialog_confirm:hover {
+  border-color: #3b5bdb;
+  background: #3b5bdb;
+  color: #ffffff;
+}
+
+/* Keep long forms usable while preserving the new modal frame. */
+body.copo-modern-body .form-modal .modal-body {
+  max-height: 72vh;
+  overflow-y: auto;
 }
 
 /* ── Getting started / welcome popover (keeping existing class names) ─── */
