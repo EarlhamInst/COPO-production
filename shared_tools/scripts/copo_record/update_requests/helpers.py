@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
 APPLY_TO_DB = False  # Set to True to apply the updates
 WRITE_TO_FILE = True  # Set to True to write updates to a file
 
-# === MongoDB Connection ===
+# === MongoDB connection ===
 username = urllib.parse.quote_plus('copo_user')
 password = urllib.parse.quote_plus('password')
 myclient = pymongo.MongoClient(
@@ -43,7 +43,7 @@ mydb = myclient['copo_mongo']
 sample_collection = mydb['SampleCollection']
 source_collection = mydb['SourceCollection']
 
-# === Field Mappings ===
+# === Field mappings ===
 SAMPLE_FIELD_NAMES = ['biosample', 'sample', 'biosamples']
 SOURCE_FIELD_NAMES = ['biospecimen', 'specimen']
 MAPPINGS = {
@@ -54,23 +54,31 @@ MAPPINGS = {
     'Species name': 'SCIENTIFIC_NAME',
     'Species': 'SCIENTIFIC_NAME',
     'New Species Name': 'SCIENTIFIC_NAME',
+    'Scientific_name': 'SCIENTIFIC_NAME',
     'taxonid': 'TAXON_ID',
     'taxon': 'TAXON_ID',
     'New TaxonID': 'TAXON_ID',
+    'New Taxon': 'TAXON_ID',
     'tolid': 'public_name',
     'New TOLID': 'public_name',
+    'Specimen_id': 'SPECIMEN_ID',
+    'New Specimen id': 'SPECIMEN_ID',
+    'Specimen id': 'SPECIMEN_ID',
+    
 }
 
 ENA_MAPPINGS = {
     'TAXON_ID': 'TAXON_ID',
     'SCIENTIFIC_NAME': 'SCIENTIFIC_NAME',
+    'SPECIMEN_ID': 'specimen_id',
     'sraAccession': 'sample_accession',
     'public_name': 'tolid',
 }
 
 OPTIONAL_TAXONOMY_UPDATE = ['GENUS', 'ORDER_OR_GROUP', 'FAMILY']
 TAXONOMY_FIELDS = ['SCIENTIFIC_NAME', 'GENUS', 'ORDER_OR_GROUP', 'TAXON_ID', 'FAMILY']
-
+OTHER_SAMPLE_FIELDS = ['SPECIMEN_ID']
+OTHER_SOURCE_FIELDS = ['SPECIMEN_ID']
 
 # === Classes ===
 class MicrosecondFormatter(logging.Formatter):
@@ -117,7 +125,7 @@ def contains_existing_updates(new_updates: list) -> tuple[bool, list]:
         print('No new updates — all entries are duplicates. Exiting.')
         return True, []
 
-    # === Case 2: Some updates already exist not all ===
+    # === Case 2: Some updates exist already ===
     elif duplicates:
         log.warning(
             f'{len(duplicates)} duplicate updates found. These will be skipped.'
@@ -217,6 +225,12 @@ def generate_sample_query(sample, fields):
     if fields.get('public_name', ''):
         update['$set']['public_name'] = fields.get('public_name')
 
+    # Handle other fields
+    if any(x in OTHER_SAMPLE_FIELDS for x in fields):
+        for field in OTHER_SAMPLE_FIELDS:
+            if fields.get(field, ''):
+                update['$set'][field] = fields.get(field)
+
     # Handle optional taxonomy updates
     for x in OPTIONAL_TAXONOMY_UPDATE:
         if fields.get(x, ''):
@@ -245,11 +259,18 @@ def generate_source_query(source, fields):
     query = {'biosampleAccession': source}
     update = {'$set': {}}
 
+    # Handle provided taxonomy fields
     if fields.get('TAXON_ID', ''):
         update['$set']['TAXON_ID'] = fields.get('TAXON_ID')
 
     if fields.get('public_name', ''):
         update['$set']['public_name'] = fields.get('public_name')
+
+    # Handle other fields
+    if any(x in OTHER_SOURCE_FIELDS for x in fields):
+        for field in OTHER_SOURCE_FIELDS:
+            if fields.get(field, ''):
+                update['$set'][field] = fields.get(field)
 
     if query['biosampleAccession'] and update['$set']:
         return {'collection': 'SourceCollection', 'query': query, 'update': update}
@@ -311,30 +332,30 @@ def get_samples_and_sources(entry):
 
     Input format and structure:
         biospecimen
-        SAMEAuuuuuuu
+        SAMEAxxxx
 
         biosamples
-        SAMEAvvvvvvv
-        SAMEAwwwwwww
+        SAMEAxxxx
+        SAMEAxxxx
 
         Update
-        Species name: SCIENTIFIC NAME X
-        taxonid: 12345
-        tolid: publicName
+        Species name: xxxx
+        taxonid: xxxx
+        tolid: xxxx
         ---
         biospecimen
         SAMEAxxxxxxx
 
         biosamples
-        SAMEAzzzzzzz
+        SAMEAxxxx
 
         Update
-        Species name: SCIENTIFIC_NAME Y
-        taxonid: 67890
-        tolid: publicName
-        GENUS: GenusName
-        ORDER_OR_GROUP: OrderOrGroupName
-        FAMILY: FamilyName
+        Species name: xxxx
+        taxonid: xxxx
+        tolid: xxxx
+        GENUS: xxxx
+        ORDER_OR_GROUP: xxxx
+        FAMILY: xxxx
     '''
     if not isinstance(entry, str):
         raise TypeError("Expected 'entry' to be a string", entry)
