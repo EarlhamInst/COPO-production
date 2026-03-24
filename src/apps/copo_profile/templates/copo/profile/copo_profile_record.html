@@ -34,10 +34,10 @@
                                 </div>
                                 <div class="text-bold mt-10">Description:</div>
                                 <div class="ellipsis-2-lines profile-description">{{ profile.description }}</div>
-                                
+
                                 {% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status%}
                                     <a id="showMoreProfileInfoBtn" class="btn {% if profile.description.strip|length < 56 %}show-more-btn-spacing{% elif profile.description.strip|length >= 56 %}show-more-btn-with-2-line-desc{% endif %}" href="#" rel="popover"
-                                        data-popover-content="#showMoreProfileInfoContent" data-placement="right" data-tour-id="profile_addtl_info_button">View more details</a>                         
+                                        data-popover-content="#showMoreProfileInfoContent" data-placement="right" data-tour-id="profile_addtl_info_button">View more details</a>
                                 {% endif %}
 
                                 <!-- Content for 'showMoreProfileInfo' popover -->
@@ -46,13 +46,13 @@
                                     <div class="popover-content showMoreProfileInfoPopover-content-div">
                                         {% if profile.owner_name %}
                                             <div class="owner-div mt-10">
-                                                <span class="text-bold">Owner: </span> 
+                                                <span class="text-bold">Owner: </span>
                                                 <span id="ownerID">{{ profile.owner_name }}</span>
                                             </div>
                                         {% endif %}
                                         {% if profile.shared_owner_name %}
                                             <div class="shared-owner-div mt-10">
-                                                <span class="text-bold">Collaborator(s): </span> 
+                                                <span class="text-bold">Collaborator(s): </span>
                                                 {% with profile.shared_owner_name as shared_owners %}
                                                     <span id="sharedOwnerID">
                                                         {% if shared_owners|length > 3 %}
@@ -87,7 +87,7 @@
                                             <div class="sequencing_centre_div_value">
                                                 <ul class="sequencing_centre_ulTag">
                                                     {% for element in profile.sequencing_centre%}
-                                                        <li> {{ element }} 
+                                                        <li> {{ element }}
                                                             <i class="fa fa-info-circle sequencing-centre-info-icon" title="{{ element | get_sequencing_centre_label }}"></i>
                                                         </li>
                                                     {% endfor %}
@@ -96,16 +96,16 @@
                                         {% endif %}
                                         {% if profile.study_status %}
                                             <div class="study-status-div">
-                                                <span class="text-bold">Release Status: </span> 
+                                                <span class="text-bold">Release Status: </span>
                                                 <span id="studyStatus_{{profile.id}}">{{ profile.study_status | get_first_value_from_array}}</span>
                                             </div>
-                                            <div><span class="text-bold">Release Date: </span>    
+                                            <div><span class="text-bold">Release Date: </span>
                                                 <span id="studyReleaseDate_{{profile.id}}">{{ profile.study_release_date | get_first_value_from_array}}</span>
                                             </div>
                                         {% endif %}
-                                    
+
                                     </div>
-                                </div>                  
+                                </div>
                             </div>
                         </div>
                         <div class="col-sm-6">

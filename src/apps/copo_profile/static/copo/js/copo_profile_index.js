@@ -255,6 +255,25 @@ $(document).on('document_ready', function () {
     $('.row-ellipsis').attr('title', $(document).data('profileOptionsTitle'));
   });
 
+  // Toggle sidebar info visibility
+  $(document).on('click', '#toggleSidebarInfoBtn', function () {
+    const $sidebar = $('.copo-sidebar');
+    const $mainContent = $('.copo-main');
+    const isVisible = $sidebar.is(':visible');
+
+    if (isVisible) {
+      // Hide sidebar and expand main content
+      $sidebar.hide();
+      $mainContent.addClass('sidebar-collapsed');
+      $(this).addClass('active');
+    } else {
+      // Show sidebar and collapse main content
+      $sidebar.show();
+      $mainContent.removeClass('sidebar-collapsed');
+      $(this).removeClass('active');
+    }
+  });
+
   $(document).on('click', '#editProfileBtn', function (e) {
     const profileId = $(this).data('profile-id');
     const profileType = $(this).data('profile-type');
@@ -395,14 +414,14 @@ function initialiseProfileActionsPopover() {
         const profileType = $panel.data('profile-type');
 
         const $editButton = $(
-          `<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"
+          `<button id="editProfileBtn" class="popover-action-btn popover-action-btn-blue" title="Edit record"
               data-profile-id="${profileId}"
               data-profile-type="${profileType}">
               <i class="fa fa-pencil"></i>&nbsp;Edit</button>`
         );
 
         const $deleteButton = $(
-          `<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"
+          `<button id="deleteProfileBtn" class="popover-action-btn popover-action-btn-red" title="Delete record"
               data-profile-id="${profileId}">
               <i class="fa fa-trash-can"></i>&nbsp;Delete</button>`
         );
@@ -419,7 +438,7 @@ function initialiseProfileActionsPopover() {
             return;
           }
           const $button = $(
-          `<button id="${item}" class="btn btn-sm btn-primary action" title="${action.title}"
+          `<button id="${item}" class="popover-action-btn popover-action-btn-teal action" title="${action.title}"
             data-action-type="${action.action}" data-profile-id="${profileId}">
             <i class="${action.icon_class}"></i>&nbsp;${action.label}
           </button>`

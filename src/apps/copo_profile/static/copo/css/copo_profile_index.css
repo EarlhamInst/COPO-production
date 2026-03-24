@@ -13,9 +13,9 @@
 
 .ui.menu {
   position: relative;
-  z-index: 1;
+  z-index: 9999;
   height: 340px;
-  overflow: hidden;
+  overflow: visible;
   width: 100% !important;
 }
 
@@ -34,6 +34,7 @@
   overflow: hidden;
   width: 100% !important;
   padding-top: 10px !important;
+  margin-bottom: 20px !important;
 }
 
 /* Expand components menu on hover */
@@ -345,8 +346,8 @@
 }
 
 .grid-panel-body {
-  padding: 15px;
-  height: 356px !important;
+  padding: 12px;
+  height: 310px !important;
   position: relative;
   z-index: 1;
 }
@@ -355,17 +356,15 @@
   background-color: #ff8c8c !important;
   color: white !important;
   font-weight: bolder !important;
-  height: 325px !important;
+  height: 290px !important;
 }
 
 #bottomPanel {
-  height: 40px;
-  display: flex;
-  align-items: center;
-  padding-left: 8px;
-  font-size: 1.1em;
-  border-top: 1px solid #d0d0d0;
-  margin-top: 30px;
+  font-size: 0.95em;
+  color: #666;
+  margin-top: 50px !important;
+  padding: 0;
+  border: none;
 }
 
 .profile-info-label {
@@ -393,11 +392,17 @@
 /* Profile grid */
 #copo_profiles_table {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-  gap: 24px;
-  max-width: calc((450px * 2) + (24px * 2)); /* 2 grids per row with 24px gap */
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 24px 24px;
+  width: 100%;
   /* margin: 0 10px 0 10px; */ /* Left align the centre: top right bottom left */
   margin: 20px auto 0 auto; /* Centre the table - top right bottom left */
+  row-gap: 60px;
+}
+
+/* When sidebar is collapsed, allow more columns */
+.copo-main.sidebar-collapsed #copo_profiles_table {
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
 }
 
 /* .copo-records-panel:hover,
@@ -409,11 +414,10 @@
 
 .grid,
 .grid-item {
-  height: 400px;
+  height: 360px;
   border-radius: 5px;
   background-color: #fff;
   max-width: 515px;
-  position: relative;
   z-index: 1;
 }
 
@@ -425,6 +429,8 @@
 .grid:hover,
 .grid-item:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 10 !important;
+  position: relative;
 }
 
 .grid-item {
@@ -695,6 +701,33 @@ ul.sequencing-centre-ul-tag {
   animation-timing-function: linear;
 }
 
+/* Toggle Sidebar Info Button */
+.toggle-sidebar-info-btn {
+  padding: 6px 12px !important;
+  font-size: 0.85rem !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+  display: inline-block;
+  vertical-align: top;
+  margin-top: 1px;
+  line-height: 1.42857143;
+}
+
+.toggle-sidebar-info-btn i {
+  margin-right: 4px;
+}
+
+.toggle-sidebar-info-btn:hover {
+  background-color: #f0f0f0 !important;
+  border-color: #999 !important;
+}
+
+.toggle-sidebar-info-btn.active {
+  background-color: #e8f4f8 !important;
+  border-color: #4a6c7a !important;
+  color: #4a6c7a !important;
+}
+
 /* Responsiveness */
 @media only screen and (max-width: 2400px) {
 }
@@ -798,7 +831,7 @@ ul.sequencing-centre-ul-tag {
 
 @media only screen and (max-width: 776px) {
   .grid-panel-body {
-    height: 335px !important;
+    height: 290px !important;
   }
 
   .menu-no-addtl-info-row {

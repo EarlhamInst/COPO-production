@@ -10,6 +10,31 @@ const alertClassMap = {
   error: 'alert-danger',
 };
 
+// Toggle visibility of the sidebar info tab based on content
+function toggleSidebarInfoVisibility() {
+  const $infoPanel = $('#page_alert_panel');
+  const $infoTab = $('.copo-sidebar-info');
+  const $sidebar = $('.copo-sidebar');
+  const $mainContent = $('.copo-main');
+  const hasContent = $infoPanel.children().length > 0;
+
+  if (hasContent) {
+    // Show the tab and its navigation item
+    $infoTab.show();
+    $('.copo-sidebar-tabs li.copo-sidebar-info').show();
+    // Show sidebar and collapse main content
+    $sidebar.show();
+    $mainContent.removeClass('sidebar-collapsed');
+  } else {
+    // Hide the tab and its navigation item
+    $infoTab.hide();
+    $('.copo-sidebar-tabs li.copo-sidebar-info').hide();
+    // Hide sidebar and expand main content
+    $sidebar.hide();
+    $mainContent.addClass('sidebar-collapsed');
+  }
+}
+
 // Set custom page length options for the DataTables dropdown menu
 $.extend($.fn.dataTable.defaults, {
   language: {
@@ -26,6 +51,9 @@ $(document).ready(function () {
   $(document).on('click', '.alertdismissOK', function () {
     WebuiPopovers.hideAll();
   });
+
+  // Initialize sidebar visibility on page load
+  toggleSidebarInfoVisibility();
 });
 
 function render_thumbnail_image_column_function(data, type, row, meta) {
@@ -429,10 +457,15 @@ function displayAlert(alertType, alertMessage) {
     e.preventDefault();
     e.stopImmediatePropagation();
     $alertElement.remove();
+    // Toggle sidebar visibility after removing alert
+    toggleSidebarInfoVisibility();
   });
 
   $alertElement.find('.alert-message').html(alertMessage);
   $infoPanel.prepend($alertElement);
+
+  // Toggle sidebar visibility to show it since content was added
+  toggleSidebarInfoVisibility();
 
   // Adjust margin spacing
   $('.component-legend, .other-projects-accessions-filter-checkboxes').css(

@@ -1,0 +1,823 @@
+/*
+ * COPO — Modern Colour Scheme Override
+ * =====================================
+ * Drop-in: add as the LAST stylesheet in <head>.
+ * No HTML, ID, class, or JS changes needed.
+ *
+ * Design philosophy:
+ *   - Warm teal-slate navbar
+ *   - Card headings: light per-type tinted backgrounds with inset colour stripe
+ *   - Component buttons: uniform ghost style, standardised width
+ *   - Title buttons: rectangular rounded, muted palette
+ *   - Reduced visual noise, calm hierarchy
+ *
+ * Profile type accent colours used for stripes & card tints:
+ *   biodata  #4da8d6   genomics #3d9e98   dtol    #3ca85c
+ *   dtolenv  #e8943a   erga     #d24085   asg     #6d46b8
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ══════════════════════════════════════════
+   CSS VARIABLES
+   ══════════════════════════════════════════ */
+:root {
+  /* Base palette */
+  --co-bg:           #f5f6fa;
+  --co-surface:      #ffffff;
+  --co-nav:          #4a6c7a;      /* warm teal-slate navbar */
+  --co-nav-border:   #3a5a68;
+  --co-text:         #1a1f2e;
+  --co-muted:        #7c8494;
+  --co-border:       #e3e6ee;
+  --co-radius:       10px;
+  --co-shadow:       0 1px 4px rgba(0,0,0,.06);
+  --co-shadow-hover: 0 6px 20px rgba(0,0,0,.09);
+  --co-font:         'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Accent */
+  --co-accent:       #4a6c7a;
+  --co-accent-hover: #3a5a68;
+
+  /* Profile type accent colours */
+  --co-biodata:  #4da8d6;
+  --co-genomics: #3d9e98;
+  --co-dtol:     #3ca85c;
+  --co-dtolenv:  #e8943a;
+  --co-erga:     #d24085;
+  --co-asg:      #6d46b8;
+
+  /* Card heading tint backgrounds */
+  --co-tint-biodata:  #eef7fd;
+  --co-tint-genomics: #edf6f5;
+  --co-tint-dtol:     #edf7f0;
+  --co-tint-dtolenv:  #fef4ea;
+  --co-tint-erga:     #fceef5;
+  --co-tint-asg:      #f2eefb;
+
+  /* Standardised component button size */
+  --co-btn-w: 148px;
+  --co-btn-h: 36px;
+}
+
+/* ══════════════════════════════════════════
+   GLOBAL
+   ══════════════════════════════════════════ */
+body {
+  font-family: var(--co-font) !important;
+  background: var(--co-bg) !important;
+  color: var(--co-text) !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+/* ══════════════════════════════════════════
+   NAVBAR
+   ══════════════════════════════════════════ */
+#authNavbar.navbar.navbar-default,
+#authNavbar.navbar.navbar-default .navbar-collapse {
+  background-color: var(--co-nav) !important;
+  border-color: var(--co-nav-border) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 1px 6px rgba(0,0,0,.15) !important;
+  min-height: 52px !important;
+  margin-bottom: 0 !important;
+}
+#authNavbar.navbar.navbar-default .navbar-header {
+  background-color: var(--co-nav) !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* Logo — invert to white on dark-ish background */
+#authNavbar .navbar-brand img,
+#authNavbar #expandingMenuTitle img {
+  filter: brightness(0) invert(1) !important;
+  opacity: .9 !important;
+  border: none !important;
+  vertical-align: middle !important;
+}
+#authNavbar .navbar-brand {
+  padding: 8px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  border: none !important;
+  outline: none !important;
+  gap: 8px !important;
+}
+
+/* Nav links */
+#authNavbar.navbar.navbar-default .navbar-nav > li > a,
+#authNavbar.navbar.navbar-default .navbar-text,
+#authNavbar.navbar.navbar-default .navbar-brand {
+  color: #ffffff !important;
+  font-size: .82rem !important;
+  font-weight: 500 !important;
+  padding: 16px 11px !important;
+  transition: color .15s, background .15s !important;
+}
+#authNavbar.navbar.navbar-default .navbar-nav > li > a:hover,
+#authNavbar.navbar.navbar-default .navbar-nav > li > a:focus {
+  color: #ffffff !important;
+  background: rgba(255,255,255,.12) !important;
+}
+#authNavbar.navbar.navbar-default .navbar-nav > .active > a,
+#authNavbar.navbar.navbar-default .navbar-nav > .active > a:hover {
+  color: #ffffff !important;
+  background: rgba(255,255,255,.18) !important;
+}
+
+/* Dropdowns */
+#authNavbar.navbar.navbar-default .navbar-nav .dropdown-menu,
+#authNavbar .dropdown-menu {
+  background: var(--co-nav-border) !important;
+  border: 1px solid rgba(0,0,0,.15) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2) !important;
+  padding: 5px !important;
+}
+#authNavbar .dropdown-menu > li > a {
+  color: #e8f4f8 !important;
+  border-radius: 6px !important;
+  padding: 7px 12px !important;
+  font-size: .8rem !important;
+}
+#authNavbar .dropdown-menu > li > a:hover {
+  color: #fff !important;
+  background: rgba(255,255,255,.12) !important;
+}
+#authNavbar .dropdown-menu .divider { background: rgba(255,255,255,.12) !important; }
+
+/* Mobile toggle */
+#authNavbar .navbar-toggle { border-color: rgba(255,255,255,.3) !important; }
+#authNavbar .navbar-toggle .icon-bar { background: rgba(255,255,255,.7) !important; }
+
+/* ══════════════════════════════════════════
+   TITLE BAR BUTTONS — rectangular, muted
+   (the circular +, lightbulb, teal list/accept buttons)
+   ══════════════════════════════════════════ */
+.big.circular.ui.icon.button {
+  width: auto !important;
+  height: 34px !important;
+  padding: 0 14px !important;
+  line-height: 34px !important;
+  border-radius: 8px !important;
+  font-size: .9rem !important;
+  border: none !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.12) !important;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 34px !important;
+}
+.big.circular.ui.icon.button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,.15) !important;
+}
+.big.circular.ui.icon.button:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,.1) !important;
+}
+
+/* Add (+) — muted blue */
+.big.circular.ui.icon.primary.button {
+  background: #6b8cba !important;
+  color: #fff !important;
+}
+.big.circular.ui.icon.primary.button:hover { background: #5a7aaa !important; }
+
+/* Tour (lightbulb) — muted amber */
+.big.circular.ui.icon.orange.button {
+  background: #c49a4a !important;
+  color: #fff !important;
+}
+.big.circular.ui.icon.orange.button:hover { background: #b38a3c !important; }
+
+/* Accept/list — muted teal */
+.big.circular.ui.icon.teal.button {
+  background: #4a8c84 !important;
+  color: #fff !important;
+}
+.big.circular.ui.icon.teal.button:hover { background: #3a7c74 !important; }
+
+/* Icon inside title buttons */
+.big.circular.ui.icon.button > i.icon {
+  font-size: .9rem !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+/* ══════════════════════════════════════════
+   PAGE HEADER
+   ══════════════════════════════════════════ */
+.global-page-title { margin-top: 16px !important; }
+.copo-page-headers { font-size: .9rem !important; font-weight: 600 !important; }
+
+/* Profile type dropdown */
+.searchable-select, #profileType {
+  border-radius: 8px !important;
+  border: 1px solid var(--co-border) !important;
+  font-size: .84rem !important;
+  padding: 6px 12px !important;
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+}
+
+/* ══════════════════════════════════════════
+   SORT CONTROLS
+   ══════════════════════════════════════════ */
+.sort-by-container {
+  font-size: .8rem !important;
+  color: var(--co-muted) !important;
+  font-weight: 500 !important;
+}
+#sortProfilesBtn {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 8px !important;
+  font-size: .82rem !important;
+  color: var(--co-text) !important;
+  box-shadow: none !important;
+}
+#sortProfilesBtn:hover { border-color: var(--co-accent) !important; }
+.sort-icon { color: var(--co-muted) !important; }
+
+/* ══════════════════════════════════════════
+   PROFILE CARDS
+   ══════════════════════════════════════════ */
+.panel.panel-profile {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: var(--co-radius) !important;
+  box-shadow: var(--co-shadow) !important;
+  transition: box-shadow .2s, transform .15s !important;
+  overflow: hidden !important;
+  margin-bottom: 14px !important;
+}
+.panel.panel-profile:hover {
+  box-shadow: var(--co-shadow-hover) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ─── Card headings: light tinted, left stripe via inset box-shadow ─── */
+.panel.panel-profile .panel-heading {
+  border-bottom: none !important;
+  padding: 13px 16px 13px 20px !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* Default heading (no profile type) */
+.panel.panel-profile .panel-heading {
+  background: #f4f6f9 !important;
+}
+
+/* Per-type: light tint background + inset left stripe */
+.copo-records-panel[data-profile-type="biodata"]  .panel-heading {
+  background: var(--co-tint-biodata)  !important;
+  box-shadow: inset 4px 0 0 var(--co-biodata)  !important;
+}
+.copo-records-panel[data-profile-type="genomics"] .panel-heading {
+  background: var(--co-tint-genomics) !important;
+  box-shadow: inset 4px 0 0 var(--co-genomics) !important;
+}
+.copo-records-panel[data-profile-type="dtol"]     .panel-heading {
+  background: var(--co-tint-dtol)     !important;
+  box-shadow: inset 4px 0 0 var(--co-dtol)     !important;
+}
+.copo-records-panel[data-profile-type="dtolenv"]  .panel-heading {
+  background: var(--co-tint-dtolenv)  !important;
+  box-shadow: inset 4px 0 0 var(--co-dtolenv)  !important;
+}
+.copo-records-panel[data-profile-type="erga"]     .panel-heading {
+  background: var(--co-tint-erga)     !important;
+  box-shadow: inset 4px 0 0 var(--co-erga)     !important;
+}
+.copo-records-panel[data-profile-type="asg"]      .panel-heading {
+  background: var(--co-tint-asg)      !important;
+  box-shadow: inset 4px 0 0 var(--co-asg)      !important;
+}
+
+/* Heading text — dark on light background */
+.panel.panel-profile .panel-heading .row-title span,
+.panel.panel-profile .panel-heading .panel-title {
+  color: var(--co-text) !important;
+  font-size: .88rem !important;
+  font-weight: 600 !important;
+  letter-spacing: .01em !important;
+}
+
+/* Ellipsis options icon */
+.panel.panel-profile .panel-heading .fa-ellipsis-v {
+  color: rgba(0,0,0,.3) !important;
+  transition: color .15s !important;
+}
+.panel.panel-profile .panel-heading .fa-ellipsis-v:hover {
+  color: rgba(0,0,0,.65) !important;
+}
+
+/* ─── Card body ─── */
+.panel.panel-profile .grid-panel-body {
+  padding: 14px 0 8px !important;
+  background: var(--co-surface) !important;
+}
+
+/* Profile info text */
+.profile-info-row {
+  font-size: .79rem !important;
+  color: var(--co-muted) !important;
+  line-height: 1.6 !important;
+  padding: 0 15px !important;
+}
+.profile-info-row .text-bold {
+  color: var(--co-text) !important;
+  font-weight: 600 !important;
+  font-size: .77rem !important;
+}
+.profile-description {
+  font-size: .79rem !important;
+  color: var(--co-muted) !important;
+}
+
+/* View more details link */
+#showMoreProfileInfoBtn,
+a[id="showMoreProfileInfoBtn"],
+.show-more-btn-spacing {
+  font-size: .73rem !important;
+  color: var(--co-accent) !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  border: none !important;
+  background: none !important;
+}
+#showMoreProfileInfoBtn:hover {
+  color: var(--co-accent-hover) !important;
+  text-decoration: underline !important;
+}
+
+/* ══════════════════════════════════════════
+   COMPONENT BUTTONS — uniform ghost style
+   ══════════════════════════════════════════ */
+#expandingMenuTitle {
+  font-size: .62rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .1em !important;
+  color: var(--co-muted) !important;
+  padding: 0 8px !important;
+  margin-bottom: 6px !important;
+}
+
+#expandingMenu,
+#expandingMenu .menu.comp {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.pcomponent-button.ui.button,
+.tiny.ui.button.pcomponent-button,
+a.pcomponent-button-template .pcomponent-button {
+  width: var(--co-btn-w) !important;
+  height: var(--co-btn-h) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 7px !important;
+  border-radius: 8px !important;
+  font-size: .73rem !important;
+  font-weight: 600 !important;
+  margin: 3px !important;
+  padding: 0 10px !important;
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border: 1px solid var(--co-border) !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  transition: all .15s !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.pcomponent-button.ui.button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,.07) !important;
+}
+
+/* Icon colours per Semantic colour class */
+.pcomponent-button.ui.button.blue    i { color: var(--co-biodata)  !important; }
+.pcomponent-button.ui.button.olive   i { color: #7a9a1e !important; }
+.pcomponent-button.ui.button.orange  i { color: var(--co-dtolenv)  !important; }
+.pcomponent-button.ui.button.green   i { color: var(--co-dtol)     !important; }
+.pcomponent-button.ui.button.violet  i { color: var(--co-asg)      !important; }
+.pcomponent-button.ui.button.yellow  i { color: #b89a14 !important; }
+.pcomponent-button.ui.button.pink    i { color: var(--co-erga)     !important; }
+.pcomponent-button.ui.button.teal    i { color: var(--co-genomics)  !important; }
+.pcomponent-button.ui.button.red     i { color: #c0392b !important; }
+.pcomponent-button.ui.button.bright-coral i { color: #e05555 !important; }
+.pcomponent-button.ui.button.terra-cotta  i { color: #c06050 !important; }
+.pcomponent-button.ui.button.coral-pink   i { color: #d96080 !important; }
+
+/* Hover — tint bg to match icon */
+.pcomponent-button.ui.button.blue:hover    { background: #eef4fc !important; border-color: var(--co-biodata)  !important; }
+.pcomponent-button.ui.button.olive:hover   { background: #f4f7e8 !important; border-color: #7a9a1e !important; }
+.pcomponent-button.ui.button.orange:hover  { background: #fdf3e8 !important; border-color: var(--co-dtolenv)  !important; }
+.pcomponent-button.ui.button.green:hover   { background: #edf7f0 !important; border-color: var(--co-dtol)     !important; }
+.pcomponent-button.ui.button.violet:hover  { background: #f2eef9 !important; border-color: var(--co-asg)      !important; }
+.pcomponent-button.ui.button.yellow:hover  { background: #fbf7e6 !important; border-color: #b89a14 !important; }
+.pcomponent-button.ui.button.pink:hover    { background: #fceef4 !important; border-color: var(--co-erga)     !important; }
+.pcomponent-button.ui.button.teal:hover    { background: #ecf6f5 !important; border-color: var(--co-genomics)  !important; }
+.pcomponent-button.ui.button.red:hover     { background: #fceeed !important; border-color: #c0392b !important; }
+
+/* Images dropdown */
+.images-pcomponent-dropdown-button-template .pcomponent-button {
+  width: var(--co-btn-w) !important;
+  height: var(--co-btn-h) !important;
+}
+.profile-dropdown-menu {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--co-shadow-hover) !important;
+}
+
+.more-pcomponent-indicator {
+  color: var(--co-muted) !important;
+  text-align: center !important;
+  font-size: .65rem !important;
+}
+
+/* ══════════════════════════════════════════
+   LEGEND (main panel, collapsible)
+   ══════════════════════════════════════════ */
+.legend-and-sort-row {
+  margin-bottom: 12px !important;
+}
+
+.component-legend {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: var(--co-radius) !important;
+  box-shadow: var(--co-shadow) !important;
+  padding: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  width: auto !important;
+}
+
+/* Clickable header row */
+.component-legend-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 9px 14px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  border-radius: var(--co-radius) !important;
+  transition: background .15s !important;
+}
+.component-legend-header:hover {
+  background: var(--co-bg) !important;
+}
+
+.component-legend-title {
+  font-size: .68rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .1em !important;
+  color: var(--co-muted) !important;
+  margin: 0 !important;
+  border: none !important;
+}
+
+/* Chevron rotates to indicate state */
+.component-legend-chevron {
+  font-size: .72rem !important;
+  color: var(--co-muted) !important;
+  transition: transform .2s ease !important;
+  transform: rotate(0deg) !important;
+}
+.component-legend-header.collapsed .component-legend-chevron {
+  transform: rotate(-90deg) !important;
+}
+
+/* Pills laid out horizontally */
+.component-legend-group {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  list-style: none !important;
+  padding: 4px 14px 12px !important;
+  margin: 0 !important;
+  gap: 8px !important;
+}
+.component-legend-group-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: var(--co-bg) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 20px !important;
+  padding: 3px 10px 3px 7px !important;
+  font-size: .76rem !important;
+  font-weight: 500 !important;
+  color: var(--co-text) !important;
+  transition: border-color .15s !important;
+}
+.component-legend-group-item:hover {
+  background: var(--co-bg) !important;
+  border-color: var(--co-accent) !important;
+}
+.component-legend-info-icon {
+  position: static !important;
+  font-size: .72rem !important;
+  color: var(--co-muted) !important;
+}
+.component-legend-circle {
+  float: none !important;
+  font-size: .65rem !important;
+  padding: 0 !important;
+}
+
+/* ══════════════════════════════════════════
+   BOTTOM PANEL
+   ══════════════════════════════════════════ */
+#bottomPanel {
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  font-size: .8rem !important;
+  color: var(--co-muted) !important;
+  margin-top: 50px !important;
+  margin-bottom: 40px !important;
+  box-shadow: none !important;
+}
+
+/* ══════════════════════════════════════════
+   SCROLL INDICATORS
+   ══════════════════════════════════════════ */
+.navigate-to-bottom, .navigate-to-top {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 50% !important;
+  box-shadow: var(--co-shadow) !important;
+}
+
+/* ══════════════════════════════════════════
+   GETTING STARTED SECTION
+   ══════════════════════════════════════════ */
+.page-welcome-message {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: var(--co-radius) !important;
+  padding: 20px !important;
+  box-shadow: var(--co-shadow) !important;
+}
+.copo-webui-popover-title {
+  font-size: .95rem !important;
+  font-weight: 600 !important;
+  color: var(--co-text) !important;
+}
+
+/* ══════════════════════════════════════════
+   BOOTSTRAP OVERRIDES
+   ══════════════════════════════════════════ */
+.modal-content {
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,.16) !important;
+}
+.modal-header {
+  border-bottom: 1px solid var(--co-border) !important;
+  padding: 14px 20px !important;
+}
+.modal-header .modal-title { font-size: .95rem !important; font-weight: 600 !important; }
+.modal-footer { border-top: 1px solid var(--co-border) !important; }
+
+/* ══════════════════════════════════════════
+   FORM MODAL (Add/Edit Profile)
+   ══════════════════════════════════════════ */
+.bootstrap-dialog.form-modal .modal-content {
+  border-radius: 12px !important;
+  border: none !important;
+  font-family: var(--co-font) !important;
+  background: var(--co-bg) !important;
+}
+
+.bootstrap-dialog.form-modal .bootstrap-dialog-header,
+.bootstrap-dialog.form-modal .modal-header {
+  background: var(--co-nav) !important;
+  border-bottom: none !important;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 10px 16px !important;
+}
+
+.bootstrap-dialog.form-modal .bootstrap-dialog-title,
+.bootstrap-dialog.form-modal .modal-title {
+  color: #fff !important;
+  font-size: .88rem !important;
+  font-weight: 600 !important;
+  letter-spacing: .01em !important;
+}
+
+.bootstrap-dialog.form-modal .bootstrap-dialog-close-button .close {
+  color: rgba(255,255,255,.7) !important;
+  opacity: 1 !important;
+  font-size: 1rem !important;
+}
+.bootstrap-dialog.form-modal .bootstrap-dialog-close-button .close:hover {
+  color: #fff !important;
+}
+
+.bootstrap-dialog.form-modal .bootstrap-dialog-body {
+  max-height: calc(100vh - 160px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.bootstrap-dialog.form-modal .modal-body {
+  background: var(--co-surface) !important;
+  padding: 14px 16px !important;
+  font-size: .82rem !important;
+  color: var(--co-text) !important;
+  overflow: hidden !important;
+}
+
+.bootstrap-dialog.form-modal .bootstrap-dialog-footer,
+.bootstrap-dialog.form-modal .modal-footer {
+  background: var(--co-bg) !important;
+  border-top: none !important;
+  border-radius: 0 0 12px 12px !important;
+  padding: 8px 16px !important;
+}
+
+.bootstrap-dialog.form-modal label {
+  font-size: .76rem !important;
+  font-weight: 600 !important;
+  color: var(--co-muted) !important;
+  text-transform: uppercase !important;
+  letter-spacing: .05em !important;
+  margin-bottom: 3px !important;
+}
+
+.bootstrap-dialog.form-modal .form-group {
+  margin-bottom: 10px !important;
+}
+
+.bootstrap-dialog.form-modal .form-control {
+  border-radius: 6px !important;
+  border: 1px solid var(--co-border) !important;
+  font-size: .82rem !important;
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  padding: 5px 10px !important;
+  height: 30px !important;
+}
+.bootstrap-dialog.form-modal textarea.form-control {
+  height: auto !important;
+}
+.bootstrap-dialog.form-modal .form-control:focus {
+  border-color: var(--co-accent) !important;
+  box-shadow: 0 0 0 2px rgba(74,108,122,.12) !important;
+}
+
+.bootstrap-dialog.form-modal #btnFormSave {
+  background: var(--co-accent) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  padding: 5px 14px !important;
+  font-size: .8rem !important;
+}
+.bootstrap-dialog.form-modal #btnFormSave:hover {
+  background: var(--co-accent-hover) !important;
+}
+
+.bootstrap-dialog.form-modal #btnFormCancel,
+.bootstrap-dialog.form-modal #btnFormClose {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  padding: 5px 14px !important;
+  font-size: .8rem !important;
+}
+.bootstrap-dialog.form-modal #btnFormCancel:hover,
+.bootstrap-dialog.form-modal #btnFormClose:hover {
+  border-color: var(--co-accent) !important;
+  color: var(--co-accent) !important;
+}
+
+.form-control {
+  border-radius: 8px !important;
+  border: 1px solid var(--co-border) !important;
+  font-size: .84rem !important;
+  box-shadow: none !important;
+}
+.form-control:focus {
+  border-color: var(--co-accent) !important;
+  box-shadow: 0 0 0 3px rgba(74,108,122,.14) !important;
+}
+
+.btn-primary {
+  background: var(--co-accent) !important;
+  border-color: var(--co-accent) !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+}
+.btn-primary:hover { background: var(--co-accent-hover) !important; }
+.btn-default {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 8px !important;
+  color: var(--co-text) !important;
+}
+.btn-default:hover { border-color: var(--co-accent) !important; color: var(--co-accent) !important; }
+.btn-custom3 {
+  background: var(--co-accent) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  border: none !important;
+}
+
+.panel { border-radius: var(--co-radius) !important; }
+.alert { border-radius: 8px !important; border: none !important; font-size: .84rem !important; }
+.popover {
+  border-radius: 10px !important;
+  border: 1px solid var(--co-border) !important;
+  box-shadow: var(--co-shadow-hover) !important;
+}
+
+/* ══════════════════════════════════════════
+   SCROLLBAR
+   ══════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--co-bg); }
+::-webkit-scrollbar-thumb { background: #c4c9d6; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9aa0b0; }
+
+/* ══════════════════════════════════════════
+   POPOVER ACTION BUTTONS
+   ══════════════════════════════════════════ */
+.popover-action-btn {
+  height: 32px !important;
+  padding: 0 10px !important;
+  border-radius: 8px !important;
+  font-size: .72rem !important;
+  font-weight: 600 !important;
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border: 1px solid var(--co-border) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  cursor: pointer !important;
+  margin: 4px 4px 4px 0 !important;
+  transition: all .15s !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+}
+.popover-action-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,.07) !important;
+}
+.popover-action-btn:active {
+  transform: translateY(0) !important;
+}
+
+/* Blue (Edit) */
+.popover-action-btn-blue i { color: var(--co-biodata) !important; }
+.popover-action-btn-blue:hover {
+  background: #eef4fc !important;
+  border-color: var(--co-biodata) !important;
+}
+
+/* Red (Delete) */
+.popover-action-btn-red i { color: #c0392b !important; }
+.popover-action-btn-red:hover {
+  background: #fceeed !important;
+  border-color: #c0392b !important;
+}
+
+/* Teal (Action buttons) */
+.popover-action-btn-teal i { color: var(--co-genomics) !important; }
+.popover-action-btn-teal:hover {
+  background: #ecf6f5 !important;
+  border-color: var(--co-genomics) !important;
+}
+
+/* ══════════════════════════════════════════
+   SIDEBAR COLLAPSE — main content expands
+   ══════════════════════════════════════════ */
+.copo-main.sidebar-collapsed {
+  width: 100% !important;
+  flex: 0 0 100% !important;
+}
+
+/* ══════════════════════════════════════════
+   FOCUS & TRANSITIONS
+   ══════════════════════════════════════════ */
+:focus-visible { outline: 2px solid var(--co-accent) !important; outline-offset: 2px !important; }
+a, button, .btn { transition: color .15s, background .15s, border-color .15s !important; }
