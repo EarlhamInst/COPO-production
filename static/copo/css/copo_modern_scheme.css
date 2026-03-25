@@ -56,8 +56,8 @@
   --co-tint-asg:      #f2eefb;
 
   /* Standardised component button size */
-  --co-btn-w: 148px;
-  --co-btn-h: 36px;
+  --co-btn-w: 120px;
+  --co-btn-h: 30px;
 }
 
 /* ══════════════════════════════════════════
@@ -150,6 +150,100 @@ body {
 /* Mobile toggle */
 #authNavbar .navbar-toggle { border-color: rgba(255,255,255,.3) !important; }
 #authNavbar .navbar-toggle .icon-bar { background: rgba(255,255,255,.7) !important; }
+
+/* ══════════════════════════════════════════
+   PAGE ICONS (component navigation icons)
+   ══════════════════════════════════════════ */
+.copo-page-icons {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 4px !important;
+  flex-wrap: wrap !important;
+}
+
+/* Icon strip container */
+.copo-page-icons .pcomponents-icons-templates,
+.copo-page-icons .huge.ui.main.menu {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Remove Semantic UI dividers between items */
+.copo-page-icons .icon.item::before {
+  display: none !important;
+}
+
+/* Individual icon links */
+.copo-page-icons .icon.item {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 8px !important;
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  color: var(--co-text) !important;
+  font-size: .95rem !important;
+  transition: all .15s !important;
+  box-shadow: var(--co-shadow) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-decoration: none !important;
+}
+.copo-page-icons .icon.item:hover {
+  background: var(--co-bg) !important;
+  border-color: var(--co-accent) !important;
+  color: var(--co-accent) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--co-shadow-hover) !important;
+}
+
+/* Icon colour overrides — Semantic UI icons */
+.copo-page-icons .icon.item i.blue   { color: var(--co-biodata)  !important; }
+.copo-page-icons .icon.item i.olive  { color: #7a9a1e !important; }
+.copo-page-icons .icon.item i.orange { color: var(--co-dtolenv)  !important; }
+.copo-page-icons .icon.item i.green  { color: var(--co-dtol)     !important; }
+.copo-page-icons .icon.item i.violet { color: var(--co-asg)      !important; }
+.copo-page-icons .icon.item i.yellow { color: #b89a14 !important; }
+.copo-page-icons .icon.item i.pink   { color: var(--co-erga)     !important; }
+.copo-page-icons .icon.item i.teal   { color: var(--co-genomics) !important; }
+.copo-page-icons .icon.item i.red    { color: #c0392b !important; }
+.copo-page-icons .icon.item i.bright-coral { color: #e05555 !important; }
+
+/* Material Symbols icon styling */
+.pcomponent-material-icon {
+  font-family: 'Material Symbols Outlined' !important;
+  font-size: 18px !important;
+  font-weight: 300 !important;
+  line-height: 1 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  display: inline-block !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  direction: ltr !important;
+  -webkit-font-smoothing: antialiased !important;
+  font-feature-settings: 'liga' !important;
+}
+
+/* Icon colour overrides — Material Symbols (colour class on the element itself) */
+.copo-page-icons .icon.item .pcomponent-material-icon.blue   { color: var(--co-biodata)  !important; }
+.copo-page-icons .icon.item .pcomponent-material-icon.olive  { color: #7a9a1e !important; }
+.copo-page-icons .icon.item .pcomponent-material-icon.orange { color: var(--co-dtolenv)  !important; }
+.copo-page-icons .icon.item .pcomponent-material-icon.green  { color: var(--co-dtol)     !important; }
+.copo-page-icons .icon.item .pcomponent-material-icon.violet { color: var(--co-asg)      !important; }
+.copo-page-icons .icon.item .pcomponent-material-icon.yellow { color: #b89a14 !important; }
+.copo-page-icons .icon.item .pcomponent-material-icon.pink   { color: var(--co-erga)     !important; }
+.copo-page-icons .icon.item .pcomponent-material-icon.teal   { color: var(--co-genomics) !important; }
+.copo-page-icons .icon.item .pcomponent-material-icon.red    { color: #c0392b !important; }
 
 /* ══════════════════════════════════════════
    TITLE BAR BUTTONS — rectangular, muted
@@ -245,14 +339,18 @@ body {
 /* ══════════════════════════════════════════
    PROFILE CARDS
    ══════════════════════════════════════════ */
+.grid .copo-records-panel,
+.grid .copo-records-panel .panel.panel-profile {
+  height: 100% !important;
+}
 .panel.panel-profile {
   background: var(--co-surface) !important;
   border: 1px solid var(--co-border) !important;
   border-radius: var(--co-radius) !important;
   box-shadow: var(--co-shadow) !important;
   transition: box-shadow .2s, transform .15s !important;
-  overflow: hidden !important;
-  margin-bottom: 14px !important;
+  overflow: visible !important;
+  margin-bottom: 0 !important;
 }
 .panel.panel-profile:hover {
   box-shadow: var(--co-shadow-hover) !important;
@@ -262,7 +360,7 @@ body {
 /* ─── Card headings: light tinted, left stripe via inset box-shadow ─── */
 .panel.panel-profile .panel-heading {
   border-bottom: none !important;
-  padding: 13px 16px 13px 20px !important;
+  padding: 12px 40px 12px 16px !important;
   position: relative !important;
   overflow: visible !important;
 }
@@ -318,25 +416,47 @@ body {
 
 /* ─── Card body ─── */
 .panel.panel-profile .grid-panel-body {
-  padding: 14px 0 8px !important;
+  padding: 12px 14px !important;
   background: var(--co-surface) !important;
+}
+
+/* Created date + "View more details" inline row */
+.created-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: baseline !important;
+}
+.view-more-details-btn {
+  font-size: .68rem !important;
+  color: var(--co-accent) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: none !important;
+}
+.view-more-details-btn:hover {
+  color: var(--co-accent-hover) !important;
+  text-decoration: underline !important;
 }
 
 /* Profile info text */
 .profile-info-row {
   font-size: .79rem !important;
   color: var(--co-muted) !important;
-  line-height: 1.6 !important;
-  padding: 0 15px !important;
+  line-height: 1.4 !important;
+  padding: 0 20px 0 8px !important;
 }
 .profile-info-row .text-bold {
   color: var(--co-text) !important;
   font-weight: 600 !important;
   font-size: .77rem !important;
+  display: block !important;
+  margin: 6px 0 3px 0 !important;
 }
 .profile-description {
   font-size: .79rem !important;
   color: var(--co-muted) !important;
+  margin-bottom: 4px !important;
 }
 
 /* View more details link */
@@ -364,15 +484,64 @@ a[id="showMoreProfileInfoBtn"],
   text-transform: uppercase !important;
   letter-spacing: .1em !important;
   color: var(--co-muted) !important;
-  padding: 0 8px !important;
-  margin-bottom: 6px !important;
+  padding: 6px 8px 4px !important;
+  margin-bottom: 4px !important;
+  margin-top: 0 !important;
+  border-bottom: none !important;
 }
 
-#expandingMenu,
-#expandingMenu .menu.comp {
+.menu-row .menu.comp,
+.menu-row .ui.menu .item,
+.menu-row .ui.menu .menu.comp,
+.menu-row .ui.menu .menu.comp .item,
+.menu-row .ui.vertical.menu .item {
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+.menu-row .ui.menu .item:before,
+.menu-row .ui.vertical.menu .item:before {
+  display: none !important;
+  content: none !important;
+}
+
+.menu-row {
+  border-top: 1px solid var(--co-border) !important;
+}
+
+.menu-row .ui.menu,
+.menu-row .ui.menu .menu.comp {
+  display: block !important;
   border: none !important;
   box-shadow: none !important;
   background: transparent !important;
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+.menu-row .ui.menu .menu.comp > .item {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  flex-direction: row !important;
+  gap: 6px !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* Prevent Semantic UI vertical menu from forcing block layout on button anchors */
+.menu-row .ui.vertical.menu .item a,
+.menu-row .ui.vertical.menu .item > div {
+  display: inline-flex !important;
+  width: auto !important;
+}
+
+a.pcomponent-button-template,
+.images-pcomponent-dropdown-button-template {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
 }
 
 .pcomponent-button.ui.button,
@@ -441,11 +610,6 @@ a.pcomponent-button-template .pcomponent-button {
   box-shadow: var(--co-shadow-hover) !important;
 }
 
-.more-pcomponent-indicator {
-  color: var(--co-muted) !important;
-  text-align: center !important;
-  font-size: .65rem !important;
-}
 
 /* ══════════════════════════════════════════
    LEGEND (main panel, collapsible)
@@ -566,12 +730,88 @@ a.pcomponent-button-template .pcomponent-button {
 /* ══════════════════════════════════════════
    GETTING STARTED SECTION
    ══════════════════════════════════════════ */
-.page-welcome-message {
+.page-welcome-message,
+.page-welcome-message .copo-webui-popover {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.page-welcome-message .webui-popover-inner {
+  border: 1px solid var(--co-border) !important;
+  border-radius: var(--co-radius) !important;
+}
+
+/* Profile card "View more details" popover */
+body > .popover,
+.grid-panel-body .popover {
   background: var(--co-surface) !important;
   border: 1px solid var(--co-border) !important;
   border-radius: var(--co-radius) !important;
-  padding: 20px !important;
-  box-shadow: var(--co-shadow) !important;
+  box-shadow: var(--co-shadow-hover) !important;
+  max-width: 400px !important;
+  width: 400px !important;
+  z-index: 99999 !important;
+}
+.grid-panel-body .popover-title,
+body > .popover .popover-title {
+  background: var(--co-surface) !important;
+  border-bottom: 1px solid var(--co-border) !important;
+  padding: 12px 14px !important;
+  min-height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  font-size: .9rem !important;
+}
+body > .popover .popover-title #showMoreProfileInfoCloseBtn {
+  margin-right: 6px !important;
+  cursor: pointer !important;
+}
+.grid-panel-body .popover-content,
+body > .popover .popover-content {
+  font-size: .8rem !important;
+  padding: 10px 14px 14px !important;
+}
+
+/* Stack each field vertically in the rendered popover */
+body > .popover .popover-content > div {
+  display: block !important;
+  width: 100% !important;
+  margin-bottom: 8px !important;
+  line-height: 1.5 !important;
+  float: none !important;
+}
+body > .popover .popover-content .text-bold {
+  display: block !important;
+  font-size: .72rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: .05em !important;
+  color: var(--co-muted) !important;
+  margin-bottom: 2px !important;
+}
+body > .popover .popover-content .profile-info-label {
+  display: block !important;
+  font-size: .72rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: .05em !important;
+  color: var(--co-muted) !important;
+  margin-bottom: 2px !important;
+  margin-top: 0 !important;
+}
+body > .popover .popover-content .associated-type-div-value,
+body > .popover .popover-content .sequencing_centre_div_value {
+  display: block !important;
+  width: 100% !important;
+}
+body > .popover .popover-content ul {
+  padding-left: 18px !important;
+  margin: 0 !important;
+}
+body > .popover .popover-content span:not(.text-bold) {
+  color: var(--co-text) !important;
+  font-size: .82rem !important;
+  word-break: break-word !important;
 }
 .copo-webui-popover-title {
   font-size: .95rem !important;

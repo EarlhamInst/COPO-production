@@ -601,21 +601,9 @@ function appendRecordComponents(grids) {
     let $menuParentElement = $grid.find('#expandingMenu');
     let $menuComp = $menuParentElement.find('.comp');
     let $componentButtons = createComponentButtons(recordId, profileType);
-    let $newIndicator = $(
-      '.more-pcomponent-indicator[data-template="true"]'
-    ).clone();
 
     $($menuParentElement).attr('id', 'menu_' + recordId);
     $menuComp.append($componentButtons);
-
-    // If more than 6 buttons exist, add 'many-items' class
-    // to reduce the height of each menu and add a down arrow indicator
-    if ($componentButtons.children().length > 6) {
-      $menuComp.addClass('many-items');
-      $newIndicator.removeAttr('data-template');
-      $menuParentElement.find('.item').after($newIndicator);
-      $newIndicator.appendTo($menuComp);
-    }
   });
 }
 
@@ -1125,6 +1113,7 @@ function profileInfoPopover(grids) {
         html: true,
         trigger: 'click',
         sanitize: false,
+        container: 'body',
         title: function () {
           let $showMoreProfileInfoCloseBtn =
             '<i id="showMoreProfileInfoCloseBtn" class="fa fa-times pull-right"></i>';

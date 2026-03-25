@@ -2621,8 +2621,9 @@ function get_profile_components() {
     {
       component: 'accessions',
       title: 'Accessions',
-      iconClass: 'fa fa-sitemap',
-      semanticIcon: 'sitemap', //semantic UI equivalence of fontawesome icon
+      iconClass: 'fa fa-database',
+      semanticIcon: 'database', //semantic UI equivalence of fontawesome icon
+      materialIcon: 'storage',
       countsKey: 'num_accessions',
       buttons: [
         'copo_accessions',
@@ -2641,8 +2642,9 @@ function get_profile_components() {
     {
       component: 'accessions',
       title: 'Accessions',
-      iconClass: 'fa fa-sitemap',
-      semanticIcon: 'sitemap', //semantic UI equivalence of fontawesome icon
+      iconClass: 'fa fa-database',
+      semanticIcon: 'database', //semantic UI equivalence of fontawesome icon
+      materialIcon: 'storage',
       countsKey: 'num_accessions',
       buttons: [
         'copo_accessions',
@@ -2661,8 +2663,9 @@ function get_profile_components() {
     {
       component: 'accessions_dashboard',
       title: 'Accessions',
-      iconClass: 'fa fa-sitemap',
-      semanticIcon: 'sitemap', //semantic UI equivalence of fontawesome icon
+      iconClass: 'fa fa-database',
+      semanticIcon: 'database', //semantic UI equivalence of fontawesome icon
+      materialIcon: 'storage',
       countsKey: 'num_accessions',
       buttons: [
         'copo_accessions',
@@ -2681,8 +2684,9 @@ function get_profile_components() {
     {
       component: 'assembly',
       title: 'Assembly',
-      iconClass: 'fa fa-puzzle-piece',
-      semanticIcon: 'puzzle piece',
+      iconClass: 'fa fa-layer-group',
+      semanticIcon: 'layer group',
+      materialIcon: 'layers',
       countsKey: 'num_assembly',
       buttons: ['new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
@@ -2701,8 +2705,9 @@ function get_profile_components() {
     {
       component: 'assembly',
       title: 'Assembly',
-      iconClass: 'fa fa-puzzle-piece',
-      semanticIcon: 'puzzle piece',
+      iconClass: 'fa fa-layer-group',
+      semanticIcon: 'layer group',
+      materialIcon: 'layers',
       countsKey: 'num_assembly',
       buttons: ['new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
@@ -2722,8 +2727,9 @@ function get_profile_components() {
       component: 'taggedseq',
       title: 'Barcoding Manifests',
       subtitle: '#component_subtitle',
-      iconClass: 'fa fa-barcode',
-      semanticIcon: 'barcode',
+      iconClass: 'fa fa-tag',
+      semanticIcon: 'tag',
+      materialIcon: 'barcode',
       countsKey1: 'num_barcode_manifest',
       buttons: [
         'new-taggedseq-spreadsheet-template',
@@ -2742,6 +2748,7 @@ function get_profile_components() {
       title: 'Files',
       iconClass: 'fa fa-file',
       semanticIcon: 'file',
+      materialIcon: 'folder_open',
       countsKey1: 'num_assembly',
       buttons: ['new-local-file', 'new-terminal-file'],
       sidebarPanels: ['copo-sidebar-info'],
@@ -2761,6 +2768,7 @@ function get_profile_components() {
       title: 'Files',
       iconClass: 'fa fa-file',
       semanticIcon: 'file',
+      materialIcon: 'folder_open',
       countsKey1: 'num_assembly',
       buttons: ['new-local-file', 'new-terminal-file'],
       sidebarPanels: ['copo-sidebar-info'],
@@ -2793,8 +2801,9 @@ function get_profile_components() {
     {
       component: 'sample',
       title: 'Samples',
-      iconClass: 'fa fa-filter',
-      semanticIcon: 'filter', //semantic UI equivalence of fontawesome icon
+      iconClass: 'fa fa-vial',
+      semanticIcon: 'lab', //semantic UI equivalence of fontawesome icon
+      materialIcon: 'biotech',
       countsKey: 'num_sample',
       buttons: [
         'quick-tour-template',
@@ -2821,8 +2830,9 @@ function get_profile_components() {
       component: 'read',
       title: 'Reads',
       subtitle: '#component_subtitle',
-      iconClass: 'fa fa-dna',
-      semanticIcon: 'dna', //semantic UI equivalence of fontawesome icon
+      iconClass: 'fa fa-microscope',
+      semanticIcon: 'microscope', //semantic UI equivalence of fontawesome icon
+      materialIcon: 'genetics',
       //   countsKey: 'num_read',
       buttons: [
         'new-reads-spreadsheet-template',
@@ -2840,8 +2850,9 @@ function get_profile_components() {
       component: 'read',
       title: 'Reads',
       //subtitle: "#component_subtitle",
-      iconClass: 'fa fa-dna',
-      semanticIcon: 'dna', //semantic UI equivalence of fontawesome icon
+      iconClass: 'fa fa-microscope',
+      semanticIcon: 'microscope', //semantic UI equivalence of fontawesome icon
+      materialIcon: 'genetics',
       // countsKey: "num_read",
       buttons: [
         'new-reads-spreadsheet-template',
@@ -2860,6 +2871,7 @@ function get_profile_components() {
       title: 'Sequence Annotations',
       iconClass: 'fa fa-tag',
       semanticIcon: 'tag',
+      materialIcon: 'edit_note',
       countsKey: 'num_seqannotation',
       buttons: ['quick-tour-template', 'new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
@@ -2880,6 +2892,7 @@ function get_profile_components() {
       title: 'Sequence Annotations',
       iconClass: 'fa fa-tag',
       semanticIcon: 'tag',
+      materialIcon: 'edit_note',
       countsKey: 'num_seqannotation',
       buttons: ['quick-tour-template', 'new-component-template'],
       sidebarPanels: ['copo-sidebar-info'],
@@ -2942,7 +2955,11 @@ function setComponentIcon(componentName) {
   if (componentName === 'profile') return;
 
   if (component && $componentIcon.length) {
-    $componentIcon.addClass(`${component.semanticIcon} ${component.color}`);
+    if (component.materialIcon) {
+      $componentIcon.removeClass('ui icon').addClass(`material-symbols-outlined ${component.color}`).text(component.materialIcon);
+    } else {
+      $componentIcon.addClass(`${component.semanticIcon} ${component.color}`);
+    }
 
     // Update page welcome message if a template message exists
     addComponentMessage(componentName);
@@ -3011,16 +3028,25 @@ function createComponentAnchor(item, profileId, isIconOnly = false) {
   const $icon = $templateAnchor.find('i');
 
   if (isIconOnly) {
-    $icon.addClass(`${item.color} ${item.semanticIcon}`);
+    if (item.materialIcon) {
+      $icon.removeClass('ui icon').addClass(`material-symbols-outlined pcomponent-material-icon ${item.color}`).text(item.materialIcon);
+    } else {
+      $icon.addClass(`${item.color} ${item.semanticIcon}`);
+    }
     $templateAnchor.removeClass('pcomponent-icon-template');
   } else {
     const $button = $templateAnchor.find('.pcomponent-button');
     $button.addClass(item.color);
-    $button.find('.pcomponent-icon').addClass(item.iconClass);
+    if (item.materialIcon) {
+      $button.find('.pcomponent-icon').removeClass('pcomponent-icon').addClass('material-symbols-outlined pcomponent-material-icon pcomponent-icon').text(item.materialIcon);
+      $icon.removeClass('pcomponent-icon').addClass('material-symbols-outlined pcomponent-material-icon').text(item.materialIcon);
+    } else {
+      $button.find('.pcomponent-icon').addClass(item.iconClass);
+      $icon.addClass(item.iconClass);
+    }
     $button
       .find('.pcomponent-name')
       .text(`${item.buttonLabel}${componentGroupName}`);
-    $icon.addClass(item.iconClass);
     $templateAnchor.removeClass('pcomponent-button-template');
   }
 

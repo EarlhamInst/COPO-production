@@ -1,20 +1,12 @@
 /* Component menu */
 .menu-row {
-  margin-top: -7px;
-  float: left;
-  width: 100% !important;
-}
-
-.menu-no-addtl-info-row {
-  padding: 180px 12px 0px 12px; /* top right bottom left */
-  margin-right: -12px;
-  margin-left: -12px;
+  margin-top: 8px;
 }
 
 .ui.menu {
   position: relative;
-  z-index: 9999;
-  height: 340px;
+  z-index: 1;
+  height: auto;
   overflow: visible;
   width: 100% !important;
 }
@@ -26,37 +18,16 @@
 }
 
 .ui.menu .menu.comp .item {
-  display: grid;
-  grid-template-columns: 1fr; /* 1 column */
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   position: relative;
   z-index: 5;
-  overflow: hidden;
   width: 100% !important;
-  padding-top: 10px !important;
-  margin-bottom: 20px !important;
+  padding-top: 6px !important;
+  margin-bottom: 0 !important;
 }
 
-/* Expand components menu on hover */
-.ui.menu:has(.menu.comp.many-items):hover,
-.ui.menu:has(.menu.comp.many-items) .menu.comp:hover .item {
-  overflow: visible !important;
-  max-height: none !important;
-  z-index: 10;
-  position: relative;
-  grid-template-columns: 1fr; /* 1 column */
-  height: auto;
-}
-
-.ui.menu:has(.menu.comp.many-items) .item {
-  padding-bottom: 25px;
-}
-
-.menu.comp.many-items.menu-expanded {
-  overflow: visible;
-  max-height: none;
-  z-index: 9999;
-}
 
 @keyframes fadeIn {
   from {
@@ -347,7 +318,7 @@
 
 .grid-panel-body {
   padding: 12px;
-  height: 310px !important;
+  height: auto !important;
   position: relative;
   z-index: 1;
 }
@@ -356,7 +327,6 @@
   background-color: #ff8c8c !important;
   color: white !important;
   font-weight: bolder !important;
-  height: 290px !important;
 }
 
 #bottomPanel {
@@ -374,7 +344,8 @@
 }
 
 .profile-description {
-  height: 42px;
+  max-height: 42px;
+  overflow: hidden;
 }
 
 .profile-info-row {
@@ -414,11 +385,12 @@
 
 .grid,
 .grid-item {
-  height: 360px;
-  border-radius: 5px;
-  background-color: #fff;
+  height: 340px;
+  border-radius: 0;
+  background-color: transparent;
   max-width: 515px;
   z-index: 1;
+  overflow: visible;
 }
 
 .grid-selected {
@@ -428,7 +400,6 @@
 
 .grid:hover,
 .grid-item:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   z-index: 10 !important;
   position: relative;
 }
@@ -829,21 +800,6 @@ ul.sequencing-centre-ul-tag {
   }
 }
 
-@media only screen and (max-width: 776px) {
-  .grid-panel-body {
-    height: 290px !important;
-  }
-
-  .menu-no-addtl-info-row {
-    padding: 160px 12px 0px 12px;
-  }
-}
-
-@media only screen and (max-width: 767px) {
-  .menu-row {
-    margin-top: -168px;
-  }
-}
 
 @media only screen and (max-width: 575px) {
   .navigate-to-top {
