@@ -1310,8 +1310,8 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 [data-theme="dark"] .modal-footer,
 [data-theme="dark"] .bootstrap-dialog .modal-footer,
 [data-theme="dark"] .bootstrap-dialog-footer {
-  background: var(--co-bg) !important;
-  border-color: var(--co-border) !important;
+  background: #1a1d24 !important;
+  border-top: 1px solid #363a46 !important;
 }
 [data-theme="dark"] .close {
   color: rgba(255,255,255,.7) !important;

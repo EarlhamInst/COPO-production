@@ -27,6 +27,33 @@ This repository builds on the work of the [COPO](https://github.com/collaborativ
 | Real-time features      | Channels, Daphne                                  | WebSocket support and async communication                   |
 | Styling & forms         | django-crispy-forms, crispy-bootstrap5            | Form rendering and UI styling                               |
 
+## Frontend styling
+
+The frontend uses multiple UI frameworks (Bootstrap 3, Semantic UI, Ace, DataTables, Select2, etc.). A single override stylesheet unifies their appearance.
+
+### `static/copo/css/copo_modern_scheme.css`
+
+This is a **drop-in cosmetic override** loaded as the last stylesheet in `<head>`. It does not add structural or layout styles — it re-themes every UI framework to produce one consistent look. Removing it should leave the app functional but unstyled.
+
+**What belongs here:**
+- Colour, typography, and spacing overrides for third-party frameworks
+- CSS custom properties (design tokens) in `:root`
+- Dark theme variants under `[data-theme="dark"]`
+- Per-profile-type accent colours and tinted card headings
+
+**What does NOT belong here:**
+- Layout or structural styles for new components (use `style.css` or a component-specific stylesheet)
+- Styles that the app depends on to function (e.g. visibility toggling, grid layout)
+
+**Dark theme:** The `[data-theme="dark"]` block redefines CSS variables and adds targeted overrides for elements that use hardcoded colours. When adding a new themed rule, prefer using existing `--co-*` variables so the dark theme inherits it automatically. Only add a `[data-theme="dark"]` override when a variable alone isn't sufficient.
+
+### Other stylesheets
+
+| File | Purpose |
+|------|---------|
+| `style.css` | Legacy base styles — structural layout, component positioning |
+| `*_style.css` / `*.css` (component-specific) | Styles scoped to individual features (e.g. `browse_style.css`, `copo_wizard.css`) |
+
 ## Related repositories
 
 - [COPO-production](https://github.com/EarlhamInst/COPO-production) – _This repository (included for reference)_
