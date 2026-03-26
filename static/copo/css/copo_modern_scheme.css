@@ -1632,3 +1632,15 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 .theme-toggle-btn:hover {
   color: #fff !important;
 }
+
+/* ── DataTables info-row ── */
+.info-rw,
+.info-rw2,
+.info-rw3 {
+  background: var(--co-bg) !important;
+  border: 1px solid var(--co-border) !important;
+  color: var(--co-text) !important;
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+  margin: 0 !important;
+}
