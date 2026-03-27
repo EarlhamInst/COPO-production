@@ -47,6 +47,34 @@ This is a **drop-in cosmetic override** loaded as the last stylesheet in `<head>
 
 **Dark theme:** The `[data-theme="dark"]` block redefines CSS variables and adds targeted overrides for elements that use hardcoded colours. When adding a new themed rule, prefer using existing `--co-*` variables so the dark theme inherits it automatically. Only add a `[data-theme="dark"]` override when a variable alone isn't sufficient.
 
+## Component icons and buttons
+
+Component buttons (Samples, Reads, Assembly, etc.) are configured in the database via the `Component` model and populated by the `setup_profile_types` management command.
+
+### Icon fields on `Component`
+
+| Field | Purpose | Example |
+|-------|---------|---------|
+| `widget_icon` | Semantic UI icon name (legacy fallback) | `lab`, `dna`, `barcode` |
+| `widget_icon_class` | Font Awesome class | `fa fa-vial`, `fa fa-microscope` |
+| `material_icon` | Google Material Symbols name (preferred) | `labs`, `genetics`, `barcode` |
+| `widget_colour` | Semantic UI colour class for the button | `olive`, `orange`, `red` |
+| `button_label` | Short label shown on the button | `Samples`, `Reads`, `Barcoding` |
+
+### How icons are resolved
+
+The frontend (`generic_handlers.js` → `setComponentIcon()` / `createComponentAnchor()`) checks `materialIcon` first. If set, it renders a Material Symbol. Otherwise, it falls back to the Semantic UI icon (`semanticIcon`).
+
+### Adding or changing a component icon
+
+1. Edit `src/apps/copo_core/management/commands/setup_profile_types.py`
+2. Update the `create_component()` call with the new `material_icon`, `widget_icon_class`, or `button_label`
+3. Run `python manage.py setup_profile_types` on the target instance
+
+### Migration note
+
+The `material_icon` field was added in migration `0027_add_material_icon_to_component`. Instances that have not yet run `setup_profile_types` will have `material_icon = NULL`, which is safe — the frontend falls back to the Semantic UI icon. Once the command is run, Material Icons take effect.
+
 ### Other stylesheets
 
 | File | Purpose |

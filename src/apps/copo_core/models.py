@@ -420,6 +420,7 @@ class Component(models.Model):
     reverse_url = models.CharField(max_length=100, blank=True, null=True)
     widget_icon = models.CharField(max_length=100, blank=True, null=True)
     widget_icon_class = models.CharField(max_length=100, blank=True, null=True)
+    material_icon = models.CharField(max_length=100, blank=True, null=True)
     widget_colour = models.CharField(max_length=200, blank=True, null=True)
     recordaction_buttons = models.ManyToManyField(RecordActionButton, blank=True)
     title_buttons = models.ManyToManyField(TitleButton, blank=True)
@@ -442,6 +443,7 @@ class Component(models.Model):
         base_component="",
         group_name="",
         button_label=None,
+        material_icon="",
     ):
         self.name = name.lower()
         self.title = title
@@ -450,6 +452,7 @@ class Component(models.Model):
         self.widget_icon = widget_icon
         self.widget_colour = widget_colour
         self.widget_icon_class = widget_icon_class
+        self.material_icon = material_icon
         self.table_id = table_id
         self.reverse_url = reverse_url
         self.schema_name = schema_name

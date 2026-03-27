@@ -45,56 +45,6 @@ const record_action_button_def = {
   {% endfor %}
 };
 
-const buttonLabelOverride = {
-  'sample':               'Samples',
-  'general_sample':       'Samples',
-  'read':                 'Reads',
-  'reads_schema':         'Reads',
-  'singlecell':           'Single-cell',
-  'assembly':             'Assembly',
-  'taggedseq':            'Barcoding',
-  'accessions':           'Accessions',
-  'accessions_dashboard': 'Accessions',
-  'accessions_schema':    'Accessions',
-  'files':                'Files',
-  'seqannotation':        'Annotations',
-  'rembi':                'Images',
-  'stx_fish':             'Spatial',
-};
-
-const materialIconOverride = {
-  'sample':               'labs',
-  'general_sample':       'labs',
-  'read':                 'genetics',
-  'reads_schema':         'genetics',
-  'singlecell':           'science',
-  'assembly':             'layers',
-  'taggedseq':            'barcode',
-  'accessions':           'storage',
-  'accessions_dashboard': 'storage',
-  'accessions_schema':    'storage',
-  'files':                'folder_open',
-  'seqannotation':        'edit_note',
-  'rembi':                'photo_library',
-  'stx_fish':             'biotech',
-};
-
-const iconClassOverride = {
-  'sample':               'fa fa-vial',
-  'general_sample':       'fa fa-vial',
-  'read':                 'fa fa-microscope',
-  'reads_schema':         'fa fa-microscope',
-  'singlecell':           'fa fa-microscope',
-  'assembly':             'fa fa-layer-group',
-  'taggedseq':            'fa fa-barcode',
-  'accessions':           'fa fa-database',
-  'accessions_dashboard': 'fa fa-database',
-  'accessions_schema':    'fa fa-database',
-  'files':                'fa fa-folder-open',
-  'seqannotation':        'fa fa-file-lines',
-  'rembi':                'fa fa-images',
-  'stx_fish':             'fa fa-flask',
-};
 
 const component_def = {
   {% for component in component_def %}
@@ -107,13 +57,13 @@ const component_def = {
       {% if  component.group_name %}
         groupName: '{{ component.group_name }}',
       {% endif %}
-      buttonLabel: buttonLabelOverride['{{ component.name|lower }}'] || '{{ component.button_label }}',
+      buttonLabel: '{{ component.button_label }}',
       schema_name: '{{ component.schema_name }}',
       tableID: '{{ component.table_id }}',
       url: "{% if component.reverse_url and component.schema_name %}{% url component.reverse_url  schema_name=component.schema_name  profile_id='999' ui_component=component.name  %}{% elif component.reverse_url %}{% url component.reverse_url  profile_id='999' ui_component=component.name %}{% endif %}",
       semanticIcon: '{{ component.widget_icon }}',
-      iconClass: iconClassOverride['{{ component.name|lower }}'] || '{{ component.widget_icon_class }}',
-      materialIcon: materialIconOverride['{{ component.name|lower }}'] || '',
+      iconClass: '{{ component.widget_icon_class }}',
+      materialIcon: '{{ component.material_icon }}',
       color: '{{ component.widget_colour }}',
       colorClass: '{{ component.widget_colour_class }}',
       buttons: [ {% for button in component.title_buttons.all %} '{{ button.name }}', {% endfor %} ],
