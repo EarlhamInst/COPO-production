@@ -905,11 +905,25 @@ function displayLegend(legendData) {
     // Create the legend item
     const $item = $(`
       <li class="component-legend-group-item">
-        <i class="fa fa-info-circle component-legend-info-icon" title="${element.profileType}"></i>
+        <i class="fa fa-info-circle component-legend-info-icon"></i>
         <span class="component-legend-text">${element.profileTypeAcronym}</span>
         <span class="fa fa-circle component-legend-circle" style="color:${element.profileTypeColour};"></span>
       </li>
     `);
+
+    // Add popover with expanded name and description
+    const popoverContent = element.profileTypeDescription || element.profileType;
+    $item.find('.component-legend-info-icon').webuiPopover({
+      title: element.profileType,
+      content: `<div class="webpop-content-div">${popoverContent}</div>`,
+      trigger: 'hover',
+      width: 280,
+      arrow: true,
+      placement: 'auto',
+      dismissible: true,
+      delay: { show: 200, hide: 100 },
+    });
+
     $group.append($item);
   });
 }
@@ -1028,16 +1042,19 @@ function setProfileGridHeading(grids) {
             profileType: acronym,
             profileTypeAcronym: 'SHARED',
             profileTypeColour: colour,
+            profileTypeDescription: 'Profiles that other users have shared with you.',
           };
         } else {
           acronym = profileType.toUpperCase();
-          colour = profile_type_def[profileType.toLowerCase()]['widget_colour'];
+          const ptDef = profile_type_def[profileType.toLowerCase()];
+          colour = ptDef['widget_colour'];
 
           legendData = {
             profileType:
               getTitleByValue(profileType) || toTitleCase(profileType),
             profileTypeAcronym: acronym.toUpperCase(),
             profileTypeColour: colour,
+            profileTypeDescription: ptDef.description || '',
           };
         }
 

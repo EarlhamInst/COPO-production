@@ -899,7 +899,7 @@ class Command(BaseCommand):
 
         erga = ProfileType().create_profile_type(
             type="erga",
-            description="European Reference Genome Atlas (ERGA)",
+            description="European Reference Genome Atlas (ERGA) — generating reference genomes for European biodiversity",
             widget_colour="#E61A8D",
             is_dtol_profile=True,
             is_permission_required=True,
@@ -909,7 +909,7 @@ class Command(BaseCommand):
         )
         asg = ProfileType().create_profile_type(
             type="asg",
-            description="Aquatic Symbiosis Genomics (ASG)",
+            description="Aquatic Symbiosis Genomics (ASG) — sequencing genomes of aquatic symbiotic organisms",
             widget_colour="#5829bb",
             is_dtol_profile=True,
             is_permission_required=True,
@@ -918,7 +918,7 @@ class Command(BaseCommand):
         )
         dtolenv = ProfileType().create_profile_type(
             type="dtolenv",
-            description="Darwin Tree of Life Environmental Samples (DTOLENV)",
+            description="Darwin Tree of Life Environmental Samples (DTOLENV) — environmental and metagenomic samples for DToL",
             widget_colour="#fb7d0d",
             is_dtol_profile=True,
             is_permission_required=True,
@@ -926,7 +926,7 @@ class Command(BaseCommand):
         )
         dtol = ProfileType().create_profile_type(
             type="dtol",
-            description="Darwin Tree of Life (DTOL)",
+            description="Darwin Tree of Life (DTOL) — sequencing all eukaryotic species in Britain and Ireland",
             widget_colour="#16ab39",
             is_dtol_profile=True,
             is_permission_required=True,
@@ -935,7 +935,7 @@ class Command(BaseCommand):
         )
         genomics = ProfileType().create_profile_type(
             type="genomics",
-            description="Genomics",
+            description="Genomics — standalone genomics profiles for general submissions",
             widget_colour="#009c95",
             is_dtol_profile=False,
             is_permission_required=False,
@@ -943,7 +943,7 @@ class Command(BaseCommand):
 
         biodata = ProfileType().create_profile_type(
             type="biodata",
-            description="Biodata",
+            description="Biodata — general-purpose profiles for biological data submissions",
             widget_colour="#00AAFF",
             is_dtol_profile=False,
             is_permission_required=False,

@@ -478,7 +478,7 @@ class ProfileType(models.Model):
     components = models.ManyToManyField(Component, blank=True)
     action_buttons = models.ManyToManyField(RecordActionButton, blank=True)
     type = models.CharField(max_length=20, unique=True)
-    description = models.CharField(max_length=100)
+    description = models.CharField(max_length=255)
     widget_colour = models.CharField(max_length=200, blank=True, null=True)
     is_dtol_profile = models.BooleanField(default=False)
     is_permission_required = models.BooleanField(default=True)
