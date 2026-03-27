@@ -255,25 +255,6 @@ $(document).on('document_ready', function () {
     $('.row-ellipsis').attr('title', $(document).data('profileOptionsTitle'));
   });
 
-  // Toggle sidebar info visibility
-  $(document).on('click', '#toggleSidebarInfoBtn', function () {
-    const $sidebar = $('.copo-sidebar');
-    const $mainContent = $('.copo-main');
-    const isVisible = $sidebar.is(':visible');
-
-    if (isVisible) {
-      // Hide sidebar and expand main content
-      $sidebar.hide();
-      $mainContent.addClass('sidebar-collapsed');
-      $(this).addClass('active');
-    } else {
-      // Show sidebar and collapse main content
-      $sidebar.show();
-      $mainContent.removeClass('sidebar-collapsed');
-      $(this).removeClass('active');
-    }
-  });
-
   $(document).on('click', '#editProfileBtn', function (e) {
     const profileId = $(this).data('profile-id');
     const profileType = $(this).data('profile-type');
@@ -821,7 +802,7 @@ function sortProfileRecords(option) {
       selector = (element) =>
         element
           .querySelector('.copo-records-panel')
-          .getAttribute('profileType');
+          .getAttribute('data-profile-type');
       break;
     default:
       isValueNumeric = true;
@@ -889,7 +870,9 @@ function displayLegend(legendData) {
   let $legend = $('.component-legend[data-legend="profile_types"]');
   const $group = $legend.find('.component-legend-group');
 
-  // Build profile type legend item
+  // Sort alphabetically by acronym then build legend items
+  legendData.sort((a, b) => a.profileTypeAcronym.localeCompare(b.profileTypeAcronym));
+
   legendData.forEach((element) => {
     // Avoid duplicate legend data
     const existingLabels = $group
@@ -902,16 +885,19 @@ function displayLegend(legendData) {
     const labelKey = element.profileTypeAcronym.trim().toLowerCase();
     if (existingLabels.includes(labelKey)) return;
 
-    // Create the legend item
+    // Create the legend item with profile-type colour accent
+    const c = element.profileTypeColour;
     const $item = $(`
-      <li class="component-legend-group-item">
+      <li class="component-legend-group-item" style="border-left: 3px solid ${c}; background: ${c}18;">
         <i class="fa fa-info-circle component-legend-info-icon"></i>
         <span class="component-legend-text">${element.profileTypeAcronym}</span>
-        <span class="fa fa-circle component-legend-circle" style="color:${element.profileTypeColour};"></span>
+        <span class="fa fa-circle component-legend-circle" style="color:${c};"></span>
       </li>
     `);
 
-    // Add popover with expanded name and description
+    $group.append($item);
+
+    // Add popover with expanded name and description (must be in DOM first)
     const popoverContent = element.profileTypeDescription || element.profileType;
     $item.find('.component-legend-info-icon').webuiPopover({
       title: element.profileType,
@@ -923,8 +909,6 @@ function displayLegend(legendData) {
       dismissible: true,
       delay: { show: 200, hide: 100 },
     });
-
-    $group.append($item);
   });
 }
 
@@ -1036,7 +1020,7 @@ function setProfileGridHeading(grids) {
 
         if (isShared) {
           acronym = 'Shared With Me';
-          colour = '#f26202';
+          colour = '#7a9aa8';
 
           legendData = {
             profileType: acronym,
@@ -1065,7 +1049,11 @@ function setProfileGridHeading(grids) {
         );
         const $titleSpan = $heading.find('.row-title span');
 
-        $heading.css('background-color', colour); // Set heading colour
+        // Apply colour as a light tint background with left accent stripe
+        $heading.css({
+          'background': colour + '18',  // ~10% opacity tint
+          'box-shadow': 'inset 4px 0 0 ' + colour,
+        });
         $titleSpan.find('small').remove(); // Replace acronym
         $titleSpan.append(`<small> (${acronym.toUpperCase()}) </small>`);
 

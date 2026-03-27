@@ -33,7 +33,55 @@ function toggleSidebarInfoVisibility() {
     $sidebar.hide();
     $mainContent.addClass('sidebar-collapsed');
   }
+
+  // Update the toggle button arrow to reflect sidebar state
+  const $arrow = $('#toggleSidebarInfoBtn .toggle-sidebar-arrow');
+  const $btn = $('#toggleSidebarInfoBtn');
+  if ($sidebar.is(':visible')) {
+    $arrow.removeClass('fa-chevron-left').addClass('fa-chevron-right');
+    $btn.removeClass('active');
+  } else {
+    $arrow.removeClass('fa-chevron-right').addClass('fa-chevron-left');
+    $btn.addClass('active');
+  }
 }
+
+// Automatically show/hide sidebar when content is added or removed.
+// Uses a short delay to ensure the sidebar DOM is fully rendered.
+$(window).on('load', function () {
+  const sidebarPanel = document.getElementById('page_alert_panel');
+  if (sidebarPanel) {
+    new MutationObserver(function () {
+      toggleSidebarInfoVisibility();
+    }).observe(sidebarPanel, {
+      childList: true,
+      subtree: true,
+    });
+    // Set initial state
+    toggleSidebarInfoVisibility();
+  }
+});
+
+// Toggle sidebar via the info button (available on all 2-col pages)
+$(document).on('click', '#toggleSidebarInfoBtn', function () {
+  const $sidebar = $('.copo-sidebar');
+  const $mainContent = $('.copo-main');
+  const $arrow = $(this).find('.toggle-sidebar-arrow');
+  const $btn = $(this);
+  const isVisible = $sidebar.is(':visible');
+
+  if (isVisible) {
+    $sidebar.hide();
+    $mainContent.addClass('sidebar-collapsed');
+    $btn.addClass('active');
+    $arrow.removeClass('fa-chevron-right').addClass('fa-chevron-left');
+  } else {
+    $sidebar.show();
+    $mainContent.removeClass('sidebar-collapsed');
+    $btn.removeClass('active');
+    $arrow.removeClass('fa-chevron-left').addClass('fa-chevron-right');
+  }
+});
 
 // Set custom page length options for the DataTables dropdown menu
 $.extend($.fn.dataTable.defaults, {
@@ -225,6 +273,16 @@ function place_task_buttons(componentMeta) {
     refresh_tool_tips();
     //table action buttons
     do_table_buttons_events();
+
+    // Toggle action button visibility on row select/deselect
+    table.on('select deselect', function () {
+      var selectedCount = table.rows({ selected: true }).count();
+      if (selectedCount > 0) {
+        customButtons.addClass('has-selection');
+      } else {
+        customButtons.removeClass('has-selection');
+      }
+    });
   }
 }
 
@@ -477,6 +535,7 @@ function displayAlert(alertType, alertMessage) {
 function deselect_records(tableID) {
   var table = $('#' + tableID).DataTable();
   table.rows().deselect();
+  $('#' + tableID).closest('.dataTables_wrapper').find('.copo-table-cbuttons').removeClass('has-selection');
 }
 
 function do_render_server_side_table(componentMeta) {
@@ -701,6 +760,14 @@ function do_render_server_side_table(componentMeta) {
       }
 
       elem.toggleClass('selected');
+
+      // Toggle action button visibility based on selection
+      var $cbuttons = $('#' + tableID).closest('.dataTables_wrapper').find('.copo-table-cbuttons');
+      if (server_side_select[component].length > 0) {
+        $cbuttons.addClass('has-selection');
+      } else {
+        $cbuttons.removeClass('has-selection');
+      }
 
       //selected message
       $('#' + tableID + '_info')

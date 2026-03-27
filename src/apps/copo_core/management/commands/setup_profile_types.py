@@ -553,7 +553,7 @@ class Command(BaseCommand):
             table_id="files_table",
             reverse_url="copo_file:copo_files",
             subtitle="",
-            button_label="Files",
+            button_label="Data Files",
         )
 
         sample = Component().create_component(
@@ -900,7 +900,7 @@ class Command(BaseCommand):
         erga = ProfileType().create_profile_type(
             type="erga",
             description="European Reference Genome Atlas (ERGA) — generating reference genomes for European biodiversity",
-            widget_colour="#E61A8D",
+            widget_colour="#e25098",
             is_dtol_profile=True,
             is_permission_required=True,
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
@@ -910,7 +910,7 @@ class Command(BaseCommand):
         asg = ProfileType().create_profile_type(
             type="asg",
             description="Aquatic Symbiosis Genomics (ASG) — sequencing genomes of aquatic symbiotic organisms",
-            widget_colour="#5829bb",
+            widget_colour="#8060d0",
             is_dtol_profile=True,
             is_permission_required=True,
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
@@ -919,7 +919,7 @@ class Command(BaseCommand):
         dtolenv = ProfileType().create_profile_type(
             type="dtolenv",
             description="Darwin Tree of Life Environmental Samples (DTOLENV) — environmental and metagenomic samples for DToL",
-            widget_colour="#fb7d0d",
+            widget_colour="#f0a44a",
             is_dtol_profile=True,
             is_permission_required=True,
             tour_id="profile_title publish_profile",
@@ -927,7 +927,7 @@ class Command(BaseCommand):
         dtol = ProfileType().create_profile_type(
             type="dtol",
             description="Darwin Tree of Life (DTOL) — sequencing all eukaryotic species in Britain and Ireland",
-            widget_colour="#16ab39",
+            widget_colour="#4cc86c",
             is_dtol_profile=True,
             is_permission_required=True,
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
@@ -936,7 +936,7 @@ class Command(BaseCommand):
         genomics = ProfileType().create_profile_type(
             type="genomics",
             description="Genomics — standalone genomics profiles for general submissions",
-            widget_colour="#009c95",
+            widget_colour="#4db8a8",
             is_dtol_profile=False,
             is_permission_required=False,
             is_deprecated=True,        )
@@ -944,7 +944,7 @@ class Command(BaseCommand):
         biodata = ProfileType().create_profile_type(
             type="biodata",
             description="Biodata — general-purpose profiles for biological data submissions",
-            widget_colour="#00AAFF",
+            widget_colour="#5cbce8",
             is_dtol_profile=False,
             is_permission_required=False,
             tour_id="profile_title",

@@ -39,21 +39,14 @@
   --co-accent:       #4a6c7a;
   --co-accent-hover: #3a5a68;
 
-  /* Profile type accent colours */
-  --co-biodata:  #4da8d6;
-  --co-genomics: #3d9e98;
-  --co-dtol:     #3ca85c;
-  --co-dtolenv:  #e8943a;
-  --co-erga:     #d24085;
-  --co-asg:      #6d46b8;
-
-  /* Card heading tint backgrounds */
-  --co-tint-biodata:  #eef7fd;
-  --co-tint-genomics: #edf6f5;
-  --co-tint-dtol:     #edf7f0;
-  --co-tint-dtolenv:  #fef4ea;
-  --co-tint-erga:     #fceef5;
-  --co-tint-asg:      #f2eefb;
+  /* Profile type accent colours — used by component buttons and icons.
+     Card heading colours come from the database via inline styles. */
+  --co-biodata:  #5cbce8;
+  --co-genomics: #4db8a8;
+  --co-dtol:     #4cc86c;
+  --co-dtolenv:  #f0a44a;
+  --co-erga:     #e25098;
+  --co-asg:      #8060d0;
 
   /* Standardised component button size */
   --co-btn-w: 120px;
@@ -300,6 +293,9 @@ body {
   margin: 0 !important;
   line-height: 1 !important;
 }
+[data-theme="dark"] .big.circular.ui.icon.button > i.icon {
+  color: #fff !important;
+}
 
 /* ══════════════════════════════════════════
    PAGE HEADER
@@ -365,36 +361,12 @@ body {
   overflow: visible !important;
 }
 
-/* Default heading (no profile type) */
+/* Default heading (no profile type — overridden by inline styles when a type is set) */
 .panel.panel-profile .panel-heading {
-  background: #f4f6f9 !important;
+  background: #f4f6f9;
 }
 
-/* Per-type: light tint background + inset left stripe */
-.copo-records-panel[data-profile-type="biodata"]  .panel-heading {
-  background: var(--co-tint-biodata)  !important;
-  box-shadow: inset 4px 0 0 var(--co-biodata)  !important;
-}
-.copo-records-panel[data-profile-type="genomics"] .panel-heading {
-  background: var(--co-tint-genomics) !important;
-  box-shadow: inset 4px 0 0 var(--co-genomics) !important;
-}
-.copo-records-panel[data-profile-type="dtol"]     .panel-heading {
-  background: var(--co-tint-dtol)     !important;
-  box-shadow: inset 4px 0 0 var(--co-dtol)     !important;
-}
-.copo-records-panel[data-profile-type="dtolenv"]  .panel-heading {
-  background: var(--co-tint-dtolenv)  !important;
-  box-shadow: inset 4px 0 0 var(--co-dtolenv)  !important;
-}
-.copo-records-panel[data-profile-type="erga"]     .panel-heading {
-  background: var(--co-tint-erga)     !important;
-  box-shadow: inset 4px 0 0 var(--co-erga)     !important;
-}
-.copo-records-panel[data-profile-type="asg"]      .panel-heading {
-  background: var(--co-tint-asg)      !important;
-  box-shadow: inset 4px 0 0 var(--co-asg)      !important;
-}
+/* Per-type heading colours are driven by the database via inline styles set in JS */
 
 /* Heading text — dark on light background */
 .panel.panel-profile .panel-heading .row-title span,
@@ -678,8 +650,8 @@ a.pcomponent-button-template .pcomponent-button {
   display: inline-flex !important;
   align-items: center !important;
   gap: 6px !important;
-  background: var(--co-bg) !important;
-  border: 1px solid var(--co-border) !important;
+  background: var(--co-bg);
+  border: 1px solid var(--co-border);
   border-radius: 20px !important;
   padding: 3px 10px 3px 7px !important;
   font-size: .76rem !important;
@@ -1088,14 +1060,6 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
   --co-dtolenv:  #f0a44a;
   --co-erga:     #e25098;
   --co-asg:      #8060d0;
-
-  /* Card heading tint backgrounds — dark tinted */
-  --co-tint-biodata:  #1a2530;
-  --co-tint-genomics: #1a2828;
-  --co-tint-dtol:     #1a2820;
-  --co-tint-dtolenv:  #282018;
-  --co-tint-erga:     #281a22;
-  --co-tint-asg:      #201a2c;
 }
 
 /* ─── Dark: Global overrides for hardcoded colours ─── */
@@ -1107,7 +1071,7 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 [data-theme="dark"],
 [data-theme="dark"] body,
 [data-theme="dark"] p,
-[data-theme="dark"] span,
+[data-theme="dark"] span:not(.component-legend-circle),
 [data-theme="dark"] div,
 [data-theme="dark"] li,
 [data-theme="dark"] td,
@@ -1221,6 +1185,41 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
   background-color: transparent !important;
 }
 
+/* ── Pagination — consistent across all tables (light mode) ── */
+/* Bootstrap DT pagination: <ul.pagination> > <li.paginate_button> > <a>
+   Style the <a> only — styling the <li> creates ghost rectangles */
+.dataTables_paginate .paginate_button {
+  border: none !important;
+  background: transparent !important;
+}
+.dataTables_paginate .paginate_button a {
+  color: var(--co-text) !important;
+  background: var(--co-bg) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 4px !important;
+  text-decoration: none !important;
+}
+.dataTables_paginate .paginate_button:hover a {
+  background: #e8eef2 !important;
+  color: var(--co-accent) !important;
+  border-color: var(--co-accent) !important;
+}
+.dataTables_paginate .paginate_button.active a,
+.dataTables_paginate .paginate_button.current a {
+  background: var(--co-accent) !important;
+  color: #fff !important;
+  border-color: var(--co-accent) !important;
+}
+.dataTables_paginate .paginate_button.disabled a {
+  color: #aaa !important;
+  background: var(--co-bg) !important;
+  border-color: var(--co-border) !important;
+  cursor: default !important;
+}
+.dataTables_paginate .pagination {
+  background: transparent !important;
+}
+
 /* Tables — all types */
 [data-theme="dark"] table,
 [data-theme="dark"] table thead th,
@@ -1233,10 +1232,12 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 [data-theme="dark"] .dataTables_info,
 [data-theme="dark"] .dataTables_length,
 [data-theme="dark"] .dataTables_filter,
-[data-theme="dark"] .dataTables_paginate {
-  background: var(--co-surface) !important;
+[data-theme="dark"] .dataTables_paginate,
+[data-theme="dark"] .dataTables_paginate span,
+[data-theme="dark"] .dataTables_paginate a {
+  background: transparent !important;
   color: var(--co-text) !important;
-  border-color: var(--co-border) !important;
+  border-color: transparent !important;
 }
 [data-theme="dark"] table.dataTable tbody tr:hover td,
 [data-theme="dark"] table tbody tr:hover td {
@@ -1251,14 +1252,107 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
   background: #22262e !important;
 }
 [data-theme="dark"] .dataTables_paginate .paginate_button {
+  border: none !important;
+  background: transparent !important;
+}
+[data-theme="dark"] .dataTables_paginate .paginate_button a {
   color: var(--co-text) !important;
   background: var(--co-surface) !important;
-  border-color: var(--co-border) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 4px !important;
 }
-[data-theme="dark"] .dataTables_paginate .paginate_button.current {
+[data-theme="dark"] .dataTables_paginate .paginate_button:hover a {
+  background: #2a2e36 !important;
+  color: var(--co-accent) !important;
+  border-color: var(--co-accent) !important;
+}
+[data-theme="dark"] .dataTables_paginate .paginate_button.active a,
+[data-theme="dark"] .dataTables_paginate .paginate_button.current a {
   background: var(--co-accent) !important;
   color: #fff !important;
   border-color: var(--co-accent) !important;
+}
+[data-theme="dark"] .dataTables_paginate .paginate_button.disabled a {
+  color: #555 !important;
+  background: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+  cursor: default !important;
+}
+[data-theme="dark"] .dataTables_paginate .pagination {
+  background: transparent !important;
+}
+
+/* Table action buttons — hide until rows are selected */
+.copo-table-cbuttons .copo-dt[data-btntype="single"],
+.copo-table-cbuttons .copo-dt[data-btntype="multi"] {
+  display: none !important;
+}
+.copo-table-cbuttons.has-selection .copo-dt[data-btntype="single"],
+.copo-table-cbuttons.has-selection .copo-dt[data-btntype="multi"] {
+  display: inline-flex !important;
+}
+
+/* Table action buttons and button row */
+[data-theme="dark"] .button-rw {
+  background: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .dtables-dbuttons {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .dtables-dbuttons:hover {
+  background: #2a2e36 !important;
+  color: var(--co-accent) !important;
+  border-color: var(--co-accent) !important;
+}
+
+/* ── Sidebar toggle button (global, all 2-col pages) ── */
+#toggleSidebarInfoBtn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1050;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+  background: #fff;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+#toggleSidebarInfoBtn i {
+  margin-right: 3px;
+}
+.toggle-sidebar-arrow {
+  margin-left: 4px;
+  margin-right: 0 !important;
+  font-size: 0.75em;
+}
+#toggleSidebarInfoBtn:hover {
+  background-color: #f0f0f0;
+  border-color: #999;
+}
+#toggleSidebarInfoBtn.active {
+  background-color: #e8f4f8;
+  border-color: #4a6c7a;
+  color: #4a6c7a;
+}
+[data-theme="dark"] #toggleSidebarInfoBtn {
+  background: var(--co-surface);
+  border-color: var(--co-border);
+  color: var(--co-text);
+}
+[data-theme="dark"] #toggleSidebarInfoBtn:hover {
+  background: #2a2e36;
+  border-color: var(--co-accent);
+}
+[data-theme="dark"] #toggleSidebarInfoBtn.active {
+  background: #1a2a33;
+  border-color: var(--co-accent);
+  color: var(--co-accent);
 }
 
 /* Inputs, selects, textareas */
@@ -1407,7 +1501,7 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
   border-color: var(--co-border) !important;
   box-shadow: none !important;
 }
-[data-theme="dark"] .ui.button {
+[data-theme="dark"] .ui.button:not(.big):not(.primary):not(.teal):not(.pink):not(.green):not(.yellow):not(.orange):not(.red):not(.blue):not(.violet):not(.olive):not(.brown):not(.purple):not(.grey) {
   background: var(--co-surface) !important;
   color: var(--co-text) !important;
   border-color: var(--co-border) !important;
@@ -1643,4 +1737,78 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
   border-radius: 4px !important;
   padding: 4px 8px !important;
   margin: 0 !important;
+}
+
+/* ══════════════════════════════════════════
+   SIDEBAR ALERTS — modern notification style
+   ══════════════════════════════════════════ */
+#page_alert_panel .alert {
+  border: none !important;
+  border-radius: 8px !important;
+  border-left: 4px solid !important;
+  padding: 12px 36px 12px 14px !important;
+  margin-bottom: 10px !important;
+  font-size: .82rem !important;
+  line-height: 1.5 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06) !important;
+  position: relative !important;
+}
+
+#page_alert_panel .alert .close {
+  position: absolute !important;
+  top: 8px !important;
+  right: 10px !important;
+  font-size: 1rem !important;
+  opacity: .4 !important;
+  text-shadow: none !important;
+  transition: opacity .15s !important;
+}
+#page_alert_panel .alert .close:hover {
+  opacity: .8 !important;
+}
+
+#page_alert_panel .alert-info {
+  background: #eef6fc !important;
+  border-left-color: #3b8dbd !important;
+  color: #1a4a6e !important;
+}
+#page_alert_panel .alert-success {
+  background: #edf7f0 !important;
+  border-left-color: #3ca85c !important;
+  color: #1a5c2e !important;
+}
+#page_alert_panel .alert-warning {
+  background: #fef8ed !important;
+  border-left-color: #d4a017 !important;
+  color: #6b5010 !important;
+}
+#page_alert_panel .alert-danger {
+  background: #fdf0f0 !important;
+  border-left-color: #c0392b !important;
+  color: #6e1a1a !important;
+}
+
+/* Dark mode overrides */
+[data-theme="dark"] #page_alert_panel .alert-info {
+  background: #172530 !important;
+  border-left-color: #5cb8e6 !important;
+  color: #a8d4ee !important;
+}
+[data-theme="dark"] #page_alert_panel .alert-success {
+  background: #172818 !important;
+  border-left-color: #4cc86c !important;
+  color: #a8e6b8 !important;
+}
+[data-theme="dark"] #page_alert_panel .alert-warning {
+  background: #282218 !important;
+  border-left-color: #f0c040 !important;
+  color: #e6d48a !important;
+}
+[data-theme="dark"] #page_alert_panel .alert-danger {
+  background: #281818 !important;
+  border-left-color: #e05555 !important;
+  color: #e6a8a8 !important;
+}
+[data-theme="dark"] #page_alert_panel .alert .close {
+  color: var(--co-text) !important;
 }
