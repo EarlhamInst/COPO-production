@@ -1006,8 +1006,12 @@ function setProfileGridHeading(grids) {
         const profileType = $panel.data('profile-type');
         if (!profileType) return; // No profile type so skip
 
-        const components = get_profile_components(profileType);
-        if (!components?.length) return; // No components so skip
+        // Shared profiles don't have a registered profile type definition,
+        // so skip the components check for them
+        if (!isShared) {
+          const components = get_profile_components(profileType);
+          if (!components?.length) return; // No components so skip
+        }
 
         let recordId = $panel.find('.row-title span').attr('id');
         let existingRecord = existingRecords
@@ -1020,7 +1024,7 @@ function setProfileGridHeading(grids) {
 
         if (isShared) {
           acronym = 'Shared With Me';
-          colour = '#7a9aa8';
+          colour = '#9e9e9e';
 
           legendData = {
             profileType: acronym,
@@ -1049,11 +1053,9 @@ function setProfileGridHeading(grids) {
         );
         const $titleSpan = $heading.find('.row-title span');
 
-        // Apply colour as a light tint background with left accent stripe
-        $heading.css({
-          'background': colour + '18',  // ~10% opacity tint
-          'box-shadow': 'inset 4px 0 0 ' + colour,
-        });
+        // Set the accent colour as a CSS custom property so dark-mode CSS
+        // can override the tinted background without fighting inline styles.
+        $heading[0].style.setProperty('--profile-accent', colour);
         $titleSpan.find('small').remove(); // Replace acronym
         $titleSpan.append(`<small> (${acronym.toUpperCase()}) </small>`);
 

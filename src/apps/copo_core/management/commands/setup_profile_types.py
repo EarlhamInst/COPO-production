@@ -626,7 +626,7 @@ class Command(BaseCommand):
 
         assembly = Component().create_component(
             name="assembly",
-            title="Assembly",
+            title="Assemblies",
             widget_icon="puzzle piece",
             widget_colour="violet",
             widget_icon_class="fa fa-layer-group",
@@ -634,7 +634,7 @@ class Command(BaseCommand):
             table_id="assembly_table",
             reverse_url="copo_assembly_submission:copo_assembly",
             subtitle="",
-            button_label="Assembly",
+            button_label="Assemblies",
         )
 
         seqannotation = Component().create_component(

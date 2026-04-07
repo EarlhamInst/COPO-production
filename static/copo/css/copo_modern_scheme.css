@@ -238,6 +238,37 @@ body {
 .copo-page-icons .icon.item .pcomponent-material-icon.teal   { color: var(--co-genomics) !important; }
 .copo-page-icons .icon.item .pcomponent-material-icon.red    { color: #c0392b !important; }
 
+/* Inline Material Symbol icons used in Getting Started sections — must match
+   the colours and glyphs of the real navbar component icons. */
+.material-symbols-outlined.inline-nav-icon {
+  font-size: 22px;
+  vertical-align: middle;
+  line-height: 1;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+.material-symbols-outlined.inline-nav-icon.blue   { color: var(--co-biodata); }
+.material-symbols-outlined.inline-nav-icon.olive  { color: #7a9a1e; }
+.material-symbols-outlined.inline-nav-icon.orange { color: var(--co-dtolenv); }
+.material-symbols-outlined.inline-nav-icon.green  { color: var(--co-dtol); }
+.material-symbols-outlined.inline-nav-icon.violet { color: var(--co-asg); }
+.material-symbols-outlined.inline-nav-icon.yellow { color: #b89a14; }
+.material-symbols-outlined.inline-nav-icon.pink   { color: var(--co-erga); }
+.material-symbols-outlined.inline-nav-icon.teal   { color: var(--co-genomics); }
+.material-symbols-outlined.inline-nav-icon.red    { color: #c0392b; }
+
+/* Dark-mode variants — brighter so they remain legible against the dark
+   surface. Var-based colours already shift via the dark :root block, but
+   the hardcoded ones (olive, yellow, red) need explicit overrides. */
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.blue   { color: #5cb8e6 !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.olive  { color: #b8d650 !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.orange { color: #f0a44a !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.green  { color: #5fd47e !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.violet { color: #9d80e8 !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.yellow { color: #e6c948 !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.pink   { color: #f06aac !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.teal   { color: #5fcebd !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.red    { color: #ff6b6b !important; }
+
 /* ══════════════════════════════════════════
    TITLE BAR BUTTONS — rectangular, muted
    (the circular +, lightbulb, teal list/accept buttons)
@@ -266,26 +297,78 @@ body {
   box-shadow: 0 1px 2px rgba(0,0,0,.1) !important;
 }
 
-/* Add (+) — muted blue */
-.big.circular.ui.icon.primary.button {
+/* Inline "Getting Started" mockup buttons — same look as the real title bar
+   buttons but at a smaller, inline-friendly scale so they fit within sentences. */
+.tiny.circular.ui.icon.button.no-click {
+  width: auto !important;
+  height: 24px !important;
+  padding: 0 10px !important;
+  line-height: 24px !important;
+  border-radius: 6px !important;
+  font-size: .75rem !important;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,.12) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 24px !important;
+  vertical-align: middle !important;
+  cursor: default !important;
+}
+.tiny.circular.ui.icon.button.no-click > i.icon {
+  font-size: .8rem !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+/* Colour overrides — apply to BOTH big (real) and tiny.no-click (mockup)
+   variants so they share a single muted palette. */
+.big.circular.ui.icon.primary.button,
+.tiny.circular.ui.icon.primary.button.no-click {
   background: #6b8cba !important;
   color: #fff !important;
 }
 .big.circular.ui.icon.primary.button:hover { background: #5a7aaa !important; }
 
 /* Tour (lightbulb) — muted amber */
-.big.circular.ui.icon.orange.button {
+.big.circular.ui.icon.orange.button,
+.tiny.circular.ui.icon.orange.button.no-click {
   background: #c49a4a !important;
   color: #fff !important;
 }
 .big.circular.ui.icon.orange.button:hover { background: #b38a3c !important; }
 
 /* Accept/list — muted teal */
-.big.circular.ui.icon.teal.button {
+.big.circular.ui.icon.teal.button,
+.tiny.circular.ui.icon.teal.button.no-click {
   background: #4a8c84 !important;
   color: #fff !important;
 }
 .big.circular.ui.icon.teal.button:hover { background: #3a7c74 !important; }
+
+/* Download blank manifest — muted brown */
+.big.circular.ui.icon.brown.button,
+.tiny.circular.ui.icon.brown.button.no-click {
+  background: #8c6239 !important;
+  color: #fff !important;
+}
+.big.circular.ui.icon.brown.button:hover { background: #7a5530 !important; }
+
+/* Download SOP — muted yellow/ochre */
+.big.circular.ui.icon.yellow.button,
+.tiny.circular.ui.icon.yellow.button.no-click {
+  background: #b89a14 !important;
+  color: #fff !important;
+}
+.big.circular.ui.icon.yellow.button:hover { background: #a08810 !important; }
+
+/* Default (no colour class) — neutral grey, matches the unstyled spreadsheet
+   upload button used by both the real navbar and the mockups. */
+.big.circular.ui.icon.button:not(.primary):not(.orange):not(.teal):not(.brown):not(.yellow):not(.red):not(.green):not(.blue):not(.violet):not(.olive):not(.pink),
+.tiny.circular.ui.icon.button.no-click:not(.primary):not(.orange):not(.teal):not(.brown):not(.yellow):not(.red):not(.green):not(.blue):not(.violet):not(.olive):not(.pink) {
+  background: #6b7280 !important;
+  color: #fff !important;
+}
 
 /* Icon inside title buttons */
 .big.circular.ui.icon.button > i.icon {
@@ -293,7 +376,8 @@ body {
   margin: 0 !important;
   line-height: 1 !important;
 }
-[data-theme="dark"] .big.circular.ui.icon.button > i.icon {
+[data-theme="dark"] .big.circular.ui.icon.button > i.icon,
+[data-theme="dark"] .tiny.circular.ui.icon.button.no-click > i.icon {
   color: #fff !important;
 }
 
@@ -354,19 +438,19 @@ body {
 }
 
 /* ─── Card headings: light tinted, left stripe via inset box-shadow ─── */
+/* --profile-accent is set as an inline CSS custom property by JS.        */
+/* Using a CSS variable (not inline background) means dark-mode rules     */
+/* can override it without needing !important wars.                       */
 .panel.panel-profile .panel-heading {
   border-bottom: none !important;
   padding: 12px 40px 12px 16px !important;
   position: relative !important;
   overflow: visible !important;
+  border-top-left-radius: calc(var(--co-radius) - 1px) !important;
+  border-top-right-radius: calc(var(--co-radius) - 1px) !important;
+  background: color-mix(in srgb, var(--profile-accent, transparent) 15%, #f4f6f9) !important;
+  box-shadow: inset 4px 0 0 var(--profile-accent, transparent) !important;
 }
-
-/* Default heading (no profile type — overridden by inline styles when a type is set) */
-.panel.panel-profile .panel-heading {
-  background: #f4f6f9;
-}
-
-/* Per-type heading colours are driven by the database via inline styles set in JS */
 
 /* Heading text — dark on light background */
 .panel.panel-profile .panel-heading .row-title span,
@@ -1109,9 +1193,11 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
   color: #fff !important;
 }
 
-/* Default card heading */
+/* Default card heading — lighten accent then tint over dark surface */
 [data-theme="dark"] .panel.panel-profile .panel-heading {
-  background: #22262e !important;
+  background: color-mix(in srgb,
+    color-mix(in srgb, var(--profile-accent, transparent) 90%, white)
+    70%, #22262e) !important;
 }
 
 /* Heading text */
@@ -1318,18 +1404,32 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
   font-size: 0.85rem;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   background: #fff;
   border: 1px solid #ccc;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1;
+  /* Kill bootstrap-theme.css .btn-default text-shadow which renders as a
+     ghost icon offset by 1px — only visible in dark mode against a dark
+     background, and most obvious on hover when the icon colour changes. */
+  text-shadow: none !important;
 }
 #toggleSidebarInfoBtn i {
-  margin-right: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  font-size: 0.95rem;
+  line-height: 1;
+  text-shadow: none !important;
 }
 .toggle-sidebar-arrow {
-  margin-left: 4px;
-  margin-right: 0 !important;
-  font-size: 0.75em;
+  font-size: 0.85rem !important;
 }
 #toggleSidebarInfoBtn:hover {
   background-color: #f0f0f0;
@@ -1344,6 +1444,15 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
   background: var(--co-surface);
   border-color: var(--co-border);
   color: var(--co-text);
+  -webkit-appearance: none;
+  appearance: none;
+  color-scheme: light !important;
+}
+#toggleSidebarInfoBtn:focus,
+#toggleSidebarInfoBtn:active,
+#toggleSidebarInfoBtn.focus {
+  outline: none !important;
+  outline-offset: 0 !important;
 }
 [data-theme="dark"] #toggleSidebarInfoBtn:hover {
   background: #2a2e36;
@@ -1376,6 +1485,26 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 }
 [data-theme="dark"] .select2-container--default .select2-results__option--highlighted {
   background: #22262e !important;
+}
+/* "Has data" indicator dot for select2 manifest/checklist dropdowns —
+   replaces the original red asterisk. Sized and aligned to read as a
+   status indicator rather than a glyph in the option text. */
+.has-data-indicator {
+  color: #d9534f;
+  font-size: 0.6em;
+  vertical-align: middle;
+  margin-right: 8px;
+  margin-left: 2px;
+  position: relative;
+  top: -1px;
+}
+[data-theme="dark"] .has-data-indicator {
+  color: #ff3b3b;
+  text-shadow:
+    0 0 3px rgba(255, 59, 59, 0.95),
+    0 0 6px rgba(255, 59, 59, 0.8),
+    0 0 10px rgba(255, 59, 59, 0.6),
+    0 0 16px rgba(255, 59, 59, 0.35);
 }
 
 /* Modals — Bootstrap & Bootstrap Dialog */
@@ -1535,7 +1664,7 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 [data-theme="dark"] #copo_sidebar {
   background: var(--co-surface) !important;
   color: var(--co-text) !important;
-  border-color: var(--co-border) !important;
+  border-left: 1px solid var(--co-border) !important;
 }
 
 /* Tabs */
@@ -1560,11 +1689,13 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
   color: var(--co-text) !important;
 }
 
-/* Icons — ensure visibility */
-[data-theme="dark"] i.fa,
-[data-theme="dark"] i.fas,
-[data-theme="dark"] i.far,
-[data-theme="dark"] .material-symbols-outlined {
+/* Icons — ensure visibility (inherit parent text colour by default).
+   Excludes `.inline-nav-icon` so explicitly-coloured nav icons keep their
+   palette colour rather than turning into the surrounding text colour. */
+[data-theme="dark"] i.fa:not(.inline-nav-icon),
+[data-theme="dark"] i.fas:not(.inline-nav-icon),
+[data-theme="dark"] i.far:not(.inline-nav-icon),
+[data-theme="dark"] .material-symbols-outlined:not(.inline-nav-icon) {
   color: inherit !important;
 }
 

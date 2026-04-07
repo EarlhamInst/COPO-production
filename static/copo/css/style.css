@@ -1537,8 +1537,8 @@ th {
 
 @media (min-width: 768px) {
   .copo-sidebar {
-    background-color: rgba(229, 239, 255, 0.2);
-    border: none;
+    background-color: rgba(229, 239, 255, 0.3);
+    border-left: 1px solid rgba(0, 0, 0, 0.12);
     bottom: 0;
     display: block;
     right: 0;
@@ -1554,8 +1554,8 @@ th {
 
 @media (min-width: 101px) {
   .copo-sidebar {
-    background-color: rgba(229, 239, 255, 0.2);
-    border: none;
+    background-color: rgba(229, 239, 255, 0.3);
+    border-left: 1px solid rgba(0, 0, 0, 0.12);
     bottom: 0;
     display: block;
     right: 0;

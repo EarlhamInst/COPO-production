@@ -4081,20 +4081,20 @@ function initialiseComponentDropdownMenu() {
     templateSelection: function (data) {
       if (!data || !data.id || !data.text) return data.text || '';
       // Check if the selected option begins with an asterisk (*)
-      // If yes, render a red asterisk and display the rest of the text
+      // If yes, replace the asterisk with a "has-data" indicator icon
       if (/^\*\s*/.test(data.text)) {
         const text = data.text.replace(/^\*\s*/, '');
-        return `<span class="asterisk" aria-hidden="true">*</span>${text}`;
+        return `<i class="fa fa-circle has-data-indicator" aria-hidden="true" title="Has data"></i>${text}`;
       }
       return data.text;
     },
     templateResult: function (data) {
       if (!data || !data.id || !data.text) return data.text || ''; // placeholder or empty
       // Check if any of the dropdown options begin with an asterisk (*)
-      // If yes, render a red asterisk and display the rest of the text
+      // If yes, replace the asterisk with a "has-data" indicator icon
       if (/^\*\s*/.test(data.text)) {
         const text = data.text.replace(/^\*\s*/, '');
-        return `<span class="asterisk" aria-hidden="true">*</span>${text}`;
+        return `<i class="fa fa-circle has-data-indicator" aria-hidden="true" title="Has data"></i>${text}`;
       }
       return data.text;
     },
