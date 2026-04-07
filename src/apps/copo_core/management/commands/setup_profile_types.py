@@ -676,7 +676,7 @@ class Command(BaseCommand):
             subtitle="#component_subtitle",
             schema_name="COPO_IMAGE_REMBI",
             base_component="singlecell",
-            button_label="Images",
+            button_label="General",
         )
 
         images_stx_fish = Component().create_component(
