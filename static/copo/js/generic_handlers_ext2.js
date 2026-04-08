@@ -10,7 +10,9 @@ const alertClassMap = {
   error: 'alert-danger',
 };
 
-// Toggle visibility of the sidebar info tab based on content
+// Show/hide the sidebar info tab based on whether there's alert content.
+// The sidebar itself is always open by default — users can manually collapse
+// it via #toggleSidebarInfoBtn.
 function toggleSidebarInfoVisibility() {
   const $infoPanel = $('#page_alert_panel');
   const $infoTab = $('.copo-sidebar-info');
@@ -19,19 +21,17 @@ function toggleSidebarInfoVisibility() {
   const hasContent = $infoPanel.children().length > 0;
 
   if (hasContent) {
-    // Show the tab and its navigation item
     $infoTab.show();
     $('.copo-sidebar-tabs li.copo-sidebar-info').show();
-    // Show sidebar and collapse main content
-    $sidebar.show();
-    $mainContent.removeClass('sidebar-collapsed');
   } else {
-    // Hide the tab and its navigation item
     $infoTab.hide();
     $('.copo-sidebar-tabs li.copo-sidebar-info').hide();
-    // Hide sidebar and expand main content
-    $sidebar.hide();
-    $mainContent.addClass('sidebar-collapsed');
+  }
+
+  // Ensure sidebar is open by default (unless the user has manually collapsed it)
+  if (!$sidebar.data('user-collapsed')) {
+    $sidebar.show();
+    $mainContent.removeClass('sidebar-collapsed');
   }
 
   // Update the toggle button arrow to reflect sidebar state
@@ -71,12 +71,12 @@ $(document).on('click', '#toggleSidebarInfoBtn', function () {
   const isVisible = $sidebar.is(':visible');
 
   if (isVisible) {
-    $sidebar.hide();
+    $sidebar.hide().data('user-collapsed', true);
     $mainContent.addClass('sidebar-collapsed');
     $btn.addClass('active');
     $arrow.removeClass('fa-chevron-right').addClass('fa-chevron-left');
   } else {
-    $sidebar.show();
+    $sidebar.show().data('user-collapsed', false);
     $mainContent.removeClass('sidebar-collapsed');
     $btn.removeClass('active');
     $arrow.removeClass('fa-chevron-left').addClass('fa-chevron-right');
