@@ -283,7 +283,7 @@ body {
   border: none !important;
   box-shadow: 0 1px 3px rgba(0,0,0,.12) !important;
   transition: transform .15s ease, box-shadow .15s ease, background .15s ease !important;
-  display: inline-flex !important;
+  display: inline-flex;
   align-items: center !important;
   justify-content: center !important;
   min-width: 34px !important;

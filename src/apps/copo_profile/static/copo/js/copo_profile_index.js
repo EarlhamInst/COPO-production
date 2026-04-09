@@ -137,7 +137,7 @@ $(document).on('document_ready', function () {
   if (groups.some((g) => g.includes('sample_managers'))) {
     const pageIcons = $('.copo-page-icons');
     if (!pageIcons.is(':visible')) pageIcons.show();
-    $('#accept_reject_shortcut').show();
+    $('#accept_reject_shortcut').css('display', 'inline-flex');
   }
 
   // Display empty profile message for potential first time users
