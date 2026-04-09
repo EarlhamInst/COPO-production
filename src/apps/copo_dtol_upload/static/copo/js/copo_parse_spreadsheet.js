@@ -419,6 +419,8 @@ $(document).ready(function () {
       if ($('#profile_id').val() == d.data.profile_id) {
         if (d.action == 'hide_sub_spinner') {
           $('#sub_spinner').fadeOut(fadeSpeed);
+          $('#spinner').fadeOut(fadeSpeed);
+          if (typeof submissionInProgress !== 'undefined') submissionInProgress = false;
         }
         hideModalInstructionText(d.message, d.action); // Dismiss helper content if applicable
         if (d.action === 'close') {
@@ -450,9 +452,8 @@ $(document).ready(function () {
               maxDots: d.max_ellipsis_length,
               word: d.message,
             });
+            $('#spinner').fadeOut();
           }
-
-          $('#spinner').fadeOut();
         } else if (d.action === 'csv_updates') {
           // show something on the info div
           // check info div is visible
@@ -552,10 +553,10 @@ $(document).ready(function () {
                 (info_type = 'errors')
               );
             }
+            $('#spinner').fadeOut();
           }
 
           $('#export_errors_button').fadeIn();
-          $('#spinner').fadeOut();
         } else if (d.action === 'success') {
           // check info div is visible
           if (!$('#' + d.html_id).is(':visible')) {

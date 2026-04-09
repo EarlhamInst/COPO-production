@@ -92,17 +92,15 @@
     </h3>
   </div>
   <div class="col-lg-3 col-sm-3 col-md-3">
-    <h4 class="h4">Status</h4>
-    <div
-      id="spinner"
-      class="pull-right ui tiny active inline loader status-spinner"
-      style="display:none"
-    ></div>
-    <div class="status_log status_log_collapse" style="display:none">
-      <button id="clearStatusLogBtn" type="button" aria-label="Clear" disabled>
-        &times;
+    <h4 class="h4">
+      Status
+      <div id="spinner" class="ui tiny active inline loader status-spinner" style="display:none"></div>
+    </h4>
+    <div class="status_log status_log_collapse">
+      <button id="clearStatusLogBtn" type="button" aria-label="Clear status log" title="Clear status log" disabled>
+        <i class="fa-solid fa-trash-can"></i>
       </button>
-      <p class="status_content">Idle</p>
+      <p class="status_content status_placeholder">Nothing to show</p>
     </div>
   </div>
 </div>

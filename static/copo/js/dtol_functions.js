@@ -667,18 +667,15 @@ $(document).on('document_ready', function () {
   });
 
   $(document).on('click', '#clearStatusLogBtn', function () {
-    let status_content = $('.status_content');
-
-    status_content.not(':first').remove();
+    $('.status_content:not(.status_placeholder)').remove();
+    $('.status_placeholder').show();
     $('#sample_panel').removeClass('status_log_overlayed');
 
-    toggle_clear_status_log_btn_interaction();
+    $('.status_log')
+      .removeClass('status_log_extend')
+      .addClass('status_log_collapse');
 
-    if (status_content.hasClass('status_log_extend')) {
-      status_content
-        .removeClass('status_log_extend')
-        .addClass('status_log_collapse');
-    }
+    toggle_clear_status_log_btn_interaction();
   });
 
   let dtol_sample_info_element = document.querySelector('#dtol_sample_info');
@@ -751,6 +748,7 @@ $(document).on('document_ready', function () {
 });
 
 var fadeSpeed = 'fast';
+var submissionInProgress = false;
 var row;
 
 function row_select(ev) {
@@ -791,7 +789,7 @@ function row_select(ev) {
       $('#profile_id').val(profile_id);
     }
 
-    $('#spinner').show();
+    if (!submissionInProgress) $('#spinner').show();
 
     sample_table.ajax.reload(function () {
       let profile_samples_table_wrapper = $('#profile_samples_wrapper');
@@ -842,7 +840,7 @@ function row_select(ev) {
       }
     });
 
-    $('#spinner').fadeOut('fast');
+    if (!submissionInProgress) $('#spinner').fadeOut('fast');
   }
   /*
     $.ajax({
@@ -1296,7 +1294,6 @@ function observeElement(element, property, callback, delay = 0) {
 
 function generate_status_log(isErrorStatus, newStatus) {
   let status_log = $('.status_log');
-  let spinner = $('#spinner');
 
   let status_content = $('<p/>', {
     class: 'status_content',
@@ -1311,15 +1308,16 @@ function generate_status_log(isErrorStatus, newStatus) {
   // Show the status log if it is hidden
   if (!status_log.is(':visible')) status_log.show();
 
-  // Append the status content to the 'status_log' div with the
-  // latest status at the bottom
-  status_log.append(status_content);
+  // Show spinner while processing
+  submissionInProgress = true;
+  if (!$('#spinner').is(':visible')) $('#spinner').fadeIn(fadeSpeed);
 
-  // Hide spinner if it is shown
-  if (spinner.is(':visible').length) spinner.fadeOut(fadeSpeed);
+  // Hide placeholder text
+  $('.status_placeholder').hide();
 
-  // Set the scrollbar to the bottom of the status log
-  scrollToBottomOfStatusLog();
+  // Prepend the status content to the 'status_log' div with the
+  // latest status at the top
+  $('#clearStatusLogBtn').after(status_content);
 }
 
 function toggle_clear_status_log_btn_interaction() {
@@ -1327,7 +1325,7 @@ function toggle_clear_status_log_btn_interaction() {
   // only one status in the status log
   let clear_status_log_btn = $('#clearStatusLogBtn');
 
-  if ($('.status_content').length === 1) {
+  if ($('.status_content:not(.status_placeholder)').length <= 1) {
     clear_status_log_btn.prop('disabled', true).prop('title', '');
   } else {
     clear_status_log_btn

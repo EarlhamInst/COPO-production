@@ -140,31 +140,22 @@ td {
 /*  clear status log button CSS styles */
 #clearStatusLogBtn {
   cursor: pointer;
-  border-radius: 50%;
-  /* top right bottom left */
-  padding: 0 0 0.5em 0;
-  width: 25px;
-  height: 25px;
-  border: 2px solid #000;
   position: absolute;
-  float: right;
-  font-size: 1.5rem;
-  font-weight: 700;
+  top: 4px;
+  right: 4px;
+  z-index: 5;
+  padding: 2px 4px;
+  border: none;
+  background: none;
+  font-size: 0.85rem;
   line-height: 1;
   color: #000;
-  text-shadow: 0 1px 0 #fff;
   opacity: 0.5;
-  top: 0;
-  right: 0;
-  margin: 5px 12px 5px 5px;
-  /* top right bottom left */
 }
 
 #clearStatusLogBtn:hover {
-  border: 2px solid #000;
-  background-color: #b94a48;
-  color: #ffffff;
   opacity: 1;
+  color: #b94a48;
 }
 
 #clearStatusLogBtn[disabled],
@@ -172,19 +163,18 @@ td {
 #clearStatusLogBtn[disabled]:focus,
 #clearStatusLogBtn[disabled]:active {
   cursor: default;
-  border: 2px solid #000;
-  background-color: #cce2ff;
-  color: #000;
-  opacity: 0.5;
+  opacity: 0.3;
+  color: #999;
 }
 
 /* Status log CSS styles*/
 .status_log {
-  /* Always show scrollbar */
-  overflow-y: scroll;
+  overflow-y: auto;
+  overflow-x: hidden;
   border: 1px solid rgb(184, 190, 193);
-  padding-top: 10px;
+  padding: 10px 28px 5px 10px;
   width: 370px;
+  min-height: 55px;
   position: relative;
   z-index: 0;
   box-sizing: border-box;
@@ -200,37 +190,15 @@ td {
   max-height: 100px;
   position: absolute;
   z-index: 0;
+  transition: max-height 0.3s ease;
 }
 
 .status_log_extend {
   position: absolute;
   z-index: 10;
-  transform: scaleY(2);
-  transform-origin: right top;
-  transition: transform 0.5s, z-index 0.5s;
   max-height: 400px;
-  height: fit-content;
   background-color: #fff;
-}
-
-.status_log_extend button,
-.status_log_extend p {
-  transform: scaleY(0.5);
-  transition: transform 0.5s, z-index 0.5s;
-  transform-origin: right top;
-}
-
-/* Apply CSS to the first status content in the status log 
-i.e. the second child element in the status log */
-.status_log_extend p:nth-child(2) {
-  margin: -2px 0 5px 0;
-}
-
-/* Apply CSS to all child p elements except 
-the first one in the status log 
-i.e. the second child element in the status log */
-.status_log_extend p:nth-child(2) ~ p {
-  margin: -10px 0 0 0;
+  transition: max-height 0.3s ease;
 }
 
 .status_content {
@@ -242,6 +210,12 @@ i.e. the second child element in the status log */
   width: fit-content;
   /* Fading effect */
   animation: fadeIn 0.5s;
+}
+
+.status_placeholder {
+  color: #999;
+  font-style: italic;
+  animation: none;
 }
 
 /* The fading in effect */
@@ -266,10 +240,6 @@ i.e. the second child element in the status log */
   padding-top: 20px;
 }
 
-/* Remove trailing whitespaces after scaling the status log */
-.status_log_extend .status_content_error:last-child {
-  margin-bottom: -50px;
-}
 
 .hr_margin_top {
   margin-top: 80px;
@@ -281,7 +251,7 @@ i.e. the second child element in the status log */
 
 /* spinner CSS */
 .status-spinner {
-  position: absolute !important;
-  margin: 45px 47px 0px 70px !important;
   display: none;
+  margin-left: 8px !important;
+  vertical-align: middle !important;
 }
