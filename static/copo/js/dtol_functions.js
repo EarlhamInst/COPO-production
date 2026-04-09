@@ -1308,6 +1308,9 @@ function generate_status_log(isErrorStatus, newStatus) {
 
   status_content.html(newStatus);
 
+  // Show the status log if it is hidden
+  if (!status_log.is(':visible')) status_log.show();
+
   // Append the status content to the 'status_log' div with the
   // latest status at the bottom
   status_log.append(status_content);
