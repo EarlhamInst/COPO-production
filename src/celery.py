@@ -43,7 +43,7 @@ app.conf.beat_schedule = {
     },
     'process_dtol_sample_submission': {
         'task': 'src.apps.copo_dtol_submission.tasks.process_dtol_sample_submission',
-        'schedule': timedelta(seconds=10),
+        'schedule': timedelta(seconds=1),
     },
     'process_stale_dtol_sample_submission': {
         'task': 'src.apps.copo_dtol_submission.tasks.process_stale_dtol_sample_submission',
