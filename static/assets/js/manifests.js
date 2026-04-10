@@ -825,7 +825,7 @@ function validateCommonValue(e, data) {
         // now that the common value is neither undefined, null or empty i.e. it has a value
         $.ajax({
           type: 'GET',
-          url: '/manifests/validate_common_value/',
+          url: '/manifests/validate_common_value',
           dataType: 'json',
           data: {
             commonField: commonField,
