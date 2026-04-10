@@ -8,6 +8,10 @@ Update
 tolid: xxxxx
 taxonid: xxxx
 Species name: xxxx
+Specimen id: xxxxx
+GENUS: xxxx
+ORDER_OR_GROUP: xxxx
+FAMILY: xxxx
 ---
 biospecimen
 SAMEAxxxx
@@ -16,5 +20,10 @@ biosamples
 SAMEAxxxx
 
 Update
+tolid: xxxxx
 taxonid: xxxx
 Species name: xxxx
+Specimen id: xxxxx
+GENUS: xxxx
+ORDER_OR_GROUP: xxxx
+FAMILY: xxxx
