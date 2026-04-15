@@ -27,13 +27,49 @@ var dialog = new BootstrapDialog({
 //uid = uid.split('/');
 //uid = uid[uid.length - 2];
 
+// WebSocket connection for receiving real-time S3 upload progress from the server.
+var s3socket;
+var uploadComplete = false;
+
+function initS3Socket() {
+  var profile_id = $('#profile_id').val();
+  if (!profile_id) return;
+  var wsprotocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+  var wsurl = wsprotocol + window.location.host + '/ws/s3_status/' + profile_id;
+  s3socket = new WebSocket(wsurl);
+  s3socket.onclose = function (e) {
+    console.log('s3socket closing ', e);
+  };
+  s3socket.onopen = function (e) {
+    console.log('s3socket opened ', e);
+  };
+  s3socket.onmessage = function (e) {
+    var d = JSON.parse(e.data);
+    if (d.action === 'upload_progress') {
+      var info = JSON.parse(d.message);
+      var percent = $('.percent');
+      var pct = info.total_chunks > 0
+        ? Math.round((info.chunk / info.total_chunks) * 100) : 0;
+      var label = '';
+      if (info.total_files > 1) {
+        label = 'Staging file ' + info.file_num + '/' + info.total_files +
+                ': ' + pct + '%';
+      } else {
+        label = 'Staging: ' + pct + '%';
+      }
+      percent.html('<b>' + label + '</b>');
+      if (info.chunk >= info.total_chunks && info.file_num >= info.total_files) {
+        uploadComplete = true;
+      }
+    }
+  };
+}
+
 $(document).ready(function () {
-  //uid = document.location.href
-  //uid = uid.split("/")
-  //uid = uid[uid.length - 2]
+  initS3Socket();
+
   //******************************Event Handlers Block*************************//
   var component = 'files';
-  //var copoVisualsURL = "/copo/copo_visuals/";
   var csrftoken = $.cookie('csrftoken');
 
   //get component metadata
@@ -249,6 +285,7 @@ function upload_files(files) {
   }
 
   $('#upload_local_files_button').fadeOut();
+  uploadComplete = false;
   var percent = $('.percent');
   $('#ss_upload_spinner').fadeIn('fast');
   var profile_id = $('#profile_id').val();
@@ -267,15 +304,16 @@ function upload_files(files) {
       headers: { 'X-CSRFToken': csrftoken },
 
       // Override the XHR factory to wire up upload progress reporting.
+      // Phase 1: browser-to-server transfer tracked via XHR progress.
+      // Phase 2: server-to-S3 transfer tracked via WebSocket (s3socket).
       xhr: function () {
         var xhr = jQuery.ajaxSettings.xhr();
         xhr.upload.onprogress = function (evt) {
           var percentVal = Math.round((evt.loaded / evt.total) * 100);
-          percent.html('<b>' + percentVal + '%</b>');
+          percent.html('<b>Uploading to server: ' + percentVal + '%</b>');
         };
         xhr.upload.onload = function () {
-          percent.html('');
-          console.log('DONE!');
+          percent.html('<b>Staging...</b>');
         };
         return xhr;
       },
@@ -297,18 +335,30 @@ function upload_files(files) {
       });
     })
     .done(function (data) {
-      $('#upload_local_files_button').fadeIn();
-      $('#ss_upload_spinner').fadeOut('fast');
-      $('#uploadModal').modal('hide');
-      result_dict = {};
-      result_dict['status'] = 'success';
-      result_dict['message'] = 'File(s) have been uploaded!';
-      do_crud_action_feedback(result_dict);
-      globalDataBuffer = data;
-      // If the response includes updated table data, trigger a full table redraw.
-      if (data.hasOwnProperty('table_data')) {
-        var event = jQuery.Event('refreshtable');
-        $('body').trigger(event);
-      }
+      // Wait briefly for the final WebSocket progress messages to arrive
+      // before hiding the spinner, so the user sees 100% rather than a jump.
+      var attempts = 0;
+      var finishUpload = function () {
+        if (!uploadComplete && attempts < 20) {
+          attempts++;
+          setTimeout(finishUpload, 100);
+          return;
+        }
+        uploadComplete = false;
+        $('#upload_local_files_button').fadeIn();
+        $('#ss_upload_spinner').fadeOut('fast');
+        $('#uploadModal').modal('hide');
+        result_dict = {};
+        result_dict['status'] = 'success';
+        result_dict['message'] = 'File(s) have been uploaded!';
+        do_crud_action_feedback(result_dict);
+        globalDataBuffer = data;
+        // If the response includes updated table data, trigger a full table redraw.
+        if (data.hasOwnProperty('table_data')) {
+          var event = jQuery.Event('refreshtable');
+          $('body').trigger(event);
+        }
+      };
+      finishUpload();
     });
 }

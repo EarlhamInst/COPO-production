@@ -12,7 +12,7 @@ from django.conf import settings
 from bson import regex
 import os
 import common.ena_utils.FileTransferUtils as tx
-from common.utils.helpers import get_env, get_current_user
+from common.utils.helpers import get_env, get_current_user, notify_submission_status
 from . import zenodo_submission
 from . import ena_submission
 from common.s3.s3Connection import S3Connection as s3
@@ -563,7 +563,27 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena"):
     else:
         #update the status of the singlecell record
         Singlecell().update_component_status(singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository=repository, status_column_value={"status":"processing"})
-        return dict(status='success', message="Submission has been scheduled.")
+
+        # Immediately notify the frontend that the submission is queued, so
+        # the user sees feedback without waiting for the next Celery beat tick.
+        notify_submission_status(
+            data={"profile_id": profile_id},
+            msg="Queued for submission...",
+            action="info",
+            html_id="submission_info",
+        )
+
+        # Dispatch the submission task directly instead of waiting up to 10s
+        # for celery beat. The periodic schedule still acts as a safety net.
+        if repository == "ena":
+            from src.apps.copo_single_cell_submission.tasks import process_ena_submission
+            process_ena_submission.delay()
+        elif repository == "zenodo":
+            from src.apps.copo_single_cell_submission.tasks import process_zenodo_submission
+            process_zenodo_submission.delay()
+
+        submission_id = str(submissions[0]["_id"])
+        return dict(status='success', message=f"Submission has been scheduled. Submission ID: {submission_id}", submission_id=submission_id)
 
 
 def get_accession(profile_id, study_id, schema_name="", repository="", is_published=False):

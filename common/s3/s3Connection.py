@@ -39,7 +39,7 @@ class S3Connection():
                                       aws_secret_access_key=self.ecs_secret_key)        
         # self.transport_params = {'client': self.s3_client}
         Logger().debug(
-            msg=f"endpoint: {self.ecs_endpoint}, access key: {self.ecs_access_key_id}, secret: {self.ecs_secret_key}")
+            msg=f"endpoint: {self.ecs_endpoint}")
 
     def list_buckets(self):
         response = self.s3_client.list_buckets()
@@ -90,17 +90,25 @@ class S3Connection():
 
 
 
-    def get_object(self, bucket, key, loc):
+    def get_object(self, bucket, key, loc, callback=None):
         Logger().log("transfering file to: " + loc)
         KB = 1024
         MB = KB * KB
         config = TransferConfig(multipart_threshold=100 * MB, multipart_chunksize=64 * MB, io_chunksize=1 * MB,
                                 max_concurrency=3, use_threads=True )
-        #self.s3_client.download_file(bucket, key, loc, Config=config)
         with open(loc, 'wb') as data:
-            self.s3_client.download_fileobj(Bucket=bucket, Key=key, Fileobj=data, Config=config)
+            self.s3_client.download_fileobj(
+                Bucket=bucket, Key=key, Fileobj=data, Config=config, Callback=callback
+            )
 
         Logger().log("transfer complete: " + loc)
+
+    def head_object_size(self, bucket, key):
+        try:
+            resp = self.s3_client.head_object(Bucket=bucket, Key=key)
+            return int(resp.get("ContentLength", 0))
+        except Exception:
+            return 0
 
     def get_presigned_url(self, bucket, key, expires_seconds=24*60*60):
         '''
