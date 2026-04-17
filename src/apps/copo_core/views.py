@@ -92,10 +92,12 @@ def web_page_access_checker(func):
 
         profile = Profile().get_record(profile_id)
 
-        # Show web page if profile does not exist but 'profile_id' exists from session <== we should return 403, i.e. invalid profile_id
-
         if not profile or type(profile) == InvalidId:
-           return handler403(request)
+            if not kwargs.get('profile_id', ''):
+                # Stale session profile_id — clear it and proceed
+                request.session.pop("profile_id", None)
+                return func(request, *args, **kwargs)
+            return handler403(request)
         else:
             user_id = Profile().get_record(ObjectId(profile_id))['user_id']
 

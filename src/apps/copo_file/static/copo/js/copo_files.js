@@ -285,6 +285,24 @@ function upload_files(files) {
   }
 
   $('#upload_local_files_button').fadeOut();
+  uploadComplete = false;
+  var percent = $('.percent');
+  $('#ss_upload_spinner').fadeIn('fast');
+  var profile_id = $('#profile_id').val();
+
+  jQuery
+    .ajax({
+      url: '/copo/copo_files/upload_ecs_files/' + profile_id,
+      data: form,
+      files: files,
+      cache: false,
+      dataType: 'json',
+      contentType: false,
+      processData: false,
+      method: 'POST',
+      type: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+
       // Phase 1: browser-to-server transfer tracked via XHR progress.
       // Phase 2: server-to-S3 transfer tracked via WebSocket (s3socket).
       xhr: function () {

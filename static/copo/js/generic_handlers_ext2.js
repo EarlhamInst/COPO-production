@@ -839,21 +839,6 @@ function do_render_server_side_table(componentMeta) {
     .find('.dataTables_scroll')
     .attr('data-tour-id', 'component_table component_table_with_accessions');
 
-  // Add component data status legend
-  const $dataStatusLegend = $(
-    '.component-legend[data-template!="true"][data-legend="data_status"]'
-  );
-
-  if ($dataStatusLegend.length) {
-    const $legendTemplate = $(
-      '.component-legend[data-template="true"][data-legend="data_status"]'
-    ).clone();
-    $legendTemplate.removeAttr('data-template');
-    $legendTemplate.attr('data-tour-id', 'component_legend');
-    $dataStatusLegend.replaceWith($legendTemplate);
-  } else {
-    console.warn(`No data status legend found for ${componentMeta.component}`);
-  }
 
   //handle event for table details
   $('#' + tableID + ' tbody')
@@ -1257,21 +1242,6 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
     .find('.dataTables_scroll')
     .attr('data-tour-id', 'component_table component_table_with_accessions');
 
-  // Add component data status legend
-  const $dataStatusLegend = $(
-    '.component-legend[data-template!="true"][data-legend="data_status"]'
-  );
-
-  if ($dataStatusLegend.length) {
-    const $legendTemplate = $(
-      '.component-legend[data-template="true"][data-legend="data_status"]'
-    ).clone();
-    $legendTemplate.removeAttr('data-template');
-    $legendTemplate.attr('data-tour-id', 'component_legend');
-    $dataStatusLegend.replaceWith($legendTemplate);
-  } else {
-    console.warn(`No data status legend found for ${componentMeta.component}`);
-  }
 
   // Handle event for table details
   $('#' + tableID + ' tbody')

@@ -208,6 +208,8 @@ data-backdrop="static" data-keyboard="false">
 </div>
 
  
+{% include 'copo/data_status_legend.html' %}
+
 <div class="row">
   <div
     id="component_table_loader"
@@ -247,9 +249,6 @@ data-backdrop="static" data-keyboard="false">
 {% block help_section %} {% endblock %}
 
 {% block sidebar_custom_section %}
-<!-- Single-cell legend -->
-<div class="component-legend" data-tour-id="component_legend" 
-  data-legend="data_status"></div>
 {% endblock sidebar_custom_section %}
 
 {% block component_info %}

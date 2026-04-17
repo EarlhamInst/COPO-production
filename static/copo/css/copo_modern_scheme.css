@@ -733,6 +733,8 @@ a.pcomponent-button-template .pcomponent-button {
 .component-legend-group-item {
   display: inline-flex !important;
   align-items: center !important;
+  justify-content: center !important;
+  flex: 1 1 0 !important;
   gap: 6px !important;
   background: var(--co-bg);
   border: 1px solid var(--co-border);
