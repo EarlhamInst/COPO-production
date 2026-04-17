@@ -218,7 +218,7 @@ function startQuickTour() {
 // Start tour based on a component
 function startComponentTour(componentName, processName = 'overview') {
   if (activeTour) {
-    console.warn('Tour already running. Skipping.');
+    // console.warn('Tour already running. Skipping.');
     return activeTour;
   }
 
@@ -244,7 +244,7 @@ function startComponentTour(componentName, processName = 'overview') {
   const processSteps = tourStages?.[processName] || tourOrder;
 
   if (!processSteps || !processSteps.length) {
-    console.warn(`No tour steps found for ${componentName} (${processName})`);
+    // console.warn(`No tour steps found for ${componentName} (${processName})`);
     return;
   }
 
@@ -263,7 +263,7 @@ function startComponentTour(componentName, processName = 'overview') {
     const $element = $(`[data-tour-id~="${id}"]:visible`);
     const element = $element.get(0);
     if (!message || !element) {
-      console.warn(`No message or element found for step ${id}`);
+      // console.warn(`No message or element found for step ${id}`);
       return;
     }
 
@@ -314,11 +314,12 @@ async function checkQueuedTour(componentName) {
         // Mark the stage as completed so it wouldn't rerun
         tour.on('complete', () => markTourRun(componentName, data.queuedStage));
         tour.on('cancel', () => markTourRun(componentName, data.queuedStage));
-      } else {
-        console.warn(
-          `No valid tour steps found for ${componentName} (${stage}). Skipping event bindings.`
-        );
       }
+      // else {
+      //   console.warn(
+      //     `No valid tour steps found for ${componentName} (${stage}). Skipping event bindings.`
+      //   );
+      // }
     }
   } catch (error) {
     console.error('Error checking queued tour:', error);
@@ -370,7 +371,7 @@ async function resetAllTours() {
         'X-CSRFToken': csrfToken,
       },
     });
-    console.log('All tours cleared (both local and server ones).');
+    // console.log('All tours cleared (both local and server ones).');
   } catch (error) {
     console.warn('Error resetting tour data: ', error);
   }
@@ -384,26 +385,27 @@ async function runTour(componentName, stage) {
 
   const alreadyRun = await hasTourRun(componentName, stage);
   if (alreadyRun) {
-    console.log(
-      `Tour for ${componentName}:${stage} has already been completed.`
-    );
+    // console.log(
+    //   `Tour for ${componentName}:${stage} has already been completed.`
+    // );
     return;
   }
 
   localTourCache.add(cacheKey);
 
-  console.log(`Starting ${componentName}:${stage} tour`);
+  // console.log(`Starting ${componentName}:${stage} tour`);
   const tour = startComponentTour(componentName, stage);
 
   if (tour && tour.steps && tour.steps.length > 0) {
     // Mark the stage as completed
     tour.on('complete', () => markTourRun(componentName, stage));
     tour.on('cancel', () => markTourRun(componentName, stage));
-  } else {
-    console.warn(
-      `No valid tour steps found for ${componentName} (${stage}). Skipping event bindings.`
-    );
   }
+  // else {
+  //   console.warn(
+  //     `No valid tour steps found for ${componentName} (${stage}). Skipping event bindings.`
+  //   );
+  // }
 }
 
 // Determine current stage based on counts
@@ -451,7 +453,7 @@ function hasSelectedRows(tableId, btnType) {
       return selectedCount > 0;
 
     default:
-      console.warn(`Unknown btntype: ${btnType} for table ${tableId}`);
+      // console.warn(`Unknown btntype: ${btnType} for table ${tableId}`);
       return false;
   }
 }
@@ -517,11 +519,11 @@ async function watchComponentForTour(componentName) {
 
         if (modalVisible) {
           // If modal is open, wait until it's closed
-          console.log('Tour paused...waiting for startup modal to close.');
+          // console.log('Tour paused...waiting for startup modal to close.');
 
           // Wait for either Bootstrap or Semantic UI modal to close before resuming
           const resumeTour = () => {
-            console.log('Start up modal closed...resuming tour.');
+            // console.log('Start up modal closed...resuming tour.');
             resolve();
           };
 
@@ -539,18 +541,18 @@ async function watchComponentForTour(componentName) {
   async function evaluateTourStage(count, isTable) {
     const stage = getStage({ count, isTable });
     if (!stage) {
-      console.warn(
-        `No tour stage found for "${componentName}" component with count=${count} (isTable=${isTable}). 
-        Please check the tour configuration.`
-      );
+      // console.warn(
+      //   `No tour stage found for "${componentName}" component with count=${count} (isTable=${isTable}). 
+      //   Please check the tour configuration.`
+      // );
       return;
     }
 
     // Prevent running 'overview' stage when the table/div already has data
     if (stage === 'overview' && count > 0) {
-      console.log(
-        `Skipping 'overview' stage for ${componentName} component because count=${count}`
-      );
+      // console.log(
+      //   `Skipping 'overview' stage for ${componentName} component because count=${count}`
+      // );
       return;
     }
 
@@ -562,11 +564,11 @@ async function watchComponentForTour(componentName) {
 
     if (modalVisible) {
       // If modal is open, wait until it's closed
-      console.log('Tour paused...waiting for modal to close.');
+      // console.log('Tour paused...waiting for modal to close.');
 
       // Wait for either Bootstrap or Semantic UI modal to close before resuming
       const resumeTour = async () => {
-        console.log('Modal closed...resuming tour.');
+        // console.log('Modal closed...resuming tour.');
         await runTour(componentName, stage);
       };
 
