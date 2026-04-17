@@ -41,7 +41,6 @@ def poll_missing_tolids(self):
 
 
 @app.task(bind=True, base=CopoBaseClassForTask)
-@only_one(key="process_poll_asyn_ena_submission", timeout=5)
 def poll_asyn_ena_submission(self):
     Logger().debug("Running poll_asyn_ena_submission")
     dtol.poll_asyn_ena_submission()
