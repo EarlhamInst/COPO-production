@@ -548,34 +548,38 @@ class Command(BaseCommand):
             title="Data files",
             widget_icon="file",
             widget_colour="blue",
-            widget_icon_class="fa fa-file",
+            widget_icon_class="fa fa-folder-open",
+            material_icon="folder_open",
             table_id="files_table",
             reverse_url="copo_file:copo_files",
             subtitle="",
+            button_label="Data Files",
         )
 
         sample = Component().create_component(
             name="sample",
             title="Samples",
-            widget_icon="filter",
+            widget_icon="lab",
             widget_colour="olive",
-            widget_icon_class="fa fa-filter",
+            widget_icon_class="fa fa-vial",
+            material_icon="labs",
             table_id="sample_table",
             reverse_url="copo_sample:copo_samples",
             subtitle="",
-            button_label="Manage Sample metadata",
+            button_label="Samples",
         )
 
         general_sample = Component().create_component(
             name="general_sample",
             title="Samples",
-            widget_icon="filter",
+            widget_icon="lab",
             widget_colour="olive",
-            widget_icon_class="fa fa-filter",
+            widget_icon_class="fa fa-vial",
+            material_icon="labs",
             table_id="sample_table",
             reverse_url="copo_sample:copo_general_samples",
             subtitle="#component_subtitle",
-            button_label="Manage Sample metadata",
+            button_label="Samples",
         )
 
         read = Component().create_component(
@@ -583,10 +587,12 @@ class Command(BaseCommand):
             title="Reads",
             widget_icon="dna",
             widget_colour="orange",
-            widget_icon_class="fa fa-dna",
+            widget_icon_class="fa fa-microscope",
+            material_icon="genetics",
             table_id="read_table",
             reverse_url="copo_read_submission:copo_reads",
             subtitle="#component_subtitle",
+            button_label="Reads",
         )
 
         reads_schema = Component().create_component(
@@ -594,35 +600,41 @@ class Command(BaseCommand):
             title="Reads",
             widget_icon="dna",
             widget_colour="orange",
-            widget_icon_class="fa fa-dna",
+            widget_icon_class="fa fa-microscope",
+            material_icon="genetics",
             table_id="singlecell_table",
             reverse_url="copo_single_cell_submission:copo_singlecell",
             subtitle="#component_subtitle",
             schema_name="COPO_READ",
             base_component="singlecell",
+            button_label="Reads",
         )
 
         singlecell = Component().create_component(
             name="singlecell",
             title="Single-cell",
-            widget_icon="bacterium",
+            widget_icon="microscope",
             widget_colour="green",
-            widget_icon_class="fa fa-bacterium",
+            widget_icon_class="fa fa-microscope",
+            material_icon="science",
             table_id="singlecell_table",
             reverse_url="copo_single_cell_submission:copo_singlecell",
             subtitle="#component_subtitle",
             schema_name="COPO_SINGLE_CELL",
+            button_label="Single-cell",
         )
 
         assembly = Component().create_component(
             name="assembly",
-            title="Assembly",
+            title="Assemblies",
             widget_icon="puzzle piece",
             widget_colour="violet",
-            widget_icon_class="fa fa-puzzle-piece",
+            widget_icon_class="fa fa-layer-group",
+            material_icon="layers",
             table_id="assembly_table",
             reverse_url="copo_assembly_submission:copo_assembly",
             subtitle="",
+            button_label="Assemblies",
         )
 
         seqannotation = Component().create_component(
@@ -630,10 +642,12 @@ class Command(BaseCommand):
             title="Sequence annotations",
             widget_icon="tag",
             widget_colour="yellow",
-            widget_icon_class="fa fa-tag",
+            widget_icon_class="fa fa-file-lines",
+            material_icon="edit_note",
             table_id="seqannotation_table",
             reverse_url="copo_seq_annotation_submission:copo_seq_annotation",
             subtitle="",
+            button_label="Annotations",
         )
 
         taggedseq = Component().create_component(
@@ -642,9 +656,11 @@ class Command(BaseCommand):
             widget_icon="barcode",
             widget_colour="red",
             widget_icon_class="fa fa-barcode",
+            material_icon="barcode",
             table_id="tagged_seq_table",
             reverse_url="copo_barcoding_submission:copo_taggedseq",
             subtitle="#component_subtitle",
+            button_label="Barcoding",
         )
 
         images_rembi = Component().create_component(
@@ -653,12 +669,14 @@ class Command(BaseCommand):
             group_name="images",
             widget_icon="image",
             widget_colour="coral-pink",
-            widget_icon_class="fa fa-image",
+            widget_icon_class="fa fa-images",
+            material_icon="photo_library",
             table_id="singlecell_table",
             reverse_url="copo_single_cell_submission:copo_singlecell",
             subtitle="#component_subtitle",
             schema_name="COPO_IMAGE_REMBI",
             base_component="singlecell",
+            button_label="General",
         )
 
         images_stx_fish = Component().create_component(
@@ -667,36 +685,40 @@ class Command(BaseCommand):
             group_name="images",
             widget_icon="image",
             widget_colour="terra-cotta",
-            widget_icon_class="fa fa-image",
+            widget_icon_class="fa fa-flask",
+            material_icon="biotech",
             table_id="singlecell_table",
             reverse_url="copo_single_cell_submission:copo_singlecell",
             subtitle="#component_subtitle",
             schema_name="COPO_IMAGE_STX_FISH",
             base_component="singlecell",
+            button_label="Spatial",
         )
 
         accessions = Component().create_component(
             name="accessions",
             title="Accessions",
-            widget_icon="sitemap",
+            widget_icon="database",
             widget_colour="pink",
-            widget_icon_class="fa fa-sitemap",
+            widget_icon_class="fa fa-database",
+            material_icon="storage",
             table_id="accessions_table",
             reverse_url="copo_accession:copo_accessions",
             subtitle="",
-            button_label="View Accessions",
+            button_label="Accessions",
         )
 
         accessions_schema = Component().create_component(
             name="accessions_schema",
             title="Accessions",
-            widget_icon="sitemap",
+            widget_icon="database",
             widget_colour="pink",
-            widget_icon_class="fa fa-sitemap",
+            widget_icon_class="fa fa-database",
+            material_icon="storage",
             table_id="accessions_schema_table",
             reverse_url="copo_accessions_schema:copo_accessions_schema",
             subtitle="#component_subtitle",
-            button_label="View Accessions",
+            button_label="Accessions",
         )
 
         profile = Component().create_component(
@@ -877,8 +899,8 @@ class Command(BaseCommand):
 
         erga = ProfileType().create_profile_type(
             type="erga",
-            description="European Reference Genome Atlas (ERGA)",
-            widget_colour="#E61A8D",
+            description="European Reference Genome Atlas (ERGA) — generating reference genomes for European biodiversity",
+            widget_colour="#e25098",
             is_dtol_profile=True,
             is_permission_required=True,
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
@@ -887,8 +909,8 @@ class Command(BaseCommand):
         )
         asg = ProfileType().create_profile_type(
             type="asg",
-            description="Aquatic Symbiosis Genomics (ASG)",
-            widget_colour="#5829bb",
+            description="Aquatic Symbiosis Genomics (ASG) — sequencing genomes of aquatic symbiotic organisms",
+            widget_colour="#8060d0",
             is_dtol_profile=True,
             is_permission_required=True,
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
@@ -896,16 +918,16 @@ class Command(BaseCommand):
         )
         dtolenv = ProfileType().create_profile_type(
             type="dtolenv",
-            description="Darwin Tree of Life Environmental Samples (DTOLENV)",
-            widget_colour="#fb7d0d",
+            description="Darwin Tree of Life Environmental Samples (DTOLENV) — environmental and metagenomic samples for DToL",
+            widget_colour="#f0a44a",
             is_dtol_profile=True,
             is_permission_required=True,
             tour_id="profile_title publish_profile",
         )
         dtol = ProfileType().create_profile_type(
             type="dtol",
-            description="Darwin Tree of Life (DTOL)",
-            widget_colour="#16ab39",
+            description="Darwin Tree of Life (DTOL) — sequencing all eukaryotic species in Britain and Ireland",
+            widget_colour="#4cc86c",
             is_dtol_profile=True,
             is_permission_required=True,
             post_save_action="src.apps.copo_profile.utils.profile_utils.post_save_dtol_profile",
@@ -913,16 +935,16 @@ class Command(BaseCommand):
         )
         genomics = ProfileType().create_profile_type(
             type="genomics",
-            description="Genomics",
-            widget_colour="#009c95",
+            description="Genomics — standalone genomics profiles for general submissions",
+            widget_colour="#4db8a8",
             is_dtol_profile=False,
             is_permission_required=False,
             is_deprecated=True,        )
 
         biodata = ProfileType().create_profile_type(
             type="biodata",
-            description="Biodata",
-            widget_colour="#00AAFF",
+            description="Biodata — general-purpose profiles for biological data submissions",
+            widget_colour="#5cbce8",
             is_dtol_profile=False,
             is_permission_required=False,
             tour_id="profile_title",

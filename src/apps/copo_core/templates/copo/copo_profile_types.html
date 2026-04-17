@@ -45,6 +45,7 @@ const record_action_button_def = {
   {% endfor %}
 };
 
+
 const component_def = {
   {% for component in component_def %}
     {{ component.name|lower }}:  {
@@ -62,6 +63,7 @@ const component_def = {
       url: "{% if component.reverse_url and component.schema_name %}{% url component.reverse_url  schema_name=component.schema_name  profile_id='999' ui_component=component.name  %}{% elif component.reverse_url %}{% url component.reverse_url  profile_id='999' ui_component=component.name %}{% endif %}",
       semanticIcon: '{{ component.widget_icon }}',
       iconClass: '{{ component.widget_icon_class }}',
+      materialIcon: '{{ component.material_icon }}',
       color: '{{ component.widget_colour }}',
       colorClass: '{{ component.widget_colour_class }}',
       buttons: [ {% for button in component.title_buttons.all %} '{{ button.name }}', {% endfor %} ],
@@ -79,6 +81,7 @@ const profile_type_def = {
   {% for profile_type in profile_type_def %}
     {{ profile_type.type|lower }}:  {
       title: '{{ profile_type.type | upper }}',
+      description: '{{ profile_type.description|escapejs }}',
       widget_colour: '{{ profile_type.widget_colour }}',
       components: [ {% for component in profile_type.components.all  %} '{{ component.name }}', {% endfor %} ],
       actionButtons:[

@@ -1,8 +1,35 @@
-//**some re-usable functions across different modules
+/**
+ * generic_handlers.js
+ *
+ * Core utility and event-handler module for the COPO Django web application.
+ *
+ * This file is loaded on every COPO page and provides:
+ *   - Global document.ready bootstrap (navigation, autocomplete, select events)
+ *   - Select2 / Selectize widget initialisation and refresh helpers
+ *   - Ontology lookup, popover display, and icon state management
+ *   - Component record view and delete confirmation dialogs
+ *   - DataTables rendering and column-definition helpers
+ *   - Form-control refresh functions (datepicker, validator, range slider,
+ *     selectbox, multiselect, ontology, general lookup, etc.)
+ *   - Autocomplete integration with the OLS (Ontology Lookup Service)
+ *   - Data-display panel builders (collapsible lists, attribute tables)
+ *   - Component navigation, icon management, and profile-type routing
+ *   - WebUI popover and context-help system
+ *   - Dialog and UI template factories (panels, alerts, menus)
+ *   - Modal/dialog utilities (close confirmation, value reset, info migration)
+ *
+ * Depends on: jQuery, Select2, Selectize, DataTables, BootstrapDialog,
+ *             WebuiPopovers, component_def, profile_type_def, title_button_def
+ */
+
+// ═══ GLOBALS ══════════════════════════════════════════════════════════════════
+
 var AnnotationEventAdded = false;
 var selectizeObjects = {}; //stores reference to selectize objects initialised on the page
 var copoVisualsURL = '/copo/copo_visualize/';
 var csrftoken = $.cookie('csrftoken');
+
+// ═══ DOCUMENT READY — BOOTSTRAP ═══════════════════════════════════════════════
 
 $(document).ready(function () {
   var componentName = $('#nav_component_name').val();
@@ -14,23 +41,10 @@ $(document).ready(function () {
     do_page_controls(componentName);
   }
 
-  //global_help_call
-  //do_global_help(componentName);
-
-  //context help event
-  //do_context_help_event();
-
-  //input fields help tips event
-  //set_inputs_help();
-
-  //add event for ontology field change
-  //ontology_value_change();
-
   var timeout;
   var delay = 1000;
 
-  //add selectize control event
-  //set_selectize_select_event();
+  // Debounce keyboard navigation in Selectize dropdowns
   $(document).on('keyup', function (event) {
     if (timeout) {
       clearTimeout(timeout);
@@ -54,10 +68,16 @@ $(document).ready(function () {
 
   initialiseNavToggle();
 
-  var event = jQuery.Event('document_ready'); //individual components can trap and handle this event as they so wish
+  var event = jQuery.Event('document_ready'); // individual components can trap and handle this event
   $(document).trigger(event);
 });
 
+// ═══ UI EVENT HANDLERS ════════════════════════════════════════════════════════
+
+/**
+ * Binds Bootstrap collapse show/hide events to toggle the plus/minus icon
+ * on `.copo-details-coll` panel headings.
+ */
 function setup_collapsible_event() {
   $(document)
     .on('show.bs.collapse', '.copo-details-coll.collapse', function (event) {
@@ -76,6 +96,10 @@ function setup_collapsible_event() {
     });
 }
 
+/**
+ * Binds a click event to `.copo-tag` elements that toggles the visibility of
+ * the associated `.copo-tag-content` panel via a slow slide animation.
+ */
 function setup_copo_general_lookup_event() {
   $(document).on('click', '.copo-tag ', function (event) {
     var content = $(this).closest('.copo-item').find('.copo-tag-content');
@@ -83,6 +107,11 @@ function setup_copo_general_lookup_event() {
   });
 }
 
+/**
+ * Initialises the ontology autocomplete control for annotation fields.
+ * Lazily adds the OLS search URL on first focus of an annotator field and
+ * ensures the global autocomplete instance is (re-)initialised.
+ */
 function setup_autocomplete() {
   var copoFormsURL = '/copo/copo_forms/';
   $(document).on('focus', 'input[id^="annotator-field"]', function (e) {
@@ -100,12 +129,22 @@ function setup_autocomplete() {
   auto_complete();
 }
 
+/**
+ * Binds a delegated click handler so that clicking the close button inside a
+ * `.message` element removes the entire message from the DOM.
+ */
 function setup_dismissable_message() {
   $(document).on('click', '.message .close', function () {
     $(this).closest('.message').remove();
   });
 }
 
+/**
+ * Builds and returns a Semantic UI success message element suitable for use
+ * as an inline feedback pane.
+ *
+ * @returns {jQuery} A jQuery-wrapped message div with header, body, and close icon.
+ */
 function get_feedback_pane() {
   return $(
     '<div class="ui success message" style="margin-bottom: 10px;">\n' +
@@ -117,6 +156,13 @@ function get_feedback_pane() {
   );
 }
 
+// ═══ SELECT2 / SELECTIZE EVENT HANDLERS ══════════════════════════════════════
+
+/**
+ * Binds a delegated click handler to `.copo-embedded` elements.
+ * On click, fetches a description for the embedded item from the server and
+ * displays it in a sticky webuiPopover attached to the clicked element.
+ */
 function select2_data_view_event() {
   $(document).on('click', '.copo-embedded', function () {
     var item = $(this);
@@ -170,6 +216,11 @@ function select2_data_view_event() {
   });
 }
 
+/**
+ * Binds a delegated mouseover handler to `.server-desc` elements inside
+ * Select2 dropdown options. On hover, fetches the item description from the
+ * server and updates the webuiPopover content in place.
+ */
 function select2_mouse_event() {
   $(document).on('mouseover', '.server-desc', function () {
     var item = $(this);
@@ -212,8 +263,12 @@ function select2_mouse_event() {
   });
 }
 
+/**
+ * Binds a keyup handler on `.ontology-field` inputs so that when the user
+ * edits a previously resolved ontology value, all associated hidden fields
+ * within the same `.ontology-parent` are cleared, preventing stale data.
+ */
 function ontology_value_change() {
-  //handles 'change of mind by user while entering value', to clear associated fields
   $(document).on('keyup', '.ontology-field', function () {
     var elem = $(this);
     elem
@@ -225,12 +280,26 @@ function ontology_value_change() {
   });
 }
 
+/**
+ * Binds a delegated click handler to `.non-free-text` elements that toggles
+ * the visibility of the extra ontology info panel (`.onto-label-more`)
+ * associated with the clicked label.
+ */
 function ontology_link_event() {
   $(document).on('click', '.non-free-text', function () {
     $(this).closest('.onto-label').find('.onto-label-more').toggle();
   });
 }
 
+/**
+ * Handles keyboard up/down navigation within Selectize dropdown controls.
+ * When the active item changes, fetches and displays a contextual popover
+ * with details about the highlighted option.  Supports four control types:
+ * onto-select (ontology), general-onto (generic object), copo-multi-search
+ * (cross-component record), and copo-lookup (server-side lookup).
+ *
+ * @param {jQuery.Event} event - The keyup event from the delegated document handler.
+ */
 function set_selectize_select_event(event) {
   var keyCode = event.keyCode || event.which;
   if (keyCode === 38 || keyCode === 40) {
@@ -364,6 +433,20 @@ $(document).on(
   }
 );
 
+// ═══ ONTOLOGY LOOKUP / POPOVER DISPLAY ════════════════════════════════════════
+
+/**
+ * Displays a webuiPopover containing lookup details (label, accession, description)
+ * for a Selectize copo-lookup item.  If the item is flagged as server-side, the
+ * description is fetched via AJAX before the popover is rendered.
+ *
+ * @param {jQuery}  item       - The Selectize control element to attach the popover to.
+ * @param {string}  label      - Display label for the selected term.
+ * @param {string}  desc       - Description text (may be resolved server-side).
+ * @param {string}  accession  - Accession/ID of the selected term.
+ * @param {string}  url        - Ajax endpoint used when serverSide is truthy.
+ * @param {boolean} serverSide - Whether to resolve the description from the server.
+ */
 function showlkup(item, label, desc, accession, url, serverSide) {
   var show_lkup_details = function () {
     var result = $('<div/>', {
@@ -440,12 +523,20 @@ function showlkup(item, label, desc, accession, url, serverSide) {
   }
 }
 
+/**
+ * Displays a webuiPopover showing ontology source, accession link, and
+ * description for a highlighted item in an onto-select Selectize control.
+ *
+ * @param {jQuery} item      - The Selectize control element to attach the popover to.
+ * @param {string} label     - Human-readable label for the ontology term.
+ * @param {string} prefix    - Ontology source prefix (e.g. "EFO"); empty string for free-text values.
+ * @param {string} desc      - Description of the ontology term.
+ * @param {string} accession - IRI or accession identifier for the term.
+ */
 function showontopop(item, label, prefix, desc, accession) {
   var result = $('<div/>', {
     class: 'limit-text',
   });
-
-  // var result = '<div class="limit-text"><ul class="list-group list-group-flush"><li style="border: none;" class="list-group-item">Value: ' + label + '</li><li style="border: none;" class="list-group-item">Accession: ' + accession + '</li><li style="border: none;" class="list-group-item">Description: ' + desc + '</li></ul></div>';
 
   item.webuiPopover('destroy');
 
@@ -502,6 +593,15 @@ function showontopop(item, label, prefix, desc, accession) {
   }
 }
 
+/**
+ * Displays a webuiPopover summarising the fields of a general-ontology
+ * (non-OLS) lookup item, rendering only schema fields marked `show_in_table`.
+ *
+ * @param {jQuery}   item       - The Selectize control element to attach the popover to.
+ * @param {Object}   dataObject - The raw value object from the Selectize options store.
+ * @param {Object[]} schema     - Field schema array; each entry has `id`, `label`, and `show_in_table`.
+ * @param {string}   lblField   - Key within `dataObject` to use as the popover title.
+ */
 function showgeneraldetails(item, dataObject, schema, lblField) {
   var result = $('<div/>', {
     class: 'limit-text',
@@ -547,8 +647,19 @@ function showgeneraldetails(item, dataObject, schema, lblField) {
   });
 }
 
+// ═══ COMPONENT RECORD VIEW / DELETE ═══════════════════════════════════════════
+
+/**
+ * Fetches display attributes for a record from the visualise endpoint and
+ * shows them in a webuiPopover attached to `eventTarget`.
+ * Maps a form element's selected value (record ID) to a component type
+ * (e.g. source, sample) for attribute rendering.
+ *
+ * @param {string} recordId            - The MongoDB ObjectId of the target record.
+ * @param {string} associatedComponent - Component type string (e.g. "source").
+ * @param {jQuery} eventTarget         - The element to which the popover is attached.
+ */
 function resolve_element_view(recordId, associatedComponent, eventTarget) {
-  //maps form element by id to component type e.g source, sample
 
   if (associatedComponent == '') {
     return false;
@@ -606,6 +717,15 @@ function resolve_element_view(recordId, associatedComponent, eventTarget) {
   });
 }
 
+/**
+ * Shows a BootstrapDialog danger confirmation prompt before deleting records.
+ * On confirmation, POSTs a delete request and re-renders the DataTable via
+ * `do_render_table`.
+ *
+ * @param {Object}   params            - Delete parameters.
+ * @param {string[]} params.target_ids - Array of record IDs to delete.
+ * @param {string}   params.component  - Component type string (e.g. "sample").
+ */
 function do_component_delete_confirmation(params) {
   var targetComponentBody =
     'Please confirm delete action for the selected records.';
@@ -669,6 +789,30 @@ function do_component_delete_confirmation(params) {
   });
 }
 
+// ═══ DATATABLES RENDERING ═════════════════════════════════════════════════════
+
+/**
+ * Initialises or refreshes a DataTable from a server response payload.
+ *
+ * Behaviour:
+ * - If the table already exists and `data.table_data.row_data` is set, a
+ *   single new row is appended and highlighted.
+ * - If the table already exists without row_data, all rows are replaced
+ *   (e.g. after a delete).
+ * - If the table does not yet exist, a full DataTable is constructed with
+ *   column definitions, global action buttons, and a hook event
+ *   (`addbuttonevents`) for per-table button wiring.
+ * - For the `datafile_table` specifically, an `addtoqueue` event is fired
+ *   so the upload queue can track the new record.
+ *
+ * @param {Object} data                            - Server response object.
+ * @param {Object} data.table_data                 - Table configuration payload.
+ * @param {string} data.table_data.table_id        - DOM id of the target table element.
+ * @param {Array}  data.table_data.dataSet         - Full row dataset for initialisation/refresh.
+ * @param {Array}  data.table_data.row_data        - Single-row data for append mode.
+ * @param {Array}  data.table_data.columns         - DataTables column definitions.
+ * @param {Object} data.table_data.action_buttons  - Button config with `global_btns` and `row_btns`.
+ */
 function do_render_table(data) {
   var table = null;
   var lastRecord = null;
@@ -971,6 +1115,15 @@ function do_render_table(data) {
   }
 } //end of function
 
+// ═══ FORM CONTROL REFRESH FUNCTIONS ═══════════════════════════════════════════
+
+/**
+ * Re-initialises all dynamic form controls on the page.
+ * Called after DataTable draws to ensure controls rendered inside table cells
+ * are properly bootstrapped.  Covers tooltips, popovers, Semantic UI dropdowns,
+ * color overrides, every Selectize/Select2 variant, range sliders, autocomplete,
+ * and the datepicker.
+ */
 function refresh_tool_tips() {
   $("[data-toggle='tooltip']").tooltip();
   $("[data-toggle='popover']").popover();
@@ -996,6 +1149,11 @@ function refresh_tool_tips() {
   setup_datepicker();
 } //end of func
 
+/**
+ * Initialises Bootstrap datepicker on all `.date-picker` inputs.
+ * The date format differs between DToL sample pages (yyyy-mm-dd) and
+ * standard ENA pages (dd/mm/yyyy).
+ */
 function setup_datepicker() {
   var format_string;
   // dtol date format and ENA date formats are sadly different, so check if we are dealing with a dtol sample
@@ -1009,10 +1167,20 @@ function setup_datepicker() {
   });
 }
 
+/**
+ * Triggers a validator update on the given form object so that any newly
+ * rendered fields are included in subsequent validation passes.
+ *
+ * @param {jQuery} formObject - The jQuery-wrapped form element.
+ */
 function refresh_validator(formObject) {
   formObject.validator('update');
-} //end of func
+}
 
+/**
+ * Initialises the rangeslider.js polyfill on all `.range-slider` inputs.
+ * Updates the paired output element and hidden value element on slide.
+ */
 function refresh_range_slider() {
   $('.range-slider').each(function () {
     var elem = $(this);
@@ -1054,7 +1222,10 @@ function refresh_range_slider() {
   });
 } //end of function
 
-//refreshes selectboxes to pick up events
+/**
+ * Initialises Selectize on all `.copo-select` elements that have not already
+ * been instantiated.  Allows free-text entry and displays a remove button.
+ */
 function refresh_selectbox() {
   $('.copo-select').each(function () {
     var elem = $(this);
@@ -1076,7 +1247,10 @@ function refresh_selectbox() {
   });
 } //end of function
 
-//refreshes selectboxes to pick up events
+/**
+ * Initialises Select2 (with tags enabled) on all `.copo-select2` elements
+ * that have not already been initialised.
+ */
 function refresh_select2box() {
   $('.copo-select2').each(function () {
     var elem = $(this);
@@ -1091,6 +1265,10 @@ function refresh_select2box() {
   });
 } //end of function
 
+/**
+ * Initialises Select2 on all `.copo-multi-select2` elements that have not
+ * already been initialised, restoring any pre-selected values.
+ */
 function refresh_multiselect2box() {
   $('.copo-multi-select2').each(function () {
     var elem = $(this);
@@ -1108,6 +1286,11 @@ function refresh_multiselect2box() {
   });
 } //end of function
 
+/**
+ * Initialises Select2 on all `.copo-single-select` elements that have not
+ * already been initialised.  Renders a webuiPopover info icon next to options
+ * that carry a description field.
+ */
 function refresh_singleselectbox() {
   $('.copo-single-select').each(function () {
     var elem = $(this);
@@ -1151,6 +1334,12 @@ function refresh_singleselectbox() {
   });
 } //end of function
 
+/**
+ * Initialises Select2 AJAX lookup on all `.copo-lookup2` elements that have
+ * not already been initialised.  Fetches options dynamically from the endpoint
+ * specified by the element's `data-url` attribute, using the current profile ID
+ * as an additional filter parameter.
+ */
 function refresh_copo_lookup2() {
   var profile_id = '';
   if ($('#profile_id').length) {
@@ -1230,8 +1419,6 @@ function refresh_copo_lookup2() {
 
           $state.append(item);
           return $state;
-
-          //return '<span data-id="' + state.id + '" data-server="' + state.serverSide + '" data-url="' + state.url + '" class="copo-select2-info select2-minfo">' + state.text + '</span>';
         },
       });
 
@@ -1240,6 +1427,12 @@ function refresh_copo_lookup2() {
   });
 } //end of function
 
+/**
+ * Initialises Selectize on all `.copo-multi-select` elements that have not
+ * already been instantiated.  Syncs the selected value back to a hidden
+ * `.copo-multi-values` element on change, and retains a reference in
+ * `selectizeObjects`.
+ */
 function refresh_multiselectbox() {
   $('.copo-multi-select').each(function () {
     var elem = $(this);
@@ -1277,6 +1470,12 @@ function refresh_multiselectbox() {
   });
 }
 
+/**
+ * Initialises Selectize on all `.copo-lookup` elements that have not already
+ * been instantiated.  Performs server-side search via the element's `data-url`
+ * attribute, syncs selected accession to a hidden `.copo-multi-values` element,
+ * and retains a reference in `selectizeObjects`.
+ */
 function refresh_copo_lookup() {
   $('.copo-lookup').each(function () {
     var elem = $(this);
@@ -1400,6 +1599,12 @@ function refresh_copo_lookup() {
   });
 }
 
+/**
+ * Initialises Selectize on all `.onto-select` elements that have not already
+ * been instantiated.  Handles OLS term search via AJAX, maps the selected term
+ * object to hidden `annotationValue / termSource / termAccession / comments`
+ * fields, updates the display label, and drives the ontology icon state.
+ */
 function refresh_ontology_select() {
   $('.onto-select').each(function () {
     var elem = $(this);
@@ -1626,8 +1831,13 @@ function refresh_ontology_select() {
   });
 }
 
+/**
+ * Initialises Selectize on all `.general-onto-search` elements that have not
+ * already been instantiated.  Supports a remote data source (server-side search).
+ * On selection, dynamically inserts hidden input fields for each schema property
+ * and fires a custom jQuery event (`data-eventname`) for external handlers.
+ */
 function refresh_general_ontology_search() {
-  //this control supports remote data source
   $('.general-onto-search').each(function () {
     var elem = $(this);
     var url = elem.attr('data-url');
@@ -1784,8 +1994,13 @@ function refresh_general_ontology_search() {
   });
 }
 
+/**
+ * Initialises Selectize on all `.general-onto-select` elements that have not
+ * already been instantiated.  Works on a predefined static options list only
+ * (no remote data source or dynamic option updates).  Sets value from
+ * `data-currentValue` and reports the option count as feedback.
+ */
 function refresh_general_ontology_select() {
-  //this control works on predefined options and doesn't support remote data source, or dynamic updates to options
   $('.general-onto-select').each(function () {
     var elem = $(this);
     var elemId = elem.attr('data-element');
@@ -1900,6 +2115,15 @@ function refresh_general_ontology_select() {
   });
 }
 
+/**
+ * Updates the feedback indicator nodes inside a `.ontology-parent` element
+ * with a status message.  Sets a colour class (blue for success, red for error)
+ * on the icon node.
+ *
+ * @param {jQuery} elem     - Any element within the `.ontology-parent` container.
+ * @param {string} feedback - The message text to display.
+ * @param {string} status   - Status string: `"success"` or `"error"`.
+ */
 function report_call_feedback(elem, feedback, status) {
   var iconNode = elem.closest('.ontology-parent').find('.copo-tag');
   var contentNode = elem.closest('.ontology-parent').find('.copo-tag-2');
@@ -1917,6 +2141,14 @@ function report_call_feedback(elem, feedback, status) {
   }
 }
 
+/**
+ * Populates the detail panel (`.copo-tag-content`) inside an ontology parent
+ * with a structured list of schema fields from the selected value object.
+ * Only fields marked `show_in_table` are rendered.
+ *
+ * @param {jQuery} elem        - Any element within the `.ontology-parent` container.
+ * @param {Object} onto_value  - The selected value object; pass an empty object to clear the display.
+ */
 function set_general_ontology_detail(elem, onto_value) {
   var contentNode = elem.closest('.ontology-parent').find('.copo-tag-content');
   contentNode.hide();
@@ -1942,7 +2174,6 @@ function set_general_ontology_detail(elem, onto_value) {
     '<div class="webpop-content-div" style="padding: 5px;"></div>'
   );
   var codeList = $('<div class="ui relaxed divided list"></div>');
-  console.log('cunt');
   message.append(codeList);
 
   for (var i = 0; i < schema.length; ++i) {
@@ -1969,8 +2200,17 @@ function set_general_ontology_detail(elem, onto_value) {
   // contentNode.slideToggle("slow");
 }
 
+/**
+ * Updates the ontology icon within an `.onto-label` element to reflect whether
+ * the current value is a properly resolved ontology term or a free-text entry.
+ * Shows/hides `.free-text` and `.non-free-text` icons accordingly and, for
+ * resolved terms, appends the ontology source and an accession hyperlink.
+ *
+ * @param {jQuery} elem        - Any element within the `.ontology-parent` container.
+ * @param {string} onto_object - JSON string of the current ontology value object,
+ *                               expected to contain `termAccession` and `termSource`.
+ */
 function set_ontology_icon(elem, onto_object) {
-  //function sets an appropriate icon depending on ontology or free-text value state
   var freeText = 'Value not set or free-text value not resolved to an ontology';
 
   try {
@@ -2052,6 +2292,12 @@ function set_ontology_icon(elem, onto_object) {
   }
 }
 
+/**
+ * Initialises Selectize on all `.copo-multi-search` elements that have not
+ * already been instantiated.  Renders component-linked records from a
+ * pre-loaded options list and syncs the selection to a hidden `.copo-multi-values`
+ * element.
+ */
 function refresh_multisearch() {
   $('.copo-multi-search').each(function () {
     var elem = $(this);
@@ -2139,6 +2385,20 @@ function refresh_multisearch() {
   });
 }
 
+// ═══ AUTOCOMPLETE ═════════════════════════════════════════════════════════════
+
+/**
+ * Bootstraps the OLS (Ontology Lookup Service) autocomplete widget on all
+ * `.ontology-field` inputs.  Removes any existing autocomplete dropdowns first
+ * to prevent duplicates on re-initialisation.
+ *
+ * Inner callbacks:
+ * - `do_pre`      — Shows a loading spinner before the request is sent.
+ * - `do_select`   — Handles term selection, writing values to the appropriate
+ *                   fields depending on annotator type (`txt`, `ss`, or default).
+ * - `do_position` — No-op positional callback required by the AutoComplete API.
+ * - `do_post`     — Parses the OLS JSON response and builds the suggestion list.
+ */
 var auto_complete = function () {
   // remove all previous autocomplete divs
   $('.autocomplete').remove();
@@ -2189,9 +2449,7 @@ var auto_complete = function () {
   function do_post(response) {
     response = JSON.parse(response);
 
-    console.log('num_found ' + response.response.numFound);
     var properties = Object.getOwnPropertyNames(response);
-    //Try parse like JSON data
 
     var empty,
       length = response.length,
@@ -2202,9 +2460,6 @@ var auto_complete = function () {
       doc = response.response.docs[item];
 
       try {
-        //
-        //console.log(response.highlighting[doc.id])
-        //console.log(doc)
         var s;
         s = response.highlighting[doc.id].label_autosuggest[0];
         if (s == undefined) {
@@ -2248,9 +2503,6 @@ var auto_complete = function () {
         $(li).attr('data-annotation_value', doc.label);
 
         $(li).attr('data-term_source', short_form);
-        //$(li).attr("data-autocomplete-value", response.highlighting[item].label_autosuggest[0].replace('<b>', '').replace('</b>', '') + ' - ' + item);
-
-        //console.log($(li).data('label'))
 
         ul.appendChild(li);
         li = document.createElement('li');
@@ -2265,11 +2517,28 @@ var auto_complete = function () {
   }
 }; //end of function
 
+/**
+ * Checks whether a value is present in an array.
+ *
+ * @param {*}     value - The value to search for.
+ * @param {Array} array - The array to search within.
+ * @returns {boolean} `true` if the value exists in the array, otherwise `false`.
+ */
 function isInArray(value, array) {
-  //checks if a value is in array
   return array.indexOf(value) > -1;
 }
 
+// ═══ DATA DISPLAY PANEL BUILDERS ═════════════════════════════════════════════
+
+/**
+ * Builds an HTML string representing a collapsible list panel for use inside
+ * a DataTable cell.  Handles arrays of strings, arrays of arrays, arrays of
+ * objects, and plain objects.
+ *
+ * @param {Array|Object} itemData - The data to render; returns an empty string if falsy.
+ * @param {string}       link     - A unique slug used to generate element IDs.
+ * @returns {string} An HTML string containing the rendered panel.
+ */
 function get_data_list_panel(itemData, link) {
   if (!itemData) {
     return '';
@@ -2400,6 +2669,15 @@ function get_data_list_panel(itemData, link) {
   return $('<div/>').append(containerFuild).html();
 }
 
+/**
+ * Builds an HTML string containing a collapsible button/badge trigger and its
+ * associated hidden content panel, used in DataTable cells that hold array data.
+ *
+ * @param {string} link      - Unique ID used for the collapse target element.
+ * @param {string} itemData  - Inner HTML of the collapse body (typically from `get_data_list_panel`).
+ * @param {number} itemCount - Number of items; drives the badge text and singular/plural label.
+ * @returns {string} An HTML string for the collapse button and panel.
+ */
 function get_data_item_collapse(link, itemData, itemCount) {
   // create badge
   var badgeSpan = $('<span/>', {
@@ -2441,6 +2719,13 @@ function get_data_item_collapse(link, itemData, itemCount) {
   return ctrlDiv.html();
 }
 
+/**
+ * Converts a camelCase string to a human-readable title-case sentence.
+ * The first word is capitalised; subsequent words are lower-cased.
+ *
+ * @param {string} xter - The camelCase string to format.
+ * @returns {string} A space-separated, title-case string.
+ */
 function format_camel_case(xter) {
   var a = xter.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) {
     return str.toUpperCase();
@@ -2460,9 +2745,18 @@ function format_camel_case(xter) {
   return refinedXter.join(' ');
 }
 
+/**
+ * Builds a jQuery table element representing datafile description metadata.
+ * This is a specialised counterpart to `build_attributes_display()` that
+ * operates on the `data.description` structure rather than `data.component_attributes`.
+ *
+ * @param {Object} data                         - Server response from the visualise endpoint.
+ * @param {Object} data.description             - Description payload.
+ * @param {Array}  data.description.columns     - Column definitions with `title` and `data` keys.
+ * @param {Object} data.description.data_set    - Key/value map of field names to display values.
+ * @returns {jQuery} A jQuery-wrapped `<table>` element.
+ */
 function build_description_display(data) {
-  //this is a specialised counterpart to the function 'build_attributes_display()',
-  // but handles datafile description metadata
 
   var resolvedTable = $('<table/>');
 
@@ -2487,6 +2781,16 @@ function build_description_display(data) {
   return resolvedTable;
 }
 
+/**
+ * Builds a jQuery summary table from a component's attribute data, typically
+ * rendered inside a webuiPopover when viewing record details.
+ *
+ * @param {Object} data                                    - Server response from the visualise endpoint.
+ * @param {Object} data.component_attributes               - Attribute payload.
+ * @param {Array}  data.component_attributes.columns       - Column definitions with `title` and `data` keys.
+ * @param {Object} data.component_attributes.data_set      - Key/value map of field names to display values.
+ * @returns {jQuery} A jQuery-wrapped `<table>` element styled with `.summary-details-table`.
+ */
 function build_attributes_display(data) {
   var contentHtml = $('<table/>', {
     // cellpadding: "5",
@@ -2516,6 +2820,14 @@ function build_attributes_display(data) {
   return contentHtml;
 }
 
+/**
+ * Builds and returns a cloned Bootstrap collapsible panel structure
+ * (panel-group > panel > panel-heading > panel-body).
+ *
+ * @param {string} [panelType='default'] - Bootstrap panel context class suffix
+ *   (e.g. `'default'`, `'primary'`, `'info'`).
+ * @returns {jQuery} A cloned jQuery element containing the full panel structure.
+ */
 function get_collapsible_panel(panelType) {
   if (!panelType) {
     panelType = 'default';
@@ -2564,6 +2876,13 @@ function get_collapsible_panel(panelType) {
   return $('<div/>').append(panelGroup).clone();
 }
 
+/**
+ * Builds and returns a cloned Bootstrap panel structure with heading, body,
+ * and footer sections.
+ *
+ * @param {string} [panelType='default'] - Bootstrap panel context class suffix.
+ * @returns {jQuery} A cloned jQuery element containing the panel.
+ */
 function get_panel(panelType) {
   if (!panelType) {
     panelType = 'default';
@@ -2597,344 +2916,41 @@ function get_panel(panelType) {
   return $('<div/>').append(panel).clone();
 }
 
-//Set COPO frontpage properties in this dictionary
+// ═══ COMPONENT NAVIGATION AND ICON MANAGEMENT ════════════════════════════════
+
+/**
+ * Retrieves the metadata definition object for a named component from the
+ * global `component_def` dictionary.
+ *
+ * @param {string} componentName - The component identifier (case-insensitive).
+ * @returns {Object|undefined} The component definition object, or `undefined`
+ *   if the component is not registered.
+ */
 function get_component_meta(componentName) {
-  var componentMeta = null;
-  //var components = get_profile_components();
-
-  componentMeta = component_def[componentName.toLowerCase()];
-  /*
-  components.forEach(function (comp) {
-    if (comp.component == component) {
-      componentMeta = comp;
-      return false;
-    }
-  });
-  */
-
-  return componentMeta;
+  return component_def[componentName.toLowerCase()];
 }
 
-/*
-function get_profile_components() {
-  return [
-    {
-      component: 'accessions',
-      title: 'Accessions',
-      iconClass: 'fa fa-sitemap',
-      semanticIcon: 'sitemap', //semantic UI equivalence of fontawesome icon
-      countsKey: 'num_accessions',
-      buttons: [
-        'copo_accessions',
-        'accept_reject_samples',
-        'tol_inspect',
-        'tol_inspect_gal',
-      ],
-      sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-accessions'],
-      colorClass: 'accessions_color',
-      color: 'pink',
-      profile_component: 'dtol',
-      tableID: 'accessions_table',
-      recordActions: ['btn-toggle'],
-      visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
-    },
-    {
-      component: 'accessions',
-      title: 'Accessions',
-      iconClass: 'fa fa-sitemap',
-      semanticIcon: 'sitemap', //semantic UI equivalence of fontawesome icon
-      countsKey: 'num_accessions',
-      buttons: [
-        'copo_accessions',
-        'accept_reject_samples',
-        'tol_inspect',
-        'tol_inspect_gal',
-      ],
-      sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-accessions'],
-      colorClass: 'accessions_color',
-      color: 'pink',
-      profile_component: 'stand-alone',
-      tableID: 'accessions_table',
-      recordActions: ['btn-toggle'],
-      visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
-    },
-    {
-      component: 'accessions_dashboard',
-      title: 'Accessions',
-      iconClass: 'fa fa-sitemap',
-      semanticIcon: 'sitemap', //semantic UI equivalence of fontawesome icon
-      countsKey: 'num_accessions',
-      buttons: [
-        'copo_accessions',
-        'accept_reject_samples',
-        'tol_inspect',
-        'tol_inspect_gal',
-      ],
-      sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-accessions'],
-      colorClass: 'accessions_color',
-      color: 'pink',
-      profile_component: '',
-      tableID: 'accessions_table',
-      recordActions: ['btn-toggle'],
-      visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
-    },
-    {
-      component: 'assembly',
-      title: 'Assembly',
-      iconClass: 'fa fa-puzzle-piece',
-      semanticIcon: 'puzzle piece',
-      countsKey: 'num_assembly',
-      buttons: ['new-component-template'],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'assembly_color',
-      color: 'violet',
-      tableID: 'assembly_table',
-      profile_component: 'stand-alone',
-      recordActions: [
-        'add_record_all',
-        'edit_record_single',
-        'delete_record_multi',
-        'submit_assembly_multi',
-      ],
-      visibleColumns: 5,
-    },
-    {
-      component: 'assembly',
-      title: 'Assembly',
-      iconClass: 'fa fa-puzzle-piece',
-      semanticIcon: 'puzzle piece',
-      countsKey: 'num_assembly',
-      buttons: ['new-component-template'],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'assembly_color',
-      color: 'violet',
-      tableID: 'assembly_table',
-      profile_component: 'dtol',
-      recordActions: [
-        'add_record_all',
-        'edit_record_single',
-        'delete_record_multi',
-        'submit_assembly_multi',
-      ],
-      visibleColumns: 5,
-    },
-    {
-      component: 'taggedseq',
-      title: 'Barcoding Manifests',
-      subtitle: '#component_subtitle',
-      iconClass: 'fa fa-barcode',
-      semanticIcon: 'barcode',
-      countsKey1: 'num_barcode_manifest',
-      buttons: [
-        'new-taggedseq-spreadsheet-template',
-        'download-blank-manifest-template|href:#blank_manifest_url',
-      ],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'data_color',
-      color: 'red',
-      tableID: 'tagged_seq_table',
-      profile_component: 'dtol',
-      recordActions: ['delete_record_multi', 'submit_tagged_seq_multi'],
-      visibleColumns: 5,
-    },
-    {
-      component: 'files',
-      title: 'Files',
-      iconClass: 'fa fa-file',
-      semanticIcon: 'file',
-      countsKey1: 'num_assembly',
-      buttons: ['new-local-file', 'new-terminal-file'],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'files_color',
-      color: 'blue',
-      tableID: 'files_table',
-      profile_component: 'stand-alone',
-      recordActions: [
-        'add_local_all',
-        'add_terminal_all',
-        'delete_record_multi',
-      ], // , "delete_record_multi, submit_assembly_multi , "edit_record_single"
-      visibleColumns: 5,
-    },
-    {
-      component: 'files',
-      title: 'Files',
-      iconClass: 'fa fa-file',
-      semanticIcon: 'file',
-      countsKey1: 'num_assembly',
-      buttons: ['new-local-file', 'new-terminal-file'],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'files_color',
-      color: 'blue',
-      tableID: 'files_table',
-      profile_component: 'dtol',
-      recordActions: [
-        'add_local_all',
-        'add_terminal_all',
-        'delete_record_multi',
-      ], // , "delete_record_multi, submit_assembly_multi , "edit_record_single"
-      visibleColumns: 5,
-    },
-    {
-      component: 'profile',
-      title: 'Work Profiles',
-      subtitle: '#component_subtitle',
-      buttons: ['quick-tour-template', 'new-component-template'],
-      sidebarPanels: ['copo-sidebar-info', 'copo-sidebar-component-legend'],
-      tableID: 'copo_profiles_table',
-      secondaryTableID: 'copo_shared_profiles_table',
-      visibleColumns: 4,
-      recordActions: [
-        'add_record_all',
-        'edit_record_single',
-        'delete_record_multi',
-      ], //specifies action buttons for records manipulation
-    },
-    {
-      component: 'sample',
-      title: 'Samples',
-      iconClass: 'fa fa-filter',
-      semanticIcon: 'filter', //semantic UI equivalence of fontawesome icon
-      countsKey: 'num_sample',
-      buttons: [
-        'quick-tour-template',
-        'new-samples-template',
-        'new-samples-spreadsheet-template',
-        'new-samples-spreadsheet-template-erga',
-        'download-blank-manifest-template|href:#blank_manifest_url',
-        'download-sop|href:#sop_url',
-        'accept_reject_samples',
-      ],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'samples_color',
-      color: 'olive',
-      profile_component: 'dtol',
-      tableID: 'sample_table',
-      recordActions: [
-        'download_sample_manifest_single',
-        'download_permits_multiple',
-        'view_images_multiple',
-      ],
-      visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
-    },
-    {
-      component: 'read',
-      title: 'Reads',
-      subtitle: '#component_subtitle',
-      iconClass: 'fa fa-dna',
-      semanticIcon: 'dna', //semantic UI equivalence of fontawesome icon
-      //   countsKey: 'num_read',
-      buttons: [
-        'new-reads-spreadsheet-template',
-        'download-blank-manifest-template|href:#blank_manifest_url',
-      ],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'read_color',
-      color: 'orange',
-      profile_component: 'stand-alone',
-      tableID: 'read_table',
-      recordActions: ['delete_read_multi', 'submit_read_multi'],
-      visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
-    },
-    {
-      component: 'read',
-      title: 'Reads',
-      //subtitle: "#component_subtitle",
-      iconClass: 'fa fa-dna',
-      semanticIcon: 'dna', //semantic UI equivalence of fontawesome icon
-      // countsKey: "num_read",
-      buttons: [
-        'new-reads-spreadsheet-template',
-        'download-blank-manifest-template|href:#blank_manifest_url',
-      ],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'read_color',
-      color: 'orange',
-      profile_component: 'dtol',
-      tableID: 'read_table',
-      recordActions: ['delete_read_multi', 'submit_read_multi'],
-      visibleColumns: 3, //no of columns to be displayed, if tabular data is required. remaining columns will be displayed in a sub-table
-    },
-    {
-      component: 'seqnanotation',
-      title: 'Sequence Annotations',
-      iconClass: 'fa fa-tag',
-      semanticIcon: 'tag',
-      countsKey: 'num_seqannotation',
-      buttons: ['quick-tour-template', 'new-component-template'],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'data_color',
-      color: 'yellow',
-      tableID: 'seqannotation_table',
-      profile_component: 'stand-alone',
-      recordActions: [
-        'add_record_all',
-        'edit_record_single',
-        'delete_record_multi',
-        'submit_annotation_multi',
-      ],
-      visibleColumns: 5,
-    },
-    {
-      component: 'seqannotation',
-      title: 'Sequence Annotations',
-      iconClass: 'fa fa-tag',
-      semanticIcon: 'tag',
-      countsKey: 'num_seqannotation',
-      buttons: ['quick-tour-template', 'new-component-template'],
-      sidebarPanels: ['copo-sidebar-info'],
-      colorClass: 'data_color',
-      color: 'yellow',
-      tableID: 'seqannotation_table',
-      profile_component: 'dtol',
-      recordActions: [
-        'add_record_all',
-        'edit_record_single',
-        'delete_record_multi',
-        'submit_annotation_multi',
-      ],
-      visibleColumns: 5,
-    },
-  ];
-}
-*/
-
-//builds component-page navbar
+/**
+ * Entry point for building the component-page navbar.
+ * Generates navigation controls, initialises the component dropdown menu,
+ * and sets the component icon in the page header.
+ *
+ * @param {string} componentName - The active component identifier.
+ */
 function do_page_controls(componentName) {
-  var component = null;
-  profile_type = $('#profile_type').val();
-  /*
-  var components = get_profile_components(profile_type);
-    if (comp.component == componentName) {
-      profile_type = $('#profile_type').val();
-      if (profile_type != undefined) {
-        if (profile_type.toLowerCase() == 'genomics') {
-          if (comp.profile_component == 'stand-alone') {
-            component = comp;
-            return false;
-          }
-        } else if (profile_type.toLowerCase() != 'genomics') {
-          if (comp.profile_component != 'stand-alone') {
-            component = comp;
-            return false;
-          }
-        }
-      } else {
-        component = comp;
-        return false;
-      }
-    }
-  });
-
-  if (component == null) {
-    return false;
-  }
-  */
+  const profile_type = $('#profile_type').val();
   generate_component_control(componentName, profile_type);
   initialiseComponentDropdownMenu();
   setComponentIcon(componentName);
-} //end of func
+}
 
+/**
+ * Sets the component icon in the page header based on the component's
+ * `materialIcon` or `semanticIcon` definition.  For profile pages the icon
+ * is skipped.  Also triggers the component welcome message if a template exists.
+ *
+ * @param {string} componentName - The active component identifier.
+ */
 function setComponentIcon(componentName) {
   let $componentIcon = $('#componentIcon');
   let component = get_component_meta(componentName);
@@ -2942,7 +2958,11 @@ function setComponentIcon(componentName) {
   if (componentName === 'profile') return;
 
   if (component && $componentIcon.length) {
-    $componentIcon.addClass(`${component.semanticIcon} ${component.color}`);
+    if (component.materialIcon) {
+      $componentIcon.removeClass('ui icon').addClass(`material-symbols-outlined ${component.color}`).text(component.materialIcon);
+    } else {
+      $componentIcon.addClass(`${component.semanticIcon} ${component.color}`);
+    }
 
     // Update page welcome message if a template message exists
     addComponentMessage(componentName);
@@ -2963,6 +2983,13 @@ function setComponentIcon(componentName) {
   }
 }
 
+/**
+ * Returns the normalised group name for a component, or an empty string if the
+ * component has no group or its group is the sentinel value `"None"`.
+ *
+ * @param {string} componentName - The component identifier.
+ * @returns {string} The lower-cased, trimmed group name, or `''`.
+ */
 function getComponentGroupName(componentName) {
   let component = get_component_meta(componentName);
   if (!component) return '';
@@ -2974,6 +3001,14 @@ function getComponentGroupName(componentName) {
     : component.groupName.trim().toLowerCase();
 }
 
+/**
+ * Groups an array of component definition objects by their `groupName` field.
+ * Components without a group (or with `groupName === "None"`) are collected
+ * under the empty-string key `''`.
+ *
+ * @param {Object[]} components - Array of component definition objects.
+ * @returns {Object} A plain object mapping group name strings to arrays of components.
+ */
 function groupComponentsByGroupName(components) {
   const grouped = {};
 
@@ -2994,6 +3029,16 @@ function groupComponentsByGroupName(components) {
   return grouped;
 }
 
+/**
+ * Creates a cloned anchor element from the appropriate page template
+ * (icon-only or button) and populates it with the component's title, href,
+ * icon class / material icon text, and button label.
+ *
+ * @param {Object}  item           - Component definition object.
+ * @param {string}  profileId      - The active profile's MongoDB ObjectId, used to resolve `item.url`.
+ * @param {boolean} [isIconOnly=false] - When `true`, clones the icon-only template; otherwise the button template.
+ * @returns {jQuery} The populated anchor element.
+ */
 function createComponentAnchor(item, profileId, isIconOnly = false) {
   const componentGroupName = item.groupName ? ` ${item.groupName}` : '';
   const $templateAnchor = isIconOnly
@@ -3011,22 +3056,38 @@ function createComponentAnchor(item, profileId, isIconOnly = false) {
   const $icon = $templateAnchor.find('i');
 
   if (isIconOnly) {
-    $icon.addClass(`${item.color} ${item.semanticIcon}`);
+    if (item.materialIcon) {
+      $icon.removeClass('ui icon').addClass(`material-symbols-outlined pcomponent-material-icon ${item.color}`).text(item.materialIcon);
+    } else {
+      $icon.addClass(`${item.color} ${item.semanticIcon}`);
+    }
     $templateAnchor.removeClass('pcomponent-icon-template');
   } else {
     const $button = $templateAnchor.find('.pcomponent-button');
     $button.addClass(item.color);
-    $button.find('.pcomponent-icon').addClass(item.iconClass);
+    if (item.materialIcon) {
+      $button.find('.pcomponent-icon').removeClass('pcomponent-icon').addClass('material-symbols-outlined pcomponent-material-icon pcomponent-icon').text(item.materialIcon);
+      $icon.removeClass('pcomponent-icon').addClass('material-symbols-outlined pcomponent-material-icon').text(item.materialIcon);
+    } else {
+      $button.find('.pcomponent-icon').addClass(item.iconClass);
+      $icon.addClass(item.iconClass);
+    }
     $button
       .find('.pcomponent-name')
       .text(`${item.buttonLabel}${componentGroupName}`);
-    $icon.addClass(item.iconClass);
     $templateAnchor.removeClass('pcomponent-button-template');
   }
 
   return $templateAnchor;
 }
 
+/**
+ * Returns `true` if `item` matches the currently active component, so it can
+ * be omitted from the navigation icon/button list.
+ *
+ * @param {Object} item - Component definition object to test.
+ * @returns {boolean} Whether the item is the current page's component.
+ */
 function skipCurrentComponent(item) {
   const componentName = $('#nav_component_name').val();
   const component = get_component_meta(componentName);
@@ -3036,6 +3097,16 @@ function skipCurrentComponent(item) {
   );
 }
 
+/**
+ * Clones the appropriate dropdown wrapper template for a component group and
+ * populates it with child component anchors.
+ *
+ * @param {string}   groupName      - The normalised group name; used to locate the template class.
+ * @param {Object[]} childrenItems  - Array of component definition objects for the group's children.
+ * @param {string}   profileId      - The active profile's MongoDB ObjectId.
+ * @param {boolean}  isIconOnly     - Whether to use icon-only templates instead of button templates.
+ * @returns {jQuery|undefined} The populated wrapper element, or `undefined` if no template was found.
+ */
 function createDropdownWrapper(
   groupName,
   childrenItems,
@@ -3085,6 +3156,15 @@ function createDropdownWrapper(
   return $wrapper;
 }
 
+/**
+ * Generates and injects the full suite of page header controls for a component:
+ * profile title, page title, optional sidebar panels, page-level action buttons,
+ * and the profile component icon/button row.  Components are grouped and rendered
+ * as dropdowns where applicable.
+ *
+ * @param {string} componentName - The active component identifier.
+ * @param {string} profile_type  - The active profile type string (e.g. `"dtol"`).
+ */
 function generate_component_control(componentName, profile_type) {
   var component = get_component_meta(componentName);
   var pageHeaders = $('.copo-page-headers'); //page header/icons
@@ -3143,43 +3223,18 @@ function generate_component_control(componentName, profile_type) {
       sidebarPanels
         .find('.tab-content')
         .append(sidebarPanels2.find('.tab-content').find('.' + item));
-      /*
-      sidebarPanels
-        .find('.component-legend')
-        .append(sidebarPanels2.find('.component-legend').find('.' + item));
-      sidebarPanels
-        .find('.accessions-legend')
-        .append(sidebarPanels2.find('.accessions-legend').find('.' + item));
-      */
     });
 
     sideBar
       .prepend(sidebarPanels.find('.tab-content'))
       .prepend(sidebarPanels.find('.nav-tabs'));
-
-    /*
-    // Add 'profile types' legend to profile web page only
-    if (component.component == 'profile') {
-      sideBar.append(sidebarPanels.find('.component-legend'));
-    }
-
-    // Add 'accessions types' filter to accessions dashboard and accessions web page only
-    if (
-      component.component == 'accessions_dashboard' ||
-      component.component == 'accessions'
-    ) {
-      sideBar.append(sidebarPanels.find('.accessions-legend'));
-    }
-    */
   }
 
   //create buttons
   var buttonsSpan = $('<span/>', { style: 'white-space:nowrap;' });
   pageHeaders.append(buttonsSpan);
-  //component.buttons.forEach(function (item) {
   if (component.buttons) {
     component.buttons.forEach(function (item) {
-      //button = $('.' + item.split('|')[0]).clone();
       button_str = title_button_def[item.split('|')[0]].template;
       additional_attr = title_button_def[item.split('|')[0]].additional_attr;
       button = $(button_str);
@@ -3203,7 +3258,6 @@ function generate_component_control(componentName, profile_type) {
         .append("<span style='display: inline;'>&nbsp;</span>");
     });
   }
-  //});
 
   //...and profile component buttons
   if (profile_type != undefined) {
@@ -3256,6 +3310,17 @@ function generate_component_control(componentName, profile_type) {
   refresh_tool_tips();
 }
 
+// ═══ WEBUI POPOVER AND HELP SYSTEM ════════════════════════════════════════════
+
+/**
+ * Initialises or refreshes a webuiPopover on an element.  Extra configuration
+ * keys supplied via `exrta_meta` are merged into the base config.
+ *
+ * @param {jQuery} elem       - The element to attach the popover to.
+ * @param {string} title      - The popover title.
+ * @param {string} content    - The popover body HTML (wrapped in `.webpop-content-div`).
+ * @param {Object} exrta_meta - Additional webuiPopover config options to merge.
+ */
 function refresh_webpop(elem, title, content, exrta_meta) {
   var config = {
     title: title,
@@ -3288,6 +3353,14 @@ function refresh_webpop(elem, title, content, exrta_meta) {
   elem.webuiPopover(config);
 }
 
+/**
+ * Globally enables or disables the per-field help tip popovers within a section.
+ * When disabled, existing popovers are destroyed and a `data-helptip="no"` flag
+ * is set to prevent new ones from opening.
+ *
+ * @param {boolean} state         - `true` to enable help tips; `false` to disable.
+ * @param {jQuery}  parentElement - The container element to scope the toggle to.
+ */
 function toggle_display_help_tips(state, parentElement) {
   if (!state) {
     parentElement.find('.copo-form-group').webuiPopover('destroy');
@@ -3297,6 +3370,11 @@ function toggle_display_help_tips(state, parentElement) {
   }
 }
 
+/**
+ * Returns a centred Font Awesome spinner element for use as a loading indicator.
+ *
+ * @returns {jQuery} A cloned jQuery `<div>` containing the spinner.
+ */
 function get_spinner_image() {
   var loaderObject = $('<div>', {
     style: 'text-align: center',
@@ -3306,6 +3384,15 @@ function get_spinner_image() {
   return loaderObject.clone();
 }
 
+/**
+ * Normalises a raw context-help payload into a flat dataset array suitable
+ * for rendering in a DataTable.  Assigns sequential IDs and generates unique
+ * DOM-safe identifiers for each help entry.
+ *
+ * @param {Object}   contextHelpList            - Raw help payload from the server.
+ * @param {Object[]} contextHelpList.properties - Array of `{title, content, context}` objects.
+ * @returns {Object[]} Normalised array of help items with `id`, `title`, `content`, `context`, and `help_id`.
+ */
 function sanitise_help_list(contextHelpList) {
   var dataSet = [];
 
@@ -3328,8 +3415,13 @@ function sanitise_help_list(contextHelpList) {
   return dataSet;
 }
 
+/**
+ * Renders or refreshes the context-help DataTable (`#page-context-help`).
+ * If the table does not exist in the DOM this function is a no-op.
+ *
+ * @param {Object} data - Raw context-help payload (passed to `sanitise_help_list`).
+ */
 function do_context_help(data) {
-  //does current page request context help?
   var tableID = 'page-context-help';
   var helpComponent = $('#' + tableID);
 
@@ -3339,17 +3431,14 @@ function do_context_help(data) {
   }
 
   var dtd = sanitise_help_list(data);
-
-  //set data
   var table = null;
 
   if ($.fn.dataTable.isDataTable('#' + tableID)) {
-    //if table instance already exists, then do refresh
     table = $('#' + tableID).DataTable();
   }
 
   if (table) {
-    //clear old, set new data
+    // Refresh existing table data
     table.clear().draw();
     table.rows.add(dtd);
     table.columns.adjust().draw();
@@ -3431,9 +3520,13 @@ function do_context_help(data) {
   // .attr("size", 30);
 }
 
+/**
+ * Fetches global help data for a component from the server and passes the
+ * context-help section to `do_context_help` for rendering.
+ *
+ * @param {string} component - The component identifier to request help for.
+ */
 function do_global_help(component) {
-  //global help
-
   $.ajax({
     url: copoVisualsURL,
     type: 'POST',
@@ -3456,6 +3549,12 @@ function do_global_help(component) {
   });
 }
 
+/**
+ * Returns a formatted timestamp string suitable for use in filenames or IDs.
+ * Format: `D_Mon_YYYY_H_M_S` (e.g. `"27_Mar_2026_14_30_00"`).
+ *
+ * @returns {string} The current date and time as an underscore-delimited string.
+ */
 function get_timestamp() {
   var date = new Date();
 
@@ -3496,9 +3595,12 @@ function get_timestamp() {
   );
 }
 
+/**
+ * Binds a delegated click handler to `.side-help-trigger` elements in the
+ * context-help table.  Toggles the collapse state of the associated help
+ * content block and updates the trigger's `shown` class accordingly.
+ */
 function do_context_help_event() {
-  //handles collapsing of help topics
-
   $(document).on('click', '.side-help-trigger', function (e) {
     var dataTargetID = $(this).attr('data-target');
 
@@ -3512,6 +3614,12 @@ function do_context_help_event() {
   });
 }
 
+/**
+ * Binds focus and blur handlers on `.copo-form-group` elements to show/hide
+ * contextual help for form inputs.  For elements inside a `.rendered-control`
+ * the help is injected into the `.message-segment`; otherwise a webuiPopover is used.
+ * Help can be suppressed per-element by setting `data-helptip="no"`.
+ */
 function set_inputs_help() {
   $(document).on('focus', '.copo-form-group', function (event) {
     var elem = $(this);
@@ -3574,6 +3682,18 @@ function set_inputs_help() {
   });
 }
 
+// ═══ DIALOG AND UI TEMPLATE FACTORIES ════════════════════════════════════════
+
+/**
+ * Configures and opens a BootstrapDialog with a custom icon, title, and message.
+ * Applies the `.spreadsheet-modal` class and renders the title above the message
+ * body rather than in the standard modal header.
+ *
+ * @param {BootstrapDialog} dialog   - A pre-created BootstrapDialog instance to configure.
+ * @param {string}          dTitle   - The dialog title string.
+ * @param {string}          dMessage - The dialog body HTML.
+ * @param {string}          dType    - One of `'warning'`, `'danger'`, or `'info'`.
+ */
 function dialog_display(dialog, dTitle, dMessage, dType) {
   var dTypeObject = {
     warning:
@@ -3617,6 +3737,12 @@ function dialog_display(dialog, dTitle, dMessage, dType) {
   dialog.open();
 }
 
+/**
+ * Builds and returns a cloned Semantic UI split-button dropdown element used
+ * as the primary actions menu on component cards and bundle panels.
+ *
+ * @returns {jQuery} A cloned jQuery element for the actions dropdown menu.
+ */
 function get_menu_control() {
   let menu_control = $(
     '<div class="copo-actions-dropdown ui dropdown">' +
@@ -3637,6 +3763,13 @@ function get_menu_control() {
   return menu_control.clone();
 }
 
+/**
+ * Builds and returns a cloned description-bundle card panel with a task-menu
+ * dropdown, status icon, and a body placeholder (`.pbody`).
+ * Used by the datafile description workflow.
+ *
+ * @returns {jQuery} A cloned jQuery element for the bundle panel.
+ */
 function get_description_bundle_panel() {
   let panel = $(
     '<div class="description-bundle-template">\n' +
@@ -3695,6 +3828,12 @@ function get_description_bundle_panel() {
   return panel.clone();
 }
 
+/**
+ * Builds and returns a cloned generic component card panel with a task-menu
+ * dropdown, optional attribute placeholder, status icon, and body (`.pbody`).
+ *
+ * @returns {jQuery} A cloned jQuery element for the card panel.
+ */
 function get_card_panel() {
   let panel = $(
     '<div class="component-type-panel">\n' +
@@ -3738,6 +3877,12 @@ function get_card_panel() {
   return panel.clone();
 }
 
+/**
+ * Returns a cloned dismissible Bootstrap alert element (`.copo-alert-message`)
+ * with a close button and an inner `.alert-message` span.
+ *
+ * @returns {jQuery} A cloned jQuery alert element.
+ */
 function get_alert_control() {
   let alert = $(
     '<div class="alert alert-success alert-dismissible fade in copo-alert-message" style="background-image: none; border: none;" role="alert">\n' +
@@ -3751,6 +3896,12 @@ function get_alert_control() {
   return alert.clone();
 }
 
+/**
+ * Returns a cloned non-dismissible Bootstrap alert element (`.copo-alert-message`)
+ * with an inner `.alert-message` span but no close button.
+ *
+ * @returns {jQuery} A cloned jQuery alert element.
+ */
 function get_alert_control_no_close() {
   let alert = $(
     '<div class="alert alert-success alert-dismissable fade in copo-alert-message" style="background-image: none; border: none;">\n' +
@@ -3761,6 +3912,12 @@ function get_alert_control_no_close() {
   return alert.clone();
 }
 
+/**
+ * Returns a cloned inline image loader element (an animated GIF `loading.gif`)
+ * wrapped in an `.input-group` span, suitable for embedding next to input fields.
+ *
+ * @returns {jQuery} A cloned jQuery loader element.
+ */
 function get_ajax_loader() {
   let loader = $(
     '<span class="input-group">\n' +
@@ -3770,6 +3927,16 @@ function get_ajax_loader() {
   return loader.clone();
 }
 
+/**
+ * Builds and returns a cloned collapsible panel structure used throughout COPO
+ * component pages (`.panel-dtables` variant with `.copo-details-coll` collapse region
+ * and a plus/minus toggle icon).
+ *
+ * Note: this is a different structure from the `get_collapsible_panel(panelType)`
+ * overload above — they are distinct template factories.
+ *
+ * @returns {jQuery} A cloned jQuery element containing the panel.
+ */
 function get_collapsible_panel() {
   let panel = $(
     '<div class="panel-group" style="margin-top: 15px;">\n' +
@@ -3798,6 +3965,19 @@ function get_collapsible_panel() {
   return panel.clone();
 }
 
+// ═══ COMPONENT DROPDOWN MENU ══════════════════════════════════════════════════
+
+/**
+ * Initialises interactive behaviour for component navigation dropdown menus.
+ *
+ * - Closes any open dropdown when the user clicks outside a wrapper.
+ * - Toggles individual dropdown menus on wrapper click, moving button-driven
+ *   menus to `<body>` to escape `overflow: hidden` containers, and positioning
+ *   them below the trigger button.
+ * - Repositions visible dropdown menus on window scroll or resize.
+ * - Initialises Select2 on `.searchable-select` elements, rendering options
+ *   that start with `*` with a red asterisk indicator.
+ */
 function initialiseComponentDropdownMenu() {
   // Close component dropdowns when clicking outside
   $(document)
@@ -3901,20 +4081,20 @@ function initialiseComponentDropdownMenu() {
     templateSelection: function (data) {
       if (!data || !data.id || !data.text) return data.text || '';
       // Check if the selected option begins with an asterisk (*)
-      // If yes, render a red asterisk and display the rest of the text
+      // If yes, replace the asterisk with a "has-data" indicator icon
       if (/^\*\s*/.test(data.text)) {
         const text = data.text.replace(/^\*\s*/, '');
-        return `<span class="asterisk" aria-hidden="true">*</span>${text}`;
+        return `<i class="fa fa-circle has-data-indicator" aria-hidden="true" title="Has data"></i>${text}`;
       }
       return data.text;
     },
     templateResult: function (data) {
       if (!data || !data.id || !data.text) return data.text || ''; // placeholder or empty
       // Check if any of the dropdown options begin with an asterisk (*)
-      // If yes, render a red asterisk and display the rest of the text
+      // If yes, replace the asterisk with a "has-data" indicator icon
       if (/^\*\s*/.test(data.text)) {
         const text = data.text.replace(/^\*\s*/, '');
-        return `<span class="asterisk" aria-hidden="true">*</span>${text}`;
+        return `<i class="fa fa-circle has-data-indicator" aria-hidden="true" title="Has data"></i>${text}`;
       }
       return data.text;
     },
@@ -3934,6 +4114,12 @@ function initialiseComponentDropdownMenu() {
   }
 }
 
+/**
+ * Initialises the responsive navigation bar toggle behaviour.
+ * Handles mobile hamburger toggle, dropdown open/close on click,
+ * navigation link clicks that collapse the menu on small screens, and
+ * resetting the menu state when the viewport widens past 768px.
+ */
 function initialiseNavToggle() {
   // Initialise navigation bar on each component page
   const $nav = $('#publicNavbar, #authNavbar');
@@ -3974,6 +4160,22 @@ function initialiseNavToggle() {
   });
 }
 
+// ═══ MODAL / DIALOG UTILITIES ═════════════════════════════════════════════════
+
+/**
+ * Conditionally shows a BootstrapDialog close-confirmation prompt before
+ * dismissing a modal.  The confirmation is only shown when a visible, non-empty
+ * alert is present in the modal AND the Finish/Submit button is still enabled
+ * (indicating an in-progress operation that would be lost).
+ *
+ * Accepts three trigger forms:
+ * 1. A DOM event (the closest `.modal` ancestor is resolved as the target).
+ * 2. A jQuery modal reference (`.modal('hide')` is called to close).
+ * 3. A BootstrapDialog instance (`.close()` is called).
+ *
+ * @param {jQuery.Event|jQuery|BootstrapDialog} triggerDialogOrEvent - The trigger
+ *   that initiated the close request.
+ */
 function confirmCloseDialog(triggerDialogOrEvent) {
   function getTargetDialog(trigger) {
     if (!trigger) return null;
@@ -4076,8 +4278,15 @@ function confirmCloseDialog(triggerDialogOrEvent) {
   }
 }
 
-// Fades out warning message in modals and updates
-// info text after manifest validation
+/**
+ * Fades out any `.warning-content` elements in the current modal and updates
+ * the `.info-content .info-text` copy after a manifest validation response is
+ * received.  Only triggers when `action` maps to a known `alertClassMap` key
+ * and `message` is a non-empty, non-loading string.
+ *
+ * @param {string} message - The response message from the server.
+ * @param {string} action  - The action key to look up in `alertClassMap`.
+ */
 function hideModalInstructionText(message, action) {
   // Relevant actions that trigger info update
   const shouldFade =
@@ -4094,6 +4303,12 @@ function hideModalInstructionText(message, action) {
   $('.info-content .info-text').text('Manifest validation completed for:');
 }
 
+/**
+ * Resets modal form state to its initial empty condition.
+ * Clears file inputs, empties and hides alert elements, and resets
+ * the tab navigation and tab content areas.  Called after a modal is closed
+ * via `confirmCloseDialog`.
+ */
 function resetValues() {
   // Clear previous data in the modal
   $('#file, #fileid').val('');
@@ -4112,36 +4327,13 @@ function resetValues() {
   $('.modal .tab-content').empty();
 }
 
-// function moveDataTableControlsToRow(
-//   $tableWrapper,
-//   className = 'dataTables_info'
-// ) {
-//   // Move info (or length) and paginate into their own row as columns
-//   const infoOrLengthDiv = $tableWrapper.find(`.${className}`);
-//   const paginateDiv = $tableWrapper.find('.dataTables_paginate');
-//   let rowDiv = $tableWrapper.find('.dataTables-controls-row');
-
-//   if (!rowDiv.length) {
-//     // Row doesn't exist yet, create it
-//     rowDiv = $('<div class="row dataTables-controls-row"></div>');
-//     $tableWrapper.append(rowDiv);
-//   }
-
-//   rowDiv.empty(); // Clear previous contents to avoid duplicates
-
-//   // Apply column classes
-//   infoOrLengthDiv.addClass('col-sm-4'); // Left half
-//   paginateDiv.addClass('col-sm-8 text-right'); // Right half
-
-//   // Append existing elements into the row
-//   rowDiv.append(infoOrLengthDiv).append(paginateDiv);
-
-//   // Add row to wrapper if length control
-//   if (className === 'dataTables_length') {
-//     $tableWrapper.append(rowDiv);
-//   }
-// }
-
+/**
+ * Moves all children of `#componentInfoContainer` into the sidebar info tab
+ * body (`#copo-sidebar-info .panel-body`), then removes the now-empty container.
+ * Each migrated alert is enhanced with a close button, a `fade` class, and a
+ * MutationObserver that syncs the `in` class with the element's display state
+ * so Bootstrap fade transitions work correctly.
+ */
 function moveComponentInfoToTabContent() {
   // Ensure that component info alerts are displayed with
   // the other alerts in the sidebar info tab

@@ -27,9 +27,6 @@
     <link rel="stylesheet" media="print" onload="this.media='all'"
           href="{% static 'copo/bootstrap/bootstrap_switch/css/bootstrap-switch.css' %}">
     <link rel="stylesheet" media="print" onload="this.media='all'"
-          href="{% static 'copo/bootstrap/css/bootstrap-select.min.css' %}">
-    <link rel="stylesheet" media="print" onload="this.media='all'" href="{% static 'copo/fuelux/css/fuelux.css' %}">
-    <link rel="stylesheet" media="print" onload="this.media='all'"
           href="{% static 'copo/rangeslider/rangeslider.css' %}">
     <link rel="stylesheet" media="print" onload="this.media='all'" href="{% static 'copo/css/style.css' %}">
     <link rel="stylesheet" media="print" onload="this.media='all'" href="{% static 'assets/css/navbar.css' %}">
@@ -57,7 +54,7 @@
     <link rel="stylesheet" type="text/css"
           href="{% static 'copo/datatables/css/datatables.min.css' %}"/>
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts (includes Material Symbols Outlined) -->
     <link href="{% static 'copo/google/css/google-fonts.css' %}" rel='stylesheet' type='text/css'>
 
     <script src="{% static 'copo/jquery/js/jquery-3.7.1.min.js' %}"></script>
@@ -69,11 +66,9 @@
     <script src="{% static 'copo/js/serialize_form_json.js' %}"></script>
     <script src="{% static 'copo/bootstrap/js/bootstrap-3.3.7.js' %}"></script>
     <script src="{% static 'copo/bootstrap/js/bootstrap-dialog.js' %}"></script>
-    <script src="{% static 'copo/bootstrap/js/bootstrap-select.min.js' %}"></script>
     <script src="{% static 'copo/bootstrap/js/dropdowns-enhancement.js' %}"></script>
     <script src="{% static 'copo/selectize/standalone/selectize.min.js' %}"></script>
     <script src="{% static 'copo/bootstrap/bootstrap_switch/js/bootstrap-switch.js' %}"></script>
-    <script src="{% static 'copo/fuelux/js/fuelux.min.js' %}"></script>
     <script src="{% static 'copo/validator1000hz/validator.min.js' %}"></script>
     <script src="{% static 'copo/rangeslider/rangeslider.min.js' %}"></script>
     <script src="{% static 'copo/jquery/js/jquery.alterclass.js' %}"></script>
@@ -257,6 +252,15 @@
             background-color: #f7eded;
         }
     </style>
+    <link rel="stylesheet" href="{% static 'copo/css/copo_modern_scheme.css' %}">
+
+    <!-- Apply saved theme immediately to prevent flash -->
+    <script>
+      (function() {
+        var t = localStorage.getItem('copo-theme');
+        if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      })();
+    </script>
 </head>
 
 <body class="{% if banner %}has-banner{% endif %}">
@@ -301,6 +305,32 @@
     {#    this block will be inherited by one of two page types i.e., single column (base_1col.html), two columns (base_2col.html - for fixed side navbar) #}
     {#    include either of the two templates (inheriting this base template) in your working page and not the base.html directly. #}
 {% endblock content_area %}
+
+<!-- Theme toggle -->
+<script>
+  $(document).ready(function() {
+    var $btn = $('#themeToggleBtn');
+    var $icon = $btn.find('i');
+
+    function updateIcon() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      $icon.toggleClass('fa-moon', !isDark).toggleClass('fa-sun', isDark);
+    }
+    updateIcon();
+
+    $btn.on('click', function() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('copo-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('copo-theme', 'dark');
+      }
+      updateIcon();
+    });
+  });
+</script>
 
 </body>
 </html>
