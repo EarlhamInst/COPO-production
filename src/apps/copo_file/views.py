@@ -6,6 +6,77 @@ import jsonpickle
 from django.http import HttpResponse
 from .utils.CopoFiles import generate_files_record
 from common.utils import helpers
+from boto3.s3.transfer import TransferConfig
+import json
+import threading
+
+
+@login_required
+def copo_files(request, profile_id, ui_component):
+    request.session["profile_id"] = profile_id
+    profile = Profile().get_record(profile_id)
+
+    profile_type =  profile.get("type", "")
+    profile_title =  profile.get('title', '')
+
+    return render(request, "copo/copo_files.html", {"profile_id": profile_id, "profile_title": profile_title, "profile_type": profile_type, "ui_component": ui_component})
+
+
+@login_required
+def process_urls(request):
+    profile_id = helpers.get_current_request().session['profile_id']
+    channels_group_name = "s3_" + profile_id
+    helpers.notify_frontend(data={"profile_id": profile_id},
+                            msg='', action="info",
+                            html_id="sample_info", group_name=channels_group_name)
+    file_list = json.loads(request.POST["data"])
+    bucket_name = profile_id
+
+    s3con = S3Connection()
+
+    if not s3con.check_for_s3_bucket(bucket_name):
+        # msg='s3 bucket not found, creating it
+        helpers.notify_frontend(
+            data={"profile_id": profile_id},
+            msg='No data file storage was found for this profile, creating it now...',
+            action="info",
+            html_id="file_info",
+            group_name=channels_group_name,
+        )
+        s3con.make_s3_bucket(bucket_name)
+        # msg = 's3 bucket created'
+        helpers.notify_frontend(data={"profile_id": profile_id},
+                                msg='A data file storage was created for this profile', action="info",
+                                html_id="file_info", group_name=channels_group_name)
+    urls_list = list()
+    for file_name in file_list:
+        if file_name and not file_name.endswith("/"):
+            file_name = file_name.replace("*", "")
+            url = s3con.get_presigned_url(bucket=bucket_name, key=file_name)
+            file_url = {"name": file_name, "url": url}
+            urls_list.append(file_url)
+    return HttpResponse(json.dumps(urls_list))
+
+
+@login_required
+def upload_ecs_files(request, profile_id):
+    channels_group_name = "s3_" + profile_id
+    files = request.FILES
+    if not files:
+        helpers.notify_frontend(data={"profile_id": profile_id},
+                                msg='At least one file is required',
+                                action="error",
+                                html_id="file_info", group_name=channels_group_name)
+
+    bucket_name = profile_id
+
+    # Upload the file
+    s3 = S3Connection()
+    if not s3.check_for_s3_bucket(bucket_name):
+        s3.make_s3_bucket(bucket_name)
+    KB = 1024
+    MB = KB * KB
+
     chunk_size = 64 * MB
     transfer_config = TransferConfig(
         multipart_threshold=chunk_size,
