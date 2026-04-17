@@ -69,11 +69,11 @@ app.conf.beat_schedule = {
     },
     'poll_asyn_ena_submission': {
         'task': 'src.apps.copo_dtol_submission.tasks.poll_asyn_ena_submission',
-        'schedule': timedelta(seconds=10),
+        'schedule': timedelta(seconds=30),
     },
     'process_ena_submission': {
         'task': 'src.apps.copo_read_submission.tasks.process_ena_submission',
-        'schedule': timedelta(seconds=20),  # execute every n minutes minute="*/n"
+        'schedule': timedelta(seconds=10),  # execute every n minutes minute="*/n"
     },
     'process_ena_transfers': {
         'task': 'src.apps.copo_read_submission.tasks.process_pending_file_transfers',
@@ -81,7 +81,7 @@ app.conf.beat_schedule = {
     },
     'check_for_stuck_transfers': {
         'task': 'src.apps.copo_read_submission.tasks.check_for_stuck_transfers',
-        'schedule': timedelta(seconds=20),
+        'schedule': timedelta(seconds=1800),
     },
     'update_assembly_submission_pending': {
         'task': 'src.apps.copo_assembly_submission.tasks.update_assembly_submission_pending',

@@ -2201,7 +2201,8 @@ class EnaReads:
         ghlper.notify_transfer_status(profile_id=submission_record['profile_id'], submission_id=self.submission_id,
                                       status_message=status_message)
 
-        kwargs = dict(submission_id=self.submission_id, transfer_queue_id=queued_record_id, report_status=True)
+        kwargs = dict(submission_id=self.submission_id, transfer_queue_id=queued_record_id, report_status=True,
+                      profile_id=submission_record['profile_id'])
         ghlper.transfer_to_ena(webin_user=self.webin_user, pass_word=self.pass_word, remote_path=self.remote_location,
                                file_paths=local_paths, **kwargs)
 

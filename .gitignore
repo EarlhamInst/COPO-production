@@ -18,6 +18,9 @@ media/uploads/
 media/ena_assembly_files
 media/ena_tagged_seq_files
 
+# local uploads #
+local_uploads/
+
 
 # Backup files #
 *.bak

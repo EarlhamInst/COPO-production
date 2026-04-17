@@ -512,12 +512,33 @@ class submissionConsumer(AsyncWebsocketConsumer):
         )
 
     async def msg(self, event):
-        # send message to WebSocket
+        # Forward generic notify_submission_status messages to the browser.
         await self.send(text_data=json.dumps({
             'message': event["message"],
             'action': event["action"],
             'html_id': event["html_id"],
             'data': event["data"]
+        }))
+
+    async def submission_status(self, event):
+        # Forward submission_status events (sent by notify_status_change in
+        # common/ena_utils/generic_helper.py) to the browser so the JS
+        # type == 'submission_status' branch in copo_submission.js can trigger
+        # get_submission_information() and update the table row status.
+        await self.send(text_data=json.dumps({
+            'type': 'submission_status',
+            'submission_id': event.get('submission_id', ''),
+        }))
+
+    async def file_transfer_status(self, event):
+        # Forward file_transfer_status events (sent by notify_file_transfer_status
+        # in common/ena_utils/generic_helper.py) to the browser so the JS
+        # type == 'file_transfer_status' branch can call get_file_transfer_status()
+        # and log the transfer progress line.
+        await self.send(text_data=json.dumps({
+            'type': 'file_transfer_status',
+            'submission_id': event.get('submission_id', ''),
+            'status_message': event.get('status_message', ''),
         }))
 
     async def disconnect(self, close_code):

@@ -201,28 +201,17 @@ function place_task_buttons(componentMeta) {
 }
 
 function do_crud_action_feedback(meta) {
-  var feedbackClass;
-
-  if (['success', 'green', 'positive'].indexOf(meta.status) > -1) {
-    feedbackClass = 'alert-success';
-  } else if (['error', 'red', 'danger', 'negative'].indexOf(meta.status) > -1) {
-    feedbackClass = 'alert-danger';
-  } else if (['warning'].indexOf(meta.status) > -1) {
-    feedbackClass = 'alert-warning';
-  } else {
-    feedbackClass = 'alert-info';
-  }
-
-  var infoPanelElement = trigger_global_notification();
-
-  var feedback = get_alert_control();
-  feedback
-    .removeClass('alert-success')
-    .addClass(feedbackClass)
-    .addClass('page-notifications-node');
-
-  feedback.find('.alert-message').html(meta.message);
-  infoPanelElement.prepend(feedback);
+  // Route all CRUD feedback through the unified submission activity log
+  // instead of cloning Bootstrap alert boxes into the sidebar.
+  var statusMap = {
+    success: 'success', green: 'success', positive: 'success',
+    error: 'error', red: 'error', danger: 'error', negative: 'error',
+    warning: 'warning',
+  };
+  var alertType = statusMap[meta.status] || 'info';
+  // Ensure the sidebar shows the info tab and route to the log pane.
+  trigger_global_notification();
+  displayAlert(alertType, meta.message);
 }
 
 function format_feedback_message(message, messageClass, messageTitle) {
@@ -397,48 +386,74 @@ function getAlertElement(htmlId) {
   return { $el: $(), inModal: false };
 }
 
-function displayAlert(alertType, alertMessage) {
-  // alertType:  'success', 'warning', 'info', 
-  //             'danger' (Note: 'error' action is mapped to 'danger' alert type)
-  // alertMessage: the message to be displayed
+function displayAlert(alertType, alertMessage, opts) {
+  // alertType:  'success', 'warning', 'info', 'danger'/'error', 'progress'
+  // alertMessage: the message/HTML to be displayed
+  // opts.lineId: if provided, update that log line in place (used for progress bars)
 
-  // Strangely, calling the 'Info' tab with the ID, '#page_alert_panel', doesn't work,
-  // so the class, '.copo-sidebar-info', is used instead.
   let $infoSidebarTab = $('.copo-sidebar-info');
   let $infoPanel = $infoSidebarTab.find('.panel-body');
-
   if (!$infoPanel.length) return;
 
   // Show the sidebar info tab
   $('.copo-sidebar-tabs a[href="#copo-sidebar-info"]').tab('show');
-
-  // Ensure the tab content is visible
   if (!$infoPanel.hasClass('in')) $infoPanel.addClass('in');
 
-  const alertClass = alertClassMap[alertType] || 'alert-info';
-  const $alertElement = $('.alert-templates')
-    .find(`.${alertClass}`)
-    .clone();
+  // Strip any boxed alerts that may have been inserted (by legacy paths or
+  // pre-existing handlers) from BOTH the info panel and #page_alert_panel.
+  var $panels = $infoPanel.add('#page_alert_panel');
+  $panels
+    .find('.alert.alert-dismissable, .alert.alert-dismissible, .copo-alert-message, .page-notifications-node')
+    .remove();
 
-  // Remove fade class if present
-  if ($alertElement.hasClass('fade')) $alertElement.removeClass('fade');
+  // Lazily create the single log pane (dark monospace stream, no boxes).
+  let $log = $panels.find('#submission-activity-log').first();
+  if (!$log.length) {
+    $log = $('<div/>', {
+      id: 'submission-activity-log',
+      css: {
+        background: '#111',
+        color: '#ddd',
+        padding: '8px 10px',
+        margin: '6px 0',
+        border: '1px solid #333',
+        borderRadius: '4px',
+        maxHeight: '320px',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        fontFamily: 'ui-monospace,Menlo,Consolas,monospace',
+        fontSize: '12px',
+        lineHeight: '1.4',
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-all',
+      },
+    });
+    // Prefer #page_alert_panel (the canonical sidebar panel) when present.
+    var $host = $('#page_alert_panel');
+    if (!$host.length) $host = $infoPanel;
+    $host.prepend($log);
+  }
 
-  // Apply close button functionality since Bootstrap's JS isn't being used
-  const $closeBtn = $alertElement.find('.close');
-  $closeBtn.on('click', function (e) {
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    $alertElement.remove();
-  });
+  const color =
+    alertType === 'error' || alertType === 'danger' ? '#ff6b6b' :
+    alertType === 'warning' ? '#e0b060' :
+    alertType === 'success' ? '#7bd88f' :
+    alertType === 'progress' ? '#9aa' : '#ddd';
 
-  $alertElement.find('.alert-message').html(alertMessage);
-  $infoPanel.prepend($alertElement);
+  const ts = new Date().toLocaleTimeString();
+  const text = ts + ' ' + String(alertMessage).replace(/<[^>]+>/g, '');
 
-  // Adjust margin spacing
-  $('.component-legend, .other-projects-accessions-filter-checkboxes').css(
-    'margin-top',
-    '0'
-  );
+  const lineId = opts && opts.lineId;
+  let $line = lineId ? $log.find('#' + lineId) : $();
+  if (!$line.length) {
+    $line = $('<div/>').css('color', color);
+    if (lineId) $line.attr('id', lineId);
+    $log.append($line);
+  } else {
+    $line.css('color', color);
+  }
+  $line.text(text);
+  $log.scrollTop($log[0].scrollHeight);
 }
 
 function deselect_records(tableID) {

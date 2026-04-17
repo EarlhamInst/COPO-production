@@ -158,8 +158,7 @@ class EnaSubmissionHelper:
                 result['status'] = False
                 raise e
 
-            message = file_name + ' successfully written to  ' + xml_file_path
-            self.logging_info(message)
+            lg.log(file_name + ' successfully written to  ' + xml_file_path)
 
             result['value'] = xml_file_path
 
@@ -296,7 +295,7 @@ class EnaSubmissionHelper:
         dt = get_datetime()
 
         # create sample xml
-        message = "Registering samples..."
+        message = "Registering samples with ENA..."
         self.logging_info(message)
         #ghlper.logging_info(message, str(submission_id))
         #notify_submission_status(data={"profile_id": profile_id}, msg=message, action="info", html_id="sample_info")
@@ -421,12 +420,26 @@ class EnaSubmissionHelper:
         project.set("alias", self.submission_id+":"+ study["study_id"])
         project.set("center_name", self.sra_settings["sra_center"])
 
-        project_title = study.get("title", str())
-        project_description = study.get("description", str())
+        # For MODIFY actions ENA locates the existing project via
+        # IDENTIFIERS/PRIMARY_ID. Do NOT also set the `accession` attribute ---
+        # specifying both has been observed to trigger an NPE
+        # ('Node.getNodeType() because "n" is null') on the Webin server.
+        if study.get("accession_ena"):
+            identifiers = etree.SubElement(project, 'IDENTIFIERS')
+            etree.SubElement(identifiers, 'PRIMARY_ID').text = study["accession_ena"]
 
-        if project_title:
-            etree.SubElement(project, 'NAME').text = project_title
-        # TITLE is required by ENA schema and must precede DESCRIPTION and SUBMISSION_PROJECT
+        # NAME and DESCRIPTION come from the profile; TITLE comes from the manifest
+        # (the per-study record on the singlecell component). Fall back to the
+        # profile title / study_id so TITLE is never empty --- ENA NPEs on an
+        # empty required element.
+        profile = getattr(self, "profile", {}) or {}
+        project_name = profile.get("title", str())
+        project_description = profile.get("description", str())
+        project_title = study.get("title", str()) or project_name or study.get("study_id", str())
+
+        # ENA schema order: IDENTIFIERS?, NAME?, TITLE, DESCRIPTION?, SUBMISSION_PROJECT.
+        if project_name:
+            etree.SubElement(project, 'NAME').text = project_name
         etree.SubElement(project, 'TITLE').text = project_title
         if project_description:
             etree.SubElement(project, 'DESCRIPTION').text = project_description
