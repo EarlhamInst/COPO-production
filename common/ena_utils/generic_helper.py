@@ -19,6 +19,7 @@ from common.utils.helpers import get_env
 
 BASE_DIR = settings.BASE_DIR
 # REPOSITORIES = settings.REPOSITORIES
+ASPERA_PATH = get_env("ASPERA_PATH")  #"/root/.aspera/cli"
 WEBIN_USER_PASSWORD = get_env('WEBIN_USER_PASSWORD')
 WEBIN_USER = get_env('WEBIN_USER')
 
@@ -542,6 +543,46 @@ def _notify_transfer_progress(method, file_path, pct, profile_id, extra=None):
     )
 
 
+def _transfer_via_aspera(remote_path, file_paths, submission_id="", profile_id=""):
+    """Attempt file transfer to ENA using Aspera CLI. Returns True on success.
+    No progress reporting on this path -- ascp's progress output is PTY-only and
+    fragile under subprocess. The FTP fallback emits real byte-level progress.
+    """
+    ascp_bin = f"{ASPERA_PATH}/bin/ascp"
+    ascp_key = f"{ASPERA_PATH}/etc/asperaweb_id_dsa.openssh"
+    # -P 33001 = ENA's documented Aspera SSH/FASP control port.
+    cmd = [
+        ascp_bin, "-P", "33001", "-l", "300M", "-i", ascp_key, "-d",
+    ] + list(file_paths) + [f"{WEBIN_USER}:{remote_path}"]
+    ascp_env = {**os.environ, "ASPERA_SCP_PASS": WEBIN_USER_PASSWORD}
+
+    _notify_transfer_method("Aspera", f'Commencing transfer of {" ".join(file_paths)} to ENA', profile_id)
+
+    try:
+        output = subprocess.check_output(
+            cmd, env=ascp_env, stderr=subprocess.STDOUT, timeout=12 * 60 * 60
+        )
+        lg.log(output)
+        _notify_transfer_method(
+            "Aspera",
+            f'Transfer to {remote_path} for {" ".join(file_paths)} completed',
+            profile_id,
+        )
+        return True
+    except subprocess.TimeoutExpired:
+        lg.error(f'Aspera transfer timed out for {" ".join(file_paths)}')
+        return False
+    except subprocess.CalledProcessError as e:
+        lg.error(
+            f'Aspera transfer failed (rc={e.returncode}) for '
+            f'{" ".join(file_paths)}: {e.output!r}'
+        )
+        return False
+    except Exception as e:
+        lg.error(f'Aspera transfer error for {" ".join(file_paths)}: {e}')
+        return False
+
+
 def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id=""):
     """Attempt file transfer to ENA using FTP via curl. Returns True on success."""
     webin_user = WEBIN_USER.split("@")[0]
@@ -638,11 +679,18 @@ def transfer_to_ena(remote_path, file_paths=list(), **kwargs):
     message = f'Commencing transfer of {" ".join(file_paths)} data files to ENA. Progress will be reported.'
     logging_info(message, submission_id)
 
+    # Try Aspera first, fall back to FTP if it fails
+    if _transfer_via_aspera(remote_path, file_paths, submission_id, profile_id):
+        return True
+
+    _notify_transfer_method("FTP", "Aspera unavailable, falling back to FTP", profile_id)
+    lg.log(f'Aspera failed, falling back to FTP for {" ".join(file_paths)}')
+
     if _transfer_via_ftp(remote_path, file_paths, submission_id, profile_id):
         return True
 
-    lg.error(f'{" ".join(file_paths)} was not uploaded to ENA via FTP')
-    _notify_transfer_method("FTP", f'Transfer failed for {" ".join(file_paths)}', profile_id)
+    lg.error(f'{" ".join(file_paths)} was not uploaded to ENA via Aspera or FTP')
+    _notify_transfer_method("FTP", f'All transfer methods failed for {" ".join(file_paths)}', profile_id)
     return False
 
 
