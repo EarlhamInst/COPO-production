@@ -198,25 +198,44 @@ class EnaSubmissionHelper:
         result = dict(status=True, value='')
 
         # register samples to the ENA service
-        curl_cmd = 'curl -u "' + user_token + ':' + pass_word \
+        curl_cmd = 'curl -s -S -u "' + user_token + ':' + pass_word \
                     + '" -F "SUBMISSION=@' \
                     + submission_xml_path \
                     + '" -F "SAMPLE=@' \
                     + sample_xml_path \
-                    + '" "' + ena_service \
+                    + '" -w "\\n|HTTP_CODE:%{http_code}|"' \
+                    + ' "' + ena_service \
                     + '"'
         self.logging_debug(
             "CURL command to submit samples xml to ENA: " + curl_cmd.replace(pass_word, "xxxxxx"))
 
         try:
-            receipt = subprocess.check_output(curl_cmd, shell=True)
+            output = subprocess.check_output(curl_cmd, shell=True, stderr=subprocess.STDOUT)
         except Exception as e:
             ghlper.logging_exception(e)
-            message = 'API call error ' + str(e).replace(pass_word, "xxxxxx"),
-            self.logging_debug(message, self.submission_id)
+            message = 'API call error ' + str(e).replace(pass_word, "xxxxxx")
+            self.logging_debug(message)
             result['message'] = message
             result['status'] = False
             raise e
+
+        output_text = output.decode('utf-8', errors='replace')
+        http_code = "unknown"
+        receipt = output
+        if "|HTTP_CODE:" in output_text:
+            body_text, _, code_part = output_text.rpartition("\n|HTTP_CODE:")
+            http_code = code_part.rstrip("|").strip()
+            receipt = body_text.encode('utf-8')
+        self.logging_debug(
+            "ENA response HTTP=" + http_code
+            + " body_len=" + str(len(receipt))
+            + " body_preview=" + repr(receipt[:500]))
+
+        if not receipt.strip():
+            result['status'] = False
+            result['message'] = "ENA returned empty response (HTTP " + http_code + ")"
+            self.logging_debug(result['message'])
+            return result
 
         root = etree.fromstring(receipt)
 

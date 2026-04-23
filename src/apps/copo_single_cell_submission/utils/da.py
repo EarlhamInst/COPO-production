@@ -1,6 +1,6 @@
 from common.dal.copo_da import DAComponent
 import pandas as pd
-from common.utils.helpers import get_datetime, get_not_deleted_flag
+from common.utils.helpers import get_datetime, get_not_deleted_flag, notify_frontend
 from django_tools.middlewares import ThreadLocal
 from bson.objectid import ObjectId
 
@@ -244,7 +244,21 @@ class Singlecell(DAComponent):
         self.get_collection_handle().update_one({"_id": ObjectId(id), "deleted": get_not_deleted_flag(), f"components.{component}.{identifier}": identifier_value},
                             {"$set": update_element_values})
 
-        singlecell = self.get_collection_handle().find_one({"_id": ObjectId(id)}, {"schema_name": 1, "checklist_id": 1, "components": 1})
+        singlecell = self.get_collection_handle().find_one({"_id": ObjectId(id)}, {"schema_name": 1, "checklist_id": 1, "components": 1, "profile_id": 1})
+
+        # Push a refresh to any open single-cell tab for this profile so the row
+        # repaints when the async worker finishes. Only for study-level terminal
+        # transitions — child updates arrive in bursts and would thrash the UI.
+        if component == "study" and status_column_value.get("status") in ("accepted", "rejected"):
+            profile_id = singlecell.get("profile_id") if singlecell else ""
+            if profile_id:
+                notify_frontend(
+                    action="refresh_table",
+                    msg="",
+                    data={"profile_id": profile_id},
+                    html_id="submission_info",
+                    group_name=f"submission_status_{profile_id}",
+                )
 
         if with_child_components:
             #get all the child components
