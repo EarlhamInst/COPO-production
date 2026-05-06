@@ -1392,24 +1392,25 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 [data-theme="dark"] .dataTables_paginate .paginate_button a {
   color: var(--co-text) !important;
   background: var(--co-surface) !important;
-  border: 1px solid var(--co-border) !important;
-  border-radius: 4px !important;
+  border: 1px solid #f0f3f8 !important;
+  border-radius: 0 !important;
 }
 [data-theme="dark"] .dataTables_paginate .paginate_button:hover a {
   background: #2a2e36 !important;
-  color: var(--co-accent) !important;
-  border-color: var(--co-accent) !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35) !important;
 }
 [data-theme="dark"] .dataTables_paginate .paginate_button.active a,
 [data-theme="dark"] .dataTables_paginate .paginate_button.current a {
   background: var(--co-accent) !important;
   color: #fff !important;
-  border-color: var(--co-accent) !important;
+  border: 1px solid #f0f3f8 !important;
 }
 [data-theme="dark"] .dataTables_paginate .paginate_button.disabled a {
-  color: #555 !important;
+  color: #888 !important;
   background: var(--co-surface) !important;
-  border-color: var(--co-border) !important;
+  border: 1px solid #8a92a0 !important;
   cursor: default !important;
 }
 [data-theme="dark"] .dataTables_paginate .pagination {
@@ -1554,6 +1555,28 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 }
 [data-theme="dark"] .select2-container--default .select2-results__option--highlighted {
   background: #22262e !important;
+}
+/* Placeholder text — clear mid-grey that reads on both themes. */
+input::placeholder, textarea::placeholder { color: #8a92a0 !important; opacity: 1 !important; }
+[data-theme="dark"] input::placeholder, [data-theme="dark"] textarea::placeholder { color: #c0c8d4 !important; opacity: 1 !important; }
+input::-webkit-input-placeholder, textarea::-webkit-input-placeholder { color: #8a92a0 !important; opacity: 1 !important; }
+[data-theme="dark"] input::-webkit-input-placeholder, [data-theme="dark"] textarea::-webkit-input-placeholder { color: #c0c8d4 !important; opacity: 1 !important; }
+input::-moz-placeholder, textarea::-moz-placeholder { color: #8a92a0 !important; opacity: 1 !important; }
+[data-theme="dark"] input::-moz-placeholder, [data-theme="dark"] textarea::-moz-placeholder { color: #c0c8d4 !important; opacity: 1 !important; }
+/* Bright-grey outline so search/filter inputs are easy to spot — DataTables
+   filter input is the one most likely to vanish into the dark surface. */
+[data-theme="dark"] .dataTables_filter input,
+[data-theme="dark"] input[type="search"],
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] textarea {
+  border: 1px solid #8a92a0 !important;
+}
+[data-theme="dark"] .dataTables_filter input:focus,
+[data-theme="dark"] input[type="search"]:focus,
+[data-theme="dark"] input[type="text"]:focus,
+[data-theme="dark"] textarea:focus {
+  border-color: #c0c8d4 !important;
+  box-shadow: 0 0 0 2px rgba(192, 200, 212, 0.2) !important;
 }
 /* "Has data" indicator dot for select2 manifest/checklist dropdowns —
    replaces the original red asterisk. Sized and aligned to read as a
