@@ -4,6 +4,10 @@ var permitBtnStatus;
 var isNew = true;
 var socket;
 var socket2;
+// dtol_functions.js declares a global `fadeSpeed`, but some host templates
+// (e.g. copo_sample.html) don't load that file. Fall back to 'fast' so the
+// spinner fadeOut calls below don't pass `undefined` to jQuery.
+var fadeSpeed = typeof fadeSpeed !== 'undefined' ? fadeSpeed : 'fast';
 
 function upload_image_files(file) {
   var csrftoken = $.cookie('csrftoken');

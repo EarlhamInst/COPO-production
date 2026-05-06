@@ -472,73 +472,73 @@ function getAlertElement(htmlId) {
   return { $el: $(), inModal: false };
 }
 
+// Activity log palettes — keyed by alert type. 'fg' is the default/no-type colour.
+const ACTIVITY_LOG_THEMES = {
+  dark:  { bg: '#111',    fg: '#ddd',    error: '#ff6b6b', danger: '#ff6b6b', warning: '#e0b060', success: '#7bd88f', info: '#7aa7ff', progress: '#9aa'    },
+  light: { bg: '#f5f6f9', fg: '#2a2e36', error: '#b8362a', danger: '#b8362a', warning: '#9a6a00', success: '#2a8a4a', info: '#2a5fb0', progress: '#5a6470' },
+};
+const _activityPalette = () =>
+  ACTIVITY_LOG_THEMES[document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'];
+const _setImp = (el, prop, val) => el.style.setProperty(prop, val, 'important');
+
+function _repaintActivityLog() {
+  const log = document.getElementById('submission-activity-log');
+  if (!log) return;
+  const p = _activityPalette();
+  _setImp(log, 'background', p.bg);
+  _setImp(log, 'color', p.fg);
+  log.querySelectorAll(':scope > div').forEach(line =>
+    _setImp(line, 'color', p[line.getAttribute('data-alert-type')] || p.fg));
+}
+
+// One-shot observer: recolour the log live when the theme toggles.
+if (!document.documentElement._activityLogThemeWatcher) {
+  const obs = new MutationObserver(_repaintActivityLog);
+  obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  document.documentElement._activityLogThemeWatcher = obs;
+}
+
 function displayAlert(alertType, alertMessage, opts) {
   // alertType:  'success', 'warning', 'info', 'danger'/'error', 'progress'
-  // alertMessage: the message/HTML to be displayed
   // opts.lineId: if provided, update that log line in place (used for progress bars)
-
-  let $infoSidebarTab = $('.copo-sidebar-info');
-  let $infoPanel = $infoSidebarTab.find('.panel-body');
+  const $infoPanel = $('.copo-sidebar-info').find('.panel-body');
   if (!$infoPanel.length) return;
 
-  // Show the sidebar info tab
   $('.copo-sidebar-tabs a[href="#copo-sidebar-info"]').tab('show');
   if (!$infoPanel.hasClass('in')) $infoPanel.addClass('in');
 
-  // Strip any boxed alerts that may have been inserted (by legacy paths or
-  // pre-existing handlers) from BOTH the info panel and #page_alert_panel.
-  var $panels = $infoPanel.add('#page_alert_panel');
-  $panels
-    .find('.alert.alert-dismissable, .alert.alert-dismissible, .copo-alert-message, .page-notifications-node')
-    .remove();
+  // Strip legacy boxed alerts from both panels.
+  const $panels = $infoPanel.add('#page_alert_panel');
+  $panels.find('.alert.alert-dismissable, .alert.alert-dismissible, .copo-alert-message, .page-notifications-node').remove();
 
-  // Lazily create the single log pane (dark monospace stream, no boxes).
+  const palette = _activityPalette();
+
+  // Lazily create the single log pane (monospace stream, no boxes).
   let $log = $panels.find('#submission-activity-log').first();
   if (!$log.length) {
-    $log = $('<div/>', {
-      id: 'submission-activity-log',
-      css: {
-        background: '#111',
-        color: '#ddd',
-        padding: '8px 10px',
-        margin: '6px 0',
-        border: '1px solid #333',
-        borderRadius: '4px',
-        maxHeight: '320px',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        fontFamily: 'ui-monospace,Menlo,Consolas,monospace',
-        fontSize: '12px',
-        lineHeight: '1.4',
-        whiteSpace: 'pre-wrap',
-        wordBreak: 'break-all',
-      },
+    $log = $('<div id="submission-activity-log"/>').css({
+      background: palette.bg, color: palette.fg,
+      padding: '8px 10px', margin: '6px 0',
+      border: '1px solid #333', borderRadius: '4px',
+      maxHeight: '320px', overflowY: 'auto', overflowX: 'hidden',
+      fontFamily: 'ui-monospace,Menlo,Consolas,monospace',
+      fontSize: '12px', lineHeight: '1.4',
+      whiteSpace: 'pre-wrap', wordBreak: 'break-all',
     });
-    // Prefer #page_alert_panel (the canonical sidebar panel) when present.
-    var $host = $('#page_alert_panel');
-    if (!$host.length) $host = $infoPanel;
-    $host.prepend($log);
+    ($('#page_alert_panel').length ? $('#page_alert_panel') : $infoPanel).prepend($log);
   }
-
-  const color =
-    alertType === 'error' || alertType === 'danger' ? '#ff6b6b' :
-    alertType === 'warning' ? '#e0b060' :
-    alertType === 'success' ? '#7bd88f' :
-    alertType === 'progress' ? '#9aa' : '#ddd';
-
-  const ts = new Date().toLocaleTimeString();
-  const text = ts + ' ' + String(alertMessage).replace(/<[^>]+>/g, '');
 
   const lineId = opts && opts.lineId;
   let $line = lineId ? $log.find('#' + lineId) : $();
   if (!$line.length) {
-    $line = $('<div/>').css('color', color);
+    $line = $('<div/>');
     if (lineId) $line.attr('id', lineId);
     $log.append($line);
-  } else {
-    $line.css('color', color);
   }
-  $line.text(text);
+  $line.attr('data-alert-type', alertType || '');
+  // setProperty('important') so per-line colour beats dark-theme's .panel-body !important rule.
+  _setImp($line[0], 'color', palette[alertType] || palette.fg);
+  $line.text(new Date().toLocaleTimeString() + ' ' + String(alertMessage).replace(/<[^>]+>/g, ''));
   $log.scrollTop($log[0].scrollHeight);
 
   // Toggle sidebar visibility to show it since content was added

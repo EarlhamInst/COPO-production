@@ -88,6 +88,8 @@ MESSAGES = {
                                    "<a href='https://www.ebi.ac.uk/ena/browser/view/ERC000053'>https://www.ebi.ac.uk/ena/browser/view/ERC000053</a>",
     'validation_msg_invalid_permit_filename': 'Invalid data: <strong>%s</strong> in column <strong>%s</strong> at '
                                               'row <strong>%s</strong>. Expected value should be <strong>%s</strong>',
+    'validation_msg_invalid_regex_match': 'Invalid data: <strong>%s</strong> in column <strong>%s</strong> at '
+                                          'row <strong>%s</strong>. Expected format: <strong>%s</strong>.',
     'validation_msg_invalid_purpose_of_specimen': 'Invalid data: <strong>%s</strong> in column '
                                                   '<strong>PURPOSE_OF_SPECIMEN</strong> at row <strong>%s</strong>. '
                                                   'Expected value should be <strong>RESEQUENCING</strong> '

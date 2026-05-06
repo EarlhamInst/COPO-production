@@ -1193,8 +1193,24 @@ def poll_asyn_ena_submission():
                         notify_frontend(data={"profile_id": submission["profile_id"]}, msg=message, action="error",
                                         html_id="dtol_sample_info")
                         continue
+                else:
+                    # ENA returned something other than 200/202 — log the actual
+                    # status so the user isn't left with the misleading
+                    # "No accessions were found" message that comes from the
+                    # fallthrough below.
+                    l.error(
+                        f"ENA poll for {sub['href']} returned HTTP "
+                        f"{response.status_code}: {response.text[:500]!r}")
+                    notify_frontend(data={"profile_id": submission["profile_id"]},
+                                    msg=f"ENA returned HTTP {response.status_code} for submission poll. Will retry; if it persists, contact admin.",
+                                    action="error",
+                                    html_id="dtol_sample_info")
+                    continue
 
                 if not accessions:
+                    l.error(
+                        f"ENA returned no accessions for submission {submission['_id']}; "
+                        f"href={sub['href']}; receipt head={response.text[:500]!r}")
                     notify_frontend(data={"profile_id": submission["profile_id"]},
                                     msg="Error creating sample: No accessions were found",
                                     action="info",

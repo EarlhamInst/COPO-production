@@ -1310,12 +1310,7 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 
 /* Tables — all types */
 [data-theme="dark"] table,
-[data-theme="dark"] table thead th,
-[data-theme="dark"] table tbody td,
-[data-theme="dark"] table tfoot td,
 [data-theme="dark"] table.dataTable,
-[data-theme="dark"] table.dataTable thead th,
-[data-theme="dark"] table.dataTable tbody td,
 [data-theme="dark"] .dataTables_wrapper,
 [data-theme="dark"] .dataTables_info,
 [data-theme="dark"] .dataTables_length,
@@ -1325,19 +1320,70 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 [data-theme="dark"] .dataTables_paginate a {
   background: transparent !important;
   color: var(--co-text) !important;
-  border-color: transparent !important;
+  border-color: #2a2e38 !important;
+}
+[data-theme="dark"] table thead th,
+[data-theme="dark"] table.dataTable thead th {
+  background: #22262e !important;
+  color: var(--co-text) !important;
+  border-color: #3a4155 !important;
+  border-bottom-width: 2px !important;
+}
+[data-theme="dark"] table tbody td,
+[data-theme="dark"] table.dataTable tbody td,
+[data-theme="dark"] table tfoot td {
+  background: transparent !important;
+  color: var(--co-text) !important;
+  border-color: #2a2e38 !important;
 }
 [data-theme="dark"] table.dataTable tbody tr:hover td,
 [data-theme="dark"] table tbody tr:hover td {
   background: #22262e !important;
 }
-[data-theme="dark"] table.dataTable tbody tr.odd,
+[data-theme="dark"] table.dataTable tbody tr.odd {
+  background: #1c1f26 !important;
+}
 [data-theme="dark"] table.dataTable tbody tr.even {
-  background: var(--co-surface) !important;
+  background: #21252d !important;
 }
 [data-theme="dark"] table.dataTable tbody tr.odd:hover,
 [data-theme="dark"] table.dataTable tbody tr.even:hover {
-  background: #22262e !important;
+  background: #2a2f3d !important;
+}
+/* Bootstrap .table-striped fallback (non-DataTable striping) */
+[data-theme="dark"] table.table-striped > tbody > tr:nth-of-type(odd) {
+  background: #21252d !important;
+}
+/* Submission status row highlights — dark-mode palette. The light-theme
+   pastels (#d9e8d9 / #ffd700 / #f88080) are unreadable on dark bg, and the
+   generic tr.odd/tr.even rule above out-specificities the .highlight_* class
+   so we need an equally specific override here. */
+[data-theme="dark"] table.dataTable tbody tr.highlight_accession,
+[data-theme="dark"] table.dataTable tbody tr.highlight_accession.odd,
+[data-theme="dark"] table.dataTable tbody tr.highlight_accession.even {
+  background: #1e3a24 !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.highlight_no_accession,
+[data-theme="dark"] table.dataTable tbody tr.highlight_no_accession.odd,
+[data-theme="dark"] table.dataTable tbody tr.highlight_no_accession.even {
+  background: #3d3216 !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status,
+[data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status.odd,
+[data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status.even {
+  background: #3d1e1e !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.highlight_accession:hover,
+[data-theme="dark"] table.dataTable tbody tr.highlight_accession:hover td {
+  background: #26482e !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.highlight_no_accession:hover,
+[data-theme="dark"] table.dataTable tbody tr.highlight_no_accession:hover td {
+  background: #4c3f1b !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status:hover,
+[data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status:hover td {
+  background: #4c2626 !important;
 }
 [data-theme="dark"] .dataTables_paginate .paginate_button {
   border: none !important;
@@ -1395,6 +1441,27 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
   color: var(--co-accent) !important;
   border-color: var(--co-accent) !important;
 }
+
+/* Submit-action buttons (Submit to ENA / Submit to ZENODO etc.) — promote
+   from Semantic UI's "basic" outline to a solid filled pill. Specificity
+   has to match Semantic's `.ui.basic.<color>.button` to win the cascade. */
+.ui.basic.button.submit-btn {
+  color: #fff !important;
+  font-weight: 700 !important;
+  border: 1px solid transparent !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
+  text-shadow: none !important;
+  background-image: none !important;
+}
+.ui.basic.button.submit-btn i,
+.ui.basic.button.submit-btn .action-label { color: #fff !important; font-weight: 700 !important; }
+.ui.basic.teal.button.submit-btn   { background: var(--co-genomics) !important; }
+.ui.basic.blue.button.submit-btn   { background: var(--co-biodata)  !important; }
+.ui.basic.green.button.submit-btn  { background: var(--co-dtol)     !important; }
+.ui.basic.orange.button.submit-btn { background: var(--co-dtolenv)  !important; }
+.ui.basic.red.button.submit-btn    { background: #c0392b !important; }
+.ui.basic.button.submit-btn:hover  { filter: brightness(0.92); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important; }
+[data-theme="dark"] .ui.basic.button.submit-btn:hover { filter: brightness(1.15); }
 
 /* ── Sidebar toggle button (global, all 2-col pages) ── */
 #toggleSidebarInfoBtn {
@@ -1514,14 +1581,15 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 [data-theme="dark"] .bootstrap-dialog .modal-content {
   background: var(--co-surface) !important;
   color: var(--co-text) !important;
-  border-color: var(--co-border) !important;
+  border: 1px solid #4a5266 !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
 }
 [data-theme="dark"] .modal-header,
 [data-theme="dark"] .bootstrap-dialog .modal-header,
 [data-theme="dark"] .bootstrap-dialog .bootstrap-dialog-header {
   background: var(--co-nav) !important;
   color: #fff !important;
-  border-color: var(--co-border) !important;
+  border-bottom: none !important;
 }
 [data-theme="dark"] .modal-title,
 [data-theme="dark"] .bootstrap-dialog-title {
@@ -1535,8 +1603,56 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 [data-theme="dark"] .modal-footer,
 [data-theme="dark"] .bootstrap-dialog .modal-footer,
 [data-theme="dark"] .bootstrap-dialog-footer {
-  background: #1a1d24 !important;
-  border-top: 1px solid #363a46 !important;
+  background: #151821 !important;
+  border-top: none !important;
+}
+/* Modal footer buttons — the bare Bootstrap 3 .btn-default was rendering as
+   white-on-white. Give every button in a dark modal a visible surface. */
+[data-theme="dark"] .modal-footer .btn,
+[data-theme="dark"] .bootstrap-dialog .modal-footer .btn,
+[data-theme="dark"] .modal-footer .btn-default,
+[data-theme="dark"] .modal-footer .btn-secondary {
+  background: #2a2f3d !important;
+  color: #e0e4ec !important;
+  border: 1px solid #4a5266 !important;
+  background-image: none !important;
+  text-shadow: none !important;
+}
+[data-theme="dark"] .modal-footer .btn:hover,
+[data-theme="dark"] .modal-footer .btn-default:hover,
+[data-theme="dark"] .modal-footer .btn-secondary:hover {
+  background: #3a4257 !important;
+  color: #ffffff !important;
+  border-color: #5a6480 !important;
+}
+[data-theme="dark"] .modal-footer .btn-primary {
+  background: var(--co-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--co-accent) !important;
+  background-image: none !important;
+  text-shadow: none !important;
+}
+[data-theme="dark"] .modal-footer .btn-primary:hover {
+  background: var(--co-accent-hover) !important;
+  border-color: var(--co-accent-hover) !important;
+  color: #ffffff !important;
+}
+[data-theme="dark"] .modal-footer .btn-danger {
+  background: #a8372e !important;
+  color: #ffffff !important;
+  border: 1px solid #c04a3e !important;
+  background-image: none !important;
+  text-shadow: none !important;
+}
+[data-theme="dark"] .modal-footer .btn-danger:hover {
+  background: #c04a3e !important;
+  border-color: #d85a4c !important;
+}
+/* The <hr> that some confirmation modals put between body and footer */
+[data-theme="dark"] .modal-body hr,
+[data-theme="dark"] .modal-content hr {
+  border-color: #3a4155 !important;
+  border-top-color: #3a4155 !important;
 }
 [data-theme="dark"] .close {
   color: rgba(255,255,255,.7) !important;
@@ -1599,25 +1715,147 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
   color: var(--co-muted) !important;
 }
 
-/* Dropdown menus */
+/* Dropdown menus — dark panel with a bright hover/selected band that is
+   clearly distinguishable from the surface (#1c1f26) on a grey monitor. */
 [data-theme="dark"] .dropdown-menu {
-  background: var(--co-surface) !important;
-  border-color: var(--co-border) !important;
+  background: #141821 !important;
+  border: 1px solid #3a4155 !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
 }
-[data-theme="dark"] .dropdown-menu > li > a {
+[data-theme="dark"] .dropdown-menu > li > a,
+[data-theme="dark"] .dropdown-menu .dropdown-item,
+[data-theme="dark"] .dropdown-menu > li > label {
   color: var(--co-text) !important;
+  background: transparent !important;
 }
-[data-theme="dark"] .dropdown-menu > li > a:hover {
-  background: #22262e !important;
-  color: var(--co-text) !important;
+[data-theme="dark"] .dropdown-menu > li > a:hover,
+[data-theme="dark"] .dropdown-menu > li > a:focus,
+[data-theme="dark"] .dropdown-menu > li > label:hover,
+[data-theme="dark"] .dropdown-menu .dropdown-item:hover,
+[data-theme="dark"] .dropdown-menu .dropdown-item:focus {
+  background: #4a5a7a !important;
+  color: #ffffff !important;
+  background-image: none !important;
+}
+[data-theme="dark"] .dropdown-menu > .active > a,
+[data-theme="dark"] .dropdown-menu > .active > a:hover,
+[data-theme="dark"] .dropdown-menu > .active > a:focus,
+[data-theme="dark"] .dropdown-menu .dropdown-item.active,
+[data-theme="dark"] .dropdown-menu .dropdown-item:active {
+  background: var(--co-accent) !important;
+  color: #ffffff !important;
+  background-image: none !important;
 }
 [data-theme="dark"] .dropdown-menu .divider {
-  background: var(--co-border) !important;
+  background: #3a4155 !important;
+}
+/* Select2 option rows — the -highlighted class is what fires on hover/arrow-key */
+[data-theme="dark"] .select2-container--default .select2-results__option--highlighted,
+[data-theme="dark"] .select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background: #4a5a7a !important;
+  color: #ffffff !important;
+}
+[data-theme="dark"] .select2-container--default .select2-results__option[aria-selected="true"] {
+  background: var(--co-accent) !important;
+  color: #ffffff !important;
+}
+/* Selectize options */
+[data-theme="dark"] .selectize-dropdown .option {
+  background: transparent !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .selectize-dropdown .option.active,
+[data-theme="dark"] .selectize-dropdown .option:hover {
+  background: #4a5a7a !important;
+  color: #ffffff !important;
+}
+/* Semantic UI dropdown menu items */
+[data-theme="dark"] .ui.dropdown .menu > .item {
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .ui.dropdown .menu > .item:hover,
+[data-theme="dark"] .ui.dropdown .menu > .item.selected {
+  background: #4a5a7a !important;
+  color: #ffffff !important;
+}
+[data-theme="dark"] .ui.dropdown .menu > .item.active {
+  background: var(--co-accent) !important;
+  color: #ffffff !important;
 }
 
 /* Tooltips */
 [data-theme="dark"] .tooltip-inner {
   background: #2a2e38 !important;
+  color: var(--co-text) !important;
+}
+
+/* Validation output panels (#sample_info, #warning_info, etc.). The light-theme
+   rules in src/apps/copo_sample/static/copo/css/sample.css paint <strong> and
+   <h2> with very pale pink/yellow backgrounds — on a dark panel and with the
+   generic `[data-theme="dark"] strong { color: var(--co-text) }` rule they
+   become near-invisible pale-on-pale. Dark palette + explicit dark text. */
+[data-theme="dark"] .sample-alert-error {
+  color: #ff8a8a !important;
+}
+[data-theme="dark"] .sample-alert-error h2 {
+  background: #5a1e1e !important;
+  color: #ffd0d0 !important;
+  padding: 2px 10px !important;
+  border-radius: 3px !important;
+}
+[data-theme="dark"] .sample-alert-error ol li {
+  color: #f0e6e6 !important;
+}
+[data-theme="dark"] .sample-alert-error strong {
+  background: #3d1e1e !important;
+  color: #ffd0d0 !important;
+  padding: 0 4px !important;
+  border-radius: 2px !important;
+}
+[data-theme="dark"] .sample-alert-warning > h2 {
+  background: #3d3216 !important;
+  color: #f0d890 !important;
+  padding: 2px 10px !important;
+  border-radius: 3px !important;
+}
+[data-theme="dark"] #warning_info > strong,
+[data-theme="dark"] #warning_info2 > strong,
+[data-theme="dark"] #warning_info3 > ul > li > ul > li > strong,
+[data-theme="dark"] #warning_info3 > ul > li > strong {
+  background: #3d3216 !important;
+  color: #f0d890 !important;
+  padding: 0 4px !important;
+  border-radius: 2px !important;
+}
+[data-theme="dark"] #warning_info3 {
+  border-top-color: #3a4155 !important;
+}
+[data-theme="dark"] .sample-alert-success {
+  color: #a8e6b8 !important;
+}
+[data-theme="dark"] .sample-alert-info {
+  color: var(--co-text) !important;
+  border-right-color: #f0a44a !important;
+}
+
+/* "Valid values" enum popover inside error messages — the light-theme version
+   renders as a bright white rectangle on the dark panel, which is jarring and
+   unreadable. Paint to match the surface palette. */
+[data-theme="dark"] details.valid-enum .valid-enum-trigger {
+  color: #7aa7ff !important;
+}
+[data-theme="dark"] details.valid-enum .valid-enum-container {
+  background: #1c1f26 !important;
+  color: var(--co-text) !important;
+  border: 1px solid #3a4155 !important;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.55) !important;
+}
+[data-theme="dark"] details.valid-enum .valid-enum-title {
+  background: #2a2f3d !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid #3a4155 !important;
+}
+[data-theme="dark"] details.valid-enum ul li {
   color: var(--co-text) !important;
 }
 
@@ -1944,4 +2182,18 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 }
 [data-theme="dark"] #page_alert_panel .alert .close {
   color: var(--co-text) !important;
+}
+
+/* Activity log pane (the monospace stream rendered by displayAlert). The
+   inline 1px solid #333 border set by generic_handlers_ext2.js is nearly
+   invisible against either theme — promote it to a higher-contrast ring. */
+#submission-activity-log {
+  border: 1.5px solid var(--co-accent) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08),
+              0 4px 12px rgba(0, 0, 0, 0.12) !important;
+}
+[data-theme="dark"] #submission-activity-log {
+  border: 2px solid #6a8aaa !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5),
+              0 4px 14px rgba(0, 0, 0, 0.6) !important;
 }
