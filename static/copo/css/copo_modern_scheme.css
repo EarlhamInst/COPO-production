@@ -1512,7 +1512,7 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 }
 [data-theme="dark"] #toggleSidebarInfoBtn {
   background: var(--co-surface);
-  border-color: var(--co-border);
+  border: 1px solid #f0f3f8 !important;
   color: var(--co-text);
   -webkit-appearance: none;
   appearance: none;
@@ -1526,11 +1526,12 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 }
 [data-theme="dark"] #toggleSidebarInfoBtn:hover {
   background: #2a2e36;
-  border-color: var(--co-accent);
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35) !important;
 }
 [data-theme="dark"] #toggleSidebarInfoBtn.active {
   background: #1a2a33;
-  border-color: var(--co-accent);
+  border-color: #f0f3f8 !important;
   color: var(--co-accent);
 }
 
@@ -1806,11 +1807,7 @@ input::-moz-placeholder, textarea::-moz-placeholder { color: #8a92a0 !important;
   color: #ffffff !important;
 }
 
-/* Tooltips */
-[data-theme="dark"] .tooltip-inner {
-  background: #2a2e38 !important;
-  color: var(--co-text) !important;
-}
+/* Tooltip styling lives in the consolidated .tooltip-inner block below. */
 
 /* Validation output panels (#sample_info, #warning_info, etc.). The light-theme
    rules in src/apps/copo_sample/static/copo/css/sample.css paint <strong> and
@@ -2088,24 +2085,34 @@ input::-moz-placeholder, textarea::-moz-placeholder { color: #8a92a0 !important;
   color: var(--co-text) !important;
 }
 
-/* Bootstrap tooltips */
+/* Bootstrap tooltips — uniform width across themes so multi-line tooltips
+   don't render as narrow tall strips, light surface so text reads. */
+.tooltip-inner {
+  max-width: 360px !important;
+  width: 360px !important;
+  text-align: left !important;
+  padding: 8px 12px !important;
+  background-color: #f5f6f9 !important;
+  color: #2a2e36 !important;
+  border: 1px solid #c0c8d4 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+  line-height: 1.45 !important;
+  opacity: 1 !important;
+}
+.tooltip.in { opacity: 1 !important; }
+.tooltip.top .tooltip-arrow    { border-top-color: #c0c8d4 !important; }
+.tooltip.bottom .tooltip-arrow { border-bottom-color: #c0c8d4 !important; }
+.tooltip.left .tooltip-arrow   { border-left-color: #c0c8d4 !important; }
+.tooltip.right .tooltip-arrow  { border-right-color: #c0c8d4 !important; }
 [data-theme="dark"] .tooltip-inner {
-  background-color: var(--co-surface) !important;
-  color: var(--co-text) !important;
-  border: 1px solid var(--co-border) !important;
+  background-color: #e8ecf2 !important;
+  color: #1a1d24 !important;
+  border-color: #8a92a0 !important;
 }
-[data-theme="dark"] .tooltip.top .tooltip-arrow {
-  border-top-color: var(--co-border) !important;
-}
-[data-theme="dark"] .tooltip.bottom .tooltip-arrow {
-  border-bottom-color: var(--co-border) !important;
-}
-[data-theme="dark"] .tooltip.left .tooltip-arrow {
-  border-left-color: var(--co-border) !important;
-}
-[data-theme="dark"] .tooltip.right .tooltip-arrow {
-  border-right-color: var(--co-border) !important;
-}
+[data-theme="dark"] .tooltip.top .tooltip-arrow    { border-top-color: #8a92a0 !important; }
+[data-theme="dark"] .tooltip.bottom .tooltip-arrow { border-bottom-color: #8a92a0 !important; }
+[data-theme="dark"] .tooltip.left .tooltip-arrow   { border-left-color: #8a92a0 !important; }
+[data-theme="dark"] .tooltip.right .tooltip-arrow  { border-right-color: #8a92a0 !important; }
 
 /* Theme toggle button */
 .theme-toggle-btn {
