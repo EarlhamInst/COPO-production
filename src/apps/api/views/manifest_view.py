@@ -114,14 +114,10 @@ def build_manifest_item(
     is_single_cell=False,
 ):
     if is_single_cell:
-        # blank_manifest_url = get_blank_manifest_url(schema_name, manifest_id)
-        # version = settings.MANIFEST_VERSION.get(schema_name, '')
         name = f"{x.get('standard', '')}_{x.get('technology', '')}".replace('_nan', '')
-        # technology_value = x.get('technology')
         technology = None if pd.isna(x.get('technology')) else x.get('technology')
     else:
         name = (getattr(x, 'name', None) or '').strip() or None
-        # blank_manifest_url = get_blank_manifest_url(manifest_id)
 
     return {
         'manifest_id': manifest_id,
