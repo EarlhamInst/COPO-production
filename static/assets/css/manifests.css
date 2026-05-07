@@ -22,8 +22,17 @@ p {
 }
 
 /* Manifest table */
+#manifestTable {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
 .table-header {
   background: #f9fafb;
+}
+
+.table-header-section {
+  border-top: 4px solid #ddd !important;
 }
 
 .manifest-dropdown-wrapper {
