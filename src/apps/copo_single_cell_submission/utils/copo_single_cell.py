@@ -677,14 +677,33 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena"):
     schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get("schema_name", singlecell["schema_name"]), schemas=dict(), target_id=singlecell["checklist_id"])
     files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
     if files:
-        # Check S3 for file existence and get etags for integrity verification
+        # Pre-flight: verify every file referenced in the manifest is actually
+        # present in S3 *before* creating transfer records or flipping the
+        # submission to "downloading". Without this guard a user can click
+        # Submit on a manifest whose data files were never uploaded, leading
+        # to silently broken EnaFileTransfer rows and a confusing failure later.
         s3obj = s3()
-        etags, _ = s3obj.check_s3_bucket_for_files(bucket_name=profile_id, file_list=files, just_return_etags= True)
+        etags, _ = s3obj.check_s3_bucket_for_files(bucket_name=profile_id, file_list=files, just_return_etags=True)
+        # Defensive: helper may return non-dict on bucket-missing/auth errors.
+        if not isinstance(etags, dict):
+            etags = {}
+        missing_files = [f for f in files if f not in etags]
+        if missing_files:
+            return dict(
+                status='error',
+                message=(
+                    "Cannot submit — the following data files are missing from storage: "
+                    + ", ".join(f"<strong>{f}</strong>" for f in missing_files)
+                    + ". Upload them via <strong>Manage Data Files</strong> on the "
+                    "Work Profiles page and try again."
+                ),
+            )
+
         datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name": {"$in": files}}, projection={"_id": 1, "file_name": 1})
         errors = []
         # Create an EnaFileTransfer record for each file (tracks download/upload progress)
         for file in datafiles:
-            result,message = tx.make_transfer_record(file_id = file["_id"], submission_id = str(submissions[0]["_id"]), no_remote_location= True if repository == "zenodo" else False, etag=etags.get(file["file_name"], ""))
+            result, message = tx.make_transfer_record(file_id=file["_id"], submission_id=str(submissions[0]["_id"]), no_remote_location=True if repository == "zenodo" else False, etag=etags.get(file["file_name"], ""))
             if not result:
                 errors.append(message)
         if errors:

@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-import subprocess
 import uuid
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -1294,28 +1293,23 @@ def submit_biosample(subfix, sampleobj, collection_id, type="sample"):
 
     submissionfile = "submission_" + str(subfix) + ".xml"
     samplefile = "bundle_" + str(subfix) + ".xml"
-    curl_cmd = 'curl -m 300 -u "' + user_token + ':' + pass_word \
-               + '" -F "SUBMISSION=@' \
-               + submissionfile \
-               + '" -F "SAMPLE=@' \
-               + samplefile \
-               + '" "' + ena_service \
-               + '"'
-
     try:
-        receipt = subprocess.check_output(curl_cmd, shell=True)
-
+        with open(submissionfile, 'rb') as sf, open(samplefile, 'rb') as xf:
+            resp = requests.post(
+                ena_service,
+                auth=(user_token, pass_word),
+                files={'SUBMISSION': sf, 'SAMPLE': xf},
+                timeout=300,
+            )
+        receipt = resp.content
         l.log("ENA RECEIPT " + str(receipt))
-        print(receipt)
     except Exception as e:
         l.log("General Error " + str(e))
-        message = 'API call error ' + "Submitting project xml to ENA via cURL. cURL command is: " + curl_cmd.replace(
-            pass_word, "xxxxxx")
+        message = 'API call error submitting sample XML to ENA: ' + str(e)
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
                         html_id="dtol_sample_info")
         os.remove(submissionfile)
         os.remove(samplefile)
-
         Submission().reset_dtol_submission_status(collection_id)
         return False
         # print(message)
@@ -1426,19 +1420,17 @@ def create_study(profile_id, collection_id):
     submissionfile = "submission_" + profile_id + ".xml"
     build_submission_xml(profile_id, hold=date.today().strftime("%Y-%m-%d"))
 
-    curl_cmd = 'curl -u -m 300 "' + user_token + ':' + pass_word \
-               + '" -F "SUBMISSION=@' \
-               + submissionfile \
-               + '" -F "PROJECT=@' \
-               + studyfile \
-               + '" "' + ena_service \
-               + '"'
     try:
-        receipt = subprocess.check_output(curl_cmd, shell=True)
-        # print(receipt)
+        with open(submissionfile, 'rb') as sf, open(studyfile, 'rb') as pf:
+            resp = requests.post(
+                ena_service,
+                auth=(user_token, pass_word),
+                files={'SUBMISSION': sf, 'PROJECT': pf},
+                timeout=300,
+            )
+        receipt = resp.content
     except Exception as e:
-        message = 'API call error ' + "Submitting project xml to ENA via cURL. cURL command is: " + curl_cmd.replace(
-            pass_word, "xxxxxx")
+        message = 'API call error submitting project XML to ENA: ' + str(e)
         notify_frontend(data={"profile_id": profile_id}, msg=message, action="error",
                         html_id="dtol_sample_info")
         os.remove(submissionfile)
@@ -1488,12 +1480,14 @@ def handle_common_ENA_error(error_to_parse, source_id):
     else:
         return False
 
-    curl_cmd = 'curl -m 300 -u "' + user_token + ':' + pass_word \
-               + '" ' + ena_report + "/" + accession
     try:
-        receipt = subprocess.check_output(curl_cmd, shell=True)
-        l.log("ENA RECEIPT REGISTERED SAMPLE for sample " +
-              accession + " " + str(receipt))
+        resp = requests.get(
+            ena_report + "/" + accession,
+            auth=(user_token, pass_word),
+            timeout=300,
+        )
+        receipt = resp.content
+        l.log("ENA RECEIPT REGISTERED SAMPLE for sample " + accession + " " + str(receipt))
     except Exception as e:
         l.log("General Error " + str(e).replace(pass_word, "xxxxxxx"))
         return False

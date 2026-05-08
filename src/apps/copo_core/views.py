@@ -545,7 +545,7 @@ def handler500(request):
     return error_page(request)
 
 
-def handler403(request, message="Apologies, you do not have permission to view this web page"):    
+def handler403(request, message="You lack permission to view this resource."):    
     if "api" in request.resolver_match.namespaces:
         return HttpResponse(
             json.dumps({"status": "error", "message": "Apologies, you do not have permission to access it"}), status=403, content_type="application/json"

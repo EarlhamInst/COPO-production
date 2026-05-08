@@ -203,7 +203,11 @@ class S3Connection():
                     action="info",
                     html_id="sample_info",
                 )
-                return False, msg
+                # Empty dict (not False) keeps the return type consistent with
+                # the success path so callers that do `etags, _ = ...; etags.get(...)`
+                # don't crash with AttributeError on the failure path. Empty dict
+                # is still falsy for callers that do `if not result: ...`.
+                return dict(), msg
 
             for f in file_list:
 
@@ -263,7 +267,7 @@ class S3Connection():
                 html_id="sample_info",
             )
 
-            return False, msg
+            return dict(), msg
         except Exception as e:
             Logger().exception(e)
             notify_read_status(data={"profile_id": profile_id}, msg="An error has occurred: " + str(e), action="info",

@@ -734,8 +734,9 @@ a.pcomponent-button-template .pcomponent-button {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  flex: 1 1 0 !important;
+  flex: 0 0 auto !important;
   gap: 6px !important;
+  white-space: nowrap !important;
   background: var(--co-bg);
   border: 1px solid var(--co-border);
   border-radius: 20px !important;
@@ -745,6 +746,7 @@ a.pcomponent-button-template .pcomponent-button {
   color: var(--co-text) !important;
   transition: border-color .15s !important;
 }
+.component-legend-text { white-space: nowrap !important; }
 .component-legend-group-item:hover {
   background: var(--co-bg) !important;
   border-color: var(--co-accent) !important;

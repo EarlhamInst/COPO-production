@@ -298,7 +298,11 @@ class EnaSubmissionHelper:
         else:
             status_message = "Samples successfully updated to ENA."
             self.logging_info(status_message)
-            # update sample status
+            # Write accession back to the sample document even for MODIFY — if the
+            # sample was re-created by a manifest re-upload it won't have
+            # biosampleAccession set, so update_accession ensures the next
+            # submission correctly detects it as already registered.
+            Sample(profile_id=self.profile_id).update_accession(sample_accessions)
             Sample(profile_id=self.profile_id).update_field(field="status", value="accepted", oids=sample_ids)
 
         return dict(status=True, value='')
@@ -329,8 +333,24 @@ class EnaSubmissionHelper:
 
         if not samples:
             return dict(status=True, value='')
-        
-        # modify samples
+
+        # Build a set of aliases already registered with ENA for this submission
+        # (stored in SubmissionCollection.accessions.sample). This covers the
+        # case where a sample was re-created by a manifest re-upload (new _id,
+        # no biosampleAccession on the new document) but the alias was already
+        # registered with ENA in a previous run — those must go through MODIFY
+        # rather than ADD to avoid "already exists" errors.
+        registered_aliases = set()
+        try:
+            sub_doc = Submission().get_collection_handle().find_one(
+                {"_id": ObjectId(self.submission_id)}, {"accessions.sample": 1}
+            )
+            if sub_doc:
+                for acc in sub_doc.get("accessions", {}).get("sample", []):
+                    if acc.get("sample_alias"):
+                        registered_aliases.add(acc["sample_alias"])
+        except Exception:
+            pass
 
         is_modifed_sample = False
         is_new_sample = False
@@ -340,7 +360,7 @@ class EnaSubmissionHelper:
         for sample in samples:
             sample_alias = str(self.submission_id) + ":sample:" + sample["name"]
             root = root_add
-            if sample.get('biosampleAccession',''):
+            if sample.get('biosampleAccession', '') or sample_alias in registered_aliases:
                 is_modifed_sample = True
                 root = root_modify
             else:
@@ -461,6 +481,14 @@ class EnaSubmissionHelper:
             etree.SubElement(project, 'NAME').text = project_name
         etree.SubElement(project, 'TITLE').text = project_title
         if project_description:
+            if len(project_description) < 20:
+                message = (
+                    f"Study description is too short ({len(project_description)} characters). "
+                    "ENA requires a minimum of 20 characters. "
+                    "Please update the profile description and resubmit."
+                )
+                self.logging_error(message)
+                return dict(status=False, message=message)
             etree.SubElement(project, 'DESCRIPTION').text = project_description
 
         # set project type - sequencing project
@@ -670,15 +698,20 @@ class EnaSubmissionHelper:
             sequencing_instrument = row.get(column_name, str())
             inst_plat = [inst['platform'] for inst in instruments if inst['value'] == sequencing_instrument]
 
-            if len(inst_plat):
-                experiment_platform_node = etree.SubElement(experiment_node, 'PLATFORM')
-                experiment_platform_type_node = etree.SubElement(experiment_platform_node, inst_plat[0])
-                etree.SubElement(experiment_platform_type_node, column_name.upper()).text = sequencing_instrument
+            if not inst_plat:
+                msg = f"Instrument model '{sequencing_instrument}' not found in sequencing instrument list — cannot build PLATFORM element for {row.get(file_identifier, '?')}"
+                self.logging_error(msg)
+                errors.append(msg)
+                continue
 
-            experiment_attributes = etree.SubElement(experiment_node, 'EXPERIMENT_ATTRIBUTES')
+            experiment_platform_node = etree.SubElement(experiment_node, 'PLATFORM')
+            experiment_platform_type_node = etree.SubElement(experiment_platform_node, inst_plat[0])
+            etree.SubElement(experiment_platform_type_node, column_name.upper()).text = sequencing_instrument
 
-            for key, value in row.items():
-                if key not in non_attribute_names and value:
+            extra_attributes = {k: v for k, v in row.items() if k not in non_attribute_names and v}
+            if extra_attributes:
+                experiment_attributes = etree.SubElement(experiment_node, 'EXPERIMENT_ATTRIBUTES')
+                for key, value in extra_attributes.items():
                     experiment_attribute = etree.SubElement(experiment_attributes, 'EXPERIMENT_ATTRIBUTE')
                     etree.SubElement(experiment_attribute, 'TAG').text = key
                     etree.SubElement(experiment_attribute, 'VALUE').text = str(value)
@@ -1080,7 +1113,7 @@ class EnaSubmissionHelper:
                     self.logging_error("no assembly file found")
 
             for _, file_row in assembly_file_df.iterrows():
-                manifest_content += file_row["assembly_file_type"].upper() + "\t" + enafile_map.get(file_row["assembly_file_name"], "") + "\n"
+                manifest_content += file_row["assembly_file_type"].upper() + "\t" + enafile_map.get(file_row["assembly_file"], "") + "\n"
 
             if not assembly_run_ref_data_df.empty:
                 assembly_run_ref_df = assembly_run_ref_data_df.loc[assembly_run_ref_data_df[parent_map["assembly_run_ref"]["assembly"]]==row[identifier]]

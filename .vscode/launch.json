@@ -10,7 +10,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/manage.py",
       "env": {
-        "PYTHONPATH1": "${workspaceFolder}/lib:${PYTHONPATH}"
+        "PYTHONPATH1": "${workspaceFolder}/lib:${PYTHONPATH}",
+        "GEVENT_SUPPORT": "True"
       },
       "args": ["runserver", "0.0.0.0:8000"],
       "django": true,
@@ -44,7 +45,7 @@
       "name": "Python: Celery Workers",
       "type": "debugpy",
       "env": {
-        "GEVENT_SUPPORT": "true"
+        "GEVENT_SUPPORT": "True"
       },
       "request": "launch",
       "module": "celery",
@@ -70,7 +71,7 @@
       "name": "Python: Celery Workers file_transfers",
       "type": "debugpy",
       "env": {
-        "GEVENT_SUPPORT": "true"
+        "GEVENT_SUPPORT": "True"
       },
       "request": "launch",
       "module": "celery",
@@ -98,6 +99,9 @@
       "request": "launch",
       "module": "celery",
       "console": "integratedTerminal",
+      "env": {
+        "GEVENT_SUPPORT": "True"
+      },
       "args": ["-A", "src", "beat", "-l", "critical"]
     },
     {

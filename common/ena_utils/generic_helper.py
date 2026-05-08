@@ -23,18 +23,16 @@ ASPERA_PATH = get_env("ASPERA_PATH")  #"/root/.aspera/cli"
 WEBIN_USER_PASSWORD = get_env('WEBIN_USER_PASSWORD')
 WEBIN_USER = get_env('WEBIN_USER')
 
-def get_submission_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['SubmissionCollection']
-
-    return collection_handle
+def get_submission_handle():
+    return mutil.get_collection_ref('SubmissionCollection')
 
 
-def get_submission_queue_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['SubmissionQueueCollection']
-
-    return collection_handle
+def get_submission_queue_handle():
+    # Use the shared MONGO_CLIENT (already connected, topology known) rather
+    # than spawning a new MongoClient on every call. Creating a fresh client
+    # each time leaves topology in Unknown state, causing a 30s
+    # serverSelectionTimeout block on every Celery beat tick under gevent.
+    return mutil.get_collection_ref('SubmissionQueueCollection')
 
 
 '''  deprecated
@@ -46,39 +44,24 @@ def get_filetransfer_queue_handle():  # this can be safely called by forked proc
 '''
 
 
-def get_description_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['DescriptionCollection']
-
-    return collection_handle
+def get_description_handle():
+    return mutil.get_collection_ref('DescriptionCollection')
 
 
-def get_person_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['PersonCollection']
-
-    return collection_handle
+def get_person_handle():
+    return mutil.get_collection_ref('PersonCollection')
 
 
-def get_datafiles_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['DataFileCollection']
-
-    return collection_handle
+def get_datafiles_handle():
+    return mutil.get_collection_ref('DataFileCollection')
 
 
-def get_samples_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['SampleCollection']
-
-    return collection_handle
+def get_samples_handle():
+    return mutil.get_collection_ref('SampleCollection')
 
 
-def get_sources_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['SourceCollection']
-
-    return collection_handle
+def get_sources_handle():
+    return mutil.get_collection_ref('SourceCollection')
 
 
 def logging_info(message=str(), submission_id=str()):
