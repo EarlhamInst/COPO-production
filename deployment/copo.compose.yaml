@@ -1,14 +1,14 @@
-version: "3.9"
+version: '3.9'
 
 # Settings and configurations that are common for all containers
 x-minio-common: &minio-common
   image: quay.io/minio/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1
   command: server --console-address ":9001" http://minio-{1...2}/data{1...2}
   #healthcheck:
-    #test: ["CMD", "mc", "ready", "local"]
-    #interval: 5s
-    #timeout: 5s
-    #retries:  5
+  #test: ["CMD", "mc", "ready", "local"]
+  #interval: 5s
+  #timeout: 5s
+  #retries:  5
   environment:
     - MINIO_ROOT_USER_FILE=/run/secrets/minio_access_key
     - MINIO_ROOT_PASSWORD_FILE=/run/secrets/minio_secret_key
@@ -44,7 +44,7 @@ services:
       placement:
         max_replicas_per_node: 1
         constraints:
-          - "node.labels.minio-service==true"
+          - 'node.labels.minio-service==true'
 
   web:
     image: copo/copo-new-web:v3.1.13.3
@@ -113,7 +113,7 @@ services:
     networks:
       default:
         aliases:
-           - copo-new.cyverseuk.org
+          - copo-new.cyverseuk.org
       frontend:
       backend:
     deploy:
@@ -123,7 +123,7 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.web-service==true"
+          - 'node.labels.web-service==true'
       resources:
         limits:
           cpus: '2'
@@ -151,7 +151,7 @@ services:
       - ecs_access_key
       - copo_zenodo_token
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000']
       interval: 2m
       timeout: 10s
       retries: 3
@@ -228,7 +228,7 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.offline-service==true"
+          - 'node.labels.offline-service==true'
       resources:
         limits:
           cpus: '2'
@@ -256,7 +256,7 @@ services:
       - ecs_access_key
       - copo_zenodo_token
   nginx:
-    image: copo/copo-nginx-minio:v1.25.3.3
+    image: copo/copo-nginx-minio:v1.30.0
     networks:
       - frontend
     volumes:
@@ -267,10 +267,10 @@ services:
       - copo-project.crt
       - copo-project.key
     ports:
-      - "80:80"
-      - "443:443"
-      - "9000:9000"
-      - "9001:9001"
+      - '80:80'
+      - '443:443'
+      - '9000:9000'
+      - '9001:9001'
     environment:
       - copoweb=copo_web
     depends_on:
@@ -281,16 +281,16 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.nginx-service==true"
+          - 'node.labels.nginx-service==true'
       update_config:
         parallelism: 1
         delay: 10s
       resources:
         limits:
-          cpus: "1"
+          cpus: '1'
           memory: 3GB
         reservations:
-          cpus: "0.3"
+          cpus: '0.3'
           memory: 512mb
   backup:
     image: copo/copo-backup:v20.04_1
@@ -322,16 +322,16 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.backup-service==true"
+          - 'node.labels.backup-service==true'
       update_config:
         parallelism: 1
         delay: 10s
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 1GB
         reservations:
-          cpus: "0.3"
+          cpus: '0.3'
           memory: 512mb
   sample_audit:
     image: copo/copo-sample-audit:v0.0.19
@@ -351,16 +351,16 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.offline-service==true"
+          - 'node.labels.offline-service==true'
       update_config:
         parallelism: 1
         delay: 10s
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 1GB
         reservations:
-          cpus: "0.1"
+          cpus: '0.1'
           memory: 128mb
     depends_on:
       - mongo
@@ -376,16 +376,16 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.web-service==true"
+          - 'node.labels.web-service==true'
       update_config:
         parallelism: 1
         delay: 10s
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 1GB
         reservations:
-          cpus: "0.3"
+          cpus: '0.3'
           memory: 512mb
 
   postgres:
@@ -407,29 +407,29 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.postgres-service==true"
+          - 'node.labels.postgres-service==true'
       update_config:
         parallelism: 1
         delay: 10s
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 1GB
         reservations:
-          cpus: "0.3"
+          cpus: '0.3'
           memory: 512mb
 
   mongo:
     image: copo/copo-mongo:v8.0.5
     command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
     entrypoint:
-       - bash
-       - -c
-       - |
-          openssl rand -base64 756 > /data/replica.key
-          chmod 400 /data/replica.key
-          chown 999:999 /data/replica.key
-          exec docker-entrypoint.sh $$@
+      - bash
+      - -c
+      - |
+        openssl rand -base64 756 > /data/replica.key
+        chmod 400 /data/replica.key
+        chown 999:999 /data/replica.key
+        exec docker-entrypoint.sh $$@
     networks:
       - backend
     hostname: copo-mongo-server
@@ -451,16 +451,16 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.mongo-service==true"
+          - 'node.labels.mongo-service==true'
       update_config:
         parallelism: 1
         delay: 10s
       resources:
         limits:
-          cpus: "0.8"
+          cpus: '0.8'
           memory: 2GB
         reservations:
-          cpus: "0.4"
+          cpus: '0.4'
           memory: 512mb
 
 #  browser:
