@@ -1,0 +1,57 @@
+# Note: Ensure that the steps in the local.copo.compose.mac.yaml or
+# local.copo.compose.linux.yaml file have been 
+# followed to set up the local COPO instance before running the command below.
+#
+#
+# docker compose \
+# --project-name copo \
+# -f /<path-to-project-directory>/COPO-production/test/playwright/docker-compose.playwright-tests.yaml \
+# run --rm copo_tests
+#
+# 1. Create network (once per runner)
+# docker network create copo_test_bridge || true
+
+# 2. Spin up minimal services
+# docker compose -f docker-compose.playwright-tests.yaml up -d copo_web
+
+# 3. Run tests
+# docker compose -f docker-compose.playwright-tests.yaml run --rm copo_tests
+
+# 4. Tear down
+# docker compose -f docker-compose.playwright-tests.yaml down
+
+services:
+  copo_web:
+    image: <your_copo_web_image>
+    environment:
+      - DEBUG=true
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_PASSWORD=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@test.com
+    ports:
+      - "8000:8000"
+    networks:
+      - copo_test_bridge
+
+  copo_tests:
+    build:
+      context: <path-to-project-directory>/COPO-production  # Project root directory
+      dockerfile: test/playwright/Dockerfile_playwright
+    command: pytest test/playwright
+    environment:
+      - BASE_URL=http://copo_web:8000
+      - HEADLESS=true
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_PASSWORD=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@test.com
+      - DEBUG=true
+    volumes:
+      - ../test/playwright:/copo/test/playwright
+    depends_on:
+      - copo_web
+    networks:
+      - copo_test_bridge
+
+networks:
+  copo_test_bridge:
+    external: true

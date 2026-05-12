@@ -136,7 +136,18 @@
       "args": [],
       "django": true,
       "justMyCode": false
-    }
+    },
+    {
+      "name": "Python: Run Playwright Tests",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pytest test/playwright --headless",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "ENVIRONMENT_TYPE": "demo",
+        "PLAYWRIGHT_HEADLESS": "true"
+      }
+    },
   ],
   "compounds": [
     {
