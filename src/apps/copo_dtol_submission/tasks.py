@@ -4,10 +4,11 @@ from .utils.copo_email import Email
 
 from common.dal.sample_da import Sample
 from src.celery import app
-from src.apps.copo_core.tasks import CopoBaseClassForTask
+from src.apps.copo_core.tasks import CopoBaseClassForTask, only_one
 from common.utils.logger import Logger
 
 @app.task(bind=True, base=CopoBaseClassForTask)
+@only_one(key="process_dtol_sample_submission", timeout=300)
 def process_dtol_sample_submission(self):
     Logger().debug("Running process_dtol_sample_submission")
     dtol.process_pending_dtol_samples()

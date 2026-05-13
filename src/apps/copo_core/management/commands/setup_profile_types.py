@@ -1,6 +1,10 @@
 from typing import Any
 from django.db.models import Q
 from django.core.management.base import BaseCommand
+
+# Minimum field lengths enforced at manifest upload time and during ENA submission.
+PROFILE_TITLE_MIN_LENGTH = 10
+PROFILE_DESCRIPTION_MIN_LENGTH = 20
 from src.apps.copo_core.models import (
     ProfileType,
     Component,

@@ -145,6 +145,32 @@ class IncorrectValueValidator(Validator):
                 self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
+class FileCompressionValidator(Validator):
+    """Checks that all file-type fields reference compressed files (.gz or .bz2)."""
+    def validate(self):
+        schema_map = self.kwargs.get("schema", {})
+        component = self.kwargs.get("component", "")
+        file_columns = [k for k, v in schema_map.items() if v.get("term_type") == "file"]
+        for column in file_columns:
+            if column not in self.data.columns:
+                continue
+            for i, value in self.data[column].items():
+                if not value:
+                    continue
+                value = str(value).strip()
+                if not (value.endswith(".gz") or value.endswith(".bz2")):
+                    self.errors.append(
+                        msg["validation_msg_file_not_compressed"].format(
+                            component=component,
+                            value=value,
+                            column=schema_map[column].get("term_label", column),
+                            row=i + 2,
+                        )
+                    )
+                    self.flag = False
+        return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
+
+
 class StudyComponentValidator(Validator):
     def validate(self):
         component = self.kwargs.get("component", "")

@@ -9,8 +9,8 @@ from common.dal.profile_da import Profile
 from common.utils import helpers
 from lxml import etree
 from common.schemas.utils.data_utils import simple_utc
-from common.utils.helpers import notify_submission_status, get_datetime, get_env, json_to_pytype
-from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SETTINGS, SRA_RUN_TEMPLATE,SRA_EXPERIMENT_TEMPLATE, SRA_SUBMISSION_MODIFY_TEMPLATE, SRA_SUBMISSION_TEMPLATE
+from common.utils.helpers import notify_submission_status, notify_read_status, get_datetime, get_env, json_to_pytype
+from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SETTINGS, SRA_RUN_TEMPLATE,SRA_EXPERIMENT_TEMPLATE, SRA_SUBMISSION_MODIFY_TEMPLATE, SRA_SUBMISSION_TEMPLATE, ENA_CLI
 import subprocess
 import tempfile
 from common.dal.submission_da import Submission
@@ -414,6 +414,13 @@ class EnaSubmissionHelper:
         # do it for modify
         if is_modifed_sample:
             result = self.process_sample(output_location, root_modify, modify_submission_xml_path, sra_df, is_new=False)
+            if result['status'] is False:
+                # MODIFY rejected (e.g. samples purged from dev server after 24 h).
+                # Reuse the sample XML already built in root_modify but submit with
+                # ADD action so ENA creates fresh registrations.
+                self.logging_info("Sample MODIFY failed, falling back to ADD.")
+                result = self.process_sample(output_location, root_modify, submission_xml_path, sra_df, is_new=True)
+                is_new_sample = False  # already handled above
 
         if result['status']:
             # do it for add
@@ -424,14 +431,12 @@ class EnaSubmissionHelper:
 
         if result['status'] is False:
             message = "Samples not registered."
-
             Sample(profile_id=self.profile_id).update_field(oids=[sample["_id"] for sample in samples], field_values={"error": result['message'], "status": "rejected"})
-            
             self.logging_error(message)
-        else:        
+        else:
             message = "Samples registered successfully."
-            
             self.logging_info(message)
+        notify_read_status(data={"profile_id": self.profile_id}, msg=message, action="refresh_table", html_id="sample_info")
         return result
 
     def register_project(self, submission_xml_path=str(), modify_submission_xml_path=str(), study=None, singlecell_id=None):
@@ -1113,7 +1118,16 @@ class EnaSubmissionHelper:
                     self.logging_error("no assembly file found")
 
             for _, file_row in assembly_file_df.iterrows():
-                manifest_content += file_row["assembly_file_type"].upper() + "\t" + enafile_map.get(file_row["assembly_file"], "") + "\n"
+                file_path_for_manifest = enafile_map.get(file_row["assembly_file"], "")
+                if file_path_for_manifest and not (file_path_for_manifest.endswith(".gz") or file_path_for_manifest.endswith(".bz2")):
+                    message = (
+                        f"Assembly file <strong>{os.path.basename(file_path_for_manifest)}</strong> "
+                        "must be compressed (.gz or .bz2) before submission. "
+                        "Please re-upload a compressed version of the file."
+                    )
+                    self.logging_error(message)
+                    return dict(status=False, message=message)
+                manifest_content += file_row["assembly_file_type"].upper() + "\t" + file_path_for_manifest + "\n"
 
             if not assembly_run_ref_data_df.empty:
                 assembly_run_ref_df = assembly_run_ref_data_df.loc[assembly_run_ref_data_df[parent_map["assembly_run_ref"]["assembly"]]==row[identifier]]
@@ -1154,7 +1168,7 @@ class EnaSubmissionHelper:
                 test = " -test "
             #cli_path = "tools/reposit/ena_cli/webin-cli.jar"
             submission_type = row.get("submission_type", "transcriptome")
-            webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
+            webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
             
             #qself.logging_debug(webin_cmd)
             try:
@@ -1238,7 +1252,7 @@ class EnaSubmissionHelper:
         test = ""
         if "dev" in ena_service:
             test = " -test "
-        webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -validate -ascp"
+        webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -validate -ascp"
         self.logging_debug(webin_cmd)
         try:
             self.logging_info("validating assembly")
@@ -1257,7 +1271,7 @@ class EnaSubmissionHelper:
         test = ""
         if "dev" in ena_service:
             test = " -test "
-        webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token}  -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
+        webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token}  -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
         Logger().debug(msg=webin_cmd)
         # print(webin_cmd)
         # try/except as it turns out this can fail even if validate is successfull
