@@ -37,9 +37,9 @@
             <tr>
               <td class="table-header {% if row.is_header %}table-header-section{% endif %}">
                 {% if row.title %}
-                  <span class="text-hover" data-toggle="tooltip" title="{{ row.title }}">{{ row.label_prefix }}</span>&nbsp;{{ row.label_suffix }}
+                  <span class="text-hover" data-toggle="tooltip" title="{{ row.title }}">{{ row.label_prefix }}</span>&nbsp;{{ row.label_suffix }} <br> <span class="table-header-section-desc">{{ row.description }}</span>
                 {% else %}
-                  {{ row.label_prefix }}&nbsp;{{ row.label_suffix }}
+                  {{ row.label_prefix }}&nbsp;{{ row.label_suffix }} <br> <span class="table-header-section-desc">{{ row.description }}</span>
                 {% endif %}
               </td>
               <td id="{{ row.prefix }}ManifestOptions" {% if row.is_header %}class="table-header-section"{% endif %}></td>
