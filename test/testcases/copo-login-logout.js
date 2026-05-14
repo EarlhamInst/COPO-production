@@ -167,13 +167,13 @@ const get_browser_id  = async () => {
     {
         const targetPage = page;
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(Enter email address)'),
-            targetPage.locator('#emaddres'),
-            targetPage.locator('::-p-xpath(//*[@id=\\"emaddres\\"])'),
-            targetPage.locator(':scope >>> #emaddres')
+          targetPage.locator('::-p-aria(Enter email address)'),
+          targetPage.locator('#emaddres'),
+          targetPage.locator('::-p-xpath(//*[@id=\\"emaddres\\"])'),
+          targetPage.locator(':scope >>> #emaddres'),
         ])
-            .setTimeout(timeout)
-            .fill('debby.ku@earlham.ac.uk');
+          .setTimeout(timeout)
+          .fill('testuser@example.com');
     }
 
     {

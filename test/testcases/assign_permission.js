@@ -116,7 +116,7 @@ const get_browser_id  = async () => {
             targetPage.locator(':scope >>> #searchbar')
         ])
             .setTimeout(timeout)
-            .fill('debby');
+            .fill('testuser');
     }
     {
         const targetPage = page;
@@ -138,7 +138,7 @@ const get_browser_id  = async () => {
             promises.push(targetPage.waitForNavigation());
         }
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(debby[role=\\"link\\"])'),
+            targetPage.locator('::-p-aria(testuser[role=\\"link\\"])'),
             targetPage.locator('#content-start tr:nth-of-type(2) a'),
             targetPage.locator('::-p-xpath(//*[@id=\\"result_list\\"]/tbody/tr[2]/th/a)'),
             targetPage.locator(':scope >>> #content-start tr:nth-of-type(2) a')
@@ -197,7 +197,7 @@ const get_browser_id  = async () => {
             promises.push(targetPage.waitForNavigation());
         }
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(debby[role=\\"rowheader\\"]) >>>> ::-p-aria([role=\\"link\\"])'),
+            targetPage.locator('::-p-aria(testuser[role=\\"rowheader\\"]) >>>> ::-p-aria([role=\\"link\\"])'),
             targetPage.locator('#content-start tr:nth-of-type(2) a'),
             targetPage.locator('::-p-xpath(//*[@id=\\"result_list\\"]/tbody/tr[2]/th/a)'),
             targetPage.locator(':scope >>> #content-start tr:nth-of-type(2) a')
