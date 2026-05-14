@@ -993,10 +993,10 @@ class EnaSubmissionHelper:
         ena_files = EnaFileTransfer().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"local_path":1,  "remote_path":1})
         data_files = DataFile().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"file_name":1,  "file_hash":1 })
         
-        analysis_file_data_df["file_hash"] = analysis_file_data_df["sequencing_annotation_file_name"].map( 
+        analysis_file_data_df["file_hash"] = analysis_file_data_df["sequencing_annotation_file"].map( 
                             {data_file["file_name"] : data_file.get("file_hash", "") 
                              for data_file in data_files if data_file.get("file_hash","") } )
-        analysis_file_data_df["remote_path"] = analysis_file_data_df["sequencing_annotation_file_name"].map( 
+        analysis_file_data_df["remote_path"] = analysis_file_data_df["sequencing_annotation_file"].map( 
                             {ena_file["local_path"].split("/")[-1] : ena_file.get("remote_path", "") 
                              for ena_file in ena_files if ena_file.get("remote_path","") } )
 
@@ -1073,7 +1073,7 @@ class EnaSubmissionHelper:
 
         for _, file in analysis_file_df.iterrows():
             file_elm = ET.SubElement(files, "FILE")
-            file_elm.set("filename", f'{file["remote_path"]}{file["sequencing_annotation_file_name"]}')
+            file_elm.set("filename", f'{file["remote_path"]}{file["sequencing_annotation_file"]}')
             file_elm.set("filetype", file["sequencing_annotation_file_type"])
             file_elm.set("checksum_method","MD5")
             file_elm.set("checksum", file["file_hash"])
