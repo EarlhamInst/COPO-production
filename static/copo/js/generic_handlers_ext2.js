@@ -203,6 +203,8 @@ function set_empty_component_message(dataRows, table_id = '*') {
     if ($('.page-welcome-message').length) {
       $(table_id).find('.page-welcome-message').hide();
     }
+
+    $('.component-legend[data-template!="true"]').show();
   }
 }
 
