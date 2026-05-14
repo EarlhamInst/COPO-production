@@ -160,6 +160,10 @@ class EnaReads:
             message = "Submission processing failed due to exception! Retry again"
             ghlper.logging_info(message, self.submission_id)
             # reset sample status to pending & remove bundle / bundle samples
+            if getattr(self, "profile_id", None):
+                Submission(profile_id=self.profile_id).reset_read_submisison_bundle(
+                    self.submission_id
+                )
             queued_record['processing_status'] = 'pending'
             collection_handle.update_one(
                 {"_id": ObjectId(str(queued_record_id))}, {'$set': queued_record}

@@ -19,77 +19,105 @@ webin_domain = get_env('WEBIN_USER').split("@")[1]
 ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
 
 
+def _reset_study_status_on_failure(singlecell, study_id, repository, error_msg):
+    """Reset a study's status from 'processing' back to 'pending' after a submission failure."""
+    if singlecell:
+        try:
+            Singlecell().update_component_status(
+                id=str(singlecell["_id"]),
+                component="study",
+                identifier="study_id",
+                identifier_value=study_id,
+                repository=repository,
+                status_column_value={"status": "pending", "error": error_msg},
+            )
+        except Exception:
+            l.exception(f"Failed to reset study status for study_id={study_id}")
+
+
 def process_pending_submission_ena():
     repository = "ena"
     submissions = Submission().get_pending_submission(repository=repository, component="study")
     if not submissions:
         return
-    
+
     for sub in submissions:
 
         ena_submission_helper = EnaSubmissionHelper(profile_id=sub["profile_id"], submission_id=str(sub["_id"]))
 
         for study_id in sub["study"]:
-            ena_submission_helper.logging_info(f"Processing submission for study: {study_id}")
-         
-            singlecell = Singlecell().get_collection_handle().find_one(
-                 {"profile_id":sub["profile_id"], "study_id":study_id,"deleted": get_not_deleted_flag()},
-                 {"schema_name":1,"checklist_id":1, "study_id":1, "components":1})
-            #generate the manifest for submission
-            if not singlecell:
-                msg = f"Missing singlecell for study: {study_id}"
-                ena_submission_helper.logging_error(msg)
-                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
-                continue
+            singlecell = None
+            try:
+                ena_submission_helper.logging_info(f"Processing submission for study: {study_id}")
 
-            singlecell_components = singlecell.get("components",{})
+                singlecell = Singlecell().get_collection_handle().find_one(
+                     {"profile_id":sub["profile_id"], "study_id":study_id,"deleted": get_not_deleted_flag()},
+                     {"schema_name":1,"checklist_id":1, "study_id":1, "components":1})
+                #generate the manifest for submission
+                if not singlecell:
+                    msg = f"Missing singlecell for study: {study_id}"
+                    ena_submission_helper.logging_error(msg)
+                    Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                    continue
 
-            studies = singlecell_components.get("study",[])
-            if not studies:
-                msg = f"Missing study for singlecell: {study_id}"
-                ena_submission_helper.logging_error(msg)
-                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
-                continue
+                singlecell_components = singlecell.get("components",{})
 
-            output_location = tempfile.mkdtemp()
+                studies = singlecell_components.get("study",[])
+                if not studies:
+                    msg = f"Missing study for singlecell: {study_id}"
+                    ena_submission_helper.logging_error(msg)
+                    Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                    continue
 
-            context = ena_submission_helper.get_submission_xml(output_location)
+                output_location = tempfile.mkdtemp()
 
-            if context['status'] is False:
-                ena_submission_helper.logging_error( context.get("message", str()))
-                return context
+                context = ena_submission_helper.get_submission_xml(output_location)
 
-            submission_xml_path = context['value']
+                if context['status'] is False:
+                    msg = context.get("message", str())
+                    ena_submission_helper.logging_error(msg)
+                    _reset_study_status_on_failure(singlecell, study_id, repository, msg)
+                    Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                    continue
 
-            context = ena_submission_helper.get_edit_submission_xml(output_location, submission_xml_path)
-            if context['status'] is False:
-                ena_submission_helper.logging_error(context.get("message", str()))
-                return context
-            
-            modify_submission_xml_path = context['value']
-            schema_name = singlecell["schema_name"]
-            schemas = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=dict(), target_id=singlecell["checklist_id"])
-            term_mapping = SinglecellSchemas().get_term_mapping(schema_name=schema_name)
-            
-            submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name=schema_name)
-            submisison_repository_component_map = submission_repository_df.to_dict('index')
-            submission_components = {}
-            for component, respositories in submisison_repository_component_map.items():
-                    if repository in respositories and respositories[repository]:
-                        submission_components[respositories[repository]] = component
+                submission_xml_path = context['value']
 
-            study_component_schema = schemas.get("study", {})
-            rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in study_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}    
-            study_component_df = pd.DataFrame.from_records(studies)
-            study_component_df.rename(columns=rename_columns, inplace=True)
-            study = study_component_df.to_dict('records')[0]
+                context = ena_submission_helper.get_edit_submission_xml(output_location, submission_xml_path)
+                if context['status'] is False:
+                    msg = context.get("message", str())
+                    ena_submission_helper.logging_error(msg)
+                    _reset_study_status_on_failure(singlecell, study_id, repository, msg)
+                    Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                    continue
 
-            #submit study to ena 
-            context = ena_submission_helper.register_project(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, study=study, singlecell_id=singlecell["_id"])   
-            Submission().remove_component_from_submission(sub_id=str(ena_submission_helper.submission_id), component="study", component_ids=[study["study_id"]])
+                modify_submission_xml_path = context['value']
+                schema_name = singlecell["schema_name"]
+                schemas = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=dict(), target_id=singlecell["checklist_id"])
+                term_mapping = SinglecellSchemas().get_term_mapping(schema_name=schema_name)
 
-            #submit run to ena
-            if context['status']:
+                submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name=schema_name)
+                submisison_repository_component_map = submission_repository_df.to_dict('index')
+                submission_components = {}
+                for component, respositories in submisison_repository_component_map.items():
+                        if repository in respositories and respositories[repository]:
+                            submission_components[respositories[repository]] = component
+
+                study_component_schema = schemas.get("study", {})
+                rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in study_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
+                study_component_df = pd.DataFrame.from_records(studies)
+                study_component_df.fillna(value="", inplace=True)
+                study_component_df.rename(columns=rename_columns, inplace=True)
+                study = study_component_df.to_dict('records')[0]
+
+                #submit study to ena
+                context = ena_submission_helper.register_project(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, study=study, singlecell_id=singlecell["_id"])
+                Submission().remove_component_from_submission(sub_id=str(ena_submission_helper.submission_id), component="study", component_ids=[study["study_id"]])
+
+                if context['status'] is False:
+                    # Status already set to 'rejected' inside register_project(); no further reset needed.
+                    continue
+
+                #submit run to ena
                 if "read" in submission_components:
                     read = singlecell_components.get(submission_components["read"],[])
                     if read:
@@ -97,7 +125,7 @@ def process_pending_submission_ena():
                             {"profile_id":sub["profile_id"], "study_id":study_id,"deleted": get_not_deleted_flag()},
                             {"schema_name":1,"checklist_id":1, "study_id":1, "components":1})
                         file_component_df, identifier_map = _prepare_file_submission(singlecell=singlecell, file_component_name=submission_components["read"])
-                        context = ena_submission_helper.register_files(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, component_df=file_component_df, identifier_map=identifier_map, singlecell=singlecell, file_component_name=submission_components["read"])   
+                        context = ena_submission_helper.register_files(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, component_df=file_component_df, identifier_map=identifier_map, singlecell=singlecell, file_component_name=submission_components["read"])
 
                         #submit assembly to ena
                         if context['status']:
@@ -105,31 +133,36 @@ def process_pending_submission_ena():
                             if "assembly" in submission_components:
                                 assembly = singlecell_components.get(submission_components["assembly"],[])
                                 if assembly:
-                                    if singlecell == None:
+                                    if singlecell is None:
                                         singlecell = Singlecell().get_collection_handle().find_one(
                                             {"profile_id":sub["profile_id"], "study_id":study_id,"deleted": get_not_deleted_flag()},
                                             {"schema_name":1,"checklist_id":1, "study_id":1, "components":1})
                                     assembly_component_data_df, assembly_run_ref_data_df,assembly_file_data_df, parent_map = _prepare_analysis_submission(singlecell=singlecell, component_name=submission_components["assembly"], is_assembly=True)
-                                    context = ena_submission_helper.register_assembly(identifier=identifier_map[submission_components["assembly"]],  assembly_component_data_df=assembly_component_data_df, assembly_run_ref_data_df=assembly_run_ref_data_df, assembly_file_data_df=assembly_file_data_df, parent_map=parent_map, singlecell_id=singlecell["_id"])   
+                                    context = ena_submission_helper.register_assembly(identifier=identifier_map[submission_components["assembly"]],  assembly_component_data_df=assembly_component_data_df, assembly_run_ref_data_df=assembly_run_ref_data_df, assembly_file_data_df=assembly_file_data_df, parent_map=parent_map, singlecell_id=singlecell["_id"])
 
-                            if "sequencing_annotation" in submission_components:    
+                            if "sequencing_annotation" in submission_components:
                                 annotation = singlecell_components.get(submission_components["sequencing_annotation"],[])
                                 if annotation:
-                                    if singlecell == None:
+                                    if singlecell is None:
                                         singlecell = Singlecell().get_collection_handle().find_one(
                                             {"profile_id":sub["profile_id"], "study_id":study_id,"deleted": get_not_deleted_flag()},
                                             {"schema_name":1,"checklist_id":1, "study_id":1, "components":1})
                                     sequencing_annotation_component_data_df, sequencing_annotation_run_ref_data_df,sequencing_annotation_file_data_df, parent_map = _prepare_analysis_submission(singlecell=singlecell, component_name=submission_components["sequencing_annotation"])
-                                    context = ena_submission_helper.register_sequencing_annotation(analysis_run_ref_data_df=sequencing_annotation_run_ref_data_df, 
+                                    context = ena_submission_helper.register_sequencing_annotation(analysis_run_ref_data_df=sequencing_annotation_run_ref_data_df,
                                                                                                    analysis_file_data_df = sequencing_annotation_file_data_df,
-                                                                                                   analysis_component_data_df=sequencing_annotation_component_data_df, 
+                                                                                                   analysis_component_data_df=sequencing_annotation_component_data_df,
                                                                                                    identifier=identifier_map[submission_components["sequencing_annotation"]],
                                                                                                    parent_map=parent_map,
                                                                                                    singlecell_id=str(singlecell["_id"]),
                                                                                                    analysis_component_name=submission_components["sequencing_annotation"]
-                                                                                                   )    
+                                                                                                   )
 
-            ena_submission_helper.push_action(message="Submission done", action="refresh_table")
+                ena_submission_helper.push_action(message="Submission done", action="refresh_table")
+
+            except Exception as e:
+                l.exception(e)
+                _reset_study_status_on_failure(singlecell, study_id, repository, str(e))
+                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
 
 def _prepare_analysis_submission(singlecell, component_name="sequencing_annotation", is_assembly=False):
     #get info from the components: sequencing_annotation, sequencing_annotation_run_ref[run accession / experiment accession], sequencing_annotation_file

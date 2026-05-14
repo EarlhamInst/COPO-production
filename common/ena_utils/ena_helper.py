@@ -493,6 +493,8 @@ class EnaSubmissionHelper:
                     "Please update the profile description and resubmit."
                 )
                 self.logging_error(message)
+                if singlecell_id and study:
+                    Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected", "error": message})
                 return dict(status=False, message=message)
             etree.SubElement(project, 'DESCRIPTION').text = project_description
 
@@ -562,9 +564,10 @@ class EnaSubmissionHelper:
         except Exception as e:
             ghlper.logging_exception(e)
             message = 'API call error ' + str(e).replace(pass_word, "xxxxxx")
-            self.logging_debug(message)
-            self.logging_error('API call error, please try it later')
-            raise e
+            self.logging_error(message)
+            if singlecell_id:
+                Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected", "error": message})
+            return dict(status=False, message=message)
 
         root = etree.fromstring(receipt)
 
@@ -580,7 +583,8 @@ class EnaSubmissionHelper:
                 result['message'] = result['message'] + error_text
 
             # log error
-            Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected",  "error": result['message'] })  
+            if singlecell_id:
+                Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected",  "error": result['message'] })
             self.logging_debug("Error in submitting study to ENA via CURL: " + str(result['message']))
             return result
 
@@ -1223,7 +1227,10 @@ class EnaSubmissionHelper:
                 elif return_code == 3:
                     directories = sorted(glob.glob(f"{submission_folder}/{submission_type}/*"),key=os.path.getmtime)
                     with open(f"{directories[-1]}/validate/webin-cli.report") as report_file:
-                        error = output + " " + report_file.read()
+                        report_text = report_file.read()
+                    # Strip Java stack traces — keep only ERROR/WARNING lines
+                    clean_lines = [l for l in report_text.splitlines() if l.startswith("ERROR") or l.startswith("WARNING")]
+                    error = "\n".join(clean_lines) if clean_lines else report_text
                 Singlecell().update_component_status(id=singlecell_id, component="assembly", identifier=identifier, identifier_value=row[identifier], repository="ena", status_column_value={"status": "rejected", "error":error})
 
             if error:

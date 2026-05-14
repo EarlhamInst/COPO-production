@@ -650,8 +650,8 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena"):
                 final_status = status
 
     # Guard against submitting when there's nothing to submit or submission is already running
-    match status_column:
-        case "published" | "accepted":
+    match final_status:
+        case "accepted" | "published":
             return dict(status='error', message="There is no pending change for submission!")
         case "processing":
             return dict(status='error', message="Submission is in progress, please wait until it is completed!")
