@@ -1,0 +1,35 @@
+# Run continuous integration (CI) checks on pull requests created 
+# by Dependabot and merged into the main branch.
+name: Dependabot validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  dependabot:
+    if: github.actor == 'dependabot[bot]'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements/base.txt
+
+      - name: Run Django tests
+        run: python manage.py test
+
+      # - name: Run Playwright tests
+      #   run: |
+      #     playwright install --with-deps
+      #     pytest test/playwright --headless
+
+      - name: Build Docker image (validation only)
+        run: docker build -t copo/copo-new-web:ci-test-${GITHUB_SHA} .
