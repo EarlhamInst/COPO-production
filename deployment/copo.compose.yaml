@@ -78,8 +78,8 @@ services:
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
       - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
       - BIOIMAGE_PASSWORD_FILE=/run/secrets/copo_bioimage_password
-      - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
-      - ECS_ACCESS_KEY_ID_FILE=/run/secrets/ecs_access_key
+      - ECS_SECRET_KEY_FILE=/run/secrets/minio_secret_key
+      - ECS_ACCESS_KEY_ID_FILE=/run/secrets/minio_access_key
       - ECS_ENDPOINT=http://minio:9000
       - ECS_ENDPOINT_EXTERNAL=https://minio-demo.copo-project.org
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
@@ -129,8 +129,8 @@ services:
       - copo_mail_password
       - copo_bioimage_path
       - copo_bioimage_password
-      - ecs_secret_key
-      - ecs_access_key
+      - minio_secret_key
+      - minio_access_key
       - copo_zenodo_token
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
@@ -188,8 +188,8 @@ services:
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
       - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
       - BIOIMAGE_PASSWORD_FILE=/run/secrets/copo_bioimage_password
-      - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
-      - ECS_ACCESS_KEY_ID_FILE=/run/secrets/ecs_access_key
+      - ECS_SECRET_KEY_FILE=/run/secrets/minio_secret_key
+      - ECS_ACCESS_KEY_ID_FILE=/run/secrets/minio_access_key
       - ECS_ENDPOINT=http://minio:9000
       - ECS_ENDPOINT_EXTERNAL=https://minio-demo.copo-project.org
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
@@ -234,8 +234,8 @@ services:
       - copo_mail_password
       - copo_bioimage_path
       - copo_bioimage_password
-      - ecs_secret_key
-      - ecs_access_key
+      - minio_secret_key
+      - minio_access_key
       - copo_zenodo_token
   nginx:
     image: copo/copo-nginx-minio:v1.25.3.3
