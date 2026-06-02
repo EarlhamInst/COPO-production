@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3.9'
 
 # Settings and configurations that are common for all containers
 x-minio-common: &minio-common
@@ -32,6 +32,7 @@ x-minio-common: &minio-common
     update_config:
       parallelism: 1
       delay: 10s
+
 services:
   minio:
     <<: *minio-common
@@ -47,7 +48,7 @@ services:
           - "node.labels.minio-service==true"
 
   web:
-    image: copo/copo-new-web:v3.2.0
+    image: copo/copo-new-web:v3.2.0.1
     entrypoint:
       - bash
       - -c
@@ -98,8 +99,8 @@ services:
       - BIOIMAGE_PASSWORD_FILE=/run/secrets/copo_bioimage_password
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
       - ECS_ACCESS_KEY_ID_FILE=/run/secrets/ecs_access_key
-      - ECS_ENDPOINT=http://minio.copodev.cyverseuk.org
-      - ECS_ENDPOINT_EXTERNAL=http://minio.copodev.cyverseuk.org
+      - ECS_ENDPOINT=http://minio:9000
+      - ECS_ENDPOINT_EXTERNAL=https://minio-demo.copo-project.org
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
@@ -113,7 +114,7 @@ services:
     networks:
       default:
         aliases:
-           - copo-new.cyverseuk.org
+          - copo-new.cyverseuk.org
       frontend:
       backend:
     deploy:
@@ -123,7 +124,7 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.web-service==true"
+          - 'node.labels.web-service==true'
       resources:
         limits:
           cpus: '2'
@@ -151,13 +152,13 @@ services:
       - ecs_access_key
       - copo_zenodo_token
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000']
       interval: 2m
       timeout: 10s
       retries: 3
       start_period: 50s
   celery_job:
-    image: copo/copo-new-web:v3.2.0
+    image: copo/copo-new-web:v3.2.0.1
     entrypoint:
       - bash
       - -c
@@ -208,8 +209,8 @@ services:
       - BIOIMAGE_PASSWORD_FILE=/run/secrets/copo_bioimage_password
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
       - ECS_ACCESS_KEY_ID_FILE=/run/secrets/ecs_access_key
-      - ECS_ENDPOINT=http://minio.copodev.cyverseuk.org
-      - ECS_ENDPOINT_EXTERNAL=http://minio.copodev.cyverseuk.org
+      - ECS_ENDPOINT=http://minio:9000
+      - ECS_ENDPOINT_EXTERNAL=https://minio-demo.copo-project.org
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
@@ -228,7 +229,7 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.offline-service==true"
+          - 'node.labels.offline-service==true'
       resources:
         limits:
           cpus: '2'
@@ -256,7 +257,7 @@ services:
       - ecs_access_key
       - copo_zenodo_token
   nginx:
-    image: copo/copo-nginx-minio:v1.25.3.3
+    image: copo/copo-nginx-minio:v1.30.2
     networks:
       - frontend
     volumes:
@@ -267,10 +268,10 @@ services:
       - copo-project.crt
       - copo-project.key
     ports:
-      - "80:80"
-      - "443:443"
-      - "9000:9000"
-      - "9001:9001"
+      - '80:80'
+      - '443:443'
+      - '9000:9000'
+      - '9001:9001'
     environment:
       - copoweb=copo_web
     depends_on:
@@ -281,16 +282,16 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.nginx-service==true"
+          - 'node.labels.nginx-service==true'
       update_config:
         parallelism: 1
         delay: 10s
       resources:
         limits:
-          cpus: "1"
+          cpus: '1'
           memory: 3GB
         reservations:
-          cpus: "0.3"
+          cpus: '0.3'
           memory: 512mb
   backup:
     image: copo/copo-backup:v20.04_1
@@ -322,16 +323,16 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.backup-service==true"
+          - 'node.labels.backup-service==true'
       update_config:
         parallelism: 1
         delay: 10s
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 1GB
         reservations:
-          cpus: "0.3"
+          cpus: '0.3'
           memory: 512mb
   sample_audit:
     image: copo/copo-sample-audit:v0.0.19
@@ -351,16 +352,16 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.offline-service==true"
+          - 'node.labels.offline-service==true'
       update_config:
         parallelism: 1
         delay: 10s
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 1GB
         reservations:
-          cpus: "0.1"
+          cpus: '0.1'
           memory: 128mb
     depends_on:
       - mongo
@@ -376,16 +377,16 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.web-service==true"
+          - 'node.labels.web-service==true'
       update_config:
         parallelism: 1
         delay: 10s
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 1GB
         reservations:
-          cpus: "0.3"
+          cpus: '0.3'
           memory: 512mb
 
   postgres:
@@ -407,29 +408,29 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.postgres-service==true"
+          - 'node.labels.postgres-service==true'
       update_config:
         parallelism: 1
         delay: 10s
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 1GB
         reservations:
-          cpus: "0.3"
+          cpus: '0.3'
           memory: 512mb
 
   mongo:
     image: copo/copo-mongo:v8.0.5
     command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
     entrypoint:
-       - bash
-       - -c
-       - |
-          openssl rand -base64 756 > /data/replica.key
-          chmod 400 /data/replica.key
-          chown 999:999 /data/replica.key
-          exec docker-entrypoint.sh $$@
+      - bash
+      - -c
+      - |
+        openssl rand -base64 756 > /data/replica.key
+        chmod 400 /data/replica.key
+        chown 999:999 /data/replica.key
+        exec docker-entrypoint.sh $$@
     networks:
       - backend
     hostname: copo-mongo-server
@@ -451,16 +452,16 @@ services:
         condition: any
       placement:
         constraints:
-          - "node.labels.mongo-service==true"
+          - 'node.labels.mongo-service==true'
       update_config:
         parallelism: 1
         delay: 10s
       resources:
         limits:
-          cpus: "0.8"
+          cpus: '0.8'
           memory: 2GB
         reservations:
-          cpus: "0.4"
+          cpus: '0.4'
           memory: 512mb
 
 #  browser:
@@ -503,6 +504,7 @@ services:
 networks:
   backend:
   frontend:
+  
 secrets:
   copo_web_secret_key:
     external: true
@@ -546,6 +548,7 @@ secrets:
     external: true
   copo_zenodo_token:
     external: true
+
 volumes:
   web-data:
     external: true

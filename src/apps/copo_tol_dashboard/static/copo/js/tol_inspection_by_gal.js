@@ -440,7 +440,7 @@ function get_gal_names() {
           $('.gal_inspection_card').css('margin-top', '44%');
         }
 
-        return False;
+        return false;
       }
 
       // Clear existing data in the gal names' table

@@ -171,8 +171,8 @@ services:
     command: server /data --console-address ":9001"
     hostname: minio
     environment:
-      MINIO_ROOT_USER: copo@nbi.ac.uk
-      MINIO_ROOT_PASSWORD: ${vault_ecs_secret_key}
+      - MINIO_ROOT_USER=copo@nbi.ac.uk
+      - MINIO_ROOT_PASSWORD=${vault_ecs_secret_key}
     ports:
       - "9000:9000"
       - "9001:9001"
