@@ -1,32 +1,51 @@
 version: '3.9'
 
 # Settings and configurations that are common for all containers
+x-minio-common: &minio-common
+  image: quay.io/minio/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1
+  command: server --console-address ":9001" http://minio-{1...2}/data{1...2}
+  #healthcheck:
+    #test: ["CMD", "mc", "ready", "local"]
+    #interval: 5s
+    #timeout: 5s
+    #retries:  5
+  environment:
+    - MINIO_ROOT_USER_FILE=/run/secrets/minio_access_key
+    - MINIO_ROOT_PASSWORD_FILE=/run/secrets/minio_secret_key
+  secrets:
+    - minio_access_key
+    - minio_secret_key
+  networks:
+    - frontend
+    - backend
+  deploy:
+    endpoint_mode: dnsrr
+    restart_policy:
+      condition: any
+    resources:
+      limits:
+        cpus: '2'
+        memory: 2GB
+      reservations:
+        cpus: '0.4'
+        memory: 512mb
+    update_config:
+      parallelism: 1
+      delay: 10s
+
 services:
   minio:
-    image: quay.io/minio/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1
-    command: server /data --console-address ":9001"
-    environment:
-      - MINIO_ROOT_USER_FILE=/run/secrets/minio_access_key
-      - MINIO_ROOT_PASSWORD_FILE=/run/secrets/minio_secret_key
-    secrets:
-      - minio_access_key
-      - minio_secret_key
-    networks:
-      - frontend
-      - backend
+    <<: *minio-common
+    hostname: minio-{{.Task.Slot}}
     volumes:
-      - minio-data1:/data
+      - minio-data1:/data1
+      - minio-data2:/data2
     deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2GB
-        reservations:
-          cpus: '0.4'
-          memory: 512mb
+      replicas: 2
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - "node.labels.minio-service==true"
 
   web:
     image: copo/copo-new-web:v3.2.0.1
@@ -485,6 +504,7 @@ services:
 networks:
   backend:
   frontend:
+  
 secrets:
   copo_web_secret_key:
     external: true
@@ -528,6 +548,7 @@ secrets:
     external: true
   copo_zenodo_token:
     external: true
+
 volumes:
   web-data:
     external: true
