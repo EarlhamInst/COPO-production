@@ -47,7 +47,7 @@ services:
           - 'node.labels.minio-service==true'
 
   web:
-    image: copo/copo-new-web:v3.1.16
+    image: copo/copo-new-web:v3.2.0
     entrypoint:
       - bash
       - -c
@@ -154,7 +154,7 @@ services:
       retries: 3
       start_period: 30s
   celery_job:
-    image: copo/copo-new-web:v3.1.16
+    image: copo/copo-new-web:v3.2.0
     entrypoint:
       - bash
       - -c
