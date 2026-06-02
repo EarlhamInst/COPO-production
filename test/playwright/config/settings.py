@@ -1,0 +1,6 @@
+BASE_URL = "http://localhost:8000"
+PROFILE_PAGE_URL = f'{BASE_URL}/copo'
+DJANGO_SUPERUSER_USERNAME = "admin"
+DJANGO_SUPERUSER_PASSWORD = "admin"
+DJANGO_SUPERUSER_EMAIL = "admin@test.com"
+DEBUG = True

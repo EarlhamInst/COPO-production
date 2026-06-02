@@ -1,0 +1,47 @@
+FROM mcr.microsoft.com/playwright:v1.60.0-noble
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/copo
+
+# Install system tools
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    gcc \
+    build-essential \
+    libpq-dev \
+    wget \
+    curl \
+    x11vnc \
+    x11-utils \
+    fluxbox \
+    xvfb \
+    && apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy project files into working directory
+WORKDIR /copo
+COPY . /copo
+
+# 'venv' virtual environment is needed since the 
+# Dockerfile image is not based on Python and 
+# does not have pip installed by default.
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install Python dependencies
+COPY ./requirements/ /tmp/requirements/
+
+RUN pip install --use-deprecated=legacy-resolver \
+    -r /tmp/requirements/dev.txt
+
+RUN playwright install chromium
+
+# Install project in editable mode
+RUN pip install -e .
+
+# Make entrypoint executable
+RUN chmod +x /copo/test/playwright/entrypoint.sh
+ENTRYPOINT ["/copo/test/playwright/entrypoint.sh"]

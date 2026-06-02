@@ -1,16 +1,28 @@
-## Note: This setup is for Mac OS only. However, they can be 
+## Note: This setup is for Mac OS only. However, they can be
 ## adapted for a Linux OS by changing the Docker images.
 #
 #
 ## To deploy a local COPO instance, follow the steps below:
 #
-## Step #1 - Create local Docker images
-## The .env file contains environment variables. Ensure that both the .env file and the 
-## local.copo.compose.mac.yaml file are in the same directory before running the command below.
+## Step #1 -  Build Docker images
+## Navigate to project root directory
+# cd <path-to-project-directory>/COPO-production
 #
-# $ export $(cat .env) > /dev/null 2>&1; docker compose -f local.copo.compose.mac.yaml up -d
+## Build main containers and playwright test container images
+# $ docker build . -f 'deployment/web/Dockerfile_local_mac' -t local_copo_web:v1.0.0
+# $ docker build . -f 'deployment/web/Dockerfile_playwright' -t playwright:v1.60.0
 #
-## Step #2  - Run Django management commands in the terminal 
+#
+## Step #2 - Create local Docker images
+## Navigate to the local project setup directory that contains 
+## the .env file and the local.copo.compose.mac.yaml file before running the command below.
+# cd <path-to-local-project-setup-files-directory>
+#
+## Run the command below to start the local COPO instance and the Playwright test container
+# $ export $(cat .env) > /dev/null 2>&1; docker compose -f local.copo.compose.mac.yaml -f <path-to-project-directory>/COPO-production/test/playwright/docker-compose.playwright.yaml up -d
+#
+#
+## Step #3  - Run Django management commands in the terminal
 ## to set up the database and create a superuser (for a new deployment with empty DB only)
 # $ docker ps
 # $ docker exec -it <copo-web-container-id> bash
@@ -23,7 +35,7 @@
 # $ python manage.py setup_sequencing_centres
 # $ python manage.py social_accounts
 
-## Step #3 - Initialise MongoDB replica set as 'copo_admin' user.
+## Step #4 - Initialise MongoDB replica set as 'copo_admin' user.
 # $ docker ps
 # $ docker exec -it <mongo-container-id> bash
 #
@@ -32,7 +44,7 @@
 # admin> db.auth("copo_admin", "password")
 # admin> rs.initiate()
 #
-## Step #4 - Return to the "copo-web-container" to run 
+## Step #5 - Return to the "copo-web-container" to run
 ## the other Django management commands
 #
 ## Exit the <mongo-container> by inputting:
@@ -49,7 +61,7 @@
 #
 # $ python manage.py createsuperuser
 #
-## Step #5 - Run Celery commands to populate data in the database
+## Step #6 - Run Celery commands to populate data in the database
 ## Switch to root user if not already it
 # sudo -i
 
@@ -59,14 +71,14 @@
 # celery -A src call src.apps.copo_core.tasks.update_ena_checklist
 # celery -A src call src.apps.copo_core.tasks.update_ena_read_platform
 
-version: "3.9"
+version: '3.9'
 services:
   copo_web:
     image: local_copo_web:v1.0.0 # Replace with your local image name
     command: >
       sleep infinity
     ports:
-      - "8000:8000"
+      - '8000:8000'
     environment:
       - ENVIRONMENT_TYPE=local
       - ASPERA_PLUGIN_DIRECTORY=aspera_linux_plugin
@@ -118,13 +130,13 @@ services:
       - DJANGO_SUPERUSER_EMAIL=admin@test.com
       - http_protocol=http
       - ZENODOURL=https://zenodo.org/api
-      - ZENODOTOKEN=${ZENODOTOKEN}    
+      - ZENODOTOKEN=${ZENODOTOKEN}
     depends_on:
       - copo_redis
       - copo_postgres
       - copo_mongo
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000']
       interval: 1m
       timeout: 10s
       retries: 3
@@ -132,14 +144,14 @@ services:
     volumes:
       # Replace with the absolute path to your local COPO project directory
       - /<path-to-project-directory>/COPO-production:/copo
-  
+
   copo_redis:
     image: redis:6.2.8
 
   copo_postgres:
     image: postgres:15
     ports:
-      - "5432:5432"  
+      - '5432:5432'
     environment:
       - POSTGRES_DB=copo
       - POSTGRES_USER=copo_user
@@ -149,16 +161,16 @@ services:
     image: copo/copo-mongo-mac:v8.0.1
     command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
     entrypoint:
-       - bash
-       - -c
-       - |
-          openssl rand -base64 756 > /data/replica.key
-          chmod 400 /data/replica.key
-          chown 999:999 /data/replica.key
-          exec docker-entrypoint.sh $$@
+      - bash
+      - -c
+      - |
+        openssl rand -base64 756 > /data/replica.key
+        chmod 400 /data/replica.key
+        chown 999:999 /data/replica.key
+        exec docker-entrypoint.sh $$@
     hostname: copo-mongo-server
     ports:
-      - "27017:27017"
+      - '27017:27017'
     environment:
       - MONGO_INITDB_ROOT_USERNAME=copo_admin
       - MONGO_INITDB_ROOT_PASSWORD=password
@@ -167,19 +179,19 @@ services:
       - MONGO_DB=copo_mongo
 
   copo_minio:
-    image: quay.io/minio/minio 
+    image: quay.io/minio/minio
     command: server /data --console-address ":9001"
     hostname: minio
     environment:
       MINIO_ROOT_USER: copo@nbi.ac.uk
       MINIO_ROOT_PASSWORD: ${vault_ecs_secret_key}
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - '9000:9000'
+      - '9001:9001'
 
   #copo_browser:
   #  image: debbyku/browserless.chrome
-  #  ports: 
+  #  ports:
   #    - "3000:3000"
   #  links:
   #    - copo_web:copo-new.cyverseuk.org
@@ -197,10 +209,10 @@ services:
   #    - MAX_CONCURRENT_SESSIONS=5
   #    - MAX_QUEUE_LENGTH=10
   #    - PREBOOT_QUANTITY=2
-  
+
   #copo_browser:
   #  image: debbyku/browserless.chrome
-  #  ports: 
+  #  ports:
   #    - "3000:3000"
   #  links:
   #    - copo_web:copo-new.cyverseuk.org

@@ -1,0 +1,29 @@
+## Note: Refer to the steps outlined in the comments 
+# in the 'local.copo.compose.linux.yaml' file or the
+# 'local.copo.compose.mac.yaml' file (depending on your OS) to set up 
+# both a local COPO instance and the Playwright container.
+#
+# After the steps have been followed especially Step #2, 
+# the Playwright container will be running. To execute tests run,
+#
+# $ docker run --rm --network host playwright:v1.60.0 pytest
+#
+services:
+  copo_playwright:
+    image: playwright:v1.60.0
+    entrypoint: ["/bin/bash", "/copo/test/playwright/entrypoint.sh"]
+    ports:
+      - '5901:5900'
+      - '5678:5678'
+    environment:
+      - BASE_URL=http://copo_web:8000
+      - DEBUG=True
+      - DISPLAY=:99
+      - DJANGO_SUPERUSER_USERNAME=test_admin
+      - DJANGO_SUPERUSER_PASSWORD=test_admin
+      - DJANGO_SUPERUSER_EMAIL=admin@test.com
+      - ENVIRONMENT_TYPE=test
+      - PLAYWRIGHT_DEBUG_PORT=5678
+      - VNC_PORT=5900
+    depends_on:
+      - copo_web
