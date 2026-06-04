@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import os
 from datetime import timedelta
 from celery import Celery
+from celery.signals import worker_ready
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'src.main_config.settings.all')
 # crontab(minute="*/1")
@@ -149,3 +150,24 @@ app.conf.task_routes = {
 @app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
+
+
+@worker_ready.connect
+def trigger_startup_lookups(sender, **kwargs):
+    """Refresh DB-backed ENA lookups when the worker boots.
+
+    Beat schedules these daily, but a timedelta schedule's first run is a full
+    interval after beat starts -- so a freshly deployed environment has no
+    platforms/checklists for 24h. Enqueue them on worker_ready so the data is
+    populated at T+0 instead. Dispatched async (.delay) so a slow ENA fetch never
+    blocks boot; the tasks are idempotent upserts so firing on every restart is safe.
+    Imported inside the handler to avoid circular imports at module load.
+    """
+    from src.apps.copo_core.tasks import (
+        update_ena_read_platform,
+        update_ena_read_checklist,
+        update_ena_checklist,
+    )
+    update_ena_read_platform.delay()
+    update_ena_read_checklist.delay()
+    update_ena_checklist.delay()
