@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     gcc \
     locales \
     python3-dev \
-    python3.12-venv \
+    python3-venv \
     python3-pip \
     ruby-dev \
     rubygems \
