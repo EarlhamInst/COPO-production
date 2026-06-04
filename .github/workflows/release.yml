@@ -1,4 +1,5 @@
 # Release Docker images to Docker Hub when a new tag is pushed.
+# Note dev/demo Docker compose file uses 4 digits while production uses 3
 # e.g. git tag v1.0.0
 #      git push origin v1.0.0
 
@@ -14,13 +15,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout project code
         uses: actions/checkout@v4
 
-      - name: Extract Docker image tag
-        id: vars
-        run: |
-          TAG=${GITHUB_REF#refs/tags/}
-          echo "version=$TAG" >> $GITHUB_OUTPUT
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: copo/copo-new-web
+          tags: |
+            type=ref,event=tag
           
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -28,26 +32,43 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build Docker image
-        run: |
-          docker build -t copo/copo-new-web:${{ steps.vars.outputs.version }} .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image locally for scanning
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deployment/web/Dockerfile
+          load: true
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=registry,ref=copo/copo-new-web:buildcache
+          cache-to: type=registry,ref=copo/copo-new-web:buildcache,mode=max
 
       - name: Run Docker Scout scan
         uses: docker/scout-action@v1
         with:
           command: cves
-          image: copo/copo-new-web:${{ steps.vars.outputs.version }}
+          image: ${{ steps.meta.outputs.tags }}
           only-severities: critical,high
           exit-code: true
 
       - name: Run Trivy scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: copo/copo-new-web:${{ steps.vars.outputs.version }}
+          image-ref: ${{ steps.meta.outputs.tags }}
           format: table
           exit-code: 1
           severity: CRITICAL,HIGH
           
       - name: Push Docker image
-        run: |
-          docker push copo/copo-new-web:${{ steps.vars.outputs.version }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deployment/web/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=copo/copo-new-web:buildcache
+          cache-to: type=registry,ref=copo/copo-new-web:buildcache,mode=max
