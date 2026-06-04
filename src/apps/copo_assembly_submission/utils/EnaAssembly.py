@@ -341,7 +341,7 @@ def process_assembly_pending_submission():
                     #this may happen for instance if the same assembly has already been submitted, which would not get caught
                     #by the validation step
                     return {"error": output}
-                accession = re.search( "ERZ\d*\w" , output).group(0).strip()
+                accession = re.search(r"ERZ\d*\w" , output).group(0).strip()
                 Assembly().add_accession(id=assembly_id, accession=accession)
                 Submission().add_assembly_accession(sub["_id"], accession, "webin-genome-" + assembly["assemblyname"], assembly_id)
 

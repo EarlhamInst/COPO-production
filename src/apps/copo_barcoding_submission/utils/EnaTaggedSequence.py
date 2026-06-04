@@ -877,7 +877,7 @@ class EnaTaggedSequence:
                 # by the validation step
                 return {"error": output}
 
-            accession = re.search("ERZ\d*\w", output).group(0).strip()
+            accession = re.search(r"ERZ\d*\w", output).group(0).strip()
             self._add_tagged_seq_accession(
                 ObjectId(submission_id),
                 accession,

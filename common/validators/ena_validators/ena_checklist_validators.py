@@ -223,7 +223,7 @@ class TaxonValidator(Validator):
                     if any(x for x in scientific_name_list):
                         for scientific_name in scientific_name_list:
                             # Check if scientific name is a string
-                            if not re.match('^[A-Za-z\s]+$', scientific_name):
+                            if not re.match(r'^[A-Za-z\s]+$', scientific_name):
                                 matching_rows = self.data.index[
                                     self.data[key] == scientific_name
                                 ].tolist()
