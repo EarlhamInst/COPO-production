@@ -1,6 +1,6 @@
 FROM ubuntu:24.04
 
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     default-jre \
@@ -13,6 +13,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     gcc \
     locales \
     python3-dev \
+    python3.12-venv \
     python3-pip \
     ruby-dev \
     rubygems \
@@ -26,6 +27,11 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/lib64:/usr/x86_64-linux-gnu/lib"
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 COPY ./requirements/ /tmp/requirements/
 RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt --break-system-packages
 
@@ -35,11 +41,11 @@ RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt --
 WORKDIR /copo
 #COPY . /code/
 
-#RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/6.5.1/webin-cli-6.5.1.jar
+#RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/8.1.0/webin-cli-8.1.0.jar
 
 # add aspera client to path
 COPY ./shared_tools/reposit/.aspera/ /root/.aspera/
-ENV PATH /root/.aspera/cli/bin:$PATH
+ENV PATH="/root/.aspera/cli/bin:$PATH"
 
 #RUN curl -fsSL https://code-server.dev/install.sh | sh
 

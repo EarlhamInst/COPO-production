@@ -1,6 +1,6 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     default-jre \
@@ -13,8 +13,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     build-essential \
     make \
     gcc \
-    python3-dev \
     locales \
+    python3-dev \
+    python3.12-venv \
     python3-pip \
     python-is-python3 \
     ruby-dev \
@@ -25,6 +26,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     pip install --upgrade pip && \
     apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 COPY ./requirements/ /tmp/requirements/
 RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt
 
@@ -34,11 +39,11 @@ RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt
 WORKDIR /copo
 #COPY . /code/
 
-RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/6.5.1/webin-cli-6.5.1.jar
+RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/8.1.0/webin-cli-8.1.0.jar
 
 # add aspera client to path
 COPY ./shared_tools/reposit/.aspera/ /root/.aspera/
-ENV PATH /root/.aspera/cli/bin:$PATH
+ENV PATH="/root/.aspera/cli/bin:$PATH"
 
 # Install VSCode
 RUN curl -fsSL https://code-server.dev/install.sh | sh
@@ -47,5 +52,5 @@ RUN curl -fsSL https://code-server.dev/install.sh | sh
 
 #ENTRYPOINT ["bash","-c","rsync -avhW --no-compress --progress /code/ /copo/ &&  rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && supervisord -c celery.conf && supervisorctl -c celery.conf start all && /usr/local/bin/daphne -b 0.0.0.0 -p 8000 web.asgi:application"]
 
-# wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin &&
+#wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin &&
 
