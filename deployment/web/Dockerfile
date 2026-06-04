@@ -49,6 +49,7 @@ RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/down
 COPY ./shared_tools/reposit/.aspera/ /root/.aspera/
 ENV PATH="/root/.aspera/cli/bin:$PATH"
 
-ENTRYPOINT ["bash","-c","rsync -avhW --no-compress --progress /code/ /copo/ &&  rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && python manage.py collectstatic --noinput && supervisord -c src/celery.conf && supervisorctl -c src/celery.conf start all && /usr/local/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application"]
+# Note that since venv is installed at /opt/venv then, daphne is installed at /opt/venv/bin/daphne not /usr/local/bin/daphne
+ENTRYPOINT ["bash","-c","rsync -avhW --no-compress --progress /code/ /copo/ &&  rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && python manage.py collectstatic --noinput && supervisord -c src/celery.conf && supervisorctl -c src/celery.conf start all && /opt/venv/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application"]
 
 #wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin &&
