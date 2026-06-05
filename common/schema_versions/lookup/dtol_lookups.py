@@ -26,6 +26,7 @@ def get_titled_data_function(str=""):
         .replace("Industry Partner", "industry partner")
         .replace("Other ", "other ")
         .replace(" Vib ", " VIB ")
+        .replace("Usa", "USA")
     )
 
 
