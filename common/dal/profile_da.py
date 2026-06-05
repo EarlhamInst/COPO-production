@@ -4,7 +4,7 @@ from bson.errors import InvalidId
 from bson.objectid import ObjectId
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from src.apps.copo_core.management.commands.setup_profile_types import PROFILE_TITLE_MIN_LENGTH, PROFILE_DESCRIPTION_MIN_LENGTH
+from common.lookup.lookup import PROFILE_TITLE_MIN_LENGTH, PROFILE_DESCRIPTION_MIN_LENGTH
 
 import common.schemas.utils.data_utils as d_utils
 from common.dal.mongo_util import cursor_to_list, cursor_to_list_str
