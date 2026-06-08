@@ -1189,6 +1189,68 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
   color: var(--co-muted) !important;
 }
 
+/* News cards — copo_news.css hardcodes a white card; give it a dark surface
+   so the forced light text (--co-text) is readable and matches the theme. */
+[data-theme="dark"] .news-item,
+[data-theme="dark"] .news-content,
+[data-theme="dark"] .news-inside,
+[data-theme="dark"] .news-item-details-container,
+[data-theme="dark"] .news-item-details-header,
+[data-theme="dark"] .news-item-details-content {
+  background-color: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .news-title,
+[data-theme="dark"] .news-item-details-title,
+[data-theme="dark"] .news-excerpt {
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .news-category,
+[data-theme="dark"] .news-date {
+  color: var(--co-muted) !important;
+}
+
+/* Landing / secondary pages (manifests, about, privacy, terms): the public
+   navbar and the left-panel/banner use light-theme colours (teal #4a6c7a,
+   white navbar, light top-banner) the dark theme never overrode. */
+[data-theme="dark"] #publicNavbar {
+  background-color: var(--co-nav) !important;
+  border-color: var(--co-nav-border) !important;
+}
+[data-theme="dark"] #publicNavbar .navbar-nav > li > a,
+[data-theme="dark"] #publicNavbar .nav > li > a {
+  color: #fff !important;
+}
+[data-theme="dark"] #main_banner,
+[data-theme="dark"] .left-panel,
+[data-theme="dark"] .green-theme,
+[data-theme="dark"] .grey-theme {
+  background-color: var(--co-bg) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .top-banner-light {
+  background-color: var(--co-surface) !important;
+  color: var(--co-text) !important;
+}
+
+/* About / info pages: white content sections and team cards */
+[data-theme="dark"] .color-white,
+[data-theme="dark"] section.color-white {
+  background-color: var(--co-bg) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .person {
+  background-color: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .for-full-back,
+[data-theme="dark"] footer.for-full-back {
+  background-color: var(--co-surface) !important;
+  border-top: 1px solid var(--co-border) !important;
+}
+
 /* Navbar dropdown */
 [data-theme="dark"] #authNavbar .dropdown-menu {
   background: #1a2530 !important;
