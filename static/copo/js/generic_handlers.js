@@ -3046,7 +3046,7 @@ function createComponentAnchor(item, profileId, isIconOnly = false) {
     : $('a.pcomponent-button-template').clone();
 
   $templateAnchor.attr('title', function (_, oldTitle) {
-    return (oldTitle || '') + ` ${item.title}${componentGroupName}`;
+    return `${oldTitle || ''} ${item.title}${componentGroupName}`.trim();
   });
   $templateAnchor.attr(
     'href',

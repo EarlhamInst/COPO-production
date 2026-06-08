@@ -666,10 +666,9 @@ class Command(BaseCommand):
 
         images_rembi = Component().create_component(
             name="rembi",
-            title="General",
-            group_name="images",
+            title="Images",
             widget_icon="image",
-            widget_colour="coral-pink",
+            widget_colour="teal",
             widget_icon_class="fa fa-images",
             material_icon="photo_library",
             table_id="singlecell_table",
@@ -677,15 +676,14 @@ class Command(BaseCommand):
             subtitle="#component_subtitle",
             schema_name="COPO_IMAGE_REMBI",
             base_component="singlecell",
-            button_label="General",
+            button_label="Images",
         )
 
         images_stx_fish = Component().create_component(
             name="stx_fish",
             title="Spatial Transcriptomics",
-            group_name="images",
             widget_icon="image",
-            widget_colour="terra-cotta",
+            widget_colour="violet",
             widget_icon_class="fa fa-flask",
             material_icon="biotech",
             table_id="singlecell_table",
