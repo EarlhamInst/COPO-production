@@ -398,13 +398,13 @@ function initialiseProfileActionsPopover() {
           `<button id="editProfileBtn" class="popover-action-btn popover-action-btn-blue" title="Edit record"
               data-profile-id="${profileId}"
               data-profile-type="${profileType}">
-              <i class="fa fa-pencil"></i>&nbsp;Edit</button>`
+              <i class="fa fa-pencil"></i>Edit</button>`
         );
 
         const $deleteButton = $(
           `<button id="deleteProfileBtn" class="popover-action-btn popover-action-btn-red" title="Delete record"
               data-profile-id="${profileId}">
-              <i class="fa fa-trash-can"></i>&nbsp;Delete</button>`
+              <i class="fa fa-trash-can"></i>Delete</button>`
         );
 
         if (canEditDelete) {
@@ -421,7 +421,7 @@ function initialiseProfileActionsPopover() {
           const $button = $(
           `<button id="${item}" class="popover-action-btn popover-action-btn-teal action" title="${action.title}"
             data-action-type="${action.action}" data-profile-id="${profileId}">
-            <i class="${action.icon_class}"></i>&nbsp;${action.label}
+            <i class="${action.icon_class}"></i>${action.label}
           </button>`
           );
           $content.append($button);
@@ -1121,6 +1121,10 @@ function profileInfoPopover(grids) {
         trigger: 'click',
         sanitize: false,
         container: 'body',
+        // Custom class lets the CSS cap this popover's height and add a scrollbar
+        // without affecting the narrow Edit/Delete options popover.
+        template:
+          '<div class="popover profile-details-popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>',
         title: function () {
           let $showMoreProfileInfoCloseBtn =
             '<i id="showMoreProfileInfoCloseBtn" class="fa fa-times pull-right"></i>';

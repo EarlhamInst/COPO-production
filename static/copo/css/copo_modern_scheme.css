@@ -481,6 +481,16 @@ body {
   display: flex !important;
   justify-content: space-between !important;
   align-items: baseline !important;
+  font-size: 1rem !important;            /* larger than .profile-info-row .79rem */
+}
+/* Created date value: darker than --co-muted in light mode for readability;
+   keep the lighter muted tone in dark mode (where darkening would reduce
+   contrast on the dark card surface). */
+.created-row .date-created-div {
+  color: #525a6c !important;
+}
+[data-theme="dark"] .created-row .date-created-div {
+  color: var(--co-muted) !important;
 }
 .view-more-details-btn {
   font-size: .68rem !important;
@@ -510,9 +520,14 @@ body {
   margin: 6px 0 3px 0 !important;
 }
 .profile-description {
-  font-size: .79rem !important;
-  color: var(--co-muted) !important;
+  font-size: 1rem !important;             /* match the enlarged .created-row date */
+  color: #525a6c !important;              /* darker than --co-muted in light mode */
   margin-bottom: 4px !important;
+}
+/* Keep the lighter muted tone in dark mode (darkening would reduce contrast
+   on the dark card surface). */
+[data-theme="dark"] .profile-description {
+  color: var(--co-muted) !important;
 }
 
 /* View more details link */
@@ -813,6 +828,14 @@ body > .popover,
   width: 400px !important;
   z-index: 99999 !important;
 }
+/* The profile "options" popover (Edit/Delete/action buttons) should hug its
+   buttons rather than stretch to the 400px width used by the field popover.
+   :has() scopes this to popovers that actually contain action buttons;
+   max-width:400px (above) still applies, so a long button row can wrap. */
+body > .popover:has(.popover-action-btn),
+.grid-panel-body .popover:has(.popover-action-btn) {
+  width: auto !important;
+}
 .grid-panel-body .popover-title,
 body > .popover .popover-title {
   background: var(--co-surface) !important;
@@ -832,6 +855,13 @@ body > .popover .popover-title #showMoreProfileInfoCloseBtn {
 body > .popover .popover-content {
   font-size: .8rem !important;
   padding: 10px 14px 14px !important;
+}
+/* "View more details" field popover: cap the body height and scroll long
+   field lists so the popover never runs off-screen. Scoped via the custom
+   template class so the title (close button) stays fixed above the scroll. */
+body > .popover.profile-details-popover .popover-content {
+  max-height: 260px !important;
+  overflow-y: auto !important;
 }
 
 /* Stack each field vertically in the rendered popover */
@@ -1209,6 +1239,28 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 [data-theme="dark"] .news-category,
 [data-theme="dark"] .news-date {
   color: var(--co-muted) !important;
+}
+
+/* Cards (Bootstrap/material .card + Semantic UI .ui.card) hardcode a white
+   background the dark theme never overrode, leaving the forced light text
+   (--co-text) washed-out/invisible on white. Style them like the dark-mode
+   .news-item cards: dark surface, themed border, --co-text, and the same light
+   1px outline shadow news-item uses (copo_news.css) so the cards read crisply
+   against the dark page. Affects the ToL dashboard stat cards, statistics &
+   manifest panels, and cards site-wide. */
+[data-theme="dark"] .card,
+[data-theme="dark"] .ui.card,
+[data-theme="dark"] .ui.cards > .card {
+  background-color: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+  color: var(--co-text) !important;
+  box-shadow: 0 1px 3px 0 #d4d4d5, 0 0 0 1px #d4d4d5 !important;
+}
+[data-theme="dark"] .card .card-header,
+[data-theme="dark"] .card .card-footer {
+  background-color: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+  color: var(--co-text) !important;
 }
 
 /* Landing / secondary pages (manifests, about, privacy, terms): the public
