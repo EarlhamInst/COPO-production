@@ -238,7 +238,7 @@ def notify_submission_status(action="message", msg=str(), data={}, html_id=""):
 
 
 def json_to_pytype(path_to_json, compatibility_mode=True):
-    # use compatability mode if jsonref is causing problems
+    # use compatibility mode if jsonref is causing problems
     with open(path_to_json, encoding='utf-8') as data_file:
         f = data_file.read()
         if compatibility_mode:
@@ -251,7 +251,7 @@ def json_to_pytype(path_to_json, compatibility_mode=True):
             )
         if "properties" in data and isinstance(data["properties"], list):
             cp = list(data["properties"])
-            idxes = list()
+            indices = list()
             # expand references
             tmp = list()
             for idx, el in enumerate(data["properties"]):
@@ -529,7 +529,7 @@ def get_db_data_sources(source=None):
     data_sources = {
         'sequencing_instrument': EnaReadPlatformCollection().get_sequencing_instrument_dropdown()
     }
-    
+
     if source not in data_sources or source is None:
         l.error(f'No data source found for: {source}')
         return []

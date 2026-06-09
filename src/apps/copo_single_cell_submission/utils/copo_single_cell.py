@@ -83,14 +83,14 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
         schemas = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=dict(), target_id=checklist_id)
 
         repositories = set()
-        submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name=schema_name)
-        submisison_repository_component_map = submission_repository_df.to_dict('index')
+        submission_repository_df = SinglecellSchemas().get_submission_repository(schema_name=schema_name)
+        submission_repository_component_map = submission_repository_df.to_dict('index')
         additional_columns_prefix_default_value = ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE
         additional_fields_map = {}
         file_df_map = {}
-        for component, respositories in submisison_repository_component_map.items():
-            submission_repository[component] = [repository for repository, value in respositories.items() if value]
-            additional_fields_map[component] = [f"{prefix}_{repository}" for repository, value in respositories.items() if value for prefix in list(additional_columns_prefix_default_value.keys())]
+        for component, repositories in submission_repository_component_map.items():
+            submission_repository[component] = [repository for repository, value in repositories.items() if value]
+            additional_fields_map[component] = [f"{prefix}_{repository}" for repository, value in repositories.items() if value for prefix in list(additional_columns_prefix_default_value.keys())]
             repositories.update(submission_repository[component])
 
         for component_name, component_schema in schemas.items():
@@ -370,7 +370,7 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
                 tmp_study_id = tmp[1]
                 identifier = tmp[1]
         else:
-            return dict(status='error', message="taget id incorrect: " + target_id)
+            return dict(status='error', message="Target ID is incorrect: " + target_id)
 
         if not component_name:
             component_name = tmp_component_name
@@ -388,13 +388,13 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
     if not identifier_key:
         return dict(status='error', message="Identifier not found for component: " + component_name)
     
-    study_messag_map = {}
+    study_message_map = {}
     for study_id in study_ids:
         singlecell_data =  Singlecell(profile_id=profile_id).get_collection_handle().find_one({"profile_id": profile_id, "checklist_id": checklist_id, "study_id": study_id }, {"components": 1, "profile_id":1, "checklist_id":1})
         
         if not singlecell_data:
             message=f"Record not found"
-            study_messag_map[study_id] = message
+            study_message_map[study_id] = message
             continue
 
         #delete the record if both of it and its child records have no accession number
@@ -408,16 +408,16 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
                 message= ' record with accession number'
             else:
                 message= f'{component_name}:{component_data_has_accession_df.tolist()}: record with accession number'
-            study_messag_map[study_id] = message
+            study_message_map[study_id] = message
             continue
 
         result, message =  _check_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map)
         if not result:
-            study_messag_map[study_id] = message
+            study_message_map[study_id] = message
  
-    if study_messag_map:
+    if study_message_map:
         message = "Record deleted failed!"
-        for key, msg in study_messag_map.items():
+        for key, msg in study_message_map.items():
             message += f"<br/>study:'{key}'| {msg}"
         return dict(status='error', message=message)
 
@@ -441,12 +441,16 @@ def delete_singlecell_records(profile_id, checklist_id, target_ids=[],target_id=
         else:
             singlecell_data["components"].pop(component_name, None)
 
-        if singlecell_data["components"]:   
-            #update status_repository = "pending" for study component   
-            submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name=schema_name)
-            submisison_repository_component_map = submission_repository_df.to_dict('index')
-            respositories = submisison_repository_component_map.get("study", {})
-            for repository, value in respositories.items():
+        if singlecell_data["components"]:
+            # update status_repository = "pending" for study component
+            submission_repository_df = SinglecellSchemas().get_submission_repository(
+                schema_name=schema_name
+            )
+            submission_repository_component_map = submission_repository_df.to_dict(
+                'index'
+            )
+            repositories = submission_repository_component_map.get("study", {})
+            for repository, value in repositories.items():
                 if value:
                     status_column = f"status_{repository}"
                     singlecell_data["components"]["study"][0][status_column] = "pending"
@@ -506,14 +510,16 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena"):
     studies = singlecell.get("components",{}).get("study",[])
 
 
-    submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name=singlecell["schema_name"])
-    submisison_repository_component_map = submission_repository_df.to_dict('index')
+    submission_repository_df = SinglecellSchemas().get_submission_repository(
+        schema_name=singlecell["schema_name"]
+    )
+    submission_repository_component_map = submission_repository_df.to_dict('index')
 
-    #propagate the submission status from components to study
+    # propagate the submission status from components to study
     status_column = f"status_{repository}"
     final_status = studies[0].get(status_column, "pending")
-    for component, respositories in submisison_repository_component_map.items():
-        if component == "study" and repository not in respositories:
+    for component, repositories in submission_repository_component_map.items():
+        if component == "study" and repository not in repositories:
             return dict(status='error', message=f"Repository {repository} is not supported for study submission!")
         
         component_data_df = pd.DataFrame.from_records(singlecell.get("components", {}).get(component, []))
@@ -579,14 +585,18 @@ def get_accession(profile_id, study_id, schema_name="", repository="", is_publis
     schemas = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=dict(), target_id=singlecell["checklist_id"])
 
     repositories = set()
-    submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name=schema_name)
-    submisison_repository_component_map = submission_repository_df.to_dict('index')
+    submission_repository_df = SinglecellSchemas().get_submission_repository(
+        schema_name=schema_name
+    )
+    submission_repository_component_map = submission_repository_df.to_dict('index')
     identifier_map, foreignkey_map = SinglecellSchemas().get_key_map(schemas=schemas)
     submission_repository = {}
-        
-    for component, respositories in submisison_repository_component_map.items():
-        submission_repository[component] = [repository for repository, value in respositories.items() if value]
-    
+
+    for component, repositories in submission_repository_component_map.items():
+        submission_repository[component] = [
+            repository for repository, value in repositories.items() if value
+        ]
+
     must_in_repository_if_published = []
     if is_published:
         study = singlecell.get("components", {}).get("study", [])

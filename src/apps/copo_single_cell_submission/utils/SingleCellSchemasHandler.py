@@ -88,7 +88,7 @@ class SingleCellSchemasHandler:
             )
 
         for checklist_id in checklist_df.index:
-            # no duplicate name,label within a component with same versio and term_name
+            # no duplicate name,label within a component with same version and term_name
             checklist_schema_df = schemas_df.drop(
                 schemas_df[pd.isna(schemas_df[checklist_id])].index
             )
@@ -600,11 +600,11 @@ class SingleCellSchemasHandler:
                     continue
 
                 if isinstance(file_path, BytesIO):
-                    outfile = file_path
+                    output_file = file_path
                 else:
-                    outfile = open(file_path, "w")
-                # with outfile:
-                outfile.write(bytes(json.dumps(compacted), 'utf-8'))
+                    output_file = open(file_path, "w")
+                # with output_file:
+                output_file.write(bytes(json.dumps(compacted), 'utf-8'))
 
     def updateSchemas(self):
         for name, url in settings.SINGLE_CELL_SCHEMAS_URL.items():
@@ -694,8 +694,8 @@ class SingleCellSchemasHandler:
                     )
                     continue
 
-                with open(file_path, "w") as outfile:
-                    outfile.write(json.dumps(compacted))
+                with open(file_path, "w") as output_file:
+                    output_file.write(json.dumps(compacted))
 
 
 class SinglecellschemasSpreadsheet:
