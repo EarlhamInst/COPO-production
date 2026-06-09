@@ -50,14 +50,14 @@ jobs:
         uses: docker/scout-action@v1
         with:
           command: cves
-          image: ${{ steps.meta.outputs.tags }}
+          image: copo/copo-new-web:${{ steps.meta.outputs.version }}
           only-severities: critical,high
           exit-code: true
 
       - name: Run Trivy scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ steps.meta.outputs.tags }}
+          image-ref: copo/copo-new-web:${{ steps.meta.outputs.version }}
           format: table
           exit-code: 1
           severity: CRITICAL,HIGH
