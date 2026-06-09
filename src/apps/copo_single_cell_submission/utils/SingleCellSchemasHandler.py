@@ -5,7 +5,7 @@ import pandas as pd
 import os
 from django.conf import settings
 from openpyxl.utils.cell import get_column_letter
-from common.utils.helpers import notify_singlecell_status, get_datetime
+from common.utils.helpers import notify_singlecell_status, get_datetime, build_unified_context
 from django_tools.middlewares import ThreadLocal
 import inspect
 import math
@@ -587,7 +587,11 @@ class SingleCellSchemasHandler:
                             ] = component_data_df.to_dict("records")
 
                 try:
-                    compacted = jsonld.compact(singlecell_dict, context)
+                    unified_context_path = f"media/assets/manifests/{schema_name}_{checklist}_context{version}.jsonld"
+                    build_unified_context(context, unified_context_path)
+                    compacted = jsonld.compact(
+                        singlecell_dict, f'{url_prefix}/{unified_context_path}'
+                    )
                 except Exception as e:
                     l.error(
                         f"Failed to generate JSON-LD for {schema_name} {checklist}: {str(e)}"

@@ -534,3 +534,24 @@ def get_db_data_sources(source=None):
         l.error(f'No data source found for: {source}')
         return []
     return data_sources[source]
+
+
+def build_unified_context(context_urls, output_path):
+    merged = {'@context': {}}
+
+    for url in context_urls:
+        ctx = requests.get(url).json()
+        if '@context' not in ctx:
+            l.error(f"Context URL {url} does not contain '@context' key.")
+            continue
+
+        # Merge term definitions
+        local_context = ctx.get('@context', {})
+        for k, v in local_context.items():
+            if k in merged['@context'] and merged['@context'][k] != v:
+                l.error(f'Context conflict on term: {k}')
+            merged['@context'][k] = v
+
+    # Save the merged context to a file
+    with open(output_path, 'w') as f:
+        json.dump(merged, f, indent=2)
