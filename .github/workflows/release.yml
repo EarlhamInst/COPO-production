@@ -52,14 +52,16 @@ jobs:
           command: cves
           image: copo/copo-new-web:${{ steps.meta.outputs.version }}
           only-severities: critical,high
-          exit-code: true
+          # Enforce (fail the build) on real release tags; advisory only on -devtest tags
+          exit-code: ${{ !contains(github.ref_name, '-devtest') }}
 
       - name: Run Trivy scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: copo/copo-new-web:${{ steps.meta.outputs.version }}
           format: table
-          exit-code: 1
+          # Advisory on -devtest tags (0 = don't fail); enforce on real release tags
+          exit-code: ${{ contains(github.ref_name, '-devtest') && '0' || '1' }}
           severity: CRITICAL,HIGH
           
       - name: Push Docker image
