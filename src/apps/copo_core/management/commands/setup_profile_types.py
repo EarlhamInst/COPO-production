@@ -691,7 +691,7 @@ class Command(BaseCommand):
             subtitle="#component_subtitle",
             schema_name="COPO_IMAGE_STX_FISH",
             base_component="singlecell",
-            button_label="Spatial",
+            button_label="Spatial (image)",
         )
 
         accessions = Component().create_component(
