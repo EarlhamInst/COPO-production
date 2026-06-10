@@ -88,7 +88,7 @@ def notify_frontend(
     msg=str(),
     data={},
     html_id="",
-    max_ellipsis_length=100,
+    max_ellipsis_length=3,
     profile_id="",
     group_name='dtol_status',
 ):

@@ -87,8 +87,8 @@
               <strong>Step 1</strong>: <strong class="text-underline">Upload prerequisite data</strong>: Before adding reads, upload 
               the prerequisite data using  the icons in the navigation pane (top right):
               <ul>
-                <li><i class="ui icon blue file"></i> — for reads <strong>data files</strong></li>
-                <li><i class="ui icon olive filter"></i> — for <strong>samples</strong></li>
+                <li><i class="material-symbols-outlined inline-nav-icon blue">folder_open</i> — for reads <strong>data files</strong></li>
+                <li><i class="material-symbols-outlined inline-nav-icon olive">labs</i> — for <strong>samples</strong></li>
               </ul>
             </p>
             <br>
@@ -158,6 +158,7 @@
   </div>
 </div>
 <!-- read_table -->
+{% include 'copo/data_status_legend.html' %}
 <div
   id="component_table_loader"
   class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"></div>
@@ -175,11 +176,7 @@
 
 {% block help_section %} {% endblock %}
 
-{% block sidebar_custom_section %}
-<!-- Reads legend -->
-<div class="component-legend" data-tour-id="component_legend" 
-  data-legend="data_status"></div>
-{% endblock sidebar_custom_section %}
+{% block sidebar_custom_section %}{% endblock sidebar_custom_section %}
 
 {% block component_info%}
 <div style="display: none; margin-top: 30px"

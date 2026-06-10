@@ -1,6 +1,4 @@
 import os
-import re
-import time
 import pexpect
 import requests
 from bson import ObjectId
@@ -11,7 +9,10 @@ from channels.layers import get_channel_layer
 from common.lookup.copo_enums import Loglvl, Logtype
 from common.utils import helpers
 from common.utils.logger import Logger
+import re
+import shlex
 import subprocess
+import time
 
 lg = Logger()
 from common.utils.helpers import get_env
@@ -22,18 +23,16 @@ ASPERA_PATH = get_env("ASPERA_PATH")  #"/root/.aspera/cli"
 WEBIN_USER_PASSWORD = get_env('WEBIN_USER_PASSWORD')
 WEBIN_USER = get_env('WEBIN_USER')
 
-def get_submission_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['SubmissionCollection']
-
-    return collection_handle
+def get_submission_handle():
+    return mutil.get_collection_ref('SubmissionCollection')
 
 
-def get_submission_queue_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['SubmissionQueueCollection']
-
-    return collection_handle
+def get_submission_queue_handle():
+    # Use the shared MONGO_CLIENT (already connected, topology known) rather
+    # than spawning a new MongoClient on every call. Creating a fresh client
+    # each time leaves topology in Unknown state, causing a 30s
+    # serverSelectionTimeout block on every Celery beat tick under gevent.
+    return mutil.get_collection_ref('SubmissionQueueCollection')
 
 
 '''  deprecated
@@ -45,39 +44,24 @@ def get_filetransfer_queue_handle():  # this can be safely called by forked proc
 '''
 
 
-def get_description_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['DescriptionCollection']
-
-    return collection_handle
+def get_description_handle():
+    return mutil.get_collection_ref('DescriptionCollection')
 
 
-def get_person_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['PersonCollection']
-
-    return collection_handle
+def get_person_handle():
+    return mutil.get_collection_ref('PersonCollection')
 
 
-def get_datafiles_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['DataFileCollection']
-
-    return collection_handle
+def get_datafiles_handle():
+    return mutil.get_collection_ref('DataFileCollection')
 
 
-def get_samples_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['SampleCollection']
-
-    return collection_handle
+def get_samples_handle():
+    return mutil.get_collection_ref('SampleCollection')
 
 
-def get_sources_handle():  # this can be safely called by forked process
-    mongo_client = mutil.get_mongo_client()
-    collection_handle = mongo_client['SourceCollection']
-
-    return collection_handle
+def get_sources_handle():
+    return mutil.get_collection_ref('SourceCollection')
 
 
 def logging_info(message=str(), submission_id=str()):
@@ -498,8 +482,10 @@ def touch_files(file_paths=list()):
     return True
 
 def _notify_transfer_method(method, message, profile_id=""):
+    """Send transfer method notification to frontend via channels."""
     lg.log(f'[Transfer method: {method}] {message}')
     if profile_id:
+        # Send to submission_status group (used by single cell, read, etc. submission pages)
         notify_frontend(
             action="info",
             msg=f'[{method}] {message}',
@@ -518,6 +504,7 @@ def _progress_id_for(file_path, profile_id):
 
 
 def _notify_transfer_progress(method, file_path, pct, profile_id, extra=None):
+    """Emit an in-place progress update for a single file transfer."""
     if not profile_id:
         return
     progress_id = _progress_id_for(file_path, profile_id)
@@ -539,13 +526,55 @@ def _notify_transfer_progress(method, file_path, pct, profile_id, extra=None):
     )
 
 
+def _transfer_via_aspera(remote_path, file_paths, submission_id="", profile_id=""):
+    """Attempt file transfer to ENA using Aspera CLI. Returns True on success.
+    No progress reporting on this path -- ascp's progress output is PTY-only and
+    fragile under subprocess. The FTP fallback emits real byte-level progress.
+    """
+    ascp_bin = f"{ASPERA_PATH}/bin/ascp"
+    ascp_key = f"{ASPERA_PATH}/etc/asperaweb_id_dsa.openssh"
+    # -P 33001 = ENA's documented Aspera SSH/FASP control port.
+    cmd = [
+        ascp_bin, "-P", "33001", "-l", "300M", "-i", ascp_key, "-d",
+    ] + list(file_paths) + [f"{WEBIN_USER}:{remote_path}"]
+    ascp_env = {**os.environ, "ASPERA_SCP_PASS": WEBIN_USER_PASSWORD}
+
+    _notify_transfer_method("Aspera", f'Commencing transfer of {" ".join(file_paths)} to ENA', profile_id)
+
+    try:
+        output = subprocess.check_output(
+            cmd, env=ascp_env, stderr=subprocess.STDOUT, timeout=12 * 60 * 60
+        )
+        lg.log(output)
+        _notify_transfer_method(
+            "Aspera",
+            f'Transfer to {remote_path} for {" ".join(file_paths)} completed',
+            profile_id,
+        )
+        return True
+    except subprocess.TimeoutExpired:
+        lg.error(f'Aspera transfer timed out for {" ".join(file_paths)}')
+        return False
+    except subprocess.CalledProcessError as e:
+        lg.error(
+            f'Aspera transfer failed (rc={e.returncode}) for '
+            f'{" ".join(file_paths)}: {e.output!r}'
+        )
+        return False
+    except Exception as e:
+        lg.error(f'Aspera transfer error for {" ".join(file_paths)}: {e}')
+        return False
+
+
 def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id=""):
+    """Attempt file transfer to ENA using FTP via curl. Returns True on success."""
     webin_user = WEBIN_USER.split("@")[0]
     ftp_base = f"ftp://webin2.ebi.ac.uk/{remote_path}"
 
     for file_path in file_paths:
         file_name = os.path.basename(file_path)
         ftp_url = f"{ftp_base}{file_name}"
+        # -# emits a progress bar to stderr; -N disables output buffering so we see it in real time
         cmd = [
             "curl", "-#", "-N", "-T", file_path,
             ftp_url,
@@ -587,6 +616,7 @@ def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id=""):
                         break
                     continue
                 buf += chunk
+                # curl -# updates in place with \r; split on \r or \n
                 parts = re.split(rb'[\r\n]', buf)
                 buf = parts[-1]
                 for part in parts[:-1]:
@@ -628,24 +658,16 @@ def transfer_to_ena(remote_path, file_paths=list(), **kwargs):
 
     submission_id = kwargs.get("submission_id", str())
     profile_id = kwargs.get("profile_id", str())
+
     message = f'Commencing transfer of {" ".join(file_paths)} data files to ENA. Progress will be reported.'
     logging_info(message, submission_id)
 
     # Try Aspera first, fall back to FTP if it fails
-    aspera_cmd = (
-        f"ASPERA_SCP_PASS='{WEBIN_USER_PASSWORD}' {ASPERA_PATH}/bin/ascp "
-        f"-l50M -i {ASPERA_PATH}/etc/asperaweb_id_dsa.openssh "
-        f"-d {' '.join(file_paths)} {WEBIN_USER}:{remote_path}"
-    )
-    try:
-        output = subprocess.check_output(aspera_cmd, shell=True, stderr=subprocess.STDOUT)
-        lg.log(f'[Submission: {submission_id}] Transfer to {remote_path} for {" ".join(file_paths)} completed via Aspera.')
-        lg.log(output)
+    if _transfer_via_aspera(remote_path, file_paths, submission_id, profile_id):
         return True
-    except subprocess.CalledProcessError as e:
-        lg.error(f'Aspera transfer failed (rc={e.returncode}): {e.output!r}. Falling back to FTP.')
 
     _notify_transfer_method("FTP", "Aspera unavailable, falling back to FTP", profile_id)
+    lg.log(f'Aspera failed, falling back to FTP for {" ".join(file_paths)}')
 
     if _transfer_via_ftp(remote_path, file_paths, submission_id, profile_id):
         return True

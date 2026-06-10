@@ -127,9 +127,10 @@
                            onchange="upload_files(this.files)">
                 </div>
                 <div class="modal-footer">
-                    <div class="ui active inline loader" id="ss_upload_spinner" style="display:none">
-                        <div class="percent"></div>
-                    </div>
+                    <span class="upload-progress" style="display:none" id="ss_upload_spinner">
+                        <div class="ui active inline loader"></div>
+                        <span class="percent"></span>
+                    </span>
                     <button type="button" id="upload_local_files_button" class="btn btn-primary">Upload</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>

@@ -1,13 +1,36 @@
+import time
+import http.client
+import urllib.error
+
 from Bio import Entrez
 from common.dal.profile_da import Profile
 from common.utils.helpers import notify_frontend
 from common.schema_versions.lookup import dtol_lookups as lookup
+from common.utils.logger import Logger
 from common.validators.helpers import check_taxon_ena_submittable
 from common.validators.validator import Validator
 from .validation_messages import MESSAGES as msg
 
 whole_used_specimens = set()
 regex_human_readable = ""
+
+
+# NCBI's load balancer intermittently drops idle TCP connections, which
+# surfaces as RemoteDisconnected/URLError from Bio.Entrez. A small retry
+# with backoff is enough to absorb the transient drops and stops a whole
+# manifest validation from failing on the first blip.
+def _entrez_call(fn, **kwargs):
+    last_exc = None
+    for attempt in range(3):
+        try:
+            return Entrez.read(fn(**kwargs))
+        except (http.client.RemoteDisconnected,
+                urllib.error.URLError,
+                ConnectionError) as e:
+            last_exc = e
+            Logger().error(f"Entrez {fn.__name__} attempt {attempt+1} failed: {e}")
+            time.sleep(0.5 * (attempt + 1))
+    raise last_exc
 
 
 # validations are run in alphabetic order of class name
@@ -67,8 +90,7 @@ class DtolEnumerationValidator(Validator):
             while i < len(taxon_id_list):
                 window_list = taxon_id_list[i: i + 200]
                 i += 200
-                handle = Entrez.efetch(db="Taxonomy", id=window_list, retmode="xml")
-                records = Entrez.read(handle)
+                records = _entrez_call(Entrez.efetch, db="Taxonomy", id=window_list, retmode="xml")
                 for element in records:
                     self.taxonomy_dict[element['TaxId']] = element
 
@@ -104,8 +126,7 @@ class DtolEnumerationValidator(Validator):
 
             # suggest TAXON_ID if not provided
             if not taxon_id:
-                handle = Entrez.esearch(db="Taxonomy", term=scientific_name)
-                records = Entrez.read(handle)
+                records = _entrez_call(Entrez.esearch, db="Taxonomy", term=scientific_name)
                 # errors.append(self.validation_msg_missing_taxon % (str(index+2), scientific_name,
                 # records['IdList'][0]))
                 if not records['IdList']:
@@ -126,8 +147,7 @@ class DtolEnumerationValidator(Validator):
                 if ena_taxon_errors:
                     self.errors += ena_taxon_errors
                     self.flag = False
-                handle = Entrez.efetch(db="Taxonomy", id=taxon_id, retmode="xml")
-                records = Entrez.read(handle)
+                records = _entrez_call(Entrez.efetch, db="Taxonomy", id=taxon_id, retmode="xml")
                 if records:
                     self.taxonomy_dict[records[0]['TaxId']] = records[0]
 
@@ -138,8 +158,7 @@ class DtolEnumerationValidator(Validator):
                     self.flag = False
                     continue
                 elif scientific_name.upper() != self.taxonomy_dict[taxon_id]['ScientificName'].upper():
-                    handle = Entrez.esearch(db="Taxonomy", term=scientific_name)
-                    records = Entrez.read(handle)
+                    records = _entrez_call(Entrez.esearch, db="Taxonomy", term=scientific_name)
                     # check if the scientific name provided is a synonym
                     if taxon_id in records['IdList']:
                         self.warnings.append(msg["validation_warning_synonym"] % (scientific_name, str(index + 2),

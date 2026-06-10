@@ -32,6 +32,17 @@
 
     <!-- PAGE LEVEL STYLES -->
     {% block stylesheet_block %}{% endblock %}
+
+    <!-- Modern UI scheme (parity with app base.html) -->
+    <link rel="stylesheet" href="{% static 'copo/css/copo_modern_scheme.css' %}">
+
+    <!-- Apply saved theme immediately to prevent flash -->
+    <script>
+      (function() {
+        var t = localStorage.getItem('copo-theme');
+        if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      })();
+    </script>
 </head>
 
 <body>
@@ -92,6 +103,32 @@
     <!-- CUSTOM SCRIPTS -->
     <script src="/static/assets/js/custom.js"></script>
     {% block js_block %}{% endblock js_block%}
+
+    <!-- Theme toggle (parity with app base.html) -->
+    <script>
+      $(document).ready(function() {
+        var $btn = $('#themeToggleBtn');
+        var $icon = $btn.find('i');
+
+        function updateIcon() {
+          var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+          $icon.toggleClass('fa-moon', !isDark).toggleClass('fa-sun', isDark);
+        }
+        updateIcon();
+
+        $btn.on('click', function() {
+          var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+          if (isDark) {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('copo-theme', 'light');
+          } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('copo-theme', 'dark');
+          }
+          updateIcon();
+        });
+      });
+    </script>
 </body>
 
 </html>

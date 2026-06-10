@@ -502,7 +502,7 @@ $(document).on('document_ready', function () {
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
-            return ['pending', 'rejected'].includes(
+            return ['pending', 'processing', 'rejected'].includes(
               table.cell(rowIdx, i).data()
             )
               ? true

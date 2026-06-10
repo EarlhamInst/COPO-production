@@ -47,6 +47,10 @@ p {
   margin-bottom: 10px;
 }
 
+.manifest-dropdown-wrapper {
+  text-align: left;
+}
+
 /* Dropdown menus */
 .manifest-dropdown-wrapper .dropdown-toggle {
   align-items: center;

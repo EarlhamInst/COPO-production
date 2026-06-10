@@ -80,7 +80,7 @@ class IncorrectValueValidator(Validator):
                         elif type == "string":
                             regex = field.get("term_regex","")
                             if regex and pd.notna(regex):
-                                
+
                                 if not re.match(regex.strip(), str(row)):
                                     self.errors.append("Sheet <strong>" + component + "</strong>: Invalid value <strong>" + row + "</strong> in column <strong>" + field["term_label"] + "</strong> at row <strong>" + str(i + 2) + "</strong>.<br>" + field.get("term_error_message", "Expected a value matching the pattern: " + str(regex)))
                                     self.flag = False
