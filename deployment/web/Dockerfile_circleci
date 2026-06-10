@@ -34,8 +34,9 @@ RUN mkdir /copo
 WORKDIR /copo
 COPY . /copo/
 
-RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/8.1.0/webin-cli-8.1.0.jar
-9.0.3/webin-cli-9.0.3
+RUN mkdir -p /copo/tools/reposit/ena_cli && \
+    wget -O /copo/tools/reposit/ena_cli/webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/9.0.3/webin-cli-9.0.3.jar
+
 # add aspera client to path
 COPY ./shared_tools/reposit/.aspera/ /root/.aspera/
 ENV PATH="/root/.aspera/cli/bin:$PATH"

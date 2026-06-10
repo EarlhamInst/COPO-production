@@ -4,6 +4,7 @@ import time
 import shutil
 import pexpect
 import subprocess
+import requests
 import pandas as pd
 from lxml import etree
 from bson import ObjectId
@@ -159,6 +160,10 @@ class EnaReads:
             message = "Submission processing failed due to exception! Retry again"
             ghlper.logging_info(message, self.submission_id)
             # reset sample status to pending & remove bundle / bundle samples
+            if getattr(self, "profile_id", None):
+                Submission(profile_id=self.profile_id).reset_read_submisison_bundle(
+                    self.submission_id
+                )
             queued_record['processing_status'] = 'pending'
             collection_handle.update_one(
                 {"_id": ObjectId(str(queued_record_id))}, {'$set': queued_record}
@@ -508,10 +513,18 @@ class EnaReads:
         # TITLE is required by ENA schema and must precede DESCRIPTION and SUBMISSION_PROJECT
         etree.SubElement(project, 'TITLE').text = study_attributes.get("title", str())
 
-        if study_attributes.get("description", str()):
-            etree.SubElement(project, 'DESCRIPTION').text = study_attributes.get(
-                "description", str()
-            )
+        description = study_attributes.get("description", str())
+        if description:
+            if len(description) < 20:
+                message = (
+                    f"Study description is too short ({len(description)} characters). "
+                    "ENA requires a minimum of 20 characters. "
+                    "Please update the profile description and resubmit."
+                )
+                ghlper.logging_error(message, self.submission_id)
+                notify_read_status(data={"profile_id": self.profile_id}, msg=message, action="error", html_id="sample_info")
+                return dict(status=False, message=message)
+            etree.SubElement(project, 'DESCRIPTION').text = description
 
         # set project type - sequencing project
         submission_project = etree.SubElement(project, 'SUBMISSION_PROJECT')
@@ -858,21 +871,26 @@ class EnaReads:
         )
 
         ghlper.logging_info(
-            "Submitting samples xml to ENA via CURL. CURL command is: "
-            + curl_cmd.replace(self.pass_word, "xxxxxx"),
+            "Submitting samples xml to ENA via requests. URL: " + self.ena_service,
             self.submission_id,
         )
 
         try:
-            receipt = subprocess.check_output(curl_cmd, shell=True)
+            with open(submission_xml_path, 'rb') as sf, open(sample_xml_path, 'rb') as xf:
+                resp = requests.post(
+                    self.ena_service,
+                    auth=(self.user_token, self.pass_word),
+                    files={'SUBMISSION': sf, 'SAMPLE': xf},
+                    timeout=300,
+                )
+            receipt = resp.content
         except Exception as e:
             if settings.DEBUG:
                 Logger().exception(e)
-            message = ('API call error ' + str(e).replace(self.pass_word, "xxxxxx"),)
+            message = 'API call error submitting samples to ENA: ' + str(e).replace(self.pass_word, "xxxxxx")
             ghlper.logging_error(message, self.submission_id)
             result['message'] = message
             result['status'] = False
-            raise e
             return result
 
         root = etree.fromstring(receipt)
@@ -1998,9 +2016,7 @@ class EnaReads:
         :return:
         """
 
-        # this manages its own mongodb connection as it will be accessed by a celery worker subprocess
-        mongo_client = mutil.get_mongo_client()
-        collection_handle = mongo_client['SubmissionCollection']
+        collection_handle = mutil.get_collection_ref('SubmissionCollection')
 
         records = mutil.cursor_to_list(
             collection_handle.find(
@@ -2201,7 +2217,8 @@ class EnaReads:
         ghlper.notify_transfer_status(profile_id=submission_record['profile_id'], submission_id=self.submission_id,
                                       status_message=status_message)
 
-        kwargs = dict(submission_id=self.submission_id, transfer_queue_id=queued_record_id, report_status=True)
+        kwargs = dict(submission_id=self.submission_id, transfer_queue_id=queued_record_id, report_status=True,
+                      profile_id=submission_record['profile_id'])
         ghlper.transfer_to_ena(webin_user=self.webin_user, pass_word=self.pass_word, remote_path=self.remote_location,
                                file_paths=local_paths, **kwargs)
 

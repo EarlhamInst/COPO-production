@@ -39,7 +39,7 @@ class S3Connection():
                                       aws_secret_access_key=self.ecs_secret_key)        
         # self.transport_params = {'client': self.s3_client}
         Logger().debug(
-            msg=f"endpoint: {self.ecs_endpoint}, access key: {self.ecs_access_key_id}, secret: {self.ecs_secret_key}")
+            msg=f"endpoint: {self.ecs_endpoint}")
 
     def list_buckets(self):
         response = self.s3_client.list_buckets()
@@ -60,6 +60,8 @@ class S3Connection():
             return list()
         return contents
     '''
+
+
 
     def list_objects(self, bucket):
         return self._get_all_s3_objects(Bucket=bucket)
@@ -90,17 +92,25 @@ class S3Connection():
 
 
 
-    def get_object(self, bucket, key, loc):
+    def get_object(self, bucket, key, loc, callback=None):
         Logger().log("transfering file to: " + loc)
         KB = 1024
         MB = KB * KB
         config = TransferConfig(multipart_threshold=100 * MB, multipart_chunksize=64 * MB, io_chunksize=1 * MB,
                                 max_concurrency=3, use_threads=True )
-        #self.s3_client.download_file(bucket, key, loc, Config=config)
         with open(loc, 'wb') as data:
-            self.s3_client.download_fileobj(Bucket=bucket, Key=key, Fileobj=data, Config=config)
+            self.s3_client.download_fileobj(
+                Bucket=bucket, Key=key, Fileobj=data, Config=config, Callback=callback
+            )
 
         Logger().log("transfer complete: " + loc)
+
+    def head_object_size(self, bucket, key):
+        try:
+            resp = self.s3_client.head_object(Bucket=bucket, Key=key)
+            return int(resp.get("ContentLength", 0))
+        except Exception:
+            return 0
 
     def get_presigned_url(self, bucket, key, expires_seconds=24*60*60):
         '''
@@ -193,7 +203,11 @@ class S3Connection():
                     action="info",
                     html_id="sample_info",
                 )
-                return False, msg
+                # Empty dict (not False) keeps the return type consistent with
+                # the success path so callers that do `etags, _ = ...; etags.get(...)`
+                # don't crash with AttributeError on the failure path. Empty dict
+                # is still falsy for callers that do `if not result: ...`.
+                return dict(), msg
 
             for f in file_list:
 
@@ -253,7 +267,7 @@ class S3Connection():
                 html_id="sample_info",
             )
 
-            return False, msg
+            return dict(), msg
         except Exception as e:
             Logger().exception(e)
             notify_read_status(data={"profile_id": profile_id}, msg="An error has occurred: " + str(e), action="info",

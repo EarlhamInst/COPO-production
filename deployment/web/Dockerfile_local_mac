@@ -41,7 +41,9 @@ RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt --
 WORKDIR /copo
 #COPY . /code/
 
-#RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/9.0.3/webin-cli-9.0.3.jar
+RUN mkdir -p /copo/tools/reposit/ena_cli && \
+    curl -L https://github.com/enasequence/webin-cli/releases/download/9.0.3/webin-cli-9.0.3.jar \
+         -o /copo/tools/reposit/ena_cli/webin-cli.jar
 
 # add aspera client to path
 COPY ./shared_tools/reposit/.aspera/ /root/.aspera/

@@ -48,12 +48,12 @@ services:
           - 'node.labels.minio-service==true'
 
   web:
-    image: copo/copo-new-web:v3.2.0.1
+    image: copo/copo-new-web:v3.2.1.8
     entrypoint:
       - bash
       - -c
       - |
-        rsync -avhW --no-compress --progress --exclude 'media' --exclude 'logs' /code/ /copo/ && rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && python manage.py collectstatic --noinput && /opt/venv/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application
+        rsync -avhW --no-compress --progress --exclude 'media' --exclude 'logs' /code/ /copo/ && rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py setup_profile_types && python manage.py createcachetable && python manage.py collectstatic --noinput && /opt/venv/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application
     volumes:
       - web-data:/copo/media
       - static-data:/copo/static
@@ -158,7 +158,7 @@ services:
       retries: 3
       start_period: 50s
   celery_job:
-    image: copo/copo-new-web:v3.2.0.1
+    image: copo/copo-new-web:v3.2.1.8
     entrypoint:
       - bash
       - -c
