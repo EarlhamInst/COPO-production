@@ -5,10 +5,10 @@ x-minio-common: &minio-common
   image: quay.io/minio/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1
   command: server --console-address ":9001" http://minio-{1...2}/data{1...2}
   #healthcheck:
-    #test: ["CMD", "mc", "ready", "local"]
-    #interval: 5s
-    #timeout: 5s
-    #retries:  5
+  #test: ["CMD", "mc", "ready", "local"]
+  #interval: 5s
+  #timeout: 5s
+  #retries:  5
   environment:
     - MINIO_ROOT_USER_FILE=/run/secrets/minio_access_key
     - MINIO_ROOT_PASSWORD_FILE=/run/secrets/minio_secret_key
@@ -45,7 +45,7 @@ services:
       placement:
         max_replicas_per_node: 1
         constraints:
-          - "node.labels.minio-service==true"
+          - 'node.labels.minio-service==true'
 
   web:
     image: copo/copo-new-web:v3.2.0.1
@@ -53,7 +53,7 @@ services:
       - bash
       - -c
       - |
-        rsync -avhW --no-compress --progress --exclude 'media' --exclude 'logs' /code/ /copo/ && rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && python manage.py collectstatic --noinput && /usr/local/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application
+        rsync -avhW --no-compress --progress --exclude 'media' --exclude 'logs' /code/ /copo/ && rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && python manage.py collectstatic --noinput && /opt/venv/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application
     volumes:
       - web-data:/copo/media
       - static-data:/copo/static
@@ -504,7 +504,7 @@ services:
 networks:
   backend:
   frontend:
-  
+
 secrets:
   copo_web_secret_key:
     external: true

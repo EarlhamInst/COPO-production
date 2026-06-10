@@ -13,7 +13,7 @@ MESSAGES = {
 
     'invalid_column_value_ontology': (
         'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'
-        'Expected value from ontology <strong>{ontology_name}</strong>'),
+        'Expected value from ontology <strong><a href="{ontology_link}" target="_blank">{ontology_name}</a></strong>'),
 
     'mismatched_value': (
         'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'

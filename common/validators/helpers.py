@@ -6,6 +6,7 @@ import requests
 import unicodedata
 import common.schemas.utils.data_utils as d_utils
 
+from urllib.parse import quote
 
 l = Logger()
 
@@ -166,8 +167,11 @@ def checkOntologyTerm(ontology_id, ancestor, term):
     Returns:
         True if a matching term that descends from ancestor is found, else False.
     """
-    url = f"https://www.ebi.ac.uk/ols4/api/v2/entities?search={term}&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId={ontology_id}"
+    encoded_term = quote(term) # URL-encode the term to handle spaces and special characters
+    ontology_id_lower = ontology_id.lower() # OLS4 API seems to require lowercase ontology IDs
+    url = f"https://www.ebi.ac.uk/ols4/api/v2/entities?search={encoded_term}&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId={ontology_id_lower}"
     response = requests.get(url)
+    
     if response.status_code == 200:
         data = response.json()
         for elm in data.get("elements",[]):

@@ -268,7 +268,7 @@ class ChecklistHandler:
                         field = {}
                         field['name'] = "SPECIMEN_ID"
                         field['label'] = "SPECIMEN_ID"
-                        field['description'] = "SPECIMENT_ID"
+                        field['description'] = "SPECIMEN_ID"
                         field['mandatory'] = "mandatory"
                         field['multiplicity'] = "single"
                         field['type'] = "TEXT_FIELD"

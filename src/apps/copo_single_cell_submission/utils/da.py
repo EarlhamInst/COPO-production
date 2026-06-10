@@ -11,7 +11,7 @@ class SinglecellSchemas(DAComponent):
         super(SinglecellSchemas, self).__init__(profile_id, "singlecellSchemas", subcomponent=subcomponent)
 
     """
-    def get_submission_repositiory(self, schema_name, checklist_id=str()):
+    def get_submission_repository(self, schema_name, checklist_id=str()):
         if not checklist_id:
             return []
         checklist = self.get_checklists(schema_name, checklist_id)
@@ -33,7 +33,7 @@ class SinglecellSchemas(DAComponent):
         else:
             return {}
 
-    def get_submission_repositiory(self,  schema_name=str(),schemas=dict()):
+    def get_submission_repository(self,  schema_name=str(),schemas=dict()):
         #get all the components from the schema
         """
         the result is
@@ -49,8 +49,8 @@ class SinglecellSchemas(DAComponent):
             components = singlecell_schemas["components"]
             component_df = pd.DataFrame.from_dict(components, orient='index')
             #component_df = component_df.set_index("key", inplace=True)
-            not_repositiory_columns = [column for column in component_df.columns if not column.startswith("repository_")]
-            component_df.drop(not_repositiory_columns, axis=1, inplace=True)
+            not_repository_columns = [column for column in component_df.columns if not column.startswith("repository_")]
+            component_df.drop(not_repository_columns, axis=1, inplace=True)
             component_df.dropna(how="all", inplace=True)
             component_df.rename(columns=lambda x: x.replace("repository_", ""), inplace=True)
             component_df.fillna("", inplace=True)
@@ -209,7 +209,7 @@ class Singlecell(DAComponent):
         if not subcomponent_identifioer:
             return fields, data
 
-        repositiories = SinglecellSchemas().get_submission_repositiory(schema_name=singlecell["schema_name"])
+        repositories = SinglecellSchemas().get_submission_repository(schema_name=singlecell["schema_name"])
         component_data = singlecell["components"].get(self.subcomponent, [])
 
         for row in component_data:
@@ -218,17 +218,17 @@ class Singlecell(DAComponent):
             for key, value in row.items():
                 index = key.rfind("_")
                 if index != -1:
-                    if key[index+1:] in repositiories:
+                    if key[index+1:] in repositories:
                         field = {}
                         field["id"] = key
                         field["show_as_attribute"] = True
                         field["label"] = key[:index].replace("_"," ") + " for " + key[index+1:]
                         field["control"] = "text"
-                        field["soring_name"] = key[index+1:] + "_" + key[:index]
+                        field["sorting_name"] = key[index+1:] + "_" + key[:index]
                         fields.append(field)
                 data[key] = value
 
-        fields.sort(key=lambda x: x["soring_name"], reverse=False)
+        fields.sort(key=lambda x: x["sorting_name"], reverse=False)
         return fields, data
 
     def update_component_status(self, id, component="study", identifier="study_id", identifier_value=str(), repository="ena", status_column_value={}, with_child_components=False):

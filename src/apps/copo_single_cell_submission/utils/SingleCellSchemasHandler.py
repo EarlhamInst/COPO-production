@@ -5,7 +5,7 @@ import pandas as pd
 import os
 from django.conf import settings
 from openpyxl.utils.cell import get_column_letter
-from common.utils.helpers import notify_singlecell_status, get_datetime
+from common.utils.helpers import notify_singlecell_status, get_datetime, build_unified_context
 from django_tools.middlewares import ThreadLocal
 import inspect
 import math
@@ -88,7 +88,7 @@ class SingleCellSchemasHandler:
             )
 
         for checklist_id in checklist_df.index:
-            # no duplicate name,label within a component with same versio and term_name
+            # no duplicate name,label within a component with same version and term_name
             checklist_schema_df = schemas_df.drop(
                 schemas_df[pd.isna(schemas_df[checklist_id])].index
             )
@@ -587,7 +587,11 @@ class SingleCellSchemasHandler:
                             ] = component_data_df.to_dict("records")
 
                 try:
-                    compacted = jsonld.compact(singlecell_dict, context)
+                    unified_context_path = f"media/assets/manifests/{schema_name}_{checklist}_context{version}.jsonld"
+                    build_unified_context(context, unified_context_path)
+                    compacted = jsonld.compact(
+                        singlecell_dict, f'{url_prefix}/{unified_context_path}'
+                    )
                 except Exception as e:
                     l.error(
                         f"Failed to generate JSON-LD for {schema_name} {checklist}: {str(e)}"
@@ -596,11 +600,11 @@ class SingleCellSchemasHandler:
                     continue
 
                 if isinstance(file_path, BytesIO):
-                    outfile = file_path
+                    output_file = file_path
                 else:
-                    outfile = open(file_path, "w")
-                # with outfile:
-                outfile.write(bytes(json.dumps(compacted), 'utf-8'))
+                    output_file = open(file_path, "w")
+                # with output_file:
+                output_file.write(bytes(json.dumps(compacted), 'utf-8'))
 
     def updateSchemas(self):
         for name, url in settings.SINGLE_CELL_SCHEMAS_URL.items():
@@ -690,8 +694,8 @@ class SingleCellSchemasHandler:
                     )
                     continue
 
-                with open(file_path, "w") as outfile:
-                    outfile.write(json.dumps(compacted))
+                with open(file_path, "w") as output_file:
+                    output_file.write(json.dumps(compacted))
 
 
 class SinglecellschemasSpreadsheet:

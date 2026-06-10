@@ -276,7 +276,8 @@ class OntologyValidator(Validator):
                                     invalid_value=self.data[key][i],
                                     column_name=field["label"],
                                     row=i + 1,
-                                    ontology_name=field.get("ontology","")
+                                    ontology_name=field.get("ontology",""),
+                                    ontology_link=field.get("ontology_link","")
                                 )
                                 
                                 self.errors.append(error_msg)

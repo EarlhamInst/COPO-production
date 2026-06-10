@@ -1103,12 +1103,12 @@ paths:
           schema:
             type: string
             minimum: 1
-      summary: Get list of studies within the profile
+      summary: Get list of studies within a profile
       description: |
-        Get list of studies within the profile.
+        Get list of studies within a profile
       responses:
         '200':
-          description: A JSON list representing the studies
+          description: A JSON list representing studies
           content:
             application/json:
               schema:
@@ -1137,16 +1137,16 @@ paths:
               properties:
                 checklist_id:
                   type: string
-                  description: Name of the checklist to use
+                  description: The ID of the checklist to use for the study
                 file:
                   type: string
                   format: binary
-      summary: Get list of study within the profile
+      summary: Get list of studies within a profile
       description: |
-        Get list of study within the profile.
+        Get list of studies within a profile
       responses:
         '200':
-          description: A JSON list representing the study
+          description: A JSON list representing studies
           content:
             application/json:
               schema:
