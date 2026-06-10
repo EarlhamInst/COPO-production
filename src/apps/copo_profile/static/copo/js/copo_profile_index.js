@@ -179,6 +179,22 @@ $(document).on('document_ready', function () {
     sortProfileRecords(optionSelected);
   });
 
+  $('#releasestudy').each(function (e) {
+    const profileStatus = $(e)
+      .closest('.copo-records-panel')
+      .attr('study-status');
+    
+    alert(profileStatus);
+
+    if (profileStatus == undefined) {
+      $(e)
+        .attr('aria-disabled', true)
+        .attr('role', 'link')
+        .css('pointer-events', 'none')
+        .css('color', 'grey');
+    }
+  });
+
   $(document).data('sortByDescendingOrder', true);
 
   $(document).on('click', '.ui.menu > div', function (e) {
@@ -195,19 +211,36 @@ $(document).on('document_ready', function () {
     const actionType = $el.data('action-type');
 
     if (actionType) {
-      let id = $el.data('profile-id'); // Profile ID
+      const profileId = $el.data('profile-id'); // Profile ID
 
       if (actionType === 'release_study') {
-        result = confirm('Are you sure you would like to publish the study?');
+        const $studyStatusEl = $(`#studyStatus_${profileId}`);
+
+        if ($studyStatusEl.length == 0) {
+          alert('Unable to process request.');
+          return;
+        }
+
+        if ($studyStatusEl.text() == 'PUBLIC') {
+          alert('Study is already published.');
+          return;
+        }
+
+        const result = confirm('Are you sure that you would like to publish the study?');
+
         if (result) {
-          url = '/copo/copo_profile/' + id + '/release_study';
+          const url = `/copo/copo_profile/${profileId}/release_study`;
           $.ajax({
             url: url,
           })
             .done(function (data) {
-              $('#studyStatus_' + id).html('PUBLIC');
-              $('#studyReleaseDate_' + id).html(data['study_release_date']);
-              $el.hide(); // Hide the 'Publish study' button after the study has been published
+              $studyStatusEl.html('PUBLIC');
+              $(`#studyReleaseDate_${profileId}`).html(
+                data['study_release_date']
+              );
+              
+              // Hide the 'Publish study' button after the study has been published
+              $el.hide();
             })
             .fail(function (data) {
               alert(data.responseText);

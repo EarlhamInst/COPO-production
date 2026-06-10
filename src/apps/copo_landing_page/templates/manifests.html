@@ -24,27 +24,27 @@
             <input type="text" id="manifestFilter" placeholder="Filter by keyword...">
         </div>
         {#  Table #}
-        <table id="manifestTable" class="ui padded table" style="text-align: center">
+        <table id="manifestTable" class="ui padded table">
             <thead>
             <tr>
                 <th>Category</th>
-                <th>Manifest/Checklist Type</th>
-                <th>Current Version</th>
+                <th>Manifest/Checklist type</th>
+                <th>Current version</th>
                 <th></th>
             </tr>
             </thead>
             {% for row in manifest_rows %}
             <tr>
-              <td class="table-header">
+              <td class="table-header {% if row.is_header %}table-header-section{% endif %}">
                 {% if row.title %}
-                  <span class="text-hover" data-toggle="tooltip" title="{{ row.title }}">{{ row.label_prefix }}</span>&nbsp;{{ row.label_suffix }}
+                  <span class="text-hover" data-toggle="tooltip" title="{{ row.title }}">{{ row.label_prefix }}</span>&nbsp;{{ row.label_suffix }} <br> <span class="table-header-section-desc">{{ row.description }}</span>
                 {% else %}
-                  {{ row.label_prefix }}&nbsp;{{ row.label_suffix }}
+                  {{ row.label_prefix }}&nbsp;{{ row.label_suffix }} <br> <span class="table-header-section-desc">{{ row.description }}</span>
                 {% endif %}
               </td>
-              <td id="{{ row.prefix }}ManifestOptions"></td>
-              <td id="{{ row.prefix }}ManifestVersion"></td>
-              <td id="{{ row.prefix }}DownloadOptions"></td>
+              <td id="{{ row.prefix }}ManifestOptions" {% if row.is_header %}class="table-header-section"{% endif %}></td>
+              <td id="{{ row.prefix }}ManifestVersion" {% if row.is_header %}class="table-header-section"{% endif %}></td>
+              <td id="{{ row.prefix }}DownloadOptions" {% if row.is_header %}class="table-header-section"{% endif %}></td>
             </tr>
           {% endfor %}
         </table>

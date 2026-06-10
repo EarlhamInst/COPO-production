@@ -130,8 +130,8 @@ const get_browser_id  = async () => {
     {
         const targetPage = page;
         await puppeteer.Locator.race([
-            targetPage.locator('::-p-aria(debby)'),
-             targetPage.locator('::-p-xpath(//*[@id=\\"id_users\\"]/option[normalize-space(.)=\"debby\"])'),
+            targetPage.locator('::-p-aria(testuser)'),
+             targetPage.locator('::-p-xpath(//*[@id=\\"id_users\\"]/option[normalize-space(.)=\"testuser\"])'),
         ])
             .setTimeout(timeout)
             .click({
