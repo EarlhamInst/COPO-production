@@ -1116,7 +1116,7 @@ class EnaSubmissionHelper:
                     #by the validation step
                     self.logging_error("assembly submission failed: " + output)
                     return {"status": False, "message": output}
-                accession = re.search( "ERZ\d*\w" , output).group(0).strip()
+                accession = re.search(r"ERZ\d*\w" , output).group(0).strip()
                 assembly_accession = dict(
                     accession = accession,
                     alias = f'webin-{submission_type}-{row["study_id"]}_{row["assembly_id"]}_{row["assemblyname"]}',

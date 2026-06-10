@@ -13,7 +13,7 @@ urlpatterns = [
     re_path(r'^view/(?P<profile_id>[a-z0-9]+)/(?P<ui_component>\w+)', views.copo_samples,
             name='copo_samples'),
 
-    re_path("download_manifest/(?P<profile_id>[a-z0-9]+)/(?P<sample_checklist_id>[A-Za-z0-9\_]+)", views.download_manifest),
+    re_path(r"download_manifest/(?P<profile_id>[a-z0-9]+)/(?P<sample_checklist_id>[A-Za-z0-9\_]+)", views.download_manifest),
     path('parse_sample_spreadsheet/', views.parse_sample_spreadsheet,
          name="parse_sample_spreadsheet"),
     path('save_sample_records/', views.save_sample_records,
