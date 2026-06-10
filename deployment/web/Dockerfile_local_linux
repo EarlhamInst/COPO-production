@@ -39,7 +39,7 @@ RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/down
 # add aspera client to path
 COPY ./shared_tools/reposit/.aspera/ /root/.aspera/
 ENV PATH /root/.aspera/cli/bin:$PATH
-
+9.0.3/webin-cli-9.0.3
 # Install VSCode
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
