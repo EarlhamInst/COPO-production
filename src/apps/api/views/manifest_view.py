@@ -87,9 +87,9 @@ def copo_manifests(request):
             },
             {
                 'prefix': 'stxFishImages',
-                'label_prefix': 'Spatial FISH',
-                'label_suffix': 'images',
-                'title': 'Spatial Transcriptomics Fluorescence in situ hybridisation (FISH)',
+                'label_prefix': 'Spatial Transcriptomics',
+                'label_suffix': '(image)',
+                'title': '',
                 'description': 'Techniques that map gene expression in tissue by detecting RNA molecules in their spatial context using fluorescence in situ hybridisation',
             },
             {
