@@ -215,7 +215,7 @@ XlsxWriter==3.0.9
 zipp==3.21.0
 zope.interface==6.0
 pillow==10.3.0
-tzdata==2022.7
+tzdata==2026.2
 geopy==2.3.0
 titlecase==2.4.1
 PyLD==2.0.4
