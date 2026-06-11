@@ -194,7 +194,7 @@ terminado==0.8.2
 testpath==0.4.2
 titlecase==2.4.1
 toml==0.10.2
-tornado==6.4.1
+tornado==6.5.7
 #traitlets==4.3.3
 Twisted==24.7.0rc1
 txaio==23.1.1
