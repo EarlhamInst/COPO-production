@@ -126,7 +126,7 @@ packaging==21.3
 pandas==2.2.3
 pandocfilters==1.4.2
 parso==0.8.5
-pbr==5.8.0
+pbr==7.0.3
 pexpect==4.4.0
 pickleshare==0.7.5
 ply==3.9
