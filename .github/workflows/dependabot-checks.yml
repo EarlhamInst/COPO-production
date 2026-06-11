@@ -100,7 +100,8 @@ jobs:
       MAIL_ADDRESS: ci@example.invalid
       # ENA / Aspera / ORCID (dummy)
       ASPERA_PLUGIN_DIRECTORY: aspera_linux_plugin
-      WEBIN_USER: ci_throwaway
+      # Must be email-shaped: app code does WEBIN_USER.split("@")[0]/[1] at import time
+      WEBIN_USER: ci_throwaway@example.invalid
       WEBIN_USER_PASSWORD: ci_throwaway
       ORCID_REDIRECT: http://localhost
       # Object store / ECS (dummy)
