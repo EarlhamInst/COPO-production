@@ -134,7 +134,7 @@ ply==3.9
 #pop-loop==1.0.5
 progressbar2==3.34.3
 #prometheus-client==0.7.1
-prompt-toolkit==3.0.50
+prompt-toolkit==3.0.52
 pronto==0.10.1
 psycopg==3.2.3
 psycopg-binary==3.2.3
