@@ -8,6 +8,11 @@
 # clients in settings), so CI must provide those vars plus live Postgres/Mongo/Redis
 # services or settings won't even import.
 #
+# SECURITY: every value below is a disposable, CI-only throwaway. They are
+# DELIBERATELY chosen NOT to match any real or production identifier, credential,
+# database name, host, or secret. The databases are ephemeral containers that are
+# destroyed when the job ends. Nothing here is a real secret.
+#
 # workflow_dispatch is included so this can be run manually on any branch
 # (the pull_request path is gated to Dependabot's own PRs).
 name: Dependabot validation
@@ -28,13 +33,13 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_DB: copo
-          POSTGRES_USER: copo_user
-          POSTGRES_PASSWORD: copo_pass
+          POSTGRES_DB: ci_throwaway_db
+          POSTGRES_USER: ci_throwaway_user
+          POSTGRES_PASSWORD: ci_throwaway_pw
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U copo_user -d copo"
+          --health-cmd "pg_isready -U ci_throwaway_user -d ci_throwaway_db"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -42,8 +47,8 @@ jobs:
       mongo:
         image: mongo:6
         env:
-          MONGO_INITDB_ROOT_USERNAME: copo_user
-          MONGO_INITDB_ROOT_PASSWORD: copo_pass
+          MONGO_INITDB_ROOT_USERNAME: ci_throwaway_user
+          MONGO_INITDB_ROOT_PASSWORD: ci_throwaway_pw
         ports:
           - 27017:27017
         options: >-
@@ -62,44 +67,45 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    # All CI-only throwaway values — intentionally NOT matching production.
     env:
       ENVIRONMENT_TYPE: dev
-      # Postgres
-      POSTGRES_DB: copo
-      POSTGRES_USER: copo_user
-      POSTGRES_PASSWORD: copo_pass
+      # Postgres (ephemeral container)
+      POSTGRES_DB: ci_throwaway_db
+      POSTGRES_USER: ci_throwaway_user
+      POSTGRES_PASSWORD: ci_throwaway_pw
       POSTGRES_SERVICE: localhost
       POSTGRES_PORT: "5432"
-      # MongoDB
-      MONGO_DB: test_copo_mongo
+      # MongoDB (ephemeral container)
+      MONGO_DB: ci_throwaway_mongo
       MONGO_HOST: localhost
-      MONGO_USER: copo_user
-      MONGO_USER_PASSWORD: copo_pass
+      MONGO_USER: ci_throwaway_user
+      MONGO_USER_PASSWORD: ci_throwaway_pw
       MONGO_PORT: "27017"
       MONGO_MAX_POOL_SIZE: "100"
-      # Redis
+      # Redis (ephemeral container)
       REDIS_HOST: localhost
       REDIS_PORT: "6379"
       # Django / app core
-      SECRET_KEY: ci-dummy-secret-key-not-used-in-prod
+      SECRET_KEY: ci-throwaway-secret-not-a-real-key
       DEBUG: "false"
       http_protocol: http
       MEDIA_PATH: media/
       PUBLIC_NAME_SERVICE: http://localhost
       # Mail (dummy — not exercised by the smoke check)
-      MAIL_USERNAME: ci
-      MAIL_PASSWORD: ci
+      MAIL_USERNAME: ci_throwaway
+      MAIL_PASSWORD: ci_throwaway
       MAIL_SERVER: localhost
       MAIL_PORT: "25"
-      MAIL_ADDRESS: ci@example.com
+      MAIL_ADDRESS: ci@example.invalid
       # ENA / Aspera / ORCID (dummy)
       ASPERA_PLUGIN_DIRECTORY: aspera_linux_plugin
-      WEBIN_USER: ci
-      WEBIN_USER_PASSWORD: ci
+      WEBIN_USER: ci_throwaway
+      WEBIN_USER_PASSWORD: ci_throwaway
       ORCID_REDIRECT: http://localhost
       # Object store / ECS (dummy)
-      ECS_ACCESS_KEY_ID: ci
-      ECS_SECRET_KEY: ci
+      ECS_ACCESS_KEY_ID: ci_throwaway
+      ECS_SECRET_KEY: ci_throwaway
       ECS_ENDPOINT: http://localhost
 
     steps:
