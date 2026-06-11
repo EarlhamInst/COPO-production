@@ -74,7 +74,7 @@ gunicorn==23.0.0
 #html5lib==1.1
 #hurry.filesize==0.9
 hyperlink==21.0.0
-idna==3.11
+idna==3.18
 #imagesize==0.7.1
 importlib_metadata==8.6.1
 Incremental==24.11.0
