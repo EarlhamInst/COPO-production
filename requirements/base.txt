@@ -76,7 +76,7 @@ gunicorn==23.0.0
 hyperlink==21.0.0
 idna==3.18
 #imagesize==0.7.1
-importlib_metadata==8.6.1
+importlib_metadata==9.0.0
 Incremental==24.11.0
 #ipykernel==5.1.2
 #ipython==7.8.0
