@@ -59,8 +59,9 @@ export const globalTourMessages = {
   },
   component_options_with_data_uploaded: {
     title: 'Checklist options (with data uploaded)',
-    content: `An asterisk (<span class="shepherd-asterisk" aria-hidden="true">*</span>) next to a checklist option
-    means that data has already been uploaded for that checklist.`,
+    content: `<span>A red circle (<span class="shepherd-circle-icon has-data-indicator" 
+    aria-hidden="true"></span>) next to a checklist option means that data has already
+    been uploaded for that checklist.</span>`,
   },
   component_table: {
     title: 'Uploaded data',

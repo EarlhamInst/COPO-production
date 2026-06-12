@@ -19,9 +19,8 @@
   color: #35637e;
 }
 
-.shepherd-asterisk {
-  color: red;
-  font-weight: bold;
+.shepherd-circle-icon {
+  margin-right: 2px !important;
 }
 
 .tour-start-btn::before {

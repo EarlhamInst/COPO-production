@@ -1695,18 +1695,35 @@ input::-moz-placeholder, textarea::-moz-placeholder { color: #8a92a0 !important;
   border-color: #c0c8d4 !important;
   box-shadow: 0 0 0 2px rgba(192, 200, 212, 0.2) !important;
 }
-/* "Has data" indicator dot for select2 manifest/checklist dropdowns —
-   replaces the original red asterisk. Sized and aligned to read as a
-   status indicator rather than a glyph in the option text. */
+/* The "has-data" attribute shows a dot/circle/bullet symbol for 
+  manifest/checklist dropdown menu options that have uploaded data. 
+  It replaces the initial red asterisk (*) symbol and is
+  sized and aligned to read as a status indicator rather than a 
+  glyph in the text of the selected item and dropdown results.
+*/
 .has-data-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: #d9534f;
-  font-size: 0.6em;
   vertical-align: middle;
+  width: 8px;
+  height: 8px;
   margin-right: 8px;
   margin-left: 2px;
   position: relative;
   top: -1px;
 }
+
+/* A circle (●) icon */
+.has-data-indicator::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background-color: currentColor;
+  border-radius: 50%;
+}
+
 [data-theme="dark"] .has-data-indicator {
   color: #ff3b3b;
   text-shadow:
