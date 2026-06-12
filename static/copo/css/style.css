@@ -722,6 +722,7 @@ copo-noborders-table.dataTable thead td {
   pointer-events: none;
   display: inline-block;
   margin-right: -0.015em;
+  font-size: 17px;
 }
 
 .webpop-content-div span.welcome-msg {
