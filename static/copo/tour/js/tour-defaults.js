@@ -1,5 +1,6 @@
 // Global tour order
 export const globalTourOrder = [
+  'theme_toggle_icon',
   'notifications_icon',
   'home_icon',
   'analytics_icon',
@@ -41,8 +42,8 @@ export const globalTourMessages = {
   },
   component_legend: {
     title: 'Data submission status legend',
-    content: `This legend explains the meaning of different colours that highlight the rows in the table.<br><br>
-    Hover over each <i class="fa fa-info-circle"></i> for detailed information.<br><br>
+    content: `Click this legend to see an explanation of the meaning of different colours that highlight the rows in the table.<br><br>
+    Then, hover over each <i class="fa fa-info-circle component-legend-info-icon"></i> for detailed information.<br><br>
     <div class="shepherd-note">To track the status of your data submissions, refer to the following columns in the table:
     <ul><li><strong>STATUS</strong></li><li><strong>ENA FILE UPLOAD STATUS</strong></li>
     <li><strong>ENA FILE PROCESSING STATUS</strong></li></ul></div>`,
@@ -66,7 +67,7 @@ export const globalTourMessages = {
     content: `View and manage the data that you have uploaded in this table.<br><br>
       To submit it, select one or more records in this table then, click 
       <button class="tiny ui basic teal button submit-btn no-click">
-      <i class="fa fa-info-circle"></i>&nbsp;Submit</button> located 
+      <i class="fa fa-paper-plane"></i>&nbsp;Submit</button> located 
       at the top right of the table.`,
     placement: 'right',
   },
@@ -170,7 +171,7 @@ export const globalTourMessages = {
     content: `Click this button to publish the study (i.e. make the study public) to European Nucleotide Archive (ENA), 
     a public repository.<br><br>
     <strong>Submit the data first</strong> using the <button class="tiny ui basic teal button submit-btn no-click">
-    <i class="fa fa-info-circle"></i>&nbsp;Submit</button> then, select <strong> one record</strong> under this
+    <i class="fa fa-paper-plane"></i>&nbsp;Submit</button> then, select <strong> one record</strong> under this
     <strong>STUDY</strong> tab in the table.<br><br>
     The publication will include all the data that relate to the selected record matching the study ID in the <strong>Study ID</strong> column.<br><br>
     <p class="shepherd-note">A public repository is a database that stores and shares 
@@ -219,6 +220,18 @@ export const globalTourMessages = {
     content:
       'Access: <ul><li>Work profile groups</li><li>Account details (such as ORCID iD)</li><li>Logout option</li></ul>',
   },
+  sidebar_alert_message: {
+    title: 'Alert messages',
+    content: `This section under the <strong>Info</strong> tab highlights important information 
+    about your data uploads and submissions.`,
+    placement: 'left',
+  },
+  sidebar_toggle_btn: {
+    title: 'Toggle sidebar info panel',
+    content: `Click this button to show or hide the information panel in the right sidebar.<br><br>
+    The information panel provides alert messages about data uploads and submissions as well as
+    confirmations of various interactions performed on the page.`,
+  },
   submit_record_button: {
     title: 'Submit data',
     content: `Click this button to submit data to European Nucleotide Archive (ENA), 
@@ -236,13 +249,9 @@ export const globalTourMessages = {
     <p class="shepherd-note"> A public repository is a database that stores and shares 
     research data with the global scientific community.</p>`,
   },
-  sidebar_alert_message: {
-    title: 'Alert messages',
-    content: `This section under the <strong>Info</strong> tab highlights important information 
-    about your data uploads and submissions.<br><br>
-    <p class="shepherd-note">Use it together with the <b>Data status & progress</b> legend
-    below to track submission progress and confirm successful uploads.</p>`,
-    placement: 'left',
+  theme_toggle_icon: {
+    title: 'Toggle dark theme mode',
+    content: 'Click this icon to switch between light and dark theme mode.',
   },
   view_images_record_button: {
     title: 'View images',

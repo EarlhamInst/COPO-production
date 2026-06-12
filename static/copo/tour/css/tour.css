@@ -130,6 +130,10 @@
   margin-right: 5px;
 }
 
+.shepherd-text .component-legend-info-icon {
+  font-size: 1rem !important;
+}
+
 .shepherd-text a,
 .shepherd-note a {
   text-decoration: underline;
