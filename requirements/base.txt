@@ -39,7 +39,7 @@ daphne==4.0.0
 decorator==4.4.0
 #deepdiff==4.0.7
 defusedxml==0.7.1
-Deprecated==1.2.13
+Deprecated==1.3.1
 dict-toolbox==2.2.0
 dict.sorted==1.0.0
 Django==5.1.1
