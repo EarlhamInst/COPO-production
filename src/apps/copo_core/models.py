@@ -515,6 +515,7 @@ class ProfileType(models.Model):
         self.post_save_action = post_save_action
         self.pre_save_action = pre_save_action
         self.is_deprecated = is_deprecated
+        self.tour_id = tour_id
 
         self.save()
         return self
