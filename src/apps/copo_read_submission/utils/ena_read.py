@@ -79,10 +79,10 @@ def submit_read(profile_id,  target_ids=list(), target_id=None, checklist_id=Non
             return dict(
                 status='error',
                 message=(
-                    "Cannot submit — the following data files are missing from storage: "
-                    + ", ".join(f"<strong>{f}</strong>" for f in missing_files)
-                    + ". Upload them via <strong>Manage Data Files</strong> on the "
-                    "Work Profiles page and try again."
+                    "Cannot submit the following data files because they are missing from storage: "
+                    + ", ".join(f"<strong>{f}</strong>" for f in missing_files) + ".<br><br>"
+                    + "Upload them via <strong>Data files</strong> on the "
+                    "<strong>Work profiles</strong> page and try again."
                 ),
             )
 

@@ -106,8 +106,8 @@ def parse_ena_spreadsheet(request):
                 s3obj.make_s3_bucket(bucket_name=bucket_name)
                 msg = (
                     "No data files were found in COPO.<br>"
-                    "To upload them, use the <strong>Manage Data Files</strong> button "
-                    "for the relevant profile on the <strong>Work Profiles</strong> page or "
+                    "To upload them, use the <strong>Data files</strong> button "
+                    "for the relevant profile on the <strong>Work profiles</strong> page or "
                     "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
                 )
 
