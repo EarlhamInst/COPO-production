@@ -89,6 +89,7 @@ const profile_type_def = {
           '{{ action.name }}'{% if not forloop.last %},{% endif %}
         {% endfor %}
       ],
+      tourId: '{{ profile_type.tour_id|default:"" }}',
     },    
   {% endfor %}
 }
