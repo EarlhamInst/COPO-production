@@ -228,14 +228,31 @@ body {
 }
 
 /* Icon colour overrides — Material Symbols (colour class on the element itself) */
+#componentIcon.material-symbols-outlined.blue,
 .copo-page-icons .icon.item .pcomponent-material-icon.blue   { color: var(--co-biodata)  !important; }
+
+#componentIcon.material-symbols-outlined.olive,
 .copo-page-icons .icon.item .pcomponent-material-icon.olive  { color: #7a9a1e !important; }
+
+#componentIcon.material-symbols-outlined.orange,
 .copo-page-icons .icon.item .pcomponent-material-icon.orange { color: var(--co-dtolenv)  !important; }
+
+#componentIcon.material-symbols-outlined.green,
 .copo-page-icons .icon.item .pcomponent-material-icon.green  { color: var(--co-dtol)     !important; }
+
+#componentIcon.material-symbols-outlined.violet,
 .copo-page-icons .icon.item .pcomponent-material-icon.violet { color: var(--co-asg)      !important; }
+
+#componentIcon.material-symbols-outlined.yellow,
 .copo-page-icons .icon.item .pcomponent-material-icon.yellow { color: #b89a14 !important; }
+
+#componentIcon.material-symbols-outlined.pink,
 .copo-page-icons .icon.item .pcomponent-material-icon.pink   { color: var(--co-erga)     !important; }
+
+#componentIcon.material-symbols-outlined.teal,
 .copo-page-icons .icon.item .pcomponent-material-icon.teal   { color: var(--co-genomics) !important; }
+
+#componentIcon.material-symbols-outlined.red,
 .copo-page-icons .icon.item .pcomponent-material-icon.red    { color: #c0392b !important; }
 
 /* Inline Material Symbol icons used in Getting Started sections — must match
