@@ -375,7 +375,7 @@ COMPONENTS_TOUR_CONFIG = {
                 'title': 'Profile components',
                 'content': (
                     'Components represent different research objects that form part of a project or study.<br><br>'
-                    "Click any of the components (e.g. Manage Sample metadata) to access a particular component's page."
+                    "Click any of the components (e.g. Samples) to access a particular component's page."
                 ),
                 'placement': 'right',
             },
