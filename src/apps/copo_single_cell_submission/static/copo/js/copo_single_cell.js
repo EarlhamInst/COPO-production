@@ -11,10 +11,8 @@ function get_checklist_id() {
 
 function get_selected_checklist_name() {
   if ($('#checklist_id').length > 0) {
-    let checklistName = $('#checklist_id').find(':selected').text().trim();
     // return $('#checklist_id').find(':selected').html();
-    // Remove leading asterisk and space i.e. '* ', if it exists
-    return checklistName.replace(/^\*\s*/, '');
+    return $('#checklist_id').find(':selected').text().trim();
   } else {
     return 'singlecell';
   }
@@ -28,9 +26,10 @@ function initialise_checklist_id() {
     ).value;
     $('#checklist_id option').each(function () {
       if (profile_checklist_ids.includes($(this).val())) {
-        // $(this).text('* ' + $(this).text());
-        let option = $(this).text().trim().replace(/^\*/, '').trim();
-        $(this).html(`<span class="asterisk">*</span>${option}`);
+        // Add attribute to indicate data presence for this checklist/manifest option
+        // $(this).text('● ' + $(this).text());
+        $(this).attr('data-has-data', 'true');
+
         if (first) {
           $(this).prop('selected', true);
           // Trigger change event for searchable select

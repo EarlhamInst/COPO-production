@@ -14,7 +14,10 @@ function initialise_checklist_id() {
     ).value;
     $('#checklist_id option').each(function () {
       if (profile_checklist_ids.includes($(this).val())) {
-        $(this).text('* ' + $(this).text());
+        // Add attribute to indicate data presence for this checklist/manifest option
+        // $(this).text('● ' + $(this).text());
+        $(this).attr('data-has-data', 'true');
+
         if (first) {
           $(this).prop('selected', true);
           // Trigger change event for searchable select

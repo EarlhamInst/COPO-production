@@ -3975,9 +3975,31 @@ function get_collapsible_panel() {
  *   menus to `<body>` to escape `overflow: hidden` containers, and positioning
  *   them below the trigger button.
  * - Repositions visible dropdown menus on window scroll or resize.
- * - Initialises Select2 on `.searchable-select` elements, rendering options
- *   that start with `*` with a red asterisk indicator.
+ * - Initialises Select2 on `.searchable-select` elements and renders options
+ *   including ones that start with `●` which is a red dot/circle/bullet symbol 
+ *   to indicate uploaded data.
  */
+function renderOption(data) {
+  if (!data || !data.id || !data.text) return data.text || ''; // placeholder or empty
+  // Check if any of the dropdown menu options have uploaded data (as indicated with a prefix circle (●))
+  // If yes, add a 'has-data-indicator' class to the option
+  const $container = $('<span>');
+  const hasData = $(data.element).data('has-data');
+
+  if (hasData) {
+    $container.append(
+      $('<span>', {
+        class: 'has-data-indicator',
+        title: 'Has uploaded data',
+        'aria-hidden': 'true',
+      })
+    );
+  }
+
+  $container.append(document.createTextNode(data.text));
+  return $container;
+}
+
 function initialiseComponentDropdownMenu() {
   // Close component dropdowns when clicking outside
   $(document)
@@ -4078,26 +4100,8 @@ function initialiseComponentDropdownMenu() {
   $selectOption.select2({
     placeholder: 'Choose an option',
     allowClear: false,
-    templateSelection: function (data) {
-      if (!data || !data.id || !data.text) return data.text || '';
-      // Check if the selected option begins with an asterisk (*)
-      // If yes, replace the asterisk with a "has-data" indicator icon
-      if (/^\*\s*/.test(data.text)) {
-        const text = data.text.replace(/^\*\s*/, '');
-        return `<i class="fa fa-circle has-data-indicator" aria-hidden="true" title="Has data"></i>${text}`;
-      }
-      return data.text;
-    },
-    templateResult: function (data) {
-      if (!data || !data.id || !data.text) return data.text || ''; // placeholder or empty
-      // Check if any of the dropdown options begin with an asterisk (*)
-      // If yes, replace the asterisk with a "has-data" indicator icon
-      if (/^\*\s*/.test(data.text)) {
-        const text = data.text.replace(/^\*\s*/, '');
-        return `<i class="fa fa-circle has-data-indicator" aria-hidden="true" title="Has data"></i>${text}`;
-      }
-      return data.text;
-    },
+    templateSelection: renderOption,
+    templateResult: renderOption,
     escapeMarkup: function (markup) {
       return markup; // Allow HTML elements
     },
