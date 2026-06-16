@@ -16,6 +16,7 @@ from common.utils.helpers import get_env, get_current_user, notify_submission_st
 from . import zenodo_submission
 from . import ena_submission
 from common.s3.s3Connection import S3Connection as s3
+from src.apps.copo_file.utils.CopoFiles import delete_image_thumbnail
 
 
 l = Logger()
@@ -357,16 +358,10 @@ def _delete_datafile(profile_id, to_be_delete_component_data_df, schema):
             DataFile().get_collection_handle().delete_many({"profile_id": profile_id, "_id": {"$in": [file["_id"] for file in fileIdList]}})
             # Delete associated ENA file transfer tracking records
             EnaFileTransfer().get_collection_handle().delete_many({"profile_id": profile_id, "file_id": {"$in": [str(file["_id"]) for file in fileIdList]}})
+
             # Clean up thumbnail images from disk for image file types
             for filename in filelist:
-                final_dot = filename.rfind(".")
-                if final_dot == -1:
-                    continue
-                file_ext = filename[final_dot:]
-                if file_ext.lower() in settings.IMAGE_FILE_EXTENSIONS:
-                    thumbnail_file = get_thumbnail_folder(profile_id) + '/' + filename[:final_dot] + "_thumb" + file_ext
-                    if os.path.exists(thumbnail_file):
-                        os.remove(thumbnail_file)
+                delete_image_thumbnail(filename, profile_id)
 
 def _delete_child_component_data(singlecell_data, component_name, identifiers, identifier_map, child_map, schemas):
     """Recursively delete child component data linked to the given parent identifiers.

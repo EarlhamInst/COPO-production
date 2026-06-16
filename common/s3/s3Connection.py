@@ -10,10 +10,11 @@ from boto3.s3.transfer import TransferConfig
 import logging
 from common.dal.copo_da import EnaFileTransfer
 from common.utils.helpers import get_env
+from src.apps.copo_file.utils.CopoFiles import delete_image_thumbnail
 
 class S3Connection():
     """
-    Class to handle interations with ECS cloud storage via s3 service
+    Class to handle interactions with ECS cloud storage via s3 service
     """
 
     def __init__(self, profile_id=str(), subcomponent=None):
@@ -287,15 +288,18 @@ class S3Connection():
             if not enaFile or get_transfer_status(enaFile) >= TransferStatus.DOWNLOADED_TO_LOCAL:
                 status = True          
                 self.s3_client.delete_object(Bucket=bucket_name, Key=key)
+
+                # Clean up thumbnail images from disk for image file types
+                delete_image_thumbnail(key, self.profile_id)
             else:
                 file_not_deleted.append(key)
                 
         if status:
             return dict(
                 status="success",
-                message="File have been deleted "
+                message="All files have been deleted "
                 + (
-                    "except for the following, which are currently in use:<br>"
+                    "except the following that are currently in use:<br>"
                     + "<br>".join(file_not_deleted)
                     if file_not_deleted
                     else ""

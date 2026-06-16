@@ -1,10 +1,11 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from common.dal.profile_da import Profile
 from common.s3.s3Connection import S3Connection
 from django.shortcuts import render
 import jsonpickle
 from django.http import HttpResponse
-from .utils.CopoFiles import generate_files_record
+from .utils.CopoFiles import generate_files_record, create_image_thumbnail
 from common.utils import helpers
 from boto3.s3.transfer import TransferConfig
 import json
@@ -91,6 +92,12 @@ def upload_ecs_files(request, profile_id):
         key = file.name.replace(" ", "-")
 
         total_chunks = max(1, -(-file.size // chunk_size))  # ceiling division
+
+        # Generate a thumbnail for the uploaded file if it's an image
+        if file.name.lower().endswith(tuple(settings.IMAGE_FILE_EXTENSIONS)):
+            file.seek(0) # Reset the cursor back to the start of the file
+            create_image_thumbnail(file.name, file, profile_id)
+            file.seek(0)
 
         helpers.notify_frontend(
             data={"profile_id": profile_id},
