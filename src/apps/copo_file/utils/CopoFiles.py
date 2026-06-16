@@ -104,7 +104,6 @@ def create_image_thumbnail(
     file_name, uploaded_file, profile_id, local_path=None, thumbnail_size=(128, 128)
 ):
     try:
-        breakpoint()  # Debugging breakpoint
         final_dot = file_name.rfind('.')
         file_extension = file_name[final_dot:]
 
