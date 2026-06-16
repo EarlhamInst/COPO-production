@@ -104,19 +104,20 @@ def create_image_thumbnail(
     file_name, uploaded_file, profile_id, local_path=None, thumbnail_size=(128, 128)
 ):
     try:
+        breakpoint()  # Debugging breakpoint
+        final_dot = file_name.rfind('.')
+        file_extension = file_name[final_dot:]
+
         if not file_extension.lower() in settings.IMAGE_FILE_EXTENSIONS:
             return  # It is not an image file, so a thumbnail cannot be created
-            
+
         if not local_path:
             local_path = f'{settings.UPLOAD_URL}/{profile_id}/{file_name}'
 
-        final_dot = file_name.rfind('.')
-        file_extension = file_name[final_dot:]
+        # Create a thumbnail directory if it doesn't exist
         thumbnail_path = (
             f'{get_thumbnail_folder(profile_id)}/{file_name[:final_dot]}_thumb{file_extension}'
         )
-        
-        # Create a thumbnail directory if it doesn't exist
         os.makedirs(os.path.dirname(thumbnail_path), exist_ok=True)
 
         img = Image.open(uploaded_file)
