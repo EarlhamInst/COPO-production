@@ -5,13 +5,14 @@ from django.contrib.auth.models import User
 from io import BytesIO
 from PIL import Image
 
-from common.s3.s3Connection import S3Connection as s3
 from common.utils.helpers import get_thumbnail_folder
 from common.utils.logger import Logger
 
 l = Logger()
 
 def generate_files_record(profile_id=str()):
+    from common.s3.s3Connection import S3Connection as s3
+
     label = ['file_name', "S3_ETag", "last_uploaded", "size_in_bytes", "size_bytes"]
     data_set = []
     columns = []
@@ -50,13 +51,13 @@ def generate_files_record(profile_id=str()):
         columns.append(col)
 
     s3obj = s3()
-    #user = User.objects.get(pk=user_id)
-    #if not user:
+    # user = User.objects.get(pk=user_id)
+    # if not user:
     #    return dict(dataSet=data_set,
     #                columns=columns,
     #                )
     bucket_name = profile_id
-    #bucket_size = 0
+    # bucket_size = 0
     if s3obj.check_for_s3_bucket(bucket_name):
         files = s3obj.list_objects(bucket_name)
         if files:
@@ -70,7 +71,7 @@ def generate_files_record(profile_id=str()):
                 row_data["last_uploaded"] = file["LastModified"]
                 row_data["S3_ETag"] = file["ETag"].replace('"', '')
                 data_set.append(row_data)
-                #bucket_size += file["Size"]
+                # bucket_size += file["Size"]
 
     return_dict = dict(dataSet=data_set,
                        columns=columns,
