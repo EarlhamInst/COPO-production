@@ -63,6 +63,7 @@ hr {
   font-weight: bold;
 }
 
+.p_orcid img,
 .person .p_orcid img {
   width: 24px;
   height: 24px;

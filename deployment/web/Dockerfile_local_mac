@@ -1,6 +1,6 @@
 FROM ubuntu:24.04
 
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     default-jre \
@@ -13,6 +13,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     gcc \
     locales \
     python3-dev \
+    python3-venv \
     python3-pip \
     ruby-dev \
     rubygems \
@@ -26,6 +27,11 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/lib64:/usr/x86_64-linux-gnu/lib"
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 COPY ./requirements/ /tmp/requirements/
 RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt --break-system-packages
 
@@ -35,14 +41,17 @@ RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt --
 WORKDIR /copo
 #COPY . /code/
 
-#RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/6.5.1/webin-cli-6.5.1.jar
+RUN mkdir -p /copo/tools/reposit/ena_cli && \
+    curl -L https://github.com/enasequence/webin-cli/releases/download/9.0.3/webin-cli-9.0.3.jar \
+         -o /copo/tools/reposit/ena_cli/webin-cli.jar
 
 # add aspera client to path
 COPY ./shared_tools/reposit/.aspera/ /root/.aspera/
-ENV PATH /root/.aspera/cli/bin:$PATH
+ENV PATH="/root/.aspera/cli/bin:$PATH"
 
 #RUN curl -fsSL https://code-server.dev/install.sh | sh
 
-#ENTRYPOINT ["bash","-c","rsync -avhW --no-compress --progress /code/ /copo/ &&  rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && supervisord -c celery.conf && supervisorctl -c celery.conf start all && /usr/local/bin/daphne -b 0.0.0.0 -p 8000 web.asgi:application"]
+# Note that since venv is installed at /opt/venv then, daphne is installed at /opt/venv/bin/daphne not /usr/local/bin/daphne
+#ENTRYPOINT ["bash","-c","rsync -avhW --no-compress --progress /code/ /copo/ &&  rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && supervisord -c celery.conf && supervisorctl -c celery.conf start all && /opt/venv/bin/daphne -b 0.0.0.0 -p 8000 web.asgi:application"]
 
 # wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin &&

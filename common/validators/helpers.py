@@ -6,6 +6,7 @@ import requests
 import unicodedata
 import common.schemas.utils.data_utils as d_utils
 
+from urllib.parse import quote
 
 l = Logger()
 
@@ -88,66 +89,54 @@ def check_taxon_ena_submittable(taxon, is_binomial_required=True, by="id"):
         - If is_binomial_required: taxinfo["binomial"] is True
     """
     errors = []
-    receipt = None
+    body = ""
     taxinfo = None
-    curl_cmd = None
-    
-    # Build the appropriate ENA API URL based on lookup type
+
+    # Use `requests` (not subprocess+curl) so the call is non-blocking under
+    # gevent — a synchronous curl blocks the whole event loop, stalling every
+    # other concurrent celery task until the request returns.
     if by == "id":
-        curl_cmd = "curl " + "https://www.ebi.ac.uk/ena/taxonomy/rest/tax-id/" + taxon
+        url = "https://www.ebi.ac.uk/ena/taxonomy/rest/tax-id/" + taxon
     elif by == "binomial":
-        curl_cmd = "curl " + "https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/" + taxon.replace(" ", "%20")
-    
+        url = "https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/" + taxon.replace(" ", "%20")
+    else:
+        errors.append(MESSAGE['validation_msg_not_submittable_taxon'] % (taxon))
+        return errors, taxinfo
+
     try:
-        # Execute the curl command and capture the response
-        receipt = subprocess.check_output(curl_cmd, shell=True)
-        print(receipt)
-        
-        # Check if ENA returned an empty response
-        if receipt.decode("utf-8") == "":
-            errors.append(
-                "ENA returned no results for Scientific Name " + taxon + ". This could mean that the taxon id is incorrect, or ENA maybe down.")
-            return errors
-        
-        # Parse the JSON response from ENA
-        taxinfo = json.loads(receipt.decode("utf-8"))
-        
-        # For binomial searches, ENA returns a list; extract the first match
+        resp = requests.get(url, timeout=10)
+        body = resp.text or ""
+
+        if body.strip() == "" or body.strip() == "No results.":
+            errors.append("ENA returned no results for " + taxon)
+            return errors, taxinfo
+
+        taxinfo = json.loads(body)
+
         if by == "binomial":
             taxinfo = taxinfo[0]
-        
-        # Verify the taxon is marked as submittable
+
         if taxinfo["submittable"] != 'true':
             errors.append("TAXON_ID " + taxon + " is not submittable to ENA")
-        
-        # Ensure the taxon is at species or subspecies rank
+
         if taxinfo["rank"] not in ["species", "subspecies"]:
             errors.append("TAXON_ID " + taxon + " is not a 'species' or 'subspecies' level entity.")
 
-        # Check if the taxon name is a valid binomial (genus + species)
         is_taxon_binomial = d_utils.convertStringToBoolean(taxinfo["binomial"])
         if is_binomial_required and not is_taxon_binomial:
             errors.append(MESSAGE['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))
+    except requests.exceptions.Timeout:
+        l.error("ENA taxonomy lookup timed out for %s (url=%s)" % (taxon, url))
+        errors.append(
+            "ENA taxonomy lookup timed out for " + taxon + ". The ENA service may be slow or unreachable; please retry.")
     except Exception as e:
-        # Log the exception and handle various error response scenarios
         l.exception(e)
-        if receipt:
-            # Check for "No results" response from ENA
-            if receipt.decode("utf-8") == "No results.":
-                errors.append(
-                    "ENA returned no results for Scientific Name " + taxon)
-            else:
-                # Try to extract error message from taxinfo or raw response
-                try:
-                    errors.append(
-                        "ENA returned - " + taxinfo.get("error", "no error returned") + " - for TAXON_ID " + taxon)
-                except (NameError, AttributeError):
-                    errors.append(
-                        "ENA returned - " + receipt.decode("utf-8") + " - for TAXON_ID " + taxon)
-        else:
-            # Fallback error message when no response is received
+        try:
+            errors.append(
+                "ENA returned - " + (taxinfo.get("error", "no error returned") if taxinfo else (body or "no response")) + " - for TAXON_ID " + taxon)
+        except (NameError, AttributeError):
             errors.append(MESSAGE['validation_msg_not_submittable_taxon'] % (taxon))
-    
+
     return errors, taxinfo
 
 
@@ -166,8 +155,11 @@ def checkOntologyTerm(ontology_id, ancestor, term):
     Returns:
         True if a matching term that descends from ancestor is found, else False.
     """
-    url = f"https://www.ebi.ac.uk/ols4/api/v2/entities?search={term}&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId={ontology_id}"
+    encoded_term = quote(term) # URL-encode the term to handle spaces and special characters
+    ontology_id_lower = ontology_id.lower() # OLS4 API seems to require lowercase ontology IDs
+    url = f"https://www.ebi.ac.uk/ols4/api/v2/entities?search={encoded_term}&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId={ontology_id_lower}"
     response = requests.get(url)
+    
     if response.status_code == 200:
         data = response.json()
         for elm in data.get("elements",[]):

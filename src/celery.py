@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import os
 from datetime import timedelta
 from celery import Celery
+from celery.signals import worker_ready
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'src.main_config.settings.all')
 # crontab(minute="*/1")
@@ -69,11 +70,11 @@ app.conf.beat_schedule = {
     },
     'poll_asyn_ena_submission': {
         'task': 'src.apps.copo_dtol_submission.tasks.poll_asyn_ena_submission',
-        'schedule': timedelta(seconds=10),
+        'schedule': timedelta(seconds=30),
     },
     'process_ena_submission': {
         'task': 'src.apps.copo_read_submission.tasks.process_ena_submission',
-        'schedule': timedelta(seconds=20),  # execute every n minutes minute="*/n"
+        'schedule': timedelta(seconds=10),  # execute every n minutes minute="*/n"
     },
     'process_ena_transfers': {
         'task': 'src.apps.copo_read_submission.tasks.process_pending_file_transfers',
@@ -81,7 +82,7 @@ app.conf.beat_schedule = {
     },
     'check_for_stuck_transfers': {
         'task': 'src.apps.copo_read_submission.tasks.check_for_stuck_transfers',
-        'schedule': timedelta(seconds=20),
+        'schedule': timedelta(seconds=1800),
     },
     'update_assembly_submission_pending': {
         'task': 'src.apps.copo_assembly_submission.tasks.update_assembly_submission_pending',
@@ -149,3 +150,24 @@ app.conf.task_routes = {
 @app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
+
+
+@worker_ready.connect
+def trigger_startup_lookups(sender, **kwargs):
+    """Refresh DB-backed ENA lookups when the worker boots.
+
+    Beat schedules these daily, but a timedelta schedule's first run is a full
+    interval after beat starts -- so a freshly deployed environment has no
+    platforms/checklists for 24h. Enqueue them on worker_ready so the data is
+    populated at T+0 instead. Dispatched async (.delay) so a slow ENA fetch never
+    blocks boot; the tasks are idempotent upserts so firing on every restart is safe.
+    Imported inside the handler to avoid circular imports at module load.
+    """
+    from src.apps.copo_core.tasks import (
+        update_ena_read_platform,
+        update_ena_read_checklist,
+        update_ena_checklist,
+    )
+    update_ena_read_platform.delay()
+    update_ena_read_checklist.delay()
+    update_ena_checklist.delay()

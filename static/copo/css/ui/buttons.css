@@ -68,7 +68,7 @@
 .dataTables_wrapper .ui.teal.buttons .button.submit-btn {
   background-color: #00b5ad !important;
   color: white !important;
-  font-weight: bold;
+  font-weight: bolder;
   box-shadow: 0 0 0 1px rgba(34, 36, 38, 0.15) inset !important;
 }
 

@@ -32,6 +32,7 @@ x-minio-common: &minio-common
     update_config:
       parallelism: 1
       delay: 10s
+
 services:
   minio:
     <<: *minio-common
@@ -47,12 +48,12 @@ services:
           - 'node.labels.minio-service==true'
 
   web:
-    image: copo/copo-new-web:v3.1.13.3
+    image: copo/copo-new-web:v3.2.1.8
     entrypoint:
       - bash
       - -c
       - |
-        rsync -avhW --no-compress --progress --exclude 'media' --exclude 'logs' /code/ /copo/ && rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && python manage.py collectstatic --noinput && /usr/local/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application
+        rsync -avhW --no-compress --progress --exclude 'media' --exclude 'logs' /code/ /copo/ && rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py setup_profile_types && python manage.py createcachetable && python manage.py collectstatic --noinput && /opt/venv/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application
     volumes:
       - web-data:/copo/media
       - static-data:/copo/static
@@ -98,8 +99,8 @@ services:
       - BIOIMAGE_PASSWORD_FILE=/run/secrets/copo_bioimage_password
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
       - ECS_ACCESS_KEY_ID_FILE=/run/secrets/ecs_access_key
-      - ECS_ENDPOINT=http://minio.copodev.cyverseuk.org
-      - ECS_ENDPOINT_EXTERNAL=http://minio.copodev.cyverseuk.org
+      - ECS_ENDPOINT=http://minio:9000
+      - ECS_ENDPOINT_EXTERNAL=https://minio-demo.copo-project.org
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
@@ -157,7 +158,7 @@ services:
       retries: 3
       start_period: 50s
   celery_job:
-    image: copo/copo-new-web:v3.1.13.3
+    image: copo/copo-new-web:v3.2.1.8
     entrypoint:
       - bash
       - -c
@@ -208,8 +209,8 @@ services:
       - BIOIMAGE_PASSWORD_FILE=/run/secrets/copo_bioimage_password
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
       - ECS_ACCESS_KEY_ID_FILE=/run/secrets/ecs_access_key
-      - ECS_ENDPOINT=http://minio.copodev.cyverseuk.org
-      - ECS_ENDPOINT_EXTERNAL=http://minio.copodev.cyverseuk.org
+      - ECS_ENDPOINT=http://minio:9000
+      - ECS_ENDPOINT_EXTERNAL=https://minio-demo.copo-project.org
       - ENA_V2_SERVICE_SYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
@@ -256,7 +257,7 @@ services:
       - ecs_access_key
       - copo_zenodo_token
   nginx:
-    image: copo/copo-nginx-minio:v1.30.0
+    image: copo/copo-nginx-minio:v1.30.2
     networks:
       - frontend
     volumes:
@@ -503,6 +504,7 @@ services:
 networks:
   backend:
   frontend:
+
 secrets:
   copo_web_secret_key:
     external: true
@@ -546,6 +548,7 @@ secrets:
     external: true
   copo_zenodo_token:
     external: true
+
 volumes:
   web-data:
     external: true

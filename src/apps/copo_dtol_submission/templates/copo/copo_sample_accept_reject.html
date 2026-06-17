@@ -92,16 +92,15 @@
     </h3>
   </div>
   <div class="col-lg-3 col-sm-3 col-md-3">
-    <h4 class="h4">Status</h4>
-    <div
-      id="spinner"
-      class="pull-right ui tiny active inline loader status-spinner"
-    ></div>
+    <h4 class="h4">
+      Status
+      <div id="spinner" class="ui tiny active inline loader status-spinner" style="display:none"></div>
+    </h4>
     <div class="status_log status_log_collapse">
-      <button id="clearStatusLogBtn" type="button" aria-label="Clear" disabled>
-        &times;
+      <button id="clearStatusLogBtn" type="button" aria-label="Clear status log" title="Clear status log" disabled>
+        <i class="fa-solid fa-trash-can"></i>
       </button>
-      <p class="status_content">Idle</p>
+      <p class="status_content status_placeholder">Nothing to show</p>
     </div>
   </div>
 </div>
@@ -246,6 +245,7 @@
   <script src="{% static 'copo/js/generic_handlers_ext2.js' %}"></script>
   <script src="{% static 'copo/js/copo_form_handlers.js' %}"></script>
   <script src="{% static 'copo/js/dtol_functions.js' %}"></script>
+  <script src="{% static 'copo/reconnecting-websocket-master/reconnecting-websocket.min.js' %}"></script>
   <script src="{% static 'copo/js/copo_parse_spreadsheet.js' %}"></script>
   <script src="{% static 'copo/js/filesaver.js' %}"></script>
   <script src="{% static 'copo/js/jszip-utils.min.js' %}"></script>

@@ -9,8 +9,8 @@ from common.dal.profile_da import Profile
 from common.utils import helpers
 from lxml import etree
 from common.schemas.utils.data_utils import simple_utc
-from common.utils.helpers import notify_submission_status, get_datetime, get_env, json_to_pytype
-from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SETTINGS, SRA_RUN_TEMPLATE,SRA_EXPERIMENT_TEMPLATE, SRA_SUBMISSION_MODIFY_TEMPLATE, SRA_SUBMISSION_TEMPLATE
+from common.utils.helpers import notify_submission_status, notify_read_status, get_datetime, get_env, json_to_pytype
+from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SETTINGS, SRA_RUN_TEMPLATE,SRA_EXPERIMENT_TEMPLATE, SRA_SUBMISSION_MODIFY_TEMPLATE, SRA_SUBMISSION_TEMPLATE, ENA_CLI
 import subprocess
 import tempfile
 from common.dal.submission_da import Submission
@@ -158,8 +158,7 @@ class EnaSubmissionHelper:
                 result['status'] = False
                 raise e
 
-            message = file_name + ' successfully written to  ' + xml_file_path
-            self.logging_info(message)
+            lg.log(file_name + ' successfully written to  ' + xml_file_path)
 
             result['value'] = xml_file_path
 
@@ -199,25 +198,44 @@ class EnaSubmissionHelper:
         result = dict(status=True, value='')
 
         # register samples to the ENA service
-        curl_cmd = 'curl -u "' + user_token + ':' + pass_word \
+        curl_cmd = 'curl -s -S -u "' + user_token + ':' + pass_word \
                     + '" -F "SUBMISSION=@' \
                     + submission_xml_path \
                     + '" -F "SAMPLE=@' \
                     + sample_xml_path \
-                    + '" "' + ena_service \
+                    + '" -w "\\n|HTTP_CODE:%{http_code}|"' \
+                    + ' "' + ena_service \
                     + '"'
         self.logging_debug(
             "CURL command to submit samples xml to ENA: " + curl_cmd.replace(pass_word, "xxxxxx"))
 
         try:
-            receipt = subprocess.check_output(curl_cmd, shell=True)
+            output = subprocess.check_output(curl_cmd, shell=True, stderr=subprocess.STDOUT)
         except Exception as e:
             ghlper.logging_exception(e)
-            message = 'API call error ' + str(e).replace(pass_word, "xxxxxx"),
-            self.logging_debug(message, self.submission_id)
+            message = 'API call error ' + str(e).replace(pass_word, "xxxxxx")
+            self.logging_debug(message)
             result['message'] = message
             result['status'] = False
             raise e
+
+        output_text = output.decode('utf-8', errors='replace')
+        http_code = "unknown"
+        receipt = output
+        if "|HTTP_CODE:" in output_text:
+            body_text, _, code_part = output_text.rpartition("\n|HTTP_CODE:")
+            http_code = code_part.rstrip("|").strip()
+            receipt = body_text.encode('utf-8')
+        self.logging_debug(
+            "ENA response HTTP=" + http_code
+            + " body_len=" + str(len(receipt))
+            + " body_preview=" + repr(receipt[:500]))
+
+        if not receipt.strip():
+            result['status'] = False
+            result['message'] = "ENA returned empty response (HTTP " + http_code + ")"
+            self.logging_debug(result['message'])
+            return result
 
         root = etree.fromstring(receipt)
 
@@ -280,7 +298,11 @@ class EnaSubmissionHelper:
         else:
             status_message = "Samples successfully updated to ENA."
             self.logging_info(status_message)
-            # update sample status
+            # Write accession back to the sample document even for MODIFY — if the
+            # sample was re-created by a manifest re-upload it won't have
+            # biosampleAccession set, so update_accession ensures the next
+            # submission correctly detects it as already registered.
+            Sample(profile_id=self.profile_id).update_accession(sample_accessions)
             Sample(profile_id=self.profile_id).update_field(field="status", value="accepted", oids=sample_ids)
 
         return dict(status=True, value='')
@@ -296,7 +318,7 @@ class EnaSubmissionHelper:
         dt = get_datetime()
 
         # create sample xml
-        message = "Registering samples..."
+        message = "Registering samples with ENA..."
         self.logging_info(message)
         #ghlper.logging_info(message, str(submission_id))
         #notify_submission_status(data={"profile_id": profile_id}, msg=message, action="info", html_id="sample_info")
@@ -311,8 +333,24 @@ class EnaSubmissionHelper:
 
         if not samples:
             return dict(status=True, value='')
-        
-        # modify samples
+
+        # Build a set of aliases already registered with ENA for this submission
+        # (stored in SubmissionCollection.accessions.sample). This covers the
+        # case where a sample was re-created by a manifest re-upload (new _id,
+        # no biosampleAccession on the new document) but the alias was already
+        # registered with ENA in a previous run — those must go through MODIFY
+        # rather than ADD to avoid "already exists" errors.
+        registered_aliases = set()
+        try:
+            sub_doc = Submission().get_collection_handle().find_one(
+                {"_id": ObjectId(self.submission_id)}, {"accessions.sample": 1}
+            )
+            if sub_doc:
+                for acc in sub_doc.get("accessions", {}).get("sample", []):
+                    if acc.get("sample_alias"):
+                        registered_aliases.add(acc["sample_alias"])
+        except Exception:
+            pass
 
         is_modifed_sample = False
         is_new_sample = False
@@ -322,7 +360,7 @@ class EnaSubmissionHelper:
         for sample in samples:
             sample_alias = str(self.submission_id) + ":sample:" + sample["name"]
             root = root_add
-            if sample.get('biosampleAccession',''):
+            if sample.get('biosampleAccession', '') or sample_alias in registered_aliases:
                 is_modifed_sample = True
                 root = root_modify
             else:
@@ -376,6 +414,13 @@ class EnaSubmissionHelper:
         # do it for modify
         if is_modifed_sample:
             result = self.process_sample(output_location, root_modify, modify_submission_xml_path, sra_df, is_new=False)
+            if result['status'] is False:
+                # MODIFY rejected (e.g. samples purged from dev server after 24 h).
+                # Reuse the sample XML already built in root_modify but submit with
+                # ADD action so ENA creates fresh registrations.
+                self.logging_info("Sample MODIFY failed, falling back to ADD.")
+                result = self.process_sample(output_location, root_modify, submission_xml_path, sra_df, is_new=True)
+                is_new_sample = False  # already handled above
 
         if result['status']:
             # do it for add
@@ -386,14 +431,12 @@ class EnaSubmissionHelper:
 
         if result['status'] is False:
             message = "Samples not registered."
-
             Sample(profile_id=self.profile_id).update_field(oids=[sample["_id"] for sample in samples], field_values={"error": result['message'], "status": "rejected"})
-            
             self.logging_error(message)
-        else:        
+        else:
             message = "Samples registered successfully."
-            
             self.logging_info(message)
+        notify_read_status(data={"profile_id": self.profile_id}, msg=message, action="refresh_table", html_id="sample_info")
         return result
 
     def register_project(self, submission_xml_path=str(), modify_submission_xml_path=str(), study=None, singlecell_id=None):
@@ -421,14 +464,38 @@ class EnaSubmissionHelper:
         project.set("alias", self.submission_id+":"+ study["study_id"])
         project.set("center_name", self.sra_settings["sra_center"])
 
-        project_title = study.get("title", str())
-        project_description = study.get("description", str())
+        # For MODIFY actions ENA locates the existing project via
+        # IDENTIFIERS/PRIMARY_ID. Do NOT also set the `accession` attribute ---
+        # specifying both has been observed to trigger an NPE
+        # ('Node.getNodeType() because "n" is null') on the Webin server.
+        if study.get("accession_ena"):
+            identifiers = etree.SubElement(project, 'IDENTIFIERS')
+            etree.SubElement(identifiers, 'PRIMARY_ID').text = study["accession_ena"]
 
-        if project_title:
-            etree.SubElement(project, 'NAME').text = project_title
-        # TITLE is required by ENA schema and must precede DESCRIPTION and SUBMISSION_PROJECT
+        # NAME and DESCRIPTION come from the profile; TITLE comes from the manifest
+        # (the per-study record on the singlecell component). Fall back to the
+        # profile title / study_id so TITLE is never empty --- ENA NPEs on an
+        # empty required element.
+        profile = getattr(self, "profile", {}) or {}
+        project_name = profile.get("title", str())
+        project_description = profile.get("description", str())
+        project_title = study.get("title", str()) or project_name or study.get("study_id", str())
+
+        # ENA schema order: IDENTIFIERS?, NAME?, TITLE, DESCRIPTION?, SUBMISSION_PROJECT.
+        if project_name:
+            etree.SubElement(project, 'NAME').text = project_name
         etree.SubElement(project, 'TITLE').text = project_title
         if project_description:
+            if len(project_description) < 20:
+                message = (
+                    f"Study description is too short ({len(project_description)} characters). "
+                    "ENA requires a minimum of 20 characters. "
+                    "Please update the profile description and resubmit."
+                )
+                self.logging_error(message)
+                if singlecell_id and study:
+                    Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected", "error": message})
+                return dict(status=False, message=message)
             etree.SubElement(project, 'DESCRIPTION').text = project_description
 
         # set project type - sequencing project
@@ -497,9 +564,10 @@ class EnaSubmissionHelper:
         except Exception as e:
             ghlper.logging_exception(e)
             message = 'API call error ' + str(e).replace(pass_word, "xxxxxx")
-            self.logging_debug(message)
-            self.logging_error('API call error, please try it later')
-            raise e
+            self.logging_error(message)
+            if singlecell_id:
+                Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected", "error": message})
+            return dict(status=False, message=message)
 
         root = etree.fromstring(receipt)
 
@@ -515,7 +583,8 @@ class EnaSubmissionHelper:
                 result['message'] = result['message'] + error_text
 
             # log error
-            Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected",  "error": result['message'] })  
+            if singlecell_id:
+                Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected",  "error": result['message'] })
             self.logging_debug("Error in submitting study to ENA via CURL: " + str(result['message']))
             return result
 
@@ -638,15 +707,20 @@ class EnaSubmissionHelper:
             sequencing_instrument = row.get(column_name, str())
             inst_plat = [inst['platform'] for inst in instruments if inst['value'] == sequencing_instrument]
 
-            if len(inst_plat):
-                experiment_platform_node = etree.SubElement(experiment_node, 'PLATFORM')
-                experiment_platform_type_node = etree.SubElement(experiment_platform_node, inst_plat[0])
-                etree.SubElement(experiment_platform_type_node, column_name.upper()).text = sequencing_instrument
+            if not inst_plat:
+                msg = f"Instrument model '{sequencing_instrument}' not found in sequencing instrument list — cannot build PLATFORM element for {row.get(file_identifier, '?')}"
+                self.logging_error(msg)
+                errors.append(msg)
+                continue
 
-            experiment_attributes = etree.SubElement(experiment_node, 'EXPERIMENT_ATTRIBUTES')
+            experiment_platform_node = etree.SubElement(experiment_node, 'PLATFORM')
+            experiment_platform_type_node = etree.SubElement(experiment_platform_node, inst_plat[0])
+            etree.SubElement(experiment_platform_type_node, column_name.upper()).text = sequencing_instrument
 
-            for key, value in row.items():
-                if key not in non_attribute_names and value:
+            extra_attributes = {k: v for k, v in row.items() if k not in non_attribute_names and v}
+            if extra_attributes:
+                experiment_attributes = etree.SubElement(experiment_node, 'EXPERIMENT_ATTRIBUTES')
+                for key, value in extra_attributes.items():
                     experiment_attribute = etree.SubElement(experiment_attributes, 'EXPERIMENT_ATTRIBUTE')
                     etree.SubElement(experiment_attribute, 'TAG').text = key
                     etree.SubElement(experiment_attribute, 'VALUE').text = str(value)
@@ -919,10 +993,10 @@ class EnaSubmissionHelper:
         ena_files = EnaFileTransfer().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"local_path":1,  "remote_path":1})
         data_files = DataFile().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"file_name":1,  "file_hash":1 })
         
-        analysis_file_data_df["file_hash"] = analysis_file_data_df["sequencing_annotation_file_name"].map( 
+        analysis_file_data_df["file_hash"] = analysis_file_data_df["sequencing_annotation_file"].map( 
                             {data_file["file_name"] : data_file.get("file_hash", "") 
                              for data_file in data_files if data_file.get("file_hash","") } )
-        analysis_file_data_df["remote_path"] = analysis_file_data_df["sequencing_annotation_file_name"].map( 
+        analysis_file_data_df["remote_path"] = analysis_file_data_df["sequencing_annotation_file"].map( 
                             {ena_file["local_path"].split("/")[-1] : ena_file.get("remote_path", "") 
                              for ena_file in ena_files if ena_file.get("remote_path","") } )
 
@@ -999,7 +1073,7 @@ class EnaSubmissionHelper:
 
         for _, file in analysis_file_df.iterrows():
             file_elm = ET.SubElement(files, "FILE")
-            file_elm.set("filename", f'{file["remote_path"]}{file["sequencing_annotation_file_name"]}')
+            file_elm.set("filename", f'{file["remote_path"]}{file["sequencing_annotation_file"]}')
             file_elm.set("filetype", file["sequencing_annotation_file_type"])
             file_elm.set("checksum_method","MD5")
             file_elm.set("checksum", file["file_hash"])
@@ -1048,7 +1122,16 @@ class EnaSubmissionHelper:
                     self.logging_error("no assembly file found")
 
             for _, file_row in assembly_file_df.iterrows():
-                manifest_content += file_row["assembly_file_type"].upper() + "\t" + enafile_map.get(file_row["assembly_file_name"], "") + "\n"
+                file_path_for_manifest = enafile_map.get(file_row["assembly_file"], "")
+                if file_path_for_manifest and not (file_path_for_manifest.endswith(".gz") or file_path_for_manifest.endswith(".bz2")):
+                    message = (
+                        f"Assembly file <strong>{os.path.basename(file_path_for_manifest)}</strong> "
+                        "must be compressed (.gz or .bz2) before submission. "
+                        "Please re-upload a compressed version of the file."
+                    )
+                    self.logging_error(message)
+                    return dict(status=False, message=message)
+                manifest_content += file_row["assembly_file_type"].upper() + "\t" + file_path_for_manifest + "\n"
 
             if not assembly_run_ref_data_df.empty:
                 assembly_run_ref_df = assembly_run_ref_data_df.loc[assembly_run_ref_data_df[parent_map["assembly_run_ref"]["assembly"]]==row[identifier]]
@@ -1089,7 +1172,7 @@ class EnaSubmissionHelper:
                 test = " -test "
             #cli_path = "tools/reposit/ena_cli/webin-cli.jar"
             submission_type = row.get("submission_type", "transcriptome")
-            webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
+            webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
             
             #qself.logging_debug(webin_cmd)
             try:
@@ -1116,7 +1199,7 @@ class EnaSubmissionHelper:
                     #by the validation step
                     self.logging_error("assembly submission failed: " + output)
                     return {"status": False, "message": output}
-                accession = re.search( "ERZ\d*\w" , output).group(0).strip()
+                accession = re.search(r"ERZ\d*\w" , output).group(0).strip()
                 assembly_accession = dict(
                     accession = accession,
                     alias = f'webin-{submission_type}-{row["study_id"]}_{row["assembly_id"]}_{row["assemblyname"]}',
@@ -1144,7 +1227,10 @@ class EnaSubmissionHelper:
                 elif return_code == 3:
                     directories = sorted(glob.glob(f"{submission_folder}/{submission_type}/*"),key=os.path.getmtime)
                     with open(f"{directories[-1]}/validate/webin-cli.report") as report_file:
-                        error = output + " " + report_file.read()
+                        report_text = report_file.read()
+                    # Strip Java stack traces — keep only ERROR/WARNING lines
+                    clean_lines = [l for l in report_text.splitlines() if l.startswith("ERROR") or l.startswith("WARNING")]
+                    error = "\n".join(clean_lines) if clean_lines else report_text
                 Singlecell().update_component_status(id=singlecell_id, component="assembly", identifier=identifier, identifier_value=row[identifier], repository="ena", status_column_value={"status": "rejected", "error":error})
 
             if error:
@@ -1173,7 +1259,7 @@ class EnaSubmissionHelper:
         test = ""
         if "dev" in ena_service:
             test = " -test "
-        webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -validate -ascp"
+        webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -validate -ascp"
         self.logging_debug(webin_cmd)
         try:
             self.logging_info("validating assembly")
@@ -1192,7 +1278,7 @@ class EnaSubmissionHelper:
         test = ""
         if "dev" in ena_service:
             test = " -test "
-        webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token}  -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
+        webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token}  -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
         Logger().debug(msg=webin_cmd)
         # print(webin_cmd)
         # try/except as it turns out this can fail even if validate is successfull

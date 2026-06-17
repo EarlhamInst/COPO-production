@@ -10,7 +10,7 @@ from django_tools.middlewares import ThreadLocal
 from lxml import etree as ET
 from django.http import HttpResponse, JsonResponse
 import os
-from common.lookup.lookup import SRA_PROJECT_TEMPLATE,SRA_SETTINGS
+from common.lookup.lookup import SRA_PROJECT_TEMPLATE, SRA_SETTINGS, ENA_CLI
 from rest_framework import status
 import subprocess
 from pathlib import Path
@@ -831,7 +831,7 @@ class EnaTaggedSequence:
             test = " -test "
         # cli_path = "tools/reposit/ena_cli/webin-cli.jar"
         webin_cmd = (
-            "java -Xmx2048m -jar webin-cli.jar -username "
+            "java -Xmx2048m -jar {ENA_CLI} -username "
             + self.user_token
             + " -password '"
             + self.pass_word
@@ -877,7 +877,7 @@ class EnaTaggedSequence:
                 # by the validation step
                 return {"error": output}
 
-            accession = re.search("ERZ\d*\w", output).group(0).strip()
+            accession = re.search(r"ERZ\d*\w", output).group(0).strip()
             self._add_tagged_seq_accession(
                 ObjectId(submission_id),
                 accession,
@@ -922,7 +922,7 @@ class EnaTaggedSequence:
         if "dev" in self.ena_service:
             test = " -test "
         webin_cmd = (
-            "java -Xmx2048m -jar webin-cli.jar -username "
+            "java -Xmx2048m -jar {ENA_CLI} -username "
             + self.user_token
             + " -password '"
             + self.pass_word

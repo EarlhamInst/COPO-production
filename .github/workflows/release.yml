@@ -1,0 +1,76 @@
+# Release Docker images to Docker Hub when a new tag is pushed.
+# Note dev/demo Docker compose file uses 4 digits while production uses 3
+# e.g. git tag v1.0.0
+#      git push origin v1.0.0
+
+name: Release Docker Image
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project code
+        uses: actions/checkout@v6
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: copo/copo-new-web
+          tags: |
+            type=ref,event=tag
+          
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build image locally for scanning
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: deployment/web/Dockerfile
+          load: true
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=registry,ref=copo/copo-new-web:buildcache
+          cache-to: type=registry,ref=copo/copo-new-web:buildcache,mode=max
+
+      - name: Run Docker Scout scan
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: copo/copo-new-web:${{ steps.meta.outputs.version }}
+          only-severities: critical,high
+          # Enforce (fail the build) on real release tags; advisory only on -devtest tags
+          exit-code: ${{ !contains(github.ref_name, '-devtest') }}
+
+      - name: Run Trivy scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: copo/copo-new-web:${{ steps.meta.outputs.version }}
+          format: table
+          # Advisory on -devtest tags (0 = don't fail); enforce on real release tags
+          exit-code: ${{ contains(github.ref_name, '-devtest') && '0' || '1' }}
+          severity: CRITICAL,HIGH
+          
+      - name: Push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: deployment/web/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=copo/copo-new-web:buildcache
+          cache-to: type=registry,ref=copo/copo-new-web:buildcache,mode=max

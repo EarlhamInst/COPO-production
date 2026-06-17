@@ -137,7 +137,7 @@ $(document).on('document_ready', function () {
   if (groups.some((g) => g.includes('sample_managers'))) {
     const pageIcons = $('.copo-page-icons');
     if (!pageIcons.is(':visible')) pageIcons.show();
-    $('#accept_reject_shortcut').show();
+    $('#accept_reject_shortcut').css('display', 'inline-flex');
   }
 
   // Display empty profile message for potential first time users
@@ -179,6 +179,22 @@ $(document).on('document_ready', function () {
     sortProfileRecords(optionSelected);
   });
 
+  $('#releasestudy').each(function (e) {
+    const profileStatus = $(e)
+      .closest('.copo-records-panel')
+      .attr('study-status');
+    
+    alert(profileStatus);
+
+    if (profileStatus == undefined) {
+      $(e)
+        .attr('aria-disabled', true)
+        .attr('role', 'link')
+        .css('pointer-events', 'none')
+        .css('color', 'grey');
+    }
+  });
+
   $(document).data('sortByDescendingOrder', true);
 
   $(document).on('click', '.ui.menu > div', function (e) {
@@ -195,19 +211,36 @@ $(document).on('document_ready', function () {
     const actionType = $el.data('action-type');
 
     if (actionType) {
-      let id = $el.data('profile-id'); // Profile ID
+      const profileId = $el.data('profile-id'); // Profile ID
 
       if (actionType === 'release_study') {
-        result = confirm('Are you sure you would like to publish the study?');
+        const $studyStatusEl = $(`#studyStatus_${profileId}`);
+
+        if ($studyStatusEl.length == 0) {
+          alert('Unable to process request.');
+          return;
+        }
+
+        if ($studyStatusEl.text() == 'PUBLIC') {
+          alert('Study is already published.');
+          return;
+        }
+
+        const result = confirm('Are you sure that you would like to publish the study?');
+
         if (result) {
-          url = '/copo/copo_profile/' + id + '/release_study';
+          const url = `/copo/copo_profile/${profileId}/release_study`;
           $.ajax({
             url: url,
           })
             .done(function (data) {
-              $('#studyStatus_' + id).html('PUBLIC');
-              $('#studyReleaseDate_' + id).html(data['study_release_date']);
-              $el.hide(); // Hide the 'Publish study' button after the study has been published
+              $studyStatusEl.html('PUBLIC');
+              $(`#studyReleaseDate_${profileId}`).html(
+                data['study_release_date']
+              );
+              
+              // Hide the 'Publish study' button after the study has been published
+              $el.hide();
             })
             .fail(function (data) {
               alert(data.responseText);
@@ -395,16 +428,16 @@ function initialiseProfileActionsPopover() {
         const profileType = $panel.data('profile-type');
 
         const $editButton = $(
-          `<button id="editProfileBtn" class="btn btn-sm btn-success" title="Edit record"
+          `<button id="editProfileBtn" class="popover-action-btn popover-action-btn-blue" title="Edit record"
               data-profile-id="${profileId}"
               data-profile-type="${profileType}">
-              <i class="fa fa-pencil"></i>&nbsp;Edit</button>`
+              <i class="fa fa-pencil"></i>Edit</button>`
         );
 
         const $deleteButton = $(
-          `<button id="deleteProfileBtn" class="btn btn-sm btn-danger" title="Delete record"
+          `<button id="deleteProfileBtn" class="popover-action-btn popover-action-btn-red" title="Delete record"
               data-profile-id="${profileId}">
-              <i class="fa fa-trash-can"></i>&nbsp;Delete</button>`
+              <i class="fa fa-trash-can"></i>Delete</button>`
         );
 
         if (canEditDelete) {
@@ -419,9 +452,9 @@ function initialiseProfileActionsPopover() {
             return;
           }
           const $button = $(
-          `<button id="${item}" class="btn btn-sm btn-primary action" title="${action.title}"
+          `<button id="${item}" class="popover-action-btn popover-action-btn-teal action" title="${action.title}"
             data-action-type="${action.action}" data-profile-id="${profileId}">
-            <i class="${action.icon_class}"></i>&nbsp;${action.label}
+            <i class="${action.icon_class}"></i>${action.label}
           </button>`
           );
           $content.append($button);
@@ -582,21 +615,9 @@ function appendRecordComponents(grids) {
     let $menuParentElement = $grid.find('#expandingMenu');
     let $menuComp = $menuParentElement.find('.comp');
     let $componentButtons = createComponentButtons(recordId, profileType);
-    let $newIndicator = $(
-      '.more-pcomponent-indicator[data-template="true"]'
-    ).clone();
 
     $($menuParentElement).attr('id', 'menu_' + recordId);
     $menuComp.append($componentButtons);
-
-    // If more than 6 buttons exist, add 'many-items' class
-    // to reduce the height of each menu and add a down arrow indicator
-    if ($componentButtons.children().length > 6) {
-      $menuComp.addClass('many-items');
-      $newIndicator.removeAttr('data-template');
-      $menuParentElement.find('.item').after($newIndicator);
-      $newIndicator.appendTo($menuComp);
-    }
   });
 }
 
@@ -814,7 +835,7 @@ function sortProfileRecords(option) {
       selector = (element) =>
         element
           .querySelector('.copo-records-panel')
-          .getAttribute('profileType');
+          .getAttribute('data-profile-type');
       break;
     default:
       isValueNumeric = true;
@@ -882,7 +903,9 @@ function displayLegend(legendData) {
   let $legend = $('.component-legend[data-legend="profile_types"]');
   const $group = $legend.find('.component-legend-group');
 
-  // Build profile type legend item
+  // Sort alphabetically by acronym then build legend items
+  legendData.sort((a, b) => a.profileTypeAcronym.localeCompare(b.profileTypeAcronym));
+
   legendData.forEach((element) => {
     // Avoid duplicate legend data
     const existingLabels = $group
@@ -895,15 +918,30 @@ function displayLegend(legendData) {
     const labelKey = element.profileTypeAcronym.trim().toLowerCase();
     if (existingLabels.includes(labelKey)) return;
 
-    // Create the legend item
+    // Create the legend item with profile-type colour accent
+    const c = element.profileTypeColour;
     const $item = $(`
-      <li class="component-legend-group-item">
-        <i class="fa fa-info-circle component-legend-info-icon" title="${element.profileType}"></i>
+      <li class="component-legend-group-item" style="border-left: 3px solid ${c}; background: ${c}18;">
+        <i class="fa fa-info-circle component-legend-info-icon"></i>
         <span class="component-legend-text">${element.profileTypeAcronym}</span>
-        <span class="fa fa-circle component-legend-circle" style="color:${element.profileTypeColour};"></span>
+        <span class="fa fa-circle component-legend-circle" style="color:${c};"></span>
       </li>
     `);
+
     $group.append($item);
+
+    // Add popover with expanded name and description (must be in DOM first)
+    const popoverContent = element.profileTypeDescription || element.profileType;
+    $item.find('.component-legend-info-icon').webuiPopover({
+      title: element.profileType,
+      content: `<div class="webpop-content-div">${popoverContent}</div>`,
+      trigger: 'hover',
+      width: 280,
+      arrow: true,
+      placement: 'auto',
+      dismissible: true,
+      delay: { show: 200, hide: 100 },
+    });
   });
 }
 
@@ -1001,8 +1039,12 @@ function setProfileGridHeading(grids) {
         const profileType = $panel.data('profile-type');
         if (!profileType) return; // No profile type so skip
 
-        const components = get_profile_components(profileType);
-        if (!components?.length) return; // No components so skip
+        // Shared profiles don't have a registered profile type definition,
+        // so skip the components check for them
+        if (!isShared) {
+          const components = get_profile_components(profileType);
+          if (!components?.length) return; // No components so skip
+        }
 
         let recordId = $panel.find('.row-title span').attr('id');
         let existingRecord = existingRecords
@@ -1015,22 +1057,25 @@ function setProfileGridHeading(grids) {
 
         if (isShared) {
           acronym = 'Shared With Me';
-          colour = '#f26202';
+          colour = '#9e9e9e';
 
           legendData = {
             profileType: acronym,
             profileTypeAcronym: 'SHARED',
             profileTypeColour: colour,
+            profileTypeDescription: 'Profiles that other users have shared with you.',
           };
         } else {
           acronym = profileType.toUpperCase();
-          colour = profile_type_def[profileType.toLowerCase()]['widget_colour'];
+          const ptDef = profile_type_def[profileType.toLowerCase()];
+          colour = ptDef['widget_colour'];
 
           legendData = {
             profileType:
               getTitleByValue(profileType) || toTitleCase(profileType),
             profileTypeAcronym: acronym.toUpperCase(),
             profileTypeColour: colour,
+            profileTypeDescription: ptDef.description || '',
           };
         }
 
@@ -1041,7 +1086,9 @@ function setProfileGridHeading(grids) {
         );
         const $titleSpan = $heading.find('.row-title span');
 
-        $heading.css('background-color', colour); // Set heading colour
+        // Set the accent colour as a CSS custom property so dark-mode CSS
+        // can override the tinted background without fighting inline styles.
+        $heading[0].style.setProperty('--profile-accent', colour);
         $titleSpan.find('small').remove(); // Replace acronym
         $titleSpan.append(`<small> (${acronym.toUpperCase()}) </small>`);
 
@@ -1106,6 +1153,11 @@ function profileInfoPopover(grids) {
         html: true,
         trigger: 'click',
         sanitize: false,
+        container: 'body',
+        // Custom class lets the CSS cap this popover's height and add a scrollbar
+        // without affecting the narrow Edit/Delete options popover.
+        template:
+          '<div class="popover profile-details-popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>',
         title: function () {
           let $showMoreProfileInfoCloseBtn =
             '<i id="showMoreProfileInfoCloseBtn" class="fa fa-times pull-right"></i>';

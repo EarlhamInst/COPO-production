@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   new_web:
-    image: debbyku/copo_new:v1.0.u2204
+    image: copo_new:v1.0.u2204
     command: >
       bash -c "code-server serve-local --disable-telemetry --auth none --host 0.0.0.0 --port 8101"
     ports:
@@ -51,8 +51,8 @@ services:
       - ECS_SECRET_KEY_FILE=/run/secrets/ecs_secret_key
       - ECS_ACCESS_KEY_ID=copo@nbi.ac.uk
       - ECS_ENDPOINT=http://ei-copo.obj-data.nbi.ac.uk
-      - SELENIUM_TEST_USERNAME=debby.ku@earlham.ac.uk
-      - SELENIUM_TEST_PASSWORD=Iam1testUser
+      - SELENIUM_TEST_USERNAME=testeruser@example.com
+      - SELENIUM_TEST_PASSWORD=password
       - B2DROP_PERMITS=/copo/b2drop/permits
     depends_on:
       - redis
@@ -151,7 +151,7 @@ services:
           memory: 512mb
 
   mongo:
-    image: debbyku/mongodb:v7.0.1_1
+    image: mongodb:v7.0.1_1
     command: mongod --replSet rs0 --bind_ip_all --keyFile /data/replica.key
     entrypoint:
        - bash

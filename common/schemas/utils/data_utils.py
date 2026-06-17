@@ -550,7 +550,7 @@ def get_studies():
 
 def get_args_from_parameter(parameter, param_value_dict):
     '''
-    given a comma seprated parameter string, function returns an argument tuple
+    given a comma separated parameter string, function returns an argument tuple
     :param parameter:
     :param param_value_dict:
     :return:

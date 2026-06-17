@@ -164,7 +164,7 @@ def save_singlecell_records(request, profile_id, schema_name):
     schemas = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=dict(), target_id=checklist_id)
     identifier_map, _ = SinglecellSchemas().get_key_map(schemas)
     submission_repository = {}
-    submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name)
+    submission_repository_df = SinglecellSchemas().get_submission_repository(schema_name)
     submisison_repository_component_map = submission_repository_df.to_dict('index')
 
     additional_columns_prefix_default_value = ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE
@@ -256,12 +256,14 @@ def save_singlecell_records(request, profile_id, schema_name):
                     common_columns = list(set(existing_component_data_df.columns) & set(component_data_df.columns))
 
                     #probably it is uploaded from new manifest with new columns
-                    if not (set(component_data_df.columns) - set(common_columns)):
+                    if not component_data_df.empty and not (set(component_data_df.columns) - set(common_columns)):
                         existing_component_common_columns_df = existing_component_data_df[common_columns]
                         existing_component_common_columns_df.sort_index(axis=1, inplace=True)
                         component_sorted_data_df = component_data_df.sort_index(axis=1)
 
                         for index, row in existing_component_data_df.iterrows():
+                            if identifier not in component_sorted_data_df.columns:
+                                break
                             if all(row[f"status_{repository}"] != additional_columns_prefix_default_value["status"] for repository in repositories):
                                 tmp_data = component_sorted_data_df.loc[component_sorted_data_df[identifier] == row[identifier]].sort_index(axis=1)
                          
@@ -278,9 +280,9 @@ def save_singlecell_records(request, profile_id, schema_name):
                     component_additional_fields.extend([ col for col in existing_component_data_df.columns if any(col.endswith(f"_{repository}") 
                                                                                                                   for repository in global_repositories) and
                                                                                                                   col not in component_additional_fields])
-                    if component_additional_fields:
+                    if component_additional_fields and not component_data_df.empty and identifier in component_data_df.columns:
                         existing_component_additional_fields_df = existing_component_data_df[[identifier]+ component_additional_fields]
-                        singlecell_record["components"][component_name] = component_data_df.merge(existing_component_additional_fields_df, on=identifier, how="left" ) 
+                        singlecell_record["components"][component_name] = component_data_df.merge(existing_component_additional_fields_df, on=identifier, how="left" )
             
     if errors:
         return HttpResponse(status=400, content="\n"+"\n".join(errors))

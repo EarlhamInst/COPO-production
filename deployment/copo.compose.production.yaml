@@ -47,12 +47,12 @@ services:
           - 'node.labels.minio-service==true'
 
   web:
-    image: copo/copo-new-web:v3.1.0.4
+    image: copo/copo-new-web:v3.2.0
     entrypoint:
       - bash
       - -c
       - |
-        rsync -avhW --no-compress --progress --exclude 'media' --exclude 'logs' /code/ /copo/ && rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && python manage.py collectstatic --noinput && /usr/local/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application
+        rsync -avhW --no-compress --progress --exclude 'media' --exclude 'logs' /code/ /copo/ && rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && python manage.py collectstatic --noinput && /opt/venv/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application
     volumes:
       - web-data:/copo/media
       - static-data:/copo/static
@@ -154,7 +154,7 @@ services:
       retries: 3
       start_period: 30s
   celery_job:
-    image: copo/copo-new-web:v3.1.0.4
+    image: copo/copo-new-web:v3.2.0
     entrypoint:
       - bash
       - -c
@@ -253,7 +253,7 @@ services:
       - ecs_access_key
       - copo_zenodo_token
   nginx:
-    image: copo/copo-nginx-minio:v1.30.0
+    image: copo/copo-nginx-minio:v1.30.2
     networks:
       - frontend
     volumes:

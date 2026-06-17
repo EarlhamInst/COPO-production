@@ -82,11 +82,6 @@
        title="Scroll down to view more profiles">
         <i class="down-arrow"></i><i class="down-arrow"></i>
     </a>
-    <!-- Navigate to top of web page button -->
-    <a href="javascript:void(0);" id="navigateToTop" class="navigate-to-top"
-       title="Navigate to top of the web page">
-        <i class="up-arrow"></i><i class="up-arrow"></i>
-    </a>
 
     <!-- getting started section -->
     <div class="row">
@@ -143,10 +138,28 @@
     <!-- Loader for component table -->
     <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"></div>
 
-    <!-- Sort Work Profiles button-->
+    <!-- Profile types legend and Sort Work Profiles controls -->
     {% if profiles %}
-    <div class="row">
-        <div class="col-lg-9 col-lg-offset-4">
+    <div class="row legend-and-sort-row">
+        <!-- Profile types legend (collapsible) - left side -->
+        <div class="col-lg-3 col-md-4">
+            <div class="component-legend" data-tour-id="component_legend" data-legend="profile_types">
+                <div class="component-legend-header collapsed"
+                     data-toggle="collapse"
+                     data-target="#legendCollapse"
+                     aria-expanded="false"
+                     aria-controls="legendCollapse">
+                    <span class="component-legend-title">Profile types</span>
+                    <i class="fa fa-chevron-down component-legend-chevron"></i>
+                </div>
+                <div id="legendCollapse" class="collapse">
+                    <ul class="component-legend-group"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sort controls and Toggle Info Bar - right side -->
+        <div class="col-lg-5 col-md-5 col-lg-offset-4">
             <div id="sortProfilesDiv" class="row">
                 <div class="col-lg-6 col-md-6 col-xs-5 sort-by-container">Sort by:</div>
                 <div class="col-lg-3 col-md-3 col-xs-4 sort-dropdown-container">
@@ -159,11 +172,13 @@
                 <div class="col-lg-1 col-md-1 col-xs-2 sort-icon-container">
                     <i id="sortIconId" class="sort-down fa fa-sort-down sort-icon"></i>
                 </div>
+
+
             </div>
         </div>
     </div>
     {% endif %}
-    
+
     <!-- Profile table div -->
     <div id="copo_profiles_table" data-tour-id="profile_grid">
         {% for profile in profiles %}
@@ -184,22 +199,13 @@
 
 {% endblock %}
 
-{% block sidebar_custom_section %}
-<!-- profiles legend -->
-<div class="component-legend" data-tour-id="component_legend" 
-    data-legend="profile_types">
-    <h4 class="component-legend-title">Profile types</h4>
-    <ul class="component-legend-group">
-    </ul>
-</div>
-{% endblock sidebar_custom_section %}
+{% block sidebar_custom_section %}{% endblock sidebar_custom_section %}
 
 {% block js_block %}
     <script src="{% static 'copo/js/generic_handlers_ext2.js' %}"></script>
     <script src="{% static 'copo/js/generic_handlers.js' %}"></script>
     <script src="{% static 'copo/js/copo_form_handlers.js' %}"></script>
     <script src="{% static 'copo/js/copo_profile_index.js' %}"></script>
-    {% include 'copo/profile/custom_profile_js.html' %}
 {% endblock %}
 
  

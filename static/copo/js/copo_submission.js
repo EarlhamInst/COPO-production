@@ -43,6 +43,65 @@ $(document).ready(function () {
       '/'
   );
 
+  // Unified log pane for all submission/transfer notifications.
+  // All notification sources (WebSocket events, AJAX transcript messages)
+  // render into this one pane instead of per-event Bootstrap/Semantic boxes.
+  function _getSubmissionLog() {
+    var $viewport = (typeof trigger_global_notification === 'function')
+      ? trigger_global_notification()
+      : $('#page_alert_panel');
+    if (!$viewport || !$viewport.length) return null;
+    var $log = $viewport.find('#submission-activity-log');
+    if (!$log.length) {
+      $log = $('<div/>', {
+        id: 'submission-activity-log',
+        css: {
+          background: '#111',
+          color: '#ddd',
+          padding: '8px 10px',
+          margin: '6px 0',
+          border: '1px solid #333',
+          borderRadius: '4px',
+          maxHeight: '320px',
+          overflowY: 'auto',
+          fontFamily: 'ui-monospace,Menlo,Consolas,monospace',
+          fontSize: '12px',
+          lineHeight: '1.4',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-all',
+        },
+      });
+      $viewport.prepend($log);
+    }
+    return $log;
+  }
+
+  function _logSubmissionEvent(text, opts) {
+    var $log = _getSubmissionLog();
+    if (!$log) return null;
+    var action = (opts && opts.action) || 'info';
+    var lineId = opts && opts.lineId;
+    var color =
+      action === 'error' ? '#ff6b6b' :
+      action === 'progress' ? '#9aa' :
+      action === 'success' ? '#7bd88f' : '#ddd';
+    var $line = lineId ? $log.find('#' + lineId) : $();
+    if (!$line.length) {
+      $line = $('<div/>').css('color', color);
+      if (lineId) $line.attr('id', lineId);
+      $log.append($line);
+    } else {
+      $line.css('color', color);
+    }
+    $line.text(text);
+    $log.scrollTop($log[0].scrollHeight);
+    return $line;
+  }
+
+  function _safeId(s) {
+    return 'logline-' + (s || '').replace(/[^a-zA-Z0-9_-]/g, '_');
+  }
+
   submissionSocket.onmessage = function (e) {
     var data = JSON.parse(e.data);
 
@@ -72,6 +131,36 @@ $(document).ready(function () {
           status_message: event_status_message,
         };
         get_file_transfer_status(eventOpt);
+      }
+    } else if (data.message || data.action === 'progress') {
+      // Generic notify_submission_status payload: always log, never boxed.
+      var action = data.action || 'info';
+      var payload = data.data || {};
+      var ts = new Date().toLocaleTimeString();
+      if (action === 'progress' && payload.progress_id) {
+        var pct = Math.max(0, Math.min(100, parseInt(payload.pct, 10) || 0));
+        var barWidth = 20;
+        var filled = Math.round((pct / 100) * barWidth);
+        var bar =
+          '[' +
+          new Array(filled + 1).join('#') +
+          new Array(barWidth - filled + 1).join('.') +
+          ']';
+        var text =
+          ts +
+          ' [' +
+          (payload.method || '') +
+          '] ' +
+          (payload.file || '') +
+          ' ' +
+          bar +
+          ' ' +
+          pct +
+          '%' +
+          (payload.done ? ' ✓' : '');
+        _logSubmissionEvent(text, { action: 'progress', lineId: _safeId(payload.progress_id) });
+      } else {
+        _logSubmissionEvent(ts + ' ' + (data.message || ''), { action: action });
       }
     }
   };
@@ -462,48 +551,9 @@ $(document).ready(function () {
   function get_file_transfer_status(transfer_update) {
     var submission_id = transfer_update.submission_id;
     var status_message = transfer_update.status_message;
-    var viewPort = trigger_global_notification();
-    var messageClass = 'info';
-
-    var messageTitle = '';
-    var getInstructionsPane = format_feedback_message(
-      status_message,
-      messageClass,
-      messageTitle
-    );
-
-    try {
-      viewPort.find('#file-transfer-transcript' + submission_id).remove();
-    } catch (err) {}
-
-    var feedbackDiv = $('<div/>', {
-      id: 'file-transfer-transcript' + submission_id,
-      style: 'cursor:pointer;',
-    });
-
-    feedbackDiv.append(getInstructionsPane);
-    viewPort.prepend(feedbackDiv);
-
-    feedbackDiv.mouseover(function () {
-      $('.submission-panel[data-id="' + submission_id + '"]')
-        .find('.panel-body')
-        .addClass('transfer-highlight-1');
-
-      $('html, body').animate(
-        {
-          scrollTop:
-            $('.submission-panel[data-id="' + submission_id + '"]')
-              .closest('.submission-panel')
-              .offset().top - 60,
-        },
-        'slow'
-      );
-    });
-
-    feedbackDiv.mouseout(function () {
-      $('.submission-panel[data-id="' + submission_id + '"]')
-        .find('.panel-body')
-        .removeClass('transfer-highlight-1');
+    var ts = new Date().toLocaleTimeString();
+    _logSubmissionEvent(ts + ' [' + submission_id + '] ' + status_message, {
+      action: 'info',
     });
   }
 
@@ -533,30 +583,21 @@ $(document).ready(function () {
             .data(submission_data)
             .draw();
 
-          //display submission status message
+          //display submission status message as a log line
           if (
             rec.hasOwnProperty('transcript_status') &&
             rec.hasOwnProperty('transcript_message') &&
             rec.transcript_status != '' &&
             rec.transcript_message != ''
           ) {
-            var viewPort = get_viewport(rec.record_id);
-            var messageClass = 'success';
-
-            if (rec.transcript_status == 'error') {
-              messageClass = 'negative';
-            } else if (rec.transcript_status == 'info') {
-              messageClass = 'info';
-            }
-
-            var messageTitle = '';
-            var getInstructionsPane = format_feedback_message(
-              rec.transcript_message,
-              messageClass,
-              messageTitle
+            var action =
+              rec.transcript_status === 'error' ? 'error' :
+              rec.transcript_status === 'info' ? 'info' : 'success';
+            var ts = new Date().toLocaleTimeString();
+            _logSubmissionEvent(
+              ts + ' [' + rec.record_id + '] ' + rec.transcript_message,
+              { action: action }
             );
-            viewPort.empty();
-            viewPort.prepend(getInstructionsPane);
           }
         }
       },
@@ -863,18 +904,11 @@ $(document).ready(function () {
                       .remove()
                       .draw();
 
-                    var infoPanelElement = trigger_global_notification();
-
-                    let feedback = get_alert_control();
-                    feedback
-                      .removeClass('alert-success')
-                      .addClass('alert-info')
-                      .addClass('page-notifications-node');
-
-                    feedback
-                      .find('.alert-message')
-                      .html('Successfully deleted submission!');
-                    infoPanelElement.prepend(feedback);
+                    var _ts = new Date().toLocaleTimeString();
+                    _logSubmissionEvent(
+                      _ts + ' [' + submission_id + '] Successfully deleted submission.',
+                      { action: 'success' }
+                    );
                   }
                   dialogRef.close();
                 } else if (

@@ -5,6 +5,7 @@ import re
 from django.conf import settings
 from django_tools.middlewares import ThreadLocal
 from common.utils.helpers import get_env, get_datetime, get_deleted_flag, get_not_deleted_flag
+from common.lookup.lookup import ENA_CLI
 from common.dal.copo_da import EnaFileTransfer, DataFile
 from common.dal.submission_da import Submission
 from .da import Assembly
@@ -199,7 +200,7 @@ def _submit_assembly(file_path, profile_id, submission_type):
     test = ""
     if "dev" in ena_service:
         test = " -test "
-    webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token}  -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
+    webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token}  -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
     Logger().debug(msg=webin_cmd)
     # print(webin_cmd)
     # try/except as it turns out this can fail even if validate is successfull
@@ -311,7 +312,7 @@ def process_assembly_pending_submission():
                 test = " -test "
             #cli_path = "tools/reposit/ena_cli/webin-cli.jar"
            
-            webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
+            webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
             Logger().debug(msg=webin_cmd)
             #print(webin_cmd)
             try:
@@ -341,7 +342,7 @@ def process_assembly_pending_submission():
                     #this may happen for instance if the same assembly has already been submitted, which would not get caught
                     #by the validation step
                     return {"error": output}
-                accession = re.search( "ERZ\d*\w" , output).group(0).strip()
+                accession = re.search(r"ERZ\d*\w" , output).group(0).strip()
                 Assembly().add_accession(id=assembly_id, accession=accession)
                 Submission().add_assembly_accession(sub["_id"], accession, "webin-genome-" + assembly["assemblyname"], assembly_id)
 

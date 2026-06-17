@@ -183,15 +183,15 @@ services:
     command: server /data --console-address ":9001"
     hostname: minio
     environment:
-      MINIO_ROOT_USER: copo@nbi.ac.uk
-      MINIO_ROOT_PASSWORD: ${vault_ecs_secret_key}
+      - MINIO_ROOT_USER=copo@nbi.ac.uk
+      - MINIO_ROOT_PASSWORD=${vault_ecs_secret_key}
     ports:
       - '9000:9000'
       - '9001:9001'
 
   #copo_browser:
-  #  image: debbyku/browserless.chrome
-  #  ports:
+  #  image: browserless.chrome
+  #  ports: 
   #    - "3000:3000"
   #  links:
   #    - copo_web:copo-new.cyverseuk.org
@@ -211,8 +211,8 @@ services:
   #    - PREBOOT_QUANTITY=2
 
   #copo_browser:
-  #  image: debbyku/browserless.chrome
-  #  ports:
+  #  image: browserless.chrome
+  #  ports: 
   #    - "3000:3000"
   #  links:
   #    - copo_web:copo-new.cyverseuk.org

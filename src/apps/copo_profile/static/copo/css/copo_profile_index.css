@@ -1,21 +1,13 @@
 /* Component menu */
 .menu-row {
-  margin-top: -7px;
-  float: left;
-  width: 100% !important;
-}
-
-.menu-no-addtl-info-row {
-  padding: 180px 12px 0px 12px; /* top right bottom left */
-  margin-right: -12px;
-  margin-left: -12px;
+  margin-top: 8px;
 }
 
 .ui.menu {
   position: relative;
   z-index: 1;
-  height: 340px;
-  overflow: hidden;
+  height: auto;
+  overflow: visible;
   width: 100% !important;
 }
 
@@ -26,36 +18,16 @@
 }
 
 .ui.menu .menu.comp .item {
-  display: grid;
-  grid-template-columns: 1fr; /* 1 column */
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   position: relative;
   z-index: 5;
-  overflow: hidden;
   width: 100% !important;
-  padding-top: 10px !important;
+  padding-top: 6px !important;
+  margin-bottom: 0 !important;
 }
 
-/* Expand components menu on hover */
-.ui.menu:has(.menu.comp.many-items):hover,
-.ui.menu:has(.menu.comp.many-items) .menu.comp:hover .item {
-  overflow: visible !important;
-  max-height: none !important;
-  z-index: 10;
-  position: relative;
-  grid-template-columns: 1fr; /* 1 column */
-  height: auto;
-}
-
-.ui.menu:has(.menu.comp.many-items) .item {
-  padding-bottom: 25px;
-}
-
-.menu.comp.many-items.menu-expanded {
-  overflow: visible;
-  max-height: none;
-  z-index: 9999;
-}
 
 @keyframes fadeIn {
   from {
@@ -228,10 +200,15 @@
 }
 
 /* Sorting */
+#sortProfilesDiv {
+  display: flex;
+  align-items: center;
+  padding-right: 15px;
+}
+
 .sort-by-container {
   padding-left: 0;
   padding-right: 8px;
-  padding-top: 7px;
   text-align: right;
 }
 
@@ -243,11 +220,11 @@
 }
 
 .sort-up {
-  padding-top: 12px;
+  transform: translateY(-4px);
 }
 
 .sort-down {
-  padding-top: 4px;
+  transform: translateY(4px);
 }
 
 .sort-dropdown-container {
@@ -274,7 +251,7 @@
   display: flex;
   gap: 5px 10px; /* 5px horizontal, 10px vertical */
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: flex-start; /* keep action buttons grouped together, not pushed to opposite edges */
   align-items: center;
 }
 
@@ -345,8 +322,8 @@
 }
 
 .grid-panel-body {
-  padding: 15px;
-  height: 356px !important;
+  padding: 12px;
+  height: auto !important;
   position: relative;
   z-index: 1;
 }
@@ -355,17 +332,14 @@
   background-color: #ff8c8c !important;
   color: white !important;
   font-weight: bolder !important;
-  height: 325px !important;
 }
 
 #bottomPanel {
-  height: 40px;
-  display: flex;
-  align-items: center;
-  padding-left: 8px;
-  font-size: 1.1em;
-  border-top: 1px solid #d0d0d0;
-  margin-top: 30px;
+  font-size: 0.95em;
+  color: #666;
+  margin-top: 50px !important;
+  padding: 0;
+  border: none;
 }
 
 .profile-info-label {
@@ -375,7 +349,8 @@
 }
 
 .profile-description {
-  height: 42px;
+  max-height: 42px;
+  overflow: hidden;
 }
 
 .profile-info-row {
@@ -393,11 +368,17 @@
 /* Profile grid */
 #copo_profiles_table {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-  gap: 24px;
-  max-width: calc((450px * 2) + (24px * 2)); /* 2 grids per row with 24px gap */
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 24px 24px;
+  width: 100%;
   /* margin: 0 10px 0 10px; */ /* Left align the centre: top right bottom left */
   margin: 20px auto 0 auto; /* Centre the table - top right bottom left */
+  row-gap: 60px;
+}
+
+/* When sidebar is collapsed, allow more columns */
+.copo-main.sidebar-collapsed #copo_profiles_table {
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
 }
 
 /* .copo-records-panel:hover,
@@ -409,12 +390,12 @@
 
 .grid,
 .grid-item {
-  height: 400px;
-  border-radius: 5px;
-  background-color: #fff;
+  height: 340px;
+  border-radius: 0;
+  background-color: transparent;
   max-width: 515px;
-  position: relative;
   z-index: 1;
+  overflow: visible;
 }
 
 .grid-selected {
@@ -424,7 +405,8 @@
 
 .grid:hover,
 .grid-item:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 10 !important;
+  position: relative;
 }
 
 .grid-item {
@@ -695,6 +677,7 @@ ul.sequencing-centre-ul-tag {
   animation-timing-function: linear;
 }
 
+
 /* Responsiveness */
 @media only screen and (max-width: 2400px) {
 }
@@ -796,21 +779,6 @@ ul.sequencing-centre-ul-tag {
   }
 }
 
-@media only screen and (max-width: 776px) {
-  .grid-panel-body {
-    height: 335px !important;
-  }
-
-  .menu-no-addtl-info-row {
-    padding: 160px 12px 0px 12px;
-  }
-}
-
-@media only screen and (max-width: 767px) {
-  .menu-row {
-    margin-top: -168px;
-  }
-}
 
 @media only screen and (max-width: 575px) {
   .navigate-to-top {

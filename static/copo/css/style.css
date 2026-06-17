@@ -36,40 +36,16 @@
   padding: 5px 5px 0px;
 }
 
-.info-rw {
-  background: rgba(229, 239, 255, 0.3);
-  margin-left: 0px;
-  margin-right: -2px;
-  margin-bottom: -5px;
-  border: 1px solid rgba(229, 239, 255, 1);
-  border-radius: 4px;
-  overflow: auto;
-  font-weight: normal;
-  padding: 5px 5px 0px;
-}
-
-.info-rw2 {
-  background: rgba(180, 205, 228, 0.4);
-  margin-left: 0px;
-  margin-right: -2px;
-  margin-bottom: -5px;
-  /*border: 1px solid rgba(17, 70, 110, 0.3);*/
-  border-radius: 4px;
-  overflow: auto;
-  font-weight: normal;
-  padding: 5px 5px 0px;
-}
-
+.info-rw,
+.info-rw2,
 .info-rw3 {
-  background: rgba(249, 241, 236, 0.7);
-  margin-left: 0px;
-  margin-right: -2px;
-  margin-bottom: -5px;
-  border: 1px solid rgba(249, 241, 236, 0.3);
+  background: transparent;
+  margin: 0;
+  border: none;
   border-radius: 4px;
   overflow: auto;
   font-weight: normal;
-  padding: 5px 5px 0px;
+  padding: 4px 8px;
 }
 
 .description-rw {
@@ -1561,8 +1537,8 @@ th {
 
 @media (min-width: 768px) {
   .copo-sidebar {
-    background-color: rgba(229, 239, 255, 0.2);
-    border: none;
+    background-color: rgba(229, 239, 255, 0.3);
+    border-left: 1px solid rgba(0, 0, 0, 0.12);
     bottom: 0;
     display: block;
     right: 0;
@@ -1578,8 +1554,8 @@ th {
 
 @media (min-width: 101px) {
   .copo-sidebar {
-    background-color: rgba(229, 239, 255, 0.2);
-    border: none;
+    background-color: rgba(229, 239, 255, 0.3);
+    border-left: 1px solid rgba(0, 0, 0, 0.12);
     bottom: 0;
     display: block;
     right: 0;
