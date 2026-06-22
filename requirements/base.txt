@@ -1,6 +1,6 @@
 aiofiles==23.2.1
 aioredis==2.0.1
-hiredis==2.2.2
+hiredis==3.4.0
 #alabaster==0.7.12
 #amqp==5.2.0
 appnope==0.1.3
