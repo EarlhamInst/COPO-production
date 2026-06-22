@@ -8,7 +8,7 @@ asgiref==3.8.1
 #asn1crypto==0.24.0
 astroid==2.2.5
 async-timeout==4.0.2
-attrs==22.2.0
+attrs==26.1.0
 autobahn==23.1.2
 Automat==22.10.0
 autopep8==2.0.2
