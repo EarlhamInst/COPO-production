@@ -2385,6 +2385,44 @@ function refresh_multisearch() {
   });
 }
 
+/**
+ * Re-render Select2 searchable dropdown menu options,
+ * 'has-data' attribute and 'has-data-indicator' class
+ */
+function refreshSelect2(payload){ 
+  const optionId = payload?.checklist_id || $('#checklist_id').find(':selected').val();
+  const $select = $('.searchable-select');
+
+  if (!$select.length || optionId === undefined || typeof optionId !== 'string') {
+    return;
+  }
+
+  if (payload?.action === 'save') {
+    $select.find(`option[value="${optionId}"]`).attr('data-has-data', 'true');
+    
+   
+  }
+
+  // Only remove the 'has-data' attribute and 'has-data-indicator' class 
+  // if there is no more data in the table
+  if (
+    payload?.dataLength === 0 && payload?.action.includes('delete')
+  ) {
+    $select.find(`option[value="${optionId}"]`).removeAttr('data-has-data');
+
+    const $container = $select.data('select2').$container;
+
+    $container
+      .find('.select2-selection__rendered')
+      .find('.has-data-indicator')
+      .removeClass('has-data-indicator');
+  }
+
+   requestAnimationFrame(() => {
+     $select.trigger('change');
+   });
+}
+
 // ═══ AUTOCOMPLETE ═════════════════════════════════════════════════════════════
 
 /**
@@ -3984,7 +4022,7 @@ function renderOption(data) {
   // Check if any of the dropdown menu options have uploaded data (as indicated with a prefix circle (●))
   // If yes, add a 'has-data-indicator' class to the option
   const $container = $('<span>');
-  const hasData = $(data.element).data('has-data');
+  const hasData = $(data.element).attr('data-has-data') === 'true';
 
   if (hasData) {
     $container.append(
