@@ -210,8 +210,9 @@ $(document).ready(function () {
   refresh_tool_tips();
 
   //trigger refresh of table
-  $('body').on('refreshtable', function (event) {
+  $('body').on('refreshtable', function (event, payload) {
     do_render_component_table(globalDataBuffer, componentMeta);
+    refreshSelect2(payload); // Refresh select2 searchable dropdown menu options
   });
 
   //handle task button event
@@ -462,8 +463,12 @@ function save_taggedseq_data() {
     globalDataBuffer = data;
 
     if (data.hasOwnProperty('table_data')) {
-      var event = jQuery.Event('refreshtable');
-      $('body').trigger(event);
+      // var event = jQuery.Event('refreshtable');
+      // $('body').trigger(event);
+      $('body').trigger('refreshtable', {
+        action: 'save',
+        checklist_id: get_checklist_id(),
+      });
     }
   });
 }
