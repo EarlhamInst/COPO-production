@@ -29,6 +29,14 @@ updates:
     labels:
       - "docker"
 
+    ignore:
+      # The local dev images are deliberately pinned to the Ubuntu 24.04 LTS
+      # (Python 3.12, matching production). Newer Ubuntu releases ship newer
+      # Python (e.g. 26.04 -> 3.14) which breaks pinned C-extension deps such
+      # as gevent. Moving off 24.04 is a deliberate migration, not an
+      # automated bump, so ignore all ubuntu updates. See PR #115.
+      - dependency-name: "ubuntu"
+
   # GitHub Actions updates
   - package-ecosystem: "github-actions"
     directory: "/"
