@@ -20,6 +20,15 @@ updates:
       - "dependencies"
       - "python"
 
+    ignore:
+      # redis-py must stay on 5.x: redis-py 8 breaks Django Channels
+      # (channels-redis 4.1.0) — the channel-layer listener's blocking read
+      # times out after ~5s, closing every WebSocket with a 1011 and killing
+      # all live submission/validation feedback. Hold at 5.x (5.x patch/minor
+      # bumps are still allowed) until channels-redis supports redis-py 8.
+      - dependency-name: "redis"
+        update-types: ["version-update:semver-major"]
+
   # Dockerfile base image updates
   - package-ecosystem: "docker"
     directory: "/deployment/web/"
