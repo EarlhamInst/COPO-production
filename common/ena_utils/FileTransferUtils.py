@@ -243,12 +243,22 @@ def process_pending_file_transfers():
     # 4 check for md5
     # 5 transfer to ENA
     if docs:
-        # cast cursor to list for double iteration
-        # docs = list(docs)
-        # first iterate all transfer records and set to processing so celery won't pick them again and send for processing as this
-        # can lead to circular operations which won't terminate
-        tx_ids = [tx["_id"] for tx in docs]
-        EnaFileTransfer().set_processing(tx_ids)
+        # Atomically claim each candidate (pending -> processing) so a
+        # concurrent beat tick / gevent greenlet can't pick up the same record
+        # and upload the same file twice. Each claim is a single match-and-set,
+        # so only the winner gets the doc back; losers get None and are skipped.
+        # (Replaces the old bulk read-then-set_processing, which raced.)
+        eft = EnaFileTransfer()
+        claimed = []
+        for tx in docs:
+            won = eft.claim_pending_transfer(tx["_id"])
+            if won is not None:
+                claimed.append(won)
+            else:
+                log.debug(
+                    f"Transfer {tx.get('_id')} already claimed by another worker; skipping"
+                )
+        docs = claimed
 
         for tx in docs:
             try:
