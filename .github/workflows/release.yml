@@ -65,13 +65,7 @@ jobs:
           severity: CRITICAL,HIGH
           # Aspera keys are IBM-distributed standard client keys, not COPO secrets.
           # autobahn/wamp/cryptosign.py ships example keys in its source — not real credentials.
-          skip-files: >-
-            /code/shared_tools/reposit/.aspera/.aspera/cli/etc/asperaweb_id_dsa.openssh,
-            /code/shared_tools/reposit/.aspera/cli/etc/asperaweb_id_dsa.openssh,
-            /root/.aspera/.aspera/cli/etc/asperaweb_id_dsa.openssh,
-            /root/.aspera/cli/etc/asperaweb_id_dsa.openssh,
-            /opt/venv/lib/python3.12/site-packages/autobahn/wamp/cryptosign.py,
-            /opt/venv/lib/python3.12/site-packages/autobahn/wamp/__pycache__/cryptosign.cpython-312.pyc
+          skip-files: "/code/shared_tools/reposit/.aspera/.aspera/cli/etc/asperaweb_id_dsa.openssh,/code/shared_tools/reposit/.aspera/cli/etc/asperaweb_id_dsa.openssh,/root/.aspera/.aspera/cli/etc/asperaweb_id_dsa.openssh,/root/.aspera/cli/etc/asperaweb_id_dsa.openssh,/opt/venv/lib/python3.12/site-packages/autobahn/wamp/cryptosign.py,/opt/venv/lib/python3.12/site-packages/autobahn/wamp/__pycache__/cryptosign.cpython-312.pyc"
           
       - name: Push Docker image
         uses: docker/build-push-action@v7
