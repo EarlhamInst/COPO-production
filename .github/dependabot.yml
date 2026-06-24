@@ -45,6 +45,9 @@ updates:
       # as gevent. Moving off 24.04 is a deliberate migration, not an
       # automated bump, so ignore all ubuntu updates. See PR #115.
       - dependency-name: "ubuntu"
+      # Python 3.14 is pre-release; hold at 3.12.x until 3.14 is stable.
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   # GitHub Actions updates
   - package-ecosystem: "github-actions"
