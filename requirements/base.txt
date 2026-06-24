@@ -10,7 +10,7 @@ astroid==4.0.4
 async-timeout==4.0.2
 attrs==26.1.0
 autobahn==23.1.2
-Automat==22.10.0
+Automat==24.8.1
 autopep8==2.0.2
 #Babel==2.12.1
 backcall==0.2.0
@@ -34,7 +34,7 @@ chardet==5.1.0
 #configparser==3.7.4
 constantly==15.1.0
 cryptography==48.0.1
-daphne==4.0.0
+daphne==4.2.2
 #-e git+https://github.com/IQSS/dataverse-client-python.git@5f95a11e2f32bcfabe28e6ad43b2f7edac60d983#egg=dataverse
 decorator==4.4.0
 #deepdiff==4.0.7
@@ -93,7 +93,7 @@ Jinja2==3.1.6
 # jsonpath-rw==1.4.0
 # jsonpath-rw-ext==1.2.2
 jsonpath-ng==1.7.0
-jsonpickle==1.2
+jsonpickle==4.1.2
 jsonref==1.1.0
 #jsonschema==4.17.3
 #jupyter==1.0.0
@@ -109,7 +109,7 @@ mccabe==0.7.0
 #mistune==0.8.4
 mock==3.0.5
 #more-itertools==10.3.0
-msgpack==1.0.5
+msgpack==1.2.1
 #mzml2isa==0.5.1
 #nbconvert==5.6.0
 #nbformat==4.4.0
@@ -176,7 +176,7 @@ s3transfer==0.19.0
 selenium==4.16.0
 #Send2Trash==1.5.0
 service-identity==18.1.0
-setuptools<82.0.0
+setuptools==78.1.1
 shortuuid==1.0.11
 #simplejson==3.16.0
 six==1.16.0
@@ -196,7 +196,7 @@ titlecase==2.4.1
 toml==0.10.2
 tornado==6.5.7
 #traitlets==4.3.3
-Twisted==24.7.0rc1
+Twisted==26.4.0
 txaio==23.1.1
 typed-ast==1.5.4
 #typing==3.6.2
