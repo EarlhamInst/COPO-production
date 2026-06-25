@@ -3,7 +3,7 @@ version: '3.9'
 # Settings and configurations that are common for all containers
 x-minio-common: &minio-common
   image: quay.io/minio/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1
-  command: server --console-address ":9001" http://minio-{1...2}/data{1...2}
+  command: server --console-address ":9001" /data1 /data2
   #healthcheck:
   #test: ["CMD", "mc", "ready", "local"]
   #interval: 5s
@@ -36,16 +36,15 @@ x-minio-common: &minio-common
 services:
   minio:
     <<: *minio-common
-    hostname: minio-{{.Task.Slot}}
+    hostname: minio
     volumes:
       - minio-data1:/data1
       - minio-data2:/data2
     deploy:
-      replicas: 2
+      replicas: 1
       placement:
-        max_replicas_per_node: 1
         constraints:
-          - 'node.labels.minio-service==true'
+          - 'node.hostname==ei-copo-demo-service'
 
   web:
     image: copo/copo-new-web:v3.2.1.8
