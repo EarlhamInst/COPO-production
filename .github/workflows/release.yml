@@ -54,13 +54,17 @@ jobs:
           only-severities: critical,high
           exit-code: false
 
-      - name: Docker Scout — enforce CRITICAL findings
+      - name: Docker Scout — enforce CRITICAL findings (fixable only)
         uses: docker/scout-action@v1
         with:
           command: cves
           image: copo/copo-new-web:${{ steps.meta.outputs.version }}
           only-severities: critical
-          # Fail on CRITICAL for real release tags; advisory on -devtest tags
+          # Only fail on CRITICALs that have a fix available — unfixed OS-level CVEs
+          # (e.g. perl CVE-2026-12087, no Debian patch yet) are reported above but
+          # won't block releases. Once Debian ships a fix, this step will automatically
+          # start failing again.
+          only-fixed: true
           exit-code: ${{ !contains(github.ref_name, '-devtest') }}
           
       - name: Push Docker image
