@@ -143,7 +143,7 @@ ptyprocess==0.5.2
 py==1.11.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.6
-pycodestyle==2.10.0
+pycodestyle==2.14.0
 #pycparser==2.22
 #Pygments==2.19.2
 #PyHamcrest==2.0.4
