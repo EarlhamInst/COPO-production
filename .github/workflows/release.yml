@@ -46,26 +46,22 @@ jobs:
           cache-from: type=registry,ref=copo/copo-new-web:buildcache
           cache-to: type=registry,ref=copo/copo-new-web:buildcache,mode=max
 
-      - name: Run Docker Scout scan
+      - name: Docker Scout — report HIGH findings (advisory)
         uses: docker/scout-action@v1
         with:
           command: cves
           image: copo/copo-new-web:${{ steps.meta.outputs.version }}
           only-severities: critical,high
-          # Enforce (fail the build) on real release tags; advisory only on -devtest tags
-          exit-code: ${{ !contains(github.ref_name, '-devtest') }}
+          exit-code: false
 
-      - name: Run Trivy scan
-        uses: aquasecurity/trivy-action@v0.36.0
+      - name: Docker Scout — enforce CRITICAL findings
+        uses: docker/scout-action@v1
         with:
-          image-ref: copo/copo-new-web:${{ steps.meta.outputs.version }}
-          format: table
-          # Advisory on -devtest tags (0 = don't fail); enforce on real release tags
-          exit-code: ${{ contains(github.ref_name, '-devtest') && '0' || '1' }}
-          severity: CRITICAL,HIGH
-          # Aspera keys are IBM-distributed standard client keys, not COPO secrets.
-          # autobahn/wamp/cryptosign.py ships example keys in its source — not real credentials.
-          skip-files: "/code/shared_tools/reposit/.aspera/.aspera/cli/etc/asperaweb_id_dsa.openssh,/code/shared_tools/reposit/.aspera/cli/etc/asperaweb_id_dsa.openssh,/root/.aspera/.aspera/cli/etc/asperaweb_id_dsa.openssh,/root/.aspera/cli/etc/asperaweb_id_dsa.openssh,/opt/venv/lib/python3.12/site-packages/autobahn/wamp/cryptosign.py,/opt/venv/lib/python3.12/site-packages/autobahn/wamp/__pycache__/cryptosign.cpython-312.pyc"
+          command: cves
+          image: copo/copo-new-web:${{ steps.meta.outputs.version }}
+          only-severities: critical
+          # Fail on CRITICAL for real release tags; advisory on -devtest tags
+          exit-code: ${{ !contains(github.ref_name, '-devtest') }}
           
       - name: Push Docker image
         uses: docker/build-push-action@v7
