@@ -200,7 +200,7 @@ Twisted==24.7.0rc1
 txaio==23.1.1
 typed-ast==1.5.4
 #typing==3.6.2
-ua-parser==0.18.0
+ua-parser==1.0.2
 urllib3==1.26.19
 user-agents==2.2.0
 validators==0.21.0
