@@ -4,7 +4,7 @@ import os
 from .resolver import RESOLVER
 
 # Minimum field lengths enforced at manifest upload time and during ENA submission.
-PROFILE_TITLE_MIN_LENGTH = 10
+PROFILE_TITLE_MIN_LENGTH = 20
 PROFILE_DESCRIPTION_MIN_LENGTH = 20
 
 # •••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••#
