@@ -20,6 +20,48 @@ updates:
       - "dependencies"
       - "python"
 
+    groups:
+      django:
+        patterns:
+          - "django*"
+          - "crispy-*"
+          - "daphne"
+          - "channels*"
+          - "asgiref"
+          - "djangorestframework"
+      aws:
+        patterns:
+          - "boto3"
+          - "botocore"
+          - "s3transfer"
+      celery:
+        patterns:
+          - "celery"
+          - "kombu"
+          - "billiard"
+          - "vine"
+      database:
+        patterns:
+          - "pymongo"
+          - "psycopg*"
+          - "redis"
+      data:
+        patterns:
+          - "numpy"
+          - "pandas"
+          - "biopython"
+          - "openpyxl"
+          - "xlrd"
+          - "XlsxWriter"
+      testing:
+        patterns:
+          - "pytest*"
+          - "selenium"
+          - "mock"
+      all-others:
+        patterns:
+          - "*"
+
   # Dockerfile base image updates
   - package-ecosystem: "docker"
     directory: "/deployment/web/"
