@@ -10,9 +10,10 @@ from botocore.exceptions import ClientError
 from common.utils.logger import Logger
 import gzip
 from .generic_helper import transfer_to_ena
-from common.utils.helpers import get_env, get_thumbnail_folder, get_datetime, notify_submission_status
+from common.utils.helpers import get_env, get_datetime, notify_submission_status
 from datetime import datetime
 from src.apps.copo_core.models import StatusMessage, User
+from src.apps.copo_file.utils.CopoFiles import create_image_thumbnail
 import hashlib
 from pathlib import Path
 from PIL import ImageFile, Image
@@ -324,24 +325,15 @@ def process_pending_file_transfers():
                     log.error("error downloading from ecs: " + str(e))
                     reset_status_counter(tx, user=user)
                     continue
+
+                # Generate a thumbnail for the file if it's an image
                 if tx.get("file_type", "") == "image":
-                    try:
-                        filename = os.path.basename(tx["local_path"])
-                        final_dot = filename.rfind(".")
-                        file_extension = filename[final_dot:]
-                        thumbnail_path = (
-                            get_thumbnail_folder(tx["profile_id"])
-                            + "/"
-                            + filename[:final_dot]
-                            + "_thumb"
-                            + file_extension
-                        )
-                        size = 128, 128
-                        im = Image.open(tx["local_path"])
-                        im.thumbnail(size)
-                        im.save(thumbnail_path)
-                    except Exception as e:
-                        log.error(f"Failed to create thumbnail for {tx['local_path']}: {e}")
+                    create_image_thumbnail(
+                        file_name=os.path.basename(tx['local_path']),
+                        uploaded_file=tx['local_path'], 
+                        profile_id=tx.get('profile_id'), 
+                        local_path=tx['local_path'] 
+                    )
             elif tx_status == 3:
                 increment_status_counter(tx)
                 continue
