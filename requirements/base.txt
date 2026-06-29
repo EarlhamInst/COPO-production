@@ -152,7 +152,7 @@ pylint==4.0.6
 pymongo==4.6.3
 #pyOpenSSL==25.1.0
 #pyparsing==3.1.2
-PyPDF2==1.27.9
+PyPDF2==3.0.1
 #pyrsistent==0.15.4
 pytest==9.0.3
 python-dateutil==2.8.2
