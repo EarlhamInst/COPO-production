@@ -861,6 +861,24 @@ class EnaFileTransfer(DAComponent):
             {"$set": {"status": "processing", "last_checked": helpers.get_datetime()}},
         )
 
+    def claim_pending_transfer(self, tx_id):
+        """Atomically claim a single transfer record by flipping it from
+        'pending' to 'processing'. The status condition is part of the same
+        update, so only one concurrent caller can win the claim; others get
+        None back and should skip the record.
+
+        This replaces the old read-then-set_processing pattern, which had a
+        race under gevent concurrency: the beat task fires every 10s while a
+        transfer is still running, and the mongo read in get_pending_transfers
+        is a gevent yield point, so two greenlets could read the same record as
+        'pending' before either marked it 'processing' and both upload it.
+        """
+        return self.get_collection_handle().find_one_and_update(
+            {"_id": ObjectId(tx_id), "status": "pending"},
+            {"$set": {"status": "processing", "last_checked": helpers.get_datetime()}},
+            return_document=pymongo.ReturnDocument.AFTER,
+        )
+
     def set_pending(self, tx_id):
         self.get_collection_handle().update_one(
             {"_id": ObjectId(tx_id)},

@@ -3,7 +3,7 @@ FROM python:3.12.7-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     default-jre \
     rsync \
     #git \
@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y \
     python-is-python3 && \
     gem install sass && \
     pip install --upgrade pip && \
-    pip install "setuptools<82" && \
+    pip install "setuptools==78.1.1" && \
     apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment

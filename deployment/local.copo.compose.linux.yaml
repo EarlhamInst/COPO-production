@@ -8,7 +8,10 @@
 ## The .env file contains environment variables. Ensure that both the .env file and the 
 ## local.copo.compose.linux.yaml file are in the same directory before running the command below.
 #
-# $ export $(cat .env) > /dev/null 2>&1; docker compose -f local.copo.compose.linux.yaml up -d
+# $ docker compose --env-file .env -f local.copo.compose.linux.yaml up -d
+#   (use --env-file so Compose parses .env: it strips the quotes that protect
+#    values containing special characters, e.g. a WEBIN password with '&'.
+#    `export $(cat .env)` leaves those quotes inside the value and breaks them.)
 #
 ## Step #2  - Run Django management commands in the terminal 
 ## to set up the database and create a superuser (for a new deployment with empty DB only)
