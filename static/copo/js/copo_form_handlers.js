@@ -3777,8 +3777,12 @@ function form_generic_task(component_name, task, records, args_dict) {
       globalDataBuffer = data;
       if (data.hasOwnProperty('table_data')) {
         //table data
-        var event = jQuery.Event('refreshtable');
-        $('body').trigger(event);
+        // var event = jQuery.Event('refreshtable');
+        // $('body').trigger(event);
+        $('body').trigger('refreshtable', {
+          action: task,
+          dataLength: data.table_data.dataSet.length,
+        });
       }
       //feedback
       if (

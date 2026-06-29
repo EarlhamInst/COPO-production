@@ -554,7 +554,7 @@ class Command(BaseCommand):
             table_id="files_table",
             reverse_url="copo_file:copo_files",
             subtitle="",
-            button_label="Data Files",
+            button_label="Data files",
         )
 
         sample = Component().create_component(

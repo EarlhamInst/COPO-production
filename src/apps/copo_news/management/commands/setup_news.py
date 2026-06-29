@@ -286,7 +286,7 @@ class Command(BaseCommand):
                     'content': (
                         '<p>The Collaborative OPen Omics (COPO) platform now supports metadata submissions to <a href="https://zenodo.org/" target="_blank">Zenodo</a>. Through COPO, metadata such as single-cell from a spreadsheet can be submitted to Zenodo after they have been uploaded and validated in COPO.</p>'
                         '<p>Submissions to Zenodo occur when a row is selected in the data table of uploaded data and the <strong><i>Submit to Zenodo</i></strong> button is clicked. Once a submission is successful, an <strong><i>accepted</i></strong> status will be displayed in the <strong>Status for Zenodo</strong> column and the assigned unique identifier will appear in the <strong>Accession for Zenodo</strong> column. '
-                        'Thereafter, selecting a row then clicking the <strong><i>Publish to Zenodo</i></strong> button will make the selected data public.</p>'
+                        'Thereafter, selecting a row then clicking the <strong><i>Publish to ZENODO</i></strong> button will make the selected data public.</p>'
                         '<p>COPO supports multiple submission types and any that are configured for Zenodo submissions and publications will provide the same functionality.</p>'
                         '<br><p>Key features include:</p>'
                         '<ul><li>Submissions receive DOIs which enable persistent referencing in publications</li>'

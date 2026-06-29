@@ -20,6 +20,56 @@ updates:
       - "dependencies"
       - "python"
 
+    groups:
+      django:
+        patterns:
+          - "django*"
+          - "crispy-*"
+          - "daphne"
+          - "channels*"
+          - "asgiref"
+          - "djangorestframework"
+      aws:
+        patterns:
+          - "boto3"
+          - "botocore"
+          - "s3transfer"
+      celery:
+        patterns:
+          - "celery"
+          - "kombu"
+          - "billiard"
+          - "vine"
+      database:
+        patterns:
+          - "pymongo"
+          - "psycopg*"
+          - "redis"
+      data:
+        patterns:
+          - "numpy"
+          - "pandas"
+          - "biopython"
+          - "openpyxl"
+          - "xlrd"
+          - "XlsxWriter"
+      testing:
+        patterns:
+          - "pytest*"
+          - "selenium"
+          - "mock"
+      all-others:
+        patterns:
+          - "*"
+    ignore:
+      # redis-py must stay on 5.x: redis-py 8 breaks Django Channels
+      # (channels-redis 4.1.0) — the channel-layer listener's blocking read
+      # times out after ~5s, closing every WebSocket with a 1011 and killing
+      # all live submission/validation feedback. Hold at 5.x (5.x patch/minor
+      # bumps are still allowed) until channels-redis supports redis-py 8.
+      - dependency-name: "redis"
+        update-types: ["version-update:semver-major"]
+
   # Dockerfile base image updates
   - package-ecosystem: "docker"
     directory: "/deployment/web/"
@@ -28,6 +78,17 @@ updates:
 
     labels:
       - "docker"
+
+    ignore:
+      # The local dev images are deliberately pinned to the Ubuntu 24.04 LTS
+      # (Python 3.12, matching production). Newer Ubuntu releases ship newer
+      # Python (e.g. 26.04 -> 3.14) which breaks pinned C-extension deps such
+      # as gevent. Moving off 24.04 is a deliberate migration, not an
+      # automated bump, so ignore all ubuntu updates. See PR #115.
+      - dependency-name: "ubuntu"
+      # Python 3.14 is pre-release; hold at 3.12.x until 3.14 is stable.
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   # GitHub Actions updates
   - package-ecosystem: "github-actions"

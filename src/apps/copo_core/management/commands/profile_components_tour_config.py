@@ -111,6 +111,7 @@ COMPONENTS_TOUR_CONFIG = {
             'component_table',
             'component_legend',
             'sidebar_alert_message',
+            'sidebar_toggle_btn',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -148,8 +149,8 @@ COMPONENTS_TOUR_CONFIG = {
             'component_legend': {
                 'title': 'Data submission status legend',
                 'content': (
-                    'This legend explains the meaning of different colours that highlight the rows in the table.<br><br>'
-                    'Hover over each <i class="fa fa-info-circle"></i> for detailed information.'
+                    'Click this legend to see an explanation of the meaning of different colours that highlight the rows in the table.<br><br>'
+                    'Hover over each <i class="fa fa-info-circle component-legend-info-icon"></i> for detailed information.'
                 ),
                 'placement': 'left',
             },
@@ -188,6 +189,7 @@ COMPONENTS_TOUR_CONFIG = {
             'add_file_record_button_local',
             'add_file_record_button_terminal',
             'delete_record_button',
+            'profile_title',
             'new_file_button_local',
             'new_file_button_terminal',
             'quick_tour_title_button',
@@ -270,6 +272,7 @@ COMPONENTS_TOUR_CONFIG = {
             'component_table',
             'component_legend',
             'sidebar_alert_message',
+            'sidebar_toggle_btn',
             'profile_title',
             'component_options',
             'download_blank_manifest_title_button',
@@ -326,7 +329,7 @@ COMPONENTS_TOUR_CONFIG = {
                     'View and manage the data that you have uploaded in this table.<br><br>'
                     'To submit it, select one or more records in this table then, click '
                     '<button class="tiny ui basic teal button submit-btn no-click">'
-                    '<i class="fa fa-info-circle"></i>&nbsp;Submit to ENA</button> located '
+                    '<i class="fa fa-paper-plane"></i>&nbsp;Submit to ENA</button> located '
                     'at the top right of the table.'
                 ),
                 'placement': 'right',
@@ -359,12 +362,14 @@ COMPONENTS_TOUR_CONFIG = {
             'component_options',
             'new_component_title_button',
             'quick_tour_title_button',
+            'accept_reject_samples_title_button',
+            'component_legend',
+            'sort_profiles_button',
             'profile_grid',
+            'profile_options_icon',
             'profile_addtl_info_button',
             'profile_component_buttons_menu',
-            'profile_options_icon',
-            'sort_profiles_button',
-            'component_legend',
+            'sidebar_toggle_btn',
         ],
         'messages': {
             'profile_addtl_info_button': {
@@ -375,7 +380,7 @@ COMPONENTS_TOUR_CONFIG = {
                 'title': 'Profile components',
                 'content': (
                     'Components represent different research objects that form part of a project or study.<br><br>'
-                    "Click any of the components (e.g. Manage Sample metadata) to access a particular component's page."
+                    "Click any of the components (e.g. Samples) to access a particular component's page."
                 ),
                 'placement': 'right',
             },
@@ -397,7 +402,7 @@ COMPONENTS_TOUR_CONFIG = {
                     'to make the metadata publicly accessible in repositories like '
                     '<span class="hover-text" title="European Nucleotide Archive">ENA</span><br><br>'
                     '<span class="shepherd-note">Read more about '
-                    '<a href="https://copo-docs.readthedocs.io/en/latest/profile/releasing-profiles.html" '
+                    '<a href="https://copo-docs.readthedocs.io/en/latest/submissions/publishing-data.html" '
                     'target="_blank">Making a Profile (Study) Public</a>.</span>'
                     '</li></ul>'
                 ),
@@ -415,9 +420,9 @@ COMPONENTS_TOUR_CONFIG = {
             'component_legend': {
                 'title': 'Profile types legend',
                 'content': (
-                    'This legend attributes the different profile types that  '
-                    'you have created to their corresponding colours.<br><br>'
-                    'Hover over each <i class="fa fa-info-circle"></i> to '
+                    'Click this legend to view attributes of the different profile types that  '
+                    'you have created and their corresponding colours.<br><br>'
+                    'Hover over each <i class="fa fa-info-circle component-legend-info-icon"></i> to '
                     'view the full name of the profile.'
                 ),
                 'placement': 'left',
@@ -443,8 +448,8 @@ COMPONENTS_TOUR_CONFIG = {
                 'quick_tour_title_button',
             ],
             'creation': [
-                'profile_addtl_info_button',
                 'profile_component_buttons_menu',
+                'profile_addtl_info_button',
                 'profile_options_icon',
                 'profile_grid',
                 'component_legend',
@@ -457,6 +462,7 @@ COMPONENTS_TOUR_CONFIG = {
             'component_table',
             'component_legend',
             'sidebar_alert_message',
+            'sidebar_toggle_btn',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -498,7 +504,7 @@ COMPONENTS_TOUR_CONFIG = {
                     'View and manage the data that you have uploaded in this table.<br><br>'
                     'To submit it, select one or more records in this table then, click '
                     '<button class="tiny ui basic teal button submit-btn no-click">'
-                    '<i class="fa fa-info-circle"></i>&nbsp;Submit</button> located '
+                    '<i class="fa fa-paper-plane"></i>&nbsp;Submit</button> located '
                     'at the top right of the table.'
                 ),
                 'placement': 'right',
@@ -531,6 +537,7 @@ COMPONENTS_TOUR_CONFIG = {
             'component_table',
             'component_legend',
             'sidebar_alert_message',
+            'sidebar_toggle_btn',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -577,10 +584,10 @@ COMPONENTS_TOUR_CONFIG = {
                     'public repositories to make it publicly accessible:<br>'
                     '<ul><li><strong>European Nucleotide Archive (ENA)</strong> using '
                     '<button class="tiny ui basic teal button publish-btn no-click">'
-                    '<i class="fa fa-info-circle"></i>&nbsp;Publish to ENA</button></li>'
+                    '<i class="fa fa-globe"></i>&nbsp;Publish to ENA</button></li>'
                     '<li><strong>Zenodo</strong> using '
                     '<button class="tiny ui basic blue button publish-btn no-click">'
-                    '<i class="fa fa-info-circle"></i>&nbsp;Publish to Zenodo</button></li>'
+                    '<i class="fa fa-globe"></i>&nbsp;Publish to ZENODO</button></li>'
                     '</ul><br>'
                     'Select <strong>one record</strong> under the <strong>STUDY</strong> tab in the data table '
                     'then, click any of the buttons to publish the study. '
@@ -596,8 +603,8 @@ COMPONENTS_TOUR_CONFIG = {
             'component_legend': {
                 'title': 'Data submission status legend',
                 'content': (
-                    'This legend explains the meaning of different colours that highlight the rows in the table.<br><br>'
-                    'Hover over each <i class="fa fa-info-circle"></i> for detailed information.<br><br>'
+                    'Click this legend to see an explanation of the meaning of different colours that highlight the rows in the table.<br><br>'
+                    'Hover over each <i class="fa fa-info-circle component-legend-info-icon"></i> for detailed information.<br><br>'
                     '<div class="shepherd-note">To track the status of your data submissions, refer to the following columns '
                     'under the <strong>STUDY</strong> tab in the table:'
                     '<ul><li><strong>Status For Ena</strong></li>'
@@ -635,6 +642,7 @@ COMPONENTS_TOUR_CONFIG = {
             'component_table',
             'component_legend',
             'sidebar_alert_message',
+            'sidebar_toggle_btn',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -652,6 +660,68 @@ COMPONENTS_TOUR_CONFIG = {
             'quick_tour_title_button',
             'profile_component_icon_navigation_pane',
         ],
+        'messages': {
+            'component_table_with_accessions': {
+                'title': 'Submitted data with accessions',
+                'content': (
+                    'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns '
+                    'under the <strong>STUDY</strong> tab:'
+                    '<ul><li><strong>Status For Zenodo</strong></li>'
+                    '<li><strong>Error For Zenodo</strong></li>'
+                    '</ul><br>'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns '
+                    'under the <strong>STUDY</strong> tab:'
+                    '<ul><li><strong>Accession For Zenodo</strong></li>'
+                    '</ul>'
+                    '<p class="shepherd-note">An accession is a unique identifier assigned to the submitted data. '
+                    'The accessions can be used to reference the submitted data in public repositories.</p>'
+                ),
+                'placement': 'top',
+            },
+            'publish_study': {
+                'title': 'Publish study',
+                'content': (
+                    'After submitting the data, you can publish the study to any of the following '
+                    'public repositories to make it publicly accessible:<br>'
+                    '<ul><li><strong>Zenodo</strong> using '
+                    '<button class="tiny ui basic blue button publish-btn no-click">'
+                    '<i class="fa fa-globe"></i>&nbsp;Publish to ZENODO</button></li>'
+                    '</ul><br>'
+                    'Select <strong>one record</strong> under the <strong>STUDY</strong> tab in the data table '
+                    'then, click any of the buttons to publish the study. '
+                    'The publication will include all data related to the selected record matching the study '
+                    'ID in the <strong>Study ID</strong> column.<br><br>'
+                    '<p class="shepherd-note">Publishing your study is an important step in sharing your '
+                    'research with the scientific community. A public repository is a database that stores and shares '
+                    'research data with the global scientific community.</p>'
+                ),
+            },
+        },
+        'message_overrides': {
+            'component_legend': {
+                'title': 'Data submission status legend',
+                'content': (
+                    'Click this legend to see an explanation of the meaning of different colours that highlight the rows in the table.<br><br>'
+                    'Then, hover over each <i class="fa fa-info-circle component-legend-info-icon"></i> for detailed information.<br><br>'
+                    '<div class="shepherd-note">To track the status of your data submissions, refer to the following columns in the table: '
+                    '<ul><li><strong>Status For Zenodo</strong></li><li><strong>Accession For Zenodo</strong></li>'
+                    '<li><strong>Error For Zenodo</strong></li></ul></div>',
+                ),
+                'placement': 'left',
+            },
+            'component_table': {
+                'title': 'Uploaded data',
+                'content': (
+                    'View and manage the data that you have uploaded in this table.<br><br>'
+                    'To submit it, select one or more records in this table then, click '
+                    '<button class="tiny ui basic blue button submit-btn no-click">'
+                    '<i class="fa fa-paper-plane"></i>&nbsp;Submit to ZENODO</button> located '
+                    'at the top right of the table.'
+                ),
+                'placement': 'right',
+            },
+        },
         'stages': {
             'overview': [
                 'getting_started',
@@ -665,6 +735,13 @@ COMPONENTS_TOUR_CONFIG = {
                 'component_table',
                 'component_legend',
                 'profile_component_icon_navigation_pane',
+                'quick_tour_title_button',
+            ],
+            'publish': [
+                'component_table_with_accessions',
+                'publish_study',
+                'sidebar_alert_message',
+                'component_options_with_data_uploaded',
                 'quick_tour_title_button',
             ],
         },
@@ -770,6 +847,7 @@ COMPONENTS_TOUR_CONFIG = {
             'component_table',
             'component_legend',
             'sidebar_alert_message',
+            'sidebar_toggle_btn',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -808,8 +886,8 @@ COMPONENTS_TOUR_CONFIG = {
             'component_legend': {
                 'title': 'Data submission status legend',
                 'content': (
-                    'This legend explains the meaning of different colours that highlight the rows in the table.<br><br>'
-                    'Hover over each <i class="fa fa-info-circle"></i> for detailed information.'
+                    'Click this legend to see an explanation of the meaning of different colours that highlight the rows in the table.<br><br>'
+                    'Then, hover over each <i class="fa fa-info-circle component-legend-info-icon"></i> for detailed information.'
                 ),
                 'placement': 'left',
             },
@@ -843,6 +921,7 @@ COMPONENTS_TOUR_CONFIG = {
             'component_table',
             'component_legend',
             'sidebar_alert_message',
+            'sidebar_toggle_btn',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -889,10 +968,10 @@ COMPONENTS_TOUR_CONFIG = {
                     'public repositories to make it publicly accessible:<br>'
                     '<ul><li><strong>European Nucleotide Archive (ENA)</strong> using '
                     '<button class="tiny ui basic teal button publish-btn no-click">'
-                    '<i class="fa fa-info-circle"></i>&nbsp;Publish to ENA</button></li>'
+                    '<i class="fa fa-globe"></i>&nbsp;Publish to ENA</button></li>'
                     '<li><strong>Zenodo</strong> using '
                     '<button class="tiny ui basic blue button publish-btn no-click">'
-                    '<i class="fa fa-info-circle"></i>&nbsp;Publish to Zenodo</button></li>'
+                    '<i class="fa fa-globe"></i>&nbsp;Publish to ZENODO</button></li>'
                     '</ul><br>'
                     'Select <strong>one record</strong> under the <strong>STUDY</strong> tab in the data table '
                     'then, click any of the buttons to publish the study. '
@@ -908,8 +987,8 @@ COMPONENTS_TOUR_CONFIG = {
             'component_legend': {
                 'title': 'Data submission status legend',
                 'content': (
-                    'This legend explains the meaning of different colours that highlight the rows in the table.<br><br>'
-                    'Hover over each <i class="fa fa-info-circle"></i> for detailed information.<br><br>'
+                    'Click this legend to see an explanation of the meaning of different colours that highlight the rows in the table.<br><br>'
+                    'Hover over each <i class="fa fa-info-circle component-legend-info-icon"></i> for detailed information.<br><br>'
                     '<div class="shepherd-note">To track the status of your data submissions, refer to the following columns '
                     'under the <strong>STUDY</strong> tab in the table:'
                     '<ul><li><strong>Status For Ena</strong></li>'
@@ -948,6 +1027,7 @@ COMPONENTS_TOUR_CONFIG = {
             'component_table',
             'component_legend',
             'sidebar_alert_message',
+            'sidebar_toggle_btn',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -965,6 +1045,68 @@ COMPONENTS_TOUR_CONFIG = {
             'quick_tour_title_button',
             'profile_component_icon_navigation_pane',
         ],
+        'messages': {
+            'component_table_with_accessions': {
+                'title': 'Submitted data with accessions',
+                'content': (
+                    'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns '
+                    'under the <strong>STUDY</strong> tab:'
+                    '<ul><li><strong>Status For Zenodo</strong></li>'
+                    '<li><strong>Error For Zenodo</strong></li>'
+                    '</ul><br>'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns '
+                    'under the <strong>STUDY</strong> tab:'
+                    '<ul><li><strong>Accession For Zenodo</strong></li>'
+                    '</ul>'
+                    '<p class="shepherd-note">An accession is a unique identifier assigned to the submitted data. '
+                    'The accessions can be used to reference the submitted data in public repositories.</p>'
+                ),
+                'placement': 'top',
+            },
+            'publish_study': {
+                'title': 'Publish study',
+                'content': (
+                    'After submitting the data, you can publish the study to any of the following '
+                    'public repositories to make it publicly accessible:<br>'
+                    '<ul><li><strong>Zenodo</strong> using '
+                    '<button class="tiny ui basic blue button publish-btn no-click">'
+                    '<i class="fa fa-globe"></i>&nbsp;Publish to ZENODO</button></li>'
+                    '</ul><br>'
+                    'Select <strong>one record</strong> under the <strong>STUDY</strong> tab in the data table '
+                    'then, click any of the buttons to publish the study. '
+                    'The publication will include all data related to the selected record matching the study '
+                    'ID in the <strong>Study ID</strong> column.<br><br>'
+                    '<p class="shepherd-note">Publishing your study is an important step in sharing your '
+                    'research with the scientific community. A public repository is a database that stores and shares '
+                    'research data with the global scientific community.</p>'
+                ),
+            },
+        },
+        'message_overrides': {
+            'component_legend': {
+                'title': 'Data submission status legend',
+                'content': (
+                    'Click this legend to see an explanation of the meaning of different colours that highlight the rows in the table.<br><br>'
+                    'Then, hover over each <i class="fa fa-info-circle component-legend-info-icon"></i> for detailed information.<br><br>'
+                    '<div class="shepherd-note">To track the status of your data submissions, refer to the following columns in the table: '
+                    '<ul><li><strong>Status For Zenodo</strong></li><li><strong>Accession For Zenodo</strong></li>'
+                    '<li><strong>Error For Zenodo</strong></li></ul></div>',
+                ),
+                'placement': 'left',
+            },
+            'component_table': {
+                'title': 'Uploaded data',
+                'content': (
+                    'View and manage the data that you have uploaded in this table.<br><br>'
+                    'To submit it, select one or more records in this table then, click '
+                    '<button class="tiny ui basic blue button submit-btn no-click">'
+                    '<i class="fa fa-paper-plane"></i>&nbsp;Submit to ZENODO</button> located '
+                    'at the top right of the table.'
+                ),
+                'placement': 'right',
+            },
+        },
         'stages': {
             'overview': [
                 'getting_started',
@@ -980,6 +1122,13 @@ COMPONENTS_TOUR_CONFIG = {
                 'profile_component_icon_navigation_pane',
                 'quick_tour_title_button',
             ],
+            'publish': [
+                'component_table_with_accessions',
+                'publish_study',
+                'sidebar_alert_message',
+                'component_options_with_data_uploaded',
+                'quick_tour_title_button',
+            ],
         },
     },
     'taggedseq': {
@@ -987,6 +1136,7 @@ COMPONENTS_TOUR_CONFIG = {
             'component_table',
             'component_legend',
             'sidebar_alert_message',
+            'sidebar_toggle_btn',
             'select_all_button',
             'select_filtered_button',
             'clear_selection_button',
@@ -1024,8 +1174,8 @@ COMPONENTS_TOUR_CONFIG = {
             'component_legend': {
                 'title': 'Data submission status legend',
                 'content': (
-                    'This legend explains the meaning of different colours that highlight the rows in the table.<br><br>'
-                    'Hover over each <i class="fa fa-info-circle"></i> for detailed information.<br><br>'
+                    'Click this legend to see an explanation of the meaning of different colours that highlight the rows in the table.<br><br>'
+                    'Hover over each <i class="fa fa-info-circle component-legend-info-icon"></i> for detailed information.<br><br>'
                     '<div class="shepherd-note">To track the status of your data submissions, refer '
                     'to the <strong>STATUS</strong> column in the table.'
                 ),

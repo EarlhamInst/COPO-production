@@ -16,7 +16,7 @@
  *   dtolenv  #e8943a   erga     #d24085   asg     #6d46b8
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('../google/css/google-fonts.css');
 
 /* ══════════════════════════════════════════
    CSS VARIABLES
@@ -58,7 +58,7 @@
    ══════════════════════════════════════════ */
 body {
   font-family: var(--co-font) !important;
-  background: var(--co-bg) !important;
+  background-color: var(--co-bg) !important;
   color: var(--co-text) !important;
   -webkit-font-smoothing: antialiased !important;
 }
@@ -228,14 +228,31 @@ body {
 }
 
 /* Icon colour overrides — Material Symbols (colour class on the element itself) */
+#componentIcon.material-symbols-outlined.blue,
 .copo-page-icons .icon.item .pcomponent-material-icon.blue   { color: var(--co-biodata)  !important; }
+
+#componentIcon.material-symbols-outlined.olive,
 .copo-page-icons .icon.item .pcomponent-material-icon.olive  { color: #7a9a1e !important; }
+
+#componentIcon.material-symbols-outlined.orange,
 .copo-page-icons .icon.item .pcomponent-material-icon.orange { color: var(--co-dtolenv)  !important; }
+
+#componentIcon.material-symbols-outlined.green,
 .copo-page-icons .icon.item .pcomponent-material-icon.green  { color: var(--co-dtol)     !important; }
+
+#componentIcon.material-symbols-outlined.violet,
 .copo-page-icons .icon.item .pcomponent-material-icon.violet { color: var(--co-asg)      !important; }
+
+#componentIcon.material-symbols-outlined.yellow,
 .copo-page-icons .icon.item .pcomponent-material-icon.yellow { color: #b89a14 !important; }
+
+#componentIcon.material-symbols-outlined.pink,
 .copo-page-icons .icon.item .pcomponent-material-icon.pink   { color: var(--co-erga)     !important; }
+
+#componentIcon.material-symbols-outlined.teal,
 .copo-page-icons .icon.item .pcomponent-material-icon.teal   { color: var(--co-genomics) !important; }
+
+#componentIcon.material-symbols-outlined.red,
 .copo-page-icons .icon.item .pcomponent-material-icon.red    { color: #c0392b !important; }
 
 /* Inline Material Symbol icons used in Getting Started sections — must match
@@ -1695,18 +1712,35 @@ input::-moz-placeholder, textarea::-moz-placeholder { color: #8a92a0 !important;
   border-color: #c0c8d4 !important;
   box-shadow: 0 0 0 2px rgba(192, 200, 212, 0.2) !important;
 }
-/* "Has data" indicator dot for select2 manifest/checklist dropdowns —
-   replaces the original red asterisk. Sized and aligned to read as a
-   status indicator rather than a glyph in the option text. */
+/* The "has-data" attribute shows a dot/circle/bullet symbol for 
+  manifest/checklist dropdown menu options that have uploaded data. 
+  It replaces the initial red asterisk (*) symbol and is
+  sized and aligned to read as a status indicator rather than a 
+  glyph in the text of the selected item and dropdown results.
+*/
 .has-data-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: #d9534f;
-  font-size: 0.6em;
   vertical-align: middle;
+  width: 8px;
+  height: 8px;
   margin-right: 8px;
   margin-left: 2px;
   position: relative;
   top: -1px;
 }
+
+/* A circle (●) icon */
+.has-data-indicator::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background-color: currentColor;
+  border-radius: 50%;
+}
+
 [data-theme="dark"] .has-data-indicator {
   color: #ff3b3b;
   text-shadow:

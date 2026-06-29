@@ -157,7 +157,7 @@ def delete_sample_records(profile_id, target_ids=list(), target_id=None):
         return dict(status='error', message=message)
 
     Sample(profile_id=profile_id).get_collection_handle().delete_many({"_id": {"$in": sample_obj_ids}})
-    return dict(status='success', message="Read records have been deleted!")
+    return dict(status='success', message="Sample records have been deleted!")
 
 
 def process_pending_submission():

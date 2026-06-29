@@ -194,7 +194,7 @@ class S3Connection():
                 # msg = "Bucket not found: " + bucket_name
                 msg = (
                     "No data files were found in COPO.<br>"
-                    "To upload them, use the <strong>Manage Data Files</strong> button "
+                    "To upload them, use the <strong>Data files</strong> button "
                     "for the relevant profile on the <strong>Work Profiles</strong> page or "
                     "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
                 )
@@ -240,8 +240,8 @@ class S3Connection():
                 missing_files_text = join_with_and([f"'{x}'" for x in missing_files])
                 msg = (
                     f"Data files missing: {missing_files_text}.<br>"
-                    "To upload them, use the <strong>Manage Data Files</strong> button "
-                    "for the relevant profile on the <strong>Work Profiles</strong> page or "
+                    "To upload them, use the <strong>Data files</strong> button "
+                    "for the relevant profile on the <strong>Work profiles</strong> page or "
                     "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
                 )
 

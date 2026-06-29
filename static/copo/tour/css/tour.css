@@ -19,9 +19,8 @@
   color: #35637e;
 }
 
-.shepherd-asterisk {
-  color: red;
-  font-weight: bold;
+.shepherd-circle-icon {
+  margin-right: 2px !important;
 }
 
 .tour-start-btn::before {
@@ -128,6 +127,10 @@
   font-weight: 900;
   color: #000;
   margin-right: 5px;
+}
+
+.shepherd-text .component-legend-info-icon {
+  font-size: 1rem !important;
 }
 
 .shepherd-text a,

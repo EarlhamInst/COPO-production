@@ -14,7 +14,10 @@ function initialise_checklist_id() {
     ).value;
     $('#checklist_id option').each(function () {
       if (profile_checklist_ids.includes($(this).val())) {
-        $(this).text('* ' + $(this).text());
+        // Add attribute to indicate data presence for this checklist/manifest option
+        // $(this).text('● ' + $(this).text());
+        $(this).attr('data-has-data', 'true');
+
         if (first) {
           $(this).prop('selected', true);
           // Trigger change event for searchable select
@@ -264,8 +267,9 @@ $(document).on('document_ready', function () {
   refresh_tool_tips();
 
   //trigger refresh of table
-  $('body').on('refreshtable', function (event) {
+  $('body').on('refreshtable', function (event, payload) {
     do_render_component_table(globalDataBuffer, componentMeta);
+    refreshSelect2(payload); // Refresh select2 searchable dropdown menu options
   });
 
   //handle task button event
@@ -526,8 +530,12 @@ function save_read_data() {
       globalDataBuffer = data;
 
       if (data.hasOwnProperty('table_data')) {
-        var event = jQuery.Event('refreshtable');
-        $('body').trigger(event);
+        // var event = jQuery.Event('refreshtable');
+        // $('body').trigger(event);
+        $('body').trigger('refreshtable', {
+          action: 'save',
+          checklist_id: get_checklist_id(),
+        });
       }
     });
 }
