@@ -107,7 +107,7 @@ lxml==6.1.0
 mccabe==0.7.0
 #meld3==2.0.0
 #mistune==0.8.4
-mock==3.0.5
+mock==5.2.0
 #more-itertools==10.3.0
 msgpack==1.2.1
 #mzml2isa==0.5.1
