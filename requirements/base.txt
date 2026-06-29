@@ -28,7 +28,7 @@ certifi==2024.7.4
 #cffi==1.16.0
 channels==4.0.0
 channels-redis==4.1.0
-chardet==5.1.0
+chardet==7.4.3
 #colorama==0.4.1
 #colored==1.4.3
 #configparser==3.7.4
