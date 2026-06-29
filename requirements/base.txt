@@ -136,7 +136,7 @@ progressbar2==3.34.3
 #prometheus-client==0.7.1
 prompt-toolkit==3.0.52
 pronto==2.7.3
-psycopg==3.2.3
+psycopg==3.3.4
 psycopg-binary==3.2.3
 ptpython==3.0.32
 ptyprocess==0.5.2
