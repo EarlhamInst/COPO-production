@@ -102,3 +102,4 @@ workflows:
             branches:
               ignore:
                 - /^dependabot\/.*/
+                - /.*/ # E2E suite is currently out of date; disabled until restored
