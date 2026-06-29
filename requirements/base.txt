@@ -213,7 +213,7 @@ xlrd==2.0.1
 xmljson==0.2.1
 XlsxWriter==3.0.9
 zipp==3.21.0
-zope.interface==6.0
+zope.interface==8.5
 pillow==12.2.0
 tzdata==2026.2
 geopy==2.3.0
