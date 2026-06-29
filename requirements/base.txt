@@ -211,7 +211,7 @@ wcwidth==0.2.6
 #wrapt==1.16.0
 xlrd==2.0.1
 xmljson==0.2.1
-XlsxWriter==3.0.9
+XlsxWriter==3.2.9
 zipp==3.21.0
 zope.interface==6.0
 pillow==12.2.0
