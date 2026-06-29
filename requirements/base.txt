@@ -10,7 +10,7 @@ astroid==4.0.4
 async-timeout==4.0.2
 attrs==26.1.0
 autobahn==23.1.2
-Automat==24.8.1
+Automat==25.4.16
 autopep8==2.0.2
 #Babel==2.12.1
 backcall==0.2.0
