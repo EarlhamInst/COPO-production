@@ -218,4 +218,4 @@ pillow==12.2.0
 tzdata==2026.2
 geopy==2.3.0
 titlecase==2.4.1
-PyLD==2.0.4
+PyLD==3.1.0
