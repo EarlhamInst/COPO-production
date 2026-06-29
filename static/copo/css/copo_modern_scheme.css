@@ -58,7 +58,7 @@
    ══════════════════════════════════════════ */
 body {
   font-family: var(--co-font) !important;
-  background: var(--co-bg) !important;
+  background-color: var(--co-bg) !important;
   color: var(--co-text) !important;
   -webkit-font-smoothing: antialiased !important;
 }
