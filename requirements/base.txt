@@ -216,6 +216,6 @@ zipp==3.21.0
 zope.interface==6.0
 pillow==12.2.0
 tzdata==2026.2
-geopy==2.3.0
+geopy==2.4.1
 titlecase==2.4.1
 PyLD==2.0.4
