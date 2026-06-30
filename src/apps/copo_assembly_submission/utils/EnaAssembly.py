@@ -5,6 +5,7 @@ import re
 from django.conf import settings
 from django_tools.middlewares import ThreadLocal
 from common.utils.helpers import get_env, get_datetime, get_deleted_flag, get_not_deleted_flag
+from common.lookup.lookup import ENA_CLI
 from common.dal.copo_da import EnaFileTransfer, DataFile
 from common.dal.submission_da import Submission
 from .da import Assembly
@@ -22,6 +23,7 @@ import pandas as pd
 from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_project
 from common.dal.mongo_util import cursor_to_list
 from common.ena_utils.ena_helper import EnaSubmissionHelper
+from common.validators.ena_validators.validation_messages import MESSAGES
 
 l = Logger()
 # other types of assemblies (not individualss or cultured isolates):
@@ -112,6 +114,9 @@ def validate_assembly(form, profile_id, assembly_id):
     for field in file_fields:
         if not form[field]:
             continue
+        if form[field] in files:
+            error_message = MESSAGES['duplicate_file_error'].format(file_name=form[field])
+            return {"error": error_message}
         files.append(form[field])
 
     if not files:   
@@ -195,7 +200,7 @@ def _submit_assembly(file_path, profile_id, submission_type):
     test = ""
     if "dev" in ena_service:
         test = " -test "
-    webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token}  -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
+    webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token}  -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
     Logger().debug(msg=webin_cmd)
     # print(webin_cmd)
     # try/except as it turns out this can fail even if validate is successfull
@@ -307,7 +312,7 @@ def process_assembly_pending_submission():
                 test = " -test "
             #cli_path = "tools/reposit/ena_cli/webin-cli.jar"
            
-            webin_cmd = f"java -Xmx6144m -jar webin-cli.jar -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
+            webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
             Logger().debug(msg=webin_cmd)
             #print(webin_cmd)
             try:
@@ -337,7 +342,7 @@ def process_assembly_pending_submission():
                     #this may happen for instance if the same assembly has already been submitted, which would not get caught
                     #by the validation step
                     return {"error": output}
-                accession = re.search( "ERZ\d*\w" , output).group(0).strip()
+                accession = re.search(r"ERZ\d*\w" , output).group(0).strip()
                 Assembly().add_accession(id=assembly_id, accession=accession)
                 Submission().add_assembly_accession(sub["_id"], accession, "webin-genome-" + assembly["assemblyname"], assembly_id)
 
@@ -374,7 +379,7 @@ def submit_assembly(profile_id, target_ids=list(),  target_id=str()):
             target_obj_ids = [ObjectId(x) for x in target_ids]
             count = Assembly().get_collection_handle().count_documents({"profile_id": profile_id, "accession": "", "_id" : {"$in": target_obj_ids}})
             if count < len(target_ids):
-                return dict(status='error', message="One or more Assembly has been submitted! Cannot submitted again.")        
+                return dict(status='error', message="One or more assemblies have been submitted! They cannot be resubmitted.")        
             
             if target_ids:
                 return Submission().make_assembly_submission_uploading(sub_id, target_ids)

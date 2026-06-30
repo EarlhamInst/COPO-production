@@ -7,13 +7,18 @@ import os
 import io
 from django.conf import settings
 from openpyxl.utils.cell import get_column_letter
-from common.utils.helpers import get_datetime, get_not_deleted_flag, get_env, notify_ena_object_status
+from common.utils.helpers import (
+    get_datetime,
+    get_not_deleted_flag,
+    get_env,
+    notify_ena_object_status,
+    extract_exact_phrases_from_regex
+)
 from django_tools.middlewares import ThreadLocal
 import inspect
 import math
 from common.schema_versions.lookup import dtol_lookups as lookup
 from common.validators.ena_validators import ena_checklist_validators  as required_validators
-from common.validators.ena_validators.ena_checklist_validators import ManifestChecklistValidator
 from common.validators.validator import Validator
 import json
 from common.dal.profile_da import Profile
@@ -36,7 +41,7 @@ class ChecklistHandler:
             except Exception as e:
                 l.exception(e)
                 return ""            
-        
+
     def _loadChecklist_local(self, file_location):
         '''
         This is a local file for testing purpose
@@ -151,7 +156,7 @@ class ChecklistHandler:
         checklist_set = []
         dt = get_datetime()
         root = ET.fromstring(xml, parser=parser)
-        #checklist_ids = settings.BARCODING_CHECKLIST
+        # checklist_ids = settings.BARCODING_CHECKLIST
         for checklist_elm in root.findall("./CHECKLIST"):
             checklist = {}
 
@@ -163,9 +168,9 @@ class ChecklistHandler:
                 checklist['ena_checklist_id'] = ena_checklist_id.text.strip()
 
             skip = settings.ENA_CHECKLIST_CONFIG.get(primary_id, dict()).get( "skip", list() )
-            #if primary_id not in checklist_ids:
+            # if primary_id not in checklist_ids:
             #    continue
-            #checklist_ids.remove(primary_id)
+            # checklist_ids.remove(primary_id)
             checklist['primary_id'] = primary_id
             checklist['name'] = checklist_elm.find("./DESCRIPTOR/NAME").text.strip()
             checklist['description'] = checklist_elm.find("./DESCRIPTOR/DESCRIPTION").text.strip()
@@ -187,7 +192,18 @@ class ChecklistHandler:
 
                     label = field_elm.find("./LABEL")
                     if label is not None:
-                        field['label'] = label.text.strip()
+                        # It seems like label is uppercase for checklist ID/primary_id
+                        # beginning with 'ERT' so use name (which is sentence case) 
+                        # as the label instead
+                        label_text = label.text.strip()
+                        if label_text.isupper():
+                            l.debug(
+                                f"{primary_id} Field {key} label '{label_text}' replaced with name '{key}'"
+                            )
+                            field['label'] = key
+                        else:
+                            field['label'] = label_text
+
                     else: 
                         l.debug(f"{primary_id} Field {key} does not have a name")
                         field['label'] = key
@@ -213,16 +229,23 @@ class ChecklistHandler:
 
                     regex = field_elm.find("./FIELD_TYPE/TEXT_FIELD/REGEX_VALUE")
                     if regex is not None:
-                        field['regex'] = regex.text.strip()
+                        regex_str = regex.text.strip()
+                        if regex_str:
+                            field['regex'] = regex_str
+                            #field['regex_description'] = describe_regex(regex_str)
+                            exact_phrases = extract_exact_phrases_from_regex(regex_str)
+                            if exact_phrases:
+                                field['choice'] = exact_phrases
+                            
                     ontology = field_elm.find("./FIELD_TYPE/ONTOLOGY")
                     if ontology is not None:
                         field['ontology'] = ontology.text.strip()
-    
+                        field['ontology_link'] = f"http://purl.obolibrary.org/obo/{str(field['ontology']).replace(':','_')}"
                     if key == 'language':
                         key = "language_code"
                     checklist['fields'][key] = field
                     if checklist['primary_id'].startswith("ERC"):
-                        #add ORGANISM
+                        # add ORGANISM
                         field = {}
                         field['name'] = "Organism"
                         field['label'] = "Organism"
@@ -231,7 +254,7 @@ class ChecklistHandler:
                         field['multiplicity'] = "single"
                         field['type'] = "SCIENTIFIC_NAME_FIELD"
                         checklist['fields']["organism"] = field
-                        #add SAMPLE
+                        # add SAMPLE
                         field = {}
                         field['name'] = "Sample"
                         field['label'] = "Sample"
@@ -240,18 +263,17 @@ class ChecklistHandler:
                         field['multiplicity'] = "single"
                         field['type'] = "TEXT_FIELD"
                         checklist['fields']["sample"] = field
-
                     elif checklist['primary_id'].startswith("ERT"):
-                        #add SPECIMEN_ID
+                        # add SPECIMEN_ID
                         field = {}
                         field['name'] = "SPECIMEN_ID"
                         field['label'] = "SPECIMEN_ID"
-                        field['description'] = "SPECIMENT_ID"
+                        field['description'] = "SPECIMEN_ID"
                         field['mandatory'] = "mandatory"
                         field['multiplicity'] = "single"
                         field['type'] = "TEXT_FIELD"
                         checklist['fields']["SPECIMEN_ID"] = field
-                        #add TAXON_ID
+                        # add TAXON_ID
                         field = {}
                         field['name'] = "TAXON_ID"
                         field['label'] = "TAXON_ID"
@@ -267,7 +289,7 @@ class ChecklistHandler:
             checklist["modified_date"] =  dt
             checklist["deleted"] = get_not_deleted_flag()
             checklist_set.append(checklist)
-            #if len(checklist_ids) == 0:
+            # if len(checklist_ids) == 0:
             #    break
         return checklist_set
 
@@ -288,26 +310,26 @@ class ChecklistHandler:
         xmlstr = self._loadChecklist_local("sample_checklist_faang.xml")
         checklist_set.extend(self._parseCheckList(xmlstr))
         """
-        
+
         """
         reads = EnaChecklist().execute_query({"primary_id": "read", "deleted": get_not_deleted_flag()})
         read = None
         if reads:
            read = reads[0]
         """
-        
+
         for checklist in checklist_set:
-            #if checklist["primary_id"].startswith("ERC"):
-                #read_fields = {key: value for key, value in read["fields"].items() if value.get("for_dtol", False) == False}
-                #for key, value in read_fields.items():                    
-                #    value.update({"read_field": True})   
-                #checklist["fields"].update(read_fields)
+            # if checklist["primary_id"].startswith("ERC"):
+            # read_fields = {key: value for key, value in read["fields"].items() if value.get("for_dtol", False) == False}
+            # for key, value in read_fields.items():
+            #    value.update({"read_field": True})
+            # checklist["fields"].update(read_fields)
             EnaChecklist().get_collection_handle().find_one_and_update({"primary_id": checklist["primary_id"]},
                                                                             {"$set": checklist},
                                                                             upsert=True)
-            #for checklist fields
+            # for checklist fields
             write_manifest(checklist, with_read=False)   
-            
+
             """
             #for checklist feils + read fields 
             if checklist["primary_id"].startswith("ERC"): 
@@ -350,17 +372,40 @@ class EnaCheckListSpreadsheet:
             if inspect.isclass(element) and issubclass(element, Validator) and not element.__name__ == "Validator":
                 self.required_validators.append(element)
 
-        # Remove ManifestChecklistValidator if it was already added by the loop (to avoid duplicates)
-        self.required_validators = [
-            v for v in self.required_validators if v is not ManifestChecklistValidator
-        ]
-        # Insert at the beginning
-        self.required_validators.insert(0, ManifestChecklistValidator)
-
         self.required_validators.extend(validators)
 
     def get_filenames_from_manifest(self):
         return list(self.data["File name"])
+
+    """ revoked the changes 
+    def check_manifest_compatibility(self):
+        '''Checks whether the uploaded manifest's column set matches 
+           the expected checklist's columns and also detects if any of 
+           the column names is different, even if the total 
+           number of columns matches.
+        '''
+        expected_columns = set(self.checklist['fields'].keys())
+        uploaded_columns = set(self.new_data.columns)
+        sheet_name = f"<strong>{self.checklist['primary_id']} {self.checklist['name']}</strong>"
+
+        # Determine the number of expected columns that are missing
+        missing = expected_columns - uploaded_columns
+
+        # Calculate the match ratio
+        total_expected = len(expected_columns)
+        match_ratio = (total_expected - len(missing)) / max(total_expected, 1)
+
+        # If almost nothing matches, display a single error message
+        # with a threshold of less than 50% columns match
+        if match_ratio < 0.5 and total_expected != len(
+            uploaded_columns
+        ):  
+            raise Exception(
+                'The uploaded manifest does not appear to match the expected checklist.<br><br>'
+                'Please ensure that you are uploading the correct manifest for the selected checklist '
+                f'(expected {total_expected} columns, found {len(uploaded_columns)} in sheet {sheet_name}).'
+            )
+    """
 
     def loadManifest(self, m_format):
 
@@ -371,11 +416,28 @@ class EnaCheckListSpreadsheet:
             try:
                 # read excel and convert all to string
                 if m_format == "xls":
-                    self.data = pd.read_excel(self.file, keep_default_na=False,
-                                                  na_values=lookup.NA_VALS)
-                elif m_format == "csv":
-                    self.data = pd.read_csv(self.file, keep_default_na=False,
-                                                na_values=lookup.NA_VALS)
+                    # Check whether the uploaded manifest matches the intended
+                    # manifest checklist dropdown menu option
+                    xl = pd.ExcelFile(self.file)
+                    sheetnames = xl.sheet_names
+                    is_found = False
+                    for sheet in sheetnames:
+                        if sheet.startswith(self.checklist_id):
+                            self.data = xl.parse(sheet, keep_default_na=False,
+                                            na_values=lookup.NA_VALS)
+                            is_found = True
+                            break
+                    if not is_found:
+                        checklist_name = f"{self.checklist_id}: {self.checklist.get('name',str())}"
+                        raise Exception(
+                            (
+                                'The uploaded manifest does not match the '
+                                'checklist selected from the dropdown menu, '
+                                f'<strong>{checklist_name}</strong>. '
+                                'Please upload the correct manifest or '
+                                'choose the appropriate checklist option.'
+                            )
+                        )
                 else:
                     raise Exception("Unknown file format")
                 if self.data.empty:
@@ -413,10 +475,6 @@ class EnaCheckListSpreadsheet:
                                                         data=self.new_data, fields=None,
                                                         errors=errors, warnings=warnings, flag=flag,
                                                         isupdate=self.isupdate).validate()
-
-                # Stop executing further validators if uploaded  manifest doesn't match expected checklist
-                if not flag and v is ManifestChecklistValidator:
-                    break
             except Exception as e:
                 l.exception(e)
                 error_message = str(e).replace("<", "").replace(">", "")
@@ -452,7 +510,7 @@ class EnaCheckListSpreadsheet:
 
         # if we get here we have a valid spreadsheet
         notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.", 
-            action="success", html_id=self.component_info)
+            action="success", html_id=self.component_info, checklist_id=self.checklist_id)
         notify_ena_object_status(data={"profile_id": self.profile_id}, msg="", action="close", html_id="upload_controls", checklist_id=self.checklist_id)
         notify_ena_object_status(data={"profile_id": self.profile_id}, msg="", action="make_valid", html_id=self.component_info, checklist_id=self.checklist_id)
 
@@ -685,7 +743,7 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
                 cell_format.set_num_format('@')
             writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
 
-            if type == "TEXT_CHOICE_FIELD" and "choice" in field:
+            if "choice" in field:
                 choice = field["choice"]
                 column_letter = get_column_letter(column_index + 1)
                 cell_start_end = '%s2:%s1048576' % (column_letter, column_letter)
@@ -702,11 +760,12 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
                         writer.sheets["data_values"].set_column(data_validation_column_index, data_validation_column_index, column_length)
                         source = "=%s!$%s$2:$%s$%s" % ("data_values", column_letter, column_letter, str(len(choice) + 1))
                         data_validation_column_index = data_validation_column_index + 1
+                    
                     writer.sheets[sheet_name].data_validation(cell_start_end,
                                                             {'validate': 'list',
-                                                            'source': source})
-
-
+                                                            'source': source,
+                                                            'show_error': 1 if type == "TEXT_CHOICE_FIELD" else 0,
+                                                            })
         sheet_name = 'field_descriptions'           
         df.to_excel(writer, sheet_name=sheet_name)
 

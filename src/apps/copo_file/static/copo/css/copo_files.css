@@ -7,3 +7,23 @@
     background-image: -webkit-linear-gradient(top, #fcf8e3 0%, #f8efc0 100%);
     border-color: #f5e79e;
 }
+
+#presigned_url_modal .modal-dialog,
+#uploadModal .modal-dialog {
+    width: 600px;
+}
+
+#command_panel {
+    display: none;
+}
+
+#url_upload_controls li {
+    margin-bottom: 10px;
+}
+
+.upload-progress {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    vertical-align: middle;
+}

@@ -3,6 +3,10 @@
 import os
 from .resolver import RESOLVER
 
+# Minimum field lengths enforced at manifest upload time and during ENA submission.
+PROFILE_TITLE_MIN_LENGTH = 20
+PROFILE_DESCRIPTION_MIN_LENGTH = 20
+
 # •••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••#
 # DB_TEMPLATES dictionary provides paths to database templates
 DB_TEMPLATES = {
@@ -668,7 +672,7 @@ HTML_TAGS = {
 UI_INFO = {
     'study_type_add_info': "Use this form to add new study types",
     'study_type_clone_info': "Use this form to clone existing study types",
-    'sample_add_info': "Use this form to add/edit study sample and assign to studies",
+    'sample_add_info': "Use this form to add or edit study samples and assign them to studies",
     'sample_assign_info': "View allows for assigning samples to current study",
     'sample_unassign_warning': 'Assigned samples about to be deleted!.',
     'add_form_title': "<h4 class='modal-title'>Add New <span style='text-transform: capitalize;'>{component_name!s}</span></h4>",
@@ -960,7 +964,7 @@ DROP_DOWNS_SOURCE = dict(
     library_strategy=os.path.join(_drop_downs_pth, 'library_strategy.json'),
     library_source=os.path.join(_drop_downs_pth, 'library_source.json'),
     library_selection=os.path.join(_drop_downs_pth, 'library_selection.json'),
-    sequencing_instrument=os.path.join(_drop_downs_pth, 'sequencing_instrument.json'),
+    # sequencing_instrument=os.path.join(_drop_downs_pth, 'sequencing_instrument.json'),
     study_type_options=DROP_DOWNS['STUDY_TYPES'],
     rooting_medium_options=DROP_DOWNS['ROOTING_MEDIUM'],
     growth_area_options=DROP_DOWNS['GROWTH_AREAS'],

@@ -2,36 +2,35 @@
 <div id="components_templates" style="display: none;">
       <!-- Alert templates -->
     <div class="alert-templates">
-        <div class="alert alert-success alert-dismissable fade in">
-            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <div class="alert alert-success alert-dismissable fade in" role="alert">
+            <button class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             <span class="webpop-content-div alert-message"></span>
         </div>
-        <div class="alert alert-info alert-dismissable fade in">
-            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <div class="alert alert-info alert-dismissable fade in" role="alert">
+            <button class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             <span class="webpop-content-div alert-message"></span>
         </div>
-        <div class="alert alert-warning alert-dismissable fade in">
-            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <div class="alert alert-warning alert-dismissable fade in" role="alert">
+            <button class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             <span class="webpop-content-div alert-message"></span>
         </div>
-        <div class="alert alert-danger alert-dismissable fade in">
-            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <div class="alert alert-danger alert-dismissable fade in" role="alert">
+            <button class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             <span class="webpop-content-div alert-message"></span>
         </div>
     </div>
 
-     <!-- sidebar tabs -->
+     <!-- Sidebar tabs -->
     <div class="copo-sidebar-templates">
         <ul class="nav nav-tabs copo-sidebar-tabs">
-            <li class="active copo-sidebar-info"><a data-toggle="tab" href="#copo-sidebar-info"
-                                                    data-copo-tour-id="page_alert_panel">Info</a></li>
+            <li class="active copo-sidebar-info"><a data-toggle="tab" href="#copo-sidebar-info">Info</a></li>
             <li class=" copo-sidebar-upload"><a data-toggle="tab" href="#copo-sidebar-upload"
-                                                data-copo-tour-id="copo_data_upload_tab">Upload</a></li>
+                                                data-tour-id="copo_data_upload_tab">Upload</a></li>
             {#            <li class="active copo-sidebar-help"><a data-toggle="tab" href="#copo-sidebar-help"#}
-            {#                                                    data-copo-tour-id="page_context_help_panel"#}
+            {#                                                    data-tour-id="page_context_help_panel"#}
             {#                                                    id="copo-context-help">Help</a>#}
             <li class="copo-sidebar-annotate"><a data-toggle="tab" href="#copo-sidebar-annotate"
-                                                 data-copo-tour-id="copo_annotation_panel">Annotate</a></li>
+                                                 data-tour-id="copo_annotation_panel">Annotate</a></li>
         </ul>
 
         <div class="tab-content">
@@ -39,7 +38,7 @@
                 <div class="row">
                     <div class="col-sm-12 col-md-12 col-lg-12">
                         <div class="panel panel-dtables">
-                            <div class="panel-body collapse in" id="page_alert_panel"></div>
+                            <div class="panel-body collapse in" data-tour-id="sidebar_alert_message" id="page_alert_panel"></div>
                         </div>
                     </div>
                 </div>
@@ -54,7 +53,7 @@
                                 {#                                          action="/rest/receive_data_file_chunked/"#}
                                 {#                                          style="margin-right:40px">#}
                                 {#                                        {% csrf_token %}#}
-                                {#                                        <span data-copo-tour-id="copo_data_upload_file_button"#}
+                                {#                                        <span data-tour-id="copo_data_upload_file_button"#}
                                 {#                                              id="upload_files_button"#}
                                 {#                                              class="tiny ui basic teal button fileinput-button"#}
                                 {#                                              style="background-image: none; border-color:transparent;">#}
@@ -113,16 +112,20 @@
                 </ul>
             </div>
             <div class="accessions-legend">
-                <h4 class="accessions-legend-title">Filter Accession Types</h4>
+                <h4 class="accessions-legend-title">Submission types</h4>
                 <div class="accessions-checkboxes"></div>
             </div>
         </div-->
     </div>
 
+
     <!-- Profile component templates: Component buttons only -->
+    <!-- 'More components' indicator : Down arrow (hovering expands the components menu) -->
+    <div class="more-pcomponent-indicator" data-template="true"><i class="fa fa-chevron-down"></i></div>
+
     <!-- Button (main/child component) -->
-    <a class="pcomponent-button-template" title="Navigate to" href="#">
-        <div class="tiny ui button pcomponent-button pcomponent-color">
+    <a class="pcomponent-button-template" title="" href="#">
+        <div class="tiny ui button pcomponent-button">
             <i class="pcomponent-icon"></i>
             <span class="pcomponent-name"></span>
         </div>
@@ -130,10 +133,10 @@
 
      <!-- Button (dropdown menu/group): Images -->
     <div class="profile-dropdown-wrapper images-pcomponent-dropdown-button-template" tabindex="0">
-        <div class="tiny ui button pcomponent-button pcomponent-color bright-coral">Images
+        <div class="tiny ui button pcomponent-button bright-coral">Images
             <i class="dropdown icon"></i>
         </div>
-        <div class="menu profile-dropdown-menu comp transition" tabindex="-1">
+        <div class="menu profile-dropdown-menu comp transition hidden" tabindex="-1">
             <div class="item"></div>
         </div>
     </div>
@@ -147,7 +150,7 @@
     </div>
 
     <!-- Icon (main/child component) -->
-    <a class="icon item copo-tooltip pcomponent-icon-template" title="Navigate to" href="#">
+    <a class="icon item copo-tooltip pcomponent-icon-template" title="" href="#">
         <i class="ui icon"></i>
     </a>
 
@@ -161,20 +164,31 @@
 
     <!-- Page welcome message template -->
     <div class="page-welcome-message-template">
-        <p class="msg-singlecell">Single-cell sequencing examines the nucleic acid sequence information from individual cells.</p>
-        <p class="msg-rembi">It is based on Recommended Metadata for Biological Images (REMBI) which provides guidelines for describing biological
-            images to support <span class="hover-text" title="Findable, Accessible, Interoperable, Reusable">FAIR</span> data.
-        </p>
-        <p class="msg-stx_fish">It is based on Spatial Transcriptomics using Fluorescence In Situ Hybridisation  
-            (<span style="font-style: italic;">STX FISH</span> or <span style="font-style: italic;">ST FISH</span>). 
-            This technique maps gene expression within tissue sections by visualising specific <span class="hover-text" title="Ribonucleic acid">RNA</span> 
-            molecules with fluorescent probes, preserving their spatial context.
-        </p>
+        <div class="msg-singlecell">
+            <p class="m-0">
+                Single-cell sequencing examines the nucleic acid sequence information from individual cells.
+            </p>
+        </div>
+        <div class="msg-rembi">
+            <p class="m-0">
+                It is based on Recommended Metadata for Biological Images (REMBI) which 
+                provides guidelines for describing biological images to support 
+                <span class="hover-text" title="Findable, Accessible, Interoperable, Reusable">FAIR</span> data.
+            </p>
+        </div>
+        <div class="msg-stx_fish">
+            <p>
+                It is based on Spatial Transcriptomics using Fluorescence In Situ Hybridisation  
+                (<span style="font-style: italic;">STX FISH</span> or <span style="font-style: italic;">ST FISH</span>). 
+                This technique maps gene expression within tissue sections by visualising specific <span class="hover-text" title="Ribonucleic acid">RNA</span> 
+                molecules with fluorescent probes, preserving their spatial context.
+            </p>
+        </div>
     </div>
 
     <!-- Quick tour template -->
     <!-- Quick tour: Initial popover -->
-    <div class="tour-popover tour-template webui-popover in" id="webuiPopover0">
+    <div id="webuiPopover0" class="tour-popover webui-popover in" data-template="true">
         <div class="webui-arrow"></div>
         <div class="webui-popover-inner">
             <a href="#" class="close"></a>
@@ -229,7 +243,7 @@
             <hr/>
 
             <span class="input-group ajax-loading-div">
-                    <img style="height: 24px; margin-left:5px;" alt="" src="{% static 'copo/img/loading.gif' %}"></span>
+                    <img style="height: 24px; margin-left:5px;" alt="" src="{% static 'assets/img/loading.gif' %}"></span>
             <h5>Choose which collection this item should be added to</h5>
             <div id="table-div-dataverse" class="table table-striped table-bordered"
                  style="padding: 10px;width:100%">
@@ -349,7 +363,7 @@
 
                     <span class="input-group ajax-loading-div"><img
                             style="height: 24px; margin-left:5px;"
-                            src="{% static 'copo/img/loading.gif' %}" alt=""></span>
+                            src="{% static 'assets/img/loading.gif' %}" alt=""></span>
 
 
                 </div> -->
@@ -717,7 +731,7 @@
 
     <!-- quick tour button template -->
     <!--button title="Quick tour"
-            class="big circular ui icon orange button takeatour quick-tour-template copo-tooltip">
+            class="big circular ui icon orange button start-tour quick-tour-template copo-tooltip">
         <i class="icon lightbulb"></i>
     </button-->
 
@@ -793,8 +807,8 @@
         <i class="icon download sign"></i>
     </a-->
 
-    <!-- button to for dtol_sample_managers to accept/reject submitted samples -->
-    <!--button style="display: none" title="Accept/Reject TOL Samples"
+    <!-- button to for dtol_sample_managers to accept or reject submitted samples -->
+    <!--button style="display: none" title="Accept or reject TOL Samples"
             class="big circular ui icon teal button accept_reject_samples copo-tooltip">
         <i class="icon tasks sign"></i>
     </button-->

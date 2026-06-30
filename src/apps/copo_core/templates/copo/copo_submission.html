@@ -8,7 +8,7 @@
 {% block title %}Samples Submission{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="{% static 'copo/css/copo/copo_submission.css' %}" xmlns="http://www.w3.org/1999/html">
+    <link rel="stylesheet" href="{% static 'copo/css/copo_submission.css' %}" xmlns="http://www.w3.org/1999/html">
 {% endblock %}
 
 
@@ -41,7 +41,7 @@
     <!-- getting started section -->
     <div class="row">
         <div class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-0 page-welcome-message"
-             style="display: none;">
+             style="display: none;" data-tour-id="getting_started">
             <div class="copo-webui-popover">
                 <div class="webui-popover-inner">
                     <h3 class="copo-webui-popover-title">Getting started</h3>
@@ -55,12 +55,11 @@
                                 submission accessions.</p>
 
                             <br/>
-                            <div><strong>Quick Tour: </strong>To explore the various
-                                controls available on this page, click the
+                            <div><strong>Quick tour: </strong>To explore the various
+                                controls available on this page, click 
                                 <button class="circular tiny ui icon orange button">
                                     <i class="icon lightbulb"></i>
-                                </button>
-                                icon.
+                                </button>.
                             </div>
                         </div>
                     </div>
@@ -83,8 +82,7 @@
     <hr/>
     <!-- submission table -->
     <h4 class="h4" id="wizard_submissions_label">Wizard Submissions</h4>
-    <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"
-         data-copo-tour-id="submission_table"></div> <!-- div used by the quick tour agent -->
+    <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"></div>
     <div id="cover-spin-bundle"></div>
 
     <div class="table-parent-div">
@@ -106,6 +104,7 @@
     <script src="{% static 'copo/js/generic_handlers.js' %}"></script>
     <script src="{% static 'copo/js/generic_handlers_ext2.js' %}"></script>
     <script src="{% static 'copo/js/copo_form_handlers.js' %}"></script>
+    <script src="{% static 'copo/reconnecting-websocket-master/reconnecting-websocket.min.js' %}"></script>
     <script src="{% static 'copo/js/copo_submission.js' %}"></script>
     <script src="{% static 'copo/js/repository_inspection.js' %}"></script>
     <script src="{% static 'copo/js/copo_submissions_manifest_functions.js' %}"></script>

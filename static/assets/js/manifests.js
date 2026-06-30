@@ -1,5 +1,6 @@
 $(document).ready(function () {
   initialiseOverlays(); // Initialise dropdown menus and tooltips
+  initialiseNavToggle();
   // Prevent date conflicts with other scripts that
   // may have datepicker defined
   $.fn.datepicker.noConflict();
@@ -566,7 +567,7 @@ function initCommonValueDropdown(commonField, commonValueDiv) {
 
   $.ajax({
     type: 'GET',
-    url: '/manifests/get_common_value_dropdown_list/',
+    url: '/manifests/get_common_value_dropdown_list',
     dataType: 'json',
     data: {
       manifestType: manifestType,
@@ -580,7 +581,7 @@ function initCommonValueDropdown(commonField, commonValueDiv) {
         value_input.setAttribute('class', 'form-control');
         value_input.setAttribute('aria-describedby', 'commonValueStatus');
         value_input.setAttribute('required', '');
-        value_input.style.width = '200px'; // Set width of the select tag field
+        value_input.style.width = '220px'; // Set width of the select tag field
 
         let option = [];
 
@@ -824,7 +825,7 @@ function validateCommonValue(e, data) {
         // now that the common value is neither undefined, null or empty i.e. it has a value
         $.ajax({
           type: 'GET',
-          url: '/manifests/validate_common_value/',
+          url: '/manifests/validate_common_value',
           dataType: 'json',
           data: {
             commonField: commonField,

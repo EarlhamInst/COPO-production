@@ -1,0 +1,100 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+# Create a bot to automatically pull requests
+version: 2
+
+updates:
+
+  # Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+    open-pull-requests-limit: 10
+
+    labels:
+      - "dependencies"
+      - "python"
+
+    groups:
+      django:
+        patterns:
+          - "django*"
+          - "crispy-*"
+          - "daphne"
+          - "channels*"
+          - "asgiref"
+          - "djangorestframework"
+      aws:
+        patterns:
+          - "boto3"
+          - "botocore"
+          - "s3transfer"
+      celery:
+        patterns:
+          - "celery"
+          - "kombu"
+          - "billiard"
+          - "vine"
+      database:
+        patterns:
+          - "pymongo"
+          - "psycopg*"
+          - "redis"
+      data:
+        patterns:
+          - "numpy"
+          - "pandas"
+          - "biopython"
+          - "openpyxl"
+          - "xlrd"
+          - "XlsxWriter"
+      testing:
+        patterns:
+          - "pytest*"
+          - "selenium"
+          - "mock"
+      all-others:
+        patterns:
+          - "*"
+    ignore:
+      # redis-py must stay on 5.x: redis-py 8 breaks Django Channels
+      # (channels-redis 4.1.0) — the channel-layer listener's blocking read
+      # times out after ~5s, closing every WebSocket with a 1011 and killing
+      # all live submission/validation feedback. Hold at 5.x (5.x patch/minor
+      # bumps are still allowed) until channels-redis supports redis-py 8.
+      - dependency-name: "redis"
+        update-types: ["version-update:semver-major"]
+
+  # Dockerfile base image updates
+  - package-ecosystem: "docker"
+    directory: "/deployment/web/"
+    schedule:
+      interval: "weekly"
+
+    labels:
+      - "docker"
+
+    ignore:
+      # The local dev images are deliberately pinned to the Ubuntu 24.04 LTS
+      # (Python 3.12, matching production). Newer Ubuntu releases ship newer
+      # Python (e.g. 26.04 -> 3.14) which breaks pinned C-extension deps such
+      # as gevent. Moving off 24.04 is a deliberate migration, not an
+      # automated bump, so ignore all ubuntu updates. See PR #115.
+      - dependency-name: "ubuntu"
+      # Python 3.14 is pre-release; hold at 3.12.x until 3.14 is stable.
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
+  # GitHub Actions updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+    labels:
+      - "github-actions"

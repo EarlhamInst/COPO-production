@@ -4,6 +4,7 @@ from bson.errors import InvalidId
 from bson.objectid import ObjectId
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from common.lookup.lookup import PROFILE_TITLE_MIN_LENGTH, PROFILE_DESCRIPTION_MIN_LENGTH
 
 import common.schemas.utils.data_utils as d_utils
 from common.dal.mongo_util import cursor_to_list, cursor_to_list_str
@@ -451,6 +452,18 @@ class Profile(DAComponent):
                     )
                     is_error_found = True
                     break
+            if field == "title" and len(field_value) < PROFILE_TITLE_MIN_LENGTH:
+                local_result["message"] = (
+                    f"Profile title must be at least {PROFILE_TITLE_MIN_LENGTH} characters."
+                )
+                is_error_found = True
+                break
+            if field == "description" and len(field_value) < PROFILE_DESCRIPTION_MIN_LENGTH:
+                local_result["message"] = (
+                    f"Profile description must be at least {PROFILE_DESCRIPTION_MIN_LENGTH} characters."
+                )
+                is_error_found = True
+                break
             if f.get("is_unique", False):
                 result = self.get_collection_handle().find(
                     {field: field_value}, {"_id": 1}

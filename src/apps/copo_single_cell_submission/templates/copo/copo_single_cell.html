@@ -52,14 +52,14 @@
   <input
     type="hidden"
     id="component_subtitle"
-    value="<select id='checklist_id' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}'>{{ checklist.name }}</option>{% endfor %}</select>"
+    value="<select id='checklist_id' class='searchable-select' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}'>{{ checklist.name }}</option>{% endfor %}</select>"
   />
   <input
     type="hidden"
     id="profile_checklist_ids"
     value="{{ profile_checklist_ids|join:',' }}" />
 
-    <a id="download-singlecell-manifest-link"><span>download</span></a>
+    <a id="download-singlecell-manifest-link" target="_blank"><span>download</span></a>
 
 </div>
 {% endblock %}
@@ -72,40 +72,67 @@
 <div class="row">
   <div
     class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-0 page-welcome-message"
-    style="display: none"
+    style="display: none" data-tour-id="getting_started"
   >
     <div class="copo-webui-popover">
       <div class="webui-popover-inner">
         <h3 class="copo-webui-popover-title">Getting started</h3>
         <div class="copo-webui-popover-content">
           <div class="webpop-content-div">
-            This page relates to the <strong>{{ ui_component | get_component_title }}</strong> component 
-            (<i id="componentIcon" class="ui icon" aria-hidden="true"></i>) of a profile. 
-            <span class="welcome-msg page-welcome-message-{{ ui_component }}"></span>
-            <br><br>
             <div>
-              <strong>Download blank manifest</strong>: Select the desired checklist from the dropdown menu above then, click the
-              <button class="circular tiny ui icon brown button no-click">
-                  <i class="icon download sign"></i>
-              </button>
-              button next to it to download a blank manifest.
-            </div> 
-            <br><br>
-            <div>
-              <strong>Upload completed manifest</strong>: After having completed the manifest, 
-              choose the matching checklist option from the dropdown menu then, click the
-              <button id="help_add_button" class="circular tiny ui icon button no-click">
-                  <i class="icon table sign"></i>
-              </button>
-              button to upload it.
+              <p>
+                This page relates to the <strong>{{ ui_component | get_component_title }}</strong> component 
+                (<i id="componentIcon" class="ui icon" aria-hidden="true"></i>) of a profile.
+              </p>
+              <div class="welcome-msg page-welcome-message-{{ ui_component }}"></div>
             </div>
-            <!--<div>
-              <strong>Quick tour</strong>: To explore various controls on this page, click the
-              <button class="circular tiny ui icon orange button no-click">
-                  <i class="icon lightbulb"></i>
-              </button>
-              button.
-            </div>-->
+            <br>
+            <div>
+              <p>
+                <strong>Step 1</strong>: <strong class="text-underline">Upload prerequisite data</strong>: 
+                Before adding {{ ui_component | get_component_title }} data, upload the following using 
+                the icons in the navigation pane (top right):
+              </p>
+              <ul class="step-list">
+                <li>
+                    <i class="material-symbols-outlined inline-nav-icon blue">folder_open</i>
+                    <span class="content">— for <strong>data files</strong></span>
+                </li>
+                <li>
+                  <i class="material-symbols-outlined inline-nav-icon olive">labs</i>
+                    <span class="content">— for <strong>samples</strong></span>
+                </li>
+              </ul>
+            </div>
+            <br>
+            <div>
+              <p>
+                <strong>Step 2</strong>: <strong class="text-underline">Download blank manifest</strong>: Select the desired checklist  
+                from the dropdown menu above then, click 
+                <button class="circular tiny ui icon brown button no-click">
+                    <i class="icon download sign"></i>
+                </button>  next to it to download a blank manifest.
+              </p>
+            </div>
+            <br>
+            <div>
+              <p>
+                <strong>Step 3</strong>: <strong class="text-underline">Upload completed manifest</strong>: After having completed the manifest, 
+                choose the matching checklist option from the dropdown menu then, click 
+                <button id="help_add_button" class="circular tiny ui icon button no-click">
+                    <i class="icon table sign"></i>
+                </button> to upload it.
+              </p>
+            </div>
+            <br>
+            <div>
+              <p>
+                <strong>Quick tour</strong>: To explore various controls on this page, click 
+                <button class="circular tiny ui icon orange button no-click">
+                    <i class="icon lightbulb"></i>
+                </button> above.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -114,19 +141,28 @@
 </div>
 
 
-<div class="modal bootstrap-dialog type-primary fade size-wide" tabindex="-1" role="dialog" id="singlecell_spreadsheet_modal" style="overflow-y: scroll"
+<div class="modal bootstrap-dialog type-primary fade size-wide spreadsheet-modal-lg" tabindex="-1" role="dialog" id="singlecell_spreadsheet_modal" style="overflow-y: scroll"
 data-backdrop="static" data-keyboard="false">
-<div class="modal-dialog modal-lg" role="document" style="width: 1000px">
+<div class="modal-dialog modal-lg" role="document">
    <div class="modal-content">
     <div class="modal-header">
-        <button id='singlecell_close_btn' type="button" class="close" aria-label="Close" data-dismiss="modal"><span
+        <button id='singlecell_close_btn' type="button" class="close modal-close-btn" aria-label="Close" data-dismiss="modal"><span
                 aria-hidden="true">&times;</span></button>
         <h4 class="modal-title">Upload a completed manifest for: <span style="color:white;font-size:20px;" id="span_checklist"></span> </h4>
     </div>
-    <div class="modal-body" style="width: 100%">
+    <div class="modal-body" style="width: 100%; padding-bottom: 0;">
+      <div class="row">
             <div class="col-lg-12 col-md-12 col-sm-12">
 
               <input id="file" type="file" style="display:none"/>
+
+              <div class="warning-content mb-20">
+                <p>Before uploading the <span id="span_checklist" class="text-bold"></span> manifest, please upload the following prerequisite data:</p>
+                <ul>
+                  <li><strong>Data files</strong></li>
+                  <li><strong>Samples</strong></li>
+                </ul>
+              </div>
 
               <div style="display:none; margin-top: 30px; " id="warning_info" class="alert alert-info"
                   role="alert">
@@ -141,6 +177,7 @@ data-backdrop="static" data-keyboard="false">
                   role="alert">
               </div>
             </div>
+      </div>
    
 
     <ul class="nav nav-tabs" id="singlecell-tabs" >
@@ -150,7 +187,7 @@ data-backdrop="static" data-keyboard="false">
 
     </ul>
     
-    <div class="tab-content" style="padding:30px" id="singlecell-tab-content">
+    <div class="tab-content" style="padding:30px 30px 10px 30px;" id="singlecell-tab-content">
       <!--div class="tab-pane fade" id="study">
           <table id="singlecell_parse_table_study" class="table table-striped table-bordered">
               <thead></thead>
@@ -161,29 +198,34 @@ data-backdrop="static" data-keyboard="false">
     </div> 
   
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="upload_singlecell_manifest_button">Upload Single Cell Manifest</button>
-        <button type="button" class="btn btn-primary" id="export_error_button">Export validation Errors</button>
-        <button type="button" class="btn btn-primary" id="save_singlecell_button" disabled>Finish</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="upload_singlecell_manifest_button">Upload manifest</button>
+        <button type="button" class="btn btn-primary" id="export_error_button">Export validation errors</button>
+        <button type="button" class="btn btn-primary btn-finish" id="save_singlecell_button" disabled>Finish</button>
+        <button type="button" class="btn btn-default modal-close-btn" data-dismiss="modal">Close</button>
     </div>
    </div>
 </div>
 </div>
 
  
+{% include 'copo/data_status_legend.html' %}
 
-<div
-  id="component_table_loader"
-  class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"
-  data-copo-tour-id="{{ui_component}}_table"
-></div>
-<!-- div used by the quick tour agent -->
+<div class="row">
+  <div
+    id="component_table_loader"
+    class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5">
+  </div>
+</div>
 
-<ul class="nav nav-tabs" id="singlecell_data_tabs" >
-  <!--li >
-      <a data-toggle="tab" id="study_data_nav_tab" href="#study_data">Study</a>
-  </li-->
-</ul>
+<div class="row tabs-row">
+  <div class="tabs-container">
+    <ul class="nav nav-tabs" id="singlecell_data_tabs" >
+      <!--li >
+        <a data-toggle="tab" id="study_data_nav_tab" href="#study_data">Study</a>
+      </li-->
+    </ul>
+  </div>
+</div>
 
 <div class="tab-content" style="padding:30px" id="singlecell_data_tab_content">
   <!--div class="table-parent-div tab-pane fade" id="study_data">
@@ -206,13 +248,15 @@ data-backdrop="static" data-keyboard="false">
 
 {% block help_section %} {% endblock %}
 
-{% block component_info%}
-<div
-  style="display: none; margin-top: 30px"
+{% block sidebar_custom_section %}
+{% endblock sidebar_custom_section %}
+
+{% block component_info %}
+<div style="display: none; margin-top: 30px"
   id="submission_info"
   class="alert alert-info"
-  role="alert"
-></div>
+  role="alert">
+</div>
 {% endblock %}
 
 {% block js_block %}

@@ -3,11 +3,11 @@ from django.conf import settings
 from common.dal.sample_da import Sample
 import re
 import pandas as pd
-from common.validators.helpers import checkOntologyTerm, checkNCBITaxonTerm
+from common.validators.helpers import checkOntologyTerm, checkNCBITaxonTerm, clean_str
 import requests
 from common.utils.helpers import get_env
 import xml.etree.ElementTree as ET
-from src.apps.copo_single_cell_submission.utils.validator.validation_message import MESSAGES
+from .validation_messages import MESSAGES
 
 ena_browser_service = get_env("ENA_BROWSER_SERVICE")
 session = requests.Session()
@@ -24,7 +24,7 @@ class MandatoryValuesValidator(Validator):
                 if key not in self.data.columns:
                     missing_mandatory_column_count += 1
                     error_msg = MESSAGES["missing_column"].format(
-                        component=component, 
+                        component=component,
                         field_name=key
                     )
                     self.errors.append(error_msg)
@@ -70,28 +70,27 @@ class IncorrectValueValidator(Validator):
                         row = str(row).strip()
                         if type == "enum":
                             if row not in field.get("choice", []):
-                                valid_values = [f"<li>{choice}</li>" for choice in field.get('choice', [])]
+                                valid_values = field.get('choice', [])
                                 error_msg = MESSAGES["invalid_column_value_with_list"].format(
                                     component=component,
                                     invalid_value=row,
                                     column_name=field["term_label"],
                                     line_no=i + self.first_data_line_no,
-                                    valid_values="<ul>"+"".join(valid_values)+"</ul>"
+                                    valid_values="<ul>" + "".join(f"<li>{v}</li>" for v in valid_values) + "</ul>"
                                 )
                                 self.errors.append(error_msg)
                                 self.flag = False
                         elif type == "string":
                             regex = field.get("term_regex","")
                             if regex and pd.notna(regex):
-                                
+
                                 if not re.match(regex.strip(), str(row)):
                                     error_msg = MESSAGES["invalid_column_value_regex"].format(
                                         component=component,
                                         invalid_value=row,
                                         column_name=field["term_label"],
                                         line_no=i + self.first_data_line_no,
-                                        field_description=field.get("term_error_message","") or field.get("term_description",""),
-                                        regex_pattern=regex.strip()
+                                        field_description=field.get("term_error_message", "") or field.get("term_description", f"Expected a value matching the pattern: {regex.strip()}")
                                     )
                                     self.errors.append(error_msg)
                                     self.flag = False
@@ -112,7 +111,7 @@ class IncorrectValueValidator(Validator):
                                 else:
                                     #it should be "ontology_id:ancestor, i.e. EFO:0004466"
                                     ontology_id = reference.split(":")[0]
-                                    ancestor = reference.split(":")[1]
+                                    ancestor = clean_str(reference.split(":")[1])
                                     if not checkOntologyTerm(ontology_id, ancestor, row):
                                         error_msg = MESSAGES["invalid_column_value_ontology"].format(
                                             component=component,
@@ -141,12 +140,11 @@ class IncorrectValueValidator(Validator):
                                         sample_name = root.find(".//SAMPLE_NAME")
                                         taxon_id = sample_name.find('TAXON_ID').text
                                         scientific_name = sample_name.find('SCIENTIFIC_NAME').text
-                                        #sample_accession = root.find(".//SAMPLE").attrib['accession']
-                                        if taxon_id :
-                                            user_taxon_id = self.data.loc[i].get("taxon_id","")
-                                            if  isinstance(user_taxon_id, str):
+                                        if taxon_id:
+                                            user_taxon_id = self.data.loc[i].get("taxon_id", "")
+                                            if isinstance(user_taxon_id, str):
                                                 user_taxon_id = user_taxon_id.strip()
-                                            else :
+                                            else:
                                                 user_taxon_id = str(int(user_taxon_id))
                                             if taxon_id != user_taxon_id:
                                                 error_msg = MESSAGES["mismatched_value"].format(
@@ -156,7 +154,7 @@ class IncorrectValueValidator(Validator):
                                                     line_no=i + self.first_data_line_no,
                                                     biosampleAccession=row
                                                 )
-                                                self.errors.append(error_msg) 
+                                                self.errors.append(error_msg)
                                                 self.flag = False
                                         if scientific_name :
                                             user_scientific_name = self.data.loc[i].get("scientific_name","")
@@ -180,7 +178,7 @@ class IncorrectValueValidator(Validator):
                                             line_no=i + self.first_data_line_no,
                                             expected_value="a valid Biosample Accession"
                                         )
-                                        self.errors.append(error_msg) 
+                                        self.errors.append(error_msg)
                                         self.flag = False
                                 except Exception as e:
                                     lg.exception(e)
@@ -205,7 +203,7 @@ class IncorrectValueValidator(Validator):
                                             line_no=i + self.first_data_line_no,
                                             biosampleAccession=row
                                         )
-                                        self.errors.append(error_msg) 
+                                        self.errors.append(error_msg)
                                         self.flag = False
                                                                     
                 if is_identifier:
@@ -217,14 +215,13 @@ class IncorrectValueValidator(Validator):
                             invalid_value=index
                         )
                         self.errors.append(error_msg)
-                        self.flag = False                                         
+                        self.flag = False
             else:
                 error_msg = MESSAGES["invalid_column"].format(
                     component=component,
                     column_name=column
                 )
                 self.warnings.append(error_msg)
-                #self.flag = False
         return self.errors, self.warnings, self.flag, missing_mandatory_column_count
 
 class StudyComponentValidator(Validator):

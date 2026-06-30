@@ -76,6 +76,7 @@ body {
 }
 
 .left-panel {
+  padding-left: 0 !important;
   padding-right: 0 !important;
   margin-right: 0 !important;
   min-height: 100vh !important;
@@ -220,8 +221,8 @@ p {
 
 /* Themes */
 .green-theme {
-  background-color: #93d242;
-  color: rgba(65, 65, 65, 1) !important;
+  background-color: #4a6c7a;
+  color: #eaf0f0 !important;
 }
 
 .grey-theme {

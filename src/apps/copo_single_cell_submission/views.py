@@ -25,7 +25,8 @@ from django.urls import reverse
 
 l = Logger()
 
-@login_required()
+
+@login_required
 @web_page_access_checker
 def parse_singlecell_spreadsheet(request, profile_id, schema_name):
     #profile_id = request.session["profile_id"]
@@ -60,7 +61,7 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
     if name.endswith("xlsx") or name.endswith("xls"):
         fmt = 'xls'
     else:
-        msg = "Please make sure your manifest is in xlxs format"
+        msg = "Please make sure your manifest is in xls or xlsx format"
         notify_singlecell_status(data={"profile_id": profile_id}, msg=msg,
                 action="error",
                 html_id="singlecell_info", checklist_id=checklist_id)
@@ -70,6 +71,7 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
         l.log("Single cell manifest loaded")
         validate_result, errors =  singlecell.validate()
         if validate_result:
+            is_warning = False
             l.log("About to collect Single cell manifest")
             
             # check s3 for bucket and files files
@@ -97,7 +99,6 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
                     if not file_name_map[file_name] or hash != file_name_map[file_name]:  
                         s3_checking_file_names.append(file_name)
 
-                is_warning = False
                 if s3_checking_file_names:
                     if s3obj.check_for_s3_bucket(bucket_name):
                         # get filenames from manifest
@@ -111,11 +112,20 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
                             #return HttpResponse(status=400, content=msg)
                     else:
                         # bucket is missing, therefore create bucket and notify user to upload files
-                        notify_singlecell_status(data={"profile_id": profile_id},
-                                        msg='s3 bucket not found, creating it', action="info",
-                                        html_id="singlecell_info")
+                        # msg='s3 bucket not found, creating it'
+                        notify_singlecell_status(
+                            data={"profile_id": profile_id},
+                            msg='No data file storage was found for this profile, creating it now...',
+                            action="info",
+                            html_id="singlecell_info",
+                        )
                         s3obj.make_s3_bucket(bucket_name=bucket_name)
-                        msg='Files not found, please click "Upload Data into COPO" and follow the instructions.'
+                        msg = (
+                            "No data files were found in COPO.<br>"
+                            "To upload them, use the <strong>Data files</strong> button "
+                            "for the relevant profile on the <strong>Work profiles</strong> page or "
+                            "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+                        )
                         is_warning = True
                         notify_singlecell_status(data={"profile_id": profile_id},
                                         msg=msg, action="warning", html_id="singlecell_info")
@@ -141,8 +151,9 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
 
 def is_image_file(filename):
     return any(filename.lower().endswith(ext) for ext in settings.IMAGE_FILE_EXTENSIONS)
- 
-@login_required()
+
+
+@login_required
 @web_page_access_checker
 def save_singlecell_records(request, profile_id, schema_name):
     # create mongo sample objects from info parsed from manifest and saved to session variable
@@ -158,7 +169,7 @@ def save_singlecell_records(request, profile_id, schema_name):
     schemas = SinglecellSchemas().get_schema(schema_name=schema_name, schemas=dict(), target_id=checklist_id)
     identifier_map, _ = SinglecellSchemas().get_key_map(schemas)
     submission_repository = {}
-    submission_repository_df = SinglecellSchemas().get_submission_repositiory(schema_name)
+    submission_repository_df = SinglecellSchemas().get_submission_repository(schema_name)
     submisison_repository_component_map = submission_repository_df.to_dict('index')
 
     additional_columns_prefix_default_value = ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE
@@ -250,12 +261,14 @@ def save_singlecell_records(request, profile_id, schema_name):
                     common_columns = list(set(existing_component_data_df.columns) & set(component_data_df.columns))
 
                     #probably it is uploaded from new manifest with new columns
-                    if not (set(component_data_df.columns) - set(common_columns)):
+                    if not component_data_df.empty and not (set(component_data_df.columns) - set(common_columns)):
                         existing_component_common_columns_df = existing_component_data_df[common_columns]
                         existing_component_common_columns_df.sort_index(axis=1, inplace=True)
                         component_sorted_data_df = component_data_df.sort_index(axis=1)
 
                         for index, row in existing_component_data_df.iterrows():
+                            if identifier not in component_sorted_data_df.columns:
+                                break
                             if all(row[f"status_{repository}"] != additional_columns_prefix_default_value["status"] for repository in repositories):
                                 tmp_data = component_sorted_data_df.loc[component_sorted_data_df[identifier] == row[identifier]].sort_index(axis=1)
                          
@@ -272,9 +285,9 @@ def save_singlecell_records(request, profile_id, schema_name):
                     component_additional_fields.extend([ col for col in existing_component_data_df.columns if any(col.endswith(f"_{repository}") 
                                                                                                                   for repository in global_repositories) and
                                                                                                                   col not in component_additional_fields])
-                    if component_additional_fields:
+                    if component_additional_fields and not component_data_df.empty and identifier in component_data_df.columns:
                         existing_component_additional_fields_df = existing_component_data_df[[identifier]+ component_additional_fields]
-                        singlecell_record["components"][component_name] = component_data_df.merge(existing_component_additional_fields_df, on=identifier, how="left" ) 
+                        singlecell_record["components"][component_name] = component_data_df.merge(existing_component_additional_fields_df, on=identifier, how="left" )
             
     if errors:
         return HttpResponse(status=400, content="\n"+"\n".join(errors))
@@ -398,8 +411,9 @@ def save_singlecell_records(request, profile_id, schema_name):
     result = {"table_data": table_data, "component": "singlecell"}
     return JsonResponse(status=200, data=result)
 
-@web_page_access_checker
+
 @login_required
+@web_page_access_checker
 def copo_singlecell(request, schema_name, profile_id, ui_component):
     request.session["profile_id"] = profile_id
 

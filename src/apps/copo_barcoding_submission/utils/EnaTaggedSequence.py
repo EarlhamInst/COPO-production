@@ -10,7 +10,8 @@ from django_tools.middlewares import ThreadLocal
 from lxml import etree as ET
 from django.http import HttpResponse, JsonResponse
 import os
-from common.lookup.lookup import SRA_PROJECT_TEMPLATE,SRA_SETTINGS
+from common.lookup.lookup import SRA_PROJECT_TEMPLATE, SRA_SETTINGS, ENA_CLI
+from rest_framework import status
 import subprocess
 from pathlib import Path
 import pandas as pd
@@ -172,7 +173,7 @@ class EnaTaggedSequence:
         checklist_id = request.POST["checklist_id"]
         name = file.name
         ena = EnaCheckListSpreadsheet(
-            file=file, checklist_id=checklist_id, component="tagged_seq"
+            file=file, checklist_id=checklist_id, with_read=False, component="tagged_seq"
         )
         if name.endswith("xlsx") or name.endswith("xls"):
             fmt = 'xls'
@@ -420,15 +421,15 @@ class EnaTaggedSequence:
                     msg="Biomanifest submitting...",
                     action="info",
                     html_id="tagged_seq_info")
-            
+
             enaSubmissionHelper = EnaSubmissionHelper(submission_id=str(sub["_id"]), profile_id=sub["profile_id"])
-            #self.submission_helper = SubmissionHelper(submission_id=str(sub["_id"]))
+            # self.submission_helper = SubmissionHelper(submission_id=str(sub["_id"]))
             self.the_submission = os.path.join(self.submission_path, sub["profile_id"]) 
             try:
                 if not os.path.exists(self.the_submission):
                     os.makedirs(self.the_submission)
 
-                #context = self._get_submission_xml()
+                # context = self._get_submission_xml()
                 context = enaSubmissionHelper.get_submission_xml()
                 submission_xml_path = context['value']
 
@@ -655,8 +656,8 @@ class EnaTaggedSequence:
         if study_attributes.get("name", str()):
             ET.SubElement(project, 'NAME').text = study_attributes.get("name", str())
 
-        if study_attributes.get("title", str()):
-            ET.SubElement(project, 'TITLE').text = study_attributes.get("title", str())
+        # TITLE is required by ENA schema and must precede DESCRIPTION and SUBMISSION_PROJECT
+        ET.SubElement(project, 'TITLE').text = study_attributes.get("title", str())
 
         if study_attributes.get("description", str()):
             ET.SubElement(project, 'DESCRIPTION').text = study_attributes.get(
@@ -830,7 +831,7 @@ class EnaTaggedSequence:
             test = " -test "
         # cli_path = "tools/reposit/ena_cli/webin-cli.jar"
         webin_cmd = (
-            "java -Xmx2048m -jar webin-cli.jar -username "
+            "java -Xmx2048m -jar {ENA_CLI} -username "
             + self.user_token
             + " -password '"
             + self.pass_word
@@ -876,7 +877,7 @@ class EnaTaggedSequence:
                 # by the validation step
                 return {"error": output}
 
-            accession = re.search("ERZ\d*\w", output).group(0).strip()
+            accession = re.search(r"ERZ\d*\w", output).group(0).strip()
             self._add_tagged_seq_accession(
                 ObjectId(submission_id),
                 accession,
@@ -921,7 +922,7 @@ class EnaTaggedSequence:
         if "dev" in self.ena_service:
             test = " -test "
         webin_cmd = (
-            "java -Xmx2048m -jar webin-cli.jar -username "
+            "java -Xmx2048m -jar {ENA_CLI} -username "
             + self.user_token
             + " -password '"
             + self.pass_word
@@ -969,7 +970,7 @@ class EnaTaggedSequence:
         label = [x for x in fields.keys() if fields[x]["type"] != "TEXT_AREA_FIELD"]
         data_set = []
         columns = []
-
+        
         detail_dict = dict(
             className='summary-details-control detail-hover-message',
             orderable=False,
@@ -979,6 +980,7 @@ class EnaTaggedSequence:
             width="5%",
         )
         columns.insert(0, detail_dict)
+        
         columns.append(dict(data="record_id", visible=False))
         columns.append(dict(data="DT_RowId", visible=False))
 

@@ -4,6 +4,10 @@ var permitBtnStatus;
 var isNew = true;
 var socket;
 var socket2;
+// dtol_functions.js declares a global `fadeSpeed`, but some host templates
+// (e.g. copo_sample.html) don't load that file. Fall back to 'fast' so the
+// spinner fadeOut calls below don't pass `undefined` to jQuery.
+var fadeSpeed = typeof fadeSpeed !== 'undefined' ? fadeSpeed : 'fast';
 
 function upload_image_files(file) {
   var csrftoken = $.cookie('csrftoken');
@@ -164,6 +168,7 @@ function upload_spreadsheet(file = file) {
       $('#sample_info').fadeOut('fast');
       $('#upload_controls').fadeIn();
       console.log(data);
+      $('#file').val('');
       BootstrapDialog.show({
         title: 'Error',
         message: 'Error ' + data.status + ': ' + data.responseText,
@@ -171,6 +176,7 @@ function upload_spreadsheet(file = file) {
       });
     })
     .done(function (data) {
+      $('#file').val('');
       // $('#sample_info').fadeOut('fast');
     });
 }
@@ -209,7 +215,7 @@ $(document).ready(function () {
       return false;
     }
     BootstrapDialog.show({
-      title: 'Submit Samples',
+      title: 'Submit samples',
       message:
         'Are you sure that you would like to submit these samples?</br></br>' +
         '<strong>This must be the definitive version of the manifest.</strong> ' +
@@ -285,7 +291,7 @@ $(document).ready(function () {
       return false;
     }
     BootstrapDialog.show({
-      title: 'Submit Samples',
+      title: 'Submit samples',
       message: 'Do you really want to make these changes to the samples?',
       cssClass: 'copo-modal1',
       closable: true,
@@ -354,23 +360,10 @@ $(document).ready(function () {
   // Get element IDs for the close buttons in the 'Upload Spreadsheet' modal
   // only if the modal is present in the DOM
   if ($('#sample_spreadsheet_modal').length) {
-    let sample_spreadsheet_close_btn1 = document.getElementById(
-      'sample_spreadsheet_close_btn1'
-    );
-
-    let sample_spreadsheet_close_btn2 = document.getElementById(
-      'sample_spreadsheet_close_btn2'
-    );
-
     // Add event listeners to the close buttons
-    sample_spreadsheet_close_btn1.addEventListener(
-      'click',
-      confirmCloseSampleDialog
-    );
-    sample_spreadsheet_close_btn2.addEventListener(
-      'click',
-      confirmCloseSampleDialog
-    );
+    document
+      .querySelectorAll('.modal-close-btn')
+      .forEach((btn) => btn.addEventListener('click', confirmCloseDialog));
   }
 
   var profileId = $('#profile_id').val();
@@ -430,8 +423,10 @@ $(document).ready(function () {
       if ($('#profile_id').val() == d.data.profile_id) {
         if (d.action == 'hide_sub_spinner') {
           $('#sub_spinner').fadeOut(fadeSpeed);
+          $('#spinner').fadeOut(fadeSpeed);
+          if (typeof submissionInProgress !== 'undefined') submissionInProgress = false;
         }
-
+        hideModalInstructionText(d.message, d.action); // Dismiss helper content if applicable
         if (d.action === 'close') {
           $('#' + d.html_id).fadeOut('50');
         } else if (d.action === 'make_valid') {
@@ -461,9 +456,8 @@ $(document).ready(function () {
               maxDots: d.max_ellipsis_length,
               word: d.message,
             });
+            $('#spinner').fadeOut();
           }
-
-          $('#spinner').fadeOut();
         } else if (d.action === 'csv_updates') {
           // show something on the info div
           // check info div is visible
@@ -563,10 +557,10 @@ $(document).ready(function () {
                 (info_type = 'errors')
               );
             }
+            $('#spinner').fadeOut();
           }
 
           $('#export_errors_button').fadeIn();
-          $('#spinner').fadeOut();
         } else if (d.action === 'success') {
           // check info div is visible
           if (!$('#' + d.html_id).is(':visible')) {
@@ -579,7 +573,6 @@ $(document).ready(function () {
             .addClass('sample-alert-success');
 
           $('#' + d.html_id).html(d.message);
-          $('#export_errors_button').fadeIn();
           $('#spinner').fadeOut();
         } else if (d.action === 'make_images_table') {
           // make table of images matched to
@@ -762,6 +755,7 @@ $(document).ready(function () {
             scrollY: 'auto',
             scrollX: true,
           });
+          
           $('#table_div').fadeIn(1000);
           $('#sample_parse_table').DataTable().draw();
           $('#files_label, #barcode_label').removeAttr('disabled');
@@ -865,11 +859,11 @@ $(document).ready(function () {
 });
 
 $(document).on('click', '.new-samples-spreadsheet-template', function (event) {
+  // Show modal
   $('#sample_spreadsheet_modal').modal('show');
 
-  $('#warning_info').fadeOut('fast');
-  $('#warning_info2').fadeOut('fast');
-  $('#warning_info3').fadeOut('fast');
+  // Fade out warnings and disable controls
+  $('#warning_info, #warning_info2, #warning_info3').fadeOut('fast');
 
   $('#images_label').addClass('disabled');
   $('#images_label').attr('disabled', 'true');
@@ -881,13 +875,12 @@ $(document).on('click', '.new-samples-spreadsheet-template', function (event) {
   $('#finish_button').fadeOut('fast');
   $('#confirm_button').fadeOut('fast');
   $('#export_errors_button').fadeOut('fast');
-});
 
-$(document).on('click', '.new-samples-spreadsheet-template', function (event) {
+  // Show 'Code of conduct' modal if profile type is 'erga'
   profile_type = $('#profile_type').val();
   if (profile_type.toLowerCase() == 'erga') {
     BootstrapDialog.show({
-      title: 'Accept Code of Conduct',
+      title: 'Code of conduct',
       message:
         "By uploading a manifest to Collaborative OPen Omics (COPO), you confirm that you are an European Reference Genome Atlas (ERGA) member and thus adhere to ERGA's " +
         'code of conduct.' +
@@ -967,53 +960,4 @@ function download(filename, text) {
   } else {
     pom.click();
   }
-}
-
-function confirmCloseSampleDialog(e) {
-  e.preventDefault();
-
-  BootstrapDialog.show({
-    title: 'Confirm Close',
-    message:
-      'Are you sure that you would like to close the modal? ' +
-      'Any upload progress will be lost.',
-    cssClass: 'copo-modal1',
-    closable: false,
-    animate: true,
-    closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
-    closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
-    type: BootstrapDialog.TYPE_WARNING,
-    buttons: [
-      {
-        id: 'cancelCloseBtnID',
-        label: 'No, cancel',
-        cssClass: 'tiny ui basic button',
-        action: function (dialogRef) {
-          dialogRef.close();
-        },
-      },
-      {
-        id: 'yesCloseBtnID',
-        label: 'Yes, close modal',
-        cssClass: 'tiny ui basic button',
-        action: function (dialogRef) {
-          // Close 'Confirm Close' modal
-          dialogRef.close();
-
-          // Close 'Upload Spreadsheet' modal
-          const modalId = $(e.target).closest('.modal').attr('id');
-          $(`#${modalId}`).modal('hide');
-        },
-      },
-    ],
-    onshown: function (dialogRef) {
-      // Remove aria-hidden before focusing the modal
-      dialogRef.getModal().removeAttr('aria-hidden');
-
-      // Set focus after a short delay
-      setTimeout(function () {
-        dialogRef.getModal().focus();
-      }, 50);
-    },
-  });
 }

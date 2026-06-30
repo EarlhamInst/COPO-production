@@ -1,0 +1,2379 @@
+/*
+ * COPO — Modern Colour Scheme Override
+ * =====================================
+ * Drop-in: add as the LAST stylesheet in <head>.
+ * No HTML, ID, class, or JS changes needed.
+ *
+ * Design philosophy:
+ *   - Warm teal-slate navbar
+ *   - Card headings: light per-type tinted backgrounds with inset colour stripe
+ *   - Component buttons: uniform ghost style, standardised width
+ *   - Title buttons: rectangular rounded, muted palette
+ *   - Reduced visual noise, calm hierarchy
+ *
+ * Profile type accent colours used for stripes & card tints:
+ *   biodata  #4da8d6   genomics #3d9e98   dtol    #3ca85c
+ *   dtolenv  #e8943a   erga     #d24085   asg     #6d46b8
+ */
+
+@import url('../google/css/google-fonts.css');
+
+/* ══════════════════════════════════════════
+   CSS VARIABLES
+   ══════════════════════════════════════════ */
+:root {
+  /* Base palette */
+  --co-bg:           #f5f6fa;
+  --co-surface:      #ffffff;
+  --co-nav:          #4a6c7a;      /* warm teal-slate navbar */
+  --co-nav-border:   #3a5a68;
+  --co-text:         #1a1f2e;
+  --co-muted:        #7c8494;
+  --co-border:       #e3e6ee;
+  --co-radius:       10px;
+  --co-shadow:       0 1px 4px rgba(0,0,0,.06);
+  --co-shadow-hover: 0 6px 20px rgba(0,0,0,.09);
+  --co-font:         'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Accent */
+  --co-accent:       #4a6c7a;
+  --co-accent-hover: #3a5a68;
+
+  /* Profile type accent colours — used by component buttons and icons.
+     Card heading colours come from the database via inline styles. */
+  --co-biodata:  #5cbce8;
+  --co-genomics: #4db8a8;
+  --co-dtol:     #4cc86c;
+  --co-dtolenv:  #f0a44a;
+  --co-erga:     #e25098;
+  --co-asg:      #8060d0;
+
+  /* Standardised component button size */
+  --co-btn-w: 120px;
+  --co-btn-h: 30px;
+}
+
+/* ══════════════════════════════════════════
+   GLOBAL
+   ══════════════════════════════════════════ */
+body {
+  font-family: var(--co-font) !important;
+  background-color: var(--co-bg) !important;
+  color: var(--co-text) !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+/* ══════════════════════════════════════════
+   NAVBAR
+   ══════════════════════════════════════════ */
+#authNavbar.navbar.navbar-default,
+#authNavbar.navbar.navbar-default .navbar-collapse {
+  background-color: var(--co-nav) !important;
+  border-color: var(--co-nav-border) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 1px 6px rgba(0,0,0,.15) !important;
+  min-height: 52px !important;
+  margin-bottom: 0 !important;
+}
+#authNavbar.navbar.navbar-default .navbar-header {
+  background-color: var(--co-nav) !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* Logo — invert to white on dark-ish background */
+#authNavbar .navbar-brand img,
+#authNavbar #expandingMenuTitle img {
+  filter: brightness(0) invert(1) !important;
+  opacity: .9 !important;
+  border: none !important;
+  vertical-align: middle !important;
+}
+#authNavbar .navbar-brand {
+  padding: 8px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  border: none !important;
+  outline: none !important;
+  gap: 8px !important;
+}
+
+/* Nav links */
+#authNavbar.navbar.navbar-default .navbar-nav > li > a,
+#authNavbar.navbar.navbar-default .navbar-text,
+#authNavbar.navbar.navbar-default .navbar-brand {
+  color: #ffffff !important;
+  font-size: .82rem !important;
+  font-weight: 500 !important;
+  padding: 16px 11px !important;
+  transition: color .15s, background .15s !important;
+}
+#authNavbar.navbar.navbar-default .navbar-nav > li > a:hover,
+#authNavbar.navbar.navbar-default .navbar-nav > li > a:focus {
+  color: #ffffff !important;
+  background: rgba(255,255,255,.12) !important;
+}
+#authNavbar.navbar.navbar-default .navbar-nav > .active > a,
+#authNavbar.navbar.navbar-default .navbar-nav > .active > a:hover {
+  color: #ffffff !important;
+  background: rgba(255,255,255,.18) !important;
+}
+
+/* Dropdowns */
+#authNavbar.navbar.navbar-default .navbar-nav .dropdown-menu,
+#authNavbar .dropdown-menu {
+  background: var(--co-nav-border) !important;
+  border: 1px solid rgba(0,0,0,.15) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2) !important;
+  padding: 5px !important;
+}
+#authNavbar .dropdown-menu > li > a {
+  color: #e8f4f8 !important;
+  border-radius: 6px !important;
+  padding: 7px 12px !important;
+  font-size: .8rem !important;
+}
+#authNavbar .dropdown-menu > li > a:hover {
+  color: #fff !important;
+  background: rgba(255,255,255,.12) !important;
+}
+#authNavbar .dropdown-menu .divider { background: rgba(255,255,255,.12) !important; }
+
+/* Mobile toggle */
+#authNavbar .navbar-toggle { border-color: rgba(255,255,255,.3) !important; }
+#authNavbar .navbar-toggle .icon-bar { background: rgba(255,255,255,.7) !important; }
+
+/* ══════════════════════════════════════════
+   PAGE ICONS (component navigation icons)
+   ══════════════════════════════════════════ */
+.copo-page-icons {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 4px !important;
+  flex-wrap: wrap !important;
+}
+
+/* Icon strip container */
+.copo-page-icons .pcomponents-icons-templates,
+.copo-page-icons .huge.ui.main.menu {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Remove Semantic UI dividers between items */
+.copo-page-icons .icon.item::before {
+  display: none !important;
+}
+
+/* Individual icon links */
+.copo-page-icons .icon.item {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 8px !important;
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  color: var(--co-text) !important;
+  font-size: .95rem !important;
+  transition: all .15s !important;
+  box-shadow: var(--co-shadow) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-decoration: none !important;
+}
+.copo-page-icons .icon.item:hover {
+  background: var(--co-bg) !important;
+  border-color: var(--co-accent) !important;
+  color: var(--co-accent) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--co-shadow-hover) !important;
+}
+
+/* Icon colour overrides — Semantic UI icons */
+.copo-page-icons .icon.item i.blue   { color: var(--co-biodata)  !important; }
+.copo-page-icons .icon.item i.olive  { color: #7a9a1e !important; }
+.copo-page-icons .icon.item i.orange { color: var(--co-dtolenv)  !important; }
+.copo-page-icons .icon.item i.green  { color: var(--co-dtol)     !important; }
+.copo-page-icons .icon.item i.violet { color: var(--co-asg)      !important; }
+.copo-page-icons .icon.item i.yellow { color: #b89a14 !important; }
+.copo-page-icons .icon.item i.pink   { color: var(--co-erga)     !important; }
+.copo-page-icons .icon.item i.teal   { color: var(--co-genomics) !important; }
+.copo-page-icons .icon.item i.red    { color: #c0392b !important; }
+.copo-page-icons .icon.item i.bright-coral { color: #e05555 !important; }
+
+/* Material Symbols icon styling */
+.pcomponent-material-icon {
+  font-family: 'Material Symbols Outlined' !important;
+  font-size: 18px !important;
+  font-weight: 300 !important;
+  line-height: 1 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  display: inline-block !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  direction: ltr !important;
+  -webkit-font-smoothing: antialiased !important;
+  font-feature-settings: 'liga' !important;
+}
+
+/* Icon colour overrides — Material Symbols (colour class on the element itself) */
+#componentIcon.material-symbols-outlined.blue,
+.copo-page-icons .icon.item .pcomponent-material-icon.blue   { color: var(--co-biodata)  !important; }
+
+#componentIcon.material-symbols-outlined.olive,
+.copo-page-icons .icon.item .pcomponent-material-icon.olive  { color: #7a9a1e !important; }
+
+#componentIcon.material-symbols-outlined.orange,
+.copo-page-icons .icon.item .pcomponent-material-icon.orange { color: var(--co-dtolenv)  !important; }
+
+#componentIcon.material-symbols-outlined.green,
+.copo-page-icons .icon.item .pcomponent-material-icon.green  { color: var(--co-dtol)     !important; }
+
+#componentIcon.material-symbols-outlined.violet,
+.copo-page-icons .icon.item .pcomponent-material-icon.violet { color: var(--co-asg)      !important; }
+
+#componentIcon.material-symbols-outlined.yellow,
+.copo-page-icons .icon.item .pcomponent-material-icon.yellow { color: #b89a14 !important; }
+
+#componentIcon.material-symbols-outlined.pink,
+.copo-page-icons .icon.item .pcomponent-material-icon.pink   { color: var(--co-erga)     !important; }
+
+#componentIcon.material-symbols-outlined.teal,
+.copo-page-icons .icon.item .pcomponent-material-icon.teal   { color: var(--co-genomics) !important; }
+
+#componentIcon.material-symbols-outlined.red,
+.copo-page-icons .icon.item .pcomponent-material-icon.red    { color: #c0392b !important; }
+
+/* Inline Material Symbol icons used in Getting Started sections — must match
+   the colours and glyphs of the real navbar component icons. */
+.material-symbols-outlined.inline-nav-icon {
+  font-size: 22px;
+  vertical-align: middle;
+  line-height: 1;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+.material-symbols-outlined.inline-nav-icon.blue   { color: var(--co-biodata); }
+.material-symbols-outlined.inline-nav-icon.olive  { color: #7a9a1e; }
+.material-symbols-outlined.inline-nav-icon.orange { color: var(--co-dtolenv); }
+.material-symbols-outlined.inline-nav-icon.green  { color: var(--co-dtol); }
+.material-symbols-outlined.inline-nav-icon.violet { color: var(--co-asg); }
+.material-symbols-outlined.inline-nav-icon.yellow { color: #b89a14; }
+.material-symbols-outlined.inline-nav-icon.pink   { color: var(--co-erga); }
+.material-symbols-outlined.inline-nav-icon.teal   { color: var(--co-genomics); }
+.material-symbols-outlined.inline-nav-icon.red    { color: #c0392b; }
+
+/* Dark-mode variants — brighter so they remain legible against the dark
+   surface. Var-based colours already shift via the dark :root block, but
+   the hardcoded ones (olive, yellow, red) need explicit overrides. */
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.blue   { color: #5cb8e6 !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.olive  { color: #b8d650 !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.orange { color: #f0a44a !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.green  { color: #5fd47e !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.violet { color: #9d80e8 !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.yellow { color: #e6c948 !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.pink   { color: #f06aac !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.teal   { color: #5fcebd !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.red    { color: #ff6b6b !important; }
+
+/* ══════════════════════════════════════════
+   TITLE BAR BUTTONS — rectangular, muted
+   (the circular +, lightbulb, teal list/accept buttons)
+   ══════════════════════════════════════════ */
+.big.circular.ui.icon.button {
+  width: auto !important;
+  height: 34px !important;
+  padding: 0 14px !important;
+  line-height: 34px !important;
+  border-radius: 8px !important;
+  font-size: .9rem !important;
+  border: none !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.12) !important;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease !important;
+  display: inline-flex;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 34px !important;
+}
+.big.circular.ui.icon.button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,.15) !important;
+}
+.big.circular.ui.icon.button:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,.1) !important;
+}
+
+/* Inline "Getting Started" mockup buttons — same look as the real title bar
+   buttons but at a smaller, inline-friendly scale so they fit within sentences. */
+.tiny.circular.ui.icon.button.no-click {
+  width: auto !important;
+  height: 24px !important;
+  padding: 0 10px !important;
+  line-height: 24px !important;
+  border-radius: 6px !important;
+  font-size: .75rem !important;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,.12) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 24px !important;
+  vertical-align: middle !important;
+  cursor: default !important;
+}
+.tiny.circular.ui.icon.button.no-click > i.icon {
+  font-size: .8rem !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+/* Colour overrides — apply to BOTH big (real) and tiny.no-click (mockup)
+   variants so they share a single muted palette. */
+.big.circular.ui.icon.primary.button,
+.tiny.circular.ui.icon.primary.button.no-click {
+  background: #6b8cba !important;
+  color: #fff !important;
+}
+.big.circular.ui.icon.primary.button:hover { background: #5a7aaa !important; }
+
+/* Tour (lightbulb) — muted amber */
+.big.circular.ui.icon.orange.button,
+.tiny.circular.ui.icon.orange.button.no-click {
+  background: #c49a4a !important;
+  color: #fff !important;
+}
+.big.circular.ui.icon.orange.button:hover { background: #b38a3c !important; }
+
+/* Accept/list — muted teal */
+.big.circular.ui.icon.teal.button,
+.tiny.circular.ui.icon.teal.button.no-click {
+  background: #4a8c84 !important;
+  color: #fff !important;
+}
+.big.circular.ui.icon.teal.button:hover { background: #3a7c74 !important; }
+
+/* Download blank manifest — muted brown */
+.big.circular.ui.icon.brown.button,
+.tiny.circular.ui.icon.brown.button.no-click {
+  background: #8c6239 !important;
+  color: #fff !important;
+}
+.big.circular.ui.icon.brown.button:hover { background: #7a5530 !important; }
+
+/* Download SOP — muted yellow/ochre */
+.big.circular.ui.icon.yellow.button,
+.tiny.circular.ui.icon.yellow.button.no-click {
+  background: #b89a14 !important;
+  color: #fff !important;
+}
+.big.circular.ui.icon.yellow.button:hover { background: #a08810 !important; }
+
+/* Default (no colour class) — neutral grey, matches the unstyled spreadsheet
+   upload button used by both the real navbar and the mockups. */
+.big.circular.ui.icon.button:not(.primary):not(.orange):not(.teal):not(.brown):not(.yellow):not(.red):not(.green):not(.blue):not(.violet):not(.olive):not(.pink),
+.tiny.circular.ui.icon.button.no-click:not(.primary):not(.orange):not(.teal):not(.brown):not(.yellow):not(.red):not(.green):not(.blue):not(.violet):not(.olive):not(.pink) {
+  background: #6b7280 !important;
+  color: #fff !important;
+}
+
+/* Icon inside title buttons */
+.big.circular.ui.icon.button > i.icon {
+  font-size: .9rem !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+[data-theme="dark"] .big.circular.ui.icon.button > i.icon,
+[data-theme="dark"] .tiny.circular.ui.icon.button.no-click > i.icon {
+  color: #fff !important;
+}
+
+/* ══════════════════════════════════════════
+   PAGE HEADER
+   ══════════════════════════════════════════ */
+.global-page-title { margin-top: 16px !important; }
+.copo-page-headers { font-size: .9rem !important; font-weight: 600 !important; }
+
+/* Profile type dropdown */
+.searchable-select, #profileType {
+  border-radius: 8px !important;
+  border: 1px solid var(--co-border) !important;
+  font-size: .84rem !important;
+  padding: 6px 12px !important;
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+}
+
+/* ══════════════════════════════════════════
+   SORT CONTROLS
+   ══════════════════════════════════════════ */
+.sort-by-container {
+  font-size: .8rem !important;
+  color: var(--co-muted) !important;
+  font-weight: 500 !important;
+}
+#sortProfilesBtn {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 8px !important;
+  font-size: .82rem !important;
+  color: var(--co-text) !important;
+  box-shadow: none !important;
+}
+#sortProfilesBtn:hover { border-color: var(--co-accent) !important; }
+.sort-icon { color: var(--co-muted) !important; }
+
+/* ══════════════════════════════════════════
+   PROFILE CARDS
+   ══════════════════════════════════════════ */
+.grid .copo-records-panel,
+.grid .copo-records-panel .panel.panel-profile {
+  height: 100% !important;
+}
+.panel.panel-profile {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: var(--co-radius) !important;
+  box-shadow: var(--co-shadow) !important;
+  transition: box-shadow .2s, transform .15s !important;
+  overflow: visible !important;
+  margin-bottom: 0 !important;
+}
+.panel.panel-profile:hover {
+  box-shadow: var(--co-shadow-hover) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ─── Card headings: light tinted, left stripe via inset box-shadow ─── */
+/* --profile-accent is set as an inline CSS custom property by JS.        */
+/* Using a CSS variable (not inline background) means dark-mode rules     */
+/* can override it without needing !important wars.                       */
+.panel.panel-profile .panel-heading {
+  border-bottom: none !important;
+  padding: 12px 40px 12px 16px !important;
+  position: relative !important;
+  overflow: visible !important;
+  border-top-left-radius: calc(var(--co-radius) - 1px) !important;
+  border-top-right-radius: calc(var(--co-radius) - 1px) !important;
+  background: color-mix(in srgb, var(--profile-accent, transparent) 15%, #f4f6f9) !important;
+  box-shadow: inset 4px 0 0 var(--profile-accent, transparent) !important;
+}
+
+/* Heading text — dark on light background */
+.panel.panel-profile .panel-heading .row-title span,
+.panel.panel-profile .panel-heading .panel-title {
+  color: var(--co-text) !important;
+  font-size: .88rem !important;
+  font-weight: 600 !important;
+  letter-spacing: .01em !important;
+}
+
+/* Ellipsis options icon */
+.panel.panel-profile .panel-heading .fa-ellipsis-v {
+  color: rgba(0,0,0,.3) !important;
+  transition: color .15s !important;
+}
+.panel.panel-profile .panel-heading .fa-ellipsis-v:hover {
+  color: rgba(0,0,0,.65) !important;
+}
+
+/* ─── Card body ─── */
+.panel.panel-profile .grid-panel-body {
+  padding: 12px 14px !important;
+  background: var(--co-surface) !important;
+}
+
+/* Created date + "View more details" inline row */
+.created-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: baseline !important;
+  font-size: 1rem !important;            /* larger than .profile-info-row .79rem */
+}
+/* Created date value: darker than --co-muted in light mode for readability;
+   keep the lighter muted tone in dark mode (where darkening would reduce
+   contrast on the dark card surface). */
+.created-row .date-created-div {
+  color: #525a6c !important;
+}
+[data-theme="dark"] .created-row .date-created-div {
+  color: var(--co-muted) !important;
+}
+.view-more-details-btn {
+  font-size: .68rem !important;
+  color: var(--co-accent) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: none !important;
+}
+.view-more-details-btn:hover {
+  color: var(--co-accent-hover) !important;
+  text-decoration: underline !important;
+}
+
+/* Profile info text */
+.profile-info-row {
+  font-size: .79rem !important;
+  color: var(--co-muted) !important;
+  line-height: 1.4 !important;
+  padding: 0 20px 0 8px !important;
+}
+.profile-info-row .text-bold {
+  color: var(--co-text) !important;
+  font-weight: 600 !important;
+  font-size: .77rem !important;
+  display: block !important;
+  margin: 6px 0 3px 0 !important;
+}
+.profile-description {
+  font-size: 1rem !important;             /* match the enlarged .created-row date */
+  color: #525a6c !important;              /* darker than --co-muted in light mode */
+  margin-bottom: 4px !important;
+}
+/* Keep the lighter muted tone in dark mode (darkening would reduce contrast
+   on the dark card surface). */
+[data-theme="dark"] .profile-description {
+  color: var(--co-muted) !important;
+}
+
+/* View more details link */
+#showMoreProfileInfoBtn,
+a[id="showMoreProfileInfoBtn"],
+.show-more-btn-spacing {
+  font-size: .73rem !important;
+  color: var(--co-accent) !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  border: none !important;
+  background: none !important;
+}
+#showMoreProfileInfoBtn:hover {
+  color: var(--co-accent-hover) !important;
+  text-decoration: underline !important;
+}
+
+/* ══════════════════════════════════════════
+   COMPONENT BUTTONS — uniform ghost style
+   ══════════════════════════════════════════ */
+#expandingMenuTitle {
+  font-size: .62rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .1em !important;
+  color: var(--co-muted) !important;
+  padding: 6px 8px 4px !important;
+  margin-bottom: 4px !important;
+  margin-top: 0 !important;
+  border-bottom: none !important;
+}
+
+.menu-row .menu.comp,
+.menu-row .ui.menu .item,
+.menu-row .ui.menu .menu.comp,
+.menu-row .ui.menu .menu.comp .item,
+.menu-row .ui.vertical.menu .item {
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+.menu-row .ui.menu .item:before,
+.menu-row .ui.vertical.menu .item:before {
+  display: none !important;
+  content: none !important;
+}
+
+.menu-row {
+  border-top: 1px solid var(--co-border) !important;
+}
+
+.menu-row .ui.menu,
+.menu-row .ui.menu .menu.comp {
+  display: block !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+.menu-row .ui.menu .menu.comp > .item {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  flex-direction: row !important;
+  gap: 6px !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* Prevent Semantic UI vertical menu from forcing block layout on button anchors */
+.menu-row .ui.vertical.menu .item a,
+.menu-row .ui.vertical.menu .item > div {
+  display: inline-flex !important;
+  width: auto !important;
+}
+
+a.pcomponent-button-template,
+.images-pcomponent-dropdown-button-template {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+}
+
+.pcomponent-button.ui.button,
+.tiny.ui.button.pcomponent-button,
+a.pcomponent-button-template .pcomponent-button {
+  width: var(--co-btn-w) !important;
+  height: var(--co-btn-h) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 7px !important;
+  border-radius: 8px !important;
+  font-size: .73rem !important;
+  font-weight: 600 !important;
+  margin: 3px !important;
+  padding: 0 10px !important;
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border: 1px solid var(--co-border) !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  transition: all .15s !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.pcomponent-button.ui.button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,.07) !important;
+}
+
+/* Icon colours per Semantic colour class */
+.pcomponent-button.ui.button.blue    i { color: var(--co-biodata)  !important; }
+.pcomponent-button.ui.button.olive   i { color: #7a9a1e !important; }
+.pcomponent-button.ui.button.orange  i { color: var(--co-dtolenv)  !important; }
+.pcomponent-button.ui.button.green   i { color: var(--co-dtol)     !important; }
+.pcomponent-button.ui.button.violet  i { color: var(--co-asg)      !important; }
+.pcomponent-button.ui.button.yellow  i { color: #b89a14 !important; }
+.pcomponent-button.ui.button.pink    i { color: var(--co-erga)     !important; }
+.pcomponent-button.ui.button.teal    i { color: var(--co-genomics)  !important; }
+.pcomponent-button.ui.button.red     i { color: #c0392b !important; }
+.pcomponent-button.ui.button.bright-coral i { color: #e05555 !important; }
+.pcomponent-button.ui.button.terra-cotta  i { color: #c06050 !important; }
+.pcomponent-button.ui.button.coral-pink   i { color: #d96080 !important; }
+
+/* Hover — tint bg to match icon */
+.pcomponent-button.ui.button.blue:hover    { background: #eef4fc !important; border-color: var(--co-biodata)  !important; }
+.pcomponent-button.ui.button.olive:hover   { background: #f4f7e8 !important; border-color: #7a9a1e !important; }
+.pcomponent-button.ui.button.orange:hover  { background: #fdf3e8 !important; border-color: var(--co-dtolenv)  !important; }
+.pcomponent-button.ui.button.green:hover   { background: #edf7f0 !important; border-color: var(--co-dtol)     !important; }
+.pcomponent-button.ui.button.violet:hover  { background: #f2eef9 !important; border-color: var(--co-asg)      !important; }
+.pcomponent-button.ui.button.yellow:hover  { background: #fbf7e6 !important; border-color: #b89a14 !important; }
+.pcomponent-button.ui.button.pink:hover    { background: #fceef4 !important; border-color: var(--co-erga)     !important; }
+.pcomponent-button.ui.button.teal:hover    { background: #ecf6f5 !important; border-color: var(--co-genomics)  !important; }
+.pcomponent-button.ui.button.red:hover     { background: #fceeed !important; border-color: #c0392b !important; }
+
+/* Images dropdown */
+.images-pcomponent-dropdown-button-template .pcomponent-button {
+  width: var(--co-btn-w) !important;
+  height: var(--co-btn-h) !important;
+}
+.profile-dropdown-menu {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--co-shadow-hover) !important;
+}
+
+
+/* ══════════════════════════════════════════
+   LEGEND (main panel, collapsible)
+   ══════════════════════════════════════════ */
+.legend-and-sort-row {
+  margin-bottom: 12px !important;
+}
+
+.component-legend {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: var(--co-radius) !important;
+  box-shadow: var(--co-shadow) !important;
+  padding: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  width: auto !important;
+}
+
+/* Clickable header row */
+.component-legend-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 9px 14px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  border-radius: var(--co-radius) !important;
+  transition: background .15s !important;
+}
+.component-legend-header:hover {
+  background: var(--co-bg) !important;
+}
+
+.component-legend-title {
+  font-size: .68rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .1em !important;
+  color: var(--co-muted) !important;
+  margin: 0 !important;
+  border: none !important;
+}
+
+/* Chevron rotates to indicate state */
+.component-legend-chevron {
+  font-size: .72rem !important;
+  color: var(--co-muted) !important;
+  transition: transform .2s ease !important;
+  transform: rotate(0deg) !important;
+}
+.component-legend-header.collapsed .component-legend-chevron {
+  transform: rotate(-90deg) !important;
+}
+
+/* Pills laid out horizontally */
+.component-legend-group {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  list-style: none !important;
+  padding: 4px 14px 12px !important;
+  margin: 0 !important;
+  gap: 8px !important;
+}
+.component-legend-group-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+  background: var(--co-bg);
+  border: 1px solid var(--co-border);
+  border-radius: 20px !important;
+  padding: 3px 10px 3px 7px !important;
+  font-size: .76rem !important;
+  font-weight: 500 !important;
+  color: var(--co-text) !important;
+  transition: border-color .15s !important;
+}
+.component-legend-text { white-space: nowrap !important; }
+.component-legend-group-item:hover {
+  background: var(--co-bg) !important;
+  border-color: var(--co-accent) !important;
+}
+.component-legend-info-icon {
+  position: static !important;
+  font-size: .72rem !important;
+  color: var(--co-muted) !important;
+}
+.component-legend-circle {
+  float: none !important;
+  font-size: .65rem !important;
+  padding: 0 !important;
+}
+
+/* ══════════════════════════════════════════
+   BOTTOM PANEL
+   ══════════════════════════════════════════ */
+#bottomPanel {
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  font-size: .8rem !important;
+  color: var(--co-muted) !important;
+  margin-top: 50px !important;
+  margin-bottom: 40px !important;
+  box-shadow: none !important;
+}
+
+/* ══════════════════════════════════════════
+   SCROLL INDICATORS
+   ══════════════════════════════════════════ */
+.navigate-to-bottom, .navigate-to-top {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 50% !important;
+  box-shadow: var(--co-shadow) !important;
+}
+
+/* ══════════════════════════════════════════
+   GETTING STARTED SECTION
+   ══════════════════════════════════════════ */
+.page-welcome-message,
+.page-welcome-message .copo-webui-popover {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.page-welcome-message .webui-popover-inner {
+  border: 1px solid var(--co-border) !important;
+  border-radius: var(--co-radius) !important;
+}
+
+/* Profile card "View more details" popover */
+body > .popover,
+.grid-panel-body .popover {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: var(--co-radius) !important;
+  box-shadow: var(--co-shadow-hover) !important;
+  max-width: 400px !important;
+  width: 400px !important;
+  z-index: 99999 !important;
+}
+/* The profile "options" popover (Edit/Delete/action buttons) should hug its
+   buttons rather than stretch to the 400px width used by the field popover.
+   :has() scopes this to popovers that actually contain action buttons;
+   max-width:400px (above) still applies, so a long button row can wrap. */
+body > .popover:has(.popover-action-btn),
+.grid-panel-body .popover:has(.popover-action-btn) {
+  width: auto !important;
+}
+.grid-panel-body .popover-title,
+body > .popover .popover-title {
+  background: var(--co-surface) !important;
+  border-bottom: 1px solid var(--co-border) !important;
+  padding: 12px 14px !important;
+  min-height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  font-size: .9rem !important;
+}
+body > .popover .popover-title #showMoreProfileInfoCloseBtn {
+  margin-right: 6px !important;
+  cursor: pointer !important;
+}
+.grid-panel-body .popover-content,
+body > .popover .popover-content {
+  font-size: .8rem !important;
+  padding: 10px 14px 14px !important;
+}
+/* "View more details" field popover: cap the body height and scroll long
+   field lists so the popover never runs off-screen. Scoped via the custom
+   template class so the title (close button) stays fixed above the scroll. */
+body > .popover.profile-details-popover .popover-content {
+  max-height: 260px !important;
+  overflow-y: auto !important;
+}
+
+/* Stack each field vertically in the rendered popover */
+body > .popover .popover-content > div {
+  display: block !important;
+  width: 100% !important;
+  margin-bottom: 8px !important;
+  line-height: 1.5 !important;
+  float: none !important;
+}
+body > .popover .popover-content .text-bold {
+  display: block !important;
+  font-size: .72rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: .05em !important;
+  color: var(--co-muted) !important;
+  margin-bottom: 2px !important;
+}
+body > .popover .popover-content .profile-info-label {
+  display: block !important;
+  font-size: .72rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: .05em !important;
+  color: var(--co-muted) !important;
+  margin-bottom: 2px !important;
+  margin-top: 0 !important;
+}
+body > .popover .popover-content .associated-type-div-value,
+body > .popover .popover-content .sequencing_centre_div_value {
+  display: block !important;
+  width: 100% !important;
+}
+body > .popover .popover-content ul {
+  padding-left: 18px !important;
+  margin: 0 !important;
+}
+body > .popover .popover-content span:not(.text-bold) {
+  color: var(--co-text) !important;
+  font-size: .82rem !important;
+  word-break: break-word !important;
+}
+.copo-webui-popover-title {
+  font-size: .95rem !important;
+  font-weight: 600 !important;
+  color: var(--co-text) !important;
+}
+
+/* ══════════════════════════════════════════
+   BOOTSTRAP OVERRIDES
+   ══════════════════════════════════════════ */
+.modal-content {
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,.16) !important;
+}
+.modal-header {
+  border-bottom: 1px solid var(--co-border) !important;
+  padding: 14px 20px !important;
+}
+.modal-header .modal-title { font-size: .95rem !important; font-weight: 600 !important; }
+.modal-footer { border-top: 1px solid var(--co-border) !important; }
+
+/* ══════════════════════════════════════════
+   FORM MODAL (Add/Edit Profile)
+   ══════════════════════════════════════════ */
+.bootstrap-dialog.form-modal .modal-content {
+  border-radius: 12px !important;
+  border: none !important;
+  font-family: var(--co-font) !important;
+  background: var(--co-bg) !important;
+}
+
+.bootstrap-dialog.form-modal .bootstrap-dialog-header,
+.bootstrap-dialog.form-modal .modal-header {
+  background: var(--co-nav) !important;
+  border-bottom: none !important;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 10px 16px !important;
+}
+
+.bootstrap-dialog.form-modal .bootstrap-dialog-title,
+.bootstrap-dialog.form-modal .modal-title {
+  color: #fff !important;
+  font-size: .88rem !important;
+  font-weight: 600 !important;
+  letter-spacing: .01em !important;
+}
+
+.bootstrap-dialog.form-modal .bootstrap-dialog-close-button .close {
+  color: rgba(255,255,255,.7) !important;
+  opacity: 1 !important;
+  font-size: 1rem !important;
+}
+.bootstrap-dialog.form-modal .bootstrap-dialog-close-button .close:hover {
+  color: #fff !important;
+}
+
+.bootstrap-dialog.form-modal .bootstrap-dialog-body {
+  max-height: calc(100vh - 160px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.bootstrap-dialog.form-modal .modal-body {
+  background: var(--co-surface) !important;
+  padding: 14px 16px !important;
+  font-size: .82rem !important;
+  color: var(--co-text) !important;
+  overflow: hidden !important;
+}
+
+.bootstrap-dialog.form-modal .bootstrap-dialog-footer,
+.bootstrap-dialog.form-modal .modal-footer {
+  background: var(--co-bg) !important;
+  border-top: none !important;
+  border-radius: 0 0 12px 12px !important;
+  padding: 8px 16px !important;
+}
+
+.bootstrap-dialog.form-modal label {
+  font-size: .76rem !important;
+  font-weight: 600 !important;
+  color: var(--co-muted) !important;
+  text-transform: uppercase !important;
+  letter-spacing: .05em !important;
+  margin-bottom: 3px !important;
+}
+
+.bootstrap-dialog.form-modal .form-group {
+  margin-bottom: 10px !important;
+}
+
+.bootstrap-dialog.form-modal .form-control {
+  border-radius: 6px !important;
+  border: 1px solid var(--co-border) !important;
+  font-size: .82rem !important;
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  padding: 5px 10px !important;
+  height: 30px !important;
+}
+.bootstrap-dialog.form-modal textarea.form-control {
+  height: auto !important;
+}
+.bootstrap-dialog.form-modal .form-control:focus {
+  border-color: var(--co-accent) !important;
+  box-shadow: 0 0 0 2px rgba(74,108,122,.12) !important;
+}
+
+.bootstrap-dialog.form-modal #btnFormSave {
+  background: var(--co-accent) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  padding: 5px 14px !important;
+  font-size: .8rem !important;
+}
+.bootstrap-dialog.form-modal #btnFormSave:hover {
+  background: var(--co-accent-hover) !important;
+}
+
+.bootstrap-dialog.form-modal #btnFormCancel,
+.bootstrap-dialog.form-modal #btnFormClose {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  padding: 5px 14px !important;
+  font-size: .8rem !important;
+}
+.bootstrap-dialog.form-modal #btnFormCancel:hover,
+.bootstrap-dialog.form-modal #btnFormClose:hover {
+  border-color: var(--co-accent) !important;
+  color: var(--co-accent) !important;
+}
+
+.form-control {
+  border-radius: 8px !important;
+  border: 1px solid var(--co-border) !important;
+  font-size: .84rem !important;
+  box-shadow: none !important;
+}
+.form-control:focus {
+  border-color: var(--co-accent) !important;
+  box-shadow: 0 0 0 3px rgba(74,108,122,.14) !important;
+}
+
+.btn-primary {
+  background: var(--co-accent) !important;
+  border-color: var(--co-accent) !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+}
+.btn-primary:hover { background: var(--co-accent-hover) !important; }
+.btn-default {
+  background: var(--co-surface) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 8px !important;
+  color: var(--co-text) !important;
+}
+.btn-default:hover { border-color: var(--co-accent) !important; color: var(--co-accent) !important; }
+.btn-custom3 {
+  background: var(--co-accent) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  border: none !important;
+}
+
+.panel { border-radius: var(--co-radius) !important; }
+.alert { border-radius: 8px !important; border: none !important; font-size: .84rem !important; }
+.popover {
+  border-radius: 10px !important;
+  border: 1px solid var(--co-border) !important;
+  box-shadow: var(--co-shadow-hover) !important;
+}
+
+/* ══════════════════════════════════════════
+   SCROLLBAR
+   ══════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--co-bg); }
+::-webkit-scrollbar-thumb { background: #c4c9d6; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9aa0b0; }
+
+/* ══════════════════════════════════════════
+   POPOVER ACTION BUTTONS
+   ══════════════════════════════════════════ */
+.popover-action-btn {
+  height: 32px !important;
+  padding: 0 10px !important;
+  border-radius: 8px !important;
+  font-size: .72rem !important;
+  font-weight: 600 !important;
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border: 1px solid var(--co-border) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  cursor: pointer !important;
+  margin: 4px 4px 4px 0 !important;
+  transition: all .15s !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+}
+.popover-action-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,.07) !important;
+}
+.popover-action-btn:active {
+  transform: translateY(0) !important;
+}
+
+/* Blue (Edit) */
+.popover-action-btn-blue i { color: var(--co-biodata) !important; }
+.popover-action-btn-blue:hover {
+  background: #eef4fc !important;
+  border-color: var(--co-biodata) !important;
+}
+
+/* Red (Delete) */
+.popover-action-btn-red i { color: #c0392b !important; }
+.popover-action-btn-red:hover {
+  background: #fceeed !important;
+  border-color: #c0392b !important;
+}
+
+/* Teal (Action buttons) */
+.popover-action-btn-teal i { color: var(--co-genomics) !important; }
+.popover-action-btn-teal:hover {
+  background: #ecf6f5 !important;
+  border-color: var(--co-genomics) !important;
+}
+
+/* ══════════════════════════════════════════
+   SIDEBAR COLLAPSE — main content expands
+   ══════════════════════════════════════════ */
+.copo-main.sidebar-collapsed {
+  width: 100% !important;
+  flex: 0 0 100% !important;
+}
+
+/* ══════════════════════════════════════════
+   FOCUS & TRANSITIONS
+   ══════════════════════════════════════════ */
+:focus-visible { outline: 2px solid var(--co-accent) !important; outline-offset: 2px !important; }
+a, button, .btn { transition: color .15s, background .15s, border-color .15s !important; }
+
+/* ══════════════════════════════════════════
+   DARK THEME
+   ══════════════════════════════════════════ */
+[data-theme="dark"] {
+  /* Base palette */
+  --co-bg:           #121418;
+  --co-surface:      #1c1f26;
+  --co-nav:          #1a2530;
+  --co-nav-border:   #0f1920;
+  --co-text:         #e0e4ec;
+  --co-muted:        #8a90a0;
+  --co-border:       #2a2e38;
+  --co-shadow:       0 1px 4px rgba(0,0,0,.3);
+  --co-shadow-hover: 0 6px 20px rgba(0,0,0,.4);
+
+  /* Accent */
+  --co-accent:       #6ca0b8;
+  --co-accent-hover: #8abcd0;
+
+  /* Profile type accent colours — slightly brighter for dark bg */
+  --co-biodata:  #5cb8e6;
+  --co-genomics: #4db8a8;
+  --co-dtol:     #4cc86c;
+  --co-dtolenv:  #f0a44a;
+  --co-erga:     #e25098;
+  --co-asg:      #8060d0;
+}
+
+/* ─── Dark: Global overrides for hardcoded colours ─── */
+[data-theme="dark"] body {
+  color-scheme: dark !important;
+}
+
+/* Force all text to be visible */
+[data-theme="dark"],
+[data-theme="dark"] body,
+[data-theme="dark"] p,
+[data-theme="dark"] span:not(.component-legend-circle),
+[data-theme="dark"] div,
+[data-theme="dark"] li,
+[data-theme="dark"] td,
+[data-theme="dark"] th,
+[data-theme="dark"] label,
+[data-theme="dark"] legend,
+[data-theme="dark"] dt,
+[data-theme="dark"] dd,
+[data-theme="dark"] small,
+[data-theme="dark"] strong,
+[data-theme="dark"] b {
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] a {
+  color: var(--co-accent) !important;
+}
+[data-theme="dark"] a:hover {
+  color: var(--co-accent-hover) !important;
+}
+[data-theme="dark"] h1, [data-theme="dark"] h2,
+[data-theme="dark"] h3, [data-theme="dark"] h4,
+[data-theme="dark"] h5, [data-theme="dark"] h6 {
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] .help-block {
+  color: var(--co-muted) !important;
+}
+
+/* News cards — copo_news.css hardcodes a white card; give it a dark surface
+   so the forced light text (--co-text) is readable and matches the theme. */
+[data-theme="dark"] .news-item,
+[data-theme="dark"] .news-content,
+[data-theme="dark"] .news-inside,
+[data-theme="dark"] .news-item-details-container,
+[data-theme="dark"] .news-item-details-header,
+[data-theme="dark"] .news-item-details-content {
+  background-color: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .news-title,
+[data-theme="dark"] .news-item-details-title,
+[data-theme="dark"] .news-excerpt {
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .news-category,
+[data-theme="dark"] .news-date {
+  color: var(--co-muted) !important;
+}
+
+/* Cards (Bootstrap/material .card + Semantic UI .ui.card) hardcode a white
+   background the dark theme never overrode, leaving the forced light text
+   (--co-text) washed-out/invisible on white. Style them like the dark-mode
+   .news-item cards: dark surface, themed border, --co-text, and the same light
+   1px outline shadow news-item uses (copo_news.css) so the cards read crisply
+   against the dark page. Affects the ToL dashboard stat cards, statistics &
+   manifest panels, and cards site-wide. */
+[data-theme="dark"] .card,
+[data-theme="dark"] .ui.card,
+[data-theme="dark"] .ui.cards > .card {
+  background-color: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+  color: var(--co-text) !important;
+  box-shadow: 0 1px 3px 0 #d4d4d5, 0 0 0 1px #d4d4d5 !important;
+}
+[data-theme="dark"] .card .card-header,
+[data-theme="dark"] .card .card-footer {
+  background-color: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+  color: var(--co-text) !important;
+}
+
+/* Landing / secondary pages (manifests, about, privacy, terms): the public
+   navbar and the left-panel/banner use light-theme colours (teal #4a6c7a,
+   white navbar, light top-banner) the dark theme never overrode. */
+[data-theme="dark"] #publicNavbar {
+  background-color: var(--co-nav) !important;
+  border-color: var(--co-nav-border) !important;
+}
+[data-theme="dark"] #publicNavbar .navbar-nav > li > a,
+[data-theme="dark"] #publicNavbar .nav > li > a {
+  color: #fff !important;
+}
+[data-theme="dark"] #main_banner,
+[data-theme="dark"] .left-panel,
+[data-theme="dark"] .green-theme,
+[data-theme="dark"] .grey-theme {
+  background-color: var(--co-bg) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .top-banner-light {
+  background-color: var(--co-surface) !important;
+  color: var(--co-text) !important;
+}
+
+/* About / info pages: white content sections and team cards */
+[data-theme="dark"] .color-white,
+[data-theme="dark"] section.color-white {
+  background-color: var(--co-bg) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .person {
+  background-color: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .for-full-back,
+[data-theme="dark"] footer.for-full-back {
+  background-color: var(--co-surface) !important;
+  border-top: 1px solid var(--co-border) !important;
+}
+
+/* Navbar dropdown */
+[data-theme="dark"] #authNavbar .dropdown-menu {
+  background: #1a2530 !important;
+}
+[data-theme="dark"] #authNavbar .navbar-nav > li > a {
+  color: #fff !important;
+}
+
+/* Default card heading — lighten accent then tint over dark surface */
+[data-theme="dark"] .panel.panel-profile .panel-heading {
+  background: color-mix(in srgb,
+    color-mix(in srgb, var(--profile-accent, transparent) 90%, white)
+    70%, #22262e) !important;
+}
+
+/* Heading text */
+[data-theme="dark"] .panel.panel-profile .panel-heading .row-title span,
+[data-theme="dark"] .panel.panel-profile .panel-heading .panel-title {
+  color: var(--co-text) !important;
+}
+
+/* Ellipsis icon */
+[data-theme="dark"] .panel.panel-profile .panel-heading .fa-ellipsis-v {
+  color: rgba(255,255,255,.35) !important;
+}
+[data-theme="dark"] .panel.panel-profile .panel-heading .fa-ellipsis-v:hover {
+  color: rgba(255,255,255,.7) !important;
+}
+
+/* Component button hover tints — darker versions */
+[data-theme="dark"] .pcomponent-button.ui.button:hover {
+  box-shadow: 0 3px 10px rgba(0,0,0,.25) !important;
+}
+[data-theme="dark"] .pcomponent-button.ui.button.blue:hover    { background: #1a2530 !important; }
+[data-theme="dark"] .pcomponent-button.ui.button.olive:hover   { background: #1e2418 !important; }
+[data-theme="dark"] .pcomponent-button.ui.button.orange:hover  { background: #282018 !important; }
+[data-theme="dark"] .pcomponent-button.ui.button.green:hover   { background: #1a2820 !important; }
+[data-theme="dark"] .pcomponent-button.ui.button.violet:hover  { background: #201a2c !important; }
+[data-theme="dark"] .pcomponent-button.ui.button.yellow:hover  { background: #28241a !important; }
+[data-theme="dark"] .pcomponent-button.ui.button.pink:hover    { background: #281a22 !important; }
+[data-theme="dark"] .pcomponent-button.ui.button.teal:hover    { background: #1a2828 !important; }
+[data-theme="dark"] .pcomponent-button.ui.button.red:hover     { background: #281a1a !important; }
+
+/* Popover action button hover tints */
+[data-theme="dark"] .popover-action-btn-blue:hover  { background: #1a2530 !important; }
+[data-theme="dark"] .popover-action-btn-red:hover   { background: #281a1a !important; }
+[data-theme="dark"] .popover-action-btn-teal:hover  { background: #1a2828 !important; }
+
+/* Legend hover */
+[data-theme="dark"] .component-legend-header:hover {
+  background: #22262e !important;
+}
+
+/* Popovers */
+[data-theme="dark"] .popover,
+[data-theme="dark"] body > .popover {
+  background: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .popover-title {
+  background: #22262e !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .popover-content {
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .popover .arrow,
+[data-theme="dark"] .popover .arrow::after {
+  border-color: transparent !important;
+}
+[data-theme="dark"] body > .popover .popover-content span:not(.text-bold) {
+  color: var(--co-text) !important;
+}
+
+/* Scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar-track { background: #121418; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #3a3e48; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: #505460; }
+
+/* Grid wrapper */
+[data-theme="dark"] .grid,
+[data-theme="dark"] .grid-item {
+  background-color: transparent !important;
+}
+
+/* ── Pagination — consistent across all tables (light mode) ── */
+/* Bootstrap DT pagination: <ul.pagination> > <li.paginate_button> > <a>
+   Style the <a> only — styling the <li> creates ghost rectangles */
+.dataTables_paginate .paginate_button {
+  border: none !important;
+  background: transparent !important;
+}
+.dataTables_paginate .paginate_button a {
+  color: var(--co-text) !important;
+  background: var(--co-bg) !important;
+  border: 1px solid var(--co-border) !important;
+  border-radius: 4px !important;
+  text-decoration: none !important;
+}
+.dataTables_paginate .paginate_button:hover a {
+  background: #e8eef2 !important;
+  color: var(--co-accent) !important;
+  border-color: var(--co-accent) !important;
+}
+.dataTables_paginate .paginate_button.active a,
+.dataTables_paginate .paginate_button.current a {
+  background: var(--co-accent) !important;
+  color: #fff !important;
+  border-color: var(--co-accent) !important;
+}
+.dataTables_paginate .paginate_button.disabled a {
+  color: #aaa !important;
+  background: var(--co-bg) !important;
+  border-color: var(--co-border) !important;
+  cursor: default !important;
+}
+.dataTables_paginate .pagination {
+  background: transparent !important;
+}
+
+/* Tables — all types */
+[data-theme="dark"] table,
+[data-theme="dark"] table.dataTable,
+[data-theme="dark"] .dataTables_wrapper,
+[data-theme="dark"] .dataTables_info,
+[data-theme="dark"] .dataTables_length,
+[data-theme="dark"] .dataTables_filter,
+[data-theme="dark"] .dataTables_paginate,
+[data-theme="dark"] .dataTables_paginate span,
+[data-theme="dark"] .dataTables_paginate a {
+  background: transparent !important;
+  color: var(--co-text) !important;
+  border-color: #2a2e38 !important;
+}
+[data-theme="dark"] table thead th,
+[data-theme="dark"] table.dataTable thead th {
+  background: #22262e !important;
+  color: var(--co-text) !important;
+  border-color: #3a4155 !important;
+  border-bottom-width: 2px !important;
+}
+[data-theme="dark"] table tbody td,
+[data-theme="dark"] table.dataTable tbody td,
+[data-theme="dark"] table tfoot td {
+  background: transparent !important;
+  color: var(--co-text) !important;
+  border-color: #2a2e38 !important;
+}
+[data-theme="dark"] table.dataTable tbody tr:hover td,
+[data-theme="dark"] table tbody tr:hover td {
+  background: #22262e !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.odd {
+  background: #1c1f26 !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.even {
+  background: #21252d !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.odd:hover,
+[data-theme="dark"] table.dataTable tbody tr.even:hover {
+  background: #2a2f3d !important;
+}
+/* Bootstrap .table-striped fallback (non-DataTable striping) */
+[data-theme="dark"] table.table-striped > tbody > tr:nth-of-type(odd) {
+  background: #21252d !important;
+}
+/* Submission status row highlights — dark-mode palette. The light-theme
+   pastels (#d9e8d9 / #ffd700 / #f88080) are unreadable on dark bg, and the
+   generic tr.odd/tr.even rule above out-specificities the .highlight_* class
+   so we need an equally specific override here. */
+[data-theme="dark"] table.dataTable tbody tr.highlight_accession,
+[data-theme="dark"] table.dataTable tbody tr.highlight_accession.odd,
+[data-theme="dark"] table.dataTable tbody tr.highlight_accession.even {
+  background: #1e3a24 !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.highlight_no_accession,
+[data-theme="dark"] table.dataTable tbody tr.highlight_no_accession.odd,
+[data-theme="dark"] table.dataTable tbody tr.highlight_no_accession.even {
+  background: #3d3216 !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status,
+[data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status.odd,
+[data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status.even {
+  background: #3d1e1e !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.highlight_accession:hover,
+[data-theme="dark"] table.dataTable tbody tr.highlight_accession:hover td {
+  background: #26482e !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.highlight_no_accession:hover,
+[data-theme="dark"] table.dataTable tbody tr.highlight_no_accession:hover td {
+  background: #4c3f1b !important;
+}
+[data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status:hover,
+[data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status:hover td {
+  background: #4c2626 !important;
+}
+[data-theme="dark"] .dataTables_paginate .paginate_button {
+  border: none !important;
+  background: transparent !important;
+}
+[data-theme="dark"] .dataTables_paginate .paginate_button a {
+  color: var(--co-text) !important;
+  background: var(--co-surface) !important;
+  border: 1px solid #f0f3f8 !important;
+  border-radius: 0 !important;
+}
+[data-theme="dark"] .dataTables_paginate .paginate_button:hover a {
+  background: #2a2e36 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35) !important;
+}
+[data-theme="dark"] .dataTables_paginate .paginate_button.active a,
+[data-theme="dark"] .dataTables_paginate .paginate_button.current a {
+  background: var(--co-accent) !important;
+  color: #fff !important;
+  border: 1px solid #f0f3f8 !important;
+}
+[data-theme="dark"] .dataTables_paginate .paginate_button.disabled a {
+  color: #888 !important;
+  background: var(--co-surface) !important;
+  border: 1px solid #8a92a0 !important;
+  cursor: default !important;
+}
+[data-theme="dark"] .dataTables_paginate .pagination {
+  background: transparent !important;
+}
+
+/* Table action buttons — hide until rows are selected */
+.copo-table-cbuttons .copo-dt[data-btntype="single"],
+.copo-table-cbuttons .copo-dt[data-btntype="multi"] {
+  display: none !important;
+}
+.copo-table-cbuttons.has-selection .copo-dt[data-btntype="single"],
+.copo-table-cbuttons.has-selection .copo-dt[data-btntype="multi"] {
+  display: inline-flex !important;
+}
+
+/* Table action buttons and button row */
+[data-theme="dark"] .button-rw {
+  background: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .dtables-dbuttons {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .dtables-dbuttons:hover {
+  background: #2a2e36 !important;
+  color: var(--co-accent) !important;
+  border-color: var(--co-accent) !important;
+}
+
+/* Submit-action buttons (Submit to ENA / Submit to ZENODO etc.) — promote
+   from Semantic UI's "basic" outline to a solid filled pill. Specificity
+   has to match Semantic's `.ui.basic.<color>.button` to win the cascade. */
+.ui.basic.button.submit-btn {
+  color: #fff !important;
+  font-weight: 700 !important;
+  border: 1px solid transparent !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
+  text-shadow: none !important;
+  background-image: none !important;
+}
+.ui.basic.button.submit-btn i,
+.ui.basic.button.submit-btn .action-label { color: #fff !important; font-weight: 700 !important; }
+.ui.basic.teal.button.submit-btn   { background: var(--co-genomics) !important; }
+.ui.basic.blue.button.submit-btn   { background: var(--co-biodata)  !important; }
+.ui.basic.green.button.submit-btn  { background: var(--co-dtol)     !important; }
+.ui.basic.orange.button.submit-btn { background: var(--co-dtolenv)  !important; }
+.ui.basic.red.button.submit-btn    { background: #c0392b !important; }
+.ui.basic.button.submit-btn:hover  { filter: brightness(0.92); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important; }
+[data-theme="dark"] .ui.basic.button.submit-btn:hover { filter: brightness(1.15); }
+
+/* ── Sidebar toggle button (global, all 2-col pages) ── */
+#toggleSidebarInfoBtn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1050;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  background: #fff;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1;
+  /* Kill bootstrap-theme.css .btn-default text-shadow which renders as a
+     ghost icon offset by 1px — only visible in dark mode against a dark
+     background, and most obvious on hover when the icon colour changes. */
+  text-shadow: none !important;
+}
+#toggleSidebarInfoBtn i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  font-size: 0.95rem;
+  line-height: 1;
+  text-shadow: none !important;
+}
+.toggle-sidebar-arrow {
+  font-size: 0.85rem !important;
+}
+#toggleSidebarInfoBtn:hover {
+  background-color: #f0f0f0;
+  border-color: #999;
+}
+#toggleSidebarInfoBtn.active {
+  background-color: #e8f4f8;
+  border-color: #4a6c7a;
+  color: #4a6c7a;
+}
+[data-theme="dark"] #toggleSidebarInfoBtn {
+  background: var(--co-surface);
+  border: 1px solid #f0f3f8 !important;
+  color: var(--co-text);
+  -webkit-appearance: none;
+  appearance: none;
+  color-scheme: light !important;
+}
+#toggleSidebarInfoBtn:focus,
+#toggleSidebarInfoBtn:active,
+#toggleSidebarInfoBtn.focus {
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+[data-theme="dark"] #toggleSidebarInfoBtn:hover {
+  background: #2a2e36;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35) !important;
+}
+[data-theme="dark"] #toggleSidebarInfoBtn.active {
+  background: #1a2a33;
+  border-color: #f0f3f8 !important;
+  color: var(--co-accent);
+}
+
+/* Inputs, selects, textareas */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] select,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] .selectize-input,
+[data-theme="dark"] .selectize-dropdown,
+[data-theme="dark"] .select2-container--default .select2-selection,
+[data-theme="dark"] .select2-dropdown,
+[data-theme="dark"] .bootstrap-select .btn,
+[data-theme="dark"] .bootstrap-select .dropdown-menu {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .select2-container--default .select2-results__option {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .select2-container--default .select2-results__option--highlighted {
+  background: #22262e !important;
+}
+/* Placeholder text — clear mid-grey that reads on both themes. */
+input::placeholder, textarea::placeholder { color: #8a92a0 !important; opacity: 1 !important; }
+[data-theme="dark"] input::placeholder, [data-theme="dark"] textarea::placeholder { color: #c0c8d4 !important; opacity: 1 !important; }
+input::-webkit-input-placeholder, textarea::-webkit-input-placeholder { color: #8a92a0 !important; opacity: 1 !important; }
+[data-theme="dark"] input::-webkit-input-placeholder, [data-theme="dark"] textarea::-webkit-input-placeholder { color: #c0c8d4 !important; opacity: 1 !important; }
+input::-moz-placeholder, textarea::-moz-placeholder { color: #8a92a0 !important; opacity: 1 !important; }
+[data-theme="dark"] input::-moz-placeholder, [data-theme="dark"] textarea::-moz-placeholder { color: #c0c8d4 !important; opacity: 1 !important; }
+/* Bright-grey outline so search/filter inputs are easy to spot — DataTables
+   filter input is the one most likely to vanish into the dark surface. */
+[data-theme="dark"] .dataTables_filter input,
+[data-theme="dark"] input[type="search"],
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] textarea {
+  border: 1px solid #8a92a0 !important;
+}
+[data-theme="dark"] .dataTables_filter input:focus,
+[data-theme="dark"] input[type="search"]:focus,
+[data-theme="dark"] input[type="text"]:focus,
+[data-theme="dark"] textarea:focus {
+  border-color: #c0c8d4 !important;
+  box-shadow: 0 0 0 2px rgba(192, 200, 212, 0.2) !important;
+}
+/* The "has-data" attribute shows a dot/circle/bullet symbol for 
+  manifest/checklist dropdown menu options that have uploaded data. 
+  It replaces the initial red asterisk (*) symbol and is
+  sized and aligned to read as a status indicator rather than a 
+  glyph in the text of the selected item and dropdown results.
+*/
+.has-data-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #d9534f;
+  vertical-align: middle;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  margin-left: 2px;
+  position: relative;
+  top: -1px;
+}
+
+/* A circle (●) icon */
+.has-data-indicator::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background-color: currentColor;
+  border-radius: 50%;
+}
+
+[data-theme="dark"] .has-data-indicator {
+  color: #ff3b3b;
+  text-shadow:
+    0 0 3px rgba(255, 59, 59, 0.95),
+    0 0 6px rgba(255, 59, 59, 0.8),
+    0 0 10px rgba(255, 59, 59, 0.6),
+    0 0 16px rgba(255, 59, 59, 0.35);
+}
+
+/* Modals — Bootstrap & Bootstrap Dialog */
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .bootstrap-dialog .modal-content {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border: 1px solid #4a5266 !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+}
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .bootstrap-dialog .modal-header,
+[data-theme="dark"] .bootstrap-dialog .bootstrap-dialog-header {
+  background: var(--co-nav) !important;
+  color: #fff !important;
+  border-bottom: none !important;
+}
+[data-theme="dark"] .modal-title,
+[data-theme="dark"] .bootstrap-dialog-title {
+  color: #fff !important;
+}
+[data-theme="dark"] .modal-body,
+[data-theme="dark"] .bootstrap-dialog .modal-body {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .modal-footer,
+[data-theme="dark"] .bootstrap-dialog .modal-footer,
+[data-theme="dark"] .bootstrap-dialog-footer {
+  background: #151821 !important;
+  border-top: none !important;
+}
+/* Modal footer buttons — the bare Bootstrap 3 .btn-default was rendering as
+   white-on-white. Give every button in a dark modal a visible surface. */
+[data-theme="dark"] .modal-footer .btn,
+[data-theme="dark"] .bootstrap-dialog .modal-footer .btn,
+[data-theme="dark"] .modal-footer .btn-default,
+[data-theme="dark"] .modal-footer .btn-secondary {
+  background: #2a2f3d !important;
+  color: #e0e4ec !important;
+  border: 1px solid #4a5266 !important;
+  background-image: none !important;
+  text-shadow: none !important;
+}
+[data-theme="dark"] .modal-footer .btn:hover,
+[data-theme="dark"] .modal-footer .btn-default:hover,
+[data-theme="dark"] .modal-footer .btn-secondary:hover {
+  background: #3a4257 !important;
+  color: #ffffff !important;
+  border-color: #5a6480 !important;
+}
+[data-theme="dark"] .modal-footer .btn-primary {
+  background: var(--co-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--co-accent) !important;
+  background-image: none !important;
+  text-shadow: none !important;
+}
+[data-theme="dark"] .modal-footer .btn-primary:hover {
+  background: var(--co-accent-hover) !important;
+  border-color: var(--co-accent-hover) !important;
+  color: #ffffff !important;
+}
+[data-theme="dark"] .modal-footer .btn-danger {
+  background: #a8372e !important;
+  color: #ffffff !important;
+  border: 1px solid #c04a3e !important;
+  background-image: none !important;
+  text-shadow: none !important;
+}
+[data-theme="dark"] .modal-footer .btn-danger:hover {
+  background: #c04a3e !important;
+  border-color: #d85a4c !important;
+}
+/* The <hr> that some confirmation modals put between body and footer */
+[data-theme="dark"] .modal-body hr,
+[data-theme="dark"] .modal-content hr {
+  border-color: #3a4155 !important;
+  border-top-color: #3a4155 !important;
+}
+[data-theme="dark"] .close {
+  color: rgba(255,255,255,.7) !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+[data-theme="dark"] .close:hover {
+  color: #fff !important;
+}
+
+/* Panels — generic */
+[data-theme="dark"] .panel {
+  background: var(--co-surface) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .panel-heading {
+  background: #22262e !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .panel-body {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .panel-footer {
+  background: var(--co-bg) !important;
+  border-color: var(--co-border) !important;
+}
+
+/* Alerts */
+[data-theme="dark"] .alert {
+  background: #22262e !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+}
+
+/* Wells */
+[data-theme="dark"] .well {
+  background: var(--co-bg) !important;
+  border-color: var(--co-border) !important;
+  color: var(--co-text) !important;
+}
+
+/* List groups */
+[data-theme="dark"] .list-group-item {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .list-group-item:hover {
+  background: #22262e !important;
+}
+
+/* Breadcrumbs */
+[data-theme="dark"] .breadcrumb {
+  background: var(--co-bg) !important;
+}
+[data-theme="dark"] .breadcrumb > li,
+[data-theme="dark"] .breadcrumb > .active {
+  color: var(--co-muted) !important;
+}
+
+/* Dropdown menus — dark panel with a bright hover/selected band that is
+   clearly distinguishable from the surface (#1c1f26) on a grey monitor. */
+[data-theme="dark"] .dropdown-menu {
+  background: #141821 !important;
+  border: 1px solid #3a4155 !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+}
+[data-theme="dark"] .dropdown-menu > li > a,
+[data-theme="dark"] .dropdown-menu .dropdown-item,
+[data-theme="dark"] .dropdown-menu > li > label {
+  color: var(--co-text) !important;
+  background: transparent !important;
+}
+[data-theme="dark"] .dropdown-menu > li > a:hover,
+[data-theme="dark"] .dropdown-menu > li > a:focus,
+[data-theme="dark"] .dropdown-menu > li > label:hover,
+[data-theme="dark"] .dropdown-menu .dropdown-item:hover,
+[data-theme="dark"] .dropdown-menu .dropdown-item:focus {
+  background: #4a5a7a !important;
+  color: #ffffff !important;
+  background-image: none !important;
+}
+[data-theme="dark"] .dropdown-menu > .active > a,
+[data-theme="dark"] .dropdown-menu > .active > a:hover,
+[data-theme="dark"] .dropdown-menu > .active > a:focus,
+[data-theme="dark"] .dropdown-menu .dropdown-item.active,
+[data-theme="dark"] .dropdown-menu .dropdown-item:active {
+  background: var(--co-accent) !important;
+  color: #ffffff !important;
+  background-image: none !important;
+}
+[data-theme="dark"] .dropdown-menu .divider {
+  background: #3a4155 !important;
+}
+/* Select2 option rows — the -highlighted class is what fires on hover/arrow-key */
+[data-theme="dark"] .select2-container--default .select2-results__option--highlighted,
+[data-theme="dark"] .select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background: #4a5a7a !important;
+  color: #ffffff !important;
+}
+[data-theme="dark"] .select2-container--default .select2-results__option[aria-selected="true"] {
+  background: var(--co-accent) !important;
+  color: #ffffff !important;
+}
+/* Selectize options */
+[data-theme="dark"] .selectize-dropdown .option {
+  background: transparent !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .selectize-dropdown .option.active,
+[data-theme="dark"] .selectize-dropdown .option:hover {
+  background: #4a5a7a !important;
+  color: #ffffff !important;
+}
+/* Semantic UI dropdown menu items */
+[data-theme="dark"] .ui.dropdown .menu > .item {
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .ui.dropdown .menu > .item:hover,
+[data-theme="dark"] .ui.dropdown .menu > .item.selected {
+  background: #4a5a7a !important;
+  color: #ffffff !important;
+}
+[data-theme="dark"] .ui.dropdown .menu > .item.active {
+  background: var(--co-accent) !important;
+  color: #ffffff !important;
+}
+
+/* Tooltip styling lives in the consolidated .tooltip-inner block below. */
+
+/* Validation output panels (#sample_info, #warning_info, etc.). The light-theme
+   rules in src/apps/copo_sample/static/copo/css/sample.css paint <strong> and
+   <h2> with very pale pink/yellow backgrounds — on a dark panel and with the
+   generic `[data-theme="dark"] strong { color: var(--co-text) }` rule they
+   become near-invisible pale-on-pale. Dark palette + explicit dark text. */
+[data-theme="dark"] .sample-alert-error {
+  color: #ff8a8a !important;
+}
+[data-theme="dark"] .sample-alert-error h2 {
+  background: #5a1e1e !important;
+  color: #ffd0d0 !important;
+  padding: 2px 10px !important;
+  border-radius: 3px !important;
+}
+[data-theme="dark"] .sample-alert-error ol li {
+  color: #f0e6e6 !important;
+}
+[data-theme="dark"] .sample-alert-error strong {
+  background: #3d1e1e !important;
+  color: #ffd0d0 !important;
+  padding: 0 4px !important;
+  border-radius: 2px !important;
+}
+[data-theme="dark"] .sample-alert-warning > h2 {
+  background: #3d3216 !important;
+  color: #f0d890 !important;
+  padding: 2px 10px !important;
+  border-radius: 3px !important;
+}
+[data-theme="dark"] #warning_info > strong,
+[data-theme="dark"] #warning_info2 > strong,
+[data-theme="dark"] #warning_info3 > ul > li > ul > li > strong,
+[data-theme="dark"] #warning_info3 > ul > li > strong {
+  background: #3d3216 !important;
+  color: #f0d890 !important;
+  padding: 0 4px !important;
+  border-radius: 2px !important;
+}
+[data-theme="dark"] #warning_info3 {
+  border-top-color: #3a4155 !important;
+}
+[data-theme="dark"] .sample-alert-success {
+  color: #a8e6b8 !important;
+}
+[data-theme="dark"] .sample-alert-info {
+  color: var(--co-text) !important;
+  border-right-color: #f0a44a !important;
+}
+
+/* "Valid values" enum popover inside error messages — the light-theme version
+   renders as a bright white rectangle on the dark panel, which is jarring and
+   unreadable. Paint to match the surface palette. */
+[data-theme="dark"] details.valid-enum .valid-enum-trigger {
+  color: #7aa7ff !important;
+}
+[data-theme="dark"] details.valid-enum .valid-enum-container {
+  background: #1c1f26 !important;
+  color: var(--co-text) !important;
+  border: 1px solid #3a4155 !important;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.55) !important;
+}
+[data-theme="dark"] details.valid-enum .valid-enum-title {
+  background: #2a2f3d !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid #3a4155 !important;
+}
+[data-theme="dark"] details.valid-enum ul li {
+  color: var(--co-text) !important;
+}
+
+/* Semantic UI overrides */
+[data-theme="dark"] .ui.menu {
+  background: transparent !important;
+}
+[data-theme="dark"] .ui.segment,
+[data-theme="dark"] .ui.message {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+  box-shadow: none !important;
+}
+[data-theme="dark"] .ui.button:not(.big):not(.primary):not(.teal):not(.pink):not(.green):not(.yellow):not(.orange):not(.red):not(.blue):not(.violet):not(.olive):not(.brown):not(.purple):not(.grey) {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .ui.primary.button {
+  background: var(--co-accent) !important;
+  color: #fff !important;
+}
+
+/* Loader overlay */
+[data-theme="dark"] #loaderOverlay {
+  background: var(--co-bg) !important;
+}
+
+/* Getting started section */
+[data-theme="dark"] .page-welcome-message .webui-popover-inner {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .copo-webui-popover {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .copo-webui-popover-title {
+  background: #22262e !important;
+  color: var(--co-text) !important;
+}
+
+/* Sidebar */
+[data-theme="dark"] .copo-sidebar,
+[data-theme="dark"] #copo_sidebar {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border-left: 1px solid var(--co-border) !important;
+}
+
+/* Tabs */
+[data-theme="dark"] .nav-tabs {
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .nav-tabs > li > a {
+  color: var(--co-muted) !important;
+}
+[data-theme="dark"] .nav-tabs > li > a:hover {
+  background: #22262e !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .nav-tabs > li.active > a {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+  border-bottom-color: var(--co-surface) !important;
+}
+[data-theme="dark"] .tab-content {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+}
+
+/* Icons — ensure visibility (inherit parent text colour by default).
+   Excludes `.inline-nav-icon` so explicitly-coloured nav icons keep their
+   palette colour rather than turning into the surrounding text colour. */
+[data-theme="dark"] i.fa:not(.inline-nav-icon),
+[data-theme="dark"] i.fas:not(.inline-nav-icon),
+[data-theme="dark"] i.far:not(.inline-nav-icon),
+[data-theme="dark"] .material-symbols-outlined:not(.inline-nav-icon) {
+  color: inherit !important;
+}
+
+/* All popover variants — comprehensive dark override */
+[data-theme="dark"] .popover,
+[data-theme="dark"] .popover1,
+[data-theme="dark"] .webui-popover,
+[data-theme="dark"] .copo-webui-popover,
+[data-theme="dark"] .webui-popover-inner {
+  background-color: var(--co-surface) !important;
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .popover-title,
+[data-theme="dark"] .popover1-title,
+[data-theme="dark"] .webui-popover-title,
+[data-theme="dark"] .copo-webui-popover-title {
+  background-color: #22262e !important;
+  background: #22262e !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .popover-content,
+[data-theme="dark"] .popover1-content,
+[data-theme="dark"] .webui-popover-content,
+[data-theme="dark"] .copo-webui-popover-content {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+}
+/* Popover arrows — hide or match dark bg */
+[data-theme="dark"] .popover > .arrow::after,
+[data-theme="dark"] .popover1 > .arrow::after,
+[data-theme="dark"] .webui-popover > .arrow::after {
+  border-top-color: var(--co-surface) !important;
+  border-bottom-color: var(--co-surface) !important;
+  border-left-color: var(--co-surface) !important;
+  border-right-color: var(--co-surface) !important;
+}
+[data-theme="dark"] .popover > .arrow,
+[data-theme="dark"] .popover1 > .arrow,
+[data-theme="dark"] .webui-popover > .arrow {
+  border-top-color: var(--co-border) !important;
+  border-bottom-color: var(--co-border) !important;
+  border-left-color: var(--co-border) !important;
+  border-right-color: var(--co-border) !important;
+}
+
+/* Profile options popover (ellipsis menu) */
+[data-theme="dark"] .popover-action-btn {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+}
+
+/* Shepherd.js tour elements */
+[data-theme="dark"] .shepherd-element,
+[data-theme="dark"] .shepherd-step-custom {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .shepherd-header {
+  background: #22262e !important;
+  color: var(--co-text) !important;
+  border-bottom-color: var(--co-border) !important;
+}
+[data-theme="dark"] .shepherd-header .shepherd-title {
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .shepherd-cancel-icon {
+  color: var(--co-text) !important;
+  text-shadow: none !important;
+}
+[data-theme="dark"] .shepherd-text {
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .shepherd-text::after {
+  background-color: var(--co-border) !important;
+}
+[data-theme="dark"] .shepherd-text li {
+  color: var(--co-text) !important;
+}
+[data-theme="dark"] .shepherd-footer {
+  background: var(--co-surface) !important;
+}
+[data-theme="dark"] .shepherd-note {
+  color: var(--co-muted) !important;
+}
+[data-theme="dark"] .shepherd-note::before {
+  color: var(--co-muted) !important;
+}
+[data-theme="dark"] .shepherd-arrow::before {
+  background: var(--co-surface) !important;
+}
+/* Tour buttons */
+[data-theme="dark"] .tour-start-btn,
+[data-theme="dark"] .tour-next-btn {
+  color: #6db3f2 !important;
+}
+[data-theme="dark"] .tour-start-btn:hover,
+[data-theme="dark"] .tour-next-btn:hover {
+  color: #8ec5f7 !important;
+}
+[data-theme="dark"] .tour-dismiss-btn,
+[data-theme="dark"] .tour-end-btn {
+  color: #f27961 !important;
+}
+[data-theme="dark"] .webpop-content-div span {
+  color: var(--co-muted) !important;
+}
+[data-theme="dark"] .tour-start-btn i,
+[data-theme="dark"] .tour-next-btn i {
+  color: var(--co-muted) !important;
+}
+
+/* Semantic UI popups (copo-tooltip) */
+[data-theme="dark"] .ui.popup {
+  background: var(--co-surface) !important;
+  color: var(--co-text) !important;
+  border-color: var(--co-border) !important;
+}
+[data-theme="dark"] .ui.popup::before {
+  background: var(--co-surface) !important;
+  box-shadow: 1px 1px 0 0 var(--co-border) !important;
+}
+[data-theme="dark"] .ui.popup .header {
+  color: var(--co-text) !important;
+}
+
+/* Bootstrap tooltips — uniform width across themes so multi-line tooltips
+   don't render as narrow tall strips, light surface so text reads. */
+.tooltip-inner {
+  max-width: 360px !important;
+  width: 360px !important;
+  text-align: left !important;
+  padding: 8px 12px !important;
+  background-color: #f5f6f9 !important;
+  color: #2a2e36 !important;
+  border: 1px solid #c0c8d4 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+  line-height: 1.45 !important;
+  opacity: 1 !important;
+}
+.tooltip.in { opacity: 1 !important; }
+.tooltip.top .tooltip-arrow    { border-top-color: #c0c8d4 !important; }
+.tooltip.bottom .tooltip-arrow { border-bottom-color: #c0c8d4 !important; }
+.tooltip.left .tooltip-arrow   { border-left-color: #c0c8d4 !important; }
+.tooltip.right .tooltip-arrow  { border-right-color: #c0c8d4 !important; }
+[data-theme="dark"] .tooltip-inner {
+  background-color: #e8ecf2 !important;
+  color: #1a1d24 !important;
+  border-color: #8a92a0 !important;
+}
+[data-theme="dark"] .tooltip.top .tooltip-arrow    { border-top-color: #8a92a0 !important; }
+[data-theme="dark"] .tooltip.bottom .tooltip-arrow { border-bottom-color: #8a92a0 !important; }
+[data-theme="dark"] .tooltip.left .tooltip-arrow   { border-left-color: #8a92a0 !important; }
+[data-theme="dark"] .tooltip.right .tooltip-arrow  { border-right-color: #8a92a0 !important; }
+
+/* Theme toggle button */
+.theme-toggle-btn {
+  background: none !important;
+  border: none !important;
+  color: rgba(255,255,255,.7) !important;
+  cursor: pointer !important;
+  font-size: 1rem !important;
+  padding: 16px 11px !important;
+  transition: color .15s !important;
+}
+.theme-toggle-btn:hover {
+  color: #fff !important;
+}
+
+/* ── DataTables info-row ── */
+.info-rw,
+.info-rw2,
+.info-rw3 {
+  background: var(--co-bg) !important;
+  border: 1px solid var(--co-border) !important;
+  color: var(--co-text) !important;
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+  margin: 0 !important;
+}
+
+/* ══════════════════════════════════════════
+   SIDEBAR ALERTS — modern notification style
+   ══════════════════════════════════════════ */
+#page_alert_panel .alert {
+  border: none !important;
+  border-radius: 8px !important;
+  border-left: 4px solid !important;
+  padding: 12px 36px 12px 14px !important;
+  margin-bottom: 10px !important;
+  font-size: .82rem !important;
+  line-height: 1.5 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06) !important;
+  position: relative !important;
+}
+
+#page_alert_panel .alert .close {
+  position: absolute !important;
+  top: 8px !important;
+  right: 10px !important;
+  font-size: 1rem !important;
+  opacity: .4 !important;
+  text-shadow: none !important;
+  transition: opacity .15s !important;
+}
+#page_alert_panel .alert .close:hover {
+  opacity: .8 !important;
+}
+
+#page_alert_panel .alert-info {
+  background: #eef6fc !important;
+  border-left-color: #3b8dbd !important;
+  color: #1a4a6e !important;
+}
+#page_alert_panel .alert-success {
+  background: #edf7f0 !important;
+  border-left-color: #3ca85c !important;
+  color: #1a5c2e !important;
+}
+#page_alert_panel .alert-warning {
+  background: #fef8ed !important;
+  border-left-color: #d4a017 !important;
+  color: #6b5010 !important;
+}
+#page_alert_panel .alert-danger {
+  background: #fdf0f0 !important;
+  border-left-color: #c0392b !important;
+  color: #6e1a1a !important;
+}
+
+/* Dark mode overrides */
+[data-theme="dark"] #page_alert_panel .alert-info {
+  background: #172530 !important;
+  border-left-color: #5cb8e6 !important;
+  color: #a8d4ee !important;
+}
+[data-theme="dark"] #page_alert_panel .alert-success {
+  background: #172818 !important;
+  border-left-color: #4cc86c !important;
+  color: #a8e6b8 !important;
+}
+[data-theme="dark"] #page_alert_panel .alert-warning {
+  background: #282218 !important;
+  border-left-color: #f0c040 !important;
+  color: #e6d48a !important;
+}
+[data-theme="dark"] #page_alert_panel .alert-danger {
+  background: #281818 !important;
+  border-left-color: #e05555 !important;
+  color: #e6a8a8 !important;
+}
+[data-theme="dark"] #page_alert_panel .alert .close {
+  color: var(--co-text) !important;
+}
+
+/* Activity log pane (the monospace stream rendered by displayAlert). The
+   inline 1px solid #333 border set by generic_handlers_ext2.js is nearly
+   invisible against either theme — promote it to a higher-contrast ring. */
+#submission-activity-log {
+  border: 1.5px solid var(--co-accent) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08),
+              0 4px 12px rgba(0, 0, 0, 0.12) !important;
+}
+[data-theme="dark"] #submission-activity-log {
+  border: 2px solid #6a8aaa !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5),
+              0 4px 14px rgba(0, 0, 0, 0.6) !important;
+}

@@ -3,22 +3,37 @@ import json
 import datetime
 from common.utils.logger import Logger
 import requests
+import unicodedata
+import common.schemas.utils.data_utils as d_utils
+
+from urllib.parse import quote
+
 l = Logger()
 
+# HTML error message templates for taxonomy validation failures.
+# Used by check_taxon_ena_submittable() to produce user-facing error strings.
 MESSAGE = {
+    # Shown when a taxon has a scientific name that is not a valid binomial (genus + species).
     'validation_msg_invalid_binomial_name': "For the TAXON_ID,  <strong>%s</strong>, the scientific name, <strong>%s</strong>, is not a valid binomial name. "
                                             "Please contact <a href='mailto:ena-asg@ebi.ac.uk'>ena-asg@ebi.ac.uk</a> or "
                                             "<a href='mailto:ena-dtol@ebi.ac.uk'>ena-dtol@ebi.ac.uk</a> or "
                                             "<a href='mailto:ena-bge@ebi.ac.uk'>ena-bge@ebi.ac.uk</a> to request assistance for this taxonomy.",
+    # Shown when ENA marks the taxon as not submittable (e.g. environmental samples, metagenomes).
     'validation_msg_not_submittable_taxon': "TAXON_ID <strong>%s</strong> is not 'submittable' to ENA. Please see "
                                             "<a href='https://ena-docs.readthedocs.io/en/latest/faq/taxonomy_requests.html#creating-taxon-requests'>here</a> "
                                             "and contact <a href='mailto:ena-asg@ebi.ac.uk'>ena-asg@ebi.ac.uk</a> or "
                                             "<a href='mailto:ena-dtol@ebi.ac.uk'>ena-dtol@ebi.ac.uk</a> or "
                                             "<a href='mailto:ena-bge@ebi.ac.uk'>ena-bge@ebi.ac.uk</a> to request an "
-                                            "informal placeholder species name. Please also refer to the ASG/DTOL/ERGA SOP.",                                            
+                                            "informal placeholder species name. Please also refer to the ASG/DTOL/ERGA SOP.",
 }
 
 def validate_date(date_text):
+    """
+    Validate that date_text is a well-formed YYYY-MM-DD date in the past.
+
+    Raises ValueError if the format is wrong, AssertionError if the date is
+    today or in the future.
+    """
     try:
         datetime.datetime.strptime(date_text, '%Y-%m-%d')
     except ValueError:
@@ -31,6 +46,12 @@ def validate_date(date_text):
         raise AssertionError("Incorrect date entered: date is in the future")
 
 def check_biocollection(voucher_id, qualifier_type):
+    """
+    Validate a specimen voucher against the EBI Sample Accessioning Hub (SAH) API.
+
+    Returns True if the voucher_id/qualifier_type combination is registered,
+    False otherwise (including on network errors).
+    """
     url = f"https://www.ebi.ac.uk/ena/sah/api/validate"
 
     try:
@@ -48,61 +69,120 @@ def check_biocollection(voucher_id, qualifier_type):
     return False
 
 
-def check_taxon_ena_submittable(taxon, by="id"):
+def check_taxon_ena_submittable(taxon, is_binomial_required=True, by="id"):
+    """
+    Query the ENA taxonomy REST API to verify a taxon is valid and submittable.
+
+    Args:
+        taxon: Taxon ID (string) or scientific name depending on `by`.
+        is_binomial_required: If True, also check that the name is a binomial.
+        by: "id" to look up by numeric taxon ID, "binomial" by scientific name.
+
+    Returns:
+        (errors, taxinfo) — errors is a list of HTML error strings (empty = valid),
+        taxinfo is the raw dict returned by ENA (or None on failure).
+
+    Checks performed:
+        - ENA returns a result (taxon exists)
+        - taxinfo["submittable"] == "true"
+        - taxinfo["rank"] is "species" or "subspecies"
+        - If is_binomial_required: taxinfo["binomial"] is True
+    """
     errors = []
-    receipt = None
+    body = ""
     taxinfo = None
-    curl_cmd = None
+
+    # Use `requests` (not subprocess+curl) so the call is non-blocking under
+    # gevent — a synchronous curl blocks the whole event loop, stalling every
+    # other concurrent celery task until the request returns.
     if by == "id":
-        curl_cmd = "curl " + "https://www.ebi.ac.uk/ena/taxonomy/rest/tax-id/" + taxon
+        url = "https://www.ebi.ac.uk/ena/taxonomy/rest/tax-id/" + taxon
     elif by == "binomial":
-        curl_cmd = "curl " + "https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/" + taxon.replace(" ", "%20")
+        url = "https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/" + taxon.replace(" ", "%20")
+    else:
+        errors.append(MESSAGE['validation_msg_not_submittable_taxon'] % (taxon))
+        return errors, taxinfo
+
     try:
-        receipt = subprocess.check_output(curl_cmd, shell=True)
-        print(receipt)
-        if receipt.decode("utf-8") == "":
-            errors.append(
-                "ENA returned no results for Scientific Name " + taxon + ". This could mean that the taxon id is incorrect, or ENA maybe down.")
-            return errors
-        taxinfo = json.loads(receipt.decode("utf-8"))
+        resp = requests.get(url, timeout=10)
+        body = resp.text or ""
+
+        if body.strip() == "" or body.strip() == "No results.":
+            errors.append("ENA returned no results for " + taxon)
+            return errors, taxinfo
+
+        taxinfo = json.loads(body)
+
         if by == "binomial":
             taxinfo = taxinfo[0]
+
         if taxinfo["submittable"] != 'true':
             errors.append("TAXON_ID " + taxon + " is not submittable to ENA")
+
         if taxinfo["rank"] not in ["species", "subspecies"]:
             errors.append("TAXON_ID " + taxon + " is not a 'species' or 'subspecies' level entity.")
-        if taxinfo["binomial"] == "false":  
-            errors.append(MESSAGE['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))    
+
+        is_taxon_binomial = d_utils.convertStringToBoolean(taxinfo["binomial"])
+        if is_binomial_required and not is_taxon_binomial:
+            errors.append(MESSAGE['validation_msg_invalid_binomial_name'] % (taxon, taxinfo["scientificName"]))
+    except requests.exceptions.Timeout:
+        l.error("ENA taxonomy lookup timed out for %s (url=%s)" % (taxon, url))
+        errors.append(
+            "ENA taxonomy lookup timed out for " + taxon + ". The ENA service may be slow or unreachable; please retry.")
     except Exception as e:
         l.exception(e)
-        if receipt:
-            if receipt.decode("utf-8") == "No results.":
-                errors.append(
-                    "ENA returned no results for Scientific Name " + taxon)
-            else:
-                try:
-                    errors.append(
-                        "ENA returned - " + taxinfo.get("error", "no error returned") + " - for TAXON_ID " + taxon)
-                except (NameError, AttributeError):
-                    errors.append(
-                        "ENA returned - " + receipt.decode("utf-8") + " - for TAXON_ID " + taxon)
-        else:
+        try:
+            errors.append(
+                "ENA returned - " + (taxinfo.get("error", "no error returned") if taxinfo else (body or "no response")) + " - for TAXON_ID " + taxon)
+        except (NameError, AttributeError):
             errors.append(MESSAGE['validation_msg_not_submittable_taxon'] % (taxon))
+
     return errors, taxinfo
 
+
 def checkOntologyTerm(ontology_id, ancestor, term):
-    url = f"https://www.ebi.ac.uk/ols4/api/v2/entities?search={term}&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId={ontology_id}"
+    """
+    Check that `term` exists in the given ontology and descends from `ancestor`.
+
+    Queries the EBI OLS4 API for an exact label/synonym match, then verifies
+    that the matched entity has `ancestor` in its hierarchical ancestor list.
+
+    Args:
+        ontology_id: OLS ontology ID, e.g. "efo" or "uberon".
+        ancestor:    Numeric part of the ancestor term ID, e.g. "0000001".
+        term:        The label or synonym string to look up.
+
+    Returns:
+        True if a matching term that descends from ancestor is found, else False.
+    """
+    encoded_term = quote(term) # URL-encode the term to handle spaces and special characters
+    ontology_id_lower = ontology_id.lower() # OLS4 API seems to require lowercase ontology IDs
+    url = f"https://www.ebi.ac.uk/ols4/api/v2/entities?search={encoded_term}&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId={ontology_id_lower}"
     response = requests.get(url)
+    
     if response.status_code == 200:
         data = response.json()
         for elm in data.get("elements",[]):
+            # Accept a match on label or any synonym (handles both plain strings and
+            # dicts with a "value" key, as OLS4 returns synonyms in both formats).
             if term in elm.get("label",[]) or any( isinstance(synonym, str) and synonym == term  or synonym.get("value") == term for synonym in elm.get("synonym",[])) :
                 for ancestor_uri in elm.get("hierarchicalAncestor",[]):
+                    # Ancestor URIs end with "{ontology_id}_{ancestor}" (case variants exist).
                     if ancestor_uri.endswith(f"{ontology_id}_{ancestor}") or ancestor_uri.endswith(f"{ontology_id.upper()}_{ancestor}"):
                         return True
     return False
 
 def checkNCBITaxonTerm(term):
+    """
+    Verify that an NCBI Taxon ID exists and is not obsolete via EBI OLS4.
+
+    Args:
+        term: Numeric NCBI taxon ID as a string, e.g. "9606".
+
+    Returns:
+        True if the taxon is found and its CURIE matches "NCBITaxon:{term}",
+        False otherwise.
+    """
     url = f"https://www.ebi.ac.uk/ols4/api/v2/ontologies/ncbitaxon/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_{term}?includeObsoleteEntities=false"
     response = requests.get(url)
     if response.status_code == 200:
@@ -111,3 +191,9 @@ def checkNCBITaxonTerm(term):
         if curie == f"NCBITaxon:{term}":
             return True
     return False
+
+def clean_str(s):
+    # Normalise Unicode spaces (e.g. NBSP → normal space)
+    normalised = unicodedata.normalize('NFKC', str(s))
+    # Remove all leading/trailing whitespace (including NBSP, zero-width)
+    return normalised.strip()

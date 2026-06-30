@@ -5,7 +5,7 @@ import pickle
 from os.path import join, isfile
 from pathlib import Path
 from shutil import rmtree
-import jsonpath_rw_ext as jp
+from jsonpath_ng.ext import parse as jp
 import pandas
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -28,6 +28,7 @@ from common.schema_versions.lookup import dtol_lookups as lookup
 from common.utils.logger import Logger
 import numpy as np
 from PIL import ImageFile, Image
+import unicodedata
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -142,7 +143,7 @@ class DtolSpreadsheet:
         self.current_schema_version = settings.MANIFEST_VERSION.get(
             self.type, "")
  
-        # Get associated type(s) as string separated by '|' symbol
+        # Get associated types as string separated by '|' symbol
         self.associated_type = " | ".join(associated_type_lst)
 
         '''
@@ -432,8 +433,6 @@ class DtolSpreadsheet:
                 for chunk in file.chunks():
                     destination.write(chunk)
 
-            filename = os.path.splitext(file.name)[0].upper()
-            # now iterate through samples data to see if there is a match between specimen_id and permit name
         permit_path = Path(settings.MEDIA_ROOT) / \
             "sample_permits" / self.profile_id
         fail_flag = False
@@ -443,6 +442,9 @@ class DtolSpreadsheet:
 
             file_list = [f for f in os.listdir(
                 permit_path) if isfile(join(permit_path, f))]
+            
+            #to handle unicode filename issues on different OS
+            file_list = [unicodedata.normalize('NFC', fn) for fn in file_list]
             file_list = set(file_list)  # Remove duplicate filenames
 
             if sample[ethics_permits_required_index] == "Y":
@@ -545,11 +547,11 @@ class DtolSpreadsheet:
         public_name_list = list()
         x = json_to_pytype(
             lk.WIZARD_FILES["sample_details"], compatibility_mode=False)
-        self.fields = jp.match(
+        self.fields = [match.value for match in jp(
             '$.properties[?(@.specifications[*] == "' + self.type.lower() +
             '"& @.manifest_version[*]=="' +
             self.current_schema_version + '")].versions[0]',
-            x)
+            ).find(x)]
 
         # Create a permit filename mapping
         permit_filename_mapping = dict()
@@ -575,7 +577,7 @@ class DtolSpreadsheet:
 
             s["manifest_version"] = settings.MANIFEST_VERSION.get(self.type.upper(), "0")
             s["sample_type"] = self.type.lower()
-            s["tol_project"] = self.type.lower()
+            s["tol_project"] = self.type.upper()
             s["associated_tol_project"] = self.associated_type
             s["biosample_accession"] = []
             s["manifest_id"] = manifest_id
@@ -679,7 +681,7 @@ class DtolSpreadsheet:
         request = ThreadLocal.get_current_request()
         profile_id = request.session["profile_id"]
         # Update the associated tol project for each sample in the manifest
-        # get associated profile type(s) of manifest
+        # get associated profile types of manifest
         profile = Profile().get_record(profile_id)
         associated_profiles = profile.get("associated_type", [])
 
@@ -773,7 +775,7 @@ class DtolSpreadsheet:
 
             uri = request.build_absolute_uri('/')
 
-            # Get associated type(s) as string separated by '|' symbol
+            # Get associated types as string separated by '|' symbol
             # then, update the associated tol project field in the sample
             associated_type = " | ".join(associated_profiles)
             

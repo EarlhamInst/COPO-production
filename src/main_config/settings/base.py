@@ -109,6 +109,7 @@ PROJECT_APPS = [
     'compressor',
     'django_extensions',
     'django_user_agents',
+    'django_json_widget',
     'corsheaders',
     'crispy_forms',
     "crispy_bootstrap5",

@@ -1,0 +1,92 @@
+strong {
+  font-weight: bold;
+}
+
+em {
+  font-style: italic;
+}
+
+table {
+  border-collapse: separate;
+  font-size: 14px;
+  line-height: 24px;
+  margin: 30px auto;
+  text-align: left;
+  width: 100%;
+  border: 1px solid rgba(69, 71, 74, 0.05);
+}
+
+th:after {
+  content: '';
+  display: block;
+  height: 25%;
+  left: 0;
+  margin: 1px 0 0 0;
+  position: absolute;
+  top: 25%;
+  width: 100%;
+}
+
+th:first-child {
+  /*border-left: 1px solid #777;
+    box-shadow: inset 1px 1px 0 #999;*/
+}
+
+th:last-child {
+  /*box-shadow: inset -1px 1px 0 #999;*/
+}
+th {
+  color: white;
+  background: #46484a;
+  padding: 10px 15px;
+  position: relative;
+  border: 1px solid #46484a;
+}
+td {
+  /*border-right: 1px solid #fff;
+    border-left: 1px solid #e8e8e8;
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid #e8e8e8;*/
+  padding: 10px 15px;
+  position: relative;
+  transition: all 100ms;
+  border: none;
+}
+
+td:first-child {
+  /*box-shadow: inset 1px 0 0 #fff;*/
+}
+
+td:last-child {
+  /*border-right: 1px solid #e8e8e8;
+    box-shadow: inset -1px 0 0 #fff;*/
+}
+
+tr {
+  //background: url("/static/assets/img/noise-diagonal.png");
+}
+
+tr:nth-child(odd) td {
+  //background: #f1f1f1 url("/static/assets/img/noise-diagonal.png");
+}
+
+tr:last-of-type td {
+  box-shadow: inset 0 -1px 0 #fff;
+}
+
+tr:last-of-type td:first-child {
+  box-shadow: inset 1px -1px 0 #fff;
+}
+
+tr:last-of-type td:last-child {
+  box-shadow: inset -1px -1px 0 #fff;
+}
+
+tbody:hover td {
+  color: grey;
+}
+
+tbody:hover tr:hover td {
+  color: black;
+  text-shadow: 0 1px 0 #fff;
+}

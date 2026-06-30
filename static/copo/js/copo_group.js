@@ -167,7 +167,7 @@ $(document).ready(function () {
             // Show success alert in the 'Info' panel
             const alertType = 'success';
             const alertMessage = 'Group created!';
-            display_copo_alert(alertType, alertMessage);
+            displayAlert(alertType, alertMessage);
           })
           .fail(function (data) {
             $('.helpDivRow').show();
@@ -221,7 +221,7 @@ $(document).ready(function () {
                 // Show success alert in the 'Info' panel
                 const alertType = 'success';
                 const alertMessage = 'Group deleted!';
-                display_copo_alert(alertType, alertMessage);
+                displayAlert(alertType, alertMessage);
               })
               .fail(function (e) {
                 console.log(e);
@@ -260,8 +260,9 @@ $(document).ready(function () {
     });
 
     let dialog = new BootstrapDialog({
-      title: 'Edit Group',
+      title: 'Edit group',
       message: message,
+      cssClass: 'form-modal',
       closable: true,
       animate: true,
       onhidden: function () {
@@ -295,7 +296,7 @@ $(document).ready(function () {
                 // Show success alert in the 'Info' panel
                 const alertType = 'success';
                 const alertMessage = 'Group updated!';
-                display_copo_alert(alertType, alertMessage);
+                displayAlert(alertType, alertMessage);
                 dialogRef.close();
               })
               .fail(function (data) {
@@ -370,7 +371,7 @@ $(document).ready(function () {
   }
 
   function remove_profile_in_group_handler(values) {
-    console.log(values);
+    // console.log(values);
     var group_id = $('#selected_group').data('selected_group_id');
     $.ajax({
       url: '/copo/remove_profile_from_group/',

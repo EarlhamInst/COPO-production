@@ -22,12 +22,33 @@ p {
 }
 
 /* Manifest table */
+#manifestTable {
+  margin-bottom: 30px;
+}
+
+.manifest-dropdown-wrapper,
+#manifestTable th,
+#manifestTable td {
+  text-align: left;
+}
+
 .table-header {
   background: #f9fafb;
 }
 
+.table-header-section {
+  border-top: 4px solid #ddd !important;
+}
+
+.table-header-section-desc {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
 .manifest-dropdown-wrapper {
-  text-align: center;
+  text-align: left;
 }
 
 /* Dropdown menus */
@@ -35,7 +56,7 @@ p {
   align-items: center;
   display: inline-flex;
   justify-content: space-between;
-  max-width: 400px; /* or a fixed width if needed */
+  max-width: 300px; /* or a fixed width if needed */
   padding: 6px 12px;
   overflow: hidden;
   white-space: nowrap;

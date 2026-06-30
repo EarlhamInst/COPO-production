@@ -42,7 +42,7 @@
         {% for checklist in checklists %}
             <input type="hidden" id="blank_manifest_url_{{checklist.primary_id}}" value="{{ checklist.primary_id  | get_blank_manifest_url  }}"/>  }}"
         {% endfor %}
-        <input type="hidden" id="component_subtitle" value="<select id='checklist_id' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}' >{{ checklist.primary_id }}: {{ checklist.name }}</option>{% endfor %}</select> "/>
+        <input type="hidden" id="component_subtitle" value="<select id='checklist_id' class='searchable-select' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}' >{{ checklist.primary_id }}: {{ checklist.name }}</option>{% endfor %}</select> "/>
     </div>
 
 {% endblock %}
@@ -101,24 +101,24 @@
 
     <!-- getting started section -->
     <div class="row">
-        <div class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-0 page-welcome-message" style="display: none;">
+        <div class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-0 page-welcome-message" style="display: none;" data-tour-id="getting_started">
             <div class="copo-webui-popover">
                 <div class="webui-popover-inner">
                     <h3 class="copo-webui-popover-title">Getting started</h3>
                     <div class="copo-webui-popover-content">
                         <div class="webpop-content-div">
-                            This page relates to the <strong>Barcoding manifest</strong> component 
+                            This page relates to the <strong>Barcoding manifests</strong> component 
                             (<i id="componentIcon" class="ui icon" aria-hidden="true"></i>) of a profile. 
                             Barcoding manifests (also known as <span style="font-style: italic;">targeted sequences</span>) 
                             are assembled and annotated sequences representing interesting features or gene regions.
                             <br><br>
                             <div>
                                 <strong>Download blank manifest</strong>: Select the desired checklist from 
-                                the dropdown menu above then, click the
+                                the dropdown menu above then, click 
                                 <button class="circular tiny ui icon brown button no-click">
                                     <i class="icon download sign"></i>
                                 </button>
-                                button next to it to download a blank manifest.
+                                next to it to download a blank manifest.
                             </div>
                             <br>
                             <div>
@@ -170,7 +170,8 @@
 
 
     <!-- read_table -->
-    <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5" data-copo-tour-id="tagged_seq_table"></div> <!-- div used by the quick tour agent -->
+    {% include 'copo/data_status_legend.html' %}
+    <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"></div>
     <div class="table-parent-div">
         <table id="tagged_seq_table" class="ui celled table hover copo-noborders-table"
                cellspacing="0" width="100%">
@@ -185,9 +186,12 @@
 {% block help_section %}
 {% endblock %}
 
+{% block sidebar_custom_section %}{% endblock sidebar_custom_section %}
+
 {% block component_info %}
 <div style="display:none; margin-top: 30px; " id="tagged_seq_info" class="alert alert-info"
-role="alert"></div>
+    role="alert">
+</div>
 {% endblock %}
 
 {% block js_block %}

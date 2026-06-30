@@ -7,10 +7,10 @@
 <!-- {% block title %}Sample Manifest Validation{% endblock %} -->
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="{% static 'copo/css/copo/browse_style.css' %}" xmlns="http://www.w3.org/1999/html">
+    <link rel="stylesheet" href="{% static 'copo/css/browse_style.css' %}" xmlns="http://www.w3.org/1999/html">
     <link rel="stylesheet" href="{% static 'copo/lou-multi-select-e052211/css/multi-select.css' %}"
           xmlns="http://www.w3.org/1999/html">
-    <link rel="stylesheet" href="{% static 'copo/css/copo/orcid_profile.css' %}"
+    <link rel="stylesheet" href="{% static 'copo/css/orcid_profile.css' %}"
           xmlns="http://www.w3.org/1999/html">
     <style>
         .group-button {
@@ -53,12 +53,6 @@
         .saving_status {
             margin-right: 25px
         }
-        .checklist  {
-            color: black;
-            font-weight: bold;
-            font-size: 1.2em;
-        }        
-
     </style>
 {% endblock %}
 
@@ -82,11 +76,11 @@
     <input type="hidden" id="profile_id" value="{{ profile_id }}"/>
     <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12">
-            <p> Please upload a completed sample manifest to validate:</p>
-
-            <h3 class="h3">
-                <span class="checklist" >{{ checklist_id }}: {{ checklist_name }} </span>
-            </h3>
+            <p class="info-content">
+                <span class="info-text">Please upload a completed sample manifest to validate:</span>
+                <br><br>
+                <span class="checklist">{{ checklist_id }}: {{ checklist_name }}</span>
+            </p>
 
             <input id="file" type="file" style="display:none"/>
 
@@ -134,7 +128,7 @@
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                             aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Move Data</h4>
+                    <h4 class="modal-title">Move data</h4>
                 </div>
                 <div class="modal-body">
                     <div id="url_upload_controls">
@@ -142,7 +136,7 @@
                             <li>Navigate to your files (Your files must all be in the same directory with no nesting)
                             </li>
                             <li>Run <kbd>ls -F1</kbd></li>
-                            <li>Paste the result into the box below, and click Process</li>
+                            <li>Paste the result into the box below then, click the <strong>Process</strong> button</li>
                         </ol>
                         <form>
                             <textarea id="url_text_area" class="form-control" rows="10"></textarea>

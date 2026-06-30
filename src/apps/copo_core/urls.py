@@ -42,4 +42,9 @@ urlpatterns = [
     path('add_user_to_group/', views.add_user_to_group, name="add_user_to_group"),
     path('remove_user_from_group/', views.remove_user_from_group, name="remove_user_from_group"),
     re_path(r'join_shared_profile/(?P<profile_id>[a-z0-9]+)/(?P<token>[a-z0-9]+)', views.join_shared_profile, name="join_shared_profile"),
- ]
+    # Tour progress URLs
+    path('tour-progress/reset/', views.reset_tour_progress, name='reset_tour_progress'),
+    path('tour-progress/<str:component>/', views.get_tour_progress, name='get_tour_progress'),
+    path('tour-progress/<str:component>/<str:stage>/', views.mark_tour_complete, name='mark_tour_complete'),
+    path('tour-progress/<str:component>/queued/<str:stage>/', views.queue_tour_stage, name='queue_tour_stage'),
+]

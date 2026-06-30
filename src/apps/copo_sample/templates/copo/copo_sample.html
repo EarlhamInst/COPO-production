@@ -7,20 +7,20 @@
 {% block title %}Samples{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="https://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
+    <link rel="stylesheet" href="{% static 'copo/css/blueimp-gallery.min.css' %}">
     <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
-    <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload.css' %}">
-    <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/jquery/jQuery-File-Upload-master/css/jquery.fileupload.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/jquery/jQuery-File-Upload-master/css/jquery.fileupload-ui.css' %}">
     <!-- CSS adjustments for browsers with JavaScript disabled -->
     <noscript>
-        <link rel="stylesheet" href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-noscript.css' %}">
+        <link rel="stylesheet" href="{% static 'copo/jquery/jQuery-File-Upload-master/css/jquery.fileupload-noscript.css' %}">
     </noscript>
     <noscript>
         <link rel="stylesheet"
-              href="{% static 'copo/jQuery-File-Upload-master/css/jquery.fileupload-ui-noscript.css' %}">
+              href="{% static 'copo/jquery/jQuery-File-Upload-master/css/jquery.fileupload-ui-noscript.css' %}">
     </noscript>
-    <link rel="stylesheet" href="{% static 'copo/css/copo/copo_wizard.css' %}">
-    <link rel="stylesheet" href="{% static 'copo/css/copo/sample.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/copo_wizard.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/sample.css' %}">
 
     <style>
     </style>
@@ -62,7 +62,7 @@
     <input type="hidden" id="groups" value="{{ groups|safe }}"/>
 
     <div style="display:none;">
-        <a id="download-sample-manifest-link"><span>download</span></a>
+        <a id="download-sample-manifest-link" target="_blank"><span>download</span></a>
     </div>  
 
     <!-- file upload control template -->
@@ -208,7 +208,7 @@
         <!-- getting started section -->
         <div class="row">
             <div class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-0 page-welcome-message"
-                 style="display: none;">
+                 style="display: none;" data-tour-id="getting_started">
                 <div class="copo-webui-popover">
                     <div class="webui-popover-inner">
                         <h3 class="copo-webui-popover-title">Getting started</h3>
@@ -220,27 +220,27 @@
                                 Samples represent units of biomaterial usually associated with single collection events.
                                 <br><br>
                                 <div>
-                                    <strong>Download blank manifest</strong>: Click the
+                                    <strong>Download blank manifest</strong>: Click 
                                     <button class="circular tiny ui icon brown button no-click">
                                         <i class="icon download sign"></i>
                                     </button>
-                                    button above to download a blank manifest template.  
+                                    above to download a blank manifest template.  
                                 </div>
                                 <br>
                                 <div>
-                                    <strong>Upload completed manifest</strong>: After having completed the manifest, click the
+                                    <strong>Upload completed manifest</strong>: After having completed the manifest, click 
                                     <button id="help_add_button" class="circular tiny ui icon button no-click">
                                         <i class="icon table sign"></i>
                                      </button>
-                                    button above to upload it.
+                                    above to upload it.
                                 </div>
                                 <br>
                                 <div>
-                                    <strong>Quick tour</strong>: To explore various controls on this page, click the
+                                    <strong>Quick tour</strong>: To explore various controls on this page, click 
                                     <button class="circular tiny ui icon orange button no-click">
                                         <i class="icon lightbulb"></i>
                                     </button>
-                                    button above.
+                                    above.
                                 </div>
                             </div>
                         </div>
@@ -250,8 +250,7 @@
         </div>
 
         <!-- sample table -->
-        <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"
-             data-copo-tour-id="sample_table"></div> <!-- div used by the quick tour agent -->
+        <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"></div>
         <table id="sample_table"
                class="ui celled table hover copo-noborders-table compact nowrap"
                cellspacing="0" width="100%">
@@ -276,6 +275,9 @@
 
 {% endblock %}
 
+{% block sidebar_custom_section %}
+{% endblock sidebar_custom_section %}
+
 {% block js_block %}
     <script src="{% static 'copo/js/generic_handlers.js' %}"></script>
     <script src="{% static 'copo/js/generic_handlers_ext2.js' %}"></script>
@@ -283,12 +285,13 @@
     <script src="{% static 'copo/js/copo_sample.js' %}"></script>
     <!--script src="{% static 'copo/js/dtol_functions.js' %}"></script-->
     <script src="{% static 'copo/js/animated_ellipsis.js' %}"></script>
+    <script src="{% static 'copo/reconnecting-websocket-master/reconnecting-websocket.min.js' %}"></script>
     <script src="{% static 'copo/js/copo_parse_spreadsheet.js' %}"></script>
     <!-- <script src="{% static 'copo/js/csv_column_updates.js' %}"></script> -->
     <script src="{% static 'copo/js/fastdom.js' %}"></script>
     <script src="{% static 'copo/js/filesaver.js' %}"></script>
     <script src="{% static 'copo/js/jszip-utils.min.js' %}"></script>
     <script src="{% static 'copo/js/jszip.min.js' %}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
+    <script src="{% static 'copo/datatables/js/moment.min.js' %}"></script>
+    <script src="{% static 'copo/datatables/js/datetime-moment.js' %}"></script>
 {% endblock %}

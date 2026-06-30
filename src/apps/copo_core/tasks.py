@@ -8,13 +8,14 @@ import redis
 from functools import wraps
 from django.conf import settings
 from common.ena_utils.EnaChecklistHandler import ChecklistHandler, ReadChecklistHandler
+from common.ena_utils.EnaReadPlatformHandler import EnaReadPlatformHandler
 from common.ena_utils.FileTransferUtils import housekeeping_local_uploads
 
 
 REDIS_CLIENT = redis.Redis(host=settings.SESSION_REDIS_HOST, port=settings.SESSION_REDIS_PORT)
 
 
-def only_one(fun=None, key="", timeout=None):   
+def only_one(fun=None, key="", timeout=1800):   
     def actual_only_one(fun): 
         """Enforce only one celery task at a time."""
         @wraps(fun)
@@ -76,17 +77,20 @@ def process_housekeeping(self):
     return True
 
 @app.task(bind=True, base=CopoBaseClassForTask)
-@only_one(key="update_ena_checklist", timeout=5)
 def update_ena_checklist(self):
     Logger().debug("Running update_ena_checklist")
     ChecklistHandler().updateCheckList()
     return True
 
 @app.task(bind=True, base=CopoBaseClassForTask)
-@only_one(key="update_ena_read_checklist", timeout=5)
 def update_ena_read_checklist(self):
     Logger().debug("Running update_ena_read_checklist")
     ReadChecklistHandler().updateCheckList()
     return True
 
- 
+
+@app.task(bind=True, base=CopoBaseClassForTask)
+def update_ena_read_platform(self):
+    Logger().debug("Running update_ena_read_platform")
+    EnaReadPlatformHandler().update_platform()
+    return True

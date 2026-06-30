@@ -48,35 +48,37 @@ Example update request:
 -----------------------
 ```
     biospecimen
-    SAMEA12345
+    SAMEAxxxx
 
     biosamples
-    SAMEA67890
-    SAMEA67891
-    SAMEA67892
-    SAMEA67893
+    SAMEAxxxx
+    SAMEAxxxx
+    SAMEAxxxx
+    SAMEAxxxx
 
     Update
-    Species name: Example Scientific name
-    taxonid: 999999
-    tolid: publicNameEx
-    GENUS: GenusName
-    ORDER_OR_GROUP: OrderOrGroupName
-    FAMILY: FamilyName
+    Species name:  xxxx
+    taxonid: xxxx
+    tolid: xxxx
+    GENUS: xxxx
+    ORDER_OR_GROUP: xxxx
+    FAMILY: xxxx
+    Specimen id: xxxx
     ---
     biospecimen
-    SAMEA67890
+    SAMEAxxxx
 
     biosamples
-    SAMEA67894
+    SAMEAxxxx
 
     Update
-    Species name: Example Scientific name
-    taxonid: 999999
-    tolid: publicNameEx
-    GENUS: GenusName
-    ORDER_OR_GROUP: OrderOrGroupName
-    FAMILY: FamilyName
+    Species name:  xxxx
+    taxonid: xxxx
+    tolid: xxxx
+    GENUS: xxxx
+    ORDER_OR_GROUP: xxxx
+    FAMILY: xxxx
+    Specimen id: xxxx
 ```
 
 Notes:
@@ -84,9 +86,45 @@ Notes:
     - The script expects consistent formatting: either tab-separated or colon-separated key-value pairs.
     - Request blocks without clear sample/source separation will raise an error.
     - You may optionally update other taxonomy fields like GENUS, ORDER_OR_GROUP and FAMILY.
-    - Only fields - TAXON_ID and public_name are updates for SourceCollection.
-    - Only fields - SCIENTIFIC_NAME, TAXON_ID, and public_name are updates for SampleCollection
+    - Only fields - TAXON_ID, SPECIMEN_ID and public_name are updates for SourceCollection.
+    - Only fields - SCIENTIFIC_NAME, SPECIMEN_ID, TAXON_ID, and public_name are updates for SampleCollection
       as well as optional fields - GENUS, ORDER_OR_GROUP and FAMILY.
+'''
+
+'''
+# Useful MongoDB queries for data verification:
+
+db.SourceCollection.find(
+  {
+    "biosampleAccession": {
+      "$in": [
+        "SAMEAxxxx",
+        "SAMEAxxxx",
+      ],
+    },
+  },
+  {"_id": 0, "biosampleAccession": 1 }
+)
+
+
+db.SourceCollection.countDocuments(
+  {
+    "biosampleAccession": {
+      "$in": ["SAMEAxxxx"],
+    },
+  },{}
+)
+
+db.SampleCollection.countDocuments(
+  {
+    "biosampleAccession": {
+      "$in": [
+        "SAMEAxxxx",
+        "SAMEAxxxx",
+      ],
+    },
+  },{}
+)
 '''
 
 import json
@@ -145,12 +183,11 @@ def process_update_request(entry):
 
     # Check for valid samples and sources
     if not samples and not sources:
-        log.error(f'No sample(s) and source found in entry: {entry}')
+        log.error(f'No sample and source found in entry: {entry}')
         return
 
     if not samples:
-        log.info(f'No sample(s) found in entry: {entry}')
-
+        log.info(f'No sample found in entry: {entry}')
     if not sources:
         log.info(f'No source found in entry: {entry}')
 
@@ -192,9 +229,9 @@ def process_update_request(entry):
                 )
                 f.write('\n')
 
-            log.info(
-                f"Update written to {OUTPUT_FILE_NAME} for {update['collection']}. Please check the file for details."
-            )
+            # log.info(
+            #     f"Update written to {OUTPUT_FILE_NAME} for {update['collection']}. Please check the file for details."
+            # )
 
             # Write the corresponding findOne query to the same file
             write_find_one_query(update)
@@ -291,9 +328,9 @@ def rearrange_update_request_file():
 
     if len(deduped_data) < len(combined_data):
         removed = len(combined_data) - len(deduped_data)
-        message = f'Removed {removed} duplicate record(s) from ENA update data.'
+        message = f'Removed {removed} duplicate records from ENA update data.'
         log.warning(message)
-        print(message)
+        print(f'\n{message}')
 
     # Compose the new content
     output_lines = []
@@ -335,19 +372,20 @@ Structure of update requests:
       
     Structured example:
         biospecimen
-        SAMEAxxxxxxx
+        SAMEAxxxx
 
         biosamples
-        SAMEAyyyyyyy
-        SAMEAzzzzzzz
+        SAMEAxxxx
+        SAMEAxxxx
 
         Update
-        Species name: SCIENTIFIC_NAME X
-        taxonid: 12345
-        tolid: public_name1
-        GENUS: GenusName
-        ORDER_OR_GROUP: OrderOrGroupName
-        FAMILY: FamilyName
+        Species name: xxxx
+        taxonid: xxxx
+        tolid: xxxx
+        GENUS: xxxx
+        ORDER_OR_GROUP: xxxx
+        FAMILY: xxxx
+        Specimen id: xxxxx
 '''
 
 
@@ -366,7 +404,7 @@ def main():
     update_requests = load_update_requests()
 
     # Process each update request
-    print(f"Processing Update Request:\n{'-' * 30}")
+    print(f"\nProcessing update request:\n{'-' * 30}")
     total_requests_count = len(update_requests)
     for i, request in enumerate(update_requests, start=1):
         # Check if the update request is empty
@@ -374,7 +412,7 @@ def main():
             print(f'Request {i + 1} is empty. Skipping.')
             continue
 
-        # === PROCESSING REQUESTS ===
+        # === Processing requests ===
         # Given that the enumeration starts at 1, i can be used directly
         # to display the request number
         print(f'\n#{i}/{total_requests_count}')

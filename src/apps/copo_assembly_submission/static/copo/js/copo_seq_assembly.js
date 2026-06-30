@@ -7,14 +7,15 @@ $(document).ready(function () {
   var s3socket;
 
   var dialog = new BootstrapDialog({
-    title: 'Add Assembly',
+    title: 'Add assembly',
     message: '',
+    cssClass: 'form-modal',
     buttons: [
       {
         id: 'submit_assembly_button',
-        label: 'Submit Assembly',
-        cssClass: 'btn-primary',
-        title: 'Submit Assembly',
+        label: 'Submit assembly',
+        cssClass: 'btn-primary btn-submit',
+        title: 'Submit assembly',
         action: function () {
           doPost();
           var $button = this; // 'this' here is a jQuery object that wrapping the <button> DOM element.
@@ -25,10 +26,35 @@ $(document).ready(function () {
       {
         label: 'Close',
         action: function (dialogItself) {
-          dialogItself.close();
+          confirmCloseDialog(dialogItself);
         },
       },
     ],
+    onshown: function (dialogRef) {
+      // Remove aria-hidden before focusing the modal
+      dialogRef.getModal().removeAttr('aria-hidden');
+
+      // Show the confirmation dialog if the close
+      // icon in the modal title is clicked
+      const $closeButton = dialogRef
+        .getModal()
+        .find('.bootstrap-dialog-close-button');
+
+      // Remove any existing BootstrapDialog handlers
+      $closeButton.off('click');
+
+      // Add your custom confirm logic
+      $closeButton.on('click.confirm', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        confirmCloseDialog(dialogRef);
+      });
+
+      // Set focus after a short delay
+      setTimeout(function () {
+        dialogRef.getModal().focus();
+      }, 50);
+    },
   });
 
   if (window.location.protocol === 'https:') {
@@ -47,35 +73,37 @@ $(document).ready(function () {
   };
   s3socket.onmessage = function (e) {
     d = JSON.parse(e.data);
-    element = element = $('#' + d.html_id);
-    if ($('.modal-dialog').is(':visible')) {
-      elem = $('.modal-dialog').find('#' + d.html_id);
-      if (elem) {
-        element = elem;
+    const { $el: $element, inModal: isModalVisible } = getAlertElement(
+      d.html_id
+    );
+    const rawMessage = d.message;
+    const hasMessage =
+      typeof rawMessage === 'string' && rawMessage.trim().length > 0;
+    const message = hasMessage ? rawMessage.trim() : '';
+
+    // Only show an alert if a message exists
+    if (hasMessage) {
+      if (isModalVisible) {
+        // If modal is visible then, show an alert inside it
+        const allAlertClasses = Object.values(alertClassMap).join(' ');
+        $element
+          .html(message)
+          .removeClass(allAlertClasses)
+          .addClass(alertClassMap[d.action] || 'alert-info')
+          .fadeIn(50);
+      } else if (d.action && $element.length) {
+        // else, show an alert message within the 'Info' sidebar tab on the page
+        displayAlert(d.action, message);
       }
     }
 
-    if (!d && !$(element).is(':hidden')) {
-      $(element).fadeOut('50');
-    } else if (d && d.message && $(element).is(':hidden')) {
-      $(element).fadeIn('50');
-    }
-    //$("#" + d.html_id).html(d.message)
+    // Special handling for actions
     if (d.action === 'info') {
-      // show something on the info div
-      // check info div is visible
-      $(element).removeClass('alert-danger').addClass('alert-info');
-      $(element).html(d.message);
       if ('table_data' in d.data) {
         globalDataBuffer = d.data;
         var event = jQuery.Event('refreshtable');
         $('body').trigger(event);
       }
-    } else if (d.action === 'error') {
-      // check info div is visible
-      $(element).removeClass('alert-info').addClass('alert-danger');
-      $(element).html(d.message);
-      //$("#spinner").fadeOut()
     }
   };
   window.addEventListener('beforeunload', function (event) {
@@ -153,7 +181,7 @@ $(document).ready(function () {
         $('.modal-dialog').find('#loading_span').fadeOut();
         BootstrapDialog.show({
           title: 'Error',
-          message: 'Error ' + data.responseText,
+          message: data.responseText,
           type: BootstrapDialog.TYPE_DANGER,
         });
       })
@@ -192,7 +220,7 @@ $(document).ready(function () {
   //get component metadata
   var componentMeta = get_component_meta(component);
   var args_dict = {};
-  args_dict['profile_id'] = profile_id,
+  args_dict['profile_id'] = profile_id;
   load_records(componentMeta, args_dict); // call to load component records
 
   //register_resolvers_event(); //register event for publication resolvers
@@ -217,17 +245,15 @@ $(document).ready(function () {
   });
 
   //details button hover
-  /*
-    $(document).on("mouseover", ".detail-hover-message", function (event) {
-        $(this).prop('title', 'Click to view ' + component + ' details');
-    });
-    */
+  $(document).on("mouseover", ".detail-hover-message", function (event) {
+      $(this).prop('title', 'Click to view ' + component + ' details');
+  });
 
   //******************************Functions Block******************************//
 
   function handle_add_n_edit(url, task) {
     dialog.realize();
-
+    dialog.getModal().addClass('form-modal');
     dialog.getButton('submit_assembly_button').disable();
 
     dialog.setMessage(
@@ -273,7 +299,8 @@ $(document).ready(function () {
                   .fail(function (data) {
                     BootstrapDialog.show({
                       title: 'Error',
-                      message: 'Error ' + data.responseText,
+                      message: data.responseText,
+                      type: BootstrapDialog.TYPE_DANGER,
                     });
                   })
                   .done(function (data) {
@@ -373,14 +400,14 @@ $(document).ready(function () {
 
     for (var i = 0; i < numCols; i++) {
       if ($(table.column(i).header()).text() == 'ACCESSION') {
-        var no_accessiion_indexes = table
+        var no_accession_indices = table
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
             return table.cell(rowIdx, i).data() === '' ? true : false;
           });
         table
-          .rows(no_accessiion_indexes)
+          .rows(no_accession_indices)
           .nodes()
           .to$()
           .addClass('highlight_no_accession');

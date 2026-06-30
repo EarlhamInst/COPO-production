@@ -62,10 +62,22 @@ MESSAGES = {
                                                      '<strong>RESEQUENCING</strong> and vice versa. Please update/edit the '
                                                      'associated profile type then, reupload the '
                                                      'manifest.',
-                                    
-
-    'validation_msg_invalid_data': 'Invalid data: <strong>%s</strong> in column <strong>%s</strong> at row '
-                                   '<strong>%s</strong>. Allowed values are <strong>%s</strong>',
+    'validation_msg_invalid_data': (
+        'Invalid value <strong>%s</strong> in column <strong>%s</strong> at row <strong>%s</strong>.<br>'
+        'Expected %s.'
+    ),                      
+    'validation_msg_invalid_enum': (
+        f'''
+        Invalid value <strong>{{value}}</strong> in column <strong>{{column}}</strong> at row <strong>{{row}}</strong>.<br>
+        Expected one of 
+        <details class='valid-enum'>
+            <summary class='valid-enum-trigger'>{{num_values}} valid values (click to view).</summary>
+            <div class='valid-enum-container'>
+                <h3 class='valid-enum-title'>Valid values</h3>{{content}}
+            </div>
+        </details>
+        '''
+    ),
     'validation_msg_invalid_date': 'Invalid date: <strong>%s</strong> in column <strong>%s</strong> at row '
                                    '<strong>%s</strong>. Dates should be in format YYYY-MM-DD',
     'validation_msg_invalid_link': 'Invalid URL: <strong>%s</strong> in column <strong>%s</strong> at row '
@@ -76,6 +88,8 @@ MESSAGES = {
                                    "<a href='https://www.ebi.ac.uk/ena/browser/view/ERC000053'>https://www.ebi.ac.uk/ena/browser/view/ERC000053</a>",
     'validation_msg_invalid_permit_filename': 'Invalid data: <strong>%s</strong> in column <strong>%s</strong> at '
                                               'row <strong>%s</strong>. Expected value should be <strong>%s</strong>',
+    'validation_msg_invalid_regex_match': 'Invalid data: <strong>%s</strong> in column <strong>%s</strong> at '
+                                          'row <strong>%s</strong>. Expected format: <strong>%s</strong>.',
     'validation_msg_invalid_purpose_of_specimen': 'Invalid data: <strong>%s</strong> in column '
                                                   '<strong>PURPOSE_OF_SPECIMEN</strong> at row <strong>%s</strong>. '
                                                   'Expected value should be <strong>RESEQUENCING</strong> '
@@ -123,7 +137,7 @@ MESSAGES = {
     'validation_msg_original_field_missing': 'Missing data: ORIGINAL_GEOGRAPHIC_LOCATION missing at row '
                                              '<strong>%s</strong>. If ORIGINAL_COLLECTION_DATE is provided, '
                                              'ORIGINAL_GEOGRAPHIC_LOCATION must also be provided.',
-    'validation_msg_orphaned_symbiont': 'Symbiont(s) found with TUBE_OR_WELL_ID: <strong>%s</strong> has no associated '
+    'validation_msg_orphaned_symbiont': 'Symbionts found with TUBE_OR_WELL_ID: <strong>%s</strong> has no associated '
                                         'Target',
     'validation_msg_overwrite_symbionts': '<strong>Warning: COPO will overwrite any <strong>SYMBIONT</strong> field '
                                           'to match the corresponding TARGET, unless otherwise stated in the SOP</br>'

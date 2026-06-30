@@ -1,6 +1,6 @@
 {% load web_tags %}
 {% load static %}
-<nav id="copoGlobalNav" class="navbar navbar-default {% if banner %}has-margin-top-neg-12{% endif %}" role="navigation">
+<nav id="authNavbar" class="navbar navbar-default {% if banner %}has-margin-top-neg-12{% endif %}" role="navigation">
     <div class="container-fluid {% if banner %}display-flex{% else %}display-block{% endif %}">
         <div class="navbar-header">
             <a class="navbar-brand" href="{% if user.is_authenticated %} {% url 'copo_profile_index:index' %} {% else %}/{% endif %}">
@@ -24,121 +24,119 @@
         {% endif %}
 
         <ul class="nav navbar-nav navbar-right">
-            <li class="dropdown" title="Notifications">
+            <li class="dropdown" title="Toggle dark mode" data-tour-id="theme_toggle_icon">
+                <a id="themeToggleBtn" class="theme-toggle-btn" role="button" aria-label="Toggle dark mode">
+                    <i class="fa fa-moon" aria-hidden="true"></i>
+                </a>
+            </li>
+            <li class="dropdown" title="Notifications" data-tour-id="notifications_icon">
                 <a data-container="body" title="Current Tasks"
                    data-placement="bottom" id="bell_notification"
                    aria-label="View current tasks" role="button">
-                    <span><i class="fa fa-bell" aria-hidden="true"></i></span>
+                    <i class="fa fa-bell" aria-hidden="true"></i>
                 </a>
             </li>
-            <li class="dropdown" title="Home">
+            <li class="dropdown" title="Home" data-tour-id="home_icon">
                 <a href="/" target="_parent" aria-label="Home">
-                    <span data-copo-tour-id="home_button">
-                        <i class="fa fa-home" aria-hidden="true"></i>
-                    </span>
+                    <i class="fa fa-home" aria-hidden="true"></i>
                 </a>
             </li>
-            <li class="dropdown" title="Analytics">
-                <a id="analyticsDropdown" href="#" class="dropdown-toggle " data-toggle="dropdown" role="button" aria-haspopup="true"
+            <li class="dropdown" title="Analytics" data-tour-id="analytics_icon">
+                <a id="analyticsDropdown" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                     aria-expanded="false">
                    <i class="fa fa-chart-line" aria-hidden="true"></i>
-                   <span class="caret"></span>
-                    <ul class="dropdown-menu" role="menu" aria-labelledby="analyticsDropdown">
-                        <li>
-                            <a href="/copo/tol_dashboard/stats" target="_parent"
-                                aria-label="Statistics">
-                                <div class="custom-nav-items">
-                                    <i class="fa fa-bar-chart" aria-hidden="true"></i>
-                                    <span class="icon_text">Statistics</span>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/copo/tol_dashboard/tol" target="_parent"
-                                aria-label="Tree of Life Dashboard">
-                                <div class="custom-nav-items">
-                                    <i class="fa fa-chart-pie" aria-hidden="true"></i>
-                                    <span class="icon_text">Tree of Life Dashboard</span>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/copo/copo_accessions/dashboard" target="_parent"
-                               aria-label="View Accessions Dashboard">
-                                <div class="custom-nav-items">
-                                    <i class="fa fa-sitemap" aria-hidden="true"></i>
-                                    <span class="icon_text">Accessions Dashboard</span>                                   
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/api" target="_parent" aria-label="COPO API endpoints">
-                                <div class="custom-nav-items">
-                                    <i class="fa fa-plug" aria-hidden="true"></i>
-                                    <span class="icon_text">API Endpoints</span>
-                                </div>
-                            </a>
-                        </li>
-                    </ul>
+                    <span class="caret"></span>
                 </a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="analyticsDropdown">
+                    <li>
+                        <a href="/copo/tol_dashboard/stats" target="_parent"
+                            aria-label="Statistics">
+                            <div class="custom-nav-items">
+                                <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                                <span class="icon_text">Statistics</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/copo/tol_dashboard/tol" target="_parent"
+                            aria-label="Tree of Life Dashboard">
+                            <div class="custom-nav-items">
+                                <i class="fa fa-chart-pie" aria-hidden="true"></i>
+                                <span class="icon_text">Tree of Life Dashboard</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/copo/copo_accessions/dashboard" target="_parent"
+                            aria-label="View Accessions Dashboard">
+                            <div class="custom-nav-items">
+                                <i class="fa fa-sitemap" aria-hidden="true"></i>
+                                <span class="icon_text">Accessions Dashboard</span>                                   
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/api" target="_parent" aria-label="COPO API endpoints">
+                            <div class="custom-nav-items">
+                                <i class="fa fa-plug" aria-hidden="true"></i>
+                                <span class="icon_text">API Endpoints</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
             </li>
-            <li class="dropdown" title="News">
+            <li class="dropdown" title="News" data-tour-id="news_icon">
                 <a href="/news" target="_parent" aria-label="News">
-                    <span data-copo-tour-id="news_button">
-                        <i class="fa fa-newspaper" aria-hidden="true"></i>
-                    </span>
+                    <i class="fa fa-newspaper" aria-hidden="true"></i>
                 </a>
             </li>
-            <li class="dropdown" title="Help">
-                <a id="helpDropdown" href="#" class="dropdown-toggle " data-toggle="dropdown" role="button" aria-haspopup="true"
+            <li class="dropdown" title="Help" data-tour-id="help_icon">
+                <a id="helpDropdown" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                     aria-expanded="false">
                    <i class="fa fa-question-circle" aria-hidden="true"></i>
-                   <span class="caret"></span>
-                    <ul class="dropdown-menu" role="menu" aria-labelledby="helpDropdown">
-                        <li class="dropdown" title="View blank manifests or checklists">
-                            <a href="/manifests/index" target="_parent"
-                                aria-label="Manifests">
-                                <div class="custom-nav-items">
-                                    <i class="fa fa-table" aria-hidden="true"></i>
-                                    <span class="icon_text">Manifests</span>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="dropdown" title="Documentation">
-                            <a id="copo-documentation" href="https://copo-docs.readthedocs.io/en/latest/" 
-                               target="_blank" aria-label="Documentation">
-                                <span data-copo-tour-id="documentation_button">
-                                    <i class="fa fa-book" aria-hidden="true"></i>
-                                    <span class="icon_text">Documentation</span>
-                                </span>
-                            </a>
-                        </li>
-                        <li class="dropdown" title="Contact COPO">
-                            <a href="/contact" target="_parent" aria-label="Contact COPO">
-                                <span data-copo-tour-id="contact_button">
-                                        <i class="fa fa-envelope" aria-hidden="true"></i>
-                                        <span class="icon_text">Contact Us</span>
-                                </span>
-                            </a>
-                        </li>
-                    </ul>
+                    <span class="caret"></span>
                 </a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="helpDropdown">
+                    <li class="dropdown" title="View blank manifests or checklists">
+                        <a href="/manifests/index" target="_parent"
+                            aria-label="Manifests">
+                            <div class="custom-nav-items">
+                                <i class="fa fa-table" aria-hidden="true"></i>
+                                <span class="icon_text">Manifests</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="dropdown" title="Documentation">
+                        <a id="copo-documentation" href="https://copo-docs.readthedocs.io/en/latest/" 
+                            target="_blank" aria-label="Documentation">
+                            <span>
+                                <i class="fa fa-book" aria-hidden="true"></i>
+                                <span class="icon_text">Documentation</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="dropdown" title="Contact COPO">
+                        <a href="/contact" target="_parent" aria-label="Contact COPO">
+                            <span>
+                                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                                    <span class="icon_text">Contact Us</span>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
             </li>
-            <li class="dropdown" title="About COPO">
+            <li class="dropdown" title="About COPO" data-tour-id="about_icon">
                 <a href="/about" target="_parent" aria-label="About COPO">
-                    <span data-copo-tour-id="about_button">
-                        <i class="fa fa-info-circle" style="font-size: 17px;" aria-hidden="true"></i>
-                    </span>
+                    <i class="fa fa-info-circle" style="font-size: 17px;" aria-hidden="true"></i>
                 </a>
             </li>
-            <li class="dropdown" title="Settings">
-                <a id="settingsDropdown" href="#" class="dropdown-toggle " data-toggle="dropdown" 
+            <li class="dropdown" title="Settings" data-tour-id="settings_icon">
+                <a id="settingsDropdown" href="#" class="dropdown-toggle" data-toggle="dropdown" 
                    role="button" aria-haspopup="true" aria-expanded="false">
                     {% if user.is_authenticated %}
                         <i class="fa fa-gear" aria-hidden="true"></i>
-                        <span data-copo-tour-id="global_user_authenticated_button">{{ user }}
-                            <span class="caret"></span>
-                        </span>
+                        <span>{{ user }}</span>
+                        <span class="caret"></span>
                     {% else %}
                         <i class="fa fa-sign-in-alt copo-header-icons" aria-hidden="true">&nbsp;
                             <span class="caret"></span>
@@ -146,7 +144,6 @@
                         Login
                     {% endif %}
                 </a>
-
                 <ul class="dropdown-menu" role="menu" aria-labelledby="settingsDropdown">
                     {% if user.is_authenticated %}
                         {% if request.user.is_staff %}

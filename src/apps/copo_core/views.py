@@ -2,7 +2,8 @@ from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES, SAMPLE
 from common.utils import helpers
 from django.db.models import Q
 import bson.json_util as json_util
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.views.decorators.http import require_POST
 from common.utils.copo_lookup_service import COPOLookup
 import json
 from allauth.socialaccount.models import SocialAccount
@@ -12,6 +13,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from jsonpickle import encode
+from rest_framework import status
 from src.apps.api.views.general import *
 from common.dal.mongo_util import cursor_to_list
 from .broker_da import BrokerDA, BrokerVisuals
@@ -19,7 +21,7 @@ from common.dal.copo_da import DataFile, CopoGroup, MetadataTemplate
 from common.dal.profile_da import ProfileInfo, Profile
 from common.dal.sample_da import Sample
 from common.dal.submission_da import Submission
-from common.dal.copo_base_da import   DAComponent
+from common.dal.copo_base_da import DAComponent
 
 from src.apps.copo_barcoding_submission.utils.da import TaggedSequence
 from src.apps.copo_assembly_submission.utils.da import Assembly
@@ -28,7 +30,7 @@ from src.apps.copo_single_cell_submission.utils.da import Singlecell
 from src.apps.ei_edp.utils.edp_utils import join_shared_edp_profile
 from common.s3.s3Connection import S3Connection as s3
 from common.lookup.lookup import REPO_NAME_LOOKUP
-from .models import Banner
+from .models import Banner, Component, TourProgress
 from common.schemas.utils import data_utils
 from common.utils.helpers import get_group_membership_asString
 from src.apps.copo_core.models import ProfileType
@@ -83,19 +85,21 @@ def web_page_access_checker(func):
             # 'accept/reject samples' web page, if 'yes', grant web page access if not, deny access
             if any(x.endswith('sample_managers') for x in member_groups) and 'accept_reject' in current_view:
                 return func(request, *args, **kwargs)
-            
+
             profile_id = request.session.get("profile_id", str())
 
             # Access web page if no profile ID exists in the request or session
             if not profile_id:
                 return func(request, *args, **kwargs)
 
-        profile =  Profile().get_record(profile_id)
-
-        # Show web page if profile does not exist but 'profile_id' exists from session <== we should return 403, i.e. invalid profile_id
+        profile = Profile().get_record(profile_id)
 
         if not profile or type(profile) == InvalidId:
-           return handler403(request)
+            if not kwargs.get('profile_id', ''):
+                # Stale session profile_id — clear it and proceed
+                request.session.pop("profile_id", None)
+                return func(request, *args, **kwargs)
+            return handler403(request)
         else:
             user_id = Profile().get_record(ObjectId(profile_id))['user_id']
 
@@ -151,17 +155,14 @@ def web_page_access_checker(func):
 
 
 def test(request):
-    return render(request, template_name='copo/test.html')
+    return render(request, 'copo/test.html', {})
 
 
 def error_page(request):
     return render(request, context={}, template_name="copo/error_page.html")
 
 
-def test(request):
-    return render(request, "copo/test.html")
-
-
+@login_required
 def forward_to_info(request):
     message = request.GET['message']
     control = request.GET['control']
@@ -196,6 +197,8 @@ def copo_repositories(request):
     user = request.user.id
     return render(request, 'copo/my_repositories.html')
 
+
+@login_required
 def resolve_submission_id(request, submission_id):
     sub = Submission().get_record(submission_id)
     # get all file metadata
@@ -284,8 +287,9 @@ def _core_visualize(request):
     out = jsonpickle.encode(context, unpicklable=False)
     return HttpResponse(out, content_type='application/json')
 
-@web_page_access_checker
+
 @login_required
+@web_page_access_checker
 def copo_forms(request):
     context = dict()
     task = request.POST.get("task", str())
@@ -370,7 +374,7 @@ def copo_forms(request):
 
 
 """
-@login_required()
+@login_required
 def delete_profile(request):
     context = dict()
     task = request.POST.get("task", str())
@@ -483,7 +487,7 @@ def view_user_info(request):
     return render(request, 'copo/user_info.html', data_dict)
 
 
-@login_required()
+@login_required
 def view_groups(request):
     # g = Group().create_group(description="test description")
     member_groups = helpers.get_group_membership_asString()
@@ -516,7 +520,7 @@ def view_groups(request):
                   {'request': request, 'profile_list': profile_list,'profile_tab_title': profile_tab_title, 'group_list': group_list})
 
 """
-# @login_required()
+# @login_required
 @user_is_staff
 def administer_repos(request):
     return render(request, 'copo/copo_repository.html', {'request': request})
@@ -544,7 +548,7 @@ def handler500(request):
     return error_page(request)
 
 
-def handler403(request, message="Apologies, you do not have permission to view this web page"):    
+def handler403(request, message="You lack permission to view this resource."):    
     if "api" in request.resolver_match.namespaces:
         return HttpResponse(
             json.dumps({"status": "error", "message": "Apologies, you do not have permission to access it"}), status=403, content_type="application/json"
@@ -563,6 +567,7 @@ def get_source_count(self):
     return HttpResponse(encode({'num_sources': num_sources}))
 
 
+@login_required
 def search_copo_components(request, data_source):
     """
     function does local lookup of items given data_source
@@ -592,6 +597,7 @@ def search_copo_components(request, data_source):
 
     return HttpResponse(jsonpickle.encode(data), content_type='application/json')
 
+
 @login_required
 def create_group(request):
     name = request.POST['group_name']
@@ -599,7 +605,7 @@ def create_group(request):
 
     if not name or not description:
         return HttpResponseBadRequest(
-            'Error Creating Group - Form field(s) cannot be empty!')
+            'Error Creating Group - Form fields cannot be empty!')
 
     uid = CopoGroup().create_shared_group(name=name, description=description)
 
@@ -607,6 +613,7 @@ def create_group(request):
         return HttpResponse(json.dumps({'id': str(uid), 'name': name}))
     else:
         return HttpResponseBadRequest('Forbidden - Group with the same name already exists!')
+
 
 @login_required
 def edit_group(request):
@@ -616,7 +623,7 @@ def edit_group(request):
 
     if not name or not description:
         return HttpResponseBadRequest(
-            'Error Updating Group - Form field(s) cannot be empty!')
+            'Error Updating Group - Form fields cannot be empty!')
 
     if name and description:
         document = CopoGroup().edit_group(
@@ -627,6 +634,7 @@ def edit_group(request):
         else:
             return HttpResponseBadRequest('Forbidden - Group with the same name already exists!')
 
+
 @login_required
 def delete_group(request):
     id = request.GET.get('group_id','')
@@ -636,6 +644,7 @@ def delete_group(request):
     else:
         return HttpResponseBadRequest('Error Deleting Group - Try Again')
 
+
 @login_required
 def view_group(request):
     id = request.GET.get('group_id','')
@@ -644,6 +653,7 @@ def view_group(request):
         return HttpResponse(json_util.dumps({'resp': group_info}))
     else:
         return HttpResponseBadRequest('Error Viewing Group - Try Again')
+
 
 @login_required
 def add_profile_to_group(request):
@@ -655,6 +665,7 @@ def add_profile_to_group(request):
     else:
         return HttpResponseBadRequest(json.dumps({'resp': 'Server Error - Try again'}))
 
+
 @login_required
 def remove_profile_from_group(request):
     group_id = request.GET.get('group_id','')
@@ -665,11 +676,13 @@ def remove_profile_from_group(request):
     else:
         return HttpResponseBadRequest(json.dumps({'resp': 'Server Error - Try again'}))
 
+
 @login_required
 def get_profiles_in_group(request):
     group_id = request.GET.get('group_id','')
     grp_info = CopoGroup().get_profiles_for_group_info(group_id=group_id)
     return HttpResponse(json_util.dumps({'resp': grp_info}))
+
 
 @login_required
 def get_users_in_group(request):
@@ -677,6 +690,8 @@ def get_users_in_group(request):
     usr_info = CopoGroup().get_users_for_group_info(group_id=group_id)
     return HttpResponse(json_util.dumps({'resp': usr_info}))
 
+
+@login_required
 def get_users(request):
     q = request.GET['q']
     x = list(User.objects.filter(
@@ -686,25 +701,37 @@ def get_users(request):
         return HttpResponse()
     return HttpResponse(json.dumps(x))
 
+
 @login_required
 def add_user_to_group(request):
     group_id = request.GET.get('group_id','')
     user_id = request.GET.get('user_id','')
     grp_info = CopoGroup().add_user_to_group(group_id=group_id, user_id=user_id)
-    return HttpResponse(json_util.dumps({'resp': grp_info}))
+    result = {
+        'matched_count': grp_info.matched_count,
+        'modified_count': grp_info.modified_count,
+        'upserted_id': str(grp_info.upserted_id) if grp_info.upserted_id else None,
+    }
+    return JsonResponse({'resp': result})
+
 
 @login_required
 def remove_user_from_group(request):
-    group_id = request.GET.get('group_id','')
-    user_id = request.GET.get('user_id','')
-    grp_info = CopoGroup().remove_user_from_group(
-        group_id=group_id, user_id=user_id)
-    return HttpResponse(json_util.dumps({'resp': grp_info}))
+    group_id = request.GET.get('group_id', '')
+    user_id = request.GET.get('user_id', '')
+    grp_info = CopoGroup().remove_user_from_group(group_id=group_id, user_id=user_id)
+    result = {
+        'matched_count': grp_info.matched_count,
+        'modified_count': grp_info.modified_count,
+        'upserted_id': str(grp_info.upserted_id) if grp_info.upserted_id else None,
+    }
+    return JsonResponse({'resp': result})
+
 
 @login_required
 def join_shared_profile(request, profile_id, token):
     profile = Profile().get_record(profile_id)
-    if isinstance(profile,InvalidId):
+    if isinstance(profile, InvalidId):
         return HttpResponseBadRequest('Profile Not Found')
     if profile["type"] == "ei_edp":
         result = join_shared_edp_profile(profile, token)
@@ -712,5 +739,120 @@ def join_shared_profile(request, profile_id, token):
             return redirect("copo_profile_index:index", permanent=True)
         else:
             return HttpResponseBadRequest(result['message'])
-    else:        
+    else:
         return HttpResponseBadRequest('You are not authorised to join this profile')
+
+
+def get_tour_progress(request, component):
+    if not Component.objects.filter(name=component).exists():
+        return JsonResponse(
+            {'error': f'Invalid component: {component}'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    completed_stages = []
+
+    if request.user.is_authenticated:
+        # Authenticated users use database
+        completed_stages = list(
+            TourProgress.objects.filter(
+                user=request.user, component=component
+            ).values_list('stage', flat=True)
+        )
+    else:
+        # Anonymous users use session only
+        completed_stages = request.session.get('completed_tours', {}).get(component, [])
+
+    queued_stage = request.session.get('queued_tours', {}).get(component)
+    return JsonResponse(
+        {'completedStages': completed_stages, 'queuedStage': queued_stage}
+    )
+
+
+@require_POST
+def queue_tour_stage(request, component, stage):
+    '''
+    Queue a tour stage for a given component.
+    It is stored server-side so that on next page load,
+    the watchComponentForTour JS function can detect it.
+    '''
+    if not Component.objects.filter(name=component).exists():
+        return JsonResponse(
+            {'error': f'Invalid component: {component}'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Store the queued stage using session
+    queued = request.session.setdefault('queued_tours', {})
+    if component not in queued:
+        queued[component] = []
+        
+    if stage not in queued[component]:
+        queued[component].append(stage)
+
+    request.session.modified = True
+    return JsonResponse({'status': 'queued', 'component': component, 'stage': stage})
+
+
+@require_POST
+def mark_tour_complete(request, component, stage):
+    if not Component.objects.filter(name=component).exists():
+        return JsonResponse(
+            {'error': f'Invalid component: {component}'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if request.user.is_authenticated:
+        # Authenticated users use database
+        TourProgress.objects.update_or_create(
+            user=request.user,
+            component=component,
+            stage=stage,
+            defaults={'completed': True},
+        )
+    else:
+        # Anonymous users use session only
+        completed = request.session.get('completed_tours', {})
+        component_stages = completed.get(component, [])
+
+        # Add stage if not already present
+        if stage not in component_stages:
+            component_stages.append(stage)
+
+        completed[component] = component_stages
+        request.session['completed_tours'] = completed
+        request.session.modified = True
+
+    # Remove component from queued tours in session if present
+    queued = request.session.get('queued_tours', {})
+    if component in queued:
+        stages = queued[component]
+
+        if isinstance(stages, str):
+            stages = [stages]
+
+        if stage in stages:
+            stages.remove(stage)
+
+        # If no more stages exist for this component,
+        # remove the component key
+        if not stages:
+            queued.pop(component)
+
+    request.session['queued_tours'] = queued
+    request.session.modified = True
+
+    return JsonResponse({'status': 'ok'})
+
+
+@login_required
+@require_POST
+def reset_tour_progress(request):
+    # Reset all tour progress for the logged-in user
+    deleted_count, _ = TourProgress.objects.filter(user=request.user).delete()
+    if 'queued_tours' in request.session:
+        request.session['queued_tours'] = {}
+        request.session.modified = True
+    return JsonResponse(
+        {'status': 'success', 'message': f'Cleared {deleted_count} tour records.'}
+    )

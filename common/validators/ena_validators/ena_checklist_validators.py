@@ -8,6 +8,7 @@ import xml.etree.ElementTree as ET
 from Bio import Entrez
 from common.utils.helpers import notify_frontend
 from common.validators.helpers import check_taxon_ena_submittable, checkOntologyTerm
+from .validation_messages import MESSAGES as msg
 
 # check mandatory fields are present in spreadsheet
 # check mandatory fields are not empty
@@ -20,57 +21,13 @@ session.auth = (user_token, pass_word)
 
 lg = settings.LOGGER
 
-
-class ManifestChecklistValidator(Validator):
-    '''
-    Checks whether the uploaded manifest's column set
-    matches the expected checklist's columns.
-    '''
-
-    def validate(self):
-        checklist = self.kwargs.get('checklist', {})
-        expected_columns = set(checklist['fields'].keys())
-        uploaded_columns = set(self.data.columns)
-
-        # Determine the number of expected columns that are missing
-        missing = expected_columns - uploaded_columns
-        
-        # Determine the number of unexpected columns that exist in the uploaded manifest
-        extras = uploaded_columns - expected_columns
-
-        # Calculate the match ratio
-        total_expected = len(expected_columns)
-        match_ratio = (total_expected - len(missing)) / max(total_expected, 1)
-
-        # If almost nothing matches, show a single error message
-        if match_ratio < 0.5:  # Threshold: less than 50% columns match
-            self.errors.append(
-                'The uploaded manifest does not appear to match the expected checklist. '
-                'Please ensure that you are uploading the correct manifest for the selected manifest '
-                f'(expected {len(expected_columns)} columns, found {len(uploaded_columns)}).'
-            )
-            self.flag = False
-        else:
-            # Otherwise, proceed with the other validators
-            if missing:
-                self.warnings.append(
-                    f'Some expected columns are missing: {sorted(missing)}'
-                )
-            if extras:
-                self.warnings.append(
-                    f'Some unexpected columns were found: {sorted(extras)}'
-                )
-
-        return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
-
-
 class MandatoryValuesValidator(Validator):
     def validate(self):
         checklist = self.kwargs.get("checklist", {})
         for key, field in checklist["fields"].items():
             if field.get("mandatory","") == "mandatory":               
                 if key not in self.data.columns:
-                    self.errors.append("Mandatory column: '" + field["name"] + "' is missing")
+                    self.errors.append(f"Mandatory column <strong>{field['name']}</strong> is missing")
                     self.flag = False
                 else:
                     null_rows=[]
@@ -78,8 +35,11 @@ class MandatoryValuesValidator(Validator):
                     null_rows.extend(self.data[self.data[key] == ""].index.tolist())
                     null_rows.extend(self.data[self.data[key].isna()].index.tolist())
                     for row in null_rows:
-                        self.errors.append("Missing data detected in column <strong>%s</strong> part at row <strong>%s</strong>." % (
-                            field["name"], str(row + 1)))
+                        error_msg = msg["missing_value"].format( 
+                            column_name=field["label"],
+                            row=row+2
+                        )
+                        self.errors.append(error_msg)
                         self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
@@ -93,7 +53,7 @@ class IncorrectValueValidator(Validator):
         if biosampleAccessions:
             biosampleAccessionsMap = {row["biosampleAccession"]: row for row in biosampleAccessions} 
 
-        #get all BIOSAMPLEACCESSION_EXT_FIELD from the checklist fields
+        # get all BIOSAMPLEACCESSION_EXT_FIELD from the checklist fields
         biosampleAccession_ext_field_map = {key: field for key, field in checklist["fields"].items() if field.get("type") == "BIOSAMPLEACCESSION_EXT_FIELD"}
 
         for column in self.data.columns:
@@ -106,34 +66,40 @@ class IncorrectValueValidator(Validator):
                     if row:
                         if type == "TEXT_CHOICE_FIELD":
                             if row not in field.get("choice"):
-                                self.errors.append("Invalid value '" + row + "' in column : '" + field["label"] + "' at row " + str(i) + ". Valid values are: " + str(field.get("choice")))
+                                valid_values = field.get("choice", [])
+                                valid_values  = (
+                                    "<ul>"
+                                    + "".join(f"<li>{v}</li>" for v in valid_values)
+                                    + "</ul>"
+                                )
+                                error_str = msg[
+                                    "invalid_column_value_with_list"
+                                ].format(
+                                    invalid_value=row,
+                                    column_name=field["label"],
+                                    row=i,
+                                    valid_values=valid_values,
+                                )
+                                self.errors.append(error_str)
                                 self.flag = False
                         elif type == "TEXT_FIELD":
                             regex = field.get("regex","")
                             if regex:
                                 lg.debug("Regex: " + str(regex) + "| Row: " + str(row)+ "| Column: " + column)
                                 if not re.match(regex, row):
-                                    '''
-                                    if column == 'collection date':
-                                        # Remove the time part from the date string if it is present
-                                        try:
-                                            result = bool(datetime.strptime(row, "%Y-%m-%d %H:%M:%S"))
-                                        except ValueError:
-                                               result = False
-
-                                        if result:
-                                            row = row.split(' ')[0]
-                                            self.data.at[i-2, column] = row
-                                        else:
-                                            self.errors.append("Invalid value '" + row + "' in column : '" + field["name"] + "' at row " + str(i))
-                                            self.flag = False        
-                                    else:
-                                    '''
-                                    self.errors.append("Invalid value '" + row + "' in column : '" + field["label"] + "' at row " + str(i) + ". Valid value should match: " + str(regex))
+                                    error_str = msg["invalid_column_value_regex"].format(
+                                        invalid_value=row,
+                                        column_name=field["label"],
+                                        row=i,
+                                        #expected_value=field.get("regex_description","") or f'<strong> {field.get("description","")} </strong>',
+                                        field_description =  field.get("description",""),
+                                        regex_pattern=regex
+                                    )
+                                    self.errors.append(error_str)
                                     self.flag = False
                         elif type == "BIOSAMPLEACCESSION_FIELD":
                             if row not in biosampleAccessionsMap.keys():
-                                #check biosample from ena
+                                # check biosample from ena
                                 try:
                                     response = session.get(f"{ena_sample_service}/{row}", data={})
                                     if response.status_code == requests.codes.ok:
@@ -144,30 +110,53 @@ class IncorrectValueValidator(Validator):
                                         if taxon_id :
                                             read_taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
                                             if taxon_id != read_taxon_id:
-                                                self.errors.append("Invalid value " + read_taxon_id + " not match with " + taxon_id + " in column: 'TAXON_ID' at row " + str(i)) 
+                                                error_msg = msg["mismatched_value"].format(
+                                                    invalid_value=read_taxon_id,
+                                                    column_name="TAXON_ID",
+                                                    biosampleAccession=row,
+                                                    row=i
+                                                )
+                                                self.errors.append(error_msg)
                                                 self.flag = False
                                             else:
                                                 self.data[f"{Validator.PREFIX_4_NEW_FIELD}sraAccession"] = sample_accession
                                     else:
-                                        self.errors.append("Invalid value " + row + " in column:'" + field["label"] + "'")
+                                        error_msg = msg["invalid_column_value_generic"].format(
+                                            invalid_value=row,
+                                            column_name=field["label"],
+                                            row=i,
+                                            expected_value="a valid BioSample Accession")
+    
+                                        self.errors.append(error_msg)
                                         self.flag = False
                                 except Exception as e:
                                     lg.exception(e)
-                                    self.errors.append("Invalid value " + row + " in column:'" + field["label"] + "'")
+                                    error_msg = msg["biosampleAccession_validation_exception"].format(
+                                        biosampleAccession=row,
+                                        column_name=field["label"],
+                                        row=i
+                                    )
+                                    self.errors.append(error_msg)
                                     self.flag = False
 
                             else:
                                 for key, field in biosampleAccession_ext_field_map.items():
                                     value = self.data.iloc[i-2].get(key,"")
-                                    #specimen_id = self.data.iloc[i-2].get("SPECIMEN_ID","")
-                                    #taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
+                                    # specimen_id = self.data.iloc[i-2].get("SPECIMEN_ID","")
+                                    # taxon_id = self.data.iloc[i-2].get("TAXON_ID","")
                                     sample = biosampleAccessionsMap.get(row)
                                     if key in sample and sample[key] != value:
-                                        self.errors.append("Invalid value " + value + " not match with " + sample.get(key,"")+ " in column: '" + key + "' at row " + str(i)) 
+                                        error_msg = msg["mismatched_value"].format(
+                                            invalid_value=value,
+                                            column_name=key,
+                                            biosampleAccession=row,
+                                            row=i
+                                        )
+                                        self.errors.append(error_msg)
                                         self.flag = False
-                                    
+
             else:
-                self.errors.append("Invalid column : '" + column +"'")
+                self.errors.append(f"Invalid column <strong>{column}</strong>")
                 self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
@@ -182,43 +171,94 @@ class TaxonValidator(Validator):
             match type:
                 case "TAXON_ID_FIELD":
                     taxon_id_set = set([x for x in self.data[key].tolist() if x])
-                    #notify_frontend(data={"profile_id": self.profile_id},
+                    # notify_frontend(data={"profile_id": self.profile_id},
                     #                msg="Querying NCBI for TAXON_IDs in manifest",
                     #                action="info",
                     #                html_id="sample_info")
                     taxon_id_list = list(taxon_id_set)
                     if any(x for x in taxon_id_list):
                         for taxon in taxon_id_list:
+                            # Check if taxon ID is an integer
+                            if not re.match('^[0-9]+$', taxon):
+                                matching_rows = self.data.index[
+                                    self.data[key] == taxon
+                                ].tolist()
+                                
+                                for row in matching_rows:
+                                    self.errors.append(
+                                        msg['invalid_column_value_generic'].format(
+                                            invalid_value=taxon,
+                                            column_name=field['label'],
+                                            row=row + 2,
+                                            expected_value='a whole number (integer) that is a valid NCBI taxon ID',
+                                        )
+                                    )
+                                    self.flag = False
+                                continue
+
                             # check if taxon is submittable
-                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(taxon, by="id")
+                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(
+                                taxon, is_binomial_required=False, by="id"
+                            )
                             if ena_taxon_errors:
                                 self.errors += ena_taxon_errors
                                 self.flag = False
                             else:
                                 if not taxid_column_name in self.data.columns:
                                     self.data[taxid_column_name] = ""
-                                self.data.loc[ self.data[key]==taxon, taxid_column_name] = taxinfo["taxId"]
-                                self.data.loc[ self.data[key]==taxon, scientific_name_column_name] = taxinfo["scientificName"]
+                                self.data.loc[
+                                    self.data[key] == taxon, taxid_column_name
+                                ] = taxinfo["taxId"]
+                                self.data.loc[
+                                    self.data[key] == taxon, scientific_name_column_name
+                                ] = taxinfo["scientificName"]
 
                 case "SCIENTIFIC_NAME_FIELD":
-                    taxon_id_set = set([x for x in self.data[key].tolist() if x])
-                    #notify_frontend(data={"profile_id": self.profile_id},
+                    scientific_name_set = set([x for x in self.data[key].tolist() if x])
+                    # notify_frontend(data={"profile_id": self.profile_id},
                     #                msg="Querying NCBI for TAXON_IDs in manifest",
                     #                action="info",
                     #                html_id="sample_info")
-                    taxon_id_list = list(taxon_id_set)
-                    if any(x for x in taxon_id_list):
-                        for taxon in taxon_id_list:
+                    scientific_name_list = list(scientific_name_set)
+                    if any(x for x in scientific_name_list):
+                        for scientific_name in scientific_name_list:
+                            # Check if scientific name is a string
+                            if not re.match(r'^[A-Za-z\s]+$', scientific_name):
+                                matching_rows = self.data.index[
+                                    self.data[key] == scientific_name
+                                ].tolist()
+
+                                for row in matching_rows:
+                                    self.errors.append(
+                                        msg['invalid_column_value_generic'].format(
+                                            invalid_value=scientific_name,
+                                            column_name=field['label'],
+                                            row=row + 2,
+                                            expected_value='a valid scientific name',
+                                        )
+                                    )
+                                    self.flag = False
+                                continue
+
                             # check if taxon is submittable
-                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(taxon, by="binomial")
+                            ena_taxon_errors, taxinfo = check_taxon_ena_submittable(
+                                scientific_name,
+                                is_binomial_required=False,
+                                by="binomial",
+                            )
                             if ena_taxon_errors:
                                 self.errors += ena_taxon_errors
                                 self.flag = False
                             else:
                                 if not taxid_column_name in self.data.columns:
                                     self.data[taxid_column_name] = ""
-                                self.data.loc[ self.data[key]==taxon, taxid_column_name] = taxinfo["taxId"]
-                                self.data.loc[ self.data[key]==taxon, scientific_name_column_name] = taxinfo["scientificName"]
+                                self.data.loc[
+                                    self.data[key] == scientific_name, taxid_column_name
+                                ] = taxinfo["taxId"]
+                                self.data.loc[
+                                    self.data[key] == scientific_name,
+                                    scientific_name_column_name,
+                                ] = taxinfo["scientificName"]
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
 
 class OntologyValidator(Validator): 
@@ -232,9 +272,17 @@ class OntologyValidator(Validator):
                         ontology =  field.get("ontology","").split(":")
                         if len(ontology) == 2:
                             if not checkOntologyTerm(ontology_id=ontology[0], ancestor=ontology[1], term=self.data[key][i]):
-                                self.errors.append("Invalid value '" + self.data[key][i] + "' in column : '" + field["label"] + "' at row " + str(i+1) + ". Valid value should match ontology: " + str(field.get("ontology","")))
+                                error_msg = msg["invalid_column_value_ontology"].format(
+                                    invalid_value=self.data[key][i],
+                                    column_name=field["label"],
+                                    row=i + 1,
+                                    ontology_name=field.get("ontology",""),
+                                    ontology_link=field.get("ontology_link","")
+                                )
+                                
+                                self.errors.append(error_msg)
                                 self.flag = False
                         else:
-                            self.errors.append("Ontology term reference is missing for column : '" + field["label"] + "'")
+                            self.errors.append(f"Ontology term reference is missing for column <strong>{field['label']}</strong>")
                             self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")

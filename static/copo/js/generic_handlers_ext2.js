@@ -3,6 +3,86 @@ var copoFormsURL = '/copo/copo_forms/';
 var copoVisualsURL = '/copo/copo_visualize/';
 var server_side_select = {}; //holds selected ids for table data - needed in server-side processing
 
+const alertClassMap = {
+  info: 'alert-info',
+  warning: 'alert-warning',
+  success: 'alert-success',
+  error: 'alert-danger',
+};
+
+// Show/hide the sidebar info tab based on whether there's alert content.
+// The sidebar itself is always open by default — users can manually collapse
+// it via #toggleSidebarInfoBtn.
+function toggleSidebarInfoVisibility() {
+  const $infoPanel = $('#page_alert_panel');
+  const $infoTab = $('.copo-sidebar-info');
+  const $sidebar = $('.copo-sidebar');
+  const $mainContent = $('.copo-main');
+  const hasContent = $infoPanel.children().length > 0;
+
+  if (hasContent) {
+    $infoTab.show();
+    $('.copo-sidebar-tabs li.copo-sidebar-info').show();
+  } else {
+    $infoTab.hide();
+    $('.copo-sidebar-tabs li.copo-sidebar-info').hide();
+  }
+
+  // Ensure sidebar is open by default (unless the user has manually collapsed it)
+  if (!$sidebar.data('user-collapsed')) {
+    $sidebar.show();
+    $mainContent.removeClass('sidebar-collapsed');
+  }
+
+  // Update the toggle button arrow to reflect sidebar state
+  const $arrow = $('#toggleSidebarInfoBtn .toggle-sidebar-arrow');
+  const $btn = $('#toggleSidebarInfoBtn');
+  if ($sidebar.is(':visible')) {
+    $arrow.removeClass('fa-chevron-left').addClass('fa-chevron-right');
+    $btn.removeClass('active');
+  } else {
+    $arrow.removeClass('fa-chevron-right').addClass('fa-chevron-left');
+    $btn.addClass('active');
+  }
+}
+
+// Automatically show/hide sidebar when content is added or removed.
+// Uses a short delay to ensure the sidebar DOM is fully rendered.
+$(window).on('load', function () {
+  const sidebarPanel = document.getElementById('page_alert_panel');
+  if (sidebarPanel) {
+    new MutationObserver(function () {
+      toggleSidebarInfoVisibility();
+    }).observe(sidebarPanel, {
+      childList: true,
+      subtree: true,
+    });
+    // Set initial state
+    toggleSidebarInfoVisibility();
+  }
+});
+
+// Toggle sidebar via the info button (available on all 2-col pages)
+$(document).on('click', '#toggleSidebarInfoBtn', function () {
+  const $sidebar = $('.copo-sidebar');
+  const $mainContent = $('.copo-main');
+  const $arrow = $(this).find('.toggle-sidebar-arrow');
+  const $btn = $(this);
+  const isVisible = $sidebar.is(':visible');
+
+  if (isVisible) {
+    $sidebar.hide().data('user-collapsed', true);
+    $mainContent.addClass('sidebar-collapsed');
+    $btn.addClass('active');
+    $arrow.removeClass('fa-chevron-right').addClass('fa-chevron-left');
+  } else {
+    $sidebar.show().data('user-collapsed', false);
+    $mainContent.removeClass('sidebar-collapsed');
+    $btn.removeClass('active');
+    $arrow.removeClass('fa-chevron-left').addClass('fa-chevron-right');
+  }
+});
+
 // Set custom page length options for the DataTables dropdown menu
 $.extend($.fn.dataTable.defaults, {
   language: {
@@ -19,6 +99,9 @@ $(document).ready(function () {
   $(document).on('click', '.alertdismissOK', function () {
     WebuiPopovers.hideAll();
   });
+
+  // Initialize sidebar visibility on page load
+  toggleSidebarInfoVisibility();
 });
 
 function render_thumbnail_image_column_function(data, type, row, meta) {
@@ -108,6 +191,7 @@ function set_empty_component_message(dataRows, table_id = '*') {
 
     if ($('.page-welcome-message').length) {
       $(table_id).find('.page-welcome-message').show();
+      $('.component-legend[data-template!="true"]').hide();
     }
   } else {
     if ($('.table-parent-div').length) {
@@ -119,6 +203,8 @@ function set_empty_component_message(dataRows, table_id = '*') {
     if ($('.page-welcome-message').length) {
       $(table_id).find('.page-welcome-message').hide();
     }
+
+    $('.component-legend[data-template!="true"]').show();
   }
 }
 
@@ -154,7 +240,7 @@ function place_task_buttons(componentMeta) {
   }
   if (
     component == 'study' &&
-    typeof componentMeta.submission_repository != "undefined" &&
+    typeof componentMeta.submission_repository != 'undefined' &&
     componentMeta.submission_repository != null &&
     componentMeta.submission_repository.length
   ) {
@@ -189,32 +275,31 @@ function place_task_buttons(componentMeta) {
     refresh_tool_tips();
     //table action buttons
     do_table_buttons_events();
+
+    // Toggle action button visibility on row select/deselect
+    table.on('select deselect', function () {
+      var selectedCount = table.rows({ selected: true }).count();
+      if (selectedCount > 0) {
+        customButtons.addClass('has-selection');
+      } else {
+        customButtons.removeClass('has-selection');
+      }
+    });
   }
 }
 
 function do_crud_action_feedback(meta) {
-  var feedbackClass;
-
-  if (['success', 'green', 'positive'].indexOf(meta.status) > -1) {
-    feedbackClass = 'alert-success';
-  } else if (['error', 'red', 'danger', 'negative'].indexOf(meta.status) > -1) {
-    feedbackClass = 'alert-danger';
-  } else if (['warning'].indexOf(meta.status) > -1) {
-    feedbackClass = 'alert-warning';
-  } else {
-    feedbackClass = 'alert-info';
-  }
-
-  var infoPanelElement = trigger_global_notification();
-
-  var feedback = get_alert_control();
-  feedback
-    .removeClass('alert-success')
-    .addClass(feedbackClass)
-    .addClass('page-notifications-node');
-
-  feedback.find('.alert-message').html(meta.message);
-  infoPanelElement.prepend(feedback);
+  // Route all CRUD feedback through the unified submission activity log
+  // instead of cloning Bootstrap alert boxes into the sidebar.
+  var statusMap = {
+    success: 'success', green: 'success', positive: 'success',
+    error: 'error', red: 'error', danger: 'error', negative: 'error',
+    warning: 'warning',
+  };
+  var alertType = statusMap[meta.status] || 'info';
+  // Ensure the sidebar shows the info tab and route to the log pane.
+  trigger_global_notification();
+  displayAlert(alertType, meta.message);
 }
 
 function format_feedback_message(message, messageClass, messageTitle) {
@@ -369,49 +454,109 @@ function button_event_alert(title, message) {
   });
 }
 
-function display_copo_alert(alertType, alertMessage, displayDuration) {
-  //function displays alert or info to the user
-  //alertType:  'success', 'warning', 'info', 'danger' - modelled after bootstrap alert classes
-  //alertMessage: the actual message to be displayed to the user
-  //displayDuration: how long should the alert be displayed for before taking it down
-
-  // Strangely, calling the 'Info' tab with the ID, '#page_alert_panel' doesn't work,
-  // so the class, '.copo-sidebar-info' is used instead.
-  let info_sidebar_tab = $('.copo-sidebar-info');
-  let infoPanelElement = info_sidebar_tab.find('.panel-body'); // $('#page_alert_panel');
-
-  if (infoPanelElement.length) {
-    //reveal tab if not already shown
-    $('.copo-sidebar-tabs a[href="#copo-sidebar-info"]').tab('show');
-
-    // Remove fade class if present
-    if (info_sidebar_tab.hasClass('fade')) info_sidebar_tab.removeClass('fade');
-
-    // Reveal tab content if it is not already shown
-    if (!info_sidebar_tab.find('.panel-body').hasClass('in'))
-      info_sidebar_tab.find('.panel-body').addClass('in');
-
-    const alertElement = $('.alert-templates')
-      .find('.alert-' + alertType)
-      .clone();
-
-    // Remove fade class if present
-    if (alertElement.hasClass('fade')) alertElement.removeClass('fade');
-
-    alertElement.find('.alert-message').html(alertMessage);
-
-    infoPanelElement.prepend(alertElement);
-
-    // adjust the margin-top between sidebar (info) tab content and the profiles legend
-    $('.profiles-legend').css('margin-top', '0');
-
-    $('.other-projects-accessions-filter-checkboxes').css('margin-top', '0');
+function getAlertElement(htmlId) {
+  // Return an empty jQuery object if there's no html ID
+  if (!htmlId) {
+    return { $el: $(), inModal: false };
   }
+
+  // Determine if it's a modal element or a page element
+  const $modalElement = $('.modal-dialog:visible').find(`#${htmlId}`);
+  if ($modalElement.length) {
+    return { $el: $modalElement, inModal: true };
+  }
+
+  const $pageElement = $('.copo-sidebar').find(`#${htmlId}`);
+  if ($pageElement.length) {
+    return { $el: $pageElement, inModal: false };
+  }
+
+  return { $el: $(), inModal: false };
+}
+
+// Activity log palettes — keyed by alert type. 'fg' is the default/no-type colour.
+const ACTIVITY_LOG_THEMES = {
+  dark:  { bg: '#111',    fg: '#ddd',    error: '#ff6b6b', danger: '#ff6b6b', warning: '#e0b060', success: '#7bd88f', info: '#7aa7ff', progress: '#9aa'    },
+  light: { bg: '#f5f6f9', fg: '#2a2e36', error: '#b8362a', danger: '#b8362a', warning: '#9a6a00', success: '#2a8a4a', info: '#2a5fb0', progress: '#5a6470' },
+};
+const _activityPalette = () =>
+  ACTIVITY_LOG_THEMES[document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'];
+const _setImp = (el, prop, val) => el.style.setProperty(prop, val, 'important');
+
+function _repaintActivityLog() {
+  const log = document.getElementById('submission-activity-log');
+  if (!log) return;
+  const p = _activityPalette();
+  _setImp(log, 'background', p.bg);
+  _setImp(log, 'color', p.fg);
+  log.querySelectorAll(':scope > div').forEach(line =>
+    _setImp(line, 'color', p[line.getAttribute('data-alert-type')] || p.fg));
+}
+
+// One-shot observer: recolour the log live when the theme toggles.
+if (!document.documentElement._activityLogThemeWatcher) {
+  const obs = new MutationObserver(_repaintActivityLog);
+  obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  document.documentElement._activityLogThemeWatcher = obs;
+}
+
+function displayAlert(alertType, alertMessage, opts) {
+  // alertType:  'success', 'warning', 'info', 'danger'/'error', 'progress'
+  // opts.lineId: if provided, update that log line in place (used for progress bars)
+  const $infoPanel = $('.copo-sidebar-info').find('.panel-body');
+  if (!$infoPanel.length) return;
+
+  $('.copo-sidebar-tabs a[href="#copo-sidebar-info"]').tab('show');
+  if (!$infoPanel.hasClass('in')) $infoPanel.addClass('in');
+
+  // Strip legacy boxed alerts from both panels.
+  const $panels = $infoPanel.add('#page_alert_panel');
+  $panels.find('.alert.alert-dismissable, .alert.alert-dismissible, .copo-alert-message, .page-notifications-node').remove();
+
+  const palette = _activityPalette();
+
+  // Lazily create the single log pane (monospace stream, no boxes).
+  let $log = $panels.find('#submission-activity-log').first();
+  if (!$log.length) {
+    $log = $('<div id="submission-activity-log"/>').css({
+      background: palette.bg, color: palette.fg,
+      padding: '8px 10px', margin: '6px 0',
+      border: '1px solid #333', borderRadius: '4px',
+      maxHeight: '320px', overflowY: 'auto', overflowX: 'hidden',
+      fontFamily: 'ui-monospace,Menlo,Consolas,monospace',
+      fontSize: '12px', lineHeight: '1.4',
+      whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+    });
+    ($('#page_alert_panel').length ? $('#page_alert_panel') : $infoPanel).prepend($log);
+  }
+
+  const lineId = opts && opts.lineId;
+  let $line = lineId ? $log.find('#' + lineId) : $();
+  if (!$line.length) {
+    $line = $('<div/>');
+    if (lineId) $line.attr('id', lineId);
+    $log.append($line);
+  }
+  $line.attr('data-alert-type', alertType || '');
+  // setProperty('important') so per-line colour beats dark-theme's .panel-body !important rule.
+  _setImp($line[0], 'color', palette[alertType] || palette.fg);
+  $line.text(new Date().toLocaleTimeString() + ' ' + String(alertMessage).replace(/<[^>]+>/g, ''));
+  $log.scrollTop($log[0].scrollHeight);
+
+  // Toggle sidebar visibility to show it since content was added
+  toggleSidebarInfoVisibility();
+
+  // Adjust margin spacing
+  $('.component-legend, .other-projects-accessions-filter-checkboxes').css(
+    'margin-top',
+    '0'
+  );
 }
 
 function deselect_records(tableID) {
   var table = $('#' + tableID).DataTable();
   table.rows().deselect();
+  $('#' + tableID).closest('.dataTables_wrapper').find('.copo-table-cbuttons').removeClass('has-selection');
 }
 
 function do_render_server_side_table(componentMeta) {
@@ -538,6 +683,9 @@ function do_render_server_side_table(componentMeta) {
               .find('.select-row-message')
               .html(server_side_select[component].length + ' records selected');
           },
+          attr: {
+            'data-tour-id': 'select_visible_button',
+          },
         },
         {
           text: 'Clear selection',
@@ -547,6 +695,9 @@ function do_render_server_side_table(componentMeta) {
             $('#' + tableID + '_info')
               .find('.select-item-1')
               .remove();
+          },
+          attr: {
+            'data-tour-id': 'clear_selection_button',
           },
         },
       ],
@@ -561,7 +712,29 @@ function do_render_server_side_table(componentMeta) {
         },
         processing: "<div class='copo-i-loader'></div>",
       },
-      dom: 'Bfr<"row"><"row info-rw" i>tlp',
+      /* 'dom' results in:
+      <div>
+        {Buttons}
+        {filter}
+        {processing}
+      </div>
+      <div class="row info-rw">
+        {information}
+      </div>
+      <div>
+        {table}
+      </div>
+      <div class="row dataTables-controls-row">
+        <div class="col-sm-4">
+          {length}
+        </div>
+        <div class="col-sm-8">
+          {pagination}
+        </div>
+      </div>
+      <div class="clear"></div>
+      */
+      dom: 'Bfr<"row"><"row info-rw" i>t<"row dataTables-controls-row"<"col-sm-4" l><"col-sm-8 text-right" p>><"clear">',
     });
 
     table
@@ -575,11 +748,12 @@ function do_render_server_side_table(componentMeta) {
     do_table_buttons_events_server_side(component);
 
     table.on('click', 'tr >td', function () {
+      // Do not select columns with any of these classes
       var classList = [
         'annotate-datafile',
         'summary-details-control',
         'detail-hover-message',
-      ]; //don't select on columns with these classes
+      ];
       var foundClass = false;
 
       var tdList = this.className.split(' ');
@@ -607,6 +781,14 @@ function do_render_server_side_table(componentMeta) {
       }
 
       elem.toggleClass('selected');
+
+      // Toggle action button visibility based on selection
+      var $cbuttons = $('#' + tableID).closest('.dataTables_wrapper').find('.copo-table-cbuttons');
+      if (server_side_select[component].length > 0) {
+        $cbuttons.addClass('has-selection');
+      } else {
+        $cbuttons.removeClass('has-selection');
+      }
 
       //selected message
       $('#' + tableID + '_info')
@@ -645,8 +827,6 @@ function do_render_server_side_table(componentMeta) {
 
   let table_wrapper = $('#' + tableID + '_wrapper');
 
-  table_wrapper.find('.dt-buttons').css({ float: 'right' });
-
   table_wrapper
     .find('.dataTables_filter')
     .find('label')
@@ -656,7 +836,11 @@ function do_render_server_side_table(componentMeta) {
     .attr('placeholder', 'Search ' + componentMeta.title)
     .attr('size', 30);
 
-  $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
+  // Add 'tour-id' attribute to the table wrapper
+  table_wrapper
+    .find('.dataTables_scroll')
+    .attr('data-tour-id', 'component_table component_table_with_accessions');
+
 
   //handle event for table details
   $('#' + tableID + ' tbody')
@@ -697,8 +881,12 @@ function do_render_server_side_table(componentMeta) {
               var contentHtml = $('<table/>', {
                 cellspacing: '0',
                 border: '0',
-                class: 'ui compact definition selectable celled table',
+                class:
+                  'ui compact definition selectable celled table summary-details-table',
               });
+
+              // Create <tbody> inside contentHtml
+              var tbody = $('<tbody/>').appendTo(contentHtml);
 
               for (
                 var i = 0;
@@ -708,20 +896,23 @@ function do_render_server_side_table(componentMeta) {
                 var colVal = data.component_attributes.columns[i];
 
                 var colTR = $('<tr/>');
-                contentHtml.append(colTR);
+                // contentHtml.append(colTR);
+                tbody.append(colTR); // Append tr to tbody
 
                 colTR
                   .append($('<td/>').append(colVal.title))
                   .append(
                     $('<td/>').append(
                       "<div style='width:300px; word-wrap: break-word;'>" +
-                        data.component_attributes.data_set[colVal.data] +
+                        (data.component_attributes.data_set[colVal.data] ||
+                          '') +
                         '</div>'
                     )
                   );
               }
 
-              row.child($('<div></div>').append(contentHtml).html()).show();
+              // row.child($('<div></div>').append(contentHtml).html()).show();
+              row.child($('<div></div>').append(contentHtml)).show();
               tr.removeClass('showing');
               tr.addClass('shown');
             }
@@ -907,7 +1098,13 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
       scrollX: true,
       scrollY: 'auto', // Adjust height to the content dynamically
       buttons: [
-        'selectAll',
+        {
+          extend: 'selectAll',
+          text: 'Select all',
+          attr: {
+            'data-tour-id': 'select_all_button',
+          },
+        },
         {
           text: 'Select filtered',
           action: function (e, dt, node, config) {
@@ -917,13 +1114,25 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
               filteredRows.select();
             }
           },
+          attr: {
+            'data-tour-id': 'select_filtered_button',
+          },
         },
-        'selectNone',
+        {
+          extend: 'selectNone',
+          text: 'Clear selection',
+          attr: {
+            'data-tour-id': 'clear_selection_button',
+          },
+        },
         {
           extend: 'csv',
           text: 'Export CSV',
           title: null,
           filename: 'copo_' + String(tableID) + '_data',
+          attr: {
+            'data-tour-id': 'export_csv_button',
+          },
         },
       ],
       language: {
@@ -933,7 +1142,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
         select: {
           rows: {
             _: '%d records selected',
-            0: "<span class='extra-table-info'>Click <span class='fa-stack' style='color:green; font-size:10px;'><i class='fa fa-circle fa-stack-2x'></i><i class='fa fa-plus fa-stack-1x fa-inverse'></i></span> beside a record to view extra details</span>",
+            0: 'Click a row to select it',
             1: '%d record selected',
           },
         },
@@ -981,8 +1190,29 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
         ); //individual components can trap and handle this event as they so wish
         $('body').trigger(event);
       },
-
-      dom: 'Bfr<"row"><"row info-rw" i>tlp',
+      /* 'dom' results in:
+      <div>
+        {Buttons}
+        {filter}
+        {processing}
+      </div>
+      <div class="row info-rw">
+        {information}
+      </div>
+      <div>
+        {table}
+      </div>
+      <div class="row dataTables-controls-row">
+        <div class="col-sm-4">
+          {length}
+        </div>
+        <div class="col-sm-8">
+          {pagination}
+        </div>
+      </div>
+      <div class="clear"></div>
+      */
+      dom: 'Bfr<"row"><"row info-rw" i>t<"row dataTables-controls-row"<"col-sm-4" l><"col-sm-8 text-right" p>><"clear">',
     });
 
     table
@@ -1000,8 +1230,6 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
 
   let table_wrapper = $('#' + tableID + '_wrapper');
 
-  table_wrapper.find('.dt-buttons').css({ float: 'right' });
-
   table_wrapper
     .find('.dataTables_filter')
     .find('label')
@@ -1011,15 +1239,19 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
     .attr('placeholder', 'Search ' + componentMeta.title)
     .attr('size', 30);
 
-  $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
+  // Add 'tour-id' attribute to the table wrapper
+  table_wrapper
+    .find('.dataTables_scroll')
+    .attr('data-tour-id', 'component_table component_table_with_accessions');
 
-  //handle event for table details
+
+  // Handle event for table details
   $('#' + tableID + ' tbody')
     .off('click', 'td.summary-details-control')
     .on('click', 'td.summary-details-control', function (event) {
       event.preventDefault();
 
-      var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
+      var event = jQuery.Event('posttablerefresh'); // Individual components can trap and handle this event as they so wish
       event.tableID = tableID;
       $('body').trigger(event);
 
@@ -1063,6 +1295,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
                 // cellpadding: "5",
                 cellspacing: '0',
                 border: '0',
+                class: 'summary-details-table',
                 // style: "padding-left:50px;"
               });
 
@@ -1080,7 +1313,7 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
                   .append($('<td/>').append(colVal.title))
                   .append(
                     $('<td/>').append(
-                      data.component_attributes.data_set[colVal.data]
+                      data.component_attributes.data_set[colVal.data] || ''
                     )
                   );
               }
@@ -1102,13 +1335,14 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
 function load_records(componentMeta, args_dict, columnDefs = null) {
   var csrftoken = $.cookie('csrftoken');
 
-  //loader
+  // Show spinner while waiting for data
   var tableLoader = null;
   if ($('#component_table_loader').length) {
     tableLoader = $('<div class="copo-i-loader"></div>');
     $('#component_table_loader').append(tableLoader);
   }
 
+  // Merge any caller-supplied params, then add required task fields
   var post_data = {};
   if (args_dict != null) {
     post_data = args_dict;
@@ -1128,6 +1362,7 @@ function load_records(componentMeta, args_dict, columnDefs = null) {
       alert("Couldn't retrieve " + componentMeta.component + ' data!');
     },
   }).done(function (data) {
+    // Multi-component response → tabbed layout; otherwise a single flat table
     if (
       typeof data.table_data != 'undefined' &&
       typeof data.table_data.components != 'undefined'
@@ -1136,9 +1371,8 @@ function load_records(componentMeta, args_dict, columnDefs = null) {
     } else {
       do_render_component_table(data, componentMeta, columnDefs);
     }
-    //remove loader
     if (tableLoader) {
-      tableLoader.remove();
+      tableLoader.remove(); // Hide spinner once rendered
     }
   });
 }

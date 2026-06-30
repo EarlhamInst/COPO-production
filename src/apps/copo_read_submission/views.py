@@ -31,8 +31,8 @@ from src.apps.copo_core.models import ProfileType
 l = Logger()
 
 
+@login_required
 @web_page_access_checker
-@login_required()
 def ena_read_manifest_validate(request, profile_id):
     request.session["profile_id"] = profile_id
     checklist_id = request.GET.get("checklist_id")
@@ -45,8 +45,9 @@ def ena_read_manifest_validate(request, profile_id):
 
     return render(request, "copo/ena_read_manifest_validate.html", data)
 
+
+@login_required
 @web_page_access_checker
-@login_required()
 def parse_ena_spreadsheet(request):
     profile_id = request.session["profile_id"]
     ghlper.notify_read_status(
@@ -95,17 +96,24 @@ def parse_ena_spreadsheet(request):
                     return HttpResponseBadRequest()
             else:
                 # bucket is missing, therefore create bucket and notify user to upload files
+                # msg = 's3 bucket not found, creating it'
                 ghlper.notify_read_status(
                     data={"profile_id": profile_id},
-                    msg='s3 bucket not found, creating it',
+                    msg='No data file storage was found for this profile, creating it now...',
                     action="info",
                     html_id="sample_info",
                 )
                 s3obj.make_s3_bucket(bucket_name=bucket_name)
+                msg = (
+                    "No data files were found in COPO.<br>"
+                    "To upload them, use the <strong>Data files</strong> button "
+                    "for the relevant profile on the <strong>Work profiles</strong> page or "
+                    "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+                )
+
                 ghlper.notify_read_status(
                     data={"profile_id": profile_id},
-                    msg='Files not found, please click "Upload Data into COPO" and follow the '
-                    'instructions.',
+                    msg=msg,
                     action="error",
                     html_id="sample_info",
                 )
@@ -122,8 +130,8 @@ def parse_ena_spreadsheet(request):
     return HttpResponseBadRequest()
 
 
+@login_required
 @web_page_access_checker
-@login_required()
 def save_ena_records(request):
     # create mongo sample objects from info parsed from manifest and saved to session variable
     sample_data = request.session.get("sample_data")
@@ -547,8 +555,9 @@ def save_ena_records(request):
     result = {"table_data": table_data, "component": "read"}
     return JsonResponse(status=200, data=result)
 
+
+@login_required
 @web_page_access_checker
-@login_required()
 def get_manifest_submission_list(request):
     profile_id = request.session["profile_id"]
     docs = (
@@ -569,7 +578,7 @@ def get_manifest_submission_list(request):
     return HttpResponse(out)
 
 
-@login_required()
+@login_required
 def init_manifest_submission(request):
     submission_id = request.POST["submission_id"]
     submission_repo = "ena"
@@ -605,7 +614,7 @@ def init_manifest_submission(request):
     return HttpResponse()
 
 
-@login_required()
+@login_required
 def get_manifest_submission_list(request):
     profile_id = request.session["profile_id"]
     docs = (
@@ -626,7 +635,7 @@ def get_manifest_submission_list(request):
     return HttpResponse(out)
 
 
-@login_required()
+@login_required
 def get_submission_status(request):
     """
     function returns the status of a submission record
@@ -686,7 +695,7 @@ def get_submission_status(request):
     return HttpResponse(jsonpickle.encode(context), content_type='application/json')
 
 
-@login_required()
+@login_required
 def get_read_accessions(request, sample_accession):
     samples = Sample().get_all_records_columns(
         filter_by={"sraAccession": sample_accession},
@@ -723,8 +732,8 @@ def get_read_accessions(request, sample_accession):
     return JsonResponse(status=200, data=result)
 
 
-@web_page_access_checker
 @login_required
+@web_page_access_checker
 def copo_reads(request, profile_id, ui_component):
     request.session["profile_id"] = profile_id
     profile = Profile().get_record(profile_id)

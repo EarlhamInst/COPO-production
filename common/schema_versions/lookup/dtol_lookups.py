@@ -26,6 +26,7 @@ def get_titled_data_function(str=""):
         .replace("Industry Partner", "industry partner")
         .replace("Other ", "other ")
         .replace(" Vib ", " VIB ")
+        .replace("Usa", "USA")
     )
 
 
@@ -123,13 +124,32 @@ DTOL_ENUMS = {
         'NOT_COLLECTED',
         'NOT_PROVIDED',
     ],
-    'BARCODING_STATUS': [
-        'DNA_BARCODING_COMPLETED',
-        'DNA_BARCODE_EXEMPT',
-        'DNA_BARCODING_FAILED',
-        'DNA_BARCODING_TO_BE_PERFORMED_GAL',
-        'DNA_BARCODING_VIA_WSI_PROCESS',
-    ],
+    'BARCODING_STATUS': {
+        'ASG': [
+            'DNA_BARCODING_COMPLETED',
+            'DNA_BARCODE_EXEMPT',
+            'DNA_BARCODING_FAILED',
+            'DNA_BARCODING_VIA_WSI_PROCESS',
+        ],
+        'DTOL': [
+            'DNA_BARCODING_COMPLETED',
+            'DNA_BARCODE_EXEMPT',
+            'DNA_BARCODING_FAILED',
+            'DNA_BARCODING_VIA_WSI_PROCESS',
+        ],
+        'DTOLENV': [
+            'DNA_BARCODING_COMPLETED',
+            'DNA_BARCODE_EXEMPT',
+            'DNA_BARCODING_FAILED',
+            'DNA_BARCODING_VIA_WSI_PROCESS',
+        ],
+        'ERGA': [
+            'DNA_BARCODING_COMPLETED',
+            'DNA_BARCODE_EXEMPT',
+            'DNA_BARCODING_FAILED',
+            'DNA_BARCODING_TO_BE_PERFORMED_GAL',
+        ],
+    },
     'CELL_NUMBER': [
         '1',
         '2-10',
@@ -498,8 +518,6 @@ DTOL_ENUMS = {
             'VEGETATIVE_CELL',
             'VEGETATIVE_STRUCTURE',
             'ZYGOTE',
-            'NOT_APPLICABLE',
-            'NOT_COLLECTED',
             'NOT_PROVIDED',
         ],
         'ASG': [
@@ -515,8 +533,6 @@ DTOL_ENUMS = {
             'VEGETATIVE_CELL',
             'VEGETATIVE_STRUCTURE',
             'ZYGOTE',
-            'NOT_APPLICABLE',
-            'NOT_COLLECTED',
             'NOT_PROVIDED',
         ],
         'ERGA': [
@@ -532,8 +548,6 @@ DTOL_ENUMS = {
             'vegetative cell',
             'vegetative structure',
             'zygote',
-            'not applicable',
-            'not collected',
             'not provided',
         ],
     },
@@ -678,20 +692,34 @@ DTOL_ENUMS = {
         'FEMALE',
         'MALE',
         'SEXUAL_MORPH',
-        'NOT_APPLICABLE',
         'NOT_COLLECTED',
-        'NOT_PROVIDED',
     ],
-    'SIZE_OF_TISSUE_IN_TUBE': [
-        'VS',
-        'S',
-        'M',
-        'L',
-        'SINGLE_CELL',
-        'NOT_APPLICABLE',
-        'NOT_COLLECTED',
-        'NOT_PROVIDED',
-    ],
+    'SIZE_OF_TISSUE_IN_TUBE': {
+        'ASG': [
+            'VS',
+            'S',
+            'M',
+            'L',
+            'SINGLE_CELL',
+            'DNA',
+        ],
+        'DTOL': [
+            'VS',
+            'S',
+            'M',
+            'L',
+            'SINGLE_CELL',
+            'NOT_APPLICABLE'
+        ],
+        'ERGA': [
+            'VS',
+            'S',
+            'M',
+            'L',
+            'SINGLE_CELL',
+            'NOT_APPLICABLE',
+        ],
+    },
     'SORTER_AFFILIATION': ['EARLHAM INSTITUTE', 'UNIVERSITY OF OXFORD'],
     'SPECIMEN_IDENTITY_RISK': ['Y', 'N'],
     'SYMBIONT': ['TARGET', 'SYMBIONT'],
@@ -869,169 +897,184 @@ DTOL_ENUMS = {
 DTOL_RULES = {
     'ASSOCIATED_TRADITIONAL_KNOWLEDGE_OR_BIOCULTURAL_PROJECT_ID': {
         "strict_regex": r"^[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}$",
-        "human_readable": "[ID provided by the local context hub]",
+        "human_readable": "an ID that is provided by the local context hub",
     },
-    'CHLOROPHYL_A': {"strict_regex": r"^\d+$", "human_readable": "integer"},
+    'CHLOROPHYL_A': {
+        "strict_regex": r"^\d+$",
+        "human_readable": "a whole number (integer)",
+    },
     'COLLECTOR_ORCID_ID': {
         "strict_regex": r"^((\d{4}-){3}\d{3}(\d|X))(\|(\d{4}-){3}\d{3}(\d|X))*|(^not provided$)|(^not applicable$)",
-        "human_readable": "16-digit number that is compatible with the ISO Standard (ISO 27729),  if multiple IDs separate with a | and no spaces",
+        "human_readable": "a 16-digit number that is compatible with the ISO Standard (ISO 27729). If multiple ORCID IDs are provided, separate them with a pipe symbol (|) with no spaces between them",
     },
     'DATE_OF_COLLECTION': {
         "ena_regex": r"(^[12][0-9]{3}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01])(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?"
         "([+-][0-9]{1,2})?)?)?)?(/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?"
         "([+-][0-9]{1,2})?)?)?)?)?$)|(^not collected$)|(^not provided$)|(^restricted access$) ",
-        "human_readable": "YYYY-MM-DD, YYYY-MM, YYYY, NOT_COLLECTED or NOT_PROVIDED",
+        "human_readable": "a date in one of the following formats: YYYY-MM-DD, YYYY-MM or YYYY; if not available, use NOT_COLLECTED or NOT_PROVIDED",
     },
     'DECIMAL_LATITUDE': {
-        "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
-        "human_readable": "numeric with decimal separator '.', NOT_COLLECTED or NOT_PROVIDED",
+        "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)",
+        "human_readable": 'a numeric value with "." as the decimal separator or NOT_COLLECTED',
     },
     'DECIMAL_LATITUDE_ERGA': {
         "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)",
-        "human_readable": "numeric with decimal separator '.', or NOT_COLLECTED",
+        "human_readable": 'a numeric value with "." as the decimal separator or NOT_COLLECTED',
     },
     'DECIMAL_LONGITUDE': {
-        "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
-        "human_readable": "numeric with decimal separator '.', NOT_COLLECTED or NOT_PROVIDED",
+        "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)",
+        "human_readable": 'a numeric value with "." as the decimal separator or NOT_COLLECTED',
     },
     'DECIMAL_LONGITUDE_ERGA': {
         "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)",
-        "human_readable": "numeric with decimal separator '.', or NOT_COLLECTED",
+        "human_readable": 'a numeric value with "." as the decimal separator or NOT_COLLECTED',
     },
     'DEPTH': {
         "ena_regex": r"(0|((0\.)|([1-9][0-9]*\.?))[0-9]*)([Ee][+-]?[0-9]+)?",
-        "human_readable": "numeric with decimal separator '.', or empty string",
+        "human_readable": 'a numeric value with "." as the decimal separator or blank',
     },
-    'DISSOLVED_OXYGEN': {"strict_regex": r"^\d+$", "human_readable": "integer"},
+    'DISSOLVED_OXYGEN': {
+        "strict_regex": r"^\d+$",
+        "human_readable": "a whole number (integer)",
+    },
     'ELEVATION': {
         "ena_regex": r"[+-]?(0|((0\.)|([1-9][0-9]*\.?))[0-9]*)([Ee][+-]?[0-9]+)?",
-        "human_readable": "numeric with decimal separator '.', or empty string",
+        "human_readable": 'a numeric value with "." as the decimal separator or blank',
     },
     'ETHICS_PERMITS_FILENAME': {
         "optional_regex": r"(^.+\.pdf$)|(^.+\.PDF$)",
-        "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required",
+        "human_readable": 'a file name (including the ".pdf" extension) if a permit is required; otherwise, input NOT_APPLICABLE',
     },
     'LATITUDE_END': {
         "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
-        "human_readable": "numeric with decimal separator '.', NOT_COLLECTED or NOT_PROVIDED",
+        "human_readable": 'a numeric value with "." as the decimal separator, NOT_COLLECTED or NOT_PROVIDED',
     },
     'LATITUDE_END_ERGA': {
         "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)",
-        "human_readable": "numeric with decimal separator '.', or NOT_COLLECTED",
+        "human_readable": 'a numeric value with "." as the decimal separator or NOT_COLLECTED',
     },
     'LATITUDE_START': {
         "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
-        "human_readable": "numeric with decimal separator '.', NOT_COLLECTED or NOT_PROVIDED",
+        "human_readable": 'a numeric value with "." as the decimal separator, NOT_COLLECTED or NOT_PROVIDED',
     },
     'LATITUDE_START_ERGA': {
         "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)",
-        "human_readable": "numeric with decimal separator '.', or NOT_COLLECTED",
+        "human_readable": 'a numeric value with "." as the decimal separator, or NOT_COLLECTED',
     },
     'LONGITUDE_END': {
         "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
-        "human_readable": "numeric with decimal separator '.', NOT_COLLECTED or NOT_PROVIDED",
+        "human_readable": 'a numeric value with "." as the decimal separator, NOT_COLLECTED or NOT_PROVIDED',
     },
     'LONGITUDE_END_ERGA': {
         "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)",
-        "human_readable": "numeric with decimal separator '.', or NOT_COLLECTED",
+        "human_readable": 'a numeric value with "." as the decimal separator, or NOT_COLLECTED',
     },
     'LONGITUDE_START': {
         "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
-        "human_readable": "numeric with decimal separator '.', NOT_COLLECTED or NOT_PROVIDED",
+        "human_readable": 'a numeric value with "." as the decimal separator, NOT_COLLECTED or NOT_PROVIDED',
     },
     'LONGITUDE_START_ERGA': {
         "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]*$)|(^not collected$)",
-        "human_readable": "numeric with decimal separator '.', or NOT_COLLECTED",
+        "human_readable": 'a numeric value with "." as the decimal separator or NOT_COLLECTED',
     },
     'NAGOYA_PERMITS_FILENAME': {
         "optional_regex": r"(^.+\.pdf$)|(^.+\.PDF$)",
-        "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required",
+        "human_readable": 'a file name (including the ".pdf" extension) if a permit is required; otherwise, input NOT_APPLICABLE',
     },
     'ORIGINAL_COLLECTION_DATE': {
         "ena_regex": r"^[12][0-9]{3}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01])(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?)?$",
-        "human_readable": "Date as YYYY, YYYY-MM or YYYY-MM-DD",
+        "human_readable": "a date in the format: YYYY, YYYY-MM or YYYY-MM-DD",
     },
     'ORIGINAL_DECIMAL_LATITUDE': {
         "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]{0,8}$)",
-        "human_readable": "numeric with decimal separator '.' and with 8 decimal places",
+        "human_readable": 'a numeric value with "." as the decimal separator and exactly 8 decimal places',
     },
     'ORIGINAL_DECIMAL_LONGITUDE': {
         "ena_regex": r"(^[+-]?[0-9]+\.?[0-9]{0,8}$)",
-        "human_readable": "numeric with decimal separator '.' and with 8 decimal places",
+        "human_readable": 'a numeric value with "." as the decimal separator and exactly 8 decimal places',
     },
     'RACK_OR_PLATE_ID': {"optional_regex": r"^[a-zA-Z]{2}\d{8}$"},
-    'SALINITY': {"strict_regex": r"^\d+$", "human_readable": "integer"},
+    'SALINITY': {
+        "strict_regex": r"^\d+$",
+        "human_readable": "a whole number (integer)",
+    },
     'SAMPLE_COORDINATOR_ORCID_ID': {
         "strict_regex": r"^((\d{4}-){3}\d{3}(\d|X))(\|(\d{4}-){3}\d{3}(\d|X))*$",
-        "human_readable": "16-digit number that is compatible with the ISO Standard (ISO 27729), if multiple IDs separate with a | and no spaces",
+        "human_readable": "a 16-digit number that is compatible with the ISO Standard (ISO 27729). If multiple ORCID IDs are provided, separate them with a pipe symbol (|), with no spaces between them",
     },
     'SAMPLE_DERIVED_FROM': {
         "ena_regex": r"(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
         r"11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
         r"AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
-        "human_readable": "Specimen accession",
+        "human_readable": "a specimen accession",
     },
     'SAMPLE_SAME_AS': {
         "ena_regex": r"(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
         r"11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
         r"AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
-        "human_readable": "Specimen accession",
+        "human_readable": "a specimen accession",
     },
     'SAMPLE_SYMBIONT_OF': {
         "ena_regex": r"(^[ESD]R[SR]\d{6,}(,[ESD]R[SR]\d{6,})*$)|(^SAM[END][AG]?\d+(,SAM[END][AG]?\d+)*$)|(^EGA[NR]\d{"
         r"11}(,EGA[NR]\d{11})*$)|(^[ESD]R[SR]\d{6,}-[ESD]R[SR]\d{6,}$)|(^SAM[END][AG]?\d+-SAM[END]["
         r"AG]?\d+$)|(^EGA[NR]\d{11}-EGA[NR]\d{11}$)",
-        "human_readable": "Specimen accession",
+        "human_readable": "a specimen accession",
     },
     'SAMPLING_PERMITS_FILENAME': {
         "optional_regex": r"(^.+\.pdf$)|(^.+\.PDF$)",
-        "human_readable": "filename (including '.pdf' extension) if permit is required or NOT_APPLICABLE if permit is not required",
+        "human_readable": 'a file name (including the ".pdf" extension) if a permit is required; otherwise, input NOT_APPLICABLE',
     },
     'SAMPLING_WATER_BODY_DEPTH': {
         "strict_regex": r"^\d+$",
-        "human_readable": "integer",
+        "human_readable": "a whole number (integer)",
     },
-    'TEMPERATURE': {"strict_regex": r"^\d+$", "human_readable": "integer"},
+    'TEMPERATURE': {
+        "strict_regex": r"^\d+$",
+        "human_readable": "a whole number (integer)",
+    },
     'TIME_OF_COLLECTION': {
         "strict_regex": r"^([0-1][0-9]|2[0-4]):[0-5]\d$",
-        "human_readable": "24-hour format with hours and minutes separated by colon",
+        "human_readable": "a time in 24-hour format (HH:MM), where hours and minutes are separated by a colon",
     },
     'TUBE_OR_WELL_ID': {"optional_regex": r"^[a-zA-Z]{2}\d{8}$"},
-    'WATER_SPEED': {"strict_regex": r"^\d+$", "human_readable": "integer"},
+    'WATER_SPEED': {
+        "strict_regex": r"^\d+$",
+        "human_readable": "a whole number (integer)",
+    },
     'tmp_TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
         "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$",
         "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
         "biocollection_qualifier_type": "specimen_voucher",
-        # every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-        "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already.",
+        # Every ID should be in the format of "institute code:collection code:id" and separated by "|". It can also be "Not_applicable, not provided or empty"
+        "human_readable": "an ID in the format of institute unique name:collection code:id or institute unique name:id. If multiple IDs are provided, separate them with a pipe symbol (|). Each ID must already be registered.",
     },
     'tmp_PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
         "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$",
         "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
         "biocollection_qualifier_type": "specimen_voucher",
-        # every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-        "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already.",
+        # Every ID should be in the format of "institute code:collection code:id" and separated by "|". It can also be "Not_applicable, not provided or empty"
+        "human_readable": "an ID in the format of institute unique name:collection code:id or institute unique name:id. If multiple IDs are provided, separate them with a pipe symbol (|). Each ID must already be registered.",
     },
     'tmp_DNA_VOUCHER_ID_FOR_BIOBANKING': {
         "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$",
         "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
         "biocollection_qualifier_type": "bio_material",
-        # every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-        "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already.",
+        # Every ID should be in the format of "institute code:collection code:id" and separated by "|". It can also be "Not_applicable, not provided or empty"
+        "human_readable": "an ID in the format of institute unique name:collection code:id or institute unique name:id. If multiple IDs are provided, separate them with a pipe symbol (|). Each ID must already be registered.",
     },
     'tmp_PROXY_VOUCHER_ID': {
         "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$",
         "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
         "biocollection_qualifier_type": "specimen_voucher",
-        # every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
-        "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already.",
+        # Every ID should be in the format of "institute code:collection code:id" and separated by "|". It can also be "Not_applicable, not provided or empty"
+        "human_readable": "an ID in the format of institute unique name:collection code:id or institute unique name:id. If multiple IDs are provided, separate them with a pipe symbol (|). Each ID must already be registered.",
     },
     'tmp_VOUCHER_ID': {
         "strict_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)|(^not applicable$)|(^not provided$)|^$",
-        # every id should be in the format of "institute code:collection code:id" and separated by "|". it can aslo be "Not_applicable, not provided or empty"
+        # Every ID should be in the format of "institute code:collection code:id" and separated by "|". It can also be "Not_applicable, not provided or empty"
         "biocollection_regex": r"((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+$)|(((^([^\|:])+)(:(([^\|:])+))?:[^\|:]+)(\|(([^\|:])+)(:(([^\|:])+))?:([^\|:])+)+$)",
         "biocollection_qualifier_type": "specimen_voucher",
-        "human_readable": "The ID should be in the format of institute unique name:collection code:id or institute unique name:id and separated by \"|\" and the ID should be registered already.",
+        "human_readable": "an ID in the format of institute unique name:collection code:id or institute unique name:id. If multiple IDs are provided, separate them with a pipe symbol (|). Each ID must already be registered.",
     },
 }
 

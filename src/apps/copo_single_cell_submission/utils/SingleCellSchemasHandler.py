@@ -4,7 +4,7 @@ import pandas as pd
 import os
 from django.conf import settings
 from openpyxl.utils.cell import get_column_letter
-from common.utils.helpers import notify_singlecell_status, get_datetime
+from common.utils.helpers import notify_singlecell_status, get_datetime, build_unified_context
 from django_tools.middlewares import ThreadLocal
 import inspect
 import math
@@ -19,7 +19,7 @@ import json
 from io import BytesIO
 from pyld import jsonld
 from django.urls import reverse
-from .validator.validation_message import MESSAGES
+from .validator.validation_messages import MESSAGES
 
 l = Logger()
 
@@ -87,7 +87,7 @@ class SingleCellSchemasHandler:
             )
 
         for checklist_id in checklist_df.index:
-            # no duplicate name,label within a component with same versio and term_name
+            # no duplicate name,label within a component with same version and term_name
             checklist_schema_df = schemas_df.drop(
                 schemas_df[pd.isna(schemas_df[checklist_id])].index
             )
@@ -592,7 +592,11 @@ class SingleCellSchemasHandler:
                             ] = component_data_df.to_dict("records")
 
                 try:
-                    compacted = jsonld.compact(singlecell_dict, context)
+                    unified_context_path = f"media/assets/manifests/{schema_name}_{checklist}_context{version}.jsonld"
+                    build_unified_context(context, unified_context_path)
+                    compacted = jsonld.compact(
+                        singlecell_dict, f'{url_prefix}/{unified_context_path}'
+                    )
                 except Exception as e:
                     l.error(
                         f"Failed to generate JSON-LD for {schema_name} {checklist}: {str(e)}"
@@ -601,11 +605,11 @@ class SingleCellSchemasHandler:
                     continue
 
                 if isinstance(file_path, BytesIO):
-                    outfile = file_path
+                    output_file = file_path
                 else:
-                    outfile = open(file_path, "w")
-                # with outfile:
-                outfile.write(bytes(json.dumps(compacted), 'utf-8'))
+                    output_file = open(file_path, "w")
+                # with output_file:
+                output_file.write(bytes(json.dumps(compacted), 'utf-8'))
 
     def updateSchemas(self):
         for name, url in settings.SINGLE_CELL_SCHEMAS_URL.items():
@@ -699,8 +703,8 @@ class SingleCellSchemasHandler:
                     )
                     continue
 
-                with open(file_path, "w") as outfile:
-                    outfile.write(json.dumps(compacted))
+                with open(file_path, "w") as output_file:
+                    output_file.write(json.dumps(compacted))
 
 
 class SinglecellschemasSpreadsheet:
@@ -913,8 +917,35 @@ class SinglecellschemasSpreadsheet:
                 # profile = Profile().get_record(self.profile_id)
                 # schema_name = profile.get("schema_name", "COPO_SINGLE_CELL")
 
-                #remove empty worksheets
+                for key, df in self.data.items():
+                    df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+                    df = df.apply(lambda x: x.astype("string"))
+                    df = df.apply(lambda x: x.str.strip())
+                    df = df.replace("", np.nan)
+                    df.dropna(how="all", inplace=True)
+                    df.fillna("", inplace=True)
+                    self.data[key] = df
+
+                # Remove worksheets that are empty after cleaning
                 self.data = {k: v for k, v in self.data.items() if not v.empty}
+
+                singlecell = (
+                    SinglecellSchemas()
+                    .get_collection_handle()
+                    .find_one({"name": self.schema_name}, {"schemas": 1, "enums": 1})
+                )
+
+                # Retrieve the name of the checklist based on the checklist ID
+                singlecell_checklists = (
+                    SinglecellSchemas()
+                    .get_checklists(self.schema_name, checklist_id=self.checklist_id)
+                )
+                checklist_name = (
+                    singlecell_checklists
+                    .get(self.checklist_id, {})
+                    .get('name')
+                )
+                self.schemas = singlecell["schemas"]
 
                 if self.schemas:
 
@@ -932,9 +963,28 @@ class SinglecellschemasSpreadsheet:
                     for component, df in self.data.items():
                         if component not in self.schemas.keys():
                             raise Exception(MESSAGES["incorrect_manifest"])
-                        
+
+                        # Check whether the uploaded manifest matches the intended
+                        # manifest checklist dropdown menu option
+                        expected_columns = set(
+                            item['term_label'] for item in self.schemas[component].values()
+                        )
+                        uploaded_columns = set(df.columns.str.replace(' (optional)', '', regex=False))
+                        missing = expected_columns - uploaded_columns
+                        total_expected = len(expected_columns)
+                        match_ratio = (total_expected - len(missing)) / max(total_expected, 1)
+
+                        if missing or match_ratio < 0.5:
+                            raise Exception(
+                                'The uploaded manifest does not match the '
+                                'checklist selected from the dropdown menu, '
+                                f'<strong>{checklist_name}</strong>. '
+                                'Please upload the correct manifest or '
+                                'choose the appropriate checklist option.'
+                            )
+
                         starting_line = self.schema_components.get(component, {}).get("first_data_line_no", 2)
-                        df = df.iloc[1+starting_line:]  # remove the first 3 rows
+                        df = df.iloc[1 + starting_line:]
                         new_column_name = {
                             name: name.replace(" (optional)", "", -1)
                             for name in df.columns.values.tolist()

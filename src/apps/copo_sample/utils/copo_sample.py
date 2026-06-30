@@ -39,10 +39,35 @@ def generate_table_records(profile_id=str(), checklist_id=str()):
     #data_set = []
     columns = []
     data_map = dict()
-
-    detail_dict = dict(className1='summary-details-control detail-hover-message', orderable=False, data=None,
-                        title='', defaultContent='', width="5%")   # remove the details 
+    
+    # Remove the details
+    detail_dict = dict(
+        className1='summary-details-control detail-hover-message',
+        orderable=False,
+        data=None,
+        title='',
+        defaultContent='',
+        width="5%",
+    )
     columns.insert(0, detail_dict)
+    columns.append(dict(data="record_id", visible=False))
+    columns.append(dict(data="DT_RowId", visible=False))
+    columns.extend(
+        [
+            dict(
+                data=x,
+                title=fields[x]["label"],
+                defaultContent='',
+                render=(
+                    "render_ena_accession_function"
+                    if x.lower().endswith("accession")
+                    else ""
+                ),
+            )
+            for x in label
+        ]
+    )
+
     columns.append(dict(data="record_id", visible=False))
     columns.append(dict(data="DT_RowId", visible=False))
     columns.extend([dict(data=x, title=fields[x]["label"], defaultContent='', render="render_ena_accession_function" if x.lower().endswith("accession") else ""    ) for x in label  ])
@@ -125,14 +150,14 @@ def delete_sample_records(profile_id, target_ids=list(), target_id=None):
     sample_with_processing = [f'{s["name"]}' for s in result if s.get("status", "") == "processing"]
     message = str()
     if sample_with_biosample:
-        message= "Sample record/s have been submitted to ENA. Cannot be deleted! : " + ",".join(sample_with_biosample)
+        message= "Sample records have been submitted to ENA. Cannot be deleted! : " + ",".join(sample_with_biosample)
     if sample_with_processing:
-        message += "\nSample record/s are being processed. Cannot be deleted! : " + ",".join(sample_with_processing)
+        message += "\nSample records are being processed. Cannot be deleted! : " + ",".join(sample_with_processing)
     if message:
         return dict(status='error', message=message)
 
     Sample(profile_id=profile_id).get_collection_handle().delete_many({"_id": {"$in": sample_obj_ids}})
-    return dict(status='success', message="Read record/s have been deleted!")
+    return dict(status='success', message="Sample records have been deleted!")
 
 
 def process_pending_submission():
@@ -196,8 +221,3 @@ def process_pending_submission():
                 message = "Sample submission has been submitted to ENA."
                 notify_submission_status(data={"profile_id": profile_id}, msg=message, action="info",
                                 html_id="submission_info")
-
-
-
-
-

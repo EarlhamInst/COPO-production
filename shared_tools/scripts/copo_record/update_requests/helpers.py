@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
 APPLY_TO_DB = False  # Set to True to apply the updates
 WRITE_TO_FILE = True  # Set to True to write updates to a file
 
-# === MongoDB Connection ===
+# === MongoDB connection ===
 username = urllib.parse.quote_plus('copo_user')
 password = urllib.parse.quote_plus('password')
 myclient = pymongo.MongoClient(
@@ -43,7 +43,7 @@ mydb = myclient['copo_mongo']
 sample_collection = mydb['SampleCollection']
 source_collection = mydb['SourceCollection']
 
-# === Field Mappings ===
+# === Field mappings ===
 SAMPLE_FIELD_NAMES = ['biosample', 'sample', 'biosamples']
 SOURCE_FIELD_NAMES = ['biospecimen', 'specimen']
 MAPPINGS = {
@@ -54,21 +54,31 @@ MAPPINGS = {
     'Species name': 'SCIENTIFIC_NAME',
     'Species': 'SCIENTIFIC_NAME',
     'New Species Name': 'SCIENTIFIC_NAME',
+    'Scientific_name': 'SCIENTIFIC_NAME',
     'taxonid': 'TAXON_ID',
     'taxon': 'TAXON_ID',
     'New TaxonID': 'TAXON_ID',
+    'New Taxon': 'TAXON_ID',
     'tolid': 'public_name',
     'New TOLID': 'public_name',
+    'Specimen_id': 'SPECIMEN_ID',
+    'New Specimen id': 'SPECIMEN_ID',
+    'Specimen id': 'SPECIMEN_ID',
+    
 }
 
 ENA_MAPPINGS = {
+    'TAXON_ID': 'TAXON_ID',
+    'SCIENTIFIC_NAME': 'SCIENTIFIC_NAME',
+    'SPECIMEN_ID': 'specimen_id',
     'sraAccession': 'sample_accession',
     'public_name': 'tolid',
 }
 
 OPTIONAL_TAXONOMY_UPDATE = ['GENUS', 'ORDER_OR_GROUP', 'FAMILY']
 TAXONOMY_FIELDS = ['SCIENTIFIC_NAME', 'GENUS', 'ORDER_OR_GROUP', 'TAXON_ID', 'FAMILY']
-
+OTHER_SAMPLE_FIELDS = ['SPECIMEN_ID']
+OTHER_SOURCE_FIELDS = ['SPECIMEN_ID']
 
 # === Classes ===
 class MicrosecondFormatter(logging.Formatter):
@@ -115,12 +125,12 @@ def contains_existing_updates(new_updates: list) -> tuple[bool, list]:
         print('No new updates — all entries are duplicates. Exiting.')
         return True, []
 
-    # === Case 2: Some updates already exist not all ===
+    # === Case 2: Some updates exist already ===
     elif duplicates:
         log.warning(
-            f'{len(duplicates)} duplicate update(s) found. These will be skipped.'
+            f'{len(duplicates)} duplicate updates found. These will be skipped.'
         )
-        print(f'{len(duplicates)} duplicate update(s) skipped.')
+        print(f'{len(duplicates)} duplicate updates skipped.')
 
         # Retain only non-duplicates
         non_duplicates = [
@@ -196,7 +206,7 @@ def generate_ena_update_data_json():
         json.dump(result, f, indent=4)
         f.write('\n')
 
-    log.info(f'Added {len(new_deduped)} new ENA update(s) to {OUTPUT_FILE_NAME}.')
+    # log.info(f'Added {len(new_deduped)} new ENA updates to {OUTPUT_FILE_NAME}.')
 
 
 def generate_sample_query(sample, fields):
@@ -214,6 +224,12 @@ def generate_sample_query(sample, fields):
 
     if fields.get('public_name', ''):
         update['$set']['public_name'] = fields.get('public_name')
+
+    # Handle other fields
+    if any(x in OTHER_SAMPLE_FIELDS for x in fields):
+        for field in OTHER_SAMPLE_FIELDS:
+            if fields.get(field, ''):
+                update['$set'][field] = fields.get(field)
 
     # Handle optional taxonomy updates
     for x in OPTIONAL_TAXONOMY_UPDATE:
@@ -243,11 +259,18 @@ def generate_source_query(source, fields):
     query = {'biosampleAccession': source}
     update = {'$set': {}}
 
+    # Handle provided taxonomy fields
     if fields.get('TAXON_ID', ''):
         update['$set']['TAXON_ID'] = fields.get('TAXON_ID')
 
     if fields.get('public_name', ''):
         update['$set']['public_name'] = fields.get('public_name')
+
+    # Handle other fields
+    if any(x in OTHER_SOURCE_FIELDS for x in fields):
+        for field in OTHER_SOURCE_FIELDS:
+            if fields.get(field, ''):
+                update['$set'][field] = fields.get(field)
 
     if query['biosampleAccession'] and update['$set']:
         return {'collection': 'SourceCollection', 'query': query, 'update': update}
@@ -265,15 +288,33 @@ def get_sample_record_by_source(source_accession, log, sample_collection):
     This is used to get the scientific name since it is not present in the SourceCollection only in SampleCollection.
     Returns the scientific name if found, otherwise returns None.
     '''
-    sample_record = sample_collection.find_one(
-        {
-            '$or': [
-                {'sampleDerivedFrom': source_accession},
-                {'sampleSameAs': source_accession},
-                {'sampleSymbiontOf': source_accession},
+    sample_record = next(
+        sample_collection.aggregate(
+            [
+                {
+                    '$match': {
+                        '$or': [
+                            {'sampleDerivedFrom': source_accession},
+                            {'sampleSameAs': source_accession},
+                            {'sampleSymbiontOf': source_accession},
+                        ]
+                    }
+                },
+                {
+                    '$project': {
+                        '_id': 0,
+                        'SCIENTIFIC_NAME': {
+                            '$ifNull': [
+                                '$SCIENTIFIC_NAME',
+                                '$species_list.SCIENTIFIC_NAME',
+                            ]
+                        },
+                    }
+                },
+                {'$limit': 1},  # Ensures that only one document is returned
             ]
-        },
-        {'_id': 0, 'SCIENTIFIC_NAME': 1},
+        ),
+        None,
     )
 
     if sample_record:
@@ -291,30 +332,30 @@ def get_samples_and_sources(entry):
 
     Input format and structure:
         biospecimen
-        SAMEAuuuuuuu
+        SAMEAxxxx
 
         biosamples
-        SAMEAvvvvvvv
-        SAMEAwwwwwww
+        SAMEAxxxx
+        SAMEAxxxx
 
         Update
-        Species name: SCIENTIFIC NAME X
-        taxonid: 12345
-        tolid: publicName
+        Species name: xxxx
+        taxonid: xxxx
+        tolid: xxxx
         ---
         biospecimen
         SAMEAxxxxxxx
 
         biosamples
-        SAMEAzzzzzzz
+        SAMEAxxxx
 
         Update
-        Species name: SCIENTIFIC_NAME Y
-        taxonid: 67890
-        tolid: publicName
-        GENUS: GenusName
-        ORDER_OR_GROUP: OrderOrGroupName
-        FAMILY: FamilyName
+        Species name: xxxx
+        taxonid: xxxx
+        tolid: xxxx
+        GENUS: xxxx
+        ORDER_OR_GROUP: xxxx
+        FAMILY: xxxx
     '''
     if not isinstance(entry, str):
         raise TypeError("Expected 'entry' to be a string", entry)
@@ -405,6 +446,59 @@ def parse_update_block(text):
     return metadata, species_list
 
 
+def build_taxonomy_projection(update_json):
+    '''
+    Automatically build a MongoDB $project stage that uses $ifNull
+    to combine top-level fields and species_list.0.* fields.
+    '''
+    # Always include 'sraAccession' and exclude '_id' field
+    projection = {'_id': 0, 'sraAccession': 1}
+
+    # Collect top-level and nested fields
+    top_fields = {}
+    species_fields = {}
+
+    # Skip unwanted keys
+    excluded_fields = OPTIONAL_TAXONOMY_UPDATE + ['sraAccession']
+
+    for key in update_json:
+        if (
+            key in excluded_fields
+            or key.replace('species_list.0.', '') in excluded_fields
+        ):
+            continue
+        elif key.startswith('species_list.0.'):
+            field = key.replace('species_list.0.', '')
+            species_fields[field] = key
+        else:
+            top_fields[key] = key
+
+    # Build the combined projection using $ifNull
+    all_fields = set(top_fields.keys()) | set(species_fields.keys())
+    for field in all_fields:
+        top_level_key = top_fields.get(field)
+        nested_key = species_fields.get(field)
+
+        if top_level_key and nested_key:
+            # Field exists in BOTH places → use $ifNull
+            projection[field] = {
+                '$ifNull': [
+                    f'${top_level_key}',
+                    {
+                        '$getField': {
+                            'field': f'{top_level_key}',
+                            'input': {'$arrayElemAt': ['$species_list', 0]},
+                        }
+                    },
+                ]
+            }
+        else:
+            # Only exists in one place → include directly
+            projection[field] = 1
+
+    return projection
+
+
 def parse_update_query_into_find_query(line):
     # Extract collection name, filter, and update dict from Mongo updateOne line
     match = re.match(
@@ -430,21 +524,20 @@ def parse_update_query_into_find_query(line):
         return None
 
     # Build projection
-    # Always include 'sraAccession' and exclude '_id' field
-    projection = {'_id': 0, 'sraAccession': 1}
-    for key in update_json:
-        # Skip unwanted keys
-        excluded_fields = OPTIONAL_TAXONOMY_UPDATE + ['sraAccession']
-
-        if key.startswith('species_list.0') or key in excluded_fields:
-            continue
-        projection[key] = 1
+    projection = build_taxonomy_projection(update_json)
 
     # Execute find_one MongoDB query
     mongo_collection = (
         source_collection if collection == 'SourceCollection' else sample_collection
     )
-    result = mongo_collection.find_one(filter_json, projection)
+    # result = mongo_collection.find_one(filter_json, projection)
+
+    result = next(
+        mongo_collection.aggregate(
+            [{'$match': filter_json}, {'$project': projection}, {'$limit': 1}]
+        ),
+        None,
+    )
 
     if result:
         if collection == 'SourceCollection':
@@ -454,7 +547,12 @@ def parse_update_query_into_find_query(line):
             if sample_record and 'SCIENTIFIC_NAME' in sample_record:
                 # SCIENTIFIC_NAME is not present in SourceCollection, so it should be retrieved
                 # from the SampleCollection to update it in ENA
-                result['SCIENTIFIC_NAME'] = sample_record.get('SCIENTIFIC_NAME')
+                scientific_name = (
+                    sample_record.get('SCIENTIFIC_NAME')[0]
+                    if isinstance(sample_record.get('SCIENTIFIC_NAME'), list)
+                    else sample_record.get('SCIENTIFIC_NAME')
+                )
+                result['SCIENTIFIC_NAME'] = scientific_name
 
         # Map COPO field names to ENA field names
         for copo_field, ena_field in ENA_MAPPINGS.items():
@@ -481,7 +579,7 @@ def remove_existing_update_request_logs():
             return
 
         print(
-            f'Found {len(log_files)} update request file(s) and {len(error_files)} update request error file(s):'
+            f'Found {len(log_files)} update request files and {len(error_files)} update request error files:'
         )
         for f in all_files:
             print(f'  - {f}')
@@ -559,4 +657,4 @@ def write_find_one_query(update):
         f.write('# COPO Find Data\n')
         f.write(find_one_str + '\n')
 
-    log.info(f"Find query written to {OUTPUT_FILE_NAME} for {update['collection']}.")
+    # log.info(f"Find query written to {OUTPUT_FILE_NAME} for {update['collection']}.")

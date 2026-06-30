@@ -120,6 +120,8 @@ def process_bioimage_pending_submission():
             notify_frontend(data={"profile_id": sub["profile_id"]}, msg="<br>Bioimage was not submitted due to an error",
                             action="error",
                             html_id="dtol_sample_info")
+            notify_frontend(data={"profile_id": sub["profile_id"]}, msg="", action="hide_sub_spinner",
+                            html_id="dtol_sample_info")
             print("error code", e.returncode, e.output)
             return
     else:
@@ -134,3 +136,6 @@ def process_bioimage_pending_submission():
     Submission().get_collection_handle().update_many(
         {"_id" : {"$in": pending_sub_ids}}, {"$set": {"dtol_specimen": [], "dtol_status":"pending", "date_modified": now}}
     )
+
+    notify_frontend(data={"profile_id": sub["profile_id"]}, msg="", action="hide_sub_spinner",
+                    html_id="dtol_sample_info")

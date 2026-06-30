@@ -2,12 +2,13 @@ var dialog = new BootstrapDialog({
   title: 'Upload local files',
   message: "<div><input type='file' id='file' style='display:block' /></div>",
   size: BootstrapDialog.SIZE_WIDE,
+  cssClass: 'file-modal',
   buttons: [
     {
       id: 'upload_local_files_button',
-      label: 'Upload Local Files',
+      label: 'Upload local files',
       cssClass: 'btn-primary',
-      title: 'Upload Local Files',
+      title: 'Upload local files',
       action: function () {
         document.getElementById('file').click();
         //upload_spreadsheet($('#file').prop('files')[0])
@@ -26,13 +27,49 @@ var dialog = new BootstrapDialog({
 //uid = uid.split('/');
 //uid = uid[uid.length - 2];
 
+// WebSocket connection for receiving real-time S3 upload progress from the server.
+var s3socket;
+var uploadComplete = false;
+
+function initS3Socket() {
+  var profile_id = $('#profile_id').val();
+  if (!profile_id) return;
+  var wsprotocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+  var wsurl = wsprotocol + window.location.host + '/ws/s3_status/' + profile_id;
+  s3socket = new WebSocket(wsurl);
+  s3socket.onclose = function (e) {
+    console.log('s3socket closing ', e);
+  };
+  s3socket.onopen = function (e) {
+    console.log('s3socket opened ', e);
+  };
+  s3socket.onmessage = function (e) {
+    var d = JSON.parse(e.data);
+    if (d.action === 'upload_progress') {
+      var info = JSON.parse(d.message);
+      var percent = $('.percent');
+      var pct = info.total_chunks > 0
+        ? Math.round((info.chunk / info.total_chunks) * 100) : 0;
+      var label = '';
+      if (info.total_files > 1) {
+        label = 'Staging file ' + info.file_num + '/' + info.total_files +
+                ': ' + pct + '%';
+      } else {
+        label = 'Staging: ' + pct + '%';
+      }
+      percent.html('<b>' + label + '</b>');
+      if (info.chunk >= info.total_chunks && info.file_num >= info.total_files) {
+        uploadComplete = true;
+      }
+    }
+  };
+}
+
 $(document).ready(function () {
-  //uid = document.location.href
-  //uid = uid.split("/")
-  //uid = uid[uid.length - 2]
+  initS3Socket();
+
   //******************************Event Handlers Block*************************//
   var component = 'files';
-  //var copoVisualsURL = "/copo/copo_visuals/";
   var csrftoken = $.cookie('csrftoken');
 
   //get component metadata
@@ -55,12 +92,26 @@ $(document).ready(function () {
     do_record_task(event);
   });
 
+  // Runs after each DataTable draw. Used to attach column-header tooltips and
+  // compute the aggregate bucket size shown above the search box.
   $('body').on('posttablerefresh', function (event) {
     table = $('#' + componentMeta.tableID).DataTable();
     var numCols = table.columns().nodes().length;
 
     for (var i = 0; i < numCols; i++) {
-      if ($(table.column(i).header()).text() == 'SIZE IN BYTES') {
+      // Attach a tooltip to the Checksum header explaining S3 ETag semantics.
+      // For single-part uploads the ETag is a plain MD5; for multipart uploads
+      // it is an MD5-of-MD5s suffixed with -N (number of parts) and cannot be
+      // used to verify raw file integrity against other systems.
+      if ($(table.column(i).header()).text().trim() == 'Checksum') {
+        $(table.column(i).header()).attr(
+          'title',
+          'S3 ETag. For multipart-uploaded files this ends in -N and is not a plain MD5 \u2014 it cannot be used to verify file integrity against other systems. The MD5 used for ENA submission is computed separately when the file is downloaded for transfer.'
+        );
+      }
+      // Sum the raw byte values in the 'Size (bytes)' column to display
+      // a human-readable total above the DataTable search box.
+      if ($(table.column(i).header()).text().trim() == 'Size (bytes)') {
         var bucket_size_in_GB = table
           .column(i)
           .data()
@@ -69,6 +120,7 @@ $(document).ready(function () {
 
         let table_wrapper = $('#' + componentMeta.tableID + '_wrapper');
 
+        // Create the total-size span once; reuse it on subsequent redraws.
         total_size = table_wrapper.find('#total_size');
         if (total_size.length == 0) {
           $('<span id="total_size"/>')
@@ -79,20 +131,23 @@ $(document).ready(function () {
           total_size = table_wrapper.find('#total_size');
         }
         total_size.text(
-          'Total size for the files: ' +
-            Math.round((bucket_size_in_GB / 1024 / 1024 / 1024) * 100) / 100 +
-            'GB'
+          'Total size for the files: ' + (function(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
+            if (bytes < 1099511627776) return (bytes / 1073741824).toFixed(2) + ' GB';
+            if (bytes < 1125899906842624) return (bytes / 1099511627776).toFixed(2) + ' TB';
+            return (bytes / 1125899906842624).toFixed(2) + ' PB';
+          })(bucket_size_in_GB)
         );
-        break;
+        break; // No need to inspect remaining columns once size is processed.
       }
     }
   });
 
   // Remove profile title if present
-  if (
-    $('.page-title-custom').find("span[title='Profile title']").is(':visible')
-  )
-    $('.page-title-custom').find("span[title='Profile title']").remove();
+  // let profileTitleDiv = $('.page-title-custom').find('span.profile-title');
+  // if (profileTitleDiv.is(':visible')) profileTitleDiv.remove();
 
   //details button hover
   /*
@@ -124,11 +179,13 @@ $(document).ready(function () {
     }
   }
 
+  // Open the presigned-URL upload modal in its initial state (input visible,
+  // copy button hidden until URLs have been generated).
   function do_add_record() {
     $('#url_upload_controls').show();
     $('#presigned_url_modal').modal('show');
     $('#command_area').html('');
-    $('#copy_urls_button').fadeOut();
+    $('#copy_command_button').fadeOut();
     $('#process_urls_button').fadeIn();
   }
 
@@ -150,12 +207,16 @@ $(document).ready(function () {
     }
   );
 
+  // Send the pasted file list to the server to generate presigned S3 PUT URLs.
+  // The server returns [{name, url}] objects; we build a nohup curl command
+  // string the user can copy and run in their terminal to upload the files.
   $(document).on('click', '#process_urls_button', function (evt) {
-    // get list of files output from ls -F1
+    // Expect one filename per line (e.g. output of ls -F1).
     var data = $('#url_text_area').val();
     filenames = data.split('\n');
     for (var i = 0; i < filenames.length; i++) {
       filenames[i] = filenames[i].trim();
+      // S3 keys with spaces cause curl quoting issues; reject them early.
       if (filenames[i].indexOf(' ') > -1) {
         alert('File name cannot contain spaces');
         return;
@@ -164,9 +225,9 @@ $(document).ready(function () {
     file_names = JSON.stringify(filenames);
 
     var csrftoken = $.cookie('csrftoken');
-    $('#url_upload_controls').fadeOut();
-    // pass to get pre-signed urls
-    $('#command_area').html('Please wait ...');
+    $('#url_upload_controls').hide();
+    $('#command_panel').show();
+    $('#command_area').html('Please wait ...')
     $.ajax({
       url: '/copo/copo_files/process_urls',
       headers: { 'X-CSRFToken': csrftoken },
@@ -175,62 +236,56 @@ $(document).ready(function () {
       dataType: 'json',
     })
       .done(function (d) {
-        $('#copy_urls_button').fadeIn();
+        $('#copy_command_button').fadeIn();
         $('#process_urls_button').fadeOut();
-        var out = '<kbd> nohup ';
-        // display each url in <kbd> tag
+        var inner = '';
         $(d).each(function (idx, obj) {
-          out =
-            out +
-            "curl --progress-bar -v -k -T '" +
-            obj.name +
-            "' '" +
-            obj.url +
-            "' | cat;";
+          inner += "curl -k -v -T '" + obj.name + "' '" + obj.url + "'; ";
         });
-        out = out + '</kbd>';
+        var out = "<kbd>nohup bash -c \"" + inner + "\" > upload.log 2>&1 &</kbd>";
         $('#command_area').html(out);
         $('#command_panel').show();
       })
       .fail(function (d) {
         $('#command_area').html(d.responseText);
-        $('#copy_urls_button').fadeOut();
+        $('#copy_command_button').fadeOut();
         $('#process_urls_button').fadeIn();
         console.log(d);
       });
   });
 
-  $(document).on('click', '#copy_urls_button', function (evt) {
-    //  $("#command_area").select()
-    //navigator.clipboard.writeText($("#command_area").text());
-    //navigator.clipboard.writeText($("#command_area").text());
-    doDL($('#command_area').text());
+  $(document).on('click', '#copy_command_button', function () {
+    var btn = $(this);
+    navigator.clipboard.writeText($('#command_area').text().trim()).then(function () {
+      btn.text('Copied!').prop('disabled', true);
+      setTimeout(function () {
+        btn.text('Copy command').prop('disabled', false);
+      }, 2000);
+    });
   });
 
-  function doDL(s) {
-    function dataUrl(data) {
-      return 'data:x-application/text,' + encodeURI(data);
-    }
-    window.open(dataUrl(s));
-  }
-
   $(document).on('click', '#upload_local_files_button', function (evt) {
-    //  $("#command_area").select()
     $('#uploadModal').find('#file').click();
   });
 });
 
+// Upload files selected via the local file picker directly to S3 through the
+// Django upload endpoint. Progress is shown as a percentage while the XHR
+// transfer is in flight; on completion the files table is refreshed.
 function upload_files(files) {
   $('#warning_info').fadeOut('fast');
   $('#warning_info2').fadeOut('fast');
 
   var csrftoken = $.cookie('csrftoken');
+  // Append each file under its index as the field name; the server iterates
+  // request.FILES by key to reconstruct the list.
   form = new FormData();
   for (var i = 0; i < files.length; i++) {
     form.append(i.toString(), files[i]);
   }
 
   $('#upload_local_files_button').fadeOut();
+  uploadComplete = false;
   var percent = $('.percent');
   $('#ss_upload_spinner').fadeIn('fast');
   var profile_id = $('#profile_id').val();
@@ -245,19 +300,19 @@ function upload_files(files) {
       contentType: false,
       processData: false,
       method: 'POST',
-      type: 'POST', // For jQuery < 1.9
+      type: 'POST',
       headers: { 'X-CSRFToken': csrftoken },
 
+      // Phase 1: browser-to-server transfer tracked via XHR progress.
+      // Phase 2: server-to-S3 transfer tracked via WebSocket (s3socket).
       xhr: function () {
         var xhr = jQuery.ajaxSettings.xhr();
         xhr.upload.onprogress = function (evt) {
           var percentVal = Math.round((evt.loaded / evt.total) * 100);
-          percent.html('<b>' + percentVal + '%</b>');
-          //console.log('progress', percentVal);
+          percent.html('<b>Uploading to server: ' + percentVal + '%</b>');
         };
         xhr.upload.onload = function () {
-          percent.html('');
-          console.log('DONE!');
+          percent.html('<b>Staging...</b>');
         };
         return xhr;
       },
@@ -265,7 +320,8 @@ function upload_files(files) {
     .fail(function (jqXHR, status, error) {
       $('#upload_local_files_button').fadeIn();
       $('#ss_upload_spinner').fadeOut('fast');
-      //console.log(jqXHR)
+      // status 0 means the request was aborted (e.g. browser navigation); use
+      // a generic message rather than exposing a raw HTTP error in that case.
       var message = 'Cannot upload files, please check your file size';
       if (jqXHR.status != '0') {
         message = jqXHR.status + ' ' + error;
@@ -278,17 +334,30 @@ function upload_files(files) {
       });
     })
     .done(function (data) {
-      $('#upload_local_files_button').fadeIn();
-      $('#ss_upload_spinner').fadeOut('fast');
-      $('#uploadModal').modal('hide');
-      result_dict = {};
-      result_dict['status'] = 'success';
-      result_dict['message'] = 'File(s) have been uploaded!';
-      do_crud_action_feedback(result_dict);
-      globalDataBuffer = data;
-      if (data.hasOwnProperty('table_data')) {
-        var event = jQuery.Event('refreshtable');
-        $('body').trigger(event);
-      }
+      // Wait briefly for the final WebSocket progress messages to arrive
+      // before hiding the spinner, so the user sees 100% rather than a jump.
+      var attempts = 0;
+      var finishUpload = function () {
+        if (!uploadComplete && attempts < 20) {
+          attempts++;
+          setTimeout(finishUpload, 100);
+          return;
+        }
+        uploadComplete = false;
+        $('#upload_local_files_button').fadeIn();
+        $('#ss_upload_spinner').fadeOut('fast');
+        $('#uploadModal').modal('hide');
+        result_dict = {};
+        result_dict['status'] = 'success';
+        result_dict['message'] = 'File(s) have been uploaded!';
+        do_crud_action_feedback(result_dict);
+        globalDataBuffer = data;
+        // If the response includes updated table data, trigger a full table redraw.
+        if (data.hasOwnProperty('table_data')) {
+          var event = jQuery.Event('refreshtable');
+          $('body').trigger(event);
+        }
+      };
+      finishUpload();
     });
 }

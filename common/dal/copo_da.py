@@ -14,6 +14,7 @@ from common.schema_versions.lookup.dtol_lookups import TOL_PROFILE_TYPES
 from common.utils import helpers
 from common.schemas.utils.cg_core.cg_schema_generator import CgCoreSchemas
 from .copo_base_da import DAComponent, handle_dict
+from random import choice
 
 lg = settings.LOGGER
 
@@ -820,24 +821,33 @@ class EnaFileTransfer(DAComponent):
         result_list = []
         result = (
             self.get_collection_handle()
-            .find({"transfer_status": {"$ne": 2}, "status": "pending"})
-            .limit(10)
+            .find({"transfer_status": {"$nin": [2,5]}, "status": "pending"})
         )
 
-        if result:
-            result_list = list(result)
-        # at most download 2 files at the sametime
-        count = self.get_collection_handle().count_documents(
-            {"transfer_status": 2, "status": "processing"}
-        )
-        if count <= 1:
-            result = (
-                self.get_collection_handle()
-                .find({"transfer_status": 2, "status": "pending"})
-                .limit(2 - count)
+        result_list = list(result)
+
+        # at most download / upload 2 files at the same time and 
+        # select 1 download or 1 upload for every run, trying to slow down the process
+        is_found = False
+        transfer_status = choice([2, 5])
+        i = 0
+        while not is_found and i < 2:
+            i += 1
+            transfer_status = 2 if transfer_status == 5 else 5
+            count = self.get_collection_handle().count_documents(
+                {"transfer_status": transfer_status, "status": "processing"}
             )
-            if result:
-                result_list.extend(list(result))
+            if count <= 1:
+                result = (
+                    self.get_collection_handle()
+                    .find({"transfer_status": transfer_status, "status": "pending"})
+                    .limit(1)
+                )
+                records = list(result)
+                if records:
+                    result_list.extend(records)
+                    is_found = True
+
         return result_list
 
     def get_processing_transfers(self):
@@ -849,6 +859,24 @@ class EnaFileTransfer(DAComponent):
         self.get_collection_handle().update_many(
             {"_id": {"$in": tx_ids}},
             {"$set": {"status": "processing", "last_checked": helpers.get_datetime()}},
+        )
+
+    def claim_pending_transfer(self, tx_id):
+        """Atomically claim a single transfer record by flipping it from
+        'pending' to 'processing'. The status condition is part of the same
+        update, so only one concurrent caller can win the claim; others get
+        None back and should skip the record.
+
+        This replaces the old read-then-set_processing pattern, which had a
+        race under gevent concurrency: the beat task fires every 10s while a
+        transfer is still running, and the mongo read in get_pending_transfers
+        is a gevent yield point, so two greenlets could read the same record as
+        'pending' before either marked it 'processing' and both upload it.
+        """
+        return self.get_collection_handle().find_one_and_update(
+            {"_id": ObjectId(tx_id), "status": "pending"},
+            {"$set": {"status": "processing", "last_checked": helpers.get_datetime()}},
+            return_document=pymongo.ReturnDocument.AFTER,
         )
 
     def set_pending(self, tx_id):
@@ -1421,12 +1449,11 @@ class EnaChecklist(DAComponent):
                 df["read_field"] = df["read_field"].fillna(False)
 
             if for_dtol:
-                df["for_dtol"] = df["for_dtol"].fillna(True)
+                df["for_dtol"] = df["for_dtol"].fillna(True) if "for_dtol" in df.columns else True
                 df = df.loc[df["for_dtol"] == True]
             else:
-                if "for_dtol" in df.columns:
-                    df["for_dtol"] = df["for_dtol"].fillna(False)
-                    df = df.loc[df["for_dtol"] == False]
+                df["for_dtol"] = df["for_dtol"].fillna(False) if "for_dtol" in df.columns else False
+                df = df.loc[df["for_dtol"] == False]
 
             if with_sample and with_read:
                 df = df.loc[
@@ -1462,6 +1489,37 @@ class EnaChecklist(DAComponent):
             filter_by={"primary_id": {"$regex": "^(ERC|COPO)"}},
             projection={"primary_id": 1, "name": 1, "description": 1},
         )
+
+
+class EnaReadPlatformCollection(DAComponent):
+    def __init__(self, profile_id=None, subcomponent=None):
+        super(EnaReadPlatformCollection, self).__init__(
+            profile_id=profile_id,
+            component='ena_read_platform',
+            subcomponent=subcomponent,
+        )
+ 
+    def get_platforms(self):
+        return cursor_to_list(
+            self.get_collection_handle().find(
+                {}, {'_id': 0, 'platform': 1, 'instruments': 1}
+            )
+        )
+
+    def get_sequencing_instrument_dropdown(self):
+        platforms = self.get_platforms()
+        dropdown = []
+
+        for x in platforms:
+            platform = x['platform']
+
+            for instrument in x.get('instruments', []):
+                dropdown.append({
+                    'value': instrument,
+                    'label': instrument,
+                    'platform': platform
+                })
+        return dropdown
 
 
 '''
@@ -1506,11 +1564,11 @@ class EnaObject(DAComponent):
         result = self.execute_query({"_id": {"$in": tagged_seq_ids},  "$or": [{"accession": {
                                     "$exists": True, "$ne": ""}}, {"status": {"$exists": True, "$ne": "pending"}}]})
         if result:
-            return dict(status='error', message="One or more Ena object/s have been accessed or scheduled to submit!")
+            return dict(status='error', message="One or more Ena objects have been accessed or scheduled to submit!")
 
         self.get_collection_handle().delete_many(
             {"_id": {"$in":   tagged_seq_ids}})
-        return dict(status='success', message="Ena object/s have been deleted!")
+        return dict(status='success', message="Ena objects have been deleted!")
 
     def update_ena_object_processing(self, profile_id=str(), tagged_seq_ids=list()):
         tagged_seq_obj_ids = [ObjectId(id) for id in tagged_seq_ids]

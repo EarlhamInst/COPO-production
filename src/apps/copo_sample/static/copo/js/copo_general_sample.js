@@ -14,9 +14,13 @@ function initialise_checklist_id() {
     ).value;
     $('#checklist_id option').each(function () {
       if (profile_checklist_ids.includes($(this).val())) {
-        $(this).text('* ' + $(this).text());
+        // Add attribute to indicate data presence for this checklist/manifest option
+        // $(this).text('● ' + $(this).text());
+        $(this).attr('data-has-data', 'true');
         if (first) {
           $(this).prop('selected', true);
+          // Trigger change event for searchable select
+          $('.searchable-select').val($(this).val()).trigger('change');
           first = false;
         }
       }
@@ -27,15 +31,20 @@ function initialise_checklist_id() {
 var columnDefs = [];
 
 var dialog = new BootstrapDialog({
-  title: 'Upload Sample Manifest',
+  title: 'Upload sample manifest',
   message: "<div><input type='file' id='fileid' style='display:none;'/></div>",
+  cssClass: 'spreadsheet-modal',
   size: BootstrapDialog.SIZE_WIDE,
+  closable: true,
+  animate: true,
+  closeByBackdrop: false, // Prevent dialog from closing by clicking on backdrop
+  closeByKeyboard: false, // Prevent dialog from closing by pressing ESC key
   buttons: [
     {
       id: 'upload_sample_manifest_button',
-      label: 'Upload Sample Manifest',
+      label: 'Upload sample manifest',
       cssClass: 'btn-primary',
-      title: 'Upload Sample Manifest',
+      title: 'Upload sample manifest',
       action: function () {
         document.getElementById('file').click();
         //upload_spreadsheet($('#file').prop('files')[0])
@@ -44,7 +53,7 @@ var dialog = new BootstrapDialog({
     {
       id: 'save_sample_button',
       label: 'Finish',
-      cssClass: 'btn-primary',
+      cssClass: 'btn-primary btn-finish',
       title: 'Finish',
       disabled: true,
       action: function () {
@@ -68,15 +77,19 @@ var dialog = new BootstrapDialog({
 
     // Show the confirmation dialog if the close
     // icon in the modal title is clicked
-    dialogRef
+    const $closeButton = dialogRef
       .getModal()
-      .find('.bootstrap-dialog-close-button')
-      .off('click.confirm') // Prevent duplicate handlers
-      .on('click.confirm', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        confirmCloseDialog(dialogRef);
-      });
+      .find('.bootstrap-dialog-close-button');
+
+    // Remove any existing BootstrapDialog handlers
+    $closeButton.off('click');
+
+    // Add your custom confirm logic
+    $closeButton.on('click.confirm', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      confirmCloseDialog(dialogRef);
+    });
 
     // Set focus after a short delay
     setTimeout(function () {
@@ -112,43 +125,31 @@ $(document).on('document_ready', function () {
 
   submissionSocket.onmessage = function (e) {
     d = JSON.parse(e.data);
-    var element = '';
+    const { $el: $element, inModal: isModalVisible } = getAlertElement(
+      d.html_id
+    );
+    const rawMessage = d.message;
+    const hasMessage =
+      typeof rawMessage === 'string' && rawMessage.trim().length > 0;
+    const message = hasMessage ? rawMessage.trim() : '';
 
-    if (d.html_id != '') {
-      element = element = $('#' + d.html_id);
+    // Only show an alert if a message exists
+    if (hasMessage) {
+      // Dismiss helper content if applicable
+      hideModalInstructionText(message, d.action);
 
-      if (!d && !$(element).is(':hidden')) {
-        $(element).fadeOut('50');
-      } else if (d && d.message && $(element).is(':hidden')) {
-        $(element).fadeIn('50');
+      if (isModalVisible) {
+        // If modal is visible then, show an alert inside it
+        const allAlertClasses = Object.values(alertClassMap).join(' ');
+        $element
+          .html(message)
+          .removeClass(allAlertClasses)
+          .addClass(alertClassMap[d.action] || 'alert-info')
+          .fadeIn(50);
+      } else if (d.action && $element.length) {
+        // else, show an alert message within the 'Info' sidebar tab on the page
+        displayAlert(d.action, message);
       }
-    }
-
-    //$("#" + d.html_id).html(d.message)
-    if (d.action === 'info') {
-      // show something on the info div
-      // check info div is visible
-      $(element).removeClass('alert-danger').addClass('alert-info');
-      $(element).html(d.message);
-      //$("#spinner").fadeOut()
-    } else if (d.action === 'warning') {
-      // show something on the info div
-      // check info div is visible
-      $(element).removeClass('alert-danger').addClass('alert-warning');
-      $(element).html(d.message);
-      //$("#spinner").fadeOut()
-    } else if (d.action === 'success') {
-      // check success div is visible
-      $(element)
-        .removeClass('alert-danger alert-info')
-        .addClass('alert-success');
-      $(element).html(d.message);
-      //$("#spinner").fadeOut();
-    } else if (d.action === 'error') {
-      // check info div is visible
-      $(element).removeClass('alert-info').addClass('alert-danger');
-      $(element).html(d.message);
-      //$("#spinner").fadeOut()
     }
   };
 
@@ -161,50 +162,35 @@ $(document).on('document_ready', function () {
 
   s3socket.onmessage = function (e) {
     d = JSON.parse(e.data);
-    var element = '';
+    const { $el: $element, inModal: isModalVisible } = getAlertElement(
+      d.html_id
+    );
+    const rawMessage = d.message;
+    const hasMessage =
+      typeof rawMessage === 'string' && rawMessage.trim().length > 0;
+    const message = hasMessage ? rawMessage.trim() : '';
 
-    if (d.html_id != '') {
-      element = element = $('#' + d.html_id);
-      if ($('.modal-dialog').is(':visible')) {
-        elem = $('.modal-dialog').find('#' + d.html_id);
-        if (elem) {
-          element = elem;
-        }
-      }
+    // Only show an alert if a message exists
+    if (hasMessage) {
+      // Dismiss helper content if applicable
+      hideModalInstructionText(message, d.action);
 
-      if (!d && !$(element).is(':hidden')) {
-        $(element).fadeOut('50');
-      } else if (d && d.message && $(element).is(':hidden')) {
-        $(element).fadeIn('50');
+      if (isModalVisible) {
+        // If modal is visible then, show an alert inside it
+        const allAlertClasses = Object.values(alertClassMap).join(' ');
+        $element
+          .html(message)
+          .removeClass(allAlertClasses)
+          .addClass(alertClassMap[d.action] || 'alert-info')
+          .fadeIn(50);
+      } else if (d.action && $element.length) {
+        // else, show an alert message within the 'Info' sidebar tab on the page
+        displayAlert(d.action, message);
       }
     }
 
-    //$("#" + d.html_id).html(d.message)
-    if (d.action === 'info') {
-      // show something on the info div
-      // check info div is visible
-      $(element).removeClass('alert-danger').addClass('alert-info');
-      $(element).html(d.message);
-      //$("#spinner").fadeOut()
-    } else if (d.action === 'warning') {
-      // show something on the info div
-      // check info div is visible
-      $(element).removeClass('alert-danger').addClass('alert-warning');
-      $(element).html(d.message);
-      //$("#spinner").fadeOut()
-    } else if (d.action === 'success') {
-      // check success div is visible
-      $(element)
-        .removeClass('alert-danger alert-info')
-        .addClass('alert-success');
-      $(element).html(d.message);
-      //$("#spinner").fadeOut();
-    } else if (d.action === 'error') {
-      // check info div is visible
-      $(element).removeClass('alert-info').addClass('alert-danger');
-      $(element).html(d.message);
-      //$("#spinner").fadeOut()
-    } else if (d.action === 'make_table') {
+    // Special handling for actions
+    if (d.action === 'make_table') {
       // make table of metadata parsed from spreadsheet
       if ($.fn.DataTable.isDataTable('#sample_parse_table')) {
         $('#sample_parse_table').DataTable().clear().destroy();
@@ -241,27 +227,33 @@ $(document).on('document_ready', function () {
         scrollY: 'auto',
         scrollX: true,
       });
+      
       $('#table_div').fadeIn(1000);
       $('#sample_parse_table').DataTable().draw();
       $('#tabs').fadeIn();
       $('#ena_finish_button').fadeIn();
     } else if (d.action === 'refresh_table') {
-      $(element).removeClass('alert-danger').addClass('alert-info');
-      $(element).html(d.message);
       var args_dict = {};
       args_dict['sample_checklist_id'] = get_checklist_id();
       args_dict['profile_id'] = $('#profile_id').val();
       load_records(componentMeta, args_dict, columnDefs); // call to load component records
     } else if (d.action === 'file_processing_status') {
-      $(element).html(d.message);
-      table = $('#'+ componentMeta.tableID).DataTable();
+      table = $('#' + componentMeta.tableID).DataTable();
       //clear old, set new data
       table.rows().deselect();
       table.clear().draw();
       table.rows.add(d.data['table_data']).draw();
       table.columns.adjust().draw();
       table.search('').columns().search('').draw();
-      $(element).html(d.message + ' ... Done');
+      
+      $('.alert:visible .alert-message')
+        .filter((_, el) => {
+          // Prevent duplicate '... Done' suffix
+          const t = el.innerText.trim();
+          return t === message && !t.endsWith('... Done');
+        })
+        .first()
+        .html(`${message}... Done`);
 
       /*
         table = $('#read_table').DataTable();
@@ -315,8 +307,9 @@ $(document).on('document_ready', function () {
   refresh_tool_tips();
 
   //trigger refresh of table
-  $('body').on('refreshtable', function (event) {
+  $('body').on('refreshtable', function (event, payload) {
     do_render_component_table(globalDataBuffer, componentMeta);
+    refreshSelect2(payload); // Refresh select2 searchable dropdown menu options
   });
 
   //handle task button event
@@ -362,6 +355,7 @@ $(document).on('document_ready', function () {
     });
 
   $('#checklist_id').change(function () {
+    $('.searchable-select').trigger('change.select2'); // Refresh select2 dropdown
     if ($.fn.dataTable.isDataTable('#' + componentMeta.tableID)) {
       //if table instance already exists, then do refresh
       table = $('#' + componentMeta.tableID).DataTable();
@@ -450,21 +444,21 @@ $(document).on('document_ready', function () {
   }
 
   $('body').on('posttablerefresh', function (event) {
-    table = $('#'+ componentMeta.tableID).DataTable();
+    table = $('#' + componentMeta.tableID).DataTable();
     //var numCols = $('#' + component + '_table thead th').length;
     var numCols = table.columns().nodes().length;
     table.rows().nodes().to$().addClass('highlight_accession');
 
     for (var i = 0; i < numCols; i++) {
       if ($(table.column(i).header()).text() == 'STATUS') {
-        var no_accessiion_indexes = table
+        var no_accession_indices = table
           .rows()
           .eq(0)
           .filter(function (rowIdx) {
             return table.cell(rowIdx, i).data() != 'accepted' ? true : false;
           });
         table
-          .rows(no_accessiion_indexes)
+          .rows(no_accession_indices)
           .nodes()
           .to$()
           .addClass('highlight_no_accession');
@@ -542,6 +536,7 @@ function upload_spreadsheet(file) {
       dialog.setClosable(true);
       dialog.getButton('upload_sample_manifest_button').stopSpin();
       console.log(data);
+      $('#file').val('');
       responseText = data.responseText;
       if (responseText != '') {
         BootstrapDialog.show({
@@ -559,6 +554,7 @@ function upload_spreadsheet(file) {
         .hide();
       dialog.getButton('save_sample_button').enable();
       dialog.setClosable(true);
+      $('#file').val('');
     });
 }
 
@@ -588,8 +584,12 @@ function save_sample_data() {
       globalDataBuffer = data;
 
       if (data.hasOwnProperty('table_data')) {
-        var event = jQuery.Event('refreshtable');
-        $('body').trigger(event);
+        // var event = jQuery.Event('refreshtable');
+        // $('body').trigger(event);
+        $('body').trigger('refreshtable', {
+          action: 'save',
+          checklist_id: get_checklist_id(),
+        });
       }
     });
 }

@@ -19,10 +19,10 @@ def post_save_dtol_profile(profile):
     if profile["date_created"] != profile["date_modified"]:
         associated_type_lst = profile.get("associated_type", [])
 
-        # Get associated type(s) as string separated by '|' symbol
+        # Get associated types as string separated by '|' symbol
         associated_type = " | ".join(associated_type_lst)
 
-        # Update the 'associated_tol_project' field for unaccepted sample record(s) (if any exist)
+        # Update the 'associated_tol_project' field for unaccepted sample records (if any exist)
         #is_associated_tol_project_update_required =  Sample().is_associated_tol_project_update_required(profile_id=kwargs["target_id"], new_associated_tol_project=associated_type)
         
         #if is_associated_tol_project_update_required:

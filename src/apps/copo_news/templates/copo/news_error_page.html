@@ -6,7 +6,7 @@
 {% block title %}Error {% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="{% static 'copo_news/css/copo_news.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/copo_news.css' %}">
     <style>
         body {
             background-image: none !important;
@@ -31,9 +31,9 @@
             <p class="error-page-message">{{ message }}</p>
         </div>
         <div class="row text-centre">
-            <img id="headCrabImgID" class="text-center" src="{% static 'copo/img/headcrab.gif' %}" 
+            <img id="headCrabImgID" class="text-center" src="{% static 'assets/img/headcrab.gif' %}" 
                 alt="Gordon Freeman and His Crowbar" />
-            <img id='freemanGifID' class="text-center" src="{% static 'copo/img/freeman.gif' %}"  
+            <img id='freemanGifID' class="text-center" src="{% static 'assets/img/freeman.gif' %}"  
                 alt="Gordon Freeman and His Crowbar" />
             <br />
             <a id="returnToNewsListBtn" class="btn btn-default" href="/news">Return to News List</a>
@@ -46,5 +46,5 @@
 {% endblock %}
 
 {% block js_block %}
-    <script src="{% static 'copo_news/js/copo_news.js' %}"></script>
+    <script src="{% static 'copo/js/copo_news.js' %}"></script>
 {% endblock %}

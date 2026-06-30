@@ -4,7 +4,7 @@
 {% block title %}News{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="{% static '/copo_news/css/copo_news.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/copo_news.css' %}">
 {% endblock %}
 
 {% block content_area %}
@@ -40,10 +40,10 @@
                                     <div class="news-date fl-right"> {{ news.created_date|date:"D, j M Y H:i" }}</div>
                                 </div>
                                 <br>
-                                <h3 class="news-title">{{ news.title|truncatechars:50 }}</h3>
+                                <h3 class="news-title">{{ news.title|truncatechars_html:50|safe }}</h3>
                                 <div class="news-excerpt">
                                     {% autoescape off %}
-                                        {{ news.content|truncatechars:400 }}
+                                        {{ news.content|truncatechars_html:400|safe }}
                                     {% endautoescape %}
                                 </div>
                                 <div class="centre mt-10 mb-10">
@@ -81,5 +81,5 @@
 {% endblock %}
 
 {% block js_block %}
-    <script src="{% static '/copo_news/js/copo_news.js' %}"></script>
+    <script src="{% static 'copo/js/copo_news.js' %}"></script>
 {% endblock %}

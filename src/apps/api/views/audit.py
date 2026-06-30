@@ -125,7 +125,7 @@ def get_sample_updates_by_manifest_id(request, manifest_id):
     if manifest_id_list and not all(d_utils.is_valid_uuid(x) for x in manifest_id_list):
         return HttpResponse(
             status=status.HTTP_400_BAD_REQUEST,
-            content=f'Invalid \'manifest_id\'(s) provided!',
+            content=f'Invalid \'manifest_id\'s provided!',
         )
 
     sample_updates = Audit().get_sample_update_audits_field_value_lst(
@@ -158,7 +158,7 @@ def get_sample_updates(request):
         ):
             return HttpResponse(
                 status=status.HTTP_400_BAD_REQUEST,
-                content=f'Invalid \'copo_id\'(s) provided!',
+                content=f'Invalid \'copo_id\'s provided!',
             )
 
         # Convert each string sample ID to ObjectId sample ID

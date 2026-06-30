@@ -1,8 +1,13 @@
+import importlib
+import pkgutil
+
 from datetime import datetime, timedelta
 from django.db import transaction
 import pytz
+from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save, post_delete
@@ -14,6 +19,7 @@ from rest_framework.authtoken.models import Token
 from asgiref.sync import sync_to_async
 from django.utils.translation import gettext_lazy as _
 from common.dal.copo_base_da import DataSchemas
+from common.schemas.utils.data_utils import join_with_and
 
 
 class UserDetails(models.Model):
@@ -90,6 +96,21 @@ class StatusMessage(models.Model):
 
     class Meta:
         get_latest_by = 'created'
+
+
+class TourProgress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    component = models.CharField(max_length=100)
+    stage = models.CharField(max_length=50)
+    completed = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'component', 'stage')
+        verbose_name_plural = 'TourProgress'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.component}:{self.stage}"
 
 
 class Banner(models.Model):
@@ -241,7 +262,7 @@ class AssociatedProfileType(models.Model):
 
 class TitleButton(models.Model):
     class Meta:
-        ordering = ['name']
+        ordering = ['id']
 
     name = models.CharField(max_length=50, unique=True)
     template = models.CharField(max_length=500)
@@ -301,12 +322,18 @@ class RecordActionButton(models.Model):
         blank=True,
         null=True,
     )
+    tour_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Optional tour ID for quick tours"
+    )
 
     def __str__(self):
         return self.name + " : " + self.title + " : " + self.type
 
     def create_record_action_button(
-        self, name, title, label, type, error_message, icon_class, action, icon_colour
+        self, name, title, label, type, error_message, icon_class, action, icon_colour, tour_id=None
     ):
         self.name = name
         self.title = title
@@ -316,6 +343,8 @@ class RecordActionButton(models.Model):
         self.icon_class = icon_class
         self.action = action
         self.icon_colour = icon_colour
+        if tour_id:
+            self.tour_id = tour_id
         self.save()
         return self
 
@@ -378,21 +407,24 @@ class SidebarPanel(models.Model):
 
 class Component(models.Model):
     class Meta:
-        ordering = ['title']
+        ordering = ['id']
 
     base_component = models.CharField(max_length=100, null=True)
     name = models.CharField(max_length=100, unique=True)
     title = models.CharField(max_length=100)
     subtitle = models.CharField(max_length=100, blank=True, null=True)
+    button_label = models.CharField(max_length=100, blank=True, null=True)
     schema_name = models.CharField(max_length=100, blank=True, null=True)
     group_name = models.CharField(max_length=100, blank=True, null=True)
     table_id = models.CharField(max_length=100)
     reverse_url = models.CharField(max_length=100, blank=True, null=True)
     widget_icon = models.CharField(max_length=100, blank=True, null=True)
     widget_icon_class = models.CharField(max_length=100, blank=True, null=True)
+    material_icon = models.CharField(max_length=100, blank=True, null=True)
     widget_colour = models.CharField(max_length=200, blank=True, null=True)
     recordaction_buttons = models.ManyToManyField(RecordActionButton, blank=True)
     title_buttons = models.ManyToManyField(TitleButton, blank=True)
+    tour_config = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
         return self.name + " : " + self.title
@@ -409,20 +441,23 @@ class Component(models.Model):
         reverse_url,
         schema_name="",
         base_component="",
-        group_name=""
+        group_name="",
+        button_label=None,
+        material_icon="",
     ):
         self.name = name.lower()
         self.title = title
+        self.button_label = f'Manage {title}' if button_label is None else button_label
         self.subtitle = subtitle
         self.widget_icon = widget_icon
         self.widget_colour = widget_colour
         self.widget_icon_class = widget_icon_class
+        self.material_icon = material_icon
         self.table_id = table_id
         self.reverse_url = reverse_url
         self.schema_name = schema_name
         self.base_component = base_component or self.name
         self.group_name = group_name
-            
         self.save()
         return self
 
@@ -441,8 +476,9 @@ class ProfileType(models.Model):
 
     associated_profile_types = models.ManyToManyField(AssociatedProfileType, blank=True)
     components = models.ManyToManyField(Component, blank=True)
+    action_buttons = models.ManyToManyField(RecordActionButton, blank=True)
     type = models.CharField(max_length=20, unique=True)
-    description = models.CharField(max_length=100)
+    description = models.CharField(max_length=255)
     widget_colour = models.CharField(max_length=200, blank=True, null=True)
     is_dtol_profile = models.BooleanField(default=False)
     is_permission_required = models.BooleanField(default=True)
@@ -450,6 +486,12 @@ class ProfileType(models.Model):
     pre_save_action = models.CharField(max_length=100, blank=True, null=True)
     post_delete_action = models.CharField(max_length=100, blank=True, null=True)
     is_deprecated = models.BooleanField(default=False, blank=True, null=True)
+    tour_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Optional tour ID for quick tours"
+    )
 
     def __str__(self):
         return self.type + " : " + self.description
@@ -465,6 +507,7 @@ class ProfileType(models.Model):
         pre_save_action=None,
         post_delete_action=None,
         is_deprecated=False,
+        tour_id=None,
     ):
         self.type = type
         self.description = description
@@ -475,6 +518,8 @@ class ProfileType(models.Model):
         self.pre_save_action = pre_save_action
         self.post_delete_action = post_delete_action
         self.is_deprecated = is_deprecated
+        self.tour_id = tour_id
+
         self.save()
         return self
 

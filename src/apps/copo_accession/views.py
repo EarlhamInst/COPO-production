@@ -14,8 +14,8 @@ import common.schemas.utils.data_utils as d_utils
 import json
 
 
-@web_page_access_checker
 @login_required
+@web_page_access_checker
 def copo_accessions(request, profile_id, ui_component):
     request.session['profile_id'] = profile_id
     profile = Profile().get_record(profile_id)
@@ -36,7 +36,7 @@ def get_accession_records_column_names(request):
     
     columns = list()
     columns.append(dict(data='DT_RowId', visible=False))
-    columns.append(dict(data='accession_type', title='Accession Type', visible=True))
+    columns.append(dict(data='accession_type', title='Submission Type', visible=True))
 
     if isOtherAccessionsTabActive:
         columns.append(dict(data='record_id', visible=False))

@@ -17,6 +17,8 @@ from tenacity import (
     wait_exponential,
     retry_if_exception_type,
 )
+import re
+from typing import List
 
 def get_class(kls):
     parts = kls.split('.')
@@ -86,7 +88,7 @@ def notify_frontend(
     msg=str(),
     data={},
     html_id="",
-    max_ellipsis_length=100,
+    max_ellipsis_length=3,
     profile_id="",
     group_name='dtol_status',
 ):
@@ -191,37 +193,52 @@ def notify_ena_object_status(
         group_name = 'tagged_seq_status_%s' % data["profile_id"]
     else:
         group_name = 'read_status_%s' % data["profile_id"]
-    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    event = {
+        "type": "msg",
+        "action": action,
+        "message": msg,
+        "data": data,
+        "html_id": html_id,
+    }
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(group_name, event)
     return True
 
 
-def notify_singlecell_status(action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()):
+def notify_singlecell_status(
+    action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()
+):
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
-    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    event = {
+        "type": "msg",
+        "action": action,
+        "message": msg,
+        "data": data,
+        "html_id": html_id,
+    }
     channel_layer = get_channel_layer()
     group_name = 'singlecell_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        event
-    )
+    async_to_sync(channel_layer.group_send)(group_name, event)
     return True
 
 
 def notify_submission_status(action="message", msg=str(), data={}, html_id=""):
     # type points to the object type which will be passed to the socket and is a method defined in consumer.py
-    event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
+    event = {
+        "type": "msg",
+        "action": action,
+        "message": msg,
+        "data": data,
+        "html_id": html_id,
+    }
     channel_layer = get_channel_layer()
     group_name = 'submission_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        event
-    )
+    async_to_sync(channel_layer.group_send)(group_name, event)
     return True
 
+
 def json_to_pytype(path_to_json, compatibility_mode=True):
-    # use compatability mode if jsonref is causing problems
+    # use compatibility mode if jsonref is causing problems
     with open(path_to_json, encoding='utf-8') as data_file:
         f = data_file.read()
         if compatibility_mode:
@@ -234,7 +251,7 @@ def json_to_pytype(path_to_json, compatibility_mode=True):
             )
         if "properties" in data and isinstance(data["properties"], list):
             cp = list(data["properties"])
-            idxes = list()
+            indices = list()
             # expand references
             tmp = list()
             for idx, el in enumerate(data["properties"]):
@@ -411,3 +428,130 @@ def get_thumbnail_folder(profile_id):
     if not os.path.exists(thumbnail_folder):
         os.makedirs(thumbnail_folder)
     return thumbnail_folder
+
+"""
+def describe_regex(pattern):
+    cleaned = re.sub(r'\|\(\^[^$]+\$\)', '', pattern)
+    cleaned = re.sub(r'\(\^[^$]+\$\)\|', '', cleaned)
+    cleaned = cleaned.strip('|')
+    
+    # Check for common patterns
+    description_parts = []
+    
+    # Date/time patterns
+    if re.search(r'\[12\]\[0-9\]\{3\}', cleaned):
+        description_parts.append("year (1000-2999)")
+    
+    if re.search(r'0\[1-9\]\|1\[0-2\]', cleaned):
+        description_parts.append("month (01-12)")
+    
+    if re.search(r'0\[1-9\]\|\[12\]\[0-9\]\|3\[01\]', cleaned):
+        description_parts.append("day (01-31)")
+    
+    if re.search(r'T\[0-9\]\{2\}:\[0-9\]\{2\}', cleaned):
+        description_parts.append("time (HH:MM)")
+    
+    if re.search(r':\[0-9\]\{2\}\)', cleaned) and 'time' in ' '.join(description_parts):
+        # Seconds are optional
+        idx = description_parts.index("time (HH:MM)")
+        description_parts[idx] = "time (HH:MM or HH:MM:SS)"
+    
+    if 'Z?' in cleaned:
+        description_parts.append("optional UTC indicator (Z)")
+    
+    if re.search(r'\[\+-\]\[0-9\]', cleaned):
+        description_parts.append("optional timezone offset (±N)")
+    
+    if re.search(r'/', cleaned) and description_parts:
+        description_parts.append("optional date range (using /)")
+    
+    # Numeric patterns
+    if re.search(r'\\d\+', cleaned) and not description_parts:
+        description_parts.append("one or more digits")
+    
+    if re.search(r'\[0-9\]\+', cleaned) and not description_parts:
+        description_parts.append("numeric values")
+    
+    # Decimal patterns
+    if re.search(r'\\\.\)', cleaned) or re.search(r'\[0-9\]\*\\\.\?', cleaned):
+        description_parts.append("decimal numbers")
+    
+    # Scientific notation
+    if re.search(r'\[Ee\]\[\+-\]', cleaned):
+        description_parts.append("scientific notation (E±N)")
+    
+    # Word patterns
+    if re.search(r'\\w\+', cleaned) and not description_parts:
+        description_parts.append("word characters")
+    
+    # Alphanumeric patterns
+    if re.search(r'\[A-Za-z0-9\]\+', cleaned) and not description_parts:
+        description_parts.append("alphanumeric characters")
+
+    # Email patterns
+    if '@' in cleaned and '\\.' in cleaned:
+        description_parts.append("email format")
+    
+    # Build sentence
+    if not description_parts:
+        return ""
+    
+    if len(description_parts) == 1:
+        return description_parts[0]
+    else:
+        main_parts = description_parts[:-1]
+        last_part = description_parts[-1]
+        return f"{', '.join(main_parts)}, and {last_part}."
+"""
+
+def extract_exact_phrases_from_regex(pattern: str) -> List[str]:
+    """
+    Extract all exact text phrases from a regex pattern.
+    Looks for patterns like (^exact text$) which match complete strings exactly.
+    Args:
+        pattern: The regex pattern to analyze
+    Returns:
+        List of exact text phrases found in the pattern
+    Example:
+        >>> pattern = r"(^hello$)|(^world$)|(\d+)"
+        >>> extract_exact_phrases(pattern)
+        ['hello', 'world']
+    """
+    # Pattern to find exact matches: (^text$)
+    exact_phrase_pattern = r'\(\^([^$\)\]\}\+\?]+)\$\)'
+    matches = re.findall(exact_phrase_pattern, pattern)
+    return matches
+
+
+def get_db_data_sources(source=None):
+    from common.dal.copo_da import EnaReadPlatformCollection
+
+    data_sources = {
+        'sequencing_instrument': EnaReadPlatformCollection().get_sequencing_instrument_dropdown()
+    }
+
+    if source not in data_sources or source is None:
+        l.error(f'No data source found for: {source}')
+        return []
+    return data_sources[source]
+
+
+def build_unified_context(context_urls, output_path):
+    merged = {'@context': {}}
+
+    for url in context_urls:
+        ctx = requests.get(url).json()
+        if '@context' not in ctx:
+            l.error(f"Context URL {url} does not contain '@context' key.")
+            continue
+
+        # Merge term definitions
+        local_context = ctx.get('@context', {})
+        for k, v in local_context.items():
+            if k in merged['@context'] and merged['@context'][k] != v:
+                l.error(f'Context conflict on term: {k}')
+            merged['@context'][k] = v
+
+    # Save the merged context to a file
+    with open(output_path, 'w') as f:
+        json.dump(merged, f, indent=2)

@@ -18,15 +18,15 @@
                                 <div class="news-date fl-right"> {{ news.created_date|date:"D, j M Y H:i" }}</div>
                             </div>
                             <br>
-                            <h3 class="news-title">{{ news.title|truncatechars:50 }}</h3>
+                            <h3 class="news-title">{{ news.title|truncatechars_html:50|safe }}</h3>
                             <div class="news-excerpt">
                                 {% autoescape off %}
-                                    {{ news.content|truncatechars:400 }}
+                                    {{ news.content|truncatechars_html:400|safe }}
                                 {% endautoescape %}
                             </div>
                             <div class="centre mt-10 mb-10">
                                 <a id="readMoreBtnID" class="btn-accent news-button btn-big" href="{% url 'news:news_item' news.id %}">
-                                    Read more <span class="sr-only">about "{{ news.title|truncatechars:10 }}"</span>
+                                    Read more <span class="sr-only">about "{{ news.title|truncatechars_html:10|safe }}"</span>
                                     <i class="fa fa-chevron-right"></i>
                                 </a>
                             </div>

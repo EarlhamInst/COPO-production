@@ -1,0 +1,79 @@
+# Release Docker images to Docker Hub when a new tag is pushed.
+# Note dev/demo Docker compose file uses 4 digits while production uses 3
+# e.g. git tag v1.0.0
+#      git push origin v1.0.0
+
+name: Release Docker Image
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project code
+        uses: actions/checkout@v7
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: copo/copo-new-web
+          tags: |
+            type=ref,event=tag
+          
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build image locally for scanning
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: deployment/web/Dockerfile
+          load: true
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=registry,ref=copo/copo-new-web:buildcache
+          cache-to: type=registry,ref=copo/copo-new-web:buildcache,mode=max
+
+      - name: Docker Scout — report HIGH findings (advisory)
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: copo/copo-new-web:${{ steps.meta.outputs.version }}
+          only-severities: critical,high
+          exit-code: false
+
+      - name: Docker Scout — enforce CRITICAL findings (fixable only)
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: copo/copo-new-web:${{ steps.meta.outputs.version }}
+          only-severities: critical
+          # Only fail on CRITICALs that have a fix available — unfixed OS-level CVEs
+          # (e.g. perl CVE-2026-12087, no Debian patch yet) are reported above but
+          # won't block releases. Once Debian ships a fix, this step will automatically
+          # start failing again.
+          only-fixed: true
+          exit-code: ${{ !contains(github.ref_name, '-devtest') }}
+          
+      - name: Push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: deployment/web/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=copo/copo-new-web:buildcache
+          cache-to: type=registry,ref=copo/copo-new-web:buildcache,mode=max

@@ -1,7 +1,7 @@
 from common.validators.validator import Validator
 from django.conf import settings
 import pandas as pd
-from src.apps.copo_single_cell_submission.utils.validator.validation_message import MESSAGES
+from .validation_messages import MESSAGES
 
 lg = settings.LOGGER
 class ForeignKeyValidator(Validator):
@@ -25,7 +25,7 @@ class ForeignKeyValidator(Validator):
                 df = schema_df.loc[schema_df["referenced_component"] == referenced_component, 'term_name']
                 #it won't happen
                 if df.empty:
-                    self.errors.append("Sheet <B>" + component + "</B>: Referenced component: '" + referenced_component + "' is missing")
+                    self.errors.append("Sheet <strong>" + component + "</strong>: Referenced component: '" + referenced_component + "' is missing")
                     self.flag = False
                 foreign_key = df.iloc[0]
                 foreignkey_map[component].append({"referenced_component": referenced_component, "foreign_key": foreign_key})
@@ -33,7 +33,7 @@ class ForeignKeyValidator(Validator):
         for component, df in self.data.items():
             for referenced_component_dict in foreignkey_map[component]:
                 if referenced_component_dict["referenced_component"] and referenced_component_dict["referenced_component"] not in self.data.keys():
-                    self.errors.append("Sheet <B>" + component + "</B>: Referenced component: '" + referenced_component_dict["referenced_component"] + "' is missing")
+                    self.errors.append("Sheet <strong>" + component + "</strong>: Referenced component: '" + referenced_component_dict["referenced_component"] + "' is missing")
                     self.flag = False
                 else:
                     component_schema = schemas.get(component, {})
@@ -43,14 +43,14 @@ class ForeignKeyValidator(Validator):
                         referenced_component = referenced_component_dict["referenced_component"]
 
                         if referenced_component and row[foreign_key] and row[foreign_key] not in self.data[referenced_component][identifier_map[referenced_component]].values:
-                            label_for_foreign_key = component_schema.get(foreign_key, {})["term_label"]
+                            label_for_foreign_key = component_schema.get(foreign_key, {}).get("term_label", foreign_key)
                             referenced_component_schema = schemas.get(referenced_component, {})
-                            label_for_reference_column = referenced_component_schema.get(identifier_map[referenced_component], {})["term_label"]
+                            label_for_reference_column = referenced_component_schema.get(identifier_map[referenced_component], {}).get("term_label", identifier_map[referenced_component])
 
                             error_msg = MESSAGES["missing_referenced_value"].format(
                                 component=component,
                                 invalid_value=row[foreign_key],
-                                column_name=label_for_foreign_key or foreign_key,
+                                column_name=label_for_foreign_key,
                                 line_no=index + self.first_data_line_no,
                                 referenced_component=referenced_component,
                                 reference_column_name=label_for_reference_column

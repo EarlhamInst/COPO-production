@@ -8,9 +8,11 @@
       "name": "Python: Django",
       "type": "debugpy",
       "request": "launch",
+      "python": "/opt/venv/bin/python",
       "program": "${workspaceFolder}/manage.py",
       "env": {
-        "PYTHONPATH1": "${workspaceFolder}/lib:${PYTHONPATH}"
+        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}",
+        "GEVENT_SUPPORT": "True"
       },
       "args": ["runserver", "0.0.0.0:8000"],
       "django": true,
@@ -20,9 +22,10 @@
       "name": "Python: Django Shell",
       "type": "debugpy",
       "request": "launch",
+      "python": "/opt/venv/bin/python",
       "program": "${workspaceFolder}/manage.py",
       "env": {
-        "PYTHONPATH1": "${workspaceFolder}/lib:${PYTHONPATH}"
+        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
       },
       "args": ["shell_plus", "--ptpython"],
       "django": true,
@@ -32,6 +35,7 @@
       "name": "Python: Django makemigration",
       "type": "debugpy",
       "request": "launch",
+      "python": "/opt/venv/bin/python",
       "program": "${workspaceFolder}/manage.py",
       "env": {
         "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
@@ -43,8 +47,9 @@
     {
       "name": "Python: Celery Workers",
       "type": "debugpy",
+      "python": "/opt/venv/bin/python",
       "env": {
-        "GEVENT_SUPPORT": "true"
+        "GEVENT_SUPPORT": "True"
       },
       "request": "launch",
       "module": "celery",
@@ -69,8 +74,9 @@
     {
       "name": "Python: Celery Workers file_transfers",
       "type": "debugpy",
+      "python": "/opt/venv/bin/python",
       "env": {
-        "GEVENT_SUPPORT": "true"
+        "GEVENT_SUPPORT": "True"
       },
       "request": "launch",
       "module": "celery",
@@ -96,14 +102,19 @@
       "name": "Python: Celery Beat",
       "type": "debugpy",
       "request": "launch",
+      "python": "/opt/venv/bin/python",
       "module": "celery",
       "console": "integratedTerminal",
+      "env": {
+        "GEVENT_SUPPORT": "True"
+      },
       "args": ["-A", "src", "beat", "-l", "critical"]
     },
     {
       "name": "Python: Generate standards map",
       "type": "debugpy",
       "request": "launch",
+      "python": "/opt/venv/bin/python",
       "program": "${workspaceFolder}/manage.py",
       "env": {
         "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
@@ -116,6 +127,7 @@
       "name": "Python: Validate API enums",
       "type": "debugpy",
       "request": "launch",
+      "python": "/opt/venv/bin/python",
       "program": "${workspaceFolder}/manage.py",
       "env": {
         "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
@@ -128,6 +140,7 @@
       "name": "Python: Handle Update Requests",
       "type": "debugpy",
       "request": "launch",
+      "python": "/opt/venv/bin/python",
       "program": "${workspaceFolder}/shared_tools/scripts/copo_record/update_requests/handle_update_requests.py",
       "env": {
         "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
@@ -136,6 +149,18 @@
       "args": [],
       "django": true,
       "justMyCode": false
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Start All",
+      "configurations": [
+        "Python: Django",
+        "Python: Celery Workers",
+        "Python: Celery Workers file_transfers",
+        "Python: Celery Beat"
+      ],
+      "stopAll": true
     }
   ]
 }

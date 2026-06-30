@@ -7,8 +7,7 @@
 {% block meta_description %}Manage and explore work profiles (aka studies or projects) seamlessly. Create, edit or delete profiles and navigate to related components like samples, reads, and files. Infinite scroll lets you view more profiles effortlessly.{% endblock %}
 
 {% block stylesheet_block %}
-    <link rel="stylesheet" href="{% static 'copo/css/copo/colours.css' %}">
-    <link rel="stylesheet" href="{% static 'copo_profile/css/copo_profile_index.css' %}">
+    <link rel="stylesheet" href="{% static 'copo/css/copo_profile_index.css' %}">
 {% endblock %}
 
 
@@ -41,7 +40,7 @@
         <input
         type="hidden"
         id="component_subtitle"
-        value="<select id='profileType' name='profileType'>{% for profile_type in profile_types %}<option value='{{ profile_type.value }}' title='{{profile_type.label}}' >{{ profile_type.label }}</option>{% endfor %}</select> "
+        value="<select id='profileType' class='searchable-select' name='profileType'>{% for profile_type in profile_types %}<option value='{{ profile_type.value }}' title='{{profile_type.label}}' >{{ profile_type.label }}</option>{% endfor %}</select> "
       />   
         <input type="hidden" id="copo_email" value="{{copo_email}}"/>
         <input type="hidden" id="groups" value="{{groups}}"/>
@@ -69,8 +68,9 @@
         <div class="col-sm-5 col-md-5 col-lg-9 copo-page-headers"></div>
         <div class="col-sm-7 col-md-7 col-lg-3 copo-page-icons">
             <button id="accept_reject_shortcut" style="display:none"
+                    data-tour-id="accept_reject_samples_title_button"
                     class="big circular ui icon teal button pull-right accept_reject_samples copo-tooltip"
-                    title="Accept/Reject TOL Samples">
+                    title="Accept or Reject Tree of Life Samples">
                 <i class="icon tasks sign"></i>
             </button>
         </div>
@@ -83,50 +83,49 @@
        title="Scroll down to view more profiles">
         <i class="down-arrow"></i><i class="down-arrow"></i>
     </a>
-    <!-- Navigate to top of web page button -->
-    <a href="javascript:void(0);" id="navigateToTop" class="navigate-to-top"
-       title="Navigate to top of the web page">
-        <i class="up-arrow"></i><i class="up-arrow"></i>
-    </a>
+
     <!-- getting started section -->
-
     <div class="row">
-
-        <div class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-0 page-welcome-message" style="display: none;">
+        <div class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-0 page-welcome-message" style="display: none;"  data-tour-id="getting_started">
             <div class="copo-webui-popover">
                 <div class="webui-popover-inner">
-                    <h3 class="copo-webui-popover-title">COPO - Getting started</h3>
+                    <h3 class="copo-webui-popover-title">Getting started</h3>
                     <div class="copo-webui-popover-content">
-                        <div class="webpop-content-div">
-                            Here are a few quick steps to get you started with COPO.
+                        <div class="webpop-content-div">Here are a few quick steps to get you started with the 
+                            Collaborative OPen Omics (COPO) platform.
                             <ol>
                                 <li>
-                                    <strong>COPO Profile: </strong>
+                                    <strong>COPO profile</strong>
                                     <p>The first step to getting work done in COPO is to create a work profile. A
-                                        profile is a collection of 'research objects' or components that form part of
-                                        your research project or study. Use the
-                                        <button class="circular mini ui icon primary button">
+                                        profile is a collection of research objects or components that form part of
+                                        your research project or study.
+                                    </p>
+                                    <p><b>To create a new profile</b>:
+                                        Choose a profile type from the dropdown menu above. Then, click 
+                                        <button class="circular tiny ui icon primary button no-click">
                                             <i class="icon add sign"></i>
                                         </button>
-                                        button on the page
-                                        to create a new profile.
+                                        next to it to create a profile.
                                     </p>
+                                    
+                                    <p><i class='fa fa-info-circle'></i>If your desired profile type is not listed, please
+                                        <a href="mailto:{{copo_email}}">contact the COPO team</a> for assistance.
+                                    </p>
+                                <li>
+                                    <strong>Profile components</strong>
+                                    <p>After creating a work profile, you can start adding metadata for a component 
+                                        by clicking any of the available components in the profile to navigate to 
+                                        to its respective page.
+                                    </p>
+                                    <p>Examples: data files, samples, reads and annotations.</p>
                                 </li>
                                 <li>
-                                    <strong>Profile Components: </strong>
-                                    <p>Once you have created a work profile, you can start creating components within
-                                        the profile. COPO provides templates/wizards for creating and managing different
-                                        components including: Datafiles, Samples, Submission, Publications, People, and
-                                        Annotations. Profile components can be created in any order.</p></li>
-                                <li>
-                                    <strong>Quick Tour: </strong>
-                                    <p>Finally, if you've not done so already, take some time to explore the various
-                                        controls available on the page. Click the
-                                        <button class="circular mini ui icon orange button">
+                                    <strong>Quick tour</strong>
+                                    <p>To explore various controls on this page, click 
+                                        <button class="circular tiny ui icon orange button no-click">
                                             <i class="icon lightbulb"></i>
                                         </button>
-                                        icon on the
-                                        page to activate the quick tour agent.
+                                        above.
                                     </p>
                                 </li>
                             </ol>
@@ -137,34 +136,52 @@
         </div>
     </div>
 
-    <!-- profile table -->
-    <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"
-         data-copo-tour-id="profile_table"></div>
-    <!-- div used by the quick tour agent -->
-    <!-- Profile tables div-->
+    <!-- Loader for component table -->
+    <div id="component_table_loader" class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"></div>
 
-    <!-- Sort Work Profiles button-->
+    <!-- Profile types legend and Sort Work Profiles controls -->
     {% if profiles %}
-        <div id="sortProfilesDiv" class="row">
-            <div class="col-xs-2 col-md-3 col-lg-4">
-                <div class="pull-right" style="padding-top: 9px;"> Sort by:</div>
+    <div class="row legend-and-sort-row">
+        <!-- Profile types legend (collapsible) - left side -->
+        <div class="col-lg-3 col-md-4">
+            <div class="component-legend" data-tour-id="component_legend" data-legend="profile_types">
+                <div class="component-legend-header collapsed"
+                     data-toggle="collapse"
+                     data-target="#legendCollapse"
+                     aria-expanded="false"
+                     aria-controls="legendCollapse">
+                    <span class="component-legend-title">Profile types</span>
+                    <i class="fa fa-chevron-down component-legend-chevron"></i>
+                </div>
+                <div id="legendCollapse" class="collapse">
+                    <ul class="component-legend-group"></ul>
+                </div>
             </div>
-            <div class="col-xs-2 col-md-2 col-lg-2">
-                <select id="sortProfilesBtn" class="form-control" style="padding-bottom:10px">
-                    <option value="date_created">Date Created</option>
-                    <option value="title">Profile Title</option>
-                    <option value="type">Profile Type</option>
-                </select>
-            </div>
-            <div class="col-xs-0 col-md-0 col-lg-0">
-                <div class="pull-left"><i id="sortIconId" class="sort-down fa fa-sort-down sort-icon"></i></div>
+        </div>
+
+        <!-- Sort controls and Toggle Info Bar - right side -->
+        <div class="col-lg-5 col-md-5 col-lg-offset-4">
+            <div id="sortProfilesDiv" class="row">
+                <div class="col-lg-6 col-md-6 col-xs-5 sort-by-container">Sort by:</div>
+                <div class="col-lg-3 col-md-3 col-xs-4 sort-dropdown-container">
+                    <select id="sortProfilesBtn" class="form-control" data-tour-id="sort_profiles_button">
+                        <option value="date_created">Date created</option>
+                        <option value="title">Profile title</option>
+                        <option value="type">Profile type</option>
+                    </select>
+                </div>
+                <div class="col-lg-1 col-md-1 col-xs-2 sort-icon-container">
+                    <i id="sortIconId" class="sort-down fa fa-sort-down sort-icon"></i>
+                </div>
+
 
             </div>
         </div>
+    </div>
     {% endif %}
-    <br>
-    <!-- COPO profiles' grid -->
-    <div id="copo_profiles_table">
+
+    <!-- Profile table div -->
+    <div id="copo_profiles_table" data-tour-id="profile_grid">
         {% for profile in profiles %}
             {% include 'copo/profile/copo_profile_record.html' %}
         {% endfor %}
@@ -183,21 +200,13 @@
 
 {% endblock %}
 
-{% block sidebar_custom_section %}
-    <!-- profiles legend -->
-    <div class="profiles-legend">
-        <h4 class="profiles-legend-title">Profile Types Legend</h4>
-        <ul class="profiles-legend-group">
-        </ul>
-    </div>
-{% endblock sidebar_custom_section %}
+{% block sidebar_custom_section %}{% endblock sidebar_custom_section %}
 
 {% block js_block %}
     <script src="{% static 'copo/js/generic_handlers_ext2.js' %}"></script>
     <script src="{% static 'copo/js/generic_handlers.js' %}"></script>
     <script src="{% static 'copo/js/copo_form_handlers.js' %}"></script>
-    <script src="{% static 'copo_profile/js/copo_profile_index.js' %}"></script>
-    {% include 'copo/profile/custom_profile_js.html' %}
+    <script src="{% static 'copo/js/copo_profile_index.js' %}"></script>
 {% endblock %}
 
  

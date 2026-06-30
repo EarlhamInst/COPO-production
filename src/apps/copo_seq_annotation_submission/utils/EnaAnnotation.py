@@ -23,6 +23,7 @@ import json
 from bson import ObjectId
 from common.utils.helpers import notify_annotation_status
 import pandas as pd
+from common.validators.ena_validators.validation_messages import MESSAGES 
 
 l = Logger() 
 pass_word = get_env('WEBIN_USER_PASSWORD')
@@ -53,7 +54,8 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
                 files_type_list.append(type)
                 file_types[f_name] = type
             else:
-                return {"error": f'File {f_name} is duplicated, please make sure file names are unique'}
+                error_message = MESSAGES['duplicate_file_error'].format(file_name=f_name)
+                return {"error": error_message}
             
     if len(files) == 0:
         return {"error": 'At least one annotation file is required'}
@@ -69,17 +71,27 @@ def validate_annotation(form_data,formset, profile_id, seq_annotation_id=None):
 
     else:
         # bucket is missing, therefore create bucket and notify user to upload files
-        notify_annotation_status(data={"profile_id": profile_id},
-                msg="s3 bucket not found, creating it",
-                action="info",
-                html_id="annotation_info")
-       
-        s3obj.make_s3_bucket(bucket_name=bucket_name)
-        msg='Files not found, please upload these files to COPO and try again',
-        notify_annotation_status(data={"profile_id": profile_id},
-            msg= msg,
+        # msg = "s3 bucket not found, creating it"
+        notify_annotation_status(
+            data={"profile_id": profile_id},
+            msg="No data file storage was found for this profile, creating it now...",
             action="info",
-            html_id="annotation_info")
+            html_id="annotation_info",
+        )
+
+        s3obj.make_s3_bucket(bucket_name=bucket_name)
+        msg = (
+            "No data files were found in COPO.<br>"
+            "To upload them, use the <strong>Data files</strong> button "
+            "for the relevant profile on the <strong>Work profiles</strong> page or "
+            "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+        )
+        notify_annotation_status(
+            data={"profile_id": profile_id},
+            msg=msg,
+            action="info",
+            html_id="annotation_info",
+        )
         return {"error": msg}
 
 

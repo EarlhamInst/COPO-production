@@ -175,6 +175,7 @@ function json2HtmlForm(data) {
   const dialog = new BootstrapDialog({
     type: BootstrapDialog.TYPE_PRIMARY,
     size: BootstrapDialog.SIZE_WIDE,
+    cssClass: 'form-modal',
     title: function () {
       return $('<span>' + dialog_title + '</span>');
     },
@@ -378,6 +379,7 @@ function json2HtmlForm(data) {
   */
 
   dialog.realize();
+  dialog.getModal().addClass('form-modal');
   dialog.setMessage($dialogContent);
   dialog.open();
 } //end of json2HTMLForm
@@ -2378,7 +2380,7 @@ function create_attachable_component(formElem) {
     type: BootstrapDialog.TYPE_PRIMARY,
     size: BootstrapDialog.SIZE_NORMAL,
     title: function () {
-      return $('<span>Create & Assign ' + formElem.label + '</span>');
+      return $('<span>Create & assign ' + formElem.label + '</span>');
     },
     closable: false,
     animate: true,
@@ -2963,7 +2965,7 @@ function get_ontology_span_2(ontologySpan, formElem) {
     class:
       'onto-label ontol-span webpop-content-div alert alert-default copo-tooltip',
     title: 'Ontology field',
-    html: '<span class="ontology-label"><i class="fa fa-align-justify free-text" style="padding-right: 5px; display: none;"></i><img class="non-free-text" src="/static/copo/img/ontology2.png" style="cursor:pointer;"></span><span class="onto-label-span"></span><span class="onto-label-more collapse"></span>',
+    html: '<span class="ontology-label"><i class="fa fa-align-justify free-text" style="padding-right: 5px; display: none;"></i><img class="non-free-text" src="/static/assets/img/ontology2.png" style="cursor:pointer;"></span><span class="onto-label-span"></span><span class="onto-label-more collapse"></span>',
   });
 
   ontologySpan.append(label);
@@ -3783,8 +3785,12 @@ function form_generic_task(component_name, task, records, args_dict) {
       globalDataBuffer = data;
       if (data.hasOwnProperty('table_data')) {
         //table data
-        var event = jQuery.Event('refreshtable');
-        $('body').trigger(event);
+        // var event = jQuery.Event('refreshtable');
+        // $('body').trigger(event);
+        $('body').trigger('refreshtable', {
+          action: task,
+          dataLength: data.table_data.dataSet.length,
+        });
       }
       //feedback
       if (

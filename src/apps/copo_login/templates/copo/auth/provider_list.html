@@ -26,7 +26,7 @@
                     {% csrf_token %}
                     <a style="margin-left: -20px"  title="{{ provider.name }}" class="socialaccount_provider {{ provider.id }}"
                        href="javascript:login_orcid()"><img
-                            height="75px" src="{% static 'copo/img/'|add:image_static %}"/>
+                            height="75px" src="{% static 'assets/img/'|add:image_static %}"/>
                         <span style="font-size: large" class="login-button">Sign in with {{ provider.name }}</span></a>
                 </form>
 
@@ -34,7 +34,7 @@
 
                     <a title="{{ provider.name }}" class="socialaccount_provider {{ provider.id }}"
                        href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}"><img
-                            height="64px" src="{% static 'copo/img/'|add:image_static %}"/><span
+                            height="64px" src="{% static 'assets/img/'|add:image_static %}"/><span
                             class="login-button">Sign in with {{ provider.name }}</span></a>
                 {% endif %}
 

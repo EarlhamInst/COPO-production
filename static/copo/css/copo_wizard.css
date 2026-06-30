@@ -1,0 +1,250 @@
+
+.wiz-info-icon {
+    cursor: pointer;
+}
+
+.copo-wiz-button {
+    margin-right: 3px;
+}
+
+.wiz-info-highlight {
+    padding: 4px;
+    background: #262626;
+    color: #f5f5f5;
+    border-radius: 4px;
+}
+
+.wiz-info-panel {
+    font-size: 14px;
+    line-height: 150%;
+    position: relative;
+    top: 0;
+    display: none;
+}
+
+.attributes-section {
+    background: rgba(219, 232, 240, 0.2);
+    border-radius: 4px !important;
+    margin-top: 5px;
+}
+
+.attributes-section-header {
+    background: rgba(219, 232, 240, 0.4);
+    padding-right: 5px;
+    margin-right: 10px;
+    font-weight: 500;
+}
+
+.attributes-section-2 {
+    background: rgba(232, 247, 212, 0.2);
+    border-radius: 4px !important;
+    margin-top: 5px;
+}
+
+.attributes-section-2-header {
+    background: rgba(232, 247, 212, 0.4);
+    padding-right: 5px;
+    margin-right: 10px;
+    font-weight: 500;
+}
+
+div.wizard-message-box {
+    border: 1px solid transparent;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    padding: 5px;
+    line-height: 1.2;
+}
+
+.copo-custom-modal-body {
+    background-color: #ffffff;
+    border-radius: 5px;
+    overflow: hidden;
+    padding: 17px;
+    text-align: center;
+    min-height: 300px;
+    overflow: scroll;
+}
+
+.copo-custom-modal-message {
+    /*text-align: left;*/
+
+    border-radius: 4px;
+    max-height: 500px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    padding: 5px;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.6;
+
+}
+
+.copo-custom-modal-title {
+    font-size: 18px;
+    padding-bottom: 20px;
+}
+
+.wizard-alert-options {
+    padding-bottom: 10px;
+}
+
+.wizard-alert-radio {
+    text-align: left;
+}
+
+ol {
+    list-style-type: decimal !important;
+}
+
+.wizard-control-message {
+    font-size: 12px;
+    line-height: 1.4;
+    max-height: 400px;
+    overflow: auto;
+    background-color: rgba(234, 245, 251, 0.95);
+}
+
+.wiz-message-panel {
+    border: 2px solid #3278B4;
+    font-size: 12px;
+}
+
+/*styling of the alert icon used in the wizard alert message*/
+.wizard-alert-icon {
+    font-size: 45px;
+}
+
+/*metadata rating styling*/
+
+.itemMetadata-flag {
+    background-color: transparent;
+    border-radius: 0px;
+    overflow: hidden;
+    padding: 0;
+    width: 16px;
+    margin-top: 0px;
+}
+
+.itemMetadata-flag span {
+    border-radius: 0px;
+    display: block;
+    height: 10px;
+    margin-bottom: 0px;
+    margin-left: 3px;
+    opacity: 0.5;
+    width: 10px;
+}
+
+/* rating colours */
+.poor {
+    color: rgba(204, 0, 0, 0.6);
+}
+
+.fair {
+    color: rgba(255, 165, 0, 0.6);
+}
+
+.good {
+    color: rgba(0, 204, 0, 0.6);
+}
+
+.in-desc {
+    color: rgba(22, 120, 194, 0.3);
+}
+
+.uncertain, .uncertain:hover {
+    color: rgba(239, 239, 239, 0.9);
+}
+
+/*! active states */
+.itemMetadata-flag span.meta-active {
+    opacity: 1;
+}
+
+.itemMetadata-flag .poor.meta-active {
+    background-color: #cc0000;
+}
+
+.itemMetadata-flag .fair.meta-active {
+    background-color: #ffb833;
+}
+
+.itemMetadata-flag .good.meta-active {
+    background-color: #009933;
+
+}
+
+/*wizard message control*/
+.control-message-trigger {
+    color: #ffffff;
+    font-size: 16px;
+}
+
+
+
+/*loading animation*/
+/*.loading {*/
+    /*font-size: 15px;*/
+    /*margin-top: 15%;*/
+/*}*/
+
+/*.loading:after {*/
+    /*overflow: hidden;*/
+    /*display: inline-block;*/
+    /*vertical-align: bottom;*/
+    /*-webkit-animation: ellipsis steps(4, end) 1200ms infinite;*/
+    /*animation: ellipsis steps(4, end) 1200ms infinite;*/
+    /*content: "\2026"; !* ascii code for the ellipsis character *!*/
+    /*width: 0px;*/
+/*}*/
+
+/*@keyframes ellipsis {*/
+    /*to {*/
+        /*width: 1.25em;*/
+    /*}*/
+/*}*/
+
+/*@-webkit-keyframes ellipsis {*/
+    /*to {*/
+        /*width: 1.25em;*/
+    /*}*/
+/*}*/
+
+/*end loading*/
+
+.action-rw {
+    background: #fff;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-bottom: -5px;
+    border: none;
+    border-radius: 4px;
+    overflow: auto;
+    font-weight: normal;
+    padding: 5px 5px 0px;
+    padding-bottom: 15px;
+}
+
+/*wizard stylings*/
+.fuelux .wizard > .steps-container > ul.steps > li > span.badge {
+    margin-left: 10px;
+}
+
+.fuelux .wizard > .actions {
+    background-color: #f5f5f5;
+    border-left: none;
+}
+
+.fuelux .wizard::before,
+.fuelux .wizard::after {
+    display: none;
+}
+
+.fuelux .wizard {
+    border: 1px solid rgba(229, 239, 255, 0.3);
+}
+
+.fuelux .wizard .step-content {
+    border: 1px solid rgba(229, 239, 255, 0.3);
+}

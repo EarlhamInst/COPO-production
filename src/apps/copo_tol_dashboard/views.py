@@ -9,12 +9,12 @@ from common.utils.helpers import get_group_membership_asString
 from common.utils.logger import Logger
 from common.utils import helpers
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.shortcuts import render
 from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 from itertools import groupby
 from operator import itemgetter
 from src.apps.copo_core.models import SequencingCentre
@@ -22,6 +22,8 @@ import ast
 import json
 import json
 import re
+
+lg = Logger()
 
 def convert_string_to_titlecase(txt):
     txt = txt.upper()  # Convert string word to uppercase
@@ -163,20 +165,31 @@ def get_gal_names(request):
 
 
 def get_location_details(latitude, longitude):
-    geolocator = Nominatim(user_agent="copo_tol_dashboard")
-    location = geolocator.reverse(str(latitude) + "," + str(longitude))
-    address = location.raw['address']
-    out = {"city": address.get("city", ""), "state": address.get(
-        "state", ""), "country": address.get("country", "")}
-    return out
-
+    geolocator = Nominatim(user_agent='copo_tol_dashboard')
+    try:
+        location = geolocator.reverse(str(latitude) + ',' + str(longitude))
+        address = location.raw.get('address', {}) if location else {}
+        return {
+            'city': address.get('city', ''),
+            'state': address.get('state', ''),
+            'country': address.get('country', '')
+        }
+    except (GeocoderTimedOut, GeocoderServiceError, ConnectionError) as e:
+        lg.exception(f'Nominatim lookup failed for {latitude},{longitude}: {e}')
+        # Return an empty location
+        return {
+            'city': 'Unknown',
+            'state': 'Unknown',
+            'country': 'Unknown'
+        }
+        
 
 def get_number_of_samples_produced(field_name, field_value):
     return Sample().get_collection_handle().count_documents({field_name: field_value})
 
 
 def get_profile_titles_nav_tabs(request):
-    queryUserProfileRecords = request.GET["queryUserProfileRecords"]
+    queryUserProfileRecords = request.GET['queryUserProfileRecords']
     #regex = r'\((.*?)\)'  # value within enclosed parentheses regex
 
     if queryUserProfileRecords:
@@ -186,7 +199,8 @@ def get_profile_titles_nav_tabs(request):
         profiles = Profile().get_all_profiles()
 
     # Get TOL profile types
-    profile_types = [i.get("type", "") for i in profiles if i.get("type", "") != "genomics"]  
+    excluded_profile_types = ['genomics', 'biodata']
+    profile_types = [i.get('type', '') for i in profiles if i.get('type', '') not in excluded_profile_types]  
 
     #  Extract value within enclosed parentheses from a unique set of profile types
     #  If the value exists, return it else, return the profile type
@@ -202,6 +216,7 @@ def get_profile_titles_nav_tabs(request):
     return HttpResponse(json_util.dumps(profile_types))
 
 
+@login_required
 def get_profiles_for_tol_inspection(request):
     data = request.POST["data"]  # "project" or "samples_data"
     searchByFaceting = data_utils.convertStringToBoolean(
@@ -239,6 +254,7 @@ def get_profiles_for_tol_inspection(request):
     return HttpResponse(json_util.dumps(out))
 
 
+@login_required
 def get_profiles_based_on_sample_data(request):
     samples_data = request.POST["samples_data"]
     # Convert string array to a list of dictionaries
@@ -255,6 +271,7 @@ def get_profiles_based_on_sample_data(request):
         json_util.dumps({'profiles': profiles, 'profile_samples_count': profile_samples_count}))
 
 
+@login_required
 def get_sample_details(request):
     sample_id = ObjectId(request.POST["sample_id"])
     sample_data = Sample().get_sample_by_id(sample_id)
@@ -273,6 +290,7 @@ def get_sample_details(request):
     return HttpResponse(json_util.dumps(sorted_sample_data_with_blank_field_values))
 
 
+@login_required
 def get_samples_by_search_faceting(request):
     url = request.build_absolute_uri()
 

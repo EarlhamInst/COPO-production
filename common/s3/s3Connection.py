@@ -1,17 +1,20 @@
 import boto3
 from botocore.config import Config
+from botocore.exceptions import ClientError, EndpointConnectionError, BotoCoreError
 from django.conf import settings as s
 from django_tools.middlewares.ThreadLocal import get_current_request
+from common.schemas.utils.data_utils import join_with_and
 from common.utils.helpers import notify_read_status
 from common.utils.logger import Logger
 from boto3.s3.transfer import TransferConfig
 import logging
 from common.dal.copo_da import EnaFileTransfer
 from common.utils.helpers import get_env
+from src.apps.copo_file.utils.CopoFiles import delete_image_thumbnail
 
 class S3Connection():
     """
-    Class to handle interations with ECS cloud storage via s3 service
+    Class to handle interactions with ECS cloud storage via s3 service
     """
 
     def __init__(self, profile_id=str(), subcomponent=None):
@@ -37,7 +40,7 @@ class S3Connection():
                                       aws_secret_access_key=self.ecs_secret_key)        
         # self.transport_params = {'client': self.s3_client}
         Logger().debug(
-            msg=f"endpoint: {self.ecs_endpoint}, access key: {self.ecs_access_key_id}, secret: {self.ecs_secret_key}")
+            msg=f"endpoint: {self.ecs_endpoint}")
 
     def list_buckets(self):
         response = self.s3_client.list_buckets()
@@ -58,6 +61,8 @@ class S3Connection():
             return list()
         return contents
     '''
+
+
 
     def list_objects(self, bucket):
         return self._get_all_s3_objects(Bucket=bucket)
@@ -88,17 +93,25 @@ class S3Connection():
 
 
 
-    def get_object(self, bucket, key, loc):
+    def get_object(self, bucket, key, loc, callback=None):
         Logger().log("transfering file to: " + loc)
         KB = 1024
         MB = KB * KB
         config = TransferConfig(multipart_threshold=100 * MB, multipart_chunksize=64 * MB, io_chunksize=1 * MB,
                                 max_concurrency=3, use_threads=True )
-        #self.s3_client.download_file(bucket, key, loc, Config=config)
         with open(loc, 'wb') as data:
-            self.s3_client.download_fileobj(Bucket=bucket, Key=key, Fileobj=data, Config=config)
+            self.s3_client.download_fileobj(
+                Bucket=bucket, Key=key, Fileobj=data, Config=config, Callback=callback
+            )
 
         Logger().log("transfer complete: " + loc)
+
+    def head_object_size(self, bucket, key):
+        try:
+            resp = self.s3_client.head_object(Bucket=bucket, Key=key)
+            return int(resp.get("ContentLength", 0))
+        except Exception:
+            return 0
 
     def get_presigned_url(self, bucket, key, expires_seconds=24*60*60):
         '''
@@ -124,12 +137,19 @@ class S3Connection():
         :param uid: the name of the bucket
         :return: True if exists, False if not
         '''
-        response = self.s3_client.list_buckets()
-        bucket_list = response['Buckets']
-        for bucket in bucket_list:
-            if bucket["Name"] == uid:
-                return True
-        return False
+        try:
+            response = self.s3_client.list_buckets()
+            bucket_list = response['Buckets']
+            for bucket in bucket_list:
+                if bucket["Name"] == uid:
+                    return True
+            return False
+        except (EndpointConnectionError, BotoCoreError, ClientError) as e:
+            Logger().exception(f'Error checking S3 buckets for uid {uid}: {str(e)}')
+            return False
+        except Exception as e:
+            Logger().exception(e)
+            return False
 
     def make_s3_bucket(self, bucket_name):
         '''
@@ -137,15 +157,18 @@ class S3Connection():
         :param bucket_name: name of bucket to make
         :return: the bucket
         '''
-
-        # try:
-        return self.s3_client.create_bucket(Bucket=str(bucket_name))
-
-        # except Exception as e:
-        #    Logger().exception(e)
-        #    response = "error"
-        #    print(e)
-        # return bucket
+        try:
+            response = self.s3_client.create_bucket(Bucket=str(bucket_name))
+            return response
+        except (EndpointConnectionError, BotoCoreError, ClientError) as e:
+            Logger().exception(f"Failed to create S3 bucket '{bucket_name}': {e}")
+            return None
+        except Exception as e:
+            Logger().exception(e)
+            #  response = "error"
+            #  print(e)
+            # return bucket_name
+            return None
 
     def check_s3_bucket_for_files(self, bucket_name, file_list, just_return_etags=False):
         '''
@@ -168,10 +191,24 @@ class S3Connection():
             bucket_files = self.list_objects(bucket=bucket_name)
 
             if not bucket_files:
-                msg = "Bucket not found: " + bucket_name
-                notify_read_status(data={"profile_id": profile_id}, msg=msg, action="info",
-                                   html_id="sample_info")                 
-                return False, msg
+                # msg = "Bucket not found: " + bucket_name
+                msg = (
+                    "No data files were found in COPO.<br>"
+                    "To upload them, use the <strong>Data files</strong> button "
+                    "for the relevant profile on the <strong>Work Profiles</strong> page or "
+                    "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+                )
+                notify_read_status(
+                    data={"profile_id": profile_id},
+                    msg=msg,
+                    action="info",
+                    html_id="sample_info",
+                )
+                # Empty dict (not False) keeps the return type consistent with
+                # the success path so callers that do `etags, _ = ...; etags.get(...)`
+                # don't crash with AttributeError on the failure path. Empty dict
+                # is still falsy for callers that do `if not result: ...`.
+                return dict(), msg
 
             for f in file_list:
 
@@ -200,25 +237,38 @@ class S3Connection():
                         missing_files.append(file)
             if not just_return_etags and len(missing_files) > 0:
                 # report missing files
-                msg="Files Missing: " + str(missing_files) + ". Please upload these files to COPO."
-              
-                notify_read_status(data={"profile_id": profile_id}, msg=msg,
-                                   action="error",
-                                   html_id="sample_info")
-                
+                missing_files_text = join_with_and([f"'{x}'" for x in missing_files])
+                msg = (
+                    f"Data files missing: {missing_files_text}.<br>"
+                    "To upload them, use the <strong>Data files</strong> button "
+                    "for the relevant profile on the <strong>Work profiles</strong> page or "
+                    "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+                )
+
+                notify_read_status(
+                    data={"profile_id": profile_id},
+                    msg=msg,
+                    action="error",
+                    html_id="sample_info",
+                )
+
                 # return false to halt execution
                 return False, msg
             else:
                 return etags, ''
 
         except KeyError as e:
-            msg = "Key Error occurred...cannot find key: " + str(e)
-             
-            notify_read_status(data={"profile_id": profile_id}, msg=msg,
-                               action="info",
-                               html_id="sample_info")
-           
-            return False, msg
+            # msg = "Key Error occurred...cannot find key: " + str(e)
+            msg = f'A required piece of information, {e}, could not be found. Please contact support.'
+
+            notify_read_status(
+                data={"profile_id": profile_id},
+                msg=msg,
+                action="info",
+                html_id="sample_info",
+            )
+
+            return dict(), msg
         except Exception as e:
             Logger().exception(e)
             notify_read_status(data={"profile_id": profile_id}, msg="An error has occurred: " + str(e), action="info",
@@ -233,15 +283,30 @@ class S3Connection():
         file_not_deleted = []
         status = False
         for key in target_ids:
-            #ok to delete the file if there is no need to tranfer to ENA
+            # ok to delete the file if there is no need to transfer to ENA
             enaFile = filestatus_map.get(f"{bucket_name}/{key}")
             if not enaFile or get_transfer_status(enaFile) >= TransferStatus.DOWNLOADED_TO_LOCAL:
                 status = True          
                 self.s3_client.delete_object(Bucket=bucket_name, Key=key)
+
+                # Clean up thumbnail images from disk for image file types
+                delete_image_thumbnail(key, self.profile_id)
             else:
                 file_not_deleted.append(key)
                 
         if status:
-            return dict(status="success", message="File(s) have been deleted " +  ("excepts for following files in use: " + "<br/>".join(file_not_deleted) if file_not_deleted else "")  )
+            return dict(
+                status="success",
+                message="All files have been deleted "
+                + (
+                    "except the following that are currently in use:<br>"
+                    + "<br>".join(file_not_deleted)
+                    if file_not_deleted
+                    else ""
+                ),
+            )
         else:
-            return dict(status="failure", message="No File has been deleted and all selected file(s) in use")
+            return dict(
+                status="failure",
+                message="No files have been deleted because all selected files are in use.",
+            )

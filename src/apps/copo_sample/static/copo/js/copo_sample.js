@@ -1145,8 +1145,6 @@ $(document).on('document_ready', function () {
 
             let table_wrapper = $('#' + tableID + '_wrapper');
 
-            table_wrapper.find('.dt-buttons').addClass('pull-right');
-
             table_wrapper
               .find('.dataTables_filter')
               .find('label')
@@ -1154,16 +1152,14 @@ $(document).on('document_ready', function () {
               .find('input')
               .removeClass('input-sm')
               .attr('placeholder', 'Search sample source');
-
-            $('<br><br>').insertAfter(table_wrapper.find('.dt-buttons'));
-
-            //handle event for table details
+            
+            // Handle event for table details
             $('#' + tableID + ' tbody')
               .off('click', 'td.summary-details-control')
               .on('click', 'td.summary-details-control', function (event) {
                 event.preventDefault();
 
-                var event = jQuery.Event('posttablerefresh'); //individual components can trap and handle this event as they so wish
+                var event = jQuery.Event('posttablerefresh'); // Individual components can trap and handle this event as they so wish
                 $('body').trigger(event);
 
                 var tr = $(this).closest('tr');
@@ -2370,7 +2366,7 @@ $(document).on('document_ready', function () {
     message.append(feedbackRow);
 
     var dialog = new BootstrapDialog({
-      title: 'Metadata Ingestion',
+      title: 'Metadata ingestion',
       message: message,
       closable: false,
       animate: true,

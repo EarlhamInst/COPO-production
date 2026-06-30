@@ -1,9 +1,9 @@
 #FROM python:3.10.13-bullseye
 FROM python:3.12.7-slim-bookworm
 
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     default-jre \
     rsync \
     #git \
@@ -15,8 +15,9 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     make \
     gcc \
-    python3-dev \
     locales \
+    python3-dev \
+    python3-venv \
     python3-pip \
     ruby-dev \
     rubygems \
@@ -26,7 +27,12 @@ RUN apt-get update && apt-get install -y \
     python-is-python3 && \
     gem install sass && \
     pip install --upgrade pip && \
+    pip install "setuptools==78.1.1" && \
     apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
 COPY ./requirements/ /tmp/requirements/
 RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt
@@ -37,12 +43,14 @@ RUN mkdir /code
 WORKDIR /copo
 COPY . /code/
 
-RUN wget -O webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/8.1.0/webin-cli-8.1.0.jar
+RUN mkdir -p /copo/tools/reposit/ena_cli && \
+    wget -O /copo/tools/reposit/ena_cli/webin-cli.jar https://github.com/enasequence/webin-cli/releases/download/9.0.3/webin-cli-9.0.3.jar
 
 # add aspera client to path
 COPY ./shared_tools/reposit/.aspera/ /root/.aspera/
-ENV PATH /root/.aspera/cli/bin:$PATH
+ENV PATH="/root/.aspera/cli/bin:$PATH"
 
-ENTRYPOINT ["bash","-c","rsync -avhW --no-compress --progress /code/ /copo/ &&  rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && python manage.py collectstatic --noinput && supervisord -c src/celery.conf && supervisorctl -c src/celery.conf start all && /usr/local/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application"]
+# Note that since venv is installed at /opt/venv then, daphne is installed at /opt/venv/bin/daphne not /usr/local/bin/daphne
+ENTRYPOINT ["bash","-c","rsync -avhW --no-compress --progress /code/ /copo/ &&  rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && python manage.py collectstatic --noinput && supervisord -c src/celery.conf && supervisorctl -c src/celery.conf start all && /opt/venv/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application"]
 
-# wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin &&
+#wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin &&

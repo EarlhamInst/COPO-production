@@ -4,6 +4,7 @@ from common.dal.copo_da import DataFile, EnaFileTransfer, EnaChecklist
 from common.dal.profile_da import Profile
 from common.dal.submission_da import Submission
 from common.dal.sample_da import Sample, Source
+from common.s3.s3Connection import S3Connection as s3
 from .da import SubmissionQueue
 from common.utils.helpers import get_datetime, get_not_deleted_flag, get_env, notify_read_status
 from common.dal.mongo_util import cursor_to_list
@@ -56,6 +57,34 @@ def submit_read(profile_id,  target_ids=list(), target_id=None, checklist_id=Non
     file_ids = [file_id for id in target_ids for file_id in id.split("_")[1].split(",")]
     sample_obj_ids = [ObjectId(id.split("_")[0]) for id in target_ids]
     paired_file_ids = [id.split("_")[1] for id in target_ids]
+
+    # Pre-flight: verify every selected data file is actually in S3 before
+    # queueing the submission. The manifest-upload path (views.py) already
+    # checks this, but a user can delete files from storage between upload
+    # and submit, leaving orphaned references that fail later in EnaReads
+    # with a confusing message.
+    datafiles = DataFile().get_all_records_columns(
+        filter_by={"_id": {"$in": [ObjectId(f) for f in file_ids]}},
+        projection={"file_name": 1},
+    )
+    file_names = [df["file_name"] for df in datafiles if df.get("file_name")]
+    if file_names:
+        etags, _ = s3().check_s3_bucket_for_files(
+            bucket_name=profile_id, file_list=file_names, just_return_etags=True
+        )
+        if not isinstance(etags, dict):
+            etags = {}
+        missing_files = [f for f in file_names if f not in etags]
+        if missing_files:
+            return dict(
+                status='error',
+                message=(
+                    "Cannot submit the following data files because they are missing from storage: "
+                    + ", ".join(f"<strong>{f}</strong>" for f in missing_files) + ".<br><br>"
+                    + "Upload them via <strong>Data files</strong> on the "
+                    "<strong>Work profiles</strong> page and try again."
+                ),
+            )
 
     sub = Submission().get_collection_handle().find_one(
         {"profile_id": profile_id, "repository":"ena", "deleted": get_not_deleted_flag()})
@@ -118,9 +147,9 @@ def delete_ena_records(profile_id, target_ids=list(), target_id=None):
             if not interset:
                 continue
             if file.get("status", "pending") == "accepted":
-                return dict(status='error', message="one or more record/s have been submitted to ENA!")
+                return dict(status='error', message="one or more records have been submitted to ENA!")
             elif file.get("status", "pending") == "processing":
-                return dict(status='error', message="one or more record/s have been scheduled to submit to ENA!")
+                return dict(status='error', message="one or more records have been scheduled to submit to ENA!")
 
     # check if any of the selected file records have been used by other samples
 
@@ -174,7 +203,7 @@ def delete_ena_records(profile_id, target_ids=list(), target_id=None):
         Sample(profile_id=profile_id).get_collection_handle().delete_many({"_id": {"$in": delete_samples}})
         Submission().get_collection_handle().update_one({"profile_id": profile_id, "repository":"ena"}, {"$pull": {"accessions.sample": {"sample_id": {"$in": [str(id) for id in delete_samples]}}}})
 
-    return dict(status='success', message="Read record/s have been deleted!")
+    return dict(status='success', message="Read records have been deleted!")
 
 
 
@@ -206,10 +235,18 @@ def generate_read_record(profile_id=str(), checklist_id=str()):
     label_set = set()
     data_map = dict()
     run_accession_number_map = dict()
-
-    detail_dict = dict(className1='summary-details-control detail-hover-message', orderable=False, data=None,
-                        title='', defaultContent='', width="5%")   # remove the details 
+    
+    # Remove the details
+    detail_dict = dict(
+        className1='summary-details-control detail-hover-message',
+        orderable=False,
+        data=None,
+        title='',
+        defaultContent='',
+        width="5%",
+    )
     columns.insert(0, detail_dict)
+
     columns.append(dict(data="record_id", visible=False))
     columns.append(dict(data="DT_RowId", visible=False))
     columns.extend([dict(data=x, title=fields[x]["name"], defaultContent='', render="render_ena_accession_function" if x.lower().endswith("accession") else "", className=x if x == "ena_file_processing_status" else "" ) for x in label  ])

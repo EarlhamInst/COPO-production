@@ -1,0 +1,13 @@
+.ui.icon.bacterium::before {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  content: "\e05a";
+  display: inline-block;
+  font-size: 1em;
+  vertical-align: middle;
+  color: inherit; 
+}
+
+.ui.icon.green.bacterium::before {
+  color: #21ba45 !important;
+}

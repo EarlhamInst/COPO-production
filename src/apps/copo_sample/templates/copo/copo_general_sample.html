@@ -53,14 +53,14 @@
   <input
     type="hidden"
     id="component_subtitle"
-    value="<select id='checklist_id' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}' >  {{ checklist.primary_id }}: {{ checklist.name }}</option>{% endfor %}</select> "
+    value="<select id='checklist_id' class='searchable-select' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}' >  {{ checklist.primary_id }}: {{ checklist.name }}</option>{% endfor %}</select> "
   />
   <input
     type="hidden"
     id="profile_checklist_ids"
     value="{{ profile_checklist_ids|join:',' }}" />
 
-    <a id="download-sample-manifest-link"><span>download</span></a>
+    <a id="download-sample-manifest-link" target="_blank"><span>download</span></a>
 </div>
 {% endblock %}
 {% block page_tile %}
@@ -72,7 +72,7 @@
 <div class="row">
   <div
     class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-0 page-welcome-message"
-    style="display: none"
+    style="display: none" data-tour-id="getting_started"
   >
     <div class="copo-webui-popover">
       <div class="webui-popover-inner">
@@ -93,11 +93,11 @@
             <br>
             <div>
               <strong>Upload completed manifest</strong>: After having completed the manifest, 
-              choose the matching checklist option from the dropdown menu then, click the
+              choose the matching checklist option from the dropdown menu then, click 
               <button id="help_add_button" class="circular tiny ui icon button no-click">
                   <i class="icon table sign"></i>
               </button>
-              button to upload it.
+              to upload it.
             </div>
             <!--<div>
               <strong>Quick tour</strong>: To explore various controls on this page, click the
@@ -150,12 +150,10 @@
   </div>
 </div>
 <!-- read_table -->
+{% include 'copo/data_status_legend.html' %}
 <div
   id="component_table_loader"
-  class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"
-  data-copo-tour-id="sample_table"
-></div>
-<!-- div used by the quick tour agent -->
+  class="col-sm-5 col-md-5 col-lg-5 col-xs-offset-5"></div>
 <div class="table-parent-div">
   <table
     id="sample_table"
@@ -171,19 +169,19 @@
 
 {% block help_section %} {% endblock %}
 
+{% block sidebar_custom_section %}{% endblock sidebar_custom_section %}
+
 {% block component_info%}
-<div
-  style="display: none; margin-top: 30px"
+<div style="display: none; margin-top: 30px"
   id="sample_info"
   class="alert alert-info"
-  role="alert"
-></div>
-<div
-  style="display: none; margin-top: 30px"
+  role="alert">
+</div>
+<div style="display: none; margin-top: 30px"
   id="submission_info"
   class="alert alert-info"
-  role="alert"
-></div>
+  role="alert">
+</div>
 {% endblock %}
 
 {% block js_block %}
