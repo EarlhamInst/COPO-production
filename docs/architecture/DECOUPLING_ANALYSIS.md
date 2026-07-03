@@ -114,6 +114,14 @@ src/apps/copo_core/
 
 Directional rule: **concrete engines and apps depend on `common/submission` interfaces; `copo_core` depends on those interfaces too — nothing in `common` or `copo_core` imports a concrete submission app.** That inversion dissolves the god-app.
 
+> **Reference implementation (landed).** The same pluggable-backend pattern has
+> been implemented for the EDP flow's LIMS integration: a `LIMSAdapter` ABC with
+> a `NullLIMSAdapter` default and a Sapio plugin, resolved from a `LIMS_ADAPTER`
+> setting. It decoupled ~330 lines of hardwired `sapiopylib` code from
+> `ei_edp/utils/` with no changes to call sites. See
+> [`LIMS_ADAPTER.md`](LIMS_ADAPTER.md) — a working example of the interface +
+> registry + one-folder-per-backend shape recommended above.
+
 ---
 
 ## 6. What should NOT be decoupled

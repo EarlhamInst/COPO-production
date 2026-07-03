@@ -27,40 +27,6 @@ user_token = get_env('WEBIN_USER').split("@")[0]  # Extract username portion bef
 session = requests.Session()
 session.auth = (user_token, pass_word)
 
-"""
-def _query_ena_file_processing_status(accession_no):
-    """Query the ENA reporting API for the archive/release status of files
-    associated with a given run accession number.
-
-    Returns an HTML-formatted string of "fileName : archiveStatus : releaseStatus"
-    for each file, separated by <br/> tags. Returns empty string if no data found.
-    """
-    result = ""
-    url = f"{get_env('ENA_ENDPOINT_REPORT')}run-files/{accession_no}?format=json"
-    with requests.Session() as session:
-        session.auth = (user_token, pass_word)
-        headers = {'Accept': '/'}
-
-        try:
-            response = session.get(url, headers=headers)
-            if response.status_code == requests.codes.ok:
-                response_body = response.json()
-                # Build a pipe-delimited string of file statuses, then convert pipes to <br/>
-                for r in response_body:
-                    report = r.get("report",{})
-                    if report:
-                        result += "|"+ report.get("fileName") + " : " + report.get("archiveStatus") + " : " + report.get("releaseStatus")
-                if result:
-                    # Strip leading pipe and replace remaining pipes with line breaks for HTML display
-                    result = result[1:].replace("|", "<br/>")
-
-            else:
-                result = "Cannot get file processing result from ENA"
-                l.error(str(response.status_code) + ":" + response.text)
-        except Exception as e:
-            l.exception(e)
-        return result
-"""
    
 def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), schema_name=str()):
     """Build the complete data structure for the single-cell UI DataTable.

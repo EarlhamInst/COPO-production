@@ -212,6 +212,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'))
 MEDIA_URL = '/media/'
 
+# Dotted path to the LIMS adapter for the EDP flow. Defaults to the Sapio
+# adapter; set to "src.apps.ei_edp.utils.lims.base.NullLIMSAdapter" (or a custom
+# subclass) to run without Sapio. See src/apps/ei_edp/utils/lims/.
+LIMS_ADAPTER = "src.apps.ei_edp.utils.lims.sapio.adapter.SapioAdapter"
+
 MANIFEST_PATH = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'), 'assets', 'manifests')
 MANIFEST_FILE_NAME = "{0}_manifest_template{1}.xlsx" # 0: schema name_checklist_id, 1: version
 MANIFEST_JSONLD_FILE_NAME = "{0}_{1}_{2}{3}.jsonld" # 0: schema name, 1: checklist_id, 2: component_name, 3: version

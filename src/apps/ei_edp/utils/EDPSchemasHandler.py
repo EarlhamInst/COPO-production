@@ -9,9 +9,7 @@ from openpyxl.comments import Comment
 from openpyxl.worksheet.datavalidation import DataValidation 
 from common.dal.profile_da import Profile
 from src.apps.copo_single_cell_submission.utils.SingleCellSchemasHandler import SingleCellSchemasHandler, SinglecellschemasSpreadsheet
-from .sapio.sapio_datamanager  import Sapio
-from sapiopylib.rest.utils.recordmodel.PyRecordModel import PyRecordModel
-from typing import List
+from .lims import get_lims_adapter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from common.ena_utils.generic_helper import notify_singlecell_status
 from openpyxl.worksheet.formula import ArrayFormula
@@ -30,19 +28,14 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
             raise Exception(f"Profile {profile_id} not found")
 
         sapio_project_id = profile.get("sapio_project_id", None)
-        samples_under_project : List[PyRecordModel] = []
-        sapio_project: PyRecordModel = None
+        lims = get_lims_adapter()
+        # Existing LIMS samples (keyed by COPO term_name) to pre-fill the sample
+        # sheet, plus study-level values for the manifest header.
+        lims_sample_records = []
+        lims_project_metadata = {}
         if sapio_project_id:
-            project_records = Sapio().dataRecordManager.query_data_records(data_type_name="Project", 
-                                                    data_field_name="C_ProjectIdentifier", 
-                                                    value_list=[sapio_project_id]).result_list
-            if not project_records or len(project_records) ==0:
-                return {"status": "error", "message": f"Sapio Project {profile['sapio_project_id']} not found."}                
-            project_record = project_records[0]
-            sapio_project: PyRecordModel = Sapio().inst_man.add_existing_record(project_record)  
-            Sapio().relationship_man.load_children([sapio_project], 'Sample')
-            samples_under_project: List[PyRecordModel] = sapio_project.get_children_of_type('Sample')
-            #populate the singlecell data with sapio data
+            lims_sample_records = lims.get_project_samples(sapio_project_id, schemas)
+            lims_project_metadata = lims.get_project_metadata(sapio_project_id)
             
 
 
@@ -82,11 +75,11 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
         worksheet_sample["C4"] = profile.get("budget_user", "")
         worksheet_sample["C5"] = profile.get("sapio_project_id", "")
 
-        if sapio_project:
-            worksheet_sample["L9"] = sapio_project.get_field_value("C_HandS")
+        if lims_project_metadata:
+            worksheet_sample["L9"] = lims_project_metadata.get("health_and_safety")
             worksheet_sample["L9"].protection = Protection(locked=False)
-            if samples_under_project:
-                worksheet_sample["L8"] = samples_under_project[0].get_field_value("C_SampleReturn")
+            if "sample_return" in lims_project_metadata:
+                worksheet_sample["L8"] = lims_project_metadata.get("sample_return")
                 worksheet_sample["L8"].protection = Protection(locked=False)
 
         worksheet_helper = workbook["How to complete the Manifest"]
@@ -142,15 +135,7 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
 
                 worksheet_helper_current_row += 1
 
-                sapio_column_map = {}
                 for _, field in component_schema_df.iterrows():
-
-                    sapio_name = field["sapio_name"]
-                    if sapio_name:
-                        sapio_object =  sapio_name.split(":")[0]
-                        sapio_field =  sapio_name.split(":")[1]
-                        if sapio_object.lower() == "sample":
-                            sapio_column_map[field["term_name"]] = sapio_field
 
                     if field["term_manifest_behavior"] == "protected":
                         continue
@@ -175,15 +160,9 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
                     
                     worksheet_helper_current_row += 1
 
-                if component_name=="sample" and samples_under_project:
-                    records_list = []
-                    for sample in samples_under_project:
-                        record_dict={}
-                        for term_name, sapio_field in sapio_column_map.items():
-                            record_dict[term_name] = sample.get_field_value(sapio_field)
-                        records_list.append(record_dict)
-                    sapio_component_data_df = pd.DataFrame.from_records(records_list) 
-                    
+                if component_name=="sample" and lims_sample_records:
+                    sapio_component_data_df = pd.DataFrame.from_records(lims_sample_records)
+
                     worksheet_sample = workbook.create_sheet("sample_metadata")
                     sample_metadata_columns = ["submitter_sample_reference", "taxon_id", "scientific_name","biosampleAccession"]
                     submitter_sample_reference = []
@@ -207,8 +186,13 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
 
                 worksheet.protection.sheet = True
                 column_index = 0
+                # column holding submitter_sample_reference (the VLOOKUP key);
+                # captured in-loop so the key column is not hardcoded
+                reference_column_letter = "I"
                 for _, field in component_schema_df.iterrows():
                     column_index += 1
+                    if field["term_name"] == "submitter_sample_reference":
+                        reference_column_letter = get_column_letter(column_index)
                     name = field["term_label"]
                     cell = worksheet.cell(row=title_row, column=column_index)
                     cell.value = name
@@ -229,7 +213,7 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
                         worksheet.column_dimensions[get_column_letter(column_index)].hidden = True
                     else:
                         #unprotect the cell of the column
-                        for i in range(1, len(samples_under_project)+1 ):
+                        for i in range(1, len(lims_sample_records)+1 ):
                             cell_under_column = worksheet.cell(row=title_row+i, column=column_index)
                             cell_under_column.protection = Protection(locked=False)
 
@@ -288,7 +272,8 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
                             worksheet.add_data_validation(dv)
                             dv.add(cell_start_end)
                                             
-                    lookup_mapping = {"taxon_id":"B", "scientific_name":"C","biosampleAccession":"D"}
+                    # VLOOKUP column indices into the sample_metadata table (A=1 key, B=2, C=3, D=4)
+                    lookup_mapping = {"taxon_id": 2, "scientific_name": 3, "biosampleAccession": 4}
 
                     data_row_index = title_row   
                     for _, row in component_data_df.iterrows():
@@ -298,7 +283,12 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
 
                     if field["term_name"] in lookup_mapping.keys():
                         column_letter = get_column_letter(column_index)
-                        worksheet[f"{column_letter}{title_row + 1}"] = ArrayFormula(f"{column_letter}{title_row + 1}:{column_letter}{data_row_index}", f"=LOOKUP((I{title_row + 1}:I{data_row_index}),sample_metadata!$A:$A, sample_metadata!${lookup_mapping[field["term_name"]]}:${lookup_mapping[field["term_name"]]})")
+                        # exact-match VLOOKUP keyed on the submitter_sample_reference
+                        # column (not a hardcoded 'I'), against the sample_metadata table
+                        worksheet[f"{column_letter}{title_row + 1}"] = ArrayFormula(
+                            f"{column_letter}{title_row + 1}:{column_letter}{data_row_index}",
+                            f"=VLOOKUP({reference_column_letter}{title_row + 1}:{reference_column_letter}{data_row_index},sample_metadata!$A:$D,{lookup_mapping[field['term_name']]},FALSE)"
+                        )
                     
                     #move sample_metadata sheet to the end                
                     workbook.move_sheet(workbook["sample_metadata"], offset = 10)
