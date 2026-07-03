@@ -218,6 +218,6 @@ def process_pending_submission():
                                                 submission_id=submission_id)
                 return context
             else:
-                message = "Sample submission has been submitted to ENA."
+                message = "Sample submission has been submitted to BioSamples."
                 notify_submission_status(data={"profile_id": profile_id}, msg=message, action="info",
                                 html_id="submission_info")

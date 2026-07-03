@@ -318,7 +318,7 @@ class EnaSubmissionHelper:
         dt = get_datetime()
 
         # create sample xml
-        message = "Registering samples with ENA..."
+        message = "Registering samples with BioSamples..."
         self.logging_info(message)
         #ghlper.logging_info(message, str(submission_id))
         #notify_submission_status(data={"profile_id": profile_id}, msg=message, action="info", html_id="sample_info")
