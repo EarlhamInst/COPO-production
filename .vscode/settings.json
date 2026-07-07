@@ -2,5 +2,8 @@
   // The container installs all dependencies into the venv at /opt/venv,
   // not the system Python. Point VS Code at it so the debugger, IntelliSense
   // and the integrated terminal all resolve the project's packages.
-  "python.defaultInterpreterPath": "/opt/venv/bin/python"
+  "python.defaultInterpreterPath": "/opt/venv/bin/python",
+
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  
 }
