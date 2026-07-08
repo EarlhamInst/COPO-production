@@ -11,6 +11,7 @@ urlpatterns = [
     path('profile/update_counts/', views.get_profile_counts, name='update_counts'),
     path('view_user_info/', views.view_user_info, name='view_user_info'),
     path('repository_credentials/save/', views.save_repository_credentials, name='save_repository_credentials'),
+    path('repository_credentials/delete/', views.delete_repository_credentials, name='delete_repository_credentials'),
     path('repository_credentials/status/', views.repository_credential_status, name='repository_credential_status'),
     path('error/', views.goto_error, name='error_page'),
 

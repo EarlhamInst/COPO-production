@@ -502,8 +502,11 @@ class BrokerDA:
         target_id = self.param_dict.get("target_id", str())
         target_ids  = self.param_dict.get("target_ids", [])
         sample_checklist_id = self.request_dict.get("sample_checklist_id", str())
+        # "user" resolves the submitter's own Webin creds (COPO default fallback);
+        # "copo_default" is the popup's one-off "use COPO default" choice.
+        credential_source = self.request_dict.get("credential_source", "user")
 
-        result = copo_sample.submit_sample(profile_id=self.profile_id, target_ids=target_ids, target_id=target_id, checklist_id=sample_checklist_id)
+        result = copo_sample.submit_sample(profile_id=self.profile_id, target_ids=target_ids, target_id=target_id, checklist_id=sample_checklist_id, credential_source=credential_source)
         report_metadata = dict()
         report_metadata["status"] = result.get("status", "success")
         report_metadata["message"] = result.get("message", "success")

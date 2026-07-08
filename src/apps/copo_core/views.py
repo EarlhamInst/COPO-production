@@ -533,6 +533,26 @@ def save_repository_credentials(request):
 
 
 @login_required
+@require_POST
+def delete_repository_credentials(request):
+    """Delete the current user's stored credentials for a repository."""
+    user = helpers.get_current_user()
+    repo_key = request.POST.get("repo_key", "").strip()
+    deleted, _ = UserRepositoryCredential.objects.filter(
+        user=user, repo_key=repo_key
+    ).delete()
+    return HttpResponse(
+        json.dumps({
+            "status": "success",
+            "deleted": bool(deleted),
+            "message": "Stored credentials deleted." if deleted
+                       else "No stored credentials to delete.",
+        }),
+        content_type="application/json",
+    )
+
+
+@login_required
 def repository_credential_status(request):
     """Report the current user's credential status + form fields for a repository.
 

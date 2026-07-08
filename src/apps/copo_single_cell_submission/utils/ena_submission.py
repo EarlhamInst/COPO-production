@@ -40,21 +40,10 @@ def _reset_study_status_on_failure(singlecell, study_id, repository, error_msg):
 def _resolve_submitter_credentials(sub):
     """Resolve the Webin credentials for a submission's submitter.
 
-    Returns a resolved credential dict for EnaSubmissionHelper, or None when
-    no submitter is recorded (legacy submissions) so the helper falls back to
-    COPO's default env credentials. A recorded submitter with their own creds
-    is used as-is: if those creds are wrong the submission fails at ENA rather
-    than silently downgrading onto COPO's account.
+    Thin wrapper around the shared resolver so single-cell and every other
+    submission app resolve per-submitter credentials identically.
     """
-    submitter_id = sub.get("submitter")
-    if not submitter_id:
-        return None
-    submitter = User.objects.filter(id=submitter_id).first()
-    if not submitter:
-        return None
-    prefer_default = sub.get("credential_source") == "copo_default"
-    resolved = credential_resolver.resolve(submitter, "ena", prefer_default=prefer_default)
-    return resolved.values
+    return credential_resolver.resolve_for_submission(sub, "ena")
 
 
 def process_pending_submission_ena():

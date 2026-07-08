@@ -650,6 +650,18 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena", cr
             if final_status != status and status != "accepted":
                 final_status = status
 
+    # Attach the submitter + credential choice to any existing submission for
+    # this study *before* the in-progress guard below. Otherwise a resubmit
+    # while a prior submission is still running returns early and the document
+    # keeps whatever (or no) submitter it had — so the async pipeline falls
+    # back to COPO's default credentials instead of the user's own.
+    existing = Submission().execute_query({"profile_id": profile_id, "repository": repository, "deleted": get_not_deleted_flag()})
+    if existing:
+        Submission().get_collection_handle().update_one(
+            {"_id": existing[0]["_id"]},
+            {"$set": {"submitter": get_current_user().id, "credential_source": credential_source}},
+        )
+
     # Guard against submitting when there's nothing to submit or submission is already running
     match final_status:
         case "accepted" | "published":

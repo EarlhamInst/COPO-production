@@ -181,3 +181,24 @@ def load_user_credentials(user, repo_key: str) -> Optional[dict]:
 def resolve(user, repo_key: str, prefer_default: bool = False) -> ResolvedCredentials:
     """Module-level convenience wrapper around provider.resolve()."""
     return get_provider(repo_key).resolve(user, prefer_default=prefer_default)
+
+
+def resolve_for_submission(sub: dict, repo_key: str = "ena"):
+    """Resolve credentials for a submission document.
+
+    Reads the `submitter` and `credential_source` recorded on the submission
+    and returns a resolved credential dict for EnaSubmissionHelper, or None
+    when no submitter is recorded (legacy submissions) so the caller falls back
+    to COPO's default env credentials. Shared by every submission app so the
+    per-submitter resolution behaves identically everywhere.
+    """
+    from django.contrib.auth.models import User
+
+    submitter_id = sub.get("submitter")
+    if not submitter_id:
+        return None
+    submitter = User.objects.filter(id=submitter_id).first()
+    if not submitter:
+        return None
+    prefer_default = sub.get("credential_source") == "copo_default"
+    return resolve(submitter, repo_key, prefer_default=prefer_default).values

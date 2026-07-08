@@ -53,6 +53,8 @@
                         </div>
                     {% endfor %}
                     <button type="button" class="btn btn-primary btn-sm repo-cred-save">Save &amp; validate</button>
+                    <button type="button" class="btn btn-danger btn-sm repo-cred-delete"
+                            style="{% if not r.has_credentials %}display:none;{% endif %}">Delete stored credentials</button>
                     <span class="repo-cred-feedback" style="margin-left: 0.75em;"></span>
                 </div>
             </div>
@@ -64,6 +66,7 @@
 <script>
     $(function () {
         var saveUrl = "{% url 'copo_core:save_repository_credentials' %}";
+        var deleteUrl = "{% url 'copo_core:delete_repository_credentials' %}";
         var csrfToken = $("input[name=csrfmiddlewaretoken]").val();
 
         $(".repo-cred-save").on("click", function () {
@@ -84,9 +87,31 @@
                     feedback.addClass("text-danger").text(resp.message);
                     badge.attr("class", "repo-cred-status label label-warning").text("Saved, not validated");
                 }
+                // Credentials now exist, so the delete control becomes relevant.
+                card.find(".repo-cred-delete").show();
             }).fail(function (xhr) {
                 feedback.addClass("text-danger").text("Error: " + (xhr.responseText || xhr.statusText));
             });
+        });
+
+        $(".repo-cred-delete").on("click", function () {
+            var card = $(this).closest(".repo-credential-card");
+            var feedback = card.find(".repo-cred-feedback");
+            var deleteBtn = $(this);
+            feedback.removeClass("text-success text-danger").text("Deleting...");
+            $.post(deleteUrl, { repo_key: card.data("repo-key"), csrfmiddlewaretoken: csrfToken })
+                .done(function (resp) {
+                    feedback.removeClass("text-danger").addClass("text-success").text(resp.message);
+                    // Back to COPO defaults: clear inputs, reset badge, hide delete.
+                    card.find(".repo-cred-input").val("");
+                    card.find(".repo-cred-status")
+                        .attr("class", "repo-cred-status label label-default")
+                        .text("Using COPO default");
+                    deleteBtn.hide();
+                })
+                .fail(function (xhr) {
+                    feedback.addClass("text-danger").text("Error: " + (xhr.responseText || xhr.statusText));
+                });
         });
     });
 </script>

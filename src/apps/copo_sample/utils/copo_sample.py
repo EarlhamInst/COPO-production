@@ -15,6 +15,7 @@ import subprocess
 import os
 import tempfile
 from common.ena_utils.ena_helper import EnaSubmissionHelper
+from common.repositories import credentials as credential_resolver
 
 l = Logger()
 ena_service = get_env('ENA_SERVICE')
@@ -90,7 +91,7 @@ def generate_table_records(profile_id=str(), checklist_id=str()):
     return return_dict
 
 
-def submit_sample(profile_id,  target_ids=list(), target_id=None, checklist_id=None):
+def submit_sample(profile_id,  target_ids=list(), target_id=None, checklist_id=None, credential_source="user"):
 
     if target_id:
         target_ids = [target_id]
@@ -100,12 +101,16 @@ def submit_sample(profile_id,  target_ids=list(), target_id=None, checklist_id=N
     component = "sample"
     user = ThreadLocal.get_current_user()
     dt = get_datetime()
- 
+
     sub = Submission().get_collection_handle().find_one({"profile_id": profile_id, "repository":"ena", "deleted": get_not_deleted_flag()})
     update_info = dict()
     update_info[f"{component}_status"] = "pending"
     update_info["date_modified"] = dt
     update_info["updated_by"] = str(user.id)
+    # Record who is submitting + which credentials to use so the async pipeline
+    # resolves the submitter's own Webin creds (or falls back to COPO default).
+    update_info["submitter"] = user.id
+    update_info["credential_source"] = credential_source
     
     if not sub:
             sub = dict()
@@ -172,7 +177,8 @@ def process_pending_submission():
         profile_id = submission["profile_id"]
         sample_ids = submission.get("sample", [])
         submission_id = str(submission["_id"])
-        ena_submission_helper = EnaSubmissionHelper(submission_id=submission_id, profile_id=profile_id)
+        credentials = credential_resolver.resolve_for_submission(submission, "ena")
+        ena_submission_helper = EnaSubmissionHelper(submission_id=submission_id, profile_id=profile_id, credentials=credentials)
 
         samples = Sample(profile_id=profile_id).get_all_records_columns(filter_by={"_id": {"$in": [ObjectId(id) for id in sample_ids]},
                                                                    "deleted": get_not_deleted_flag()}

@@ -475,100 +475,11 @@ $(document).on('document_ready', function () {
       // Before an ENA submission, make sure we know which credentials to use:
       // the user's own (if valid) or a one-off COPO default chosen in a popup.
       if (task == 'submit_singlecell_ena') {
-        ensure_ena_credentials_then_submit(task, records, args_dict);
+        ensureRepositoryCredentialsThenSubmit('singlecell', 'ena', task, records, args_dict);
       } else {
         form_generic_task('singlecell', task, records, args_dict);
       }
     }
-  }
-
-  // Checks the user's ENA credential status; submits straight away if they
-  // already have valid credentials, otherwise opens the credential popup.
-  function ensure_ena_credentials_then_submit(task, records, args_dict) {
-    $.getJSON('/copo/repository_credentials/status/', { repo_key: 'ena' })
-      .done(function (status) {
-        if (status.is_valid) {
-          args_dict['credential_source'] = 'user';
-          form_generic_task('singlecell', task, records, args_dict);
-        } else {
-          show_repository_credential_modal(status, task, records, args_dict);
-        }
-      })
-      .fail(function () {
-        // If the status check fails, fall back to the normal flow (server
-        // still resolves user creds -> COPO default).
-        form_generic_task('singlecell', task, records, args_dict);
-      });
-  }
-
-  function show_repository_credential_modal(status, task, records, args_dict) {
-    var csrfToken = $("input[name=csrfmiddlewaretoken]").val() ||
-      $("[name=csrfmiddlewaretoken]").val();
-
-    var fieldsHtml = status.fields.map(function (f) {
-      var type = f.secret ? 'password' : 'text';
-      return (
-        '<div class="form-group">' +
-        '<label>' + f.label + '</label>' +
-        '<input type="' + type + '" class="form-control cred-modal-input" ' +
-        'data-field-name="' + f.name + '" autocomplete="off" placeholder="' +
-        (f.help_text || '') + '">' +
-        '</div>'
-      );
-    }).join('');
-
-    var modal = $(
-      '<div class="modal fade" id="repo_cred_modal" tabindex="-1" role="dialog">' +
-        '<div class="modal-dialog" role="document"><div class="modal-content">' +
-          '<div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>' +
-            '<h4 class="modal-title">' + status.label + ' credentials</h4></div>' +
-          '<div class="modal-body">' +
-            '<p>You have not set up your own ' + status.label +
-            ' credentials. Enter them below, or submit using COPO\'s default credentials for this submission only.</p>' +
-            fieldsHtml +
-            '<span class="cred-modal-feedback"></span>' +
-          '</div>' +
-          '<div class="modal-footer">' +
-            '<button type="button" class="btn btn-default cred-modal-default">Use COPO default</button>' +
-            '<button type="button" class="btn btn-primary cred-modal-save">Save, validate &amp; submit</button>' +
-          '</div>' +
-        '</div></div>' +
-      '</div>'
-    );
-
-    $('#repo_cred_modal').remove();
-    $('body').append(modal);
-    modal.modal('show');
-
-    // One-off: submit under COPO's shared credentials without storing anything.
-    modal.find('.cred-modal-default').on('click', function () {
-      args_dict['credential_source'] = 'copo_default';
-      modal.modal('hide');
-      form_generic_task('singlecell', task, records, args_dict);
-    });
-
-    // Save + validate the user's own credentials, then submit under them.
-    modal.find('.cred-modal-save').on('click', function () {
-      var feedback = modal.find('.cred-modal-feedback');
-      var payload = { repo_key: status.repo_key, csrfmiddlewaretoken: csrfToken };
-      modal.find('.cred-modal-input').each(function () {
-        payload[$(this).data('field-name')] = $(this).val();
-      });
-      feedback.removeClass('text-danger').text('Validating...');
-      $.post('/copo/repository_credentials/save/', payload)
-        .done(function (resp) {
-          if (resp.is_valid) {
-            args_dict['credential_source'] = 'user';
-            modal.modal('hide');
-            form_generic_task('singlecell', task, records, args_dict);
-          } else {
-            feedback.addClass('text-danger').text(resp.message);
-          }
-        })
-        .fail(function (xhr) {
-          feedback.addClass('text-danger').text('Error: ' + (xhr.responseText || xhr.statusText));
-        });
-    });
   }
 
   $('body').on('posttablerefresh', function (event) {

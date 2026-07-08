@@ -14,6 +14,7 @@ from common.repositories.credentials.base import (
     get_provider,
     all_providers,
     resolve,
+    resolve_for_submission,
     save_user_credentials,
     load_user_credentials,
 )
@@ -29,6 +30,7 @@ __all__ = [
     "get_provider",
     "all_providers",
     "resolve",
+    "resolve_for_submission",
     "save_user_credentials",
     "load_user_credentials",
 ]
