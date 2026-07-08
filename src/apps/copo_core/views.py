@@ -32,7 +32,8 @@ from common.lookup.lookup import REPO_NAME_LOOKUP
 from .models import Banner, Component, TourProgress
 from common.schemas.utils import data_utils
 from common.utils.helpers import get_group_membership_asString
-from src.apps.copo_core.models import ProfileType
+from src.apps.copo_core.models import ProfileType, UserRepositoryCredential
+from common.repositories import credentials as repo_credentials
 from bson.errors import InvalidId
 
 LOGGER = settings.LOGGER
@@ -475,13 +476,91 @@ def view_user_info(request):
     # op = Orcid().get_orcid_profile(user)
     d = SocialAccount.objects.get(user_id=user.id)
     op = json.loads(json.dumps(d.extra_data).replace("-", "_"))
-    repos = []
-    # repo_ids = user.userdetails.repo_submitter
-    # repos = Repository().get_by_ids(repo_ids)
-    # data_dict = jsonpickle.encode(data_dict)
-    data_dict = {'orcid': op, "repos": repos}
+    data_dict = {'orcid': op, "repos": _serialize_repo_credentials(user)}
 
     return render(request, 'copo/user_info.html', data_dict)
+
+
+def _serialize_repo_credentials(user):
+    """Build the per-repository credential state for the user info page.
+
+    One entry per registered provider: its form fields plus whether this user
+    already has stored, validated credentials. Drives the re-enter/re-validate
+    control and, on the submit popup, the enter-your-own form.
+    """
+    repos = []
+    for provider in repo_credentials.all_providers():
+        row = UserRepositoryCredential.objects.filter(
+            user=user, repo_key=provider.key
+        ).first()
+        repos.append({
+            "key": provider.key,
+            "label": provider.label,
+            "fields": [
+                {"name": f.name, "label": f.label, "secret": f.secret, "help_text": f.help_text}
+                for f in provider.fields
+            ],
+            "has_credentials": bool(row and row.payload),
+            "is_valid": bool(row and row.is_valid),
+            "validated_at": row.validated_at.isoformat() if row and row.validated_at else None,
+        })
+    return repos
+
+
+@login_required
+@require_POST
+def save_repository_credentials(request):
+    """Persist (and validate) a user's own credentials for one repository."""
+    user = helpers.get_current_user()
+    repo_key = request.POST.get("repo_key", "").strip()
+    try:
+        provider = repo_credentials.get_provider(repo_key)
+    except repo_credentials.CredentialResolutionError as e:
+        return HttpResponseBadRequest(json.dumps({"status": "error", "message": str(e)}),
+                                      content_type="application/json")
+
+    values = {f.name: request.POST.get(f.name, "") for f in provider.fields}
+    try:
+        ok, message = repo_credentials.save_user_credentials(user, repo_key, values, validate=True)
+    except Exception as e:
+        return HttpResponse(json.dumps({"status": "error", "is_valid": False, "message": str(e)}),
+                            content_type="application/json")
+
+    return HttpResponse(
+        json.dumps({"status": "success" if ok else "error", "is_valid": ok, "message": message}),
+        content_type="application/json",
+    )
+
+
+@login_required
+def repository_credential_status(request):
+    """Report the current user's credential status + form fields for a repository.
+
+    Returns the provider's fields so a submit-time popup can render the
+    enter-your-own form without hardcoding any repository's shape.
+    """
+    user = helpers.get_current_user()
+    repo_key = request.GET.get("repo_key", request.POST.get("repo_key", "")).strip()
+    try:
+        provider = repo_credentials.get_provider(repo_key)
+    except repo_credentials.CredentialResolutionError as e:
+        return HttpResponseBadRequest(json.dumps({"status": "error", "message": str(e)}),
+                                      content_type="application/json")
+
+    row = UserRepositoryCredential.objects.filter(user=user, repo_key=repo_key).first()
+    return HttpResponse(
+        json.dumps({
+            "repo_key": provider.key,
+            "label": provider.label,
+            "fields": [
+                {"name": f.name, "label": f.label, "secret": f.secret, "help_text": f.help_text}
+                for f in provider.fields
+            ],
+            "has_credentials": bool(row and row.payload),
+            "is_valid": bool(row and row.is_valid),
+        }),
+        content_type="application/json",
+    )
 
 
 @login_required

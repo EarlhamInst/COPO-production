@@ -607,7 +607,11 @@ class BrokerDA:
         checklist_id = self.request_dict.get("singlecell_checklist_id", str())
         study_id = self.request_dict.get("study_id", "")
 
-        result = copo_single_cell.submit_singlecell(profile_id=self.profile_id, study_id=study_id, repository=repository)
+        # "user" (default) resolves the submitter's own Webin creds with a COPO
+        # fallback; "copo_default" is the popup's one-off "use COPO default".
+        credential_source = self.request_dict.get("credential_source", "user")
+
+        result = copo_single_cell.submit_singlecell(profile_id=self.profile_id, study_id=study_id, repository=repository, credential_source=credential_source)
 
         report_metadata = dict()
         report_metadata["status"] = result.get("status", "success")

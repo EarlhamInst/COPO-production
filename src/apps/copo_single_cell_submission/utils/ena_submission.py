@@ -3,6 +3,8 @@ from .da import Singlecell, SinglecellSchemas
 from common.utils.logger import Logger
 from common.utils.helpers import  get_not_deleted_flag, get_env
 from common.ena_utils.ena_helper import EnaSubmissionHelper
+from common.repositories import credentials as credential_resolver
+from django.contrib.auth.models import User
 import tempfile
 from .da import SinglecellSchemas
 import pandas as pd
@@ -35,6 +37,26 @@ def _reset_study_status_on_failure(singlecell, study_id, repository, error_msg):
             l.exception(f"Failed to reset study status for study_id={study_id}")
 
 
+def _resolve_submitter_credentials(sub):
+    """Resolve the Webin credentials for a submission's submitter.
+
+    Returns a resolved credential dict for EnaSubmissionHelper, or None when
+    no submitter is recorded (legacy submissions) so the helper falls back to
+    COPO's default env credentials. A recorded submitter with their own creds
+    is used as-is: if those creds are wrong the submission fails at ENA rather
+    than silently downgrading onto COPO's account.
+    """
+    submitter_id = sub.get("submitter")
+    if not submitter_id:
+        return None
+    submitter = User.objects.filter(id=submitter_id).first()
+    if not submitter:
+        return None
+    prefer_default = sub.get("credential_source") == "copo_default"
+    resolved = credential_resolver.resolve(submitter, "ena", prefer_default=prefer_default)
+    return resolved.values
+
+
 def process_pending_submission_ena():
     repository = "ena"
     submissions = Submission().get_pending_submission(repository=repository, component="study")
@@ -43,7 +65,8 @@ def process_pending_submission_ena():
 
     for sub in submissions:
 
-        ena_submission_helper = EnaSubmissionHelper(profile_id=sub["profile_id"], submission_id=str(sub["_id"]))
+        credentials = _resolve_submitter_credentials(sub)
+        ena_submission_helper = EnaSubmissionHelper(profile_id=sub["profile_id"], submission_id=str(sub["_id"]), credentials=credentials)
 
         for study_id in sub["study"]:
             singlecell = None
@@ -452,9 +475,15 @@ def poll_asyn_analysis_submission_receipt():
     submissions = Submission().get_async_analysis_submission()
 
     with requests.Session() as session:
-        session.auth = (user_token, pass_word)    
         for submission in submissions:
-            ena_submission_helper = EnaSubmissionHelper(profile_id=submission["profile_id"], submission_id=str(submission["_id"]))
+            # Poll each submission with its own submitter's Webin credentials,
+            # falling back to COPO defaults for legacy submissions.
+            credentials = _resolve_submitter_credentials(submission)
+            session.auth = (
+                (credentials["user_token"], credentials["password"])
+                if credentials else (user_token, pass_word)
+            )
+            ena_submission_helper = EnaSubmissionHelper(profile_id=submission["profile_id"], submission_id=str(submission["_id"]), credentials=credentials)
             for analysis_sub in submission["analysis_submission"]:
                 accessions = ""
                 response = session.get(analysis_sub["href"])
