@@ -526,18 +526,24 @@ def _notify_transfer_progress(method, file_path, pct, profile_id, extra=None):
     )
 
 
-def _transfer_via_aspera(remote_path, file_paths, submission_id="", profile_id=""):
+def _transfer_via_aspera(remote_path, file_paths, submission_id="", profile_id="",
+                         webin_user=None, webin_password=None):
     """Attempt file transfer to ENA using Aspera CLI. Returns True on success.
     No progress reporting on this path -- ascp's progress output is PTY-only and
     fragile under subprocess. The FTP fallback emits real byte-level progress.
+
+    webin_user/webin_password default to COPO's shared env credentials so the
+    apps that don't yet pass per-user credentials are unaffected.
     """
+    webin_user = webin_user or WEBIN_USER
+    webin_password = webin_password or WEBIN_USER_PASSWORD
     ascp_bin = f"{ASPERA_PATH}/bin/ascp"
     ascp_key = f"{ASPERA_PATH}/etc/asperaweb_id_dsa.openssh"
     # -P 33001 = ENA's documented Aspera SSH/FASP control port.
     cmd = [
         ascp_bin, "-P", "33001", "-l", "300M", "-i", ascp_key, "-d",
-    ] + list(file_paths) + [f"{WEBIN_USER}:{remote_path}"]
-    ascp_env = {**os.environ, "ASPERA_SCP_PASS": WEBIN_USER_PASSWORD}
+    ] + list(file_paths) + [f"{webin_user}:{remote_path}"]
+    ascp_env = {**os.environ, "ASPERA_SCP_PASS": webin_password}
 
     _notify_transfer_method("Aspera", f'Commencing transfer of {" ".join(file_paths)} to ENA', profile_id)
 
@@ -566,9 +572,17 @@ def _transfer_via_aspera(remote_path, file_paths, submission_id="", profile_id="
         return False
 
 
-def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id=""):
-    """Attempt file transfer to ENA using FTP via curl. Returns True on success."""
-    webin_user = WEBIN_USER.split("@")[0]
+def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id="",
+                      webin_user=None, webin_password=None):
+    """Attempt file transfer to ENA using FTP via curl. Returns True on success.
+
+    webin_user/webin_password default to COPO's shared env credentials so the
+    apps that don't yet pass per-user credentials are unaffected.
+    """
+    webin_user = webin_user or WEBIN_USER
+    webin_password = webin_password or WEBIN_USER_PASSWORD
+    # FTP basic-auth wants just the Webin token (before '@'), not the full domain.
+    webin_token = webin_user.split("@")[0]
     ftp_base = f"ftp://webin2.ebi.ac.uk/{remote_path}"
 
     for file_path in file_paths:
@@ -578,7 +592,7 @@ def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id=""):
         cmd = [
             "curl", "-#", "-N", "-T", file_path,
             ftp_url,
-            "--user", f"{webin_user}:{WEBIN_USER_PASSWORD}",
+            "--user", f"{webin_token}:{webin_password}",
             "--ftp-create-dirs",
             "--retry", "3",
             "--retry-delay", "5",
@@ -658,18 +672,24 @@ def transfer_to_ena(remote_path, file_paths=list(), **kwargs):
 
     submission_id = kwargs.get("submission_id", str())
     profile_id = kwargs.get("profile_id", str())
+    # Per-user Webin credentials resolved by the caller (from the submission's
+    # submitter). None => the transfer functions fall back to COPO's env creds.
+    webin_user = kwargs.get("webin_user")
+    webin_password = kwargs.get("webin_password")
 
     message = f'Commencing transfer of {" ".join(file_paths)} data files to ENA. Progress will be reported.'
     logging_info(message, submission_id)
 
     # Try Aspera first, fall back to FTP if it fails
-    if _transfer_via_aspera(remote_path, file_paths, submission_id, profile_id):
+    if _transfer_via_aspera(remote_path, file_paths, submission_id, profile_id,
+                            webin_user=webin_user, webin_password=webin_password):
         return True
 
     _notify_transfer_method("FTP", "Aspera unavailable, falling back to FTP", profile_id)
     lg.log(f'Aspera failed, falling back to FTP for {" ".join(file_paths)}')
 
-    if _transfer_via_ftp(remote_path, file_paths, submission_id, profile_id):
+    if _transfer_via_ftp(remote_path, file_paths, submission_id, profile_id,
+                         webin_user=webin_user, webin_password=webin_password):
         return True
 
     lg.error(f'{" ".join(file_paths)} was not uploaded to ENA via Aspera or FTP')
