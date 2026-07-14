@@ -1,20 +1,24 @@
-from common.dal.copo_da import EnaChecklist
-from common.dal.sample_da import Sample
-from common.utils.helpers import get_not_deleted_flag
-from django_tools.middlewares import ThreadLocal
-from common.utils.helpers import get_datetime, get_not_deleted_flag, get_env, notify_submission_status, json_to_pytype
-from bson import ObjectId
-from common.dal.submission_da import Submission
-from common.utils.logger import Logger
-from common.ena_utils import generic_helper as ghlper
-from lxml import etree
-from common.lookup.lookup import SRA_SAMPLE_TEMPLATE
-from common.lookup.lookup import SRA_SETTINGS
+import os
 import pandas as pd
 import subprocess
-import os
 import tempfile
+
+from bson import ObjectId
+from django_tools.middlewares import ThreadLocal
+from lxml import etree
+from more_itertools import chunked
+
+from common.dal.copo_da import EnaChecklist
+from common.dal.mongo_util import cursor_to_list
+from common.dal.sample_da import Sample, Source
+from common.dal.submission_da import Submission
+from common.ena_utils import generic_helper as ghlper
 from common.ena_utils.ena_helper import EnaSubmissionHelper
+from common.ena_utils.ena_sample_updater import EnaSampleUpdater
+from common.lookup.lookup import SRA_SAMPLE_TEMPLATE, SRA_SETTINGS
+from common.utils.helpers import get_datetime, get_not_deleted_flag, get_env, notify_submission_status, json_to_pytype
+from common.utils.logger import Logger
+
 
 l = Logger()
 ena_service = get_env('ENA_SERVICE')
@@ -22,6 +26,7 @@ pass_word = get_env('WEBIN_USER_PASSWORD')
 user_token = get_env('WEBIN_USER').split("@")[0]
 webin_user = get_env('WEBIN_USER')
 webin_domain = get_env('WEBIN_USER').split("@")[1]
+
 
 def generate_table_records(profile_id=str(), checklist_id=str()):
     checklist = EnaChecklist().execute_query({"primary_id" : checklist_id})
@@ -221,3 +226,95 @@ def process_pending_submission():
                 message = "Sample submission has been submitted to ENA."
                 notify_submission_status(data={"profile_id": profile_id}, msg=message, action="info",
                                 html_id="submission_info")
+
+
+def fetch_ena_updates(
+    sample_types=list(),
+    biosample_accessions=list(),
+):
+    # Example command to call to ENA Browser API for retrieving metadata in XML format
+    '''
+    curl -X 'POST' \
+       'https://www.ebi.ac.uk/ena/browser/api/xml' \
+       -H 'accept: application/xml' \
+       -H 'Content-Type: application/json' \
+       -d '{
+       "accessions": [
+         "SAMEA9461308",
+         "SAMEA9461311"
+       ],
+       "expanded": true,
+       "annotationOnly": false,
+       "lineLimit": 0,
+       "download": false,
+       "gzip": true,
+       "set": true,
+       "includeLinks": false,
+       "range": "string",
+       "complement": true
+     }'
+    '''
+
+    # db.collection.update_many(
+    #     {'sample_type': {'$in': ['dtol', 'asg']}}, {"$set": {"last_checked_ena": None}}
+    # )
+
+    # db.accession.create_index([("last_checked_ena", 1)])
+
+    # Build filter queries for sample and source collections
+    # by getting all the fields from the MongoDB database that
+    # are submitted to ENA
+    # Exclude the '_id' field from the output
+
+    if biosample_accessions:
+        ena_update_obj = EnaSampleUpdater(biosample_accessions=biosample_accessions)
+
+        sample_biosample_accessions, source_biosample_accessions = (
+            ena_update_obj._split_accessions_by_collection(
+                accessions=biosample_accessions
+            )
+        )
+        sample_filter = ena_update_obj._build_filter(
+            sample_type_list=None,
+            biosample_accession_list=sample_biosample_accessions,
+        )
+
+        source_filter = ena_update_obj._build_filter(
+            sample_type_list=None,
+            biosample_accession_list=source_biosample_accessions,
+        )
+    elif sample_types:
+        ena_update_obj = EnaSampleUpdater(sample_types=sample_types)
+
+        sample_filter = ena_update_obj._build_filter(
+            sample_type_list=sample_types, biosample_accession_list=list()
+        )
+        source_filter = ena_update_obj._build_filter(
+            sample_type_list=[f'{t}_specimen' for t in sample_types],
+            biosample_accession_list=list(),
+        )
+    else:
+        return dict(
+            status='error',
+            message="Please provide either sample types or biosample accessions to fetch updates from ENA.",
+        )
+
+    db_queries = [
+        (Source, source_filter, 'source'),
+        (Sample, sample_filter, 'sample'),
+    ]
+
+    combined_records = [
+        ena_update_obj._normalise_records(record, collection_type)
+        for db_collection, query, collection_type in db_queries
+        for record in cursor_to_list(
+            db_collection()
+            .get_collection_handle()
+            .find(query, ena_update_obj.projection)
+        )
+    ]
+
+    # Split the accessions into batches of size max_accessions and process each batch
+    # e.g. task 1: 10,000 accessions, task 2: 20,000 accessions etc.
+    for batch in chunked(combined_records, ena_update_obj.max_accessions):
+        ena_update_obj.update_ena_records(records=batch)
