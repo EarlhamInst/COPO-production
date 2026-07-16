@@ -118,12 +118,12 @@ nest-asyncio==1.6.0
 #networkx==2.0
 #notebook==6.0.1
 #numexpr==2.14.1
-numpy==2.4.6
+numpy==2.5.0
 oauthlib==3.2.2
-openpyxl==3.1.2
+openpyxl==3.1.5
 ordered-set==3.1.1
 packaging==24.2
-pandas==2.2.3
+pandas==3.0.3
 pandocfilters==1.4.2
 parso==0.8.7
 pbr==7.0.3
@@ -209,9 +209,9 @@ wcwidth==0.2.6
 #webencodings==0.5.1
 #widgetsnbextension==3.5.1
 #wrapt==1.16.0
-xlrd==2.0.1
+xlrd==2.0.2
 xmljson==0.2.1
-XlsxWriter==3.0.9
+XlsxWriter==3.2.9
 zipp==3.21.0
 zope.interface==6.0
 pillow==12.2.0
