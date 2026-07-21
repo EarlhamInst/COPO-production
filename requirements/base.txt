@@ -106,7 +106,7 @@ lxml==6.1.1
 mccabe==0.7.0
 #meld3==2.0.0
 #mistune==0.8.4
-mock==3.0.5
+mock==5.2.0
 #more-itertools==10.3.0
 msgpack==1.2.1
 #mzml2isa==0.5.1
@@ -152,7 +152,7 @@ pymongo==4.17.0
 #pyparsing==3.1.2
 PyPDF2==3.0.1
 #pyrsistent==0.15.4
-pytest==9.0.3
+pytest==9.1.1
 python-dateutil==2.9.0.post0
 #python-utils==3.8.2
 python3-openid==3.2.0
@@ -171,7 +171,7 @@ requests-oauthlib==2.0.0
 #rsa==3.4.2
 roc-validator==0.11.2
 s3transfer==0.19.1
-selenium==4.16.0
+selenium==4.46.0
 #Send2Trash==1.5.0
 service-identity==26.1.0
 setuptools==83.0.0
