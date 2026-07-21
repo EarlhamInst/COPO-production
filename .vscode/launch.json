@@ -19,6 +19,20 @@
       "justMyCode": false
     },
     {
+      "name": "Python: Setup All",
+      "type": "debugpy",
+      "request": "launch",
+      "python": "/opt/venv/bin/python",
+      "program": "${workspaceFolder}/manage.py",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
+      },
+      "args": ["setup_all"],
+      "console": "integratedTerminal",
+      "django": true,
+      "justMyCode": false
+    },
+    {
       "name": "Python: Django Shell",
       "type": "debugpy",
       "request": "launch",
