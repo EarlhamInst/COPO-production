@@ -28,7 +28,6 @@ certifi==2026.6.17
 #cffi==1.16.0
 channels==4.3.2
 channels-redis==4.3.0
-chardet==7.4.3
 #colorama==0.4.1
 #colored==1.4.3
 #configparser==3.7.4
@@ -135,7 +134,6 @@ ply==3.11
 progressbar2==4.5.0
 #prometheus-client==0.7.1
 prompt-toolkit==3.0.52
-pronto==2.7.3
 psycopg==3.3.4
 psycopg-binary==3.3.4
 ptpython==3.0.32
