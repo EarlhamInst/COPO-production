@@ -214,7 +214,7 @@ xmljson==0.2.1
 XlsxWriter==3.2.9
 zipp==3.21.0
 zope.interface==6.0
-pillow==12.2.0
+pillow==12.3.0
 tzdata==2026.2
 geopy==2.3.0
 titlecase==2.4.1
