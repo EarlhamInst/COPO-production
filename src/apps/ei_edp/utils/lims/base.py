@@ -30,6 +30,22 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 
 
+class LIMSUnavailable(Exception):
+    """Raised when a LIMS operation cannot complete because of a backend error.
+
+    Carries a user-facing summary — which LIMS, what it was doing, and the
+    underlying error — so callers (e.g. the EDP form build) can fail cleanly
+    with an informative message instead of a blank 503 or a partially-built
+    form missing its LIMS-sourced fields.
+    """
+
+    def __init__(self, lims_name: str, operation: str, detail: str):
+        self.lims_name = lims_name
+        self.operation = operation
+        self.detail = detail
+        super().__init__(f"{lims_name} LIMS error while {operation}: {detail}")
+
+
 class LIMSAdapter(ABC):
     """Operations COPO's EDP flow performs against a LIMS.
 

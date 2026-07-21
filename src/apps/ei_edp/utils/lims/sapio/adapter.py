@@ -21,9 +21,33 @@ from common.utils.logger import Logger
 from sapiopylib.rest.utils.recordmodel.PyRecordModel import PyRecordModel
 
 from .datamanager import Sapio
-from ..base import LIMSAdapter
+from ..base import LIMSAdapter, LIMSUnavailable
 
 l = Logger()
+
+
+def _describe_error(error: Exception) -> str:
+    """One-line summary of a Sapio request failure: status + URL, never the body.
+
+    Deliberately avoids ``str(error)``: a Sapio ``SapioServerException`` stringifies
+    to the full response body — a large JSON blob containing a Java stack trace.
+    We dig out the underlying ``requests`` Response (directly, or via the
+    ``client_error`` that ``SapioServerException`` wraps) and report only the
+    HTTP status, reason and URL. Falls back to the attempted request URL for
+    connection errors, then to the bare exception class name.
+    """
+    response = getattr(error, "response", None)
+    if response is None:
+        # sapiopylib SapioServerException wraps the real requests error here
+        wrapped = getattr(error, "client_error", None)
+        response = getattr(wrapped, "response", None)
+    if response is not None and getattr(response, "status_code", None):
+        reason = (getattr(response, "reason", "") or "").strip()
+        return f"HTTP {response.status_code} {reason}".rstrip() + f" from {response.url}"
+    request = getattr(error, "request", None)
+    if request is not None and getattr(request, "url", None):
+        return f"could not reach {request.url}"
+    return type(error).__name__
 
 
 class SapioAdapter(LIMSAdapter):
@@ -33,8 +57,16 @@ class SapioAdapter(LIMSAdapter):
     # ------------------------------------------------------------------ #
     def get_sample_type_options(self) -> List[Dict[str, str]]:
         # Fetch the "Exemplar Sample Types" picklist from Sapio and return as
-        # {value, label} pairs for use in COPO form dropdowns
-        config = Sapio().picklistManager.get_picklist("Exemplar Sample Types")
+        # {value, label} pairs for use in COPO form dropdowns. The dropdown is
+        # required for a valid submission, so a LIMS failure must abort the form
+        # build (see LIMSUnavailable) rather than yield a partial form.
+        try:
+            config = Sapio().picklistManager.get_picklist("Exemplar Sample Types")
+        except Exception as error:
+            l.error(f"Sapio get_sample_type_options failed: {error}")
+            raise LIMSUnavailable(
+                "Sapio", "loading the Sample Types picklist", _describe_error(error)
+            ) from error
         return [{"value": s, "label": s} for s in config.entry_list]
 
     # ------------------------------------------------------------------ #

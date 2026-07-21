@@ -109,6 +109,17 @@ function initiate_form_call(component, args_dict) {
     headers: { 'X-CSRFToken': csrftoken },
     data: post_data,
     success: function (data) {
+      if (
+        data &&
+        data.action_feedback &&
+        data.action_feedback.status === 'error'
+      ) {
+        // A required lookup failed server-side (e.g. the LIMS is unavailable),
+        // so the form can't be built correctly. Show the message and abort
+        // rather than rendering a partial form.
+        do_crud_action_feedback(data.action_feedback);
+        return false;
+      }
       json2HtmlForm(data);
       componentData = data;
 

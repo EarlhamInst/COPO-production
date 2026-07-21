@@ -17,9 +17,9 @@ from importlib import import_module
 
 from django.conf import settings
 
-from .base import LIMSAdapter, NullLIMSAdapter
+from .base import LIMSAdapter, LIMSUnavailable, NullLIMSAdapter
 
-__all__ = ["get_lims_adapter", "LIMSAdapter", "NullLIMSAdapter"]
+__all__ = ["get_lims_adapter", "LIMSAdapter", "LIMSUnavailable", "NullLIMSAdapter"]
 
 # Cache the resolved instance; the setting is fixed for the process lifetime.
 _adapter_instance: LIMSAdapter = None

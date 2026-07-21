@@ -28,6 +28,7 @@ from src.apps.copo_assembly_submission.utils.da import Assembly
 from src.apps.copo_seq_annotation_submission.utils.da import SequenceAnnotation
 from src.apps.copo_single_cell_submission.utils.da import Singlecell
 from src.apps.ei_edp.utils.edp_utils import join_shared_edp_profile
+from src.apps.ei_edp.utils.lims import LIMSUnavailable
 from common.s3.s3Connection import S3Connection as s3
 from common.lookup.lookup import REPO_NAME_LOOKUP
 from .models import Banner, Component, TourProgress
@@ -363,7 +364,17 @@ def copo_forms(request):
                      )
 
     if task in task_dict:
-        context = task_dict[task]()
+        try:
+            context = task_dict[task]()
+        except LIMSUnavailable as error:
+            # A required LIMS lookup (e.g. the sample-type dropdown) failed, so
+            # the form cannot be built correctly. Fail the whole build with an
+            # informative message rather than rendering a partial form or a
+            # bare 503.
+            context["action_feedback"] = {
+                "status": "error",
+                "message": f"The form could not be built. {error}",
+            }
 
     out = jsonpickle.encode(context, unpicklable=False)
     status = context.get("action_feedback", dict()).get("status", "success")
