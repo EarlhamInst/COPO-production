@@ -3,6 +3,7 @@
 # shared_tools/scripts/setup/postgresqlDB_setup.sh, but as a single Django
 # management command so it can be launched from VS Code ("Python: Setup All").
 
+from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand, call_command
 
 
@@ -39,7 +40,14 @@ class Command(BaseCommand):
             self.stdout.write(self.style.MIGRATE_HEADING(
                 f"\n[{index}/{total}] {label}  (manage.py {command_name} {' '.join(command_args)})".rstrip()
             ))
+            if command_name == "createsuperuser" and self._superuser_exists():
+                self.stdout.write(self.style.WARNING("⚠ Create superuser skipped: a superuser already exists"))
+                continue
             self._run_step(label, command_name, command_args)
+
+    @staticmethod
+    def _superuser_exists():
+        return get_user_model().objects.filter(is_superuser=True).exists()
 
     def _run_step(self, label, command_name, command_args):
         try:
