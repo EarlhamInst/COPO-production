@@ -71,6 +71,9 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Django 6.0 requires this app to be installed to use postgres ArrayField
+    # (see copo_core.UserDetails); previously tolerated implicitly (postgres.E005).
+    'django.contrib.postgres',
 ]
 
 # Maximum number of files/images that can be uploaded at once
