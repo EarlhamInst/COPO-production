@@ -332,7 +332,9 @@ class SapioAdapter(LIMSAdapter):
         sample_schema = schemas.get("sample", [])
         for field in sample_schema:
             sapio_name = field.get("sapio_name")
-            if sapio_name and ":" in sapio_name:
+            # sapio_name can be NaN (a float) when the schema cell is blank — guard on
+            # str, not truthiness, since NaN is truthy and ":" in <float> raises.
+            if isinstance(sapio_name, str) and ":" in sapio_name:
                 sapio_object = sapio_name.split(":")[0]
                 sapio_field = sapio_name.split(":")[1]
                 if sapio_object.lower() == "sample":
