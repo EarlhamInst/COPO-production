@@ -120,7 +120,9 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
                 if component_schema_df.empty:
                     continue
 
-                component_schema_df.fillna("", inplace=True)
+                # pandas 3 refuses to fill a float64 column with "" (raises
+                # TypeError); cast to object first so blank cells fill cleanly.
+                component_schema_df = component_schema_df.astype(object).fillna("")
                 component_schema_df["choice"] = component_schema_df[
                     component_schema_df["term_type"].isin(["enum", "suggested_enum"])
                 ]["term_name"].apply(
