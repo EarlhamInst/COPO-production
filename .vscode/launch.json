@@ -33,6 +33,34 @@
       "justMyCode": false
     },
     {
+      "name": "Python: Clear Profiles (dry run)",
+      "type": "debugpy",
+      "request": "launch",
+      "python": "/opt/venv/bin/python",
+      "program": "${workspaceFolder}/manage.py",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
+      },
+      "args": ["clear_profiles"],
+      "console": "integratedTerminal",
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Clear Profiles (COMMIT — deletes!)",
+      "type": "debugpy",
+      "request": "launch",
+      "python": "/opt/venv/bin/python",
+      "program": "${workspaceFolder}/manage.py",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
+      },
+      "args": ["clear_profiles", "--include-orphans", "--commit", "--yes"],
+      "console": "integratedTerminal",
+      "django": true,
+      "justMyCode": false
+    },
+    {
       "name": "Python: Django Shell",
       "type": "debugpy",
       "request": "launch",
