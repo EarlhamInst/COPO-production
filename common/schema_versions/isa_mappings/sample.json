@@ -681,28 +681,6 @@
       "colour": "",
       "control": "date-picker",
       "control_meta": {},
-      "default_value": null,
-      "deprecated": false,
-      "excel_col": "",
-      "help_tip": "",
-      "hidden": "true",
-      "id": "copo.sample.last_checked_ena",
-      "is_sensitive": false,
-      "label": "Last checked (ENA)",
-      "ref": "",
-      "required": "true",
-      "show_in_api": false,
-      "show_in_form": false,
-      "show_in_table": false,
-      "type": "string",
-      "versions": [
-        "last_checked_ena"
-      ]
-    },
-    {
-      "colour": "",
-      "control": "date-picker",
-      "control_meta": {},
       "default_value": "",
       "deprecated": false,
       "excel_col": "",

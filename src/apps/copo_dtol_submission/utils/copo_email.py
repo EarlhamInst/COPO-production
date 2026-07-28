@@ -172,7 +172,6 @@ class Email:
                         sub=sub,
                         content=msg,
                         html=True,
-                        is_cc_required=True,
                         cc=list(cc_email_addresses),
                     )
             else:

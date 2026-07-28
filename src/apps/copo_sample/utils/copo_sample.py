@@ -14,11 +14,16 @@ from common.dal.sample_da import Sample, Source
 from common.dal.submission_da import Submission
 from common.ena_utils import generic_helper as ghlper
 from common.ena_utils.ena_helper import EnaSubmissionHelper
-from common.ena_utils.ena_sample_updater import EnaSampleUpdater
+from common.ena_utils.ena_record_synchroniser import EnaRecordSynchroniser
 from common.lookup.lookup import SRA_SAMPLE_TEMPLATE, SRA_SETTINGS
-from common.utils.helpers import get_datetime, get_not_deleted_flag, get_env, notify_submission_status, json_to_pytype
+from common.utils.helpers import (
+    get_datetime,
+    get_not_deleted_flag,
+    get_env,
+    notify_submission_status,
+    json_to_pytype,
+)
 from common.utils.logger import Logger
-
 
 l = Logger()
 ena_service = get_env('ENA_SERVICE')
@@ -228,46 +233,20 @@ def process_pending_submission():
                                 html_id="submission_info")
 
 
-def fetch_ena_updates(
+def fetch_system_records(
     sample_types=list(),
     biosample_accessions=list(),
 ):
-    # Example command to call to ENA Browser API for retrieving metadata in XML format
     '''
-    curl -X 'POST' \
-       'https://www.ebi.ac.uk/ena/browser/api/xml' \
-       -H 'accept: application/xml' \
-       -H 'Content-Type: application/json' \
-       -d '{
-       "accessions": [
-         "SAMEA9461308",
-         "SAMEA9461311"
-       ],
-       "expanded": true,
-       "annotationOnly": false,
-       "lineLimit": 0,
-       "download": false,
-       "gzip": true,
-       "set": true,
-       "includeLinks": false,
-       "range": "string",
-       "complement": true
-     }'
+    Build queries for the sample and source collections in the
+    MongoDB database using fields that can be submitted to ENA, 
+    excluding the `_id` field from the output.
     '''
-
-    # db.collection.update_many(
-    #     {'sample_type': {'$in': ['dtol', 'asg']}}, {"$set": {"last_checked_ena": None}}
-    # )
-
-    # db.accession.create_index([("last_checked_ena", 1)])
-
-    # Build filter queries for sample and source collections
-    # by getting all the fields from the MongoDB database that
-    # are submitted to ENA
-    # Exclude the '_id' field from the output
 
     if biosample_accessions:
-        ena_update_obj = EnaSampleUpdater(biosample_accessions=biosample_accessions)
+        ena_update_obj = EnaRecordSynchroniser(
+            biosample_accessions=biosample_accessions
+        )
 
         sample_biosample_accessions, source_biosample_accessions = (
             ena_update_obj._split_accessions_by_collection(
@@ -284,7 +263,7 @@ def fetch_ena_updates(
             biosample_accession_list=source_biosample_accessions,
         )
     elif sample_types:
-        ena_update_obj = EnaSampleUpdater(sample_types=sample_types)
+        ena_update_obj = EnaRecordSynchroniser(sample_types=sample_types)
 
         sample_filter = ena_update_obj._build_filter(
             sample_type_list=sample_types, biosample_accession_list=list()
@@ -304,6 +283,7 @@ def fetch_ena_updates(
         (Sample, sample_filter, 'sample'),
     ]
 
+    # Fetch the records from the database
     combined_records = [
         ena_update_obj._normalise_records(record, collection_type)
         for db_collection, query, collection_type in db_queries
@@ -314,7 +294,17 @@ def fetch_ena_updates(
         )
     ]
 
-    # Split the accessions into batches of size max_accessions and process each batch
+    # Set timestamps for the records to the current datetime
+    ena_update_obj.sync_report_run_id = f'ena_sync_{get_datetime():%Y%m%d_%H%M%S}'
+    ena_update_obj.sync_report_timestamp = get_datetime()
+
+    # Apply changes (if any) in batches of size `max_accessions` then, process each batch
     # e.g. task 1: 10,000 accessions, task 2: 20,000 accessions etc.
     for batch in chunked(combined_records, ena_update_obj.max_accessions):
-        ena_update_obj.update_ena_records(records=batch)
+        ena_update_obj.apply_ena_record_changes_to_system_records(records=batch)
+
+    # Send email notification with an update or warning report if any changes were made
+    if ena_update_obj.update_report or ena_update_obj.warning_report:
+        ena_update_obj.send_sync_report(
+            len(combined_records)
+        )

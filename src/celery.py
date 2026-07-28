@@ -138,8 +138,8 @@ app.conf.beat_schedule = {
         'task': 'src.apps.copo_single_cell_submission.tasks.process_asyn_analysis_submission_receipt',
         'schedule': timedelta(seconds=10)
     },
-    'sync_ena_updates' :{
-        'task': 'src.apps.copo_sample.tasks.sync_ena_updates',
+    'sync_system_records_with_ena': {
+        'task': 'src.apps.copo_sample.tasks.sync_system_records_with_ena',
         'schedule': timedelta(weeks=1)
     }
 }

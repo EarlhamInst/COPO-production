@@ -81,8 +81,8 @@ DTOL_ENA_MAPPINGS = {
     'ORIGINAL_DECIMAL_LATITUDE': {'ena': 'original geographic location (latitude)'},
     'ORIGINAL_DECIMAL_LONGITUDE': {'ena': 'original geographic location (longitude)'},
     'ORIGINAL_GEOGRAPHIC_LOCATION': {'ena': 'original geographic location'},
-    'PARTNER': {'ena': 'GAL'},
-    'PARTNER_SAMPLE_ID': {'ena': 'GAL_sample_id'},
+    'PARTNER': {'ena': 'GAL', 'aliases': ['GAL']},
+    'PARTNER_SAMPLE_ID': {'ena': 'GAL_sample_id', 'aliases': ['GAL_SAMPLE_ID']},
     'PROXY_TISSUE_VOUCHER_ID_FOR_BIOBANKING': {
         'ena': 'proxy biomaterial',
         'ena_split_by': '|',
