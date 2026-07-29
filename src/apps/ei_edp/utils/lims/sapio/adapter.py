@@ -434,7 +434,7 @@ class SapioAdapter(LIMSAdapter):
             # Drop columns not in the schema (e.g. internal COPO metadata fields)
             columns = component_data_df.columns
             component_data_df.drop(columns=[column for column in columns if column not in component_schema_df["term_name"].values]
-                                   , axis=1, inplace=True)
+                                   , inplace=True)
 
             if component_name == "study":
                 # Study fields map to the Sapio Project record, and some also propagate to all samples

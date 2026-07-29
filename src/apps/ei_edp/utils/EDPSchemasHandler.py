@@ -366,7 +366,7 @@ class EDPSchemasSpreadsheet(SinglecellschemasSpreadsheet):
                 }
                 component_df["Project ID"] = profile["sapio_project_id"] if "sapio_project_id" in profile else ""    
                 component_df = component_df.loc[:, ~component_df.columns.str.contains('^Unnamed')]
-                component_df.fillna("", inplace=True)
+                component_df = component_df.astype(object).fillna("")
                 self.data[sheetname] = component_df
                 self.new_data[sheetname] = component_df.rename(columns=new_column_name)
             """
@@ -381,7 +381,7 @@ class EDPSchemasSpreadsheet(SinglecellschemasSpreadsheet):
                     for key, item in self.schemas["index"].items()
                 }
                 index_df["Project ID"]= profile["sapio_project_id"] if "sapio_project_id" in profile else ""
-                index_df.fillna("", inplace=True)
+                index_df = index_df.astype(object).fillna("")
                 self.data["index"] = index_df
                 self.new_data["index"] = index_df.rename(columns=new_column_name)
             """
