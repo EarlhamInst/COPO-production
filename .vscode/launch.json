@@ -149,17 +149,39 @@
       "args": [],
       "django": true,
       "justMyCode": false
-    }
+    },
+    {
+      "name": "Playwright: Attach debugger",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5678
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/copo"
+        }
+      ]
+    },
   ],
   "compounds": [
     {
-      "name": "Start All",
+      "name": "Start all",
       "configurations": [
         "Python: Django",
         "Python: Celery Workers",
-        "Python: Celery Workers file_transfers",
-        "Python: Celery Beat"
+        "Python: Celery Beat",
       ],
+      "stopAll": true
+    },
+    {
+      "name": "Playwright: Debug tests",
+      "configurations": [
+        "Playwright: Attach debugger"
+      ],
+      "preLaunchTask": "Playwright: Start Playwright tests script in debug mode",
       "stopAll": true
     }
   ]
