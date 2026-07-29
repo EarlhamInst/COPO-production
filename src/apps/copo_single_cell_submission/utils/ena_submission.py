@@ -105,7 +105,7 @@ def process_pending_submission_ena():
                 study_component_schema = schemas.get("study", {})
                 rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in study_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
                 study_component_df = pd.DataFrame.from_records(studies)
-                study_component_df.fillna(value="", inplace=True)
+                study_component_df = study_component_df.astype(object).fillna("")
                 study_component_df.rename(columns=rename_columns, inplace=True)
                 study = study_component_df.to_dict('records')[0]
 
@@ -187,11 +187,11 @@ def _prepare_analysis_submission(singlecell, component_name="sequencing_annotati
 
     analysis_component_schema = schemas[component_name]
     analysis_component_schema_df = pd.DataFrame.from_records(analysis_component_schema)
-    analysis_component_schema_df.fillna(value="", inplace=True)
+    analysis_component_schema_df = analysis_component_schema_df.astype(object).fillna("")
 
     schema_columns = analysis_component_data_df.columns[analysis_component_data_df.columns.isin(analysis_component_schema_df["term_name"].tolist() + ["accession_ena"])]
     rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in analysis_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
-    analysis_component_data_df.fillna(value="", inplace=True)
+    analysis_component_data_df = analysis_component_data_df.astype(object).fillna("")
     analysis_component_data_df = analysis_component_data_df[schema_columns]
     analysis_component_data_df.rename(columns=rename_columns, inplace=True)
     child_component_data_df_map = dict()
@@ -205,7 +205,7 @@ def _prepare_analysis_submission(singlecell, component_name="sequencing_annotati
     
     sample_component_data = components.get("sample", [])
     sample_component_data_df = pd.DataFrame.from_records(sample_component_data)
-    sample_component_data_df.fillna(value="", inplace=True)
+    sample_component_data_df = sample_component_data_df.astype(object).fillna("")
     sample_component_data_df = sample_component_data_df[[identifier_map["sample"], "biosampleAccession"]]
     analysis_component_data_df = analysis_component_data_df.merge(sample_component_data_df, left_on=parent_map[component_name]["sample"], right_on=identifier_map["sample"], how="left") 
     analysis_component_data_df["study_accession"] = study_accession
@@ -220,11 +220,11 @@ def _prepare_analysis_submission(singlecell, component_name="sequencing_annotati
             Logger().error(f"Missing schema for component {component} in singlecell submission: {singlecell.get('study_id', 'Unknown')}")
             continue
         child_component_schema_df = pd.DataFrame.from_records(child_component_schema)
-        child_component_schema_df.fillna(value="", inplace=True)
+        child_component_schema_df = child_component_schema_df.astype(object).fillna("")
         child_component_data_df = pd.DataFrame.from_records(child_component_data)
         schema_columns = child_component_data_df.columns[child_component_data_df.columns.isin(child_component_schema_df["term_name"].tolist())]
         rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in analysis_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
-        child_component_data_df.fillna(value="", inplace=True)
+        child_component_data_df = child_component_data_df.astype(object).fillna("")
         child_component_data_df = child_component_data_df[schema_columns]
         child_component_data_df.rename(columns=rename_columns, inplace=True)
         if component not in [f"{component_name}_run_ref", f"{component_name}_file"]:
@@ -284,11 +284,11 @@ def _prepare_assembly_submission(singlecell, component_name="assembly"):
     assembly_component_data_df = assembly_component_data_df.drop(assembly_component_data_df[assembly_component_data_df["accession_ena"]!=""].index)
     assembly_component_schema = schemas[component_name]
     assembly_component_schema_df = pd.DataFrame.from_records(assembly_component_schema)
-    assembly_component_schema_df.fillna(value="", inplace=True)
+    assembly_component_schema_df = assembly_component_schema_df.astype(object).fillna("")
 
     schema_columns = assembly_component_data_df.columns[assembly_component_data_df.columns.isin(assembly_component_schema_df["term_name"].tolist() + ["accession_ena"])]
     rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in assembly_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
-    assembly_component_data_df.fillna(value="", inplace=True)
+    assembly_component_data_df = assembly_component_data_df.astype(object).fillna("")
     assembly_component_data_df = assembly_component_data_df[schema_columns]
     assembly_component_data_df.rename(columns=rename_columns, inplace=True)
     child_component_data_df_map = dict()
@@ -302,7 +302,7 @@ def _prepare_assembly_submission(singlecell, component_name="assembly"):
     
     sample_component_data = components.get("sample", [])
     sample_component_data_df = pd.DataFrame.from_records(sample_component_data)
-    sample_component_data_df.fillna(value="", inplace=True)
+    sample_component_data_df = sample_component_data_df.astype(object).fillna("")
     sample_component_data_df = sample_component_data_df[[identifier_map["sample"], "biosampleAccession"]]
     assembly_component_data_df = assembly_component_data_df.merge(sample_component_data_df, left_on=parent_map["assembly"]["sample"], right_on=identifier_map["sample"], how="left") 
     assembly_component_data_df["study_accession"] = study_accession
@@ -317,11 +317,11 @@ def _prepare_assembly_submission(singlecell, component_name="assembly"):
             Logger().error(f"Missing schema for component {component} in singlecell submission: {singlecell.get('study_id', 'Unknown')}")
             continue
         child_component_schema_df = pd.DataFrame.from_records(child_component_schema)
-        child_component_schema_df.fillna(value="", inplace=True)
+        child_component_schema_df = child_component_schema_df.astype(object).fillna("")
         child_component_data_df = pd.DataFrame.from_records(child_component_data)
         schema_columns = child_component_data_df.columns[child_component_data_df.columns.isin(child_component_schema_df["term_name"].tolist())]
         rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in assembly_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
-        child_component_data_df.fillna(value="", inplace=True)
+        child_component_data_df = child_component_data_df.astype(object).fillna("")
         child_component_data_df = child_component_data_df[schema_columns]
         child_component_data_df.rename(columns=rename_columns, inplace=True)
         child_component_data_df_map[component] = child_component_data_df
@@ -386,13 +386,13 @@ def _prepare_file_submission(singlecell, file_component_name="file"):
     if not file_component_data:
         return
     file_component_df = pd.DataFrame.from_records(file_component_data)
-    file_component_df.fillna(value="", inplace=True)
+    file_component_df = file_component_df.astype(object).fillna("")
     file_component_schema = schemas.get(file_component_name, {})
     if not file_component_schema:
         Logger().error(f"Missing schema for {file_component_name} component in singlecell submission: {singlecell.get('study_id', 'Unknown')}")
         return
     file_component_schema_df = pd.DataFrame.from_records(file_component_schema)
-    file_component_schema_df.fillna(value="", inplace=True)
+    file_component_schema_df = file_component_schema_df.astype(object).fillna("")
     schema_columns = file_component_df.columns[file_component_df.columns.isin(file_component_schema_df["term_name"].tolist() + ["accession_ena"])]
     rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in file_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
 
@@ -413,14 +413,14 @@ def _merge_paranent_data(component_df, identifier_map, component_name, parent_ma
         if not referenced_component_data:
             continue 
         referenced_component_df = pd.DataFrame.from_records(referenced_component_data)
-        referenced_component_df.fillna(value="", inplace=True)
+        referenced_component_df = referenced_component_df.astype(object).fillna("")
         referenced_component_df.drop(columns=["study_id"], inplace=True, errors='ignore')
         
         referenced_component_schema = schemas.get(referenced_component, {})
         if not referenced_component_schema:
             continue
         referenced_component_schema_df = pd.DataFrame.from_records(referenced_component_schema)
-        referenced_component_schema_df.fillna(value="", inplace=True)
+        referenced_component_schema_df = referenced_component_schema_df.astype(object).fillna("")
 
         schema_columns = referenced_component_df.columns[referenced_component_df.columns.isin(referenced_component_schema_df["term_name"].tolist())]
         rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in referenced_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}

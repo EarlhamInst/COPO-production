@@ -53,7 +53,7 @@ class SinglecellSchemas(DAComponent):
             component_df.drop(not_repository_columns, axis=1, inplace=True)
             component_df.dropna(how="all", inplace=True)
             component_df.rename(columns=lambda x: x.replace("repository_", ""), inplace=True)
-            component_df.fillna("", inplace=True)
+            component_df = component_df.astype(object).fillna("")
             return component_df
 
     def get_term_mapping(self, schema_name):
