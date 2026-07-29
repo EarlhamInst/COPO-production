@@ -232,7 +232,7 @@ class SingleCellSchemasHandler:
                         if component_schema_df.empty:
                             continue
 
-                        component_schema_df.fillna("", inplace=True)
+                        component_schema_df = component_schema_df.astype(object).fillna("")
                         component_schema_df["choice"] = component_schema_df[
                             component_schema_df["term_type"] == "enum"
                         ]["term_name"].apply(
@@ -299,7 +299,7 @@ class SingleCellSchemasHandler:
                                     [component_schema_df_transposed, component_data_df],
                                     axis=0,
                                 )
-                                component_schema_df_transposed.fillna("", inplace=True)
+                                component_schema_df_transposed = component_schema_df_transposed.astype(object).fillna("")
 
                         # sheet_name = component_names.get(component_name, {}).get("name", component_name)
                         # sheet_name = sheet_name[:31]
@@ -528,7 +528,7 @@ class SingleCellSchemasHandler:
                             pd.isna(component_schema_df[schema_checklist])
                         ].index
                     )
-                    component_schema_df.fillna("", inplace=True)
+                    component_schema_df = component_schema_df.astype(object).fillna("")
 
                     if component_schema_df.empty:
                         continue
@@ -578,7 +578,7 @@ class SingleCellSchemasHandler:
                             component_data_df.rename(
                                 columns=new_column_name, inplace=True
                             )
-                            component_data_df.fillna("", inplace=True)
+                            component_data_df = component_data_df.astype(object).fillna("")
                             component_data_df["@type"] = url_prefix + reverse(
                                 "copo_single_cell_submission:display_term",
                                 args=[singlecell_schema["name"], component_name],
@@ -659,7 +659,7 @@ class SingleCellSchemasHandler:
                 )
                 if component_schema_df.empty:
                     continue
-                component_schema_df.fillna("", inplace=True)
+                component_schema_df = component_schema_df.astype(object).fillna("")
                 file_path = os.path.join(
                     settings.MANIFEST_PATH,
                     settings.MANIFEST_JSONLD_FILE_NAME.format(
@@ -772,7 +772,7 @@ class SinglecellschemasSpreadsheet:
                 if component_schema_df.empty:
                     self.schemas.pop(component, None)
                     continue
-                component_schema_df.fillna("", inplace=True)
+                component_schema_df = component_schema_df.astype(object).fillna("")
                 component_schema_df["choice"] = component_schema_df[
                     component_schema_df["term_type"] == "enum"
                 ]["term_name"].apply(lambda x: singlecell["enums"].get(x, []))
@@ -816,7 +816,7 @@ class SinglecellschemasSpreadsheet:
                 schema_file_df = schema_file_df.merge(
                     schema_file_checksum_df, on="term_name", how="left"
                 )
-                schema_file_df.fillna("", inplace=True)
+                schema_file_df = schema_file_df.astype(object).fillna("")
             else:
                 schema_file_df["term_checksum"] = ""
 
@@ -923,7 +923,7 @@ class SinglecellschemasSpreadsheet:
                     df = df.apply(lambda x: x.str.strip())
                     df = df.replace("", np.nan)
                     df.dropna(how="all", inplace=True)
-                    df.fillna("", inplace=True)
+                    df = df.astype(object).fillna("")
                     self.data[key] = df
 
                 # Remove worksheets that are empty after cleaning
@@ -957,7 +957,7 @@ class SinglecellschemasSpreadsheet:
                         # remove the rows with all empty values or 0
                         df = df.replace("", np.nan)
                         df.dropna(how="all", inplace=True)
-                        df.fillna("", inplace=True)
+                        df = df.astype(object).fillna("")
                         self.data[key] = df
 
                     for component, df in self.data.items():

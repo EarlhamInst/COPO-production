@@ -297,7 +297,9 @@ def save_singlecell_records(request, profile_id, schema_name):
             if field not in component_data_df.columns:
                 component_data_df[field] = additional_fields_default_value_map[field]
             else:
-                component_data_df[field].fillna(additional_fields_default_value_map[field], inplace=True)
+                component_data_df[field] = component_data_df[field].astype(object).fillna(
+                    additional_fields_default_value_map[field]
+                )
                 
         #update status = "pending" for all submission repository
         for repository in submission_repository.get(component_name, []):
