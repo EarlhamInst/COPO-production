@@ -4,11 +4,16 @@ These cover the two pure functions in that module. Everything else in it calls
 out to ENA, OLS or NCBI and belongs in a later batch with patched HTTP clients.
 """
 
-from datetime import date, timedelta
+# Test suite for validator helper functions: validate_date, clean_str, and check_biocollection
+# - validate_date: Tests date validation with various formats and past/future dates
+# - clean_str: Tests string cleaning including whitespace removal
+# - check_biocollection: Tests biocollection voucher registration checking with mocked HTTP responses
 
+from datetime import date, timedelta
+from unittest import mock
 import pytest
 
-from common.validators.helpers import clean_str, validate_date
+from common.validators.helpers import clean_str, validate_date, check_biocollection
 
 
 def test_validate_date_accepts_a_past_date():
@@ -67,3 +72,22 @@ def test_clean_str_strips_surrounding_whitespace(raw, expected):
 @pytest.mark.xfail(strict=True, reason='clean_str() does not remove zero-width spaces. This is known, and this is an xfail test')
 def test_clean_str_removes_zero_width_space():
     assert clean_str('Homo sapiens\u200b') == 'Homo sapiens'
+
+def test_check_biocollection_rejects_unregistered_voucher():
+    fake_response = mock.Mock(
+        status_code=200,
+        **{'json.return_value': {'success': False}},
+    )
+
+    with mock.patch('common.validators.helpers.requests.get', return_value=fake_response):
+        assert check_biocollection('V12345', 'type1') is False
+
+
+def test_check_biocollection_accepts_registered_voucher():
+    fake_response = mock.Mock(
+        status_code=200,
+        **{'json.return_value': {'success': True}},
+    )
+
+    with mock.patch('common.validators.helpers.requests.get', return_value=fake_response):
+        assert check_biocollection('V12345', 'type1') is True
