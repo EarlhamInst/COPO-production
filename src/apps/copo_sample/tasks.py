@@ -10,6 +10,7 @@ def process_pending_sample_submission(self):
     process_pending_submission()
     return True
 
+
 @app.task(bind=True, base=CopoBaseClassForTask)
 def sync_system_records_with_ena(self):
     # Sync ASG and DToL source and sample changes from ENA

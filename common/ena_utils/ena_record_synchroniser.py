@@ -2,6 +2,7 @@ import os
 import shutil
 import pandas as pd
 import requests
+import time
 
 from collections import defaultdict
 from datetime import timedelta
@@ -12,6 +13,7 @@ from pymongo import UpdateOne
 
 from common.dal.sample_da import Sample, Source
 from common.schema_versions.lookup.dtol_lookups import (
+    BLANK_VALS,
     DTOL_ENA_MAPPINGS,
     TOL_PROFILE_TYPES,
 )
@@ -43,16 +45,31 @@ class EnaRecordSynchroniser:
         self.reports_directory = Path(settings.BASE_DIR) / 'reports'
         self.reports_directory_housekeeping_days = 5
         self.sync_report_file_name = f'{self.repository}-sync-report'
+        # NB: settings.MAIL_ADDRESS does not work as the sender's email address
+        self.sync_report_recipient_email_address = 'ei.copo@earlham.ac.uk'
+
+        self.taxonomy_fields = [
+            'COMMON_NAME',
+            'CULTURE_OR_STRAIN_ID',
+            'FAMILY',
+            'GENUS',
+            'INFRASPECIFIC_EPITHET',
+            'ORDER_OR_GROUP',
+            'SCIENTIFIC_NAME',
+            'SYMBIONT',
+            'TAXON_ID',
+            'TAXON_REMARKS',
+        ]
 
         additional_output_fields = {
             '_id': 0,
-            'biosampleAccession': 1,
             'COLLECTION_LOCATION': 1,
+            'biosampleAccession': 1,
             'sample_type': 1,
         }
         self.additional_projected_fields = {
-            'TAXON_ID': {'ena': 'TAXON_ID'},
             'SCIENTIFIC_NAME': {'ena': 'SCIENTIFIC_NAME'},
+            'TAXON_ID': {'ena': 'TAXON_ID'},
         }
 
         self.all_ena_fields_map = {
@@ -100,6 +117,12 @@ class EnaRecordSynchroniser:
             },
         }
 
+        self.system_date_fields = [
+            'DATE_OF_COLLECTION',
+            'DATE_OF_PRESERVATION',
+            'ORIGINAL_COLLECTION_DATE',
+        ]
+
     def _build_filter(self, sample_type_list, biosample_accession_list):
         filter_dict = {}
 
@@ -142,6 +165,48 @@ class EnaRecordSynchroniser:
 
         return output_dict
 
+    def _build_report_entry(
+        self,
+        collection_name,
+        record_accession,
+        record_type,
+        system_field,
+        ena_field,
+        old_system_value=None,
+        new_value_from_ena=None,
+        reason=None,
+        entry_type=None,
+    ):
+        entry = {
+            'run_id': self.sync_report_run_id,
+            'timestamp': self.sync_report_timestamp,
+            'collection': collection_name,
+            'accession': record_accession,
+            'record_type': record_type,
+            'system_field': system_field,
+            'ena_field': ena_field,
+        }
+
+        if entry_type == 'update':
+            # Update report entry
+            entry.update(
+                {
+                    'old_system_value': old_system_value,
+                    'new_value_from_ena': new_value_from_ena,
+                }
+            )
+            return entry
+        elif entry_type == 'warning':
+            # Warning report entry
+            entry['reason'] = reason
+            return entry
+        else:
+            l.error(
+                f'Invalid entry_type "{entry_type}" provided for {self.repository.upper()} sync report. '
+                'Expected "update" or "warning".'
+            )
+            return {}
+
     def _normalise_records(self, record, collection_name):
         record_type = record.pop('sample_type', None)
 
@@ -170,8 +235,6 @@ class EnaRecordSynchroniser:
                     )
                 record.pop('species_list', None)
 
-                # ToDo: Consider unpacking 'species_list' into the document
-
         return {
             'accession': record['biosampleAccession'],
             'collection': collection_name,
@@ -179,17 +242,94 @@ class EnaRecordSynchroniser:
             'data': record,
         }
 
+    def _normalise_blank_value(self, value):
+        # Collapse whitespaces and convert them to underscores
+        canonical = '_'.join(value.split())
+
+        if canonical in BLANK_VALS:
+            return ' '.join(canonical.split('_'))
+        return value
+
+    def _normalise_date_value(self, value, system_field):
+        # Remove the time component from dates
+        if value is None:
+            return value
+
+        return (
+            value.split('T')[0]
+            if system_field in self.system_date_fields and 'T' in value
+            else value
+        )
+
     def _normalise_value(self, value):
+        value = self._normalise_blank_value(value)
         return ' | '.join(part.strip().casefold() for part in value.split('|')).replace(
             '_', ' '
         )
+
+    def _repair_mojibake(
+        self,
+        value,
+        collection_name,
+        record_accession,
+        system_record_type,
+        system_field,
+        ena_field,
+        is_system_value=True,
+    ):
+        '''
+        Corrects mojibake (i.e. garbled text) caused by encoding issues
+        in non-ASCII characters. e.g. é, Ç, Ã
+
+        Examples:
+            - ENA value: 'GONÃ‡ALVES'; System value: 'GONÇALVES'
+            - ENA value: 'PÃ©rez'; System value: 'Pérez'
+        '''
+        is_error = False
+
+        if not value:
+            return value
+
+        original_value = value
+
+        try:
+            return value.encode('cp1252').decode('utf-8')
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            is_error = True
+            pass
+
+        try:
+            return value.encode('latin1').decode('utf-8')
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            is_error = True
+            pass
+
+        # Log warning if unable to repair mojibake for values from ENA
+        # NB: System values are free text and should be regarded as such like 'Pérez'.
+        # It is usually the corresponding values from ENA like 'GONÃ‡ALVES' and 'PÃ©rez'
+        # that should be flagged if they are garbled and unable to be repaired
+        if not is_system_value and is_error:
+            l.debug('Unable to repair mojibake value: %r' % original_value)
+
+            report_entry = self._build_report_entry(
+                collection_name,
+                record_accession,
+                system_record_type,
+                system_field,
+                ena_field,
+                reason='Unable to repair mojibake (garbled text) value',
+                entry_type='warning',
+            )
+
+            self.warning_report.append(report_entry)
+
+        return original_value
 
     def _find_matching_ena_field_value(self, system_value, ena_values):
         # Try exact/normalised matching to get exact matches
         for index, ena_value in enumerate(ena_values):
             if self._normalise_value(system_value) == self._normalise_value(ena_value):
                 return index, ena_value
-
         return None, None
 
     def _get_ena_sample_attribute_values(self, sample_node, tag_name):
@@ -335,42 +475,42 @@ class EnaRecordSynchroniser:
     def send_sync_report_email(
         self, file_path, record_count, update_count, warning_count
     ):
-        recipient_email_address = settings.MAIL_ADDRESS  # 'ei.copo@earlham.ac.uk'
-        cc_email_addresses = recipient_email_address  # CC to the sender's email address
         email_subject_prefix = (
             ''
             if settings.ENVIRONMENT_TYPE == 'prod'
             else f'[{settings.ENVIRONMENT_TYPE.upper()} SERVER NOTIFICATION] - '
         )
         email_subject = f'{email_subject_prefix}ENA Synchronisation Completed {self.sync_report_timestamp}'
-        file_name = os.path.basename(file_path)
+        # Similar code to os.path.basename(file_path)
+        file_name = Path(file_path).name
 
         email_body = f'''
-        <p>Dear COPO project Team,</p>
-        <br><br>
-        <p>The European Nucleotide Archive (ENA) synchronisation process has completed successfully.</p>
-        <br><br>
-        <p>Records processed:{record_count}</p>
+        <p>Dear COPO Project Team,</p>
+        <br>
+        <p>The European Nucleotide Archive (ENA) synchronisation process has completed successfully. Its 
+        records have been synchronised with the system records.</p>
+        <br>
+        <p>Records processed: {record_count}</p>
         <p>Updates applied: {update_count}</p>
         <p>Warnings: {warning_count}</p>
         <br><br>
         <p>Please find the attached file `{file_name}` for details.</p>
-        <br><br><br>
+        <br><br>
         <p>Best regards,</p>
         <p>Collaborative OPen Omics (COPO) Project Team</p>
         '''
 
         try:
             CopoEmail().send(
-                to=[recipient_email_address],
+                to=[self.sync_report_recipient_email_address],
                 sub=email_subject,
                 content=email_body,
                 html=True,
-                cc=[cc_email_addresses],
+                attachment_path=file_path,
             )
 
-            # Move file from the 'pending' to 'sent' folder within the 'media/reports' directory
-            archive_file_path = file_path.replace('pending', 'sent')
+            # Move file from the 'pending' to 'sent' folder within the 'reports/' directory
+            archive_file_path = Path(str(file_path).replace('pending', 'sent'))
             shutil.move(file_path, archive_file_path)
         except Exception as e:
             l.exception(
@@ -379,8 +519,8 @@ class EnaRecordSynchroniser:
 
     def remove_old_synced_reports(self):
         '''
-        A housekeeping task to delete all .xlsx  or .zip files in the 'reports/pending' folder
-        and 'reports/sent' folder older than 30 days that has the prefix 'ena-sync-report'
+        A housekeeping task to delete all .xlsx  and .zip files in the 'reports/pending' folder
+        and 'reports/sent' folder older than 5 days that has the prefix 'ena-sync-report'
         '''
         cutoff_time = get_datetime() - timedelta(
             days=self.reports_directory_housekeeping_days
@@ -396,10 +536,9 @@ class EnaRecordSynchroniser:
                             get_datetime().fromtimestamp(file.stat().st_mtime)
                             < cutoff_time
                         ):
-                            l.debug(f'Deleting file: {file}')
                             file.unlink()
         except Exception as e:
-            l.error(f'Error deleting file `{file}`: {e}')
+            l.error(f'Error deleting `{self.sync_report_file_name}` file: {e}')
 
     def send_sync_report(self, record_count):
         if not (self.update_report or self.warning_report):
@@ -437,6 +576,44 @@ class EnaRecordSynchroniser:
         # Function: Retrieve records from ENA using biosample accessions
         # and update the corresponding records in the system
         # database if there are any changes
+
+        def _post_with_retry(url, payload, retries=3):
+            last_exception = None
+
+            for attempt in range(retries):
+                try:
+                    return requests.post(
+                        url,
+                        headers={
+                            'accept': 'application/xml',
+                            'Content-Type': 'application/json',
+                        },
+                        json=payload,
+                        timeout=30,
+                    )
+                except (
+                    requests.exceptions.ReadTimeout,
+                    requests.exceptions.ConnectionError,
+                ) as e:
+                    last_exception = e
+
+                    if attempt < retries - 1:
+                        wait = 2**attempt
+                        time.sleep(wait)
+                except Exception as e:
+                    l.exception(
+                        f'Unexpected error occurred while making a POST request to {self.repository.upper()}"s API: {e}'
+                    )
+                    raise
+
+            if last_exception:
+                l.error(
+                    f'{self.repository.upper()} API request failed after %s attempts: %s',
+                    retries,
+                    last_exception,
+                )
+                raise
+
         try:
             # Example command to call to ENA Browser API for retrieving metadata in XML format
             '''
@@ -476,15 +653,7 @@ class EnaRecordSynchroniser:
                 'complement': True,
             }
 
-            response = requests.post(
-                settings.ENA_BROWSER_API_URL['xml'],
-                headers={
-                    'accept': 'application/xml',
-                    'Content-Type': 'application/json',
-                },
-                json=payload,
-                timeout=30,
-            )
+            response = _post_with_retry(settings.ENA_BROWSER_API_URL['xml'], payload)
 
             if response.status_code == requests.codes.ok:
                 xml_str = response.text
@@ -501,10 +670,12 @@ class EnaRecordSynchroniser:
                 for sample_node in sample_set.findall('SAMPLE'):
                     update_dict = {}
                     record_accession = sample_node.attrib['accession']
+
                     system_record = next(
                         (r for r in records if r['accession'] == record_accession), None
                     )
                     system_record_type = system_record['record_type']
+                    system_record_data = system_record['data']
 
                     # Database information for the current record
                     db_collection = system_record['collection']
@@ -538,18 +709,22 @@ class EnaRecordSynchroniser:
                             if 'COLLECTION_LOCATION' in system_field:
                                 system_value, ena_value = (
                                     self._get_collection_location_field_values(
-                                        transform, sample_node, system_record['data']
+                                        transform, sample_node, system_record_data
                                     )
                                 )
                             else:
-                                # The current record's value is transformed using the
+                                # The current system record's value is transformed using the
                                 # function specified by the `ena_data_function` field.
-                                system_value = transform(
-                                    self._get_system_value(
-                                        system_field,
-                                        mapping,
-                                        system_record['data'],
-                                    )
+                                s_value = self._get_system_value(
+                                    system_field,
+                                    mapping,
+                                    system_record_data,
+                                )
+                                system_value = (
+                                    transform(s_value)
+                                    if s_value is not None
+                                    and system_field in system_record_data
+                                    else None
                                 )
 
                                 ena_value = ena_record.get(ena_field)
@@ -569,7 +744,7 @@ class EnaRecordSynchroniser:
                             system_value = self._get_system_value(
                                 system_field,
                                 mapping,
-                                system_record['data'],
+                                system_record_data,
                             )
 
                             ena_remaining_values = (
@@ -580,7 +755,7 @@ class EnaRecordSynchroniser:
 
                             for field in list(remaining_bio_material_fields):
                                 index, value = self._find_matching_ena_field_value(
-                                    system_record['data'][field],
+                                    system_record_data[field],
                                     ena_remaining_values,
                                 )
 
@@ -601,24 +776,40 @@ class EnaRecordSynchroniser:
                                         f'to system fields for the record matching the accession {record_accession}',
                                     )
 
-                                    self.warning_report.append(
-                                        {
-                                            'run_id': self.sync_report_run_id,
-                                            'timestamp': self.sync_report_timestamp,
-                                            'collection': collection_name,
-                                            'accession': record_accession,
-                                            'record_type': system_record_type,
-                                            'system_field': system_field,
-                                            'ena_field': ena_field,
-                                            'reason': (
-                                                'Unable to uniquely map ENA `bio_material` field values'
-                                                'because more than one value exists in ENA for the '
-                                                '`bio_material` field. This field is mapped to - '
-                                                f'{join_with_and(self.system_fields_mapped_to_bio_material)} '
-                                                'fields in the system database.'
-                                            ),
-                                        }
+                                    reason = (
+                                        f'Unable to uniquely map {self.repository.upper()} `bio_material` field values'
+                                        'because more than one value exists in ENA for the '
+                                        '`bio_material` field. This field is mapped to - '
+                                        f'{join_with_and(self.system_fields_mapped_to_bio_material)} '
+                                        'fields in the system database.'
                                     )
+
+                                    report_entry = self._build_report_entry(
+                                        collection_name,
+                                        record_accession,
+                                        system_record_type,
+                                        system_field,
+                                        ena_field,
+                                        reason=reason,
+                                        entry_type='warning',
+                                    )
+
+                                    self.warning_report.append(report_entry)
+                        elif system_field in self.system_date_fields:
+                            # Handle case for date fields where some date values from
+                            # ENA can contain the time component (e.g. 2022-09-21T10:44:00)
+                            # while the system value is 2022-09-21
+
+                            # `system_value` is the value currently stored in the system database
+                            # `ena_value` is the value coming from ENA
+                            ena_value = self._normalise_date_value(
+                                ena_record.get(ena_field), system_field
+                            )
+                            system_value = self._get_system_value(
+                                system_field,
+                                mapping,
+                                system_record_data,
+                            )
                         else:
                             # `system_value` is the value currently stored in the system database
                             # `ena_value` is the value coming from ENA
@@ -626,36 +817,76 @@ class EnaRecordSynchroniser:
                             system_value = self._get_system_value(
                                 system_field,
                                 mapping,
-                                system_record['data'],
+                                system_record_data,
                             )
 
                         if ena_value is None or system_value is None:
                             continue
 
                         if system_value != ena_value:
-                            # Ignore field values that are the same after normalisation
-                            # i.e. values that are identical when compared
-                            # case-insensitively and with whitespace ignored
+                            # Handle em dashes (—) and en dashes (–) in system values
+                            system_value = system_value.replace('–', '-').replace(
+                                '—', '-'
+                            )
+
+                            # Ignore field values that are the same after
+                            # case-insensitive comparison and ignoring whitespace
                             if self._normalise_value(
                                 system_value
                             ) == self._normalise_value(ena_value):
                                 continue
 
+                            # Ignore field values that are the same after
+                            # correcting mojibake (garbled text)
+                            repaired_system_value = self._repair_mojibake(
+                                system_value,
+                                collection_name,
+                                record_accession,
+                                system_record_type,
+                                system_field,
+                                ena_field,
+                            )
+
+                            repaired_ena_value = self._repair_mojibake(
+                                ena_value,
+                                collection_name,
+                                record_accession,
+                                system_record_type,
+                                system_field,
+                                ena_field,
+                                is_system_value=False,
+                            )
+
+                            if self._normalise_value(
+                                repaired_system_value
+                            ) == self._normalise_value(repaired_ena_value):
+                                continue
+
+                            # Log the update and add it to the update report
                             update_dict[system_field] = ena_value
 
-                            self.update_report.append(
-                                {
-                                    'run_id': self.sync_report_run_id,
-                                    'timestamp': self.sync_report_timestamp,
-                                    'collection': collection_name,
-                                    'accession': record_accession,
-                                    'record_type': system_record_type,
-                                    'system_field': system_field,
-                                    'ena_field': ena_field,
-                                    'old_system_value': system_value,
-                                    'new_value_from_ena': ena_value,
-                                }
+                            # Also, update the `species_list` field for samples
+                            # if the system field is a taxonomy field
+                            if (
+                                collection_name == 'SampleCollection'
+                                and system_field in self.taxonomy_fields
+                            ):
+                                update_dict[f'species_list.0.{system_field}'] = (
+                                    ena_value
+                                )
+
+                            report_entry = self._build_report_entry(
+                                collection_name,
+                                record_accession,
+                                system_record_type,
+                                system_field,
+                                ena_field,
+                                system_value,
+                                ena_value,
+                                entry_type='update',
                             )
+
+                            self.update_report.append(report_entry)
 
                     # Add update query to bulk_updates if there are any changes
                     if update_dict:
@@ -672,10 +903,10 @@ class EnaRecordSynchroniser:
                         )
 
                 # Perform a bulk update instead of individual updates
-                # if bulk_updates:
-                #     for db_collection_name, updates in bulk_updates.items():
-                #         db_collection_handles[db_collection_name].bulk_write(updates)
+                if bulk_updates:
+                    for db_collection_name, updates in bulk_updates.items():
+                        db_collection_handles[db_collection_name].bulk_write(updates)
         except Exception as e:
             l.exception(
-                f'Failed to synchronise system records with ENA records: {str(e)}'
+                f'Failed to synchronise system records with {self.repository.upper()} records: {str(e)}'
             )

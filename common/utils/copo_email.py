@@ -58,13 +58,14 @@ class CopoEmail:
     def _attach_file(self, msg, file_path):
         # 20 * 1024 * 1024  == 20 MB
         max_attachment_size = 20 * 1024 * 1024
+        file_name = Path(file_path).name
 
         if Path(file_path).stat().st_size > max_attachment_size:
             # Compress and zip the file if its size exceeds the 20 MB limit
             zip_path = Path(file_path).with_suffix('.zip')
 
             with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-                zip_file.write(file_path, arcname=Path(file_path).name)
+                zip_file.write(file_path, arcname=file_name)
 
             if zip_path.stat().st_size <= max_attachment_size:
                 file_path = zip_path
@@ -77,7 +78,7 @@ class CopoEmail:
         encoders.encode_base64(attachment)
 
         attachment.add_header(
-                'Content-Disposition', f'attachment; filename={Path(file_path).name}'
+                'Content-Disposition', f'attachment; filename={file_name}'
             )
 
         msg.attach(attachment)

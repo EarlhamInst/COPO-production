@@ -4,34 +4,36 @@ from common.utils import helpers
 from titlecase import titlecase
 
 
-def get_collection_location_1(str=""):
-    return get_titled_data_function(str.split('|')[0])
+def get_collection_location_1(text=""):
+    return get_titled_data_function((text or "").split('|')[0])
 
 
-def get_collection_location_2(str=""):
-    return "|".join(str.split('|')[1:])
+def get_collection_location_2(text=""):
+    return "|".join((text or "").split('|')[1:])
 
 
-def get_default_data_function(str=""):
-    return str.lower().replace("_", " ").strip()
+def get_default_data_function(text=""):
+    return (text or "").lower().replace("_", " ").strip()
 
 
-def get_titled_data_function(str=""):
+def get_titled_data_function(text=""):
     return (
-        titlecase(str.replace("_", " "))
-        .strip()
-        .replace(" De ", " de ")
-        .replace("Dna ", "DNA ")
-        .replace("Scilifelab", "SciLifeLab")
-        .replace("Industry Partner", "industry partner")
-        .replace("Other ", "other ")
-        .replace(" Vib ", " VIB ")
-        .replace("Usa", "USA")
+        (
+            titlecase((text or "").replace("_", " "))
+            .strip()
+            .replace(" De ", " de ")
+            .replace("Dna ", "DNA ")
+            .replace("Scilifelab", "SciLifeLab")
+            .replace("Industry Partner", "industry partner")
+            .replace("Other ", "other ")
+            .replace(" Vib ", " VIB ")
+            .replace("Usa", "USA")
+        )
     )
 
 
-def exec_function(func=get_default_data_function, str=str()):
-    return func(str)
+def exec_function(func=get_default_data_function, text=str()):
+    return func(text)
 
 
 DTOL_ENA_MAPPINGS = {
