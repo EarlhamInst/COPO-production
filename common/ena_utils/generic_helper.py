@@ -12,6 +12,7 @@ from common.utils.logger import Logger
 import re
 import shlex
 import subprocess
+import tempfile
 import time
 
 lg = Logger()
@@ -572,6 +573,21 @@ def _transfer_via_aspera(remote_path, file_paths, submission_id="", profile_id="
         return False
 
 
+def _write_netrc_file(host, login, password):
+    """Write a netrc file granting curl --netrc-file access to `host` only,
+    so the Webin password never appears in this process's argv (visible to
+    other local users/processes via `ps`/`/proc/<pid>/cmdline` for the whole
+    upload, which can run for hours). Caller is responsible for deleting the
+    returned path once curl has finished with it.
+    """
+    fd, path = tempfile.mkstemp(prefix="copo_netrc_", text=True)
+    os.close(fd)
+    with open(path, "w") as f:
+        f.write(f"machine {host}\nlogin {login}\npassword {password}\n")
+    os.chmod(path, 0o600)
+    return path
+
+
 def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id="",
                       webin_user=None, webin_password=None):
     """Attempt file transfer to ENA using FTP via curl. Returns True on success.
@@ -583,8 +599,17 @@ def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id="",
     webin_password = webin_password or WEBIN_USER_PASSWORD
     # FTP basic-auth wants just the Webin token (before '@'), not the full domain.
     webin_token = webin_user.split("@")[0]
-    ftp_base = f"ftp://webin2.ebi.ac.uk/{remote_path}"
+    ftp_host = "webin2.ebi.ac.uk"
+    ftp_base = f"ftp://{ftp_host}/{remote_path}"
 
+    netrc_path = _write_netrc_file(ftp_host, webin_token, webin_password)
+    try:
+        return _do_ftp_transfers(ftp_base, file_paths, netrc_path, submission_id, profile_id)
+    finally:
+        os.remove(netrc_path)
+
+
+def _do_ftp_transfers(ftp_base, file_paths, netrc_path, submission_id, profile_id):
     for file_path in file_paths:
         file_name = os.path.basename(file_path)
         ftp_url = f"{ftp_base}{file_name}"
@@ -592,7 +617,7 @@ def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id="",
         cmd = [
             "curl", "-#", "-N", "-T", file_path,
             ftp_url,
-            "--user", f"{webin_token}:{webin_password}",
+            "--netrc-file", netrc_path,
             "--ftp-create-dirs",
             "--retry", "3",
             "--retry-delay", "5",

@@ -1270,7 +1270,7 @@ class EnaSubmissionHelper:
         if "dev" in ena_service:
             test = " -test "
         webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token} -password '{self.pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -validate -ascp"
-        self.logging_debug(webin_cmd)
+        self.logging_debug(webin_cmd.replace(self.pass_word, "xxxxxx"))
         try:
             self.logging_info("validating assembly")
             output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True)
@@ -1289,7 +1289,7 @@ class EnaSubmissionHelper:
         if "dev" in ena_service:
             test = " -test "
         webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token}  -password '{self.pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
-        Logger().debug(msg=webin_cmd)
+        Logger().debug(msg=webin_cmd.replace(self.pass_word, "xxxxxx"))
         # print(webin_cmd)
         # try/except as it turns out this can fail even if validate is successfull
         try:
