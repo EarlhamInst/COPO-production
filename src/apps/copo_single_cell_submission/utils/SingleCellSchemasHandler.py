@@ -231,7 +231,7 @@ class SingleCellSchemasHandler:
                         if component_schema_df.empty:
                             continue
 
-                        component_schema_df.fillna("", inplace=True)
+                        component_schema_df = component_schema_df.astype(object).fillna("")
                         component_schema_df["choice"] = component_schema_df[
                             component_schema_df["term_type"] == "enum"
                         ]["term_name"].apply(
@@ -523,7 +523,7 @@ class SingleCellSchemasHandler:
                             pd.isna(component_schema_df[schema_checklist])
                         ].index
                     )
-                    component_schema_df.fillna("", inplace=True)
+                    component_schema_df = component_schema_df.astype(object).fillna("")
 
                     if component_schema_df.empty:
                         continue
@@ -650,7 +650,7 @@ class SingleCellSchemasHandler:
                 )
                 if component_schema_df.empty:
                     continue
-                component_schema_df.fillna("", inplace=True)
+                component_schema_df = component_schema_df.astype(object).fillna("")
                 file_path = os.path.join(
                     settings.MANIFEST_PATH,
                     settings.MANIFEST_JSONLD_FILE_NAME.format(
@@ -909,7 +909,7 @@ class SinglecellschemasSpreadsheet:
                         if component_schema_df.empty:
                             self.schemas.pop(component, None)
                             continue
-                        component_schema_df.fillna("", inplace=True)
+                        component_schema_df = component_schema_df.astype(object).fillna("")
                         component_schema_df["choice"] = component_schema_df[
                             component_schema_df["term_type"] == "enum"
                         ]["term_name"].apply(lambda x: singlecell["enums"].get(x, []))
