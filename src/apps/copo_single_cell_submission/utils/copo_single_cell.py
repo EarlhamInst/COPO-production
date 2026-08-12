@@ -230,7 +230,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
             # Generate unique DataTable row IDs: "componentName_studyId_identifier"
             component_data_df["DT_RowId"] = component_name + "_"+ study_id + "_" + component_data_df.get(identifier_map.get(component_name,""), "")
             component_data_df["record_id"] = component_data_df["DT_RowId"]
-            component_data_df.fillna("", inplace=True)
+            component_data_df = component_data_df.astype(object).fillna("")
 
             # Build the file_status column by concatenating "filename : transferStatus" for each file field
             file_terms = file_df_map.get(component_name, [])

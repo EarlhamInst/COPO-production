@@ -1539,8 +1539,7 @@ class SubmissionHelper:
         df_columns = df_attributes_df.columns
 
         # replace null values
-        for k in df_columns:
-            df_attributes_df[k].fillna('', inplace=True)
+        df_attributes_df = df_attributes_df.astype(object).fillna('')
 
         if 'study_samples' in df_columns:
             df_attributes_df['study_samples'] = df_attributes_df['study_samples'].apply(

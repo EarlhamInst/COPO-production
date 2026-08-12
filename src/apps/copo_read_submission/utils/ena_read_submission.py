@@ -1215,8 +1215,7 @@ class EnaReads:
 
         # set default for nans
         datafile_columns = datafiles_df.columns
-        for k in datafile_columns:
-            datafiles_df[k].fillna('', inplace=True)
+        datafiles_df = datafiles_df.astype(object).fillna('')
 
         # get run accessions - to provide info on datafiles submission status
         run_accessions = self.submission_helper.get_run_accessions()

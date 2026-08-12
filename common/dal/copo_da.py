@@ -599,9 +599,7 @@ class CGCore(DAComponent):
                 schema=schema_fields, type_name=referenced_type
             )
             columns = list(schema_df.columns)
-
-            for col in columns:
-                schema_df[col].fillna('n/a', inplace=True)
+            schema_df = schema_df.astype(object).fillna('n/a')
 
             schema_fields = schema_df.sort_values(by=['field_constraint_rank']).to_dict(
                 'records'
@@ -1436,7 +1434,7 @@ class EnaChecklist(DAComponent):
                     | (df["shown_when_no_sample"].isnull())
                 ]
             # df.set_index("name", drop=False, inplace=True)
-            df.fillna("", inplace=True)
+            df = df.astype(object).fillna("")
             checklist["fields"] = df.to_dict('index')
             return checklist
 
