@@ -608,7 +608,7 @@ def query_submit_result(profile_id, study_id,schema_name, repository="ena"):
             return dict(status='error', message="Submission is in progress, please try again later!")  
         
         
-def submit_singlecell(profile_id, study_id, schema_name="", repository="ena"):
+def submit_singlecell(profile_id, study_id, schema_name="", repository="ena", credential_source="user"):
     """Initiate a single-cell submission to a repository (ENA or Zenodo).
 
     This is the main submission entry point called from the frontend. It:
@@ -650,6 +650,18 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena"):
             if final_status != status and status != "accepted":
                 final_status = status
 
+    # Attach the submitter + credential choice to any existing submission for
+    # this study *before* the in-progress guard below. Otherwise a resubmit
+    # while a prior submission is still running returns early and the document
+    # keeps whatever (or no) submitter it had — so the async pipeline falls
+    # back to COPO's default credentials instead of the user's own.
+    existing = Submission().execute_query({"profile_id": profile_id, "repository": repository, "deleted": get_not_deleted_flag()})
+    if existing:
+        Submission().get_collection_handle().update_one(
+            {"_id": existing[0]["_id"]},
+            {"$set": {"submitter": get_current_user().id, "credential_source": credential_source}},
+        )
+
     # Guard against submitting when there's nothing to submit or submission is already running
     match final_status:
         case "accepted" | "published":
@@ -673,6 +685,16 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena"):
 
         submission = Submission().get_collection_handle().insert_one(insert_sub)
         submissions = [{"_id":submission.inserted_id}]
+
+    # Record who is submitting and which credentials to use, so the async ENA
+    # pipeline can resolve the submitter's own Webin credentials (or fall back
+    # to COPO defaults). credential_source == "copo_default" is the popup's
+    # one-off "use COPO default" choice. Written on every submit so a repeated
+    # submission always reflects the latest choice.
+    Submission().get_collection_handle().update_one(
+        {"_id": submissions[0]["_id"]},
+        {"$set": {"submitter": get_current_user().id, "credential_source": credential_source}},
+    )
 
     # Prepare file transfer records for all files referenced in the singlecell record
     schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get("schema_name", singlecell["schema_name"]), schemas=dict(), target_id=singlecell["checklist_id"])

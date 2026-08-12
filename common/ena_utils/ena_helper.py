@@ -36,11 +36,21 @@ webin_domain = get_env('WEBIN_USER').split("@")[1]
 ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
 
 class EnaSubmissionHelper:
-    def __init__(self, submission_id=str(), profile_id=str()):
+    def __init__(self, submission_id=str(), profile_id=str(), credentials=None):
         self.submission_id = submission_id
         self.profile_id = profile_id
         self.profile = Profile().get_record(self.profile_id)
         self.sra_settings = json_to_pytype(SRA_SETTINGS).get("properties", dict())
+
+        # Per-submission Webin credentials. When `credentials` is supplied (a
+        # resolved dict from common.repositories.credentials) we use it;
+        # otherwise we fall back to COPO's module-scope defaults, so callers
+        # that don't pass credentials behave exactly as before.
+        credentials = credentials or {}
+        self.user_token = credentials.get("user_token") or user_token
+        self.pass_word = credentials.get("password") or pass_word
+        self.webin_user = credentials.get("webin_user") or webin_user
+        self.webin_domain = credentials.get("webin_domain") or webin_domain
 
     def logging_debug(self, message=str()):
         ghlper.logging_debug(message, self.submission_id)
@@ -198,7 +208,7 @@ class EnaSubmissionHelper:
         result = dict(status=True, value='')
 
         # register samples to the ENA service
-        curl_cmd = 'curl -s -S -u "' + user_token + ':' + pass_word \
+        curl_cmd = 'curl -s -S -u "' + self.user_token + ':' + self.pass_word \
                     + '" -F "SUBMISSION=@' \
                     + submission_xml_path \
                     + '" -F "SAMPLE=@' \
@@ -207,13 +217,13 @@ class EnaSubmissionHelper:
                     + ' "' + ena_service \
                     + '"'
         self.logging_debug(
-            "CURL command to submit samples xml to ENA: " + curl_cmd.replace(pass_word, "xxxxxx"))
+            "CURL command to submit samples xml to ENA: " + curl_cmd.replace(self.pass_word, "xxxxxx"))
 
         try:
             output = subprocess.check_output(curl_cmd, shell=True, stderr=subprocess.STDOUT)
         except Exception as e:
             ghlper.logging_exception(e)
-            message = 'API call error ' + str(e).replace(pass_word, "xxxxxx")
+            message = 'API call error ' + str(e).replace(self.pass_word, "xxxxxx")
             self.logging_debug(message)
             result['message'] = message
             result['status'] = False
@@ -549,7 +559,7 @@ class EnaSubmissionHelper:
         result = dict(status=True, value='')
 
         # register study to the ENA service
-        curl_cmd = 'curl -u "' + user_token + ':' + pass_word \
+        curl_cmd = 'curl -u "' + self.user_token + ':' + self.pass_word \
                     + '" -F "SUBMISSION=@' \
                     + submission_xml_path \
                     + '" -F "PROJECT=@' \
@@ -557,13 +567,13 @@ class EnaSubmissionHelper:
                     + '" "' + ena_service \
                     + '"'
         self.logging_debug(
-            "CURL command to submit study xml to ENA: " + curl_cmd.replace(pass_word, "xxxxxx"))
+            "CURL command to submit study xml to ENA: " + curl_cmd.replace(self.pass_word, "xxxxxx"))
 
         try:
             receipt = subprocess.check_output(curl_cmd, shell=True)
         except Exception as e:
             ghlper.logging_exception(e)
-            message = 'API call error ' + str(e).replace(pass_word, "xxxxxx")
+            message = 'API call error ' + str(e).replace(self.pass_word, "xxxxxx")
             self.logging_error(message)
             if singlecell_id:
                 Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected", "error": message})
@@ -781,7 +791,7 @@ class EnaSubmissionHelper:
             else:
                 final_submission_xml_path = submission_xml_path
 
-            curl_cmd = 'curl -u "' + user_token + ':' + pass_word \
+            curl_cmd = 'curl -u "' + self.user_token + ':' + self.pass_word \
                        + '" -F "SUBMISSION=@' \
                        + final_submission_xml_path \
                        + '" -F "EXPERIMENT=@' \
@@ -793,7 +803,7 @@ class EnaSubmissionHelper:
 
             self.logging_debug(
                 "Submitting EXPERIMENT and RUN XMLs for " +  
-                    row[file_identifier] + " using CURL. CURL command is: " + curl_cmd.replace(pass_word, "xxxxx"))
+                    row[file_identifier] + " using CURL. CURL command is: " + curl_cmd.replace(self.pass_word, "xxxxx"))
 
             try:
                 receipt = subprocess.check_output(curl_cmd, shell=True)
@@ -875,7 +885,7 @@ class EnaSubmissionHelper:
         
  
         # get study status from API
-        project_status = ghlper.get_study_status(user_token=user_token, pass_word=pass_word,
+        project_status = ghlper.get_study_status(user_token=self.user_token, pass_word=self.pass_word,
                                         project_accession=study_accession)
 
         if not project_status:
@@ -925,7 +935,7 @@ class EnaSubmissionHelper:
 
         message = None
         with requests.Session() as session:
-            session.auth = (user_token, pass_word)
+            session.auth = (self.user_token, self.pass_word)
             try:
                 response = session.post(ena_service, data={}, files=files)
                 receipt = response.text
@@ -1172,7 +1182,7 @@ class EnaSubmissionHelper:
                 test = " -test "
             #cli_path = "tools/reposit/ena_cli/webin-cli.jar"
             submission_type = row.get("submission_type", "transcriptome")
-            webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
+            webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token} -password '{self.pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
             
             #qself.logging_debug(webin_cmd)
             try:
@@ -1259,8 +1269,8 @@ class EnaSubmissionHelper:
         test = ""
         if "dev" in ena_service:
             test = " -test "
-        webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token} -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -validate -ascp"
-        self.logging_debug(webin_cmd)
+        webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token} -password '{self.pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -validate -ascp"
+        self.logging_debug(webin_cmd.replace(self.pass_word, "xxxxxx"))
         try:
             self.logging_info("validating assembly")
             output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True)
@@ -1278,8 +1288,8 @@ class EnaSubmissionHelper:
         test = ""
         if "dev" in ena_service:
             test = " -test "
-        webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token}  -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
-        Logger().debug(msg=webin_cmd)
+        webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token}  -password '{self.pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
+        Logger().debug(msg=webin_cmd.replace(self.pass_word, "xxxxxx"))
         # print(webin_cmd)
         # try/except as it turns out this can fail even if validate is successfull
         try:
@@ -1331,7 +1341,7 @@ class EnaSubmissionHelper:
         files = {'file': xml_str}
 
         with requests.Session() as session:    
-            session.auth = (user_token, pass_word)    
+            session.auth = (self.user_token, self.pass_word)    
             try:
                 response = session.post(ena_v2_service_async, data={},files = files)
                 receipt = response.text
