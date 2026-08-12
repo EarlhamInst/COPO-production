@@ -1419,13 +1419,13 @@ class EnaChecklist(DAComponent):
             df = pd.DataFrame.from_dict(checklist["fields"], orient='index')
 
             if "read_field" in df.columns:
-                df["read_field"] = df["read_field"].fillna(False)
+                df["read_field"] = df["read_field"].astype(object).fillna(False)
 
             if for_dtol:
-                df["for_dtol"] = df["for_dtol"].fillna(True) if "for_dtol" in df.columns else True
+                df["for_dtol"] = df["for_dtol"].astype(object).fillna(True) if "for_dtol" in df.columns else True
                 df = df.loc[df["for_dtol"] == True]
             else:
-                df["for_dtol"] = df["for_dtol"].fillna(False) if "for_dtol" in df.columns else False
+                df["for_dtol"] = df["for_dtol"].astype(object).fillna(False) if "for_dtol" in df.columns else False
                 df = df.loc[df["for_dtol"] == False]
 
             if with_sample and with_read:

@@ -712,7 +712,7 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
 
         #sample_df = sample_df.rename(columns={"name": "Sample"})
         df1 = pd.concat([df1, sample_df], axis=0, join="outer")
-        df1 = df1.fillna("")
+        df1 = df1.astype(object).fillna("")
 
     if file_path is None:
         manifest_name = checklist["primary_id"]
