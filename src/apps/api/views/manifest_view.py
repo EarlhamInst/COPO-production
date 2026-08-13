@@ -1024,7 +1024,6 @@ def generate_manifest_template(manifest_type, manifest_template_path, initial_da
         columns=initial_data.columns.difference(
             metadataEntry_worksheet_dataframe.columns
         ),
-        axis=1,
         inplace=True,
     )
     metadataEntry_worksheet_concatenation = pd.concat(

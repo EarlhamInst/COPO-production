@@ -708,11 +708,11 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
         sample_df = pd.DataFrame.from_records(samples)
         new_column_name = { key : field["label" ]+ (" (optional)" if  field["mandatory"] != 'mandatory' else "") for key, field in checklist["fields"].items() }
         sample_df.rename(columns=new_column_name, inplace=True)
-        sample_df.drop(columns=sample_df.columns.difference(df1.columns), axis=1, inplace=True)
+        sample_df.drop(columns=sample_df.columns.difference(df1.columns), inplace=True)
 
         #sample_df = sample_df.rename(columns={"name": "Sample"})
         df1 = pd.concat([df1, sample_df], axis=0, join="outer")
-        df1 = df1.fillna("")
+        df1 = df1.astype(object).fillna("")
 
     if file_path is None:
         manifest_name = checklist["primary_id"]

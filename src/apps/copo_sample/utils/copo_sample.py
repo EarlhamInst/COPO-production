@@ -24,6 +24,7 @@ from common.utils.helpers import (
     json_to_pytype,
 )
 from common.utils.logger import Logger
+from common.repositories import credentials as credential_resolver
 
 l = Logger()
 ena_service = get_env('ENA_SERVICE')
@@ -142,7 +143,7 @@ def generate_table_records(profile_id=str(), checklist_id=str()):
     return return_dict
 
 
-def submit_sample(profile_id, target_ids=list(), target_id=None, checklist_id=None):
+def submit_sample(profile_id,  target_ids=list(), target_id=None, checklist_id=None, credential_source="user"):
 
     if target_id:
         target_ids = [target_id]
@@ -170,7 +171,11 @@ def submit_sample(profile_id, target_ids=list(), target_id=None, checklist_id=No
     update_info[f"{component}_status"] = "pending"
     update_info["date_modified"] = dt
     update_info["updated_by"] = str(user.id)
-
+    # Record who is submitting + which credentials to use so the async pipeline
+    # resolves the submitter's own Webin creds (or falls back to COPO default).
+    update_info["submitter"] = user.id
+    update_info["credential_source"] = credential_source
+    
     if not sub:
         sub = dict()
         sub["date_created"] = dt
@@ -285,6 +290,15 @@ def process_pending_submission():
             if sample.get("status", "") == "processing"
         }
 
+        credentials = credential_resolver.resolve_for_submission(submission, "ena")
+        ena_submission_helper = EnaSubmissionHelper(submission_id=submission_id, profile_id=profile_id, credentials=credentials)
+
+        samples = Sample(profile_id=profile_id).get_all_records_columns(filter_by={"_id": {"$in": [ObjectId(id) for id in sample_ids]},
+                                                                   "deleted": get_not_deleted_flag()}
+                                                              )
+        
+        sample_processing_ids = {sample["_id"]: sample for sample in samples if sample.get("status", "") == "processing"}
+    
         if sample_processing_ids:
             # Update the status of the samples to 'sending'
             # Sample(profile_id=profile_id).get_collection_handle().update_many(

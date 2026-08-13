@@ -599,9 +599,7 @@ class CGCore(DAComponent):
                 schema=schema_fields, type_name=referenced_type
             )
             columns = list(schema_df.columns)
-
-            for col in columns:
-                schema_df[col].fillna('n/a', inplace=True)
+            schema_df = schema_df.astype(object).fillna('n/a')
 
             schema_fields = schema_df.sort_values(by=['field_constraint_rank']).to_dict(
                 'records'
@@ -1421,13 +1419,13 @@ class EnaChecklist(DAComponent):
             df = pd.DataFrame.from_dict(checklist["fields"], orient='index')
 
             if "read_field" in df.columns:
-                df["read_field"] = df["read_field"].fillna(False)
+                df["read_field"] = df["read_field"].astype(object).fillna(False)
 
             if for_dtol:
-                df["for_dtol"] = df["for_dtol"].fillna(True) if "for_dtol" in df.columns else True
+                df["for_dtol"] = df["for_dtol"].astype(object).fillna(True) if "for_dtol" in df.columns else True
                 df = df.loc[df["for_dtol"] == True]
             else:
-                df["for_dtol"] = df["for_dtol"].fillna(False) if "for_dtol" in df.columns else False
+                df["for_dtol"] = df["for_dtol"].astype(object).fillna(False) if "for_dtol" in df.columns else False
                 df = df.loc[df["for_dtol"] == False]
 
             if with_sample and with_read:
@@ -1436,7 +1434,7 @@ class EnaChecklist(DAComponent):
                     | (df["shown_when_no_sample"].isnull())
                 ]
             # df.set_index("name", drop=False, inplace=True)
-            df.fillna("", inplace=True)
+            df = df.astype(object).fillna("")
             checklist["fields"] = df.to_dict('index')
             return checklist
 
