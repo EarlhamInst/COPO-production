@@ -42,6 +42,9 @@ fi
 DB=${MONGO_DB:-admin}
 ROLE=readWrite
 
+echo "initiating Mongo replica set..."
+mongosh admin -u $ADMIN_USER -p $ADMIN_PASS --eval "rs.initiate()" || echo "replica set already initiated, continuing"
+
 echo "creating Mongo user: \"$USER\"..."
 mongosh admin -u $ADMIN_USER -p $ADMIN_PASS --eval "db.createUser({ user: '$USER', pwd: '$PASS', roles: [ { role: '$ROLE', db: '$DB' } ] });"
 
