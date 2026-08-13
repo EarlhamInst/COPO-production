@@ -94,10 +94,12 @@
                 the icons in the navigation pane (top right):
               </p>
               <ul class="step-list">
+                {% if ui_component != 'lims_integration' %}
                 <li>
                     <i class="material-symbols-outlined inline-nav-icon blue">folder_open</i>
                     <span class="content">— for <strong>data files</strong></span>
                 </li>
+                {% endif %}
                 <li>
                   <i class="material-symbols-outlined inline-nav-icon olive">labs</i>
                     <span class="content">— for <strong>samples</strong></span>
@@ -159,7 +161,9 @@ data-backdrop="static" data-keyboard="false">
               <div class="warning-content mb-20">
                 <p>Before uploading the <span id="span_checklist" class="text-bold"></span> manifest, please upload the following prerequisite data:</p>
                 <ul>
+                  {% if ui_component != 'lims_integration' %}
                   <li><strong>Data files</strong></li>
+                  {% endif %}
                   <li><strong>Samples</strong></li>
                 </ul>
               </div>

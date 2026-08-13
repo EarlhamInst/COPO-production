@@ -357,6 +357,96 @@ COMPONENTS_TOUR_CONFIG = {
             ],
         },
     },
+    'lims_integration': {
+        'order': [
+            'component_table',
+            'component_legend',
+            'sidebar_alert_message',
+            'sidebar_toggle_btn',
+            'select_all_button',
+            'select_filtered_button',
+            'clear_selection_button',
+            'export_csv_button',
+            'submit_record_button_sapio',
+            'profile_title',
+            'component_options',
+            'download_blank_manifest_title_button',
+            'new_spreadsheet_title_button',
+            'quick_tour_title_button',
+            'profile_component_icon_navigation_pane',
+        ],
+        'messages': {
+            'component_table_with_accessions': {
+                'title': 'Submitted data with accessions',
+                'content': (
+                    'View the submission status and the accessions assigned to the submissions in the data table.<br><br>'
+                    'To view the <strong>status</strong> of the submissions, refer to any of the following columns '
+                    'under the <strong>STUDY</strong> tab:'
+                    '<ul><li><strong>Status For Ckan</strong></li>'
+                    '<li><strong>Status For Sapio</strong></li>'
+                    '<li><strong>Error For Ckan</strong></li>'
+                    '<li><strong>Error For Sapio</strong></li>'
+                    '</ul><br>'
+                    'To view the <strong>accessions</strong>, refer to any of the following columns '
+                    'under the <strong>STUDY</strong> tab:'
+                    '<ul><li><strong>Accession For Ckan</strong></li>'
+                    '<li><strong>Accession For Sapio</strong></li>'
+                    '</ul>'
+                    '<p class="shepherd-note">An accession is a unique identifier assigned to the submitted data. '
+                    'The accessions can be used to reference the submitted data in public repositories.</p>'
+                ),
+                'placement': 'top',
+            },
+        },
+        'message_overrides': {
+            'component_table': {
+                'title': 'Uploaded data',
+                'content': (
+                    'View and manage the data that you have uploaded in this table.<br><br>'
+                    'To submit it, select one or more records in this table then, click '
+                    '<button class="tiny ui basic teal button submit-btn no-click">'
+                    '<i class="fa fa-paper-plane"></i>&nbsp;Submit to Sapio</button> located '
+                    'at the top right of the table.'
+                ),
+                'placement': 'right',
+            },
+            'component_legend': {
+                'title': 'Data submission status legend',
+                'content': (
+                    'Click this legend to see an explanation of the meaning of different colours that highlight the rows in the table.<br><br>'
+                    'Hover over each <i class="fa fa-info-circle component-legend-info-icon"></i> for detailed information.<br><br>'
+                    '<div class="shepherd-note">To track the status of your data submissions, refer to the following columns '
+                    'under the <strong>STUDY</strong> tab in the table:'
+                    '<ul><li><strong>Status For Ckan</strong></li>'
+                    '<li><strong>Status For Sapio</strong></li>'
+                    '</ul></div>'
+                ),
+                'placement': 'left',
+            },
+        },
+        'stages': {
+            'overview': [
+                'getting_started',
+                'profile_title',
+                'component_options',
+                'download_blank_manifest_title_button',
+                'new_spreadsheet_title_button',
+                'quick_tour_title_button',
+            ],
+            'creation': [
+                'component_table',
+                'component_legend',
+                'profile_component_icon_navigation_pane',
+                'quick_tour_title_button',
+            ],
+            'publish': [
+                'component_table_with_accessions',
+                'sidebar_alert_message',
+                'component_options_with_data_uploaded',
+                'quick_tour_title_button',
+            ],
+        },
+    },
     'profile': {
         'order': [
             'component_options',

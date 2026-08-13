@@ -252,14 +252,16 @@ class Command(BaseCommand):
         )
         submit_singlecell_single_sapio = RecordActionButton().create_record_action_button(
             name="submit_singlecell_single_sapio",
-            title="submit record to Sapio ",
-            label="To Sapio",
+            title="Submit record to Sapio ",
+            label="Submit to Sapio",
             type="single",
             error_message="Please select one record to submit",
-            icon_class="fa fa-info-circle",
+            icon_class="fa fa-paper-plane",
             action="submit_singlecell_sapio",
             icon_colour="teal",
-        )           
+            tour_id="submit_record_button_sapio",
+            
+        )
         download_permits_multiple = RecordActionButton().create_record_action_button(
             name="download_permits_multiple",
             title="Download permits",
@@ -636,7 +638,7 @@ class Command(BaseCommand):
 
         lims_integration = Component().create_component(
             name="lims_integration",
-            title="LIMS Integration",
+            title="LIMS integration",
             widget_icon="dna",
             widget_colour="grey",
             widget_icon_class="fa fa-dna",
@@ -645,7 +647,7 @@ class Command(BaseCommand):
             subtitle="#component_subtitle",
             schema_name="EI_EDP",
             base_component="singlecell",
-            button_label="LIMS integration"
+            button_label="LIMS"
         )
 
         assembly = Component().create_component(
@@ -851,7 +853,11 @@ class Command(BaseCommand):
         )
 
         lims_integration.title_buttons.set(
-            [new_singlecell_spreadsheet_template, download_blank_manifest_template]
+            [
+                new_singlecell_spreadsheet_template,
+                download_blank_manifest_template,
+                quick_tour_template,
+            ]
         )
 
         images_rembi.recordaction_buttons.set(
@@ -978,13 +984,14 @@ class Command(BaseCommand):
 
         edp = ProfileType().create_profile_type(
             type="ei_edp",
-            description="EDP",
+            description="Earlham Data Portal (EDP)",
             widget_colour="#FF0000",
             is_dtol_profile=False,
-            is_permission_required=False,
+            is_permission_required=True,
             pre_save_action="src.apps.ei_edp.utils.edp_utils.pre_save_edp_profile",
             post_save_action="src.apps.ei_edp.utils.edp_utils.post_save_edp_profile",
             post_delete_action="src.apps.ei_edp.utils.edp_utils.post_delete_edp_profile",
+            tour_id="profile_title",
         )
 
         # Assign components to profile types
