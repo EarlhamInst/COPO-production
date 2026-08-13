@@ -106,6 +106,7 @@ services:
       - ENA_V1_SAMPLE_SERVICE=https://www.ebi.ac.uk/ena/submit/drop-box/samples
       - ZENODOURL=https://zenodo.org/api
       - ZENODOTOKEN_FILE=/run/secrets/copo_zenodo_token
+      - ENA_BROWSER_SERVICE=https://www.ebi.ac.uk/ena/browser/api
     depends_on:
       - redis
       - postgres

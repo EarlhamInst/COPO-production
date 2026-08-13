@@ -442,12 +442,12 @@ class Component(models.Model):
         schema_name="",
         base_component="",
         group_name="",
-        button_label=None,
+        button_label="",
         material_icon="",
     ):
         self.name = name.lower()
         self.title = title
-        self.button_label = f'Manage {title}' if button_label is None else button_label
+        self.button_label = button_label if button_label else title
         self.subtitle = subtitle
         self.widget_icon = widget_icon
         self.widget_colour = widget_colour

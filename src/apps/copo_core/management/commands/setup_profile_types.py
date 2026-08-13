@@ -645,6 +645,7 @@ class Command(BaseCommand):
             subtitle="#component_subtitle",
             schema_name="EI_EDP",
             base_component="singlecell",
+            button_label="LIMS integration"
         )
 
         assembly = Component().create_component(

@@ -121,11 +121,12 @@ services:
       - DJANGO_SUPERUSER_EMAIL=admin@test.com
       - http_protocol=http
       - ZENODOURL=https://zenodo.org/api
-      - ZENODOTOKEN=${ZENODOTOKEN}
+      - ZENODOTOKEN=${vault_zenodo_api_token}
       - ENA_BROWSER_SERVICE=https://www.ebi.ac.uk/ena/browser/api
-      - SAPIO_USERNAME=${SAPIO_USERNAME}
-      - SAPIO_PASSWORD=${SAPIO_PASSWORD}
-      - SAPIO_API_URL=${SAPIO_API_URL}
+      - SAPIO_USERNAME=${vault_sapio_username}
+      - SAPIO_PASSWORD=${vault_sapio_password}
+      - SAPIO_API_TOKEN=${vault_sapio_api_token}
+      - SAPIO_API_URL=https://earlham-gold-lims-stag.exemplareln.com/webservice/api
     depends_on:
       - copo_redis
       - copo_postgres

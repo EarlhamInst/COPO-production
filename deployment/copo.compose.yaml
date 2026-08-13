@@ -107,10 +107,11 @@ services:
       - ENA_V1_SAMPLE_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples
       - ZENODOURL=https://zenodo.org/api
       - ZENODOTOKEN_FILE=/run/secrets/copo_zenodo_token
+      - ENA_BROWSER_SERVICE=https://www.ebi.ac.uk/ena/browser/api
       - SAPIO_USERNAME_FILE=/run/secrets/sapio_username
       - SAPIO_PASSWORD_FILE=/run/secrets/sapio_password
+      - SAPIO_API_TOKEN_FILE=/run/secrets/sapio_api_token
       - SAPIO_API_URL=https://earlham-ded-gold-lims.exemplareln.com/webservice/api
-      _ ENA_BROWSER_SERVICE=https://www.ebi.ac.uk/ena/browser/api
     depends_on:
       - redis
       - postgres

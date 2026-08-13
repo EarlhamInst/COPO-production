@@ -11,6 +11,7 @@ from channels.layers import get_channel_layer
 from django_tools.middlewares import ThreadLocal
 from django.conf import settings
 from functools import wraps
+from pandas import isna
 from tenacity import (
     retry,
     stop_after_attempt,
@@ -555,3 +556,9 @@ def build_unified_context(context_urls, output_path):
     # Save the merged context to a file
     with open(output_path, 'w') as f:
         json.dump(merged, f, indent=2)
+
+
+def safe_stringify(value):
+    # Values (or text) can sometimes be non-strings like NaN
+    # and float in pandas DataFrame so convert them to string
+    return '' if isna(value) else str(value)

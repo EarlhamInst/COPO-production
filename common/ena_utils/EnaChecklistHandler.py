@@ -12,7 +12,8 @@ from common.utils.helpers import (
     get_not_deleted_flag,
     get_env,
     notify_ena_object_status,
-    extract_exact_phrases_from_regex
+    extract_exact_phrases_from_regex,
+    safe_stringify,
 )
 from django_tools.middlewares import ThreadLocal
 import inspect
@@ -732,19 +733,24 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
 
         data_validation_column_index = 0
         for field in checklist["fields"].values():
-            name = field["label"] if field["mandatory"] == "mandatory"  else field["label"] + " (optional)"
-            type = field.get("type","TEXT_FIELD")
+            raw_label = safe_stringify(field.get("label", ""))
+            name = (
+                raw_label
+                if field["mandatory"] == "mandatory"
+                else raw_label + " (optional)"
+            )
+            field_type = field.get("type", "TEXT_FIELD")
             if name not in df1.columns:
                 continue
             column_index = df1.columns.get_loc(name)
             column_length = len(name)
             cell_format = writer.book.add_format()
-            if type.startswith("TEXT_"):
+            if field_type.startswith("TEXT_"):
                 cell_format.set_num_format('@')
             writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
 
             if "choice" in field:
-                choice = field["choice"]
+                choice = [safe_stringify(x) for x in field["choice"] if not pd.isna(x)]
                 column_letter = get_column_letter(column_index + 1)
                 cell_start_end = '%s2:%s1048576' % (column_letter, column_letter)
                 if len(choice) > 0:
@@ -753,23 +759,53 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
                     if number_of_char_for_choice <= 255:
                         source = choice
                     else:
-                        s = pd.Series(choice, name=field["label"])
-                        s.to_frame().to_excel(writer, sheet_name="data_values", index=False, header=True, startrow=0, startcol=data_validation_column_index)
-                        column_letter = get_column_letter(data_validation_column_index + 1)
-                        column_length = max(s.astype(str).map(len).max(), len(field["name"]))
-                        writer.sheets["data_values"].set_column(data_validation_column_index, data_validation_column_index, column_length)
-                        source = "=%s!$%s$2:$%s$%s" % ("data_values", column_letter, column_letter, str(len(choice) + 1))
+                        s = pd.Series(choice, name=raw_label)
+                        s.to_frame().to_excel(
+                            writer,
+                            sheet_name="data_values",
+                            index=False,
+                            header=True,
+                            startrow=0,
+                            startcol=data_validation_column_index,
+                        )
+                        column_letter = get_column_letter(
+                            data_validation_column_index + 1
+                        )
+                        column_length = max(
+                            s.astype(str).map(len).max(),
+                            len(safe_stringify(field.get("name", ""))),
+                        )
+                        writer.sheets["data_values"].set_column(
+                            data_validation_column_index,
+                            data_validation_column_index,
+                            column_length,
+                        )
+                        source = "=%s!$%s$2:$%s$%s" % (
+                            "data_values",
+                            column_letter,
+                            column_letter,
+                            str(len(choice) + 1),
+                        )
                         data_validation_column_index = data_validation_column_index + 1
-                    
-                    writer.sheets[sheet_name].data_validation(cell_start_end,
-                                                            {'validate': 'list',
-                                                            'source': source,
-                                                            'show_error': 1 if type == "TEXT_CHOICE_FIELD" else 0,
-                                                            })
-        sheet_name = 'field_descriptions'           
+
+                    writer.sheets[sheet_name].data_validation(
+                        cell_start_end,
+                        {
+                            'validate': 'list',
+                            'source': source,
+                            'show_error': 1 if field_type == "TEXT_CHOICE_FIELD" else 0,
+                        },
+                    )
+        sheet_name = 'field_descriptions'
         df.to_excel(writer, sheet_name=sheet_name)
 
         for column in df.columns:
-            column_length = max(df[column].astype(str).map(len).max(), len(column))
-            column_index = df.columns.get_loc(column)+1
-            writer.sheets[sheet_name].set_column(column_index, column_index, column_length)    
+            # Normalise column names which can be non-strings like NaN and float
+            normalised_column_name = safe_stringify(column)
+            column_length = max(
+                df[normalised_column_name].astype("string").str.len().max(), len(str(normalised_column_name))
+            )
+            column_index = df.columns.get_loc(column) + 1
+            writer.sheets[sheet_name].set_column(
+                column_index, column_index, column_length
+            )
