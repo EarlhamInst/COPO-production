@@ -1446,8 +1446,10 @@ class EnaChecklist(DAComponent):
 
     # obsolete
     def get_sample_checklists_no_fields(self):
+        # Get all sample checklists with 'ERC' or 'read' as the checklist
+        # ID prefix except the default sample checklist (ERC000011)
         return self.get_all_records_columns(
-            filter_by={"primary_id": {"$regex": "^(ERC|read)"}},
+            filter_by={"primary_id": {"$regex": "^(ERC|read)", "$nin": ["ERC000011"]}},
             projection={"primary_id": 1, "name": 1, "description": 1},
         )
 
@@ -1458,8 +1460,10 @@ class EnaChecklist(DAComponent):
         )
 
     def get_general_sample_checklists_no_fields(self):
+        # Get all general sample checklists with 'ERC' or 'COPO' as the checklist
+        # ID prefix except the default sample checklist (ERC000011)
         return self.get_all_records_columns(
-            filter_by={"primary_id": {"$regex": "^(ERC|COPO)"}},
+            filter_by={"primary_id": {"$regex": "^(ERC|COPO)", "$nin": ["ERC000011"]}},
             projection={"primary_id": 1, "name": 1, "description": 1},
         )
 
