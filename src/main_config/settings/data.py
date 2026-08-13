@@ -114,6 +114,7 @@ ENA_CHECKLIST_CONFIG = {
     "ERT000002": {"skip": ["STRAIN", "LAB_HOST"]},
     "ERT000020": {"skip": ["STRAIN", "SPECVOUCH", "VARIETY", "IDBY"]},
 }
+ENA_BROWSER_API_URL = {'xml':'https://www.ebi.ac.uk/ena/browser/api/xml'}
 
 ENA_CHECKLIST_URL = [
     "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/ERT000002?type=sequence",
