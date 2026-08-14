@@ -11,6 +11,7 @@ from common.ena_utils.EnaChecklistHandler import ChecklistHandler, ReadChecklist
 from common.ena_utils.EnaReadPlatformHandler import EnaReadPlatformHandler
 from common.ena_utils.ena_record_synchroniser import EnaRecordSynchroniser
 from common.ena_utils.FileTransferUtils import housekeeping_local_uploads
+from .utils import deactivate_expired_banners
 
 
 REDIS_CLIENT = redis.Redis(host=settings.SESSION_REDIS_HOST, port=settings.SESSION_REDIS_PORT)
@@ -99,4 +100,11 @@ def update_ena_read_checklist(self):
 def update_ena_read_platform(self):
     Logger().debug("Running update_ena_read_platform")
     EnaReadPlatformHandler().update_platform()
+    return True
+
+
+@app.task(bind=True, base=CopoBaseClassForTask)
+def process_expired_banners(self):
+    Logger().debug("Running process_expired_banners")
+    deactivate_expired_banners()
     return True

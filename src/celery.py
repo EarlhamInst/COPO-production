@@ -140,8 +140,12 @@ app.conf.beat_schedule = {
     },
     'sync_system_records_with_ena': {
         'task': 'src.apps.copo_sample.tasks.sync_system_records_with_ena',
-        'schedule': timedelta(weeks=1)
-    }
+        'schedule': timedelta(weeks=1),
+    },
+    'process_expired_banners': {
+        'task': 'src.apps.copo_core.tasks.process_expired_banners',
+        'schedule': timedelta(minutes=5),
+    },
 }
 
 app.conf.task_routes = {
