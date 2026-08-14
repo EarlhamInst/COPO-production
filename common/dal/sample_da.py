@@ -1107,7 +1107,7 @@ class Sample(DAComponent):
 
         if samples:
             df = pd.DataFrame(samples)
-            df = df.fillna('')
+            df = df.astype(object).fillna('')
             schema = [
                 x
                 for x in sc

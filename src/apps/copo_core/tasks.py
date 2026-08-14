@@ -9,6 +9,7 @@ from functools import wraps
 from django.conf import settings
 from common.ena_utils.EnaChecklistHandler import ChecklistHandler, ReadChecklistHandler
 from common.ena_utils.EnaReadPlatformHandler import EnaReadPlatformHandler
+from common.ena_utils.ena_record_synchroniser import EnaRecordSynchroniser
 from common.ena_utils.FileTransferUtils import housekeeping_local_uploads
 
 
@@ -73,6 +74,11 @@ def process_housekeeping(self):
     Logger().debug("Running housekeeping local_uploads")
     housekeeping_local_uploads()
 
+    """
+    housekeep sync reports
+    """
+    Logger().debug("Running housekeeping remove_old_synced_reports")
+    EnaRecordSynchroniser().remove_old_synced_reports()
 
     return True
 

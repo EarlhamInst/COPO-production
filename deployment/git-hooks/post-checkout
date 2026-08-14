@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+#
+# post-checkout: re-sync the local database to the checked-out branch.
+#
+# COPO loads its UI schemas into Mongo and its profile types / components into
+# Postgres *once*, then serves them from the database. Switching to a branch
+# whose definitions differ (e.g. main <-> edp) leaves the database describing
+# the OLD branch, which shows up as import errors / profiles that won't render.
+#
+# This hook detects when the schema or profile-type definitions differ between
+# the branch you left and the one you switched to, and re-runs the setup
+# commands inside the running web container so Mongo + Postgres match the code.
+#
+# It only runs on a real branch switch, and only when the relevant files
+# actually changed — ordinary branch hops stay fast. Skip explicitly with:
+#   COPO_SKIP_SETUP=1 git checkout <branch>
+#
+# Install (once per clone): point git at this tracked hooks directory:
+#   git config core.hooksPath deployment/git-hooks
+
+prev_head="$1"
+new_head="$2"
+branch_flag="$3"   # 1 = branch checkout, 0 = file checkout
+
+# Only act on branch switches, not `git checkout -- <file>`.
+[ "$branch_flag" = "1" ] || exit 0
+# No-op when HEAD didn't actually move (e.g. checkout of the current branch).
+[ "$prev_head" = "$new_head" ] && exit 0
+# Allow an explicit opt-out.
+[ -n "$COPO_SKIP_SETUP" ] && exit 0
+
+# Paths whose changes mean the database needs re-seeding.
+watch_paths=(
+  "common/schemas"
+  "src/apps/*/management/commands/setup_schemas.py"
+  "src/apps/*/management/commands/setup_profile_types.py"
+)
+
+# Did any watched path change between the two commits? If git can't compare
+# (shallow clone, etc.) we err on the side of running.
+if git diff --quiet "$prev_head" "$new_head" -- ${watch_paths[@]} 2>/dev/null; then
+  exit 0
+fi
+
+# Find the running web container (override with COPO_WEB_CONTAINER).
+container="${COPO_WEB_CONTAINER:-$(docker ps --format '{{.Names}}' 2>/dev/null | grep -E 'copo_web|copo-web' | head -1)}"
+
+if [ -z "$container" ]; then
+  echo "[copo] Schema/profile-type definitions changed on this branch, but no running"
+  echo "[copo] web container was found. Once the stack is up, run:"
+  echo "[copo]   docker exec -w /copo <web-container> python manage.py setup_schemas"
+  echo "[copo]   docker exec -w /copo <web-container> python manage.py setup_profile_types"
+  exit 0
+fi
+
+echo "[copo] Branch definitions changed — re-seeding the database in '$container'..."
+# Schemas first (profile types / components reference schema-derived data).
+docker exec -w /copo "$container" python manage.py setup_schemas \
+  && docker exec -w /copo "$container" python manage.py setup_profile_types \
+  && echo "[copo] Database re-synced to $(git rev-parse --abbrev-ref HEAD)." \
+  || echo "[copo] Re-seed failed — run setup_schemas / setup_profile_types manually."
+
+exit 0

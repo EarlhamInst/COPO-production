@@ -24,11 +24,95 @@
             </p>
         </div>        
     </div>
-    <!-- <div class="repositories-div">
+    <div class="repositories-div" style="margin-top: 1.5em;">
+        <h4 class="page-title-custom">Submission repository credentials</h4>
+        <p class="text-muted">Supply your own credentials for a repository, or leave them blank to use COPO's shared defaults.</p>
+        {% csrf_token %}
         {% for r in repos %}
-            {{ r.name }}
+            <div class="repo-credential-card" data-repo-key="{{ r.key }}"
+                 style="border: 1px solid #ccc; border-radius: 6px; padding: 1em; margin-bottom: 1em; max-width: 640px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>{{ r.label }}</strong>
+                    {% if r.is_valid %}
+                        <span class="repo-cred-status label label-success">Validated</span>
+                    {% elif r.has_credentials %}
+                        <span class="repo-cred-status label label-warning">Saved, not validated</span>
+                    {% else %}
+                        <span class="repo-cred-status label label-default">Using COPO default</span>
+                    {% endif %}
+                </div>
+                <div style="margin-top: 0.75em;">
+                    {% for f in r.fields %}
+                        <div class="form-group">
+                            <label for="{{ r.key }}_{{ f.name }}">{{ f.label }}</label>
+                            <input type="{% if f.secret %}password{% else %}text{% endif %}"
+                                   class="form-control repo-cred-input" id="{{ r.key }}_{{ f.name }}"
+                                   data-field-name="{{ f.name }}" autocomplete="off"
+                                   placeholder="{{ f.help_text }}">
+                            {% if f.help_text %}<small class="text-muted">{{ f.help_text }}</small>{% endif %}
+                        </div>
+                    {% endfor %}
+                    <button type="button" class="btn btn-primary btn-sm repo-cred-save">Save &amp; validate</button>
+                    <button type="button" class="btn btn-danger btn-sm repo-cred-delete"
+                            style="{% if not r.has_credentials %}display:none;{% endif %}">Delete stored credentials</button>
+                    <span class="repo-cred-feedback" style="margin-left: 0.75em;"></span>
+                </div>
+            </div>
         {% endfor %}
-    </div> -->
+    </div>
 {% endblock %}
 
-{% block js_block %}{% endblock %}
+{% block js_block %}
+<script>
+    $(function () {
+        var saveUrl = "{% url 'copo_core:save_repository_credentials' %}";
+        var deleteUrl = "{% url 'copo_core:delete_repository_credentials' %}";
+        var csrfToken = $("input[name=csrfmiddlewaretoken]").val();
+
+        $(".repo-cred-save").on("click", function () {
+            var card = $(this).closest(".repo-credential-card");
+            var feedback = card.find(".repo-cred-feedback");
+            var payload = { repo_key: card.data("repo-key"), csrfmiddlewaretoken: csrfToken };
+            card.find(".repo-cred-input").each(function () {
+                payload[$(this).data("field-name")] = $(this).val();
+            });
+
+            feedback.removeClass("text-success text-danger").text("Validating...");
+            $.post(saveUrl, payload).done(function (resp) {
+                var badge = card.find(".repo-cred-status");
+                if (resp.is_valid) {
+                    feedback.addClass("text-success").text(resp.message);
+                    badge.attr("class", "repo-cred-status label label-success").text("Validated");
+                } else {
+                    feedback.addClass("text-danger").text(resp.message);
+                    badge.attr("class", "repo-cred-status label label-warning").text("Saved, not validated");
+                }
+                // Credentials now exist, so the delete control becomes relevant.
+                card.find(".repo-cred-delete").show();
+            }).fail(function (xhr) {
+                feedback.addClass("text-danger").text("Error: " + (xhr.responseText || xhr.statusText));
+            });
+        });
+
+        $(".repo-cred-delete").on("click", function () {
+            var card = $(this).closest(".repo-credential-card");
+            var feedback = card.find(".repo-cred-feedback");
+            var deleteBtn = $(this);
+            feedback.removeClass("text-success text-danger").text("Deleting...");
+            $.post(deleteUrl, { repo_key: card.data("repo-key"), csrfmiddlewaretoken: csrfToken })
+                .done(function (resp) {
+                    feedback.removeClass("text-danger").addClass("text-success").text(resp.message);
+                    // Back to COPO defaults: clear inputs, reset badge, hide delete.
+                    card.find(".repo-cred-input").val("");
+                    card.find(".repo-cred-status")
+                        .attr("class", "repo-cred-status label label-default")
+                        .text("Using COPO default");
+                    deleteBtn.hide();
+                })
+                .fail(function (xhr) {
+                    feedback.addClass("text-danger").text("Error: " + (xhr.responseText || xhr.statusText));
+                });
+        });
+    });
+</script>
+{% endblock %}

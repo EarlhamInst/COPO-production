@@ -948,17 +948,28 @@ class SinglecellschemasSpreadsheet:
                 self.schemas = singlecell["schemas"]
 
                 if self.schemas:
+                    for component in list(self.schemas.keys()):
+                        component_schema_df = pd.DataFrame.from_records(
+                            self.schemas[component]
+                        )
+                        component_schema_df = component_schema_df.drop(
+                            component_schema_df[
+                                pd.isna(component_schema_df[self.checklist_id])
+                            ].index
+                        )
+                        if component_schema_df.empty:
+                            self.schemas.pop(component, None)
+                            continue
+                        component_schema_df = component_schema_df.astype(object).fillna("")
+                        component_schema_df["choice"] = component_schema_df[
+                            component_schema_df["term_type"] == "enum"
+                        ]["term_name"].apply(lambda x: singlecell["enums"].get(x, []))
+                        component_schema_df["mandatory"] = component_schema_df[
+                            self.checklist_id
+                        ]
+                        component_schema_df.set_index(keys="term_name", inplace=True)
 
-                    for key, df in self.data.items():
-                        #df = df.iloc[3:]  # remove the first 3 rows
-                        df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
-                        df = df.apply(lambda x: x.astype("string"))
-                        df = df.apply(lambda x: x.str.strip())
-                        # remove the rows with all empty values or 0
-                        df = df.replace("", np.nan)
-                        df.dropna(how="all", inplace=True)
-                        df = df.astype(object).fillna("")
-                        self.data[key] = df
+                        self.schemas[component] = component_schema_df.to_dict("index")
 
                     for component, df in self.data.items():
                         if component not in self.schemas.keys():

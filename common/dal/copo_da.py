@@ -1444,13 +1444,13 @@ class EnaChecklist(DAComponent):
             df = pd.DataFrame.from_dict(checklist["fields"], orient='index')
 
             if "read_field" in df.columns:
-                df["read_field"] = df["read_field"].fillna(False)
+                df["read_field"] = df["read_field"].astype(object).fillna(False)
 
             if for_dtol:
-                df["for_dtol"] = df["for_dtol"].fillna(True) if "for_dtol" in df.columns else True
+                df["for_dtol"] = df["for_dtol"].astype(object).fillna(True) if "for_dtol" in df.columns else True
                 df = df.loc[df["for_dtol"] == True]
             else:
-                df["for_dtol"] = df["for_dtol"].fillna(False) if "for_dtol" in df.columns else False
+                df["for_dtol"] = df["for_dtol"].astype(object).fillna(False) if "for_dtol" in df.columns else False
                 df = df.loc[df["for_dtol"] == False]
 
             if with_sample and with_read:
@@ -1471,8 +1471,10 @@ class EnaChecklist(DAComponent):
 
     # obsolete
     def get_sample_checklists_no_fields(self):
+        # Get all sample checklists with 'ERC' or 'read' as the checklist
+        # ID prefix except the default sample checklist (ERC000011)
         return self.get_all_records_columns(
-            filter_by={"primary_id": {"$regex": "^(ERC|read)"}},
+            filter_by={"primary_id": {"$regex": "^(ERC|read)", "$nin": ["ERC000011"]}},
             projection={"primary_id": 1, "name": 1, "description": 1},
         )
 
@@ -1483,8 +1485,10 @@ class EnaChecklist(DAComponent):
         )
 
     def get_general_sample_checklists_no_fields(self):
+        # Get all general sample checklists with 'ERC' or 'COPO' as the checklist
+        # ID prefix except the default sample checklist (ERC000011)
         return self.get_all_records_columns(
-            filter_by={"primary_id": {"$regex": "^(ERC|COPO)"}},
+            filter_by={"primary_id": {"$regex": "^(ERC|COPO)", "$nin": ["ERC000011"]}},
             projection={"primary_id": 1, "name": 1, "description": 1},
         )
 

@@ -75,6 +75,36 @@ def save_user_details(sender, instance, **kwargs):
     instance.userdetails.save()
 
 
+class UserRepositoryCredential(models.Model):
+    """A user's own credentials for a submission repository (ENA, Zenodo, ...).
+
+    One row per (user, repo_key). The secret parts live in `payload` as a
+    Fernet-encrypted JSON blob, so each repository stores whatever shape it
+    needs (ENA: user + password; Zenodo: a token) in the same column. Nothing
+    here is read at import time — the resolver looks a row up per submission,
+    which is what makes per-user credentials with a COPO-default fallback
+    possible.
+    """
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="repository_credentials"
+    )
+    repo_key = models.CharField(max_length=50)
+    # Fernet token over a JSON object; opaque to the DB. Never store plaintext.
+    payload = models.TextField(blank=True)
+    validated_at = models.DateTimeField(null=True, blank=True)
+    is_valid = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # A user has at most one credential set per repository.
+        unique_together = ("user", "repo_key")
+
+    def __str__(self):
+        return f"{self.user.username}:{self.repo_key}"
+
+
 class Repository(models.Model):
     class Meta:
         managed = False  # No database table creation or deletion operations \

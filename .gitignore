@@ -171,3 +171,6 @@ logs/*
 # Ignore update log files produced by the 'handle_update_requests.py' script
 update_request_*.txt
 update_request_errors*.log
+
+# Ignore 'reports' folder...produced when syncing system records with ENA
+reports/
