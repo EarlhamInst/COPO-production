@@ -145,7 +145,7 @@ class EnaTaggedSequence:
                 df.to_excel(writer, sheet_name=sheet_name)
 
                 for column in df.columns:
-                    column_length = max(df[column].fillna('').astype(str).map(len).max(), len(column))
+                    column_length = max(df[column].astype(object).fillna('').astype(str).map(len).max(), len(column))
                     column_index = df.columns.get_loc(column)+1
                     writer.sheets[sheet_name].set_column(column_index, column_index, column_length)
 
