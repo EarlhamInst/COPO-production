@@ -60,3 +60,6 @@ class Command(BaseCommand):
         asg_managers, created = Group.objects.get_or_create(name='asg_sample_managers')
         # receive asg notification emails
         asg_notifiers, created = Group.objects.get_or_create(name='asg_sample_notifiers')
+        # view edp functionality
+        edp_group, create = Group.objects.get_or_create(name='ei_edp_users')
+        edp_managers, created = Group.objects.get_or_create(name='ei_edp_managers')

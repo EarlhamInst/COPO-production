@@ -1,3 +1,5 @@
+from django.contrib.auth.models import Group
+
 from common.utils.logger import Logger
 from common.dal.profile_da import Profile
 from src.apps.copo_single_cell_submission.utils.da import Singlecell, SinglecellSchemas
@@ -16,6 +18,23 @@ l = Logger()
 def get_sapio_sample_type_options():
     # Sample-type choices for the profile form dropdown, sourced from the LIMS.
     return get_lims_adapter().get_sample_type_options()
+
+def _add_to_edp_django_group(user_ids, action='add'):
+    '''
+    Adds users to the 'ei_edp_users' Django group 
+    by their IDs if they are not a member.
+    '''
+    if not user_ids:
+        return
+    
+    edp_django_group, _ = Group.objects.get_or_create(name='ei_edp_users')
+    
+    if action == 'add':
+        edp_django_group.user_set.add(*user_ids)
+    elif action == 'remove':
+        edp_django_group.user_set.remove(*user_ids)
+    else:
+        l.error("Error occurred when adding user to EDP group. Invalid action. Use 'add' or 'remove'.")
 
 def pre_save_edp_profile(auto_fields, **kwargs):
     """Validate EDP profile fields before saving.
@@ -94,10 +113,26 @@ def post_save_edp_profile(profile):
                                     and user['email'] != current_user.email
                                 }
             if new_shared_user:
-                CopoGroup().add_users_to_group(group_id=group_id, user_ids=list(new_shared_user.keys()))
-                Email().notify_shared_profile_to_existing_user(profile, new_shared_user.values())
+                # Add users to the shared profile group
+                CopoGroup().add_users_to_group(
+                    group_id=group_id, user_ids=list(new_shared_user.keys())
+                )
 
-        CopoGroup().remove_users_from_group(group_id=group_id, user_ids=incorrect_shared_user_ids)
+                # Add users to the 'ei_edp_users' Django group (by IDs)
+                _add_to_edp_django_group(list(map(int, new_shared_user.keys())))
+
+                # Send an email about the shared profile
+                Email().notify_shared_profile_to_existing_user(
+                    profile, new_shared_user.values()
+                )
+                
+        # Remove users who are no longer in the email list from the shared profile group
+        CopoGroup().remove_users_from_group(
+            group_id=group_id, user_ids=incorrect_shared_user_ids
+        )
+        
+        # Remove users from the 'ei_edp_users' Django group
+        _add_to_edp_django_group(list(map(int, incorrect_shared_user_ids)), action='remove')
 
         if missing_user_emails:
             # Generate a UUID token per email address so uninvited users can claim access
@@ -171,10 +206,17 @@ def join_shared_edp_profile(profile, token):
     If the user has no email address yet (e.g. a new ORCID-only account), the
     token is used to look up and assign their email before adding them to the
     COPO group.
+
+    In addition, if the customer is not already a member of the 'ei_edp_users' group,
+    the customer is added to it so that the EDP profile can be accessed in the
+    profile type dropdown menu.
     """
     type = profile["type"]
     if type != "ei_edp":
-        return {"status": "error", "message": f"Profile {profile['_id']} is not an EDP profile."}
+        return {
+            "status": "error",
+            "message": f"Profile {profile['_id']} is not an Earlham Data Profile (EDP) profile.",
+        }
     user = helpers.get_current_user()
     if user.id == profile["user_id"]:
         return {"status": "error", "message": f"Profile owner cannot join the profile."}
@@ -189,8 +231,11 @@ def join_shared_edp_profile(profile, token):
 
     customer_emails = profile.get("customer_emails","")
     if customer_emails:
-        emails = [email.strip() for email in customer_emails.split(";")
-                   if email.strip()]
+        emails = [
+            email.strip()
+            for email in customer_emails.split(CUSTOMER_EMAIL_SPLITTER)
+            if email.strip()
+        ]
 
         if user.email in emails:
             groups = CopoGroup().get_group_by_profile(profile_id=profile["_id"])
@@ -198,7 +243,13 @@ def join_shared_edp_profile(profile, token):
                 group_id = CopoGroup().create_group_for_profile(profile_id=profile["_id"], group_name=profile["title"], owner_id=profile["user_id"])
             else:
                 group_id = groups[0]["_id"]
+            
+            # Add user to the shared profile group
             CopoGroup().add_user_to_group(group_id=group_id, user_id=str(user.id))
+
+            # Add user to the 'ei_edp_users' Django group by ID
+            _add_to_edp_django_group([user.id])
+
             return {"status": "success"}
         return {
             "status": "error",
