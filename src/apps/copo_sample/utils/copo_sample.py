@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 
 from bson import ObjectId
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from lxml import etree
 from more_itertools import chunked
 

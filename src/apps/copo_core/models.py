@@ -12,7 +12,7 @@ from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django_tools.middlewares.ThreadLocal import get_current_user
+from django_tools.middlewares.threadlocal import get_current_user
 from django.conf import settings
 from django.utils import timezone
 from rest_framework.authtoken.models import Token

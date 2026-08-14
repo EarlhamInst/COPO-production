@@ -1,5 +1,5 @@
 from django.conf import settings
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from common.utils.helpers import get_env, get_datetime, get_deleted_flag, get_not_deleted_flag
 from common.dal.copo_da import EnaFileTransfer, DataFile
 from common.dal.submission_da import Submission
@@ -15,7 +15,7 @@ from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_projec
 from common.utils import html_tags_utils as htags
 
 from django.conf import settings
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 
 import xml.etree.ElementTree as ET
 import requests

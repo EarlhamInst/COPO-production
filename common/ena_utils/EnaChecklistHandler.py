@@ -14,7 +14,7 @@ from common.utils.helpers import (
     notify_ena_object_status,
     extract_exact_phrases_from_regex
 )
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 import inspect
 import math
 from common.schema_versions.lookup import dtol_lookups as lookup

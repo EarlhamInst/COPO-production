@@ -55,7 +55,7 @@ django-gollum==1.0.1
 django-html-validator==0.5.1
 django-json-widget==2.1.1
 django-redis-sessions==0.6.2
-django-tools==0.58.0
+django-tools==0.59.0
 django-user-agents==0.4.0
 django-crispy-forms==2.6
 crispy-bootstrap5==2026.3
