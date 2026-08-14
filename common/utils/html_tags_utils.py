@@ -513,7 +513,7 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
         df = pd.DataFrame(records)
         if  "_id" in additional_columns:
             df = df.merge(additional_columns, on='_id', how="left")
-            df = df.fillna("")
+            df = df.astype(object).fillna("")
 
         df['s_n'] = df.index
 
@@ -541,7 +541,7 @@ def generate_table_records(profile_id=str(), da_object=None, record_id=str(), ad
             columns.append(dict(data=x["id"], title=x["label"], defaultContent='', render="render_ena_accession_function" if x["id"].lower().endswith("accession") else "" ))
             if x["id"] not in df_columns:
                 df[x["id"]] = str()
-            df[x["id"]] = df[x["id"]].fillna('')
+            df[x["id"]] = df[x["id"]].astype(object).fillna('')
 
             if "dtol" not in x.get("specifications", []) or "asg" not in x.get("specifications", []):
                 df[x["id"]] = df[x["id"]].apply(

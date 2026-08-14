@@ -54,10 +54,10 @@ class CgCoreSchemas:
         path_to_spec = self.cg_wizard_stages
         df = pd.read_csv(path_to_spec)
 
-        df['stage_label'] = df['stage_label'].fillna("Description")
-        df['stage_id'] = df['stage_id'].fillna("000")
+        df['stage_label'] = df['stage_label'].astype(object).fillna("Description")
+        df['stage_id'] = df['stage_id'].astype(object).fillna("000")
         df.stage_id = df.stage_id.astype(str)
-        df['stage_message'] = df['stage_message'].fillna("CG Core stage")
+        df['stage_message'] = df['stage_message'].astype(object).fillna("CG Core stage")
 
         return df
 
@@ -299,7 +299,7 @@ class CgCoreSchemas:
         new_dict_series = pd.Series(new_dict)
         new_dict_series.index = new_dict_series.index.str.lower()
         schema_df['vals'] = new_dict_series
-        schema_df['vals'] = schema_df['vals'].fillna('')
+        schema_df['vals'] = schema_df['vals'].astype(object).fillna('')
 
         schema_df = schema_df[['ref', 'id', 'vals', 'prefix', 'label']]
 
@@ -390,15 +390,15 @@ class CgCoreSchemas:
         df = df[cid_series[~cid_series.isna()].index]
 
         # substitute for NANs
-        df.loc['LABEL'] = df.loc['LABEL'].fillna('**No label**')
-        df.loc['HELP_TIP'] = df.loc['HELP_TIP'].fillna('n/a')
-        df.loc['COPO_CONTROL'] = df.loc['COPO_CONTROL'].fillna('text')
-        df.loc['TYPE'] = df.loc['TYPE'].fillna('string')
-        df.loc['DEPENDENCY'] = df.loc['DEPENDENCY'].fillna('')
-        df.loc['COPO_DATA_SOURCE'] = df.loc['COPO_DATA_SOURCE'].fillna('')
-        df.loc['REPO'] = df.loc['REPO'].fillna('')
-        df.loc['REPO_PREFIX'] = df.loc['REPO_PREFIX'].fillna('')
-        df.loc['Wizard_Stage_ID'] = df.loc['Wizard_Stage_ID'].fillna('-1')
+        df.loc['LABEL'] = df.loc['LABEL'].astype(object).fillna('**No label**')
+        df.loc['HELP_TIP'] = df.loc['HELP_TIP'].astype(object).fillna('n/a')
+        df.loc['COPO_CONTROL'] = df.loc['COPO_CONTROL'].astype(object).fillna('text')
+        df.loc['TYPE'] = df.loc['TYPE'].astype(object).fillna('string')
+        df.loc['DEPENDENCY'] = df.loc['DEPENDENCY'].astype(object).fillna('')
+        df.loc['COPO_DATA_SOURCE'] = df.loc['COPO_DATA_SOURCE'].astype(object).fillna('')
+        df.loc['REPO'] = df.loc['REPO'].astype(object).fillna('')
+        df.loc['REPO_PREFIX'] = df.loc['REPO_PREFIX'].astype(object).fillna('')
+        df.loc['Wizard_Stage_ID'] = df.loc['Wizard_Stage_ID'].astype(object).fillna('-1')
 
         return df
 

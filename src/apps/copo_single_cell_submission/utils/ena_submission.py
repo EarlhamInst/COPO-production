@@ -3,6 +3,8 @@ from .da import Singlecell, SinglecellSchemas
 from common.utils.logger import Logger
 from common.utils.helpers import  get_not_deleted_flag, get_env
 from common.ena_utils.ena_helper import EnaSubmissionHelper
+from common.repositories import credentials as credential_resolver
+from django.contrib.auth.models import User
 import tempfile
 from .da import SinglecellSchemas
 import pandas as pd
@@ -35,6 +37,15 @@ def _reset_study_status_on_failure(singlecell, study_id, repository, error_msg):
             l.exception(f"Failed to reset study status for study_id={study_id}")
 
 
+def _resolve_submitter_credentials(sub):
+    """Resolve the Webin credentials for a submission's submitter.
+
+    Thin wrapper around the shared resolver so single-cell and every other
+    submission app resolve per-submitter credentials identically.
+    """
+    return credential_resolver.resolve_for_submission(sub, "ena")
+
+
 def process_pending_submission_ena():
     repository = "ena"
     submissions = Submission().get_pending_submission(repository=repository, component="study")
@@ -43,7 +54,8 @@ def process_pending_submission_ena():
 
     for sub in submissions:
 
-        ena_submission_helper = EnaSubmissionHelper(profile_id=sub["profile_id"], submission_id=str(sub["_id"]))
+        credentials = _resolve_submitter_credentials(sub)
+        ena_submission_helper = EnaSubmissionHelper(profile_id=sub["profile_id"], submission_id=str(sub["_id"]), credentials=credentials)
 
         for study_id in sub["study"]:
             singlecell = None
@@ -57,7 +69,7 @@ def process_pending_submission_ena():
                 if not singlecell:
                     msg = f"Missing singlecell for study: {study_id}"
                     ena_submission_helper.logging_error(msg)
-                    Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                    Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                     continue
 
                 singlecell_components = singlecell.get("components",{})
@@ -66,7 +78,7 @@ def process_pending_submission_ena():
                 if not studies:
                     msg = f"Missing study for singlecell: {study_id}"
                     ena_submission_helper.logging_error(msg)
-                    Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                    Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                     continue
 
                 output_location = tempfile.mkdtemp()
@@ -77,7 +89,7 @@ def process_pending_submission_ena():
                     msg = context.get("message", str())
                     ena_submission_helper.logging_error(msg)
                     _reset_study_status_on_failure(singlecell, study_id, repository, msg)
-                    Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                    Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                     continue
 
                 submission_xml_path = context['value']
@@ -87,7 +99,7 @@ def process_pending_submission_ena():
                     msg = context.get("message", str())
                     ena_submission_helper.logging_error(msg)
                     _reset_study_status_on_failure(singlecell, study_id, repository, msg)
-                    Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                    Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                     continue
 
                 modify_submission_xml_path = context['value']
@@ -162,7 +174,7 @@ def process_pending_submission_ena():
             except Exception as e:
                 l.exception(e)
                 _reset_study_status_on_failure(singlecell, study_id, repository, str(e))
-                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
 
 def _prepare_analysis_submission(singlecell, component_name="sequencing_annotation", is_assembly=False):
     #get info from the components: sequencing_annotation, sequencing_annotation_run_ref[run accession / experiment accession], sequencing_annotation_file
@@ -452,9 +464,15 @@ def poll_asyn_analysis_submission_receipt():
     submissions = Submission().get_async_analysis_submission()
 
     with requests.Session() as session:
-        session.auth = (user_token, pass_word)    
         for submission in submissions:
-            ena_submission_helper = EnaSubmissionHelper(profile_id=submission["profile_id"], submission_id=str(submission["_id"]))
+            # Poll each submission with its own submitter's Webin credentials,
+            # falling back to COPO defaults for legacy submissions.
+            credentials = _resolve_submitter_credentials(submission)
+            session.auth = (
+                (credentials["user_token"], credentials["password"])
+                if credentials else (user_token, pass_word)
+            )
+            ena_submission_helper = EnaSubmissionHelper(profile_id=submission["profile_id"], submission_id=str(submission["_id"]), credentials=credentials)
             for analysis_sub in submission["analysis_submission"]:
                 accessions = ""
                 response = session.get(analysis_sub["href"])

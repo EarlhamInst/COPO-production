@@ -69,6 +69,7 @@ services:
       - REDIS_PORT=6379
       - WEBIN_USER_FILE=/run/secrets/copo_webin_user
       - WEBIN_USER_PASSWORD_FILE=/run/secrets/copo_webin_user_password
+      - CREDENTIAL_ENCRYPTION_KEY_FILE=/run/secrets/copo_credential_encryption_key
       - ENA_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD_FILE=/run/secrets/copo_mongo_user_password
@@ -147,6 +148,7 @@ services:
       - copo_orcid_client_id
       - copo_webin_user
       - copo_webin_user_password
+      - copo_credential_encryption_key
       - copo_nih_api_key
       - copo_public_name_service_api_key
       - copo_mail_password
@@ -185,6 +187,7 @@ services:
       - REDIS_PORT=6379
       - WEBIN_USER_FILE=/run/secrets/copo_webin_user
       - WEBIN_USER_PASSWORD_FILE=/run/secrets/copo_webin_user_password
+      - CREDENTIAL_ENCRYPTION_KEY_FILE=/run/secrets/copo_credential_encryption_key
       - ENA_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD_FILE=/run/secrets/copo_mongo_user_password
@@ -258,6 +261,7 @@ services:
       - copo_orcid_client_id
       - copo_webin_user
       - copo_webin_user_password
+      - copo_credential_encryption_key
       - copo_nih_api_key
       - copo_public_name_service_api_key
       - copo_mail_password
@@ -531,6 +535,8 @@ secrets:
   copo_webin_user:
     external: true
   copo_webin_user_password:
+    external: true
+  copo_credential_encryption_key:
     external: true
   copo_nih_api_key:
     external: true
