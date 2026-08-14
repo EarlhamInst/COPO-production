@@ -756,7 +756,7 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
                         s = pd.Series(choice, name=field["label"])
                         s.to_frame().to_excel(writer, sheet_name="data_values", index=False, header=True, startrow=0, startcol=data_validation_column_index)
                         column_letter = get_column_letter(data_validation_column_index + 1)
-                        column_length = max(s.astype(str).map(len).max(), len(field["name"]))
+                        column_length = max(s.fillna('').astype(str).map(len).max(), len(field["name"]))
                         writer.sheets["data_values"].set_column(data_validation_column_index, data_validation_column_index, column_length)
                         source = "=%s!$%s$2:$%s$%s" % ("data_values", column_letter, column_letter, str(len(choice) + 1))
                         data_validation_column_index = data_validation_column_index + 1
@@ -770,6 +770,6 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
         df.to_excel(writer, sheet_name=sheet_name)
 
         for column in df.columns:
-            column_length = max(df[column].astype(str).map(len).max(), len(column))
+            column_length = max(df[column].fillna('').astype(str).map(len).max(), len(column))
             column_index = df.columns.get_loc(column)+1
             writer.sheets[sheet_name].set_column(column_index, column_index, column_length)    
