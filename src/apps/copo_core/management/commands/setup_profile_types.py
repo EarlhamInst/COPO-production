@@ -1063,7 +1063,7 @@ class Command(BaseCommand):
         at_erga_community = AssociatedProfileType.objects.get(name="ERGA_COMMUNITY")
         at_pop_genomics = AssociatedProfileType.objects.get(name="POP_GENOMICS")
         at_sanger = AssociatedProfileType.objects.get(name="SANGER")
-        
+
         # Assign associated profile types to profile types
         erga.associated_profile_types.set(
             [

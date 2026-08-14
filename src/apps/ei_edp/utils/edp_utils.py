@@ -15,6 +15,7 @@ CUSTOMER_EMAIL_SPLITTER = ";"
 
 l = Logger()
 
+
 def get_sapio_sample_type_options():
     # Sample-type choices for the profile form dropdown, sourced from the LIMS.
     return get_lims_adapter().get_sample_type_options()
@@ -49,7 +50,7 @@ def pre_save_edp_profile(auto_fields, **kwargs):
       number of samples that already have customer names assigned (i.e. can't
       silently delete committed samples).
     """
-    target_id = kwargs.get("target_id","")
+    target_id = kwargs.get("target_id", "")
     if not target_id:
         return {"status": "success"}
     profile = Profile().get_record(target_id)
@@ -58,6 +59,7 @@ def pre_save_edp_profile(auto_fields, **kwargs):
     # LIMS-specific validation (e.g. can't drop below committed samples) is
     # delegated to the active adapter.
     return get_lims_adapter().validate_profile_change(profile, requested_sample_count)
+
 
 def post_save_edp_profile(profile):
     """Sync the saved EDP profile to Sapio after it has been written to the database.
@@ -84,7 +86,7 @@ def post_save_edp_profile(profile):
     current_user = helpers.get_current_user()
 
     # --- COPO profile sharing ---
-    customer_emails = profile.get("customer_emails","")
+    customer_emails = profile.get("customer_emails", "")
     if customer_emails:
         emails = [
             email.strip()
@@ -96,22 +98,35 @@ def post_save_edp_profile(profile):
         group_id = None
         groups = CopoGroup().get_group_by_profile(profile_id=profile["_id"])
         if not groups:
-            group_id = CopoGroup().create_group_for_profile(profile_id=profile["_id"], group_name=profile["title"], owner_id=profile["user_id"])
+            group_id = CopoGroup().create_group_for_profile(
+                profile_id=profile["_id"],
+                group_name=profile["title"],
+                owner_id=profile["user_id"],
+            )
         else:
             group_id = groups[0]["_id"]
         current_shared_users = CopoGroup().get_users_for_group_info(group_id=group_id)
 
         missing_user_emails = set(emails)
         # Users currently in the group who are no longer in the email list should be removed
-        incorrect_shared_user_ids = [str(user["id"]) for user in current_shared_users if user.get("email","") not in emails]
-        users = User.objects.filter(email__in = emails).values('id', 'email','first_name')
+        incorrect_shared_user_ids = [
+            str(user["id"])
+            for user in current_shared_users
+            if user.get("email", "") not in emails
+        ]
+        users = User.objects.filter(email__in=emails).values(
+            'id', 'email', 'first_name'
+        )
         if users:
             missing_user_emails = set(emails) - {user["email"] for user in users}
-            # Add any new users who aren't already in the group (and aren't the profile owner)
-            new_shared_user = {str(user['id']) : user for user in users if
-                                    user['id'] not in current_shared_users
-                                    and user['email'] != current_user.email
-                                }
+            # Add any new users who are not already in the group (and aren't the profile owner)
+            new_shared_user = {
+                str(user['id']): user
+                for user in users
+                if user['id'] not in current_shared_users
+                and user['email'] != current_user.email
+            }
+            
             if new_shared_user:
                 # Add users to the shared profile group
                 CopoGroup().add_users_to_group(
@@ -139,7 +154,9 @@ def post_save_edp_profile(profile):
             # via the join_shared_profile view without needing an existing COPO account
             customer_emails_tokens = { str(uuid.uuid4()):email for email in missing_user_emails}
             Profile().get_collection_handle().update_one({"_id":profile["_id"]},{"$set":{"customer_emails_tokens": customer_emails_tokens}})
-            Email().notify_shared_profile_to_non_existent_user(profile, customer_emails_tokens)
+            Email().notify_shared_profile_to_non_existent_user(
+                profile, customer_emails_tokens
+            )
 
     # --- LIMS project sync ---
     # Delegate project/sample synchronisation to the active LIMS adapter. The
@@ -151,11 +168,14 @@ def post_save_edp_profile(profile):
     if project_id and project_id != profile.get("sapio_project_id", ""):
         profile["sapio_project_id"] = project_id
         Profile().get_collection_handle().update_one(
-            {"_id": profile["_id"]}, {"$set": {"sapio_project_id": project_id}})
+            {"_id": profile["_id"]}, {"$set": {"sapio_project_id": project_id}}
+        )
 
     if result.get("status") != "success":
-        return {"status": result.get("status", "warning"),
-                "message": result.get("message", "")}
+        return {
+            "status": result.get("status", "warning"),
+            "message": result.get("message", ""),
+        }
 
     return {"status": "success"}
 
@@ -166,9 +186,10 @@ def post_delete_edp_profile(profile):
     Uses recursive_delete=True so Sapio cleans up all child records
     (Samples, Plates, etc.) along with the Project.
     """
-    if profile.get("sapio_project_id",""):
+    if profile.get("sapio_project_id", ""):
         return get_lims_adapter().delete_project(profile["sapio_project_id"])
     return {"status": "success"}
+
 
 def submit_edp_to_sapio(profile_id, study_id):
     """Push single-cell submission data from COPO into the linked Sapio project.
@@ -185,12 +206,21 @@ def submit_edp_to_sapio(profile_id, study_id):
     if not profile:
         return {"status": "error", "message": f"Profile {profile_id} not found."}
 
-    singlecell = Singlecell().get_collection_handle().find_one({"profile_id": profile_id, "study_id": study_id})
+    singlecell = (
+        Singlecell()
+        .get_collection_handle()
+        .find_one({"profile_id": profile_id, "study_id": study_id})
+    )
     if not singlecell:
-        return {"status": "error", "message": f"Singlecell submission for profile {profile_id} and study {study_id} not found."}
+        return {
+            "status": "error",
+            "message": f"Singlecell submission for profile {profile_id} and study {study_id} not found.",
+        }
 
-    singlecell_components = singlecell.get("components",{})
-    schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], target_id=singlecell["checklist_id"])
+    singlecell_components = singlecell.get("components", {})
+    schemas = SinglecellSchemas().get_schema(
+        schema_name=singlecell["schema_name"], target_id=singlecell["checklist_id"]
+    )
 
     # The COPO term → LIMS field mapping and the write itself are the adapter's
     # responsibility; here study_id is the LIMS project identifier.
@@ -225,11 +255,14 @@ def join_shared_edp_profile(profile, token):
         # New user with no email — resolve their address from the invite token
         email = profile.get("customer_emails_tokens", {}).get(token, "")
         if not email:
-            return {"status": "error", "message": f"User is not authorised to join the profile."}
+            return {
+                "status": "error",
+                "message": f"User is not authorised to join the profile.",
+            }
         user.email = email
         user.save()
 
-    customer_emails = profile.get("customer_emails","")
+    customer_emails = profile.get("customer_emails", "")
     if customer_emails:
         emails = [
             email.strip()
@@ -240,7 +273,11 @@ def join_shared_edp_profile(profile, token):
         if user.email in emails:
             groups = CopoGroup().get_group_by_profile(profile_id=profile["_id"])
             if not groups:
-                group_id = CopoGroup().create_group_for_profile(profile_id=profile["_id"], group_name=profile["title"], owner_id=profile["user_id"])
+                group_id = CopoGroup().create_group_for_profile(
+                    profile_id=profile["_id"],
+                    group_name=profile["title"],
+                    owner_id=profile["user_id"],
+                )
             else:
                 group_id = groups[0]["_id"]
             

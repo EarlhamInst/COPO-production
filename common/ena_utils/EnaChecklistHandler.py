@@ -19,7 +19,9 @@ from django_tools.middlewares import ThreadLocal
 import inspect
 import math
 from common.schema_versions.lookup import dtol_lookups as lookup
-from common.validators.ena_validators import ena_checklist_validators  as required_validators
+from common.validators.ena_validators import (
+    ena_checklist_validators as required_validators,
+)
 from common.validators.validator import Validator
 import json
 from common.dal.profile_da import Profile
@@ -27,21 +29,22 @@ from src.apps.copo_core.models import ProfileType
 
 l = Logger()
 
+
 class ChecklistHandler:
     def __init__(self):
         self.pass_word = get_env('WEBIN_USER_PASSWORD')
         self.user_token = get_env('WEBIN_USER').split("@")[0]
-        self.headers = {'Accept': 'application/xml' }
+        self.headers = {'Accept': 'application/xml'}
 
     def _loadCheckList(self, url):
-        with requests.Session() as session:    
-            session.auth = (self.user_token, self.pass_word) 
+        with requests.Session() as session:
+            session.auth = (self.user_token, self.pass_word)
             try:
-                response = session.get(url,headers=self.headers)
+                response = session.get(url, headers=self.headers)
                 return response.text
             except Exception as e:
                 l.exception(e)
-                return ""            
+                return ""
 
     def _loadChecklist_local(self, file_location):
         '''
@@ -50,6 +53,7 @@ class ChecklistHandler:
         with open(file_location, 'r') as file:
             xmlstr = file.read()
             return xmlstr
+
     '''
     <CHECKLIST_SET>
     <CHECKLIST accession="ERT000028" checklistType="Sequence">
@@ -161,20 +165,24 @@ class ChecklistHandler:
         for checklist_elm in root.findall("./CHECKLIST"):
             checklist = {}
 
-            primary_id = checklist_elm.find("./IDENTIFIERS/PRIMARY_ID").text.strip() 
+            primary_id = checklist_elm.find("./IDENTIFIERS/PRIMARY_ID").text.strip()
             ena_checklist_id = checklist_elm.find("./IDENTIFIERS/ENA_CHECKLIST_ID")
             if ena_checklist_id is None:
                 checklist['ena_checklist_id'] = primary_id
             else:
                 checklist['ena_checklist_id'] = ena_checklist_id.text.strip()
 
-            skip = settings.ENA_CHECKLIST_CONFIG.get(primary_id, dict()).get( "skip", list() )
+            skip = settings.ENA_CHECKLIST_CONFIG.get(primary_id, dict()).get(
+                "skip", list()
+            )
             # if primary_id not in checklist_ids:
             #    continue
             # checklist_ids.remove(primary_id)
             checklist['primary_id'] = primary_id
             checklist['name'] = checklist_elm.find("./DESCRIPTOR/NAME").text.strip()
-            checklist['description'] = checklist_elm.find("./DESCRIPTOR/DESCRIPTION").text.strip()
+            checklist['description'] = checklist_elm.find(
+                "./DESCRIPTOR/DESCRIPTION"
+            ).text.strip()
             checklist['fields'] = {}
             for field_elm in checklist_elm.findall("./DESCRIPTOR/FIELD_GROUP/FIELD"):
                 try:
@@ -194,7 +202,7 @@ class ChecklistHandler:
                     label = field_elm.find("./LABEL")
                     if label is not None:
                         # It seems like label is uppercase for checklist ID/primary_id
-                        # beginning with 'ERT' so use name (which is sentence case) 
+                        # beginning with 'ERT' so use name (which is sentence case)
                         # as the label instead
                         label_text = label.text.strip()
                         if label_text.isupper():
@@ -205,7 +213,7 @@ class ChecklistHandler:
                         else:
                             field['label'] = label_text
 
-                    else: 
+                    else:
                         l.debug(f"{primary_id} Field {key} does not have a name")
                         field['label'] = key
                     field['name'] = key
@@ -213,7 +221,9 @@ class ChecklistHandler:
                     if desc is not None:
                         field['description'] = desc.text.strip()
                     field['mandatory'] = field_elm.find("./MANDATORY").text.strip()
-                    field['multiplicity'] = field_elm.find("./MULTIPLICITY").text.strip()
+                    field['multiplicity'] = field_elm.find(
+                        "./MULTIPLICITY"
+                    ).text.strip()
                     synonym = field_elm.find("./SYNONYM")
                     if synonym is not None:
                         field['synonym'] = synonym.text.strip()
@@ -226,22 +236,26 @@ class ChecklistHandler:
                     if choice is not None:
                         field['choice'] = []
                         for choice_elm in choice.findall("./TEXT_VALUE"):
-                            field['choice'].append(choice_elm.find("./VALUE").text.strip())
+                            field['choice'].append(
+                                choice_elm.find("./VALUE").text.strip()
+                            )
 
                     regex = field_elm.find("./FIELD_TYPE/TEXT_FIELD/REGEX_VALUE")
                     if regex is not None:
                         regex_str = regex.text.strip()
                         if regex_str:
                             field['regex'] = regex_str
-                            #field['regex_description'] = describe_regex(regex_str)
+                            # field['regex_description'] = describe_regex(regex_str)
                             exact_phrases = extract_exact_phrases_from_regex(regex_str)
                             if exact_phrases:
                                 field['choice'] = exact_phrases
-                            
+
                     ontology = field_elm.find("./FIELD_TYPE/ONTOLOGY")
                     if ontology is not None:
                         field['ontology'] = ontology.text.strip()
-                        field['ontology_link'] = f"http://purl.obolibrary.org/obo/{str(field['ontology']).replace(':','_')}"
+                        field['ontology_link'] = (
+                            f"http://purl.obolibrary.org/obo/{str(field['ontology']).replace(':','_')}"
+                        )
                     if key == 'language':
                         key = "language_code"
                     checklist['fields'][key] = field
@@ -287,7 +301,7 @@ class ChecklistHandler:
                     l.exception(e)
                     l.debug(f"{primary_id} {key} Field does not have a name")
                     continue
-            checklist["modified_date"] =  dt
+            checklist["modified_date"] = dt
             checklist["deleted"] = get_not_deleted_flag()
             checklist_set.append(checklist)
             # if len(checklist_ids) == 0:
@@ -325,11 +339,13 @@ class ChecklistHandler:
             # for key, value in read_fields.items():
             #    value.update({"read_field": True})
             # checklist["fields"].update(read_fields)
-            EnaChecklist().get_collection_handle().find_one_and_update({"primary_id": checklist["primary_id"]},
-                                                                            {"$set": checklist},
-                                                                            upsert=True)
+            EnaChecklist().get_collection_handle().find_one_and_update(
+                {"primary_id": checklist["primary_id"]},
+                {"$set": checklist},
+                upsert=True,
+            )
             # for checklist fields
-            write_manifest(checklist, with_read=False)   
+            write_manifest(checklist, with_read=False)
 
             """
             #for checklist feils + read fields 
@@ -340,8 +356,17 @@ class ChecklistHandler:
                 write_manifest(checklist, with_read=True)  
             """
 
+
 class EnaCheckListSpreadsheet:
-    def __init__(self, file, checklist_id, component, validators=[], with_read=True, with_sample=True):
+    def __init__(
+        self,
+        file,
+        checklist_id,
+        component,
+        validators=[],
+        with_read=True,
+        with_sample=True,
+    ):
         self.with_read = with_read
         self.req = ThreadLocal.get_current_request()
         self.profile_id = self.req.session.get("profile_id", None)
@@ -349,13 +374,18 @@ class EnaCheckListSpreadsheet:
         profile_type = ProfileType.objects.get(type=profile["type"])
 
         self.checklist_id = checklist_id
-        self.checklist = EnaChecklist().get_checklist(self.checklist_id, with_read=self.with_read, for_dtol=profile_type.is_dtol_profile, with_sample=with_sample)  
+        self.checklist = EnaChecklist().get_checklist(
+            self.checklist_id,
+            with_read=self.with_read,
+            for_dtol=profile_type.is_dtol_profile,
+            with_sample=with_sample,
+        )
         self.data = None
         self.new_data = None
         self.component = component
         self.component_info = f"{self.component}_info"
         self.component_table = f"{self.component}_table"
-        self.required_validators = []    
+        self.required_validators = []
         self.symbiont_list = []
         self.validator_list = []
         # if a file is passed in, then this is the first time we have seen the spreadsheet,
@@ -370,7 +400,11 @@ class EnaCheckListSpreadsheet:
         required = dict(globals().items())["required_validators"]
         for element_name in dir(required):
             element = getattr(required, element_name)
-            if inspect.isclass(element) and issubclass(element, Validator) and not element.__name__ == "Validator":
+            if (
+                inspect.isclass(element)
+                and issubclass(element, Validator)
+                and not element.__name__ == "Validator"
+            ):
                 self.required_validators.append(element)
 
         self.required_validators.extend(validators)
@@ -411,8 +445,13 @@ class EnaCheckListSpreadsheet:
     def loadManifest(self, m_format):
 
         if self.profile_id is not None:
-            notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Loading...", action="info",
-                            html_id=self.component_info, checklist_id=self.checklist_id)
+            notify_ena_object_status(
+                data={"profile_id": self.profile_id},
+                msg="Loading...",
+                action="info",
+                html_id=self.component_info,
+                checklist_id=self.checklist_id,
+            )
 
             try:
                 # read excel and convert all to string
@@ -424,12 +463,15 @@ class EnaCheckListSpreadsheet:
                     is_found = False
                     for sheet in sheetnames:
                         if sheet.startswith(self.checklist_id):
-                            self.data = xl.parse(sheet, keep_default_na=False,
-                                            na_values=lookup.NA_VALS)
+                            self.data = xl.parse(
+                                sheet, keep_default_na=False, na_values=lookup.NA_VALS
+                            )
                             is_found = True
                             break
                     if not is_found:
-                        checklist_name = f"{self.checklist_id}: {self.checklist.get('name',str())}"
+                        checklist_name = (
+                            f"{self.checklist_id}: {self.checklist.get('name',str())}"
+                        )
                         raise Exception(
                             (
                                 'The uploaded manifest does not match the '
@@ -443,23 +485,35 @@ class EnaCheckListSpreadsheet:
                     raise Exception("Unknown file format")
                 if self.data.empty:
                     raise Exception("Empty file")
-                self.data = self.data.loc[:, ~self.data.columns.str.contains('^Unnamed')]
+                self.data = self.data.loc[
+                    :, ~self.data.columns.str.contains('^Unnamed')
+                ]
                 self.data = self.data.apply(lambda x: x.astype(str))
                 self.data = self.data.apply(lambda x: x.str.strip())
                 # self.data.columns = self.data.columns.str.replace(" ", "")
 
-                new_column_name = { name : name.replace(" (optional)", "",-1).upper() for name in self.data.columns.values.tolist() }
-                self.new_data = self.data.rename(columns=new_column_name)    
+                new_column_name = {
+                    name: name.replace(" (optional)", "", -1).upper()
+                    for name in self.data.columns.values.tolist()
+                }
+                self.new_data = self.data.rename(columns=new_column_name)
 
-                new_column_name = { value["label"].upper() : key for key, value in self.checklist["fields"].items() }
-                self.new_data.rename(columns=new_column_name, inplace=True)    
+                new_column_name = {
+                    value["label"].upper(): key
+                    for key, value in self.checklist["fields"].items()
+                }
+                self.new_data.rename(columns=new_column_name, inplace=True)
 
             except Exception as e:
                 # if error notify via web socket
                 l.exception(e)
-                notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Unable to load file. " + str(e),
-                                action="error",
-                                html_id=self.component_info, checklist_id=self.checklist_id)
+                notify_ena_object_status(
+                    data={"profile_id": self.profile_id},
+                    msg="Unable to load file. " + str(e),
+                    action="error",
+                    html_id=self.component_info,
+                    checklist_id=self.checklist_id,
+                )
                 return False
             return True
 
@@ -472,10 +526,16 @@ class EnaCheckListSpreadsheet:
         # validate for required fields
         for v in self.required_validators:
             try:
-                errors, warnings, flag, self.isupdate = v(profile_id=self.profile_id, checklist=self.checklist,
-                                                        data=self.new_data, fields=None,
-                                                        errors=errors, warnings=warnings, flag=flag,
-                                                        isupdate=self.isupdate).validate()
+                errors, warnings, flag, self.isupdate = v(
+                    profile_id=self.profile_id,
+                    checklist=self.checklist,
+                    data=self.new_data,
+                    fields=None,
+                    errors=errors,
+                    warnings=warnings,
+                    flag=flag,
+                    isupdate=self.isupdate,
+                ).validate()
             except Exception as e:
                 l.exception(e)
                 error_message = str(e).replace("<", "").replace(">", "")
@@ -490,30 +550,59 @@ class EnaCheckListSpreadsheet:
         # send warnings
         if warnings:
             l.log(",".join(warnings))
-            notify_ena_object_status(data={"profile_id": self.profile_id},
-                            msg="<br>".join(warnings),
-                            action="warning",
-                            html_id="warning_info2", checklist_id=self.checklist_id)
+            notify_ena_object_status(
+                data={"profile_id": self.profile_id},
+                msg="<br>".join(warnings),
+                action="warning",
+                html_id="warning_info2",
+                checklist_id=self.checklist_id,
+            )
         # if flag is false, compile list of errors
         if not flag:
             errors = list(map(lambda x: "<li>" + x + "</li>", errors))
             errors = "".join(errors)
             l.log(errors)
-            notify_ena_object_status(data={"profile_id": self.profile_id},
-                            msg="<h4>" + self.file.name + "</h4><h2>Errors</h2><ol>" + errors + "</ol>",
-                            action="error",
-                            html_id=self.component_info, checklist_id=self.checklist_id)
+            notify_ena_object_status(
+                data={"profile_id": self.profile_id},
+                msg="<h4>"
+                + self.file.name
+                + "</h4><h2>Errors</h2><ol>"
+                + errors
+                + "</ol>",
+                action="error",
+                html_id=self.component_info,
+                checklist_id=self.checklist_id,
+            )
             return False
 
         for column in self.new_data.columns:
             if column.startswith(Validator.PREFIX_4_NEW_FIELD):
-                self.data[column.removeprefix(Validator.PREFIX_4_NEW_FIELD)] = self.new_data[column]
+                self.data[column.removeprefix(Validator.PREFIX_4_NEW_FIELD)] = (
+                    self.new_data[column]
+                )
 
         # if we get here we have a valid spreadsheet
-        notify_ena_object_status(data={"profile_id": self.profile_id}, msg="Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.", 
-            action="success", html_id=self.component_info, checklist_id=self.checklist_id)
-        notify_ena_object_status(data={"profile_id": self.profile_id}, msg="", action="close", html_id="upload_controls", checklist_id=self.checklist_id)
-        notify_ena_object_status(data={"profile_id": self.profile_id}, msg="", action="make_valid", html_id=self.component_info, checklist_id=self.checklist_id)
+        notify_ena_object_status(
+            data={"profile_id": self.profile_id},
+            msg="Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.",
+            action="success",
+            html_id=self.component_info,
+            checklist_id=self.checklist_id,
+        )
+        notify_ena_object_status(
+            data={"profile_id": self.profile_id},
+            msg="",
+            action="close",
+            html_id="upload_controls",
+            checklist_id=self.checklist_id,
+        )
+        notify_ena_object_status(
+            data={"profile_id": self.profile_id},
+            msg="",
+            action="make_valid",
+            html_id=self.component_info,
+            checklist_id=self.checklist_id,
+        )
 
         return True
 
@@ -534,63 +623,72 @@ class EnaCheckListSpreadsheet:
         self.req.session[f"{self.component}_data"] = tagged_seq_data
         self.req.session["checklist_id"] = self.checklist_id
 
-        notify_ena_object_status(data={"profile_id": self.profile_id}, msg=tagged_seq_data, action="make_table",
-                        html_id=f"{self.component}_parse_table", checklist_id=self.checklist_id)
+        notify_ena_object_status(
+            data={"profile_id": self.profile_id},
+            msg=tagged_seq_data,
+            action="make_table",
+            html_id=f"{self.component}_parse_table",
+            checklist_id=self.checklist_id,
+        )
 
 
 class ReadChecklistHandler:
-    def __init__(self ):
+    def __init__(self):
         self.pass_word = get_env('WEBIN_USER_PASSWORD')
         self.user_token = get_env('WEBIN_USER').split("@")[0]
-        self.headers = {'Accept': 'application/xml' }
+        self.headers = {'Accept': 'application/xml'}
 
     def _loadCheckList(self, url):
-        with requests.Session() as session:    
-            session.auth = (self.user_token, self.pass_word) 
+        with requests.Session() as session:
+            session.auth = (self.user_token, self.pass_word)
             try:
-                response = session.get(url,headers=self.headers)
+                response = session.get(url, headers=self.headers)
                 return response.text
             except Exception as e:
                 l.exception(e)
-                return ""         
+                return ""
 
     def _parseCheckList(self, jsonstr):
-            dt = get_datetime()
-            try:
-                checklists_elm = json.loads(jsonstr)
-                checklists = list()
-                for checklist_elm in checklists_elm.get("fieldTypes",[]):
-                    name = checklist_elm["name"]
-                    if name == "fastq1":
-                        checklist = dict()
-                        checklist["primary_id"] = "read"
-                        checklist["name"] = "read checklist"
-                        checklist["description"] = checklist_elm["description"]
-                        checklist["fields"] = {}
-                        checklist["modified_date"] =  dt
-                        checklist["deleted"] = get_not_deleted_flag()
-                        for field_elm in checklist_elm["fields"]:
+        dt = get_datetime()
+        try:
+            checklists_elm = json.loads(jsonstr)
+            checklists = list()
+            for checklist_elm in checklists_elm.get("fieldTypes", []):
+                name = checklist_elm["name"]
+                if name == "fastq1":
+                    checklist = dict()
+                    checklist["primary_id"] = "read"
+                    checklist["name"] = "read checklist"
+                    checklist["description"] = checklist_elm["description"]
+                    checklist["fields"] = {}
+                    checklist["modified_date"] = dt
+                    checklist["deleted"] = get_not_deleted_flag()
+                    for field_elm in checklist_elm["fields"]:
 
-                            field = dict()
-                            name = field_elm["name"]
-                            if name.lower() in ["study"]:
-                                continue
+                        field = dict()
+                        name = field_elm["name"]
+                        if name.lower() in ["study"]:
+                            continue
 
-                            field["name"] = name
-                            field["label"] = field_elm["label"]
-                            field["description"] = field_elm["description"]
-                            field["mandatory"] =  "mandatory" if field_elm.get("mandatory", False) else "optional"
-                            field["type"] = "TEXT_FIELD"
-                            if "value_choice" in field_elm:
-                                field["type"] = "TEXT_CHOICE_FIELD"
-                                field["choice"] = field_elm["value_choice"]
-                            field["read_field"] = True
-                            #don't want to have "sample" in the read checklist for DTOL profile
-                            if field_elm["name"] == "sample":
-                                field["for_dtol"] = False
-                            checklist["fields"][field_elm["name"]] = field
+                        field["name"] = name
+                        field["label"] = field_elm["label"]
+                        field["description"] = field_elm["description"]
+                        field["mandatory"] = (
+                            "mandatory"
+                            if field_elm.get("mandatory", False)
+                            else "optional"
+                        )
+                        field["type"] = "TEXT_FIELD"
+                        if "value_choice" in field_elm:
+                            field["type"] = "TEXT_CHOICE_FIELD"
+                            field["choice"] = field_elm["value_choice"]
+                        field["read_field"] = True
+                        # don't want to have "sample" in the read checklist for DTOL profile
+                        if field_elm["name"] == "sample":
+                            field["for_dtol"] = False
+                        checklist["fields"][field_elm["name"]] = field
 
-                        """
+                    """
                         field = {}
                         field['name'] = "Organism"
                         field['description'] = "Scientific Name"
@@ -602,63 +700,62 @@ class ReadChecklistHandler:
                         field["read_field"] = True
                         checklist['fields']["organism"] = field
                         """
-                        field = {}
-                        field['name'] = "biosampleAccession"
-                        field['label'] = "biosampleAccession"
-                        field['description'] = "Biosample Accession"
-                        field['mandatory'] = "mandatory"
-                        field['multiplicity'] = "single"
-                        field['type'] = "BIOSAMPLEACCESSION_FIELD"
-                        field["shown_when_no_sample"] = True
-                        field["read_field"] = True
-                        checklist['fields']["biosampleAccession"] = field  
+                    field = {}
+                    field['name'] = "biosampleAccession"
+                    field['label'] = "biosampleAccession"
+                    field['description'] = "Biosample Accession"
+                    field['mandatory'] = "mandatory"
+                    field['multiplicity'] = "single"
+                    field['type'] = "BIOSAMPLEACCESSION_FIELD"
+                    field["shown_when_no_sample"] = True
+                    field["read_field"] = True
+                    checklist['fields']["biosampleAccession"] = field
 
-                        field = {}
-                        field['name'] = "taxon_id"
-                        field['label'] = "taxon_id"
-                        field['description'] = "taxon_id"
-                        field['mandatory'] = "mandatory"
-                        field['multiplicity'] = "single"
-                        field['type'] = "BIOSAMPLEACCESSION_EXT_FIELD"
-                        field["shown_when_no_sample"] = True
-                        field["for_dtol"] = False
-                        field["read_field"] = True
-                        checklist['fields']["taxon_id"] = field  
+                    field = {}
+                    field['name'] = "taxon_id"
+                    field['label'] = "taxon_id"
+                    field['description'] = "taxon_id"
+                    field['mandatory'] = "mandatory"
+                    field['multiplicity'] = "single"
+                    field['type'] = "BIOSAMPLEACCESSION_EXT_FIELD"
+                    field["shown_when_no_sample"] = True
+                    field["for_dtol"] = False
+                    field["read_field"] = True
+                    checklist['fields']["taxon_id"] = field
 
-                        #add SPECIMEN_ID
-                        field = {}
-                        field['name'] = "SPECIMEN_ID"
-                        field['label'] = "SPECIMEN_ID"
-                        field['description'] = "SPECIMENT_ID"
-                        field['mandatory'] = "mandatory"
-                        field['multiplicity'] = "single"
-                        field['type'] = "BIOSAMPLEACCESSION_EXT_FIELD"
-                        field["shown_when_no_sample"] = True
-                        field["for_dtol"] = True
-                        field["read_field"] = True
-                        checklist['fields']["SPECIMEN_ID"] = field
-                        
-                        #add TAXON_ID
-                        field = {}
-                        field['name'] = "TAXON_ID"
-                        field['label'] = "TAXON_ID"
-                        field['description'] = "TAXON_ID"
-                        field['mandatory'] = "mandatory"
-                        field['multiplicity'] = "single"
-                        field['type'] = "BIOSAMPLEACCESSION_EXT_FIELD"
-                        field["shown_when_no_sample"] = True
-                        field["for_dtol"] = True
-                        field["read_field"] = True
-                        checklist['fields']["TAXON_ID"] = field
+                    # add SPECIMEN_ID
+                    field = {}
+                    field['name'] = "SPECIMEN_ID"
+                    field['label'] = "SPECIMEN_ID"
+                    field['description'] = "SPECIMENT_ID"
+                    field['mandatory'] = "mandatory"
+                    field['multiplicity'] = "single"
+                    field['type'] = "BIOSAMPLEACCESSION_EXT_FIELD"
+                    field["shown_when_no_sample"] = True
+                    field["for_dtol"] = True
+                    field["read_field"] = True
+                    checklist['fields']["SPECIMEN_ID"] = field
 
-                         
-                        checklists.append(checklist)
-                        break
+                    # add TAXON_ID
+                    field = {}
+                    field['name'] = "TAXON_ID"
+                    field['label'] = "TAXON_ID"
+                    field['description'] = "TAXON_ID"
+                    field['mandatory'] = "mandatory"
+                    field['multiplicity'] = "single"
+                    field['type'] = "BIOSAMPLEACCESSION_EXT_FIELD"
+                    field["shown_when_no_sample"] = True
+                    field["for_dtol"] = True
+                    field["read_field"] = True
+                    checklist['fields']["TAXON_ID"] = field
 
-                return checklists
-            except Exception as e:
-                l.exception(e)
-                return []
+                    checklists.append(checklist)
+                    break
+
+            return checklists
+        except Exception as e:
+            l.exception(e)
+            return []
 
     def updateCheckList(self):
         urls = [
@@ -671,14 +768,23 @@ class ReadChecklistHandler:
 
         for checklist in checklist_set:
 
-            EnaChecklist().get_collection_handle().find_one_and_update({"primary_id": checklist["primary_id"]},
-                                                                            {"$set": checklist},
-                                                                            upsert=True)        
+            EnaChecklist().get_collection_handle().find_one_and_update(
+                {"primary_id": checklist["primary_id"]},
+                {"$set": checklist},
+                upsert=True,
+            )
             write_manifest(checklist, for_dtol=True, with_sample=False)
             write_manifest(checklist, for_dtol=False, with_sample=False)
 
 
-def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, samples=None, file_path=None):
+def write_manifest(
+    checklist,
+    for_dtol=False,
+    with_read=True,
+    with_sample=True,
+    samples=None,
+    file_path=None,
+):
     df = pd.DataFrame.from_dict(list(checklist["fields"].values()), orient='columns')
 
     """
@@ -693,8 +799,8 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
     if with_sample and with_read:
         df = df.loc[(df["shown_when_no_sample"] == False) | (df["shown_when_no_sample"].isnull())]
     """
-    df.sort_values(by=['mandatory','name'], inplace=True)
-    df.loc[df["mandatory"] == "mandatory" , "label"] = df["label"]
+    df.sort_values(by=['mandatory', 'name'], inplace=True)
+    df.loc[df["mandatory"] == "mandatory", "label"] = df["label"]
     df.loc[df["mandatory"] != "mandatory", "label"] = df["label"] + " (optional)"
 
     df1 = df.transpose()
@@ -707,11 +813,15 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
 
     if samples is not None:
         sample_df = pd.DataFrame.from_records(samples)
-        new_column_name = { key : field["label" ]+ (" (optional)" if  field["mandatory"] != 'mandatory' else "") for key, field in checklist["fields"].items() }
+        new_column_name = {
+            key: field["label"]
+            + (" (optional)" if field["mandatory"] != 'mandatory' else "")
+            for key, field in checklist["fields"].items()
+        }
         sample_df.rename(columns=new_column_name, inplace=True)
         sample_df.drop(columns=sample_df.columns.difference(df1.columns), inplace=True)
 
-        #sample_df = sample_df.rename(columns={"name": "Sample"})
+        # sample_df = sample_df.rename(columns={"name": "Sample"})
         df1 = pd.concat([df1, sample_df], axis=0, join="outer")
         df1 = df1.fillna("")
 
@@ -724,9 +834,12 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
             if for_dtol:
                 manifest_name = manifest_name + "_dtol"
 
-        file_path = os.path.join(settings.MANIFEST_PATH, settings.MANIFEST_FILE_NAME.format(manifest_name, version)  )
- 
-    with pd.ExcelWriter(path=file_path, engine='xlsxwriter' ) as writer:  
+        file_path = os.path.join(
+            settings.MANIFEST_PATH,
+            settings.MANIFEST_FILE_NAME.format(manifest_name, version),
+        )
+
+    with pd.ExcelWriter(path=file_path, engine='xlsxwriter') as writer:
         sheet_name = checklist["primary_id"] + " " + checklist["name"]
         sheet_name = sheet_name[:31]
         df1.to_excel(writer, sheet_name=sheet_name, index=False, header=False)
@@ -747,7 +860,9 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
             cell_format = writer.book.add_format()
             if field_type.startswith("TEXT_"):
                 cell_format.set_num_format('@')
-            writer.sheets[sheet_name].set_column(column_index, column_index, column_length, cell_format)
+            writer.sheets[sheet_name].set_column(
+                column_index, column_index, column_length, cell_format
+            )
 
             if "choice" in field:
                 choice = [safe_stringify(x) for x in field["choice"] if not pd.isna(x)]
@@ -803,7 +918,8 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
             # Normalise column names which can be non-strings like NaN and float
             normalised_column_name = safe_stringify(column)
             column_length = max(
-                df[normalised_column_name].astype("string").str.len().max(), len(str(normalised_column_name))
+                df[normalised_column_name].astype("string").str.len().max(),
+                len(str(normalised_column_name)),
             )
             column_index = df.columns.get_loc(column) + 1
             writer.sheets[sheet_name].set_column(
