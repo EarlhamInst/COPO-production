@@ -3,7 +3,7 @@ from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample
 from common.schemas.utils.data_utils import join_with_and
 from .validation_messages import MESSAGES as msg
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 import os
 
 class SinglePairedValuesValidator(Validator):

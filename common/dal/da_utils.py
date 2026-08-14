@@ -1,4 +1,4 @@
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from .copo_da import DataFile
 from .sample_da import Sample, Source
 from .submission_da import Submission

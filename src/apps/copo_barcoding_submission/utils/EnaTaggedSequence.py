@@ -1,12 +1,12 @@
 from django.conf import settings
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from common.utils.helpers import get_env, get_datetime, get_not_deleted_flag, json_to_pytype,notify_tagged_seq_status, map_to_dict
 from common.dal.copo_da import EnaChecklist
 from common.dal.submission_da import Submission
 from .da import TaggedSequence
 from common.utils.logger import Logger
 from bson import ObjectId
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from lxml import etree as ET
 from django.http import HttpResponse, JsonResponse
 import os

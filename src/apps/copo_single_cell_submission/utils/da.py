@@ -1,7 +1,7 @@
 from common.dal.copo_da import DAComponent
 import pandas as pd
 from common.utils.helpers import get_datetime, get_not_deleted_flag, notify_frontend
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from bson.objectid import ObjectId
 
 ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE = {"status":"pending", "accession":"", "error":""}

@@ -6,7 +6,7 @@ import os
 from django.conf import settings
 from openpyxl.utils.cell import get_column_letter
 from common.utils.helpers import notify_singlecell_status, get_datetime, build_unified_context
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 import inspect
 import math
 from common.schema_versions.lookup import dtol_lookups as lookup
