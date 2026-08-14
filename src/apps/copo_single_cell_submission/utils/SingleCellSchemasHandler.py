@@ -452,7 +452,7 @@ class SingleCellSchemasHandler:
                                             data_validation_column_index + 1
                                         )
                                         column_length = max(
-                                            s.astype(str).map(len).max(),
+                                            s.fillna('').astype(str).map(len).max(),
                                             len(field["term_label"]),
                                         )
                                         writer.sheets["data_values"].set_column(
