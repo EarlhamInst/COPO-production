@@ -33,7 +33,7 @@ channels-redis==4.3.0
 #colored==1.4.3
 #configparser==3.7.4
 constantly==23.10.4
-cryptography==49.0.0
+cryptography==50.0.0
 daphne==4.2.2
 #-e git+https://github.com/IQSS/dataverse-client-python.git@5f95a11e2f32bcfabe28e6ad43b2f7edac60d983#egg=dataverse
 decorator==5.3.1
