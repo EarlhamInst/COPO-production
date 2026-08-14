@@ -131,10 +131,10 @@ def parse_singlecell_spreadsheet(request, profile_id, schema_name):
                                         msg=msg, action="warning", html_id="singlecell_info")
                         #return HttpResponse(status=400, content=msg)
                     
-                if not is_warning:
-                    notify_singlecell_status(data={"profile_id": profile_id},
-                                    msg='Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.', action="success",
-                                    html_id="singlecell_info")
+            if not is_warning:
+                notify_singlecell_status(data={"profile_id": profile_id},
+                    msg='Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.', action="success",
+                    html_id="singlecell_info")
             
             notify_singlecell_status(data={"profile_id": profile_id}, msg="", action="close", html_id="upload_controls", checklist_id=checklist_id)
             notify_singlecell_status(data={"profile_id": profile_id}, msg="", action="make_valid", html_id="singlecell_info", checklist_id=checklist_id)
