@@ -7,13 +7,13 @@ from django.urls import reverse
 logger = Logger()
 
 class Email:
-
-   
-    def notify_shared_profile_to_not_exist_user(self, profile, customer_emails_token):
+    def notify_shared_profile_to_non_existent_user(
+        self, profile, customer_emails_token
+    ):
         subj = "COPO Profile Shared with You"
         uri = self._get_uri()
         if settings.ENVIRONMENT_TYPE != "prod":
-            subj =  "Non Prod : " + subj
+            subj = f'[{settings.ENVIRONMENT_TYPE.upper()} SERVER NOTIFICATION] - {subj}'
 
         if profile and customer_emails_token:
             for token, email in customer_emails_token.items():
@@ -24,7 +24,7 @@ class Email:
         subj = "COPO Profile Shared with You"
         #uri = self._get_uri()
         if settings.ENVIRONMENT_TYPE != "prod":
-            subj =  "Non Prod : " + subj
+            subj = f'[{settings.ENVIRONMENT_TYPE.upper()} SERVER NOTIFICATION] - {subj}'
 
         if profile and users:
             for user in users:

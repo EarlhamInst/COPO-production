@@ -742,8 +742,13 @@ def remove_user_from_group(request):
 @login_required
 def join_shared_profile(request, profile_id, token):
     profile = Profile().get_record(profile_id)
-    if isinstance(profile, InvalidId):
-        return HttpResponseBadRequest('Profile Not Found')
+
+    if not profile or isinstance(profile, InvalidId):
+        return HttpResponseBadRequest(
+            'The profile associated with this link could not be found. '
+            'Please contact the person who provided the link '
+            'to request a new one.'
+        )
     if profile["type"] == "ei_edp":
         result = join_shared_edp_profile(profile, token)
         if result['status'] == 'success':
@@ -751,7 +756,7 @@ def join_shared_profile(request, profile_id, token):
         else:
             return HttpResponseBadRequest(result['message'])
     else:
-        return HttpResponseBadRequest('You are not authorised to join this profile')
+        return HttpResponseBadRequest('Sorry, you are not authorised to create an account to join this profile')
 
 
 def get_tour_progress(request, component):

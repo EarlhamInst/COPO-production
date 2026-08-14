@@ -67,8 +67,11 @@ def post_save_edp_profile(profile):
     # --- COPO profile sharing ---
     customer_emails = profile.get("customer_emails","")
     if customer_emails:
-        emails = [email.strip() for email in customer_emails.split(CUSTOMER_EMAIL_SPLITTER)
-                   if email.strip()]
+        emails = [
+            email.strip()
+            for email in customer_emails.split(CUSTOMER_EMAIL_SPLITTER)
+            if email.strip()
+        ]
 
         # Ensure a COPO group exists for this profile (used to control access)
         group_id = None
@@ -101,7 +104,7 @@ def post_save_edp_profile(profile):
             # via the join_shared_profile view without needing an existing COPO account
             customer_emails_tokens = { str(uuid.uuid4()):email for email in missing_user_emails}
             Profile().get_collection_handle().update_one({"_id":profile["_id"]},{"$set":{"customer_emails_tokens": customer_emails_tokens}})
-            Email().notify_shared_profile_to_not_exist_user(profile, customer_emails_tokens)
+            Email().notify_shared_profile_to_non_existent_user(profile, customer_emails_tokens)
 
     # --- LIMS project sync ---
     # Delegate project/sample synchronisation to the active LIMS adapter. The
@@ -163,7 +166,7 @@ def join_shared_edp_profile(profile, token):
     """Allow a customer to join an EDP profile they've been invited to.
 
     Called from the join_shared_profile view when a user follows the token link
-    sent by Email.notify_shared_profile_to_not_exist_user.
+    sent by Email.notify_shared_profile_to_non_existent_user.
 
     If the user has no email address yet (e.g. a new ORCID-only account), the
     token is used to look up and assign their email before adding them to the
@@ -176,7 +179,7 @@ def join_shared_edp_profile(profile, token):
     if user.id == profile["user_id"]:
         return {"status": "error", "message": f"Profile owner cannot join the profile."}
 
-    if user.email is None:
+    if user.email == '' or user.email is None:
         # New user with no email — resolve their address from the invite token
         email = profile.get("customer_emails_tokens", {}).get(token, "")
         if not email:
@@ -197,4 +200,7 @@ def join_shared_edp_profile(profile, token):
                 group_id = groups[0]["_id"]
             CopoGroup().add_user_to_group(group_id=group_id, user_id=str(user.id))
             return {"status": "success"}
-        return {"status": "error", "message": f"User {user.email} is not authorised to join the profile."}
+        return {
+            "status": "error",
+            "message": f"Customer with email '{user.email}' is not authorised to join the profile.",
+        }
