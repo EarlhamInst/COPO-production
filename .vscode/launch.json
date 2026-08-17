@@ -213,6 +213,7 @@
       "configurations": [
         "Python: Django",
         "Python: Celery Workers",
+        "Python: Celery Workers file_transfers",
         "Python: Celery Beat",
       ],
       "stopAll": true
