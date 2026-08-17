@@ -11,7 +11,7 @@ from bson import ObjectId, json_util
 from django.conf import settings
 from common.schemas.utils.cg_core.cg_schema_generator import CgCoreSchemas
 from datetime import datetime, timedelta
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 
 
 lg =  Logger()
@@ -1166,7 +1166,10 @@ class Submission(DAComponent):
         # stuck submissions in sending state, so get both types
         subs = self.get_collection_handle().find(
             {f"{component}_status": {"$in": ["sending", "pending"]}, "repository": repository},
-            {f"{component}_status": 1, "profile_id": 1, "date_modified": 1, component: 1, "accessions":1})
+            {f"{component}_status": 1, "profile_id": 1, "date_modified": 1, component: 1, "accessions": 1,
+             # Needed so the async pipeline can resolve the submitter's own
+             # repository credentials (falls back to COPO default otherwise).
+             "submitter": 1, "credential_source": 1})
         sub = cursor_to_list(subs)
         out = list()
         current_time = helpers.get_datetime()

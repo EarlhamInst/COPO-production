@@ -1,7 +1,7 @@
 from common.dal.copo_da import DAComponent
 import pandas as pd
 from common.utils.helpers import get_datetime, get_not_deleted_flag, notify_frontend
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from bson.objectid import ObjectId
 
 ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE = {"status":"pending", "accession":"", "error":""}
@@ -53,7 +53,7 @@ class SinglecellSchemas(DAComponent):
             component_df.drop(not_repository_columns, axis=1, inplace=True)
             component_df.dropna(how="all", inplace=True)
             component_df.rename(columns=lambda x: x.replace("repository_", ""), inplace=True)
-            component_df.fillna("", inplace=True)
+            component_df = component_df.astype(object).fillna("")
             return component_df
 
     def get_term_mapping(self, schema_name):

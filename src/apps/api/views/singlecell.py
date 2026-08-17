@@ -22,7 +22,7 @@ def get_current_supported_checklists(request,schema_name):
     
     df = pd.DataFrame(checklists.values(), index=checklists.keys())
     df = df.reset_index().rename(columns={'index': 'checklist_id'})
-    df = df.fillna("")
+    df = df.astype(object).fillna("")
     return JsonResponse(list(df.to_dict("index").values()), safe=False)
 
 

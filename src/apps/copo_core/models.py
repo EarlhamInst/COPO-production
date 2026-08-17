@@ -12,7 +12,7 @@ from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django_tools.middlewares.ThreadLocal import get_current_user
+from django_tools.middlewares.threadlocal import get_current_user
 from django.conf import settings
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
@@ -75,6 +75,36 @@ def save_user_details(sender, instance, **kwargs):
     instance.userdetails.save()
 
 
+class UserRepositoryCredential(models.Model):
+    """A user's own credentials for a submission repository (ENA, Zenodo, ...).
+
+    One row per (user, repo_key). The secret parts live in `payload` as a
+    Fernet-encrypted JSON blob, so each repository stores whatever shape it
+    needs (ENA: user + password; Zenodo: a token) in the same column. Nothing
+    here is read at import time — the resolver looks a row up per submission,
+    which is what makes per-user credentials with a COPO-default fallback
+    possible.
+    """
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="repository_credentials"
+    )
+    repo_key = models.CharField(max_length=50)
+    # Fernet token over a JSON object; opaque to the DB. Never store plaintext.
+    payload = models.TextField(blank=True)
+    validated_at = models.DateTimeField(null=True, blank=True)
+    is_valid = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # A user has at most one credential set per repository.
+        unique_together = ("user", "repo_key")
+
+    def __str__(self):
+        return f"{self.user.username}:{self.repo_key}"
+
+
 class Repository(models.Model):
     class Meta:
         managed = False  # No database table creation or deletion operations \
@@ -117,7 +147,30 @@ class Banner(models.Model):
     header = models.TextField(max_length=78, blank=False, default="")
     body = models.TextField(max_length=2000, blank=True, default="")
     active = models.BooleanField(default=False)
+    expires_at = models.DateTimeField(null=True, blank=True)
 
+    def clean(self):
+        super().clean()
+        if self.active:
+            if not self.expires_at:
+                raise ValidationError(
+                    {
+                        'expires_at': 'An active banner must have an expiry date and time.'
+                    }
+                )
+
+            if self.expires_at <= timezone.now():
+                raise ValidationError(
+                    {
+                        'expires_at': 'The expiry date and time must be in the future.'
+                    }
+                )
+
+    def deactivate_if_expired(self):
+        if self.active and self.expires_at and self.expires_at <= timezone.now():
+            self.active = False
+            self.save(update_fields=['active'])
+            
 
 class ViewLock(models.Model):
     url = models.URLField(max_length=2000)

@@ -2,7 +2,7 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError, EndpointConnectionError, BotoCoreError
 from django.conf import settings as s
-from django_tools.middlewares.ThreadLocal import get_current_request
+from django_tools.middlewares.threadlocal import get_current_request
 from common.schemas.utils.data_utils import join_with_and
 from common.utils.helpers import notify_read_status
 from common.utils.logger import Logger

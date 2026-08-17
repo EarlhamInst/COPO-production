@@ -3,7 +3,7 @@ from pathlib import Path
 import subprocess
 import re
 from django.conf import settings
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from common.utils.helpers import get_env, get_datetime, get_deleted_flag, get_not_deleted_flag
 from common.lookup.lookup import ENA_CLI
 from common.dal.copo_da import EnaFileTransfer, DataFile

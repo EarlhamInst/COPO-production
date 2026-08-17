@@ -603,7 +603,7 @@ def prefill_manifest_template(request):
 
 def auto_adjust_excel_column_width(dataframe, pandas_writer, sheet_name):
     for column in dataframe:
-        column_length = max(dataframe[column].astype(str).map(len).max(), len(column))
+        column_length = max(dataframe[column].astype(object).fillna('').astype(str).map(len).max(), len(column))
         column_index = dataframe.columns.get_loc(column)
         pandas_writer.sheets[sheet_name].set_column(
             column_index, column_index, column_length
@@ -701,7 +701,7 @@ def apply_dropdown_list(
 ):
     for column_name in dataframe:
         column_length = max(
-            dataframe[column_name].astype(str).map(len).max(), len(column_name)
+            dataframe[column_name].astype(object).fillna('').astype(str).map(len).max(), len(column_name)
         )
         column_index = dataframe.columns.get_loc(column_name)
 
@@ -1024,7 +1024,6 @@ def generate_manifest_template(manifest_type, manifest_template_path, initial_da
         columns=initial_data.columns.difference(
             metadataEntry_worksheet_dataframe.columns
         ),
-        axis=1,
         inplace=True,
     )
     metadataEntry_worksheet_concatenation = pd.concat(

@@ -22,7 +22,7 @@ from common.schema_versions.lookup.dtol_lookups import (
 from common.utils import helpers
 from datetime import datetime, timezone, timedelta
 from django.conf import settings
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from itertools import chain
 from pymongo.collection import ReturnDocument
 from pymongo import ReturnDocument
@@ -1107,7 +1107,7 @@ class Sample(DAComponent):
 
         if samples:
             df = pd.DataFrame(samples)
-            df = df.fillna('')
+            df = df.astype(object).fillna('')
             schema = [
                 x
                 for x in sc

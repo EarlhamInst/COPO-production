@@ -14,7 +14,7 @@ from common.utils.helpers import (
     notify_ena_object_status,
     extract_exact_phrases_from_regex
 )
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 import inspect
 import math
 from common.schema_versions.lookup import dtol_lookups as lookup
@@ -708,11 +708,11 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
         sample_df = pd.DataFrame.from_records(samples)
         new_column_name = { key : field["label" ]+ (" (optional)" if  field["mandatory"] != 'mandatory' else "") for key, field in checklist["fields"].items() }
         sample_df.rename(columns=new_column_name, inplace=True)
-        sample_df.drop(columns=sample_df.columns.difference(df1.columns), axis=1, inplace=True)
+        sample_df.drop(columns=sample_df.columns.difference(df1.columns), inplace=True)
 
         #sample_df = sample_df.rename(columns={"name": "Sample"})
         df1 = pd.concat([df1, sample_df], axis=0, join="outer")
-        df1 = df1.fillna("")
+        df1 = df1.astype(object).fillna("")
 
     if file_path is None:
         manifest_name = checklist["primary_id"]
@@ -756,7 +756,7 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
                         s = pd.Series(choice, name=field["label"])
                         s.to_frame().to_excel(writer, sheet_name="data_values", index=False, header=True, startrow=0, startcol=data_validation_column_index)
                         column_letter = get_column_letter(data_validation_column_index + 1)
-                        column_length = max(s.astype(str).map(len).max(), len(field["name"]))
+                        column_length = max(s.astype(object).fillna('').astype(str).map(len).max(), len(field["name"]))
                         writer.sheets["data_values"].set_column(data_validation_column_index, data_validation_column_index, column_length)
                         source = "=%s!$%s$2:$%s$%s" % ("data_values", column_letter, column_letter, str(len(choice) + 1))
                         data_validation_column_index = data_validation_column_index + 1
@@ -770,6 +770,6 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
         df.to_excel(writer, sheet_name=sheet_name)
 
         for column in df.columns:
-            column_length = max(df[column].astype(str).map(len).max(), len(column))
+            column_length = max(df[column].astype(object).fillna('').astype(str).map(len).max(), len(column))
             column_index = df.columns.get_loc(column)+1
             writer.sheets[sheet_name].set_column(column_index, column_index, column_length)    

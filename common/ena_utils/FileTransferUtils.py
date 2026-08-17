@@ -9,7 +9,8 @@ from bson import ObjectId
 from botocore.exceptions import ClientError
 from common.utils.logger import Logger
 import gzip
-from .generic_helper import transfer_to_ena
+from .generic_helper import transfer_to_ena, get_submission_handle
+from common.repositories import credentials as credential_resolver
 from common.utils.helpers import get_env, get_datetime, notify_submission_status
 from datetime import datetime
 from src.apps.copo_core.models import StatusMessage, User
@@ -623,8 +624,47 @@ def get_transfer_status(tx):
     else:
         return False
 
+def _resolve_transfer_credentials(tx):
+    """Resolve the Webin credentials to upload this transfer record's file under.
+
+    A transfer record only carries a `submission_id` (the SubmissionCollection
+    ObjectId), so we fetch that submission and defer to the shared resolver,
+    which reads its `submitter` + `credential_source`. Returns the canonical
+    credential dict (keys: webin_user, user_token, webin_domain, password), or
+    None so the transfer functions fall back to COPO's default env credentials.
+
+    """
+    submission_id = tx.get("submission_id")
+    if not submission_id:
+        # Legacy / orphaned record with no submission — fall back to default.
+        return None
+
+    sub = get_submission_handle().find_one({"_id": ObjectId(submission_id)})
+    if not sub:
+        # The submission has been deleted but the transfer record survived.
+        # There's no submitter to attribute the upload to, so fall back to
+        # COPO's default account rather than error the record forever.
+        Logger().log(
+            f"_resolve_transfer_credentials: submission {submission_id} not found; "
+            f"using COPO default credentials for {tx.get('local_path')}"
+        )
+        return None
+
+    # resolve_for_submission returns None for legacy submissions with no
+    # submitter (intended default-fallback signal), or the user's/COPO-default
+    # creds otherwise. We deliberately do NOT swallow errors from here: if a
+    # user supplied their own creds and resolution fails, the accountability
+    # rule says the record must NOT silently upload under COPO's account — let
+    # it propagate so the transfer is reset and retried, not misattributed.
+    return credential_resolver.resolve_for_submission(sub, "ena")
+
+
 def to_ena(user_details, tx, user=None):
     kwargs = dict(profile_id=tx.get("profile_id", ""))
+    creds = _resolve_transfer_credentials(tx)
+    if creds:
+        kwargs["webin_user"] = creds.get("webin_user")
+        kwargs["webin_password"] = creds.get("password")
     result = transfer_to_ena(
             tx["remote_path"],
             [tx["local_path"]],

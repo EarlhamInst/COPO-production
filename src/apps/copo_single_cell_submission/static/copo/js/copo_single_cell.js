@@ -471,7 +471,14 @@ $(document).on('document_ready', function () {
         }
       }
       args_dict['study_id'] = study_id;
-      form_generic_task('singlecell', task, records, args_dict);
+
+      // Before an ENA submission, make sure we know which credentials to use:
+      // the user's own (if valid) or a one-off COPO default chosen in a popup.
+      if (task == 'submit_singlecell_ena') {
+        ensureRepositoryCredentialsThenSubmit('singlecell', 'ena', task, records, args_dict);
+      } else {
+        form_generic_task('singlecell', task, records, args_dict);
+      }
     }
   }
 

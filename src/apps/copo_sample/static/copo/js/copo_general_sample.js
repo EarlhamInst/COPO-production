@@ -438,6 +438,9 @@ $(document).on('document_ready', function () {
       );
       $('#download-sample-manifest-link span').trigger('click');
       return;
+    } else if (task == 'submit_sample') {
+      // Gate ENA sample submission on the user's own credentials (popup).
+      ensureRepositoryCredentialsThenSubmit('sample', 'ena', task, records, args_dict);
     } else {
       form_generic_task('sample', task, records, args_dict);
     }

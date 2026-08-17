@@ -7,7 +7,7 @@ import uuid
 from django.http import HttpResponse
 from datetime import date, datetime
 from dateutil.parser import parse as parse_date
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from rest_framework import status
 
 import common.schemas.utils.data_utils as d_utils

@@ -17,12 +17,13 @@ backcall==0.2.0
 beautifulsoup4==4.15.0
 billiard==4.2.4
 #biopy-isatab==0.1.1
-biopython==1.87
+biopython==1.88
 bleach==6.4.0
 boto3==1.43.50
 botocore==1.43.50
 Brotli==1.2.0
 bs4==0.0.2
+cattrs==26.1.0
 celery==5.6.3
 certifi==2026.6.17
 #cffi==1.16.0
@@ -32,7 +33,7 @@ channels-redis==4.3.0
 #colored==1.4.3
 #configparser==3.7.4
 constantly==23.10.4
-cryptography==49.0.0
+cryptography==50.0.0
 daphne==4.2.2
 #-e git+https://github.com/IQSS/dataverse-client-python.git@5f95a11e2f32bcfabe28e6ad43b2f7edac60d983#egg=dataverse
 decorator==5.3.1
@@ -54,7 +55,7 @@ django-gollum==1.0.1
 django-html-validator==0.5.1
 django-json-widget==2.1.1
 django-redis-sessions==0.6.2
-django-tools==0.58.0
+django-tools==0.59.0
 django-user-agents==0.4.0
 django-crispy-forms==2.6
 crispy-bootstrap5==2026.3
@@ -107,7 +108,7 @@ mccabe==0.7.0
 #meld3==2.0.0
 #mistune==0.8.4
 mock==5.2.0
-#more-itertools==10.3.0
+more-itertools==11.1.0
 msgpack==1.2.1
 #mzml2isa==0.5.1
 #nbconvert==5.6.0
@@ -117,12 +118,12 @@ nest-asyncio==1.6.0
 #networkx==2.0
 #notebook==6.0.1
 #numexpr==2.14.1
-numpy==2.5.1
+numpy==2.5.2
 oauthlib==3.3.1
 openpyxl==3.1.5
 ordered-set==4.1.0
 packaging==26.2
-pandas==3.0.3
+pandas==3.0.5
 pandocfilters==1.5.1
 parso==0.8.7
 pbr==7.0.3
