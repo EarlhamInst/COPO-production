@@ -16,7 +16,11 @@ services:
       - '5901:5900'
       - '5678:5678'
     environment:
-      - BASE_URL=http://copo_web:8000
+      # "copo_web" (underscore) is a valid Docker DNS name but Django's Host-header
+      # parser rejects underscores outright (RFC 1034/1035), regardless of
+      # ALLOWED_HOSTS. Use the hyphenated network alias defined alongside the
+      # copo_web service instead.
+      - BASE_URL=http://copo-web:8000
       - DEBUG=True
       - DISPLAY=:99
       - DJANGO_SUPERUSER_USERNAME=test_admin
@@ -27,3 +31,11 @@ services:
       - VNC_PORT=5900
     depends_on:
       - copo_web
+    volumes:
+      # Bind-mount the repo (same pattern as copo_web) so edits to tests,
+      # conftest.py, or app code are picked up immediately — no image rebuild
+      # needed. Only new/changed *dependencies* (requirements/dev.txt) still
+      # require rebuilding, since those are installed at build time. This also
+      # means anything pytest writes under /copo (e.g. --output results) lands
+      # directly in the repo on the host — no separate volume needed for that.
+      - /Users/fshaw/dev/COPO-production:/copo

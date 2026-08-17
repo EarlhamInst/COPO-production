@@ -16,8 +16,9 @@ until xdpyinfo -display :99 >/dev/null 2>&1; do
   sleep 0.2
 done
 
-# Wait for web service to start up
-until curl -f http://copo_web:8000/health; do
+# Wait for web service to start up. No dedicated health endpoint exists;
+# match the plain root-URL check the copo_web service's own healthcheck uses.
+until curl -f "${BASE_URL}/"; do
   echo "Waiting for copo_web service to start..."
   sleep 2
   elapsed=$((elapsed+2))

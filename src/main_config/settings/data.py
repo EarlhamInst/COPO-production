@@ -14,6 +14,14 @@ if ENVIRONMENT_TYPE == "":
         'ENVIRONMENT_TYPE environment variable not set. Value should be either "prod" or "dev"'
     )
 
+# The Playwright test container reaches this service over the Docker Compose
+# network via the "copo-web" alias (hyphen, not the "copo_web" service/container
+# name — Django's Host-header parser rejects underscores outright, per RFC
+# 1034/1035, regardless of ALLOWED_HOSTS). Allowed only outside production,
+# same allowlist create_test_user.py uses for its own guard.
+if ENVIRONMENT_TYPE in ('test', 'local', 'demo', 'dev'):
+    base.ALLOWED_HOSTS.append('copo-web')
+
 # settings for postgres
 DATABASES = {
     'default': {

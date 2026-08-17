@@ -3,6 +3,8 @@
 # shared_tools/scripts/setup/postgresqlDB_setup.sh, but as a single Django
 # management command so it can be launched from VS Code ("Python: Setup All").
 
+import os
+
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand, call_command
 
@@ -27,6 +29,9 @@ STEPS = [
     ("Set up profile types", "setup_profile_types", []),
     ("Set up news", "setup_news", []),
     ("Create superuser", "createsuperuser", []),  # interactive — prompts on stdin
+    # Non-critical: skips with a warning if $COPO_TEST_USER_PASSWORD isn't set,
+    # rather than aborting the whole bootstrap over an optional test-only step.
+    ("Create test user", "create_test_user", ["--password", os.environ.get("COPO_TEST_USER_PASSWORD", "")]),
 ]
 
 
