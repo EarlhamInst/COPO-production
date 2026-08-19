@@ -11,8 +11,7 @@
       "python": "/opt/venv/bin/python",
       "program": "${workspaceFolder}/manage.py",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}",
-        "GEVENT_SUPPORT": "True"
+        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
       },
       "args": ["runserver", "0.0.0.0:8000"],
       "django": true,
