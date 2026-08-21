@@ -29,6 +29,30 @@ services:
       - ENVIRONMENT_TYPE=test
       - PLAYWRIGHT_DEBUG_PORT=5678
       - VNC_PORT=5900
+      # Django settings import fails outright without these (some are cast with
+      # int(), so even being unset — not just wrong — crashes at import time).
+      # Mirrors copo_web's own environment block (deployment/local.copo.compose.mac.yaml)
+      # so tests can run manage.py commands (e.g. create_test_user) directly,
+      # against the same database copo_web itself uses.
+      - SECRET_KEY=${vault_copo_web_secret_key}
+      - MEDIA_PATH=media/
+      - http_protocol=http
+      - WEBIN_USER=${vault_copo_webin_user}
+      - WEBIN_USER_PASSWORD=${vault_copo_webin_user_password}
+      - REDIS_HOST=copo_redis
+      - REDIS_PORT=6379
+      - MONGO_USER=copo_user
+      - MONGO_USER_PASSWORD=password
+      - MONGO_DB=copo_mongo
+      - MONGO_HOST=copo_mongo
+      - MONGO_PORT=27017
+      - MONGO_MAX_POOL_SIZE=100
+      - POSTGRES_DB=copo
+      - POSTGRES_USER=copo_user
+      - POSTGRES_PORT=5432
+      - POSTGRES_SERVICE=copo_postgres
+      - POSTGRES_PASSWORD=password
+      - COPO_TEST_USER_PASSWORD=${COPO_TEST_USER_PASSWORD}
     depends_on:
       - copo_web
     volumes:

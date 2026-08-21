@@ -106,11 +106,7 @@ $(document).ready(function () {
     var data = JSON.parse(e.data);
 
     if (data.hasOwnProperty('type') && data.type == 'submission_status') {
-      var event_target_id = '';
-      try {
-        event_target_id = data.submission_id;
-      } catch (err) {}
-
+      var event_target_id = data.submission_id;
       if (event_target_id) {
         get_submission_information([event_target_id]);
       }

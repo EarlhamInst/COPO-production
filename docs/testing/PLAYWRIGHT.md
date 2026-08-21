@@ -69,6 +69,27 @@ each action down somewhat (roughly 20-30%, per Playwright's own guidance) —
 negligible for a single short test, more noticeable across a whole suite run
 repeatedly. This is why tracing is opt-in rather than always-on.
 
+## Tests marked `external` (real ENA/Zenodo calls)
+
+Some tests make real network calls to third-party services — ENA's dev
+sandbox (`wwwdev.ebi.ac.uk`, safe, EBI's own intended test environment) and
+production Zenodo (`zenodo.org` — there is no Zenodo sandbox anywhere in
+this repo). These are marked `@pytest.mark.external` and are **excluded by
+default**: a bare `run_playwright_tests.sh` run always passes
+`-m "not external"`.
+
+To opt in and run them too, pass `-e` as the first argument:
+
+```
+test/playwright/scripts/run_playwright_tests.sh -e
+```
+
+`-e` can be combined with a specific file/test path, same as any other
+argument. Expect these to be slower than the rest of the suite (they poll
+for real, asynchronous ENA/Zenodo responses rather than asserting against
+local, synchronous state) and to leave real side effects behind (an ENA
+sandbox submission, a Zenodo draft deposition — never a published one).
+
 ## Watching a test live
 
 While a test is running, you can watch the actual browser instead of

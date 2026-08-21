@@ -5,11 +5,15 @@
 #   test/playwright/scripts/run_playwright_tests.sh                     # whole suite
 #   test/playwright/scripts/run_playwright_tests.sh -t test/playwright/e2e/test_case_login.py
 #   test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_login.py --tracing=on -v
+#   test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_submission_journey.py::test_full_submission_and_publish_journey
 #
-# -t records a trace (expands to --tracing=on -v) and is stripped before the
-# rest of the arguments are passed straight through to pytest. With no other
-# arguments, the whole test/playwright/ suite runs (a bare `pytest` would run
-# test/unit instead, per pytest.ini's testpaths). Traces land in
+# -t records a trace (expands to --tracing=on -v). -e includes tests marked
+# "external" (real calls to ENA's dev sandbox / production Zenodo) — these
+# are excluded by default (-m "not external") since they're slow and hit
+# real third-party services. Both flags are stripped before the rest of the
+# arguments are passed straight through to pytest. With no other arguments,
+# the whole test/playwright/ suite runs (a bare `pytest` would run test/unit
+# instead, per pytest.ini's testpaths). Traces land in
 # test-results/<test-name>/trace.zip — see docs/testing/PLAYWRIGHT.md.
 set -euo pipefail
 
@@ -23,10 +27,13 @@ if [ ! -d "$PROJECT_SETUP_DIR" ]; then
 fi
 
 TRACE=0
+INCLUDE_EXTERNAL=0
 REMAINING_ARGS=()
 for arg in "$@"; do
   if [ "$arg" = "-t" ]; then
     TRACE=1
+  elif [ "$arg" = "-e" ]; then
+    INCLUDE_EXTERNAL=1
   else
     REMAINING_ARGS+=("$arg")
   fi
@@ -44,6 +51,9 @@ if [ ${#PYTEST_ARGS[@]} -eq 0 ]; then
 fi
 if [ "$TRACE" -eq 1 ]; then
   PYTEST_ARGS+=("--tracing=on" "-v")
+fi
+if [ "$INCLUDE_EXTERNAL" -eq 0 ]; then
+  PYTEST_ARGS+=("-m" "not external")
 fi
 
 # pytest-playwright's default --output ("test-results", relative to cwd) would

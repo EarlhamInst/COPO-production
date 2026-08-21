@@ -74,7 +74,14 @@ class Command(BaseCommand):
         user, created = User.objects.get_or_create(username=username, defaults={'email': email})
         self.stdout.write(f'{"Creating" if created else "Updating"} test user {username!r}...')
         user.email = email
-        user.set_password(password)
+        # set_password() re-hashes unconditionally, even for an unchanged
+        # password — Django ties session validity to a hash of the password
+        # (get_session_auth_hash()), so a no-op password "change" silently
+        # invalidates every existing session for this user, including any
+        # cached storage_state from earlier in the same test run. Only
+        # reset it when the password has actually changed.
+        if not user.check_password(password):
+            user.set_password(password)
         
         groups = Group.objects.all()
         if not groups:

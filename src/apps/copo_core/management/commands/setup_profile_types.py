@@ -803,6 +803,7 @@ class Command(BaseCommand):
             [
                 delete_singlecell_multi,
                 download_singlecell_manifest_single,
+                submit_singlecell_single_ena,
             ]
         )
         singlecell.title_buttons.set(
