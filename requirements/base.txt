@@ -184,7 +184,7 @@ six==1.17.0
 #snowballstemmer==1.2.1
 soupsieve==2.8.4
 sphinxcontrib-websupport==2.0.0
-sqlparse==0.5.5
+sqlparse==0.6.0
 supervisor==4.3.0
 #tables==3.7.0
 tabulate==0.10.0
