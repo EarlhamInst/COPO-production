@@ -1,4 +1,4 @@
-# Smoke-check Dependabot pull requests so a green tick is meaningful:
+# Smoke-check every PR into main so a green tick is meaningful:
 # - dependencies install
 # - Django settings import and system checks pass
 # - database migrations apply against a real Postgres (connectivity + schema build)
@@ -13,9 +13,10 @@
 # database name, host, or secret. The databases are ephemeral containers that are
 # destroyed when the job ends. Nothing here is a real secret.
 #
-# workflow_dispatch is included so this can be run manually on any branch
-# (the pull_request path is gated to Dependabot's own PRs).
-name: Dependabot validation
+# Originally scoped to Dependabot's own PRs only (hence the filename), then
+# widened to run on every PR — nothing here needs repo secrets or elevated
+# permissions, so there was no reason to keep it Dependabot-only.
+name: CI smoke test
 
 on:
   pull_request:
@@ -24,9 +25,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  dependabot:
-    if: github.actor == 'dependabot[bot]' || github.event_name == 'workflow_dispatch'
-
+  smoke-test:
     runs-on: ubuntu-latest
 
     services:

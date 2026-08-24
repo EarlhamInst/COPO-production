@@ -140,7 +140,13 @@ application code changes.
 
 ## GitHub Actions
 
-`.github/workflows/playwright.yml` exists but does not actually run
-anything — its `run: test playwright run` step is a shell no-op (`test` is
-the shell's built-in conditional command, not a real invocation) that
-always reports success. Wiring this up properly is still outstanding work.
+`.github/workflows/playwright.yml` is currently disabled (`workflow_dispatch`
+only — it won't fire on PRs or pushes). It never actually ran the suite: its
+`run: test playwright run` step isn't a real command (bash parses `test` as
+its own built-in operator, not an invocation), and the commented-out
+fallback below it wouldn't have worked either — it starts `manage.py
+runserver` with no Postgres/Redis/Mongo/MinIO behind it, which the app needs
+just to boot. Making this real means standing up those services (Mongo
+needs a replica set + keyfile, per `project_setup/compose.yaml`) as GitHub
+Actions services — still outstanding work. Until then, run the suite locally
+as described above.
