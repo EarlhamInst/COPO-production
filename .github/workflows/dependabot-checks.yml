@@ -1,8 +1,15 @@
-# Smoke-check every PR into main so a green tick is meaningful:
+# Two independent jobs that run on every PR into main, so a green tick is
+# meaningful:
+#
+# smoke-test:
 # - dependencies install
 # - Django settings import and system checks pass
 # - database migrations apply against a real Postgres (connectivity + schema build)
 # - the production Docker image still builds
+#
+# unit-tests:
+# - runs test/unit (see that suite's own conftest.py for why it needs none of
+#   smoke-test's services or env setup)
 #
 # The app reads ~30 settings from the environment at startup (and constructs DB
 # clients in settings), so CI must provide those vars plus live Postgres/Mongo/Redis
@@ -126,3 +133,24 @@ jobs:
 
       - name: Build Docker image (validation only)
         run: docker build -f deployment/web/Dockerfile -t copo/copo-new-web:ci-test-${GITHUB_SHA} .
+
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    # No services and no env block needed: test/unit/conftest.py points
+    # DJANGO_SETTINGS_MODULE at src.main_config.settings.test, which seeds its
+    # own placeholder env vars and replaces Mongo/Postgres/Redis with
+    # in-memory/unreachable equivalents. See project docs/testing notes on the
+    # unit suite for why it deliberately needs none of the smoke-test's setup.
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements/base.txt
+
+      - name: Run unit tests
+        run: pytest test/unit -v
