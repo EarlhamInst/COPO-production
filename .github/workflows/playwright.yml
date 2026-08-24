@@ -1,10 +1,17 @@
 name: Playwright Tests
 
+# Disabled: this workflow doesn't actually run the suite. "Run Playwright
+# tests" invokes `test playwright run`, which isn't a real command (bash
+# parses it as the `test` builtin), and the commented-out block below it
+# wouldn't work either — it starts `manage.py runserver` with no
+# Postgres/Redis/Mongo/MinIO behind it, which the app needs to boot at all.
+# Making this real means standing up those services (Mongo needs a replica
+# set + keyfile, per project_setup/compose.yaml) as GitHub Actions services.
+# Until that's done, leave this manual-only so it stops firing a misleading
+# red X on every PR. See docs/testing/PLAYWRIGHT.md for how to run the suite
+# locally in the meantime.
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   test:
