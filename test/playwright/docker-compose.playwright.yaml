@@ -1,0 +1,65 @@
+## Note: Refer to the steps outlined in the comments 
+# in the 'local.copo.compose.linux.yaml' file or the
+# 'local.copo.compose.mac.yaml' file (depending on your OS) to set up 
+# both a local COPO instance and the Playwright container.
+#
+# After the steps have been followed especially Step #2, 
+# the Playwright container will be running. To execute tests run,
+#
+# $ docker run --rm --network host playwright:v1.60.0 pytest
+#
+services:
+  copo_playwright:
+    image: playwright:v1.60.0
+    entrypoint: ["/bin/bash", "/copo/test/playwright/entrypoint.sh"]
+    ports:
+      - '5901:5900'
+      - '5678:5678'
+    environment:
+      # "copo_web" (underscore) is a valid Docker DNS name but Django's Host-header
+      # parser rejects underscores outright (RFC 1034/1035), regardless of
+      # ALLOWED_HOSTS. Use the hyphenated network alias defined alongside the
+      # copo_web service instead.
+      - BASE_URL=http://copo-web:8000
+      - DEBUG=True
+      - DISPLAY=:99
+      - DJANGO_SUPERUSER_USERNAME=test_admin
+      - DJANGO_SUPERUSER_PASSWORD=test_admin
+      - DJANGO_SUPERUSER_EMAIL=admin@test.com
+      - ENVIRONMENT_TYPE=test
+      - PLAYWRIGHT_DEBUG_PORT=5678
+      - VNC_PORT=5900
+      # Django settings import fails outright without these (some are cast with
+      # int(), so even being unset — not just wrong — crashes at import time).
+      # Mirrors copo_web's own environment block (deployment/local.copo.compose.mac.yaml)
+      # so tests can run manage.py commands (e.g. create_test_user) directly,
+      # against the same database copo_web itself uses.
+      - SECRET_KEY=${vault_copo_web_secret_key}
+      - MEDIA_PATH=media/
+      - http_protocol=http
+      - WEBIN_USER=${vault_copo_webin_user}
+      - WEBIN_USER_PASSWORD=${vault_copo_webin_user_password}
+      - REDIS_HOST=copo_redis
+      - REDIS_PORT=6379
+      - MONGO_USER=copo_user
+      - MONGO_USER_PASSWORD=password
+      - MONGO_DB=copo_mongo
+      - MONGO_HOST=copo_mongo
+      - MONGO_PORT=27017
+      - MONGO_MAX_POOL_SIZE=100
+      - POSTGRES_DB=copo
+      - POSTGRES_USER=copo_user
+      - POSTGRES_PORT=5432
+      - POSTGRES_SERVICE=copo_postgres
+      - POSTGRES_PASSWORD=password
+      - COPO_TEST_USER_PASSWORD=${COPO_TEST_USER_PASSWORD}
+    depends_on:
+      - copo_web
+    volumes:
+      # Bind-mount the repo (same pattern as copo_web) so edits to tests,
+      # conftest.py, or app code are picked up immediately — no image rebuild
+      # needed. Only new/changed *dependencies* (requirements/dev.txt) still
+      # require rebuilding, since those are installed at build time. This also
+      # means anything pytest writes under /copo (e.g. --output results) lands
+      # directly in the repo on the host — no separate volume needed for that.
+      - /Users/fshaw/dev/COPO-production:/copo

@@ -51,6 +51,14 @@ COPY ./shared_tools/reposit/.aspera/ /root/.aspera/
 ENV PATH="/root/.aspera/cli/bin:$PATH"
 
 # Note that since venv is installed at /opt/venv then, daphne is installed at /opt/venv/bin/daphne not /usr/local/bin/daphne
-ENTRYPOINT ["bash","-c","rsync -avhW --no-compress --progress /code/ /copo/ &&  rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && python manage.py collectstatic --noinput && supervisord -c src/celery.conf && supervisorctl -c src/celery.conf start all && /opt/venv/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application"]
+#
+# CMD, not ENTRYPOINT: an exec-form ENTRYPOINT always runs, with any `command:`/
+# CLI override merely appended as unused positional args to this "bash -c" --
+# so `command: sleep infinity` (project_setup/compose.yaml) and one-off
+# `docker run local_copo:v8.0.1 <cmd>` runs (e.g. the unit test suite) were
+# silently ignored: this full production boot sequence ran regardless,
+# including an rsync that overwrites the bind-mounted repo. As CMD, any
+# override genuinely replaces this, the way both of those callers expect.
+CMD ["bash","-c","rsync -avhW --no-compress --progress /code/ /copo/ &&  rm -rf /code/ && python manage.py migrate && python manage.py social_accounts && python manage.py setup_groups && python manage.py setup_schemas && python manage.py createcachetable && python manage.py collectstatic --noinput && supervisord -c src/celery.conf && supervisorctl -c src/celery.conf start all && /opt/venv/bin/daphne -b 0.0.0.0 -p 8000 src.main_config.asgi:application"]
 
 #wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin &&

@@ -208,7 +208,15 @@ class EnaSubmissionHelper:
         result = dict(status=True, value='')
 
         # register samples to the ENA service
-        curl_cmd = 'curl -s -S -u "' + self.user_token + ':' + self.pass_word \
+        #
+        # --max-time bounds the whole request (connect + transfer) so curl
+        # exits on its own if ENA is slow/unresponsive, rather than hanging
+        # forever with no error and no log entry -- confirmed live: a real
+        # submission got stuck in "sending" status indefinitely (well past
+        # the Celery retry threshold) with nothing in the logs, because
+        # nothing here could ever time out. The subprocess timeout is a
+        # backstop in case curl itself doesn't honour --max-time.
+        curl_cmd = 'curl -s -S --max-time 90 -u "' + self.user_token + ':' + self.pass_word \
                     + '" -F "SUBMISSION=@' \
                     + submission_xml_path \
                     + '" -F "SAMPLE=@' \
@@ -220,7 +228,7 @@ class EnaSubmissionHelper:
             "CURL command to submit samples xml to ENA: " + curl_cmd.replace(self.pass_word, "xxxxxx"))
 
         try:
-            output = subprocess.check_output(curl_cmd, shell=True, stderr=subprocess.STDOUT)
+            output = subprocess.check_output(curl_cmd, shell=True, stderr=subprocess.STDOUT, timeout=120)
         except Exception as e:
             ghlper.logging_exception(e)
             message = 'API call error ' + str(e).replace(self.pass_word, "xxxxxx")
@@ -559,7 +567,11 @@ class EnaSubmissionHelper:
         result = dict(status=True, value='')
 
         # register study to the ENA service
-        curl_cmd = 'curl -u "' + self.user_token + ':' + self.pass_word \
+        #
+        # --max-time bounds the request so a slow/unresponsive ENA can't
+        # hang this indefinitely -- same missing-timeout hang confirmed
+        # live for the sample-registration call above (process_sample()).
+        curl_cmd = 'curl -s -S --max-time 90 -u "' + self.user_token + ':' + self.pass_word \
                     + '" -F "SUBMISSION=@' \
                     + submission_xml_path \
                     + '" -F "PROJECT=@' \
@@ -570,7 +582,7 @@ class EnaSubmissionHelper:
             "CURL command to submit study xml to ENA: " + curl_cmd.replace(self.pass_word, "xxxxxx"))
 
         try:
-            receipt = subprocess.check_output(curl_cmd, shell=True)
+            receipt = subprocess.check_output(curl_cmd, shell=True, timeout=120)
         except Exception as e:
             ghlper.logging_exception(e)
             message = 'API call error ' + str(e).replace(self.pass_word, "xxxxxx")
@@ -596,6 +608,18 @@ class EnaSubmissionHelper:
             if singlecell_id:
                 Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected",  "error": result['message'] })
             self.logging_debug("Error in submitting study to ENA via CURL: " + str(result['message']))
+            # Singlecell().update_component_status()'s own notify_frontend() call
+            # (da.py) sends an empty-message "refresh_table" event that only
+            # repaints the status column -- it never reaches
+            # #submission-activity-log. update_submission_status() is what
+            # copo_read_submission uses for a real logged message; reuse it
+            # here so a rejected single-cell ENA study is actually reported,
+            # not just silently reflected in the table.
+            ghlper.update_submission_status(
+                status='error',
+                message="Study " + study["study_id"] + " was rejected by ENA: " + str(result['message']),
+                submission_id=self.submission_id,
+            )
             return result
 
 
@@ -617,7 +641,18 @@ class EnaSubmissionHelper:
                     study_id=study_id  # assuming study_id is the last part of the alias
                 )
             
-            Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "accepted", "state": status,  "accession": accession, "release_date": release_date, "error": ""})  
+            Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "accepted", "state": status,  "accession": accession, "release_date": release_date, "error": ""})
+
+            # See the matching comment on the rejected path above:
+            # update_component_status()'s own notify_frontend() call sends an
+            # empty message that never reaches #submission-activity-log --
+            # log the real acceptance + accession here the same way
+            # copo_read_submission does for its own completed submissions.
+            ghlper.update_submission_status(
+                status='success',
+                message="Study " + study_id + " accepted by ENA. Accession: " + accession,
+                submission_id=self.submission_id,
+            )
 
         submission_record = Submission().get_collection_handle().find_one({"_id": ObjectId(self.submission_id)}, {"accessions.project": 1})
 
@@ -791,7 +826,10 @@ class EnaSubmissionHelper:
             else:
                 final_submission_xml_path = submission_xml_path
 
-            curl_cmd = 'curl -u "' + self.user_token + ':' + self.pass_word \
+            # --max-time bounds the request so a slow/unresponsive ENA can't
+            # hang this indefinitely -- same missing-timeout hang confirmed
+            # live for the sample-registration call above (process_sample()).
+            curl_cmd = 'curl -s -S --max-time 90 -u "' + self.user_token + ':' + self.pass_word \
                        + '" -F "SUBMISSION=@' \
                        + final_submission_xml_path \
                        + '" -F "EXPERIMENT=@' \
@@ -802,11 +840,11 @@ class EnaSubmissionHelper:
                        + '"'
 
             self.logging_debug(
-                "Submitting EXPERIMENT and RUN XMLs for " +  
+                "Submitting EXPERIMENT and RUN XMLs for " +
                     row[file_identifier] + " using CURL. CURL command is: " + curl_cmd.replace(self.pass_word, "xxxxx"))
 
             try:
-                receipt = subprocess.check_output(curl_cmd, shell=True)
+                receipt = subprocess.check_output(curl_cmd, shell=True, timeout=120)
             except Exception as e:
                 ghlper.logging_exception(e)
                 message = 'API call error ' + str(e).replace(self.pass_word, "xxxxxx"),
