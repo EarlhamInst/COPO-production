@@ -1,2 +1,16 @@
 [tool.black]
 skip-string-normalization = true
+
+[project]
+name = "copo"
+version = "0.1"
+dependencies = []
+
+[project.scripts]
+copo = "copo.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "cli"}
+
+[tool.setuptools.packages.find]
+where = ["cli"]

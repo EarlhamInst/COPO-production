@@ -106,7 +106,7 @@ class IncorrectValueValidator(Validator):
                             if row not in biosampleAccessionsMap.keys():
                                 #check biosample from ena
                                 try:
-                                    response = session.get(f"{ena_sample_service}/{row}", data={})
+                                    response = session.get(f"{ena_sample_service}/{row}", data={}, timeout=15)
                                     if response.status_code == requests.codes.ok:
                                         root = ET.fromstring(response.text)
                                         sample_name = root.find(".//SAMPLE_NAME")

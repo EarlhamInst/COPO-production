@@ -2,6 +2,7 @@ import time
 import http.client
 import urllib.error
 
+import pandas as pd
 from Bio import Entrez
 from common.dal.profile_da import Profile
 from common.utils.helpers import notify_frontend
@@ -37,9 +38,15 @@ def _entrez_call(fn, **kwargs):
 class ATaxonIdMustBeIntegerValidator(Validator):
     def validate(self):
         for index, row in self.data.iterrows():
+            taxon_id = row.get("TAXON_ID", "")
+            # Missingness is a separate validator's concern (e.g. mandatory-field
+            # checks) -- this validator only cares about format, so an absent
+            # value here should not also trigger a "non numeric" error.
+            if pd.isna(taxon_id) or taxon_id == "" or taxon_id in lookup.BLANK_VALS:
+                continue
             try:
-                row.get("TAXON_ID", "")
-            except ValueError as e:
+                int(taxon_id)
+            except ValueError:
                 self.errors.append(msg["validation_msg_string_in_taxon_id"] % (str(index + 1)))
                 self.flag = False
         return self.errors, self.warnings, self.flag

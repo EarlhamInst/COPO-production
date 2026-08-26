@@ -30,11 +30,12 @@ class MandatoryValuesValidator(Validator):
                     self.errors.append(f"Mandatory column <strong>{field['name']}</strong> is missing")
                     self.flag = False
                 else:
-                    null_rows=[]
-                    null_rows.extend(self.data[self.data[key].isnull()].index.tolist())
-                    null_rows.extend(self.data[self.data[key] == ""].index.tolist())
-                    null_rows.extend(self.data[self.data[key].isna()].index.tolist())
-                    for row in null_rows:
+                    # isnull()/isna() are aliases of the same check -- only use one,
+                    # or a genuinely-null cell gets reported as two separate errors.
+                    null_rows = set()
+                    null_rows.update(self.data[self.data[key].isnull()].index.tolist())
+                    null_rows.update(self.data[self.data[key] == ""].index.tolist())
+                    for row in sorted(null_rows):
                         error_msg = msg["missing_value"].format( 
                             column_name=field["label"],
                             row=row+2
