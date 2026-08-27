@@ -92,6 +92,7 @@ services:
       - REDIS_PORT=6379
       - WEBIN_USER=${vault_copo_webin_user}
       - WEBIN_USER_PASSWORD=${vault_copo_webin_user_password}
+      - CREDENTIAL_ENCRYPTION_KEY=${vault_copo_credential_encryption_key}
       - ENA_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD=password
@@ -133,7 +134,7 @@ services:
       - DJANGO_SUPERUSER_EMAIL=admin@test.com
       - http_protocol=http
       - ZENODOURL=https://zenodo.org/api
-      - ZENODOTOKEN=${ZENODOTOKEN}
+      - ZENODOTOKEN=${vault_zenodo_api_token}
     depends_on:
       - copo_redis
       - copo_postgres
