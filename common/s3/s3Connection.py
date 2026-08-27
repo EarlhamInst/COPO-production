@@ -113,12 +113,12 @@ class S3Connection():
         except Exception:
             return 0
 
-    def get_presigned_url(self, bucket, key, expires_seconds=24*60*60):
+    def get_presigned_url(self, bucket, key, expires_seconds=7*24*60*60):
         '''
         Create a pre-signed url for uploading a single file to the s3 ECS
         :param bucket: name of the bucket to which the object sould be uploaded
         :param key: name of the file
-        :param expires_seconds: how long until the url expires, default 24hrs
+        :param expires_seconds: how long until the url expires, default 7 days (AWS SigV4 maximum)
         :return:
         '''
         try:
