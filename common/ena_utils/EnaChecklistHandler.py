@@ -15,7 +15,7 @@ from common.utils.helpers import (
     extract_exact_phrases_from_regex,
     safe_stringify,
 )
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 import inspect
 import math
 from common.schema_versions.lookup import dtol_lookups as lookup

@@ -1,4 +1,4 @@
-/** Created by AProvidence on 16012023
+/**
  * Functions defined are called from 'copo_tol_inspect_gal' web page
  */
 

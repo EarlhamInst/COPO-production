@@ -56,7 +56,6 @@ updates:
       testing:
         patterns:
           - "pytest*"
-          - "selenium"
           - "mock"
       all-others:
         patterns:
@@ -69,6 +68,14 @@ updates:
       # bumps are still allowed) until channels-redis supports redis-py 8.
       - dependency-name: "redis"
         update-types: ["version-update:semver-major"]
+      # astroid must stay within pylint's supported range: pylint 4.0.7 (the
+      # latest release as of writing) caps astroid at <=4.1.dev0, but astroid
+      # itself has moved past that (4.3.0+). Dependabot keeps proposing astroid
+      # bumps the "all-others" catch-all group can't actually install, breaking
+      # CI on every PR that includes them. Hold at patch-level until pylint
+      # raises its astroid ceiling.
+      - dependency-name: "astroid"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   # Dockerfile base image updates
   - package-ecosystem: "docker"

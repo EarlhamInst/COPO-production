@@ -79,6 +79,41 @@ $(document).on('document_ready', function () {
 
   submissionSocket.onmessage = function (e) {
     d = JSON.parse(e.data);
+
+    // Study/sample submission completion is signalled by a bare
+    // {type: 'submission_status', submission_id} frame (no html_id/message/
+    // action -- see ghlper.update_submission_status()), telling listeners to
+    // go fetch the real transcript rather than carrying it inline. The rest
+    // of this handler only understands the notify_frontend() shape (html_id/
+    // message/action), so a frame like this fell through with no message and
+    // no action, silently doing nothing -- the completion notification (e.g.
+    // "Study STUDY004 accepted by ENA. Accession: PRJEB...") never reached
+    // #submission-activity-log. copo_submission.js has an equivalent handler,
+    // but it isn't loaded on this page, so this page needs its own.
+    if (d.type === 'submission_status' && d.submission_id) {
+      $.ajax({
+        url: '/copo/copo_read/get_submission_status/',
+        type: 'POST',
+        headers: { 'X-CSRFToken': $.cookie('csrftoken') },
+        data: { submission_ids: JSON.stringify([d.submission_id]) },
+        success: function (data) {
+          for (const key of Object.keys(data)) {
+            var rec = data[key];
+            if (rec.transcript_status && rec.transcript_message) {
+              var action =
+                rec.transcript_status === 'error'
+                  ? 'error'
+                  : rec.transcript_status === 'info'
+                  ? 'info'
+                  : 'success';
+              displayAlert(action, rec.transcript_message);
+            }
+          }
+        },
+      });
+      return;
+    }
+
     const { $el: $element, inModal: isModalVisible } = getAlertElement(
       d.html_id
     );

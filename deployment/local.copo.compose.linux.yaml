@@ -4,16 +4,26 @@
 #
 ## To deploy a local COPO instance, follow the steps below:
 #
-## Step #1 - Create local Docker images
-## The .env file contains environment variables. Ensure that both the .env file and the
-## local.copo.compose.linux.yaml file are in the same directory before running the command below.
+## Step #1 -  Build Docker images
+## Navigate to project root directory
+# cd <path-to-project-directory>/COPO-production
 #
-# $ docker compose --env-file .env -f local.copo.compose.linux.yaml up -d
+## Build main containers and playwright test container images
+# $ docker build . -f 'deployment/web/Dockerfile_local_linux' -t local_copo_web:v1.0.0
+# $ docker build . -f 'deployment/web/Dockerfile_playwright' -t playwright:v1.60.0
+#
+#
+## Step #2 - Start the containers
+## Navigate to the local project setup directory that contains the .env file
+# cd <path-to-local-project-setup-files-directory>
+#
+## Run the command below to start the local COPO instance and the Playwright test container
+# $ docker compose --env-file .env -f local.copo.compose.linux.yaml -f <path-to-project-directory>/COPO-production/test/playwright/docker-compose.playwright.yaml up -d
 #   (use --env-file so Compose parses .env: it strips the quotes that protect
 #    values containing special characters, e.g. a WEBIN password with '&'.
 #    `export $(cat .env)` leaves those quotes inside the value and breaks them.)
 #
-## Step #2  - Run Django management commands in the terminal
+## Step #3  - Run Django management commands in the terminal
 ## to set up the database and create a superuser (for a new deployment with empty DB only)
 # $ docker ps
 # $ docker exec -it <copo-web-container-id> bash
@@ -26,7 +36,7 @@
 # $ python manage.py setup_sequencing_centres
 # $ python manage.py social_accounts
 
-## Step #3 - Initialise MongoDB replica set as 'copo_admin' user.
+## Step #4 - Initialise MongoDB replica set as 'copo_admin' user.
 # $ docker ps
 # $ docker exec -it <mongo-container-id> bash
 #
@@ -35,7 +45,7 @@
 # admin> db.auth("copo_admin", "password")
 # admin> rs.initiate()
 #
-## Step #4 - Return to the "copo-web-container" to run
+## Step #5 - Return to the "copo-web-container" to run
 ## the other Django management commands
 #
 ## Exit the <mongo-container> by inputting:
@@ -52,7 +62,7 @@
 #
 # $ python manage.py createsuperuser
 #
-## Step #5 - Run Celery commands to populate data in the database
+## Step #6 - Run Celery commands to populate data in the database
 ## Switch to root user if not already it
 # sudo -i
 
@@ -80,6 +90,7 @@ services:
       - REDIS_PORT=6379
       - WEBIN_USER=${vault_copo_webin_user}
       - WEBIN_USER_PASSWORD=${vault_copo_webin_user_password}
+      - CREDENTIAL_ENCRYPTION_KEY=${vault_copo_credential_encryption_key}
       - ENA_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD=password

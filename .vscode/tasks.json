@@ -1,0 +1,14 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Playwright: Start Playwright tests script in debug mode",
+      "type": "shell",
+      "command": "${workspaceFolder}/test/playwright/scripts/run_playwright_tests.sh",
+      "args": ["test", "playwright", "debug"],
+      "problemMatcher": []
+    }
+  ]
+}

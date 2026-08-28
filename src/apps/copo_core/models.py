@@ -12,7 +12,7 @@ from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from django_tools.middlewares.ThreadLocal import get_current_user
+from django_tools.middlewares.threadlocal import get_current_user
 from django.conf import settings
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
@@ -147,7 +147,30 @@ class Banner(models.Model):
     header = models.TextField(max_length=78, blank=False, default="")
     body = models.TextField(max_length=2000, blank=True, default="")
     active = models.BooleanField(default=False)
+    expires_at = models.DateTimeField(null=True, blank=True)
 
+    def clean(self):
+        super().clean()
+        if self.active:
+            if not self.expires_at:
+                raise ValidationError(
+                    {
+                        'expires_at': 'An active banner must have an expiry date and time.'
+                    }
+                )
+
+            if self.expires_at <= timezone.now():
+                raise ValidationError(
+                    {
+                        'expires_at': 'The expiry date and time must be in the future.'
+                    }
+                )
+
+    def deactivate_if_expired(self):
+        if self.active and self.expires_at and self.expires_at <= timezone.now():
+            self.active = False
+            self.save(update_fields=['active'])
+            
 
 class ViewLock(models.Model):
     url = models.URLField(max_length=2000)

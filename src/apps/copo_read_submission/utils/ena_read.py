@@ -1,4 +1,4 @@
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from common.utils.logger import Logger
 from common.dal.copo_da import DataFile, EnaFileTransfer, EnaChecklist
 from common.dal.profile_da import Profile

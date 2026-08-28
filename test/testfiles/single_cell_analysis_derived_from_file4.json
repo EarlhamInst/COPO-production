@@ -1,0 +1,12 @@
+[
+  {
+    "file_name":"random_expression_matrix.csv",
+    "file_type":"csv",
+    "derived_from":"synthetic_generation",
+    "description":"Synthetic single-cell expression CSV created as fallback (anndata not available)",
+    "processing_steps":"random counts; saved as CSV",
+    "software":"pandas",
+    "date":"2025-11-08T15:24:20.421772",
+    "error_note":"No module named 'anndata'"
+  }
+]

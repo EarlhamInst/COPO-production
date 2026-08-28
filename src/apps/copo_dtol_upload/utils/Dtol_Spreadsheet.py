@@ -9,7 +9,7 @@ from jsonpath_ng.ext import parse as jp
 import pandas
 from django.conf import settings
 from django.core.files.storage import default_storage
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 import common.schemas.utils.data_utils as d_utils
 from common.utils.helpers import map_to_dict, get_datetime, notify_frontend, get_current_user
 from common.dal.copo_da import  DataFile

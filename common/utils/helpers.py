@@ -8,7 +8,7 @@ from .logger import Logger
 from common.lookup.copo_enums import *
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from django.conf import settings
 from functools import wraps
 from pandas import isna

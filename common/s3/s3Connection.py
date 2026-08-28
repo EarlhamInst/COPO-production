@@ -2,7 +2,7 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError, EndpointConnectionError, BotoCoreError
 from django.conf import settings as s
-from django_tools.middlewares.ThreadLocal import get_current_request
+from django_tools.middlewares.threadlocal import get_current_request
 from common.schemas.utils.data_utils import join_with_and
 from common.utils.helpers import notify_read_status
 from common.utils.logger import Logger
@@ -113,12 +113,12 @@ class S3Connection():
         except Exception:
             return 0
 
-    def get_presigned_url(self, bucket, key, expires_seconds=24*60*60):
+    def get_presigned_url(self, bucket, key, expires_seconds=7*24*60*60):
         '''
         Create a pre-signed url for uploading a single file to the s3 ECS
         :param bucket: name of the bucket to which the object sould be uploaded
         :param key: name of the file
-        :param expires_seconds: how long until the url expires, default 24hrs
+        :param expires_seconds: how long until the url expires, default 7 days (AWS SigV4 maximum)
         :return:
         '''
         try:

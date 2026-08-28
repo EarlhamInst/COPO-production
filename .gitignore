@@ -174,3 +174,9 @@ update_request_errors*.log
 
 # Ignore 'reports' folder...produced when syncing system records with ENA
 reports/
+
+# Playwright trace/screenshot output, bind-mounted from the copo_playwright container
+test/playwright/test_results/
+
+# Saved login session (cookies) for the storage_state fixture in conftest.py
+test/playwright/.auth_state.json

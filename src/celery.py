@@ -140,8 +140,12 @@ app.conf.beat_schedule = {
     },
     'sync_system_records_with_ena': {
         'task': 'src.apps.copo_sample.tasks.sync_system_records_with_ena',
-        'schedule': timedelta(weeks=1)
-    }
+        'schedule': timedelta(weeks=1),
+    },
+    'process_expired_banners': {
+        'task': 'src.apps.copo_core.tasks.process_expired_banners',
+        'schedule': timedelta(minutes=5),
+    },
 }
 
 app.conf.task_routes = {
@@ -158,12 +162,12 @@ def debug_task(self):
 
 @worker_ready.connect
 def trigger_startup_lookups(sender, **kwargs):
-    """Refresh DB-backed ENA lookups when the worker boots.
+    """Refresh DB-backed remote lookups (ENA, single-cell schemas) when the worker boots.
 
     Beat schedules these daily, but a timedelta schedule's first run is a full
     interval after beat starts -- so a freshly deployed environment has no
-    platforms/checklists for 24h. Enqueue them on worker_ready so the data is
-    populated at T+0 instead. Dispatched async (.delay) so a slow ENA fetch never
+    platforms/checklists/schemas for up to 24h. Enqueue them on worker_ready so the
+    data is populated at T+0 instead. Dispatched async (.delay) so a slow fetch never
     blocks boot; the tasks are idempotent upserts so firing on every restart is safe.
     Imported inside the handler to avoid circular imports at module load.
     """
@@ -172,6 +176,8 @@ def trigger_startup_lookups(sender, **kwargs):
         update_ena_read_checklist,
         update_ena_checklist,
     )
+    from src.apps.copo_single_cell_submission.tasks import update_singlecell_schema
     update_ena_read_platform.delay()
     update_ena_read_checklist.delay()
     update_ena_checklist.delay()
+    update_singlecell_schema.delay()

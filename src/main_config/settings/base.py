@@ -148,7 +148,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_tools.middlewares.ThreadLocal.ThreadLocalMiddleware',
+    'django_tools.middlewares.threadlocal.ThreadLocalMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
     'compression_middleware.middleware.CompressionMiddleware',
     'src.apps.copo_core.middlewares.LocksMiddleware.LocksMiddleware',

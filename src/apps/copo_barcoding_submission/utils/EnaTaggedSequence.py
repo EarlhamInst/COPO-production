@@ -1,12 +1,12 @@
 from django.conf import settings
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from common.utils.helpers import get_env, get_datetime, get_not_deleted_flag, json_to_pytype,notify_tagged_seq_status, map_to_dict
 from common.dal.copo_da import EnaChecklist
 from common.dal.submission_da import Submission
 from .da import TaggedSequence
 from common.utils.logger import Logger
 from bson import ObjectId
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from lxml import etree as ET
 from django.http import HttpResponse, JsonResponse
 import os
@@ -145,7 +145,7 @@ class EnaTaggedSequence:
                 df.to_excel(writer, sheet_name=sheet_name)
 
                 for column in df.columns:
-                    column_length = max(df[column].astype(str).map(len).max(), len(column))
+                    column_length = max(df[column].astype(object).fillna('').astype(str).map(len).max(), len(column))
                     column_index = df.columns.get_loc(column)+1
                     writer.sheets[sheet_name].set_column(column_index, column_index, column_length)
 

@@ -1,4 +1,4 @@
-/** Created by AProvidence on 16012023
+/**
  * Functions defined are called from 'copo_tol_inspect' web page
  */
 const profile_samples_dt_options = {

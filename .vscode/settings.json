@@ -3,7 +3,9 @@
   // not the system Python. Point VS Code at it so the debugger, IntelliSense
   // and the integrated terminal all resolve the project's packages.
   "python.defaultInterpreterPath": "/opt/venv/bin/python",
-
-  "terminal.integrated.defaultProfile.osx": "zsh",
-  
+  "python.testing.pytestArgs": [
+    "test"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }

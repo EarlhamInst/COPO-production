@@ -11,7 +11,7 @@ from bson import ObjectId, json_util
 from django.conf import settings
 from common.schemas.utils.cg_core.cg_schema_generator import CgCoreSchemas
 from datetime import datetime, timedelta
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 
 
 lg =  Logger()
