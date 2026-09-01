@@ -37,8 +37,8 @@ services:
     <<: *minio-common
     hostname: minio
     volumes:
-      - minio-sn-data1:/data1
-      - minio-sn-data2:/data2
+      - minio-data1:/data1
+      - minio-data2:/data2
     deploy:
       # NB: YAML merge keys are shallow, so this block REPLACES the `deploy:` in
       # the x-minio-common anchor rather than merging into it. Everything MinIO
@@ -543,13 +543,9 @@ volumes:
     external: true
   singlecellschemas:
     external: true
-  # Single-node drives (live). Created on ei-copo-prod-service only.
-  minio-sn-data1:
-    external: true
-  minio-sn-data2:
-    external: true
-  # Old distributed drives, retained intact as the migration rollback.
-  # Unreferenced by any service; safe to delete once the cutover is signed off.
+  # Single-node drives, attached on ei-copo-prod-service only. These MUST be
+  # wiped before the first single-node deploy: MinIO rejects a distributed
+  # pool's format.json and will not start. See MINIO_SINGLE_NODE_MIGRATION.md.
   minio-data1:
     external: true
   minio-data2:
