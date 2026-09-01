@@ -75,7 +75,7 @@ back to a wipe without revisiting that decision.
 
 ---
 
-## Phase 0 — Pre-flight (do this first, it can veto the plan)
+## Phase 0 — Pre-flight
 
 1. **Fix SSH to the frontend node.** The 2026-08-27 capture failed with
    `Host key verification failed` on `ei-copo-prod-frontend`. You need both hosts.
@@ -85,23 +85,23 @@ back to a wipe without revisiting that decision.
    mc alias set prodold http://minio:9000 "$ROOT_USER" "$ROOT_PASS"
    mc du --recursive prodold
    ```
-   The export is **99% used with ~45T available**. The parallel-instance method
-   below needs free space equal to the total object size. If `mc du` exceeds the
-   headroom, stop and use the staged variant in "If there is not enough space".
+   This is **informational, not a gate.** Use it to estimate how long the mirror
+   will take, not to decide whether it fits.
 
-   **Before assuming that 99% is a real ceiling:** on Isilon it is very often a
-   **SmartQuota** on `copo_data/copo_live` rather than exhaustion of the 4.2P
-   cluster. Ask storage admins whether the directory is under a quota, what the
-   hard/soft limits are, and how much space the cluster actually has free. If the
-   quota can be raised, the space problem disappears and no reclaim work is
-   needed.
+   > **Ignore `df` on this mount.** It reports the export as *99% used with ~45T
+   > available*, and that figure is **wrong** (confirmed 2026-09-01). There is no
+   > SmartQuota on `copo_data/copo_live`, and OneFS reports capacity to NFS
+   > clients in ways that do not correspond to usable free space. **Space is not a
+   > constraint on this migration.** If you need a real number, get it from the
+   > storage team or OneFS directly (`isi status`, or the WebUI) — not from `df`
+   > on a COPO host.
 
-   Also ask for an **Isilon SnapshotIQ snapshot** of the MinIO directories before
-   the window. Snapshots are copy-on-write and near-instant, so this is a
-   point-in-time safety net at essentially no cost in space or time — far cheaper
-   than any copy. Note a same-cluster snapshot protects against procedural
-   mistakes, not against the cluster failing; ask whether **SyncIQ** replicates
-   `copo_live` off-cluster if you want cover for that.
+   Ask storage admins for an **Isilon SnapshotIQ snapshot** of the MinIO
+   directories before the window. Snapshots are copy-on-write and near-instant, so
+   this is a point-in-time safety net at essentially no cost in space or time —
+   far cheaper than any copy. Note that a same-cluster snapshot protects against
+   procedural mistakes, not against the cluster failing; ask whether **SyncIQ**
+   replicates `copo_live` off-cluster if you want cover for that.
 
 3. **Confirm the NFS mount layout on `ei-copo-prod-service`:**
    ```bash
@@ -304,18 +304,20 @@ docker volume rm copo_minio-data1 copo_minio-data2   # on BOTH nodes, when happy
 
 ---
 
-## If there is not enough space
+## If space ever does become a constraint
 
-If `mc du` exceeds the free space on the export, the parallel-instance method
-will not fit. Options, in order of preference:
+**It is not one today** (confirmed 2026-09-01: no quota, and the `df` figure is
+erroneous — see Phase 0). Kept only in case that changes, or in case this
+procedure is reused on a genuinely constrained filesystem.
 
 1. **Reclaim first.** Drop MinIO's own versioning/incomplete-upload debris:
    `mc rm --incomplete --recursive`, and expire noncurrent versions if versioning
    is on. Large aborted multipart uploads from the failed 500GB+ transfers are a
-   likely source of dead weight.
+   likely source of dead weight. Worth doing on its own merits before a long
+   mirror — it is pure waste, and copying it wastes hours.
 2. **Stage to a different filesystem** — mirror the old cluster to any other host
    or export with room, wipe the old drives, deploy single-node onto the *old*
-   directories, then mirror back. This is slower and gives up the intact-rollback
+   directories, then mirror back. Slower, and it gives up the intact-rollback
    property, so only do it if option 1 does not free enough.
 3. **Do not proceed** with a wipe-then-restore on the same filesystem with no
    verified second copy. There is no safe version of that on production.
