@@ -80,13 +80,17 @@ back to a wipe without revisiting that decision.
 1. **Fix SSH to the frontend node.** The 2026-08-27 capture failed with
    `Host key verification failed` on `ei-copo-prod-frontend`. You need both hosts.
 
-2. **Size the data.** This decides whether the migration is even possible.
-   ```bash
-   mc alias set prodold http://minio:9000 "$ROOT_USER" "$ROOT_PASS"
-   mc du --recursive prodold
-   ```
-   This is **informational, not a gate.** Use it to estimate how long the mirror
-   will take, not to decide whether it fits.
+2. **Size the data.** Use `mc admin info` — it reads the usage cache and returns
+   instantly, where `mc du --recursive` walks every object.
+
+   **Measured on prod 2026-09-01: 1.4 TiB used, 48 buckets, 105 objects**, one
+   pool, one erasure set, stripe size 4, EC:2, 4 drives online / 0 offline.
+
+   That is small enough that the mirror is a few hours, not days — and 105 objects
+   is few enough to verify **exhaustively** (diff the full object listing old vs
+   new and require an exact match) rather than by spot-check.
+
+   This step is **informational, not a gate.**
 
    > **Ignore `df` on this mount.** It reports the export as *99% used with ~45T
    > available*, and that figure is **wrong** (confirmed 2026-09-01). There is no
@@ -105,25 +109,40 @@ back to a wipe without revisiting that decision.
 
 3. **Confirm the NFS mount layout on `ei-copo-prod-service`:**
    ```bash
-   docker volume inspect copo_minio-data1 copo_minio-data2 -f '{{.Name}} -> {{.Options}} {{.Mountpoint}}'
+   docker volume inspect minio-data1 minio-data2 -f '{{.Name}} -> {{.Options}} {{.Mountpoint}}'
    df -h /mnt/copo-data/prod_copo
    ```
 
 4. **Capture the IAM state — the step most likely to be forgotten.**
-   The app authenticates with `ecs_access_key` / `ecs_secret_key`, which are
-   *different* Swarm secrets from `minio_access_key` / `minio_secret_key` (the
-   MinIO root user). That strongly implies a MinIO IAM user stored inside
-   `.minio.sys/`. **`mc mirror` copies objects only — it does not copy IAM users,
-   policies, or bucket policies.** Miss this and every app request returns
-   `AccessDenied` immediately after cutover, with the objects present and intact.
+
+   **Confirmed on prod 2026-09-01:** there are **no IAM users** and **no custom
+   policies** (only the five built-ins). The app authenticates as a **service
+   account under the root user** — access key `dfdDKFJLKIerKJO`, `Policy: implied`,
+   no expiry. Its secret is the Swarm secret `ecs_secret_key`.
+
+   Service accounts live in `.minio.sys/` exactly like users do, and **`mc mirror`
+   does not copy them.** Miss this and every app request returns `AccessDenied`
+   after cutover, with the objects present and intact.
+
+   Worse: a service account secret **cannot be read back** from MinIO — `svcacct
+   info` returns the access key and never the secret. The only two ways to
+   reconstitute it are the IAM export/import below, or recreating it explicitly
+   from the values in the Swarm secrets `ecs_access_key` / `ecs_secret_key`.
+
    ```bash
-   mc admin user list prodold
-   mc admin policy list prodold
-   mc admin cluster iam export prodold        # writes a zip; keep it safe
-   for b in $(mc ls prodold --json | jq -r .key); do
-       echo "== $b"; mc anonymous get-json "prodold/$b" || true
-   done > /tmp/bucket-policies.json
+   # on ei-copo-prod-service, as root; mc IS present in the MinIO image
+   C=$(docker ps -qf name=copo_minio)
+   docker exec "$C" sh -c 'mc alias set l http://127.0.0.1:9000 \
+     "$(cat /run/secrets/minio_access_key)" "$(cat /run/secrets/minio_secret_key)"'
+   docker exec "$C" mc admin user list l
+   docker exec "$C" mc admin policy list l
+   docker exec "$C" sh -c 'mc admin user svcacct list l "$(cat /run/secrets/minio_access_key)"'
+   docker exec "$C" mc admin cluster iam export l     # writes /l-iam-info.zip (~1.7 KB)
+   docker cp "$C":/l-iam-info.zip /root/l-iam-info.zip
    ```
+   **Copy the zip off the host** — it is worthless if it only exists inside a
+   container you are about to destroy.
+
    Also record bucket-level settings that live outside object data: versioning,
    object locking, lifecycle rules, notifications.
 
@@ -144,20 +163,35 @@ back to a wipe without revisiting that decision.
 The new single-node instance uses **new** directories, so the old distributed
 drives stay untouched and remain the rollback. On `ei-copo-prod-service`:
 
-```bash
-sudo mkdir -p /mnt/copo-data/prod_copo/minio-sn-data1 \
-              /mnt/copo-data/prod_copo/minio-sn-data2
+**Volume facts, confirmed on prod 2026-09-01 — do not guess these:**
 
-docker volume create --driver local \
-  --opt type=none --opt o=bind \
-  --opt device=/mnt/copo-data/prod_copo/minio-sn-data1 copo_minio-sn-data1
-docker volume create --driver local \
-  --opt type=none --opt o=bind \
-  --opt device=/mnt/copo-data/prod_copo/minio-sn-data2 copo_minio-sn-data2
+| | |
+|---|---|
+| Names | `minio-data1`, `minio-data2` — **no `copo_` prefix** (Swarm `external: true` volumes are not stack-prefixed) |
+| Driver | **`local-persist`** (third-party plugin), *not* `local` |
+| Mountpoints on `ei-copo-prod-service` | `/mnt/copo-data/prod_copo/minio-data1-service`, `.../minio-data2-service` |
+
+The `-service` / `-frontend` suffix is per node: each host has its own directories
+on the shared Isilon export.
+
+`local-persist` takes a single `mountpoint` option — the `--opt type=none -o bind
+-o device=` form used by the built-in `local` driver **does not work** with it.
+On `ei-copo-prod-service` (as root; docker needs root on these hosts):
+
+```bash
+mkdir -p /mnt/copo-data/prod_copo/minio-sn-data1-service \
+         /mnt/copo-data/prod_copo/minio-sn-data2-service
+
+docker volume create -d local-persist \
+  -o mountpoint=/mnt/copo-data/prod_copo/minio-sn-data1-service \
+  --name=minio-sn-data1
+docker volume create -d local-persist \
+  -o mountpoint=/mnt/copo-data/prod_copo/minio-sn-data2-service \
+  --name=minio-sn-data2
 ```
 
-Match ownership/permissions to the existing `minio-data*` directories, or MinIO
-will fail to format them.
+Match ownership/permissions to the existing `minio-data*-service` directories, or
+MinIO will fail to format them.
 
 ---
 
@@ -175,26 +209,27 @@ docker service create --name minio-sn \
   --secret minio_access_key --secret minio_secret_key \
   --env MINIO_ROOT_USER_FILE=/run/secrets/minio_access_key \
   --env MINIO_ROOT_PASSWORD_FILE=/run/secrets/minio_secret_key \
-  --mount type=volume,source=copo_minio-sn-data1,target=/data1 \
-  --mount type=volume,source=copo_minio-sn-data2,target=/data2 \
+  --mount type=volume,source=minio-sn-data1,target=/data1 \
+  --mount type=volume,source=minio-sn-data2,target=/data2 \
   quay.io/minio/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1 \
   server --console-address ":9001" /data1 /data2
 ```
 
-`copo_backend` is a Swarm overlay and is likely **not** `--attachable`, so plain
-`docker run` will not reach it. Run `mc` as a service on the same network:
+**No `mc` sidecar is needed** — `mc` ships inside the MinIO image (confirmed
+2026-09-01; note `which` is absent from that image, so probe with `mc --version`
+rather than `which mc`). Drive everything from the running old-cluster container
+on `ei-copo-prod-service`, as root:
 
 ```bash
-docker service create --name mctool \
-  --network copo_backend \
-  --constraint 'node.hostname==ei-copo-prod-service' \
-  --entrypoint sleep minio/mc infinity
-
-# then, on ei-copo-prod-service (docker exec is node-local):
-C=$(docker ps -qf name=mctool)
-docker exec $C mc alias set old http://minio:9000    "$ROOT_USER" "$ROOT_PASS"
-docker exec $C mc alias set new http://minio-sn:9000 "$ROOT_USER" "$ROOT_PASS"
+C=$(docker ps -qf name=copo_minio)
+docker exec "$C" sh -c 'mc alias set old http://127.0.0.1:9000 \
+  "$(cat /run/secrets/minio_access_key)" "$(cat /run/secrets/minio_secret_key)"'
+docker exec "$C" sh -c 'mc alias set new http://minio-sn:9000 \
+  "$(cat /run/secrets/minio_access_key)" "$(cat /run/secrets/minio_secret_key)"'
 ```
+
+Both aliases use the same root credentials, since `minio-sn` is created with the
+same Swarm secrets. `old` goes via loopback to avoid depending on service DNS.
 
 Mirror bucket by bucket. This is restartable and incremental — run it as many
 times as you like while the old cluster serves traffic:
@@ -246,12 +281,12 @@ time over NFS — start it early.
 ## Phase 4 — Cut over
 
 ```bash
-docker service rm minio-sn mctool          # release the new volumes
+docker service rm minio-sn               # release the new volumes
 docker service rm copo_minio               # stop the old distributed cluster
 docker stack deploy -c deployment/copo.compose.production.yaml copo   # with your real tags
 ```
 
-The new `minio` service claims `copo_minio-sn-data1/2` — the drives already
+The new `minio` service claims `minio-sn-data1/2` — the drives already
 holding the mirrored data — and comes up single-node with the same root
 credentials.
 
@@ -288,9 +323,9 @@ rebuild — check before the window, not during it.
 
 Nothing destructive happens until Phase 4, and even then the old drives survive:
 
-- **During Phases 1–3:** delete `minio-sn` and `mctool`. The old cluster never
+- **During Phases 1–3:** delete `minio-sn`. The old cluster never
   stopped. Zero impact.
-- **After Phase 4:** `copo_minio-data1/2` still hold the intact distributed pool.
+- **After Phase 4:** `minio-data1/2` still hold the intact distributed pool.
   Revert the compose change (`git revert`), redeploy, and the old cluster
   reassembles. Any objects written *after* cutover exist only on the new drives,
   so mirror them back first.
@@ -299,7 +334,7 @@ Keep the old volumes until the cutover is signed off. Delete them only when you
 are certain:
 
 ```bash
-docker volume rm copo_minio-data1 copo_minio-data2   # on BOTH nodes, when happy
+docker volume rm minio-data1 minio-data2   # on BOTH nodes, when happy
 ```
 
 ---
