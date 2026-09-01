@@ -234,15 +234,49 @@ same Swarm secrets. `old` goes via loopback to avoid depending on service DNS.
 Mirror bucket by bucket. This is restartable and incremental — run it as many
 times as you like while the old cluster serves traffic:
 
+**Three gotchas, all hit for real on 2026-09-01:**
+
+1. **One bucket has an invalid S3 name** — `682b7cb739ff65f8c6295d00_tmp`
+   (underscore). MinIO accepted it historically, but `mc` rejects it client-side
+   and **aborts any alias-level operation**, so `mc mirror old new` cannot be
+   used. Mirror per bucket, filtering it out. Verified empty (40 KB of directory
+   metadata per drive, no objects), so skipping it loses nothing.
+2. **The MinIO image has no `awk`, `grep`, `which` or `head`** (UBI micro base).
+   Run `mc` in the container but do all text processing **on the host**.
+3. **`mc mirror` bucket-to-bucket does not create the target bucket** — it only
+   does that alias-to-alias. Every target bucket needs an explicit
+   `mc mb --ignore-existing` first, or every bucket fails with
+   `The specified bucket does not exist`.
+
+Build the bucket list on the host (expect 47 of the 48):
+
 ```bash
-for b in $(docker exec $C mc ls old --json | jq -r .key | tr -d /); do
-    docker exec $C mc mb --ignore-existing "new/$b"
-    docker exec $C mc mirror --preserve --retry "old/$b" "new/$b"
-done
+docker exec $(docker ps -qf name=copo_minio) mc ls old 2>/dev/null \
+  | awk '{print $NF}' | tr -d '/' | grep -v '_' \
+  | tee /root/buckets.txt | wc -l
 ```
 
-Run it repeatedly until a pass copies almost nothing. Expect this to take a long
-time over NFS — start it early.
+Then run the mirror detached, so it survives an SSH drop:
+
+```bash
+nohup bash -c 'C=$(docker ps -qf name=copo_minio); while read -r b; do
+    echo "=== $b ==="
+    docker exec "$C" mc mb --ignore-existing "new/$b"
+    docker exec "$C" mc mirror --preserve --retry "old/$b" "new/$b"
+done < /root/buckets.txt' > /root/mirror.log 2>&1 &
+
+tail -f /root/mirror.log
+```
+
+The whole loop is idempotent (`--ignore-existing` plus mirror's own comparison),
+so re-run it as many times as you like — that is exactly how the Phase 3
+incremental pass works. The old cluster serves normally throughout.
+
+**Actual volume to copy: ~58 GiB**, not the 1.4 TiB that `mc admin info` reports
+as used. The gap is almost certainly incomplete multipart uploads left by the
+failed 500GB+ transfers — they consume space but are not objects, so they are not
+mirrored. Worth reclaiming separately (`mc rm --incomplete --recursive`), but it
+is not a blocker.
 
 ---
 
