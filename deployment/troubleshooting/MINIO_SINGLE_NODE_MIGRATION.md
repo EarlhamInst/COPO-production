@@ -44,18 +44,34 @@ There is currently *zero* single-node fault tolerance — any 20s heartbeat blip
 between the two hosts is a write outage. That is the recurring incident. With one
 node there is no peer to lose and no cross-node quorum to break.
 
-**Does NOT fix:** the drives are on NFS (`cyverse.ei.apricot.ciscloud:
-/CyVerse-iRODS/exports/copo_data/copo_live`), which MinIO does not support and
-which is the prime suspect for the I/O stalls that starve the grid heartbeat.
-Single-node makes a stall a *slow request* instead of a *write outage*, which is
-a large improvement, but the underlying storage is still unsupported. Moving to
+**Does NOT fix:** the drives are on an **Isilon (Dell PowerScale)** NFS export
+(`cyverse.ei.apricot.ciscloud:/CyVerse-iRODS/exports/copo_data/copo_live`), which
+MinIO does not support and which is the prime suspect for the I/O stalls that
+starve the grid heartbeat. Isilon **group changes** — node join/leave, drive
+failure, FlexProtect/restripe jobs — pause NFS I/O for tens of seconds, matching
+MinIO's 20s `last pong too old` threshold. That also fits a detail the network
+theory never explained: the pongs failed in *both* directions, which a
+host-to-host network fault rarely does but a simultaneous storage stall does.
+Single-node makes such a stall a *slow request* instead of a *write outage*,
+which is a large improvement, but the storage is still unsupported. Moving to
 local block devices remains the correct long-term fix and is out of scope here.
 
 **Trade-off accepted:** if `ei-copo-prod-service` goes down, MinIO is fully
 offline (previously reads survived one node loss). This is a smaller loss than it
-looks: all four drives already live on the *same* NFS export, so the current
+looks: all four drives already live on the *same* Isilon export, so the current
 cross-node redundancy is largely fictitious — losing the export loses everything
 either way.
+
+**On "the data is scratch":** ENA is the system of record and COPO recreates
+buckets on demand (`src/apps/copo_file/views.py:38-47`), so in principle these
+drives could simply be wiped. **The decision (2026-09-01) is to migrate the data
+anyway.** Two reasons it is worth the extra work: MinIO holds uploads that are
+staged but not yet transferred to ENA — `validate_and_delete()`
+(`common/s3/s3Connection.py:278`) only permits deletion once a transfer reaches
+`DOWNLOADED_TO_LOCAL` — and those have no other copy, so wiping forces users to
+re-upload, which is punishing at the 500GB+ file sizes involved. Migrating also
+keeps the old pool intact as a real rollback. Do not "simplify" this procedure
+back to a wipe without revisiting that decision.
 
 ---
 
@@ -72,6 +88,20 @@ either way.
    The export is **99% used with ~45T available**. The parallel-instance method
    below needs free space equal to the total object size. If `mc du` exceeds the
    headroom, stop and use the staged variant in "If there is not enough space".
+
+   **Before assuming that 99% is a real ceiling:** on Isilon it is very often a
+   **SmartQuota** on `copo_data/copo_live` rather than exhaustion of the 4.2P
+   cluster. Ask storage admins whether the directory is under a quota, what the
+   hard/soft limits are, and how much space the cluster actually has free. If the
+   quota can be raised, the space problem disappears and no reclaim work is
+   needed.
+
+   Also ask for an **Isilon SnapshotIQ snapshot** of the MinIO directories before
+   the window. Snapshots are copy-on-write and near-instant, so this is a
+   point-in-time safety net at essentially no cost in space or time — far cheaper
+   than any copy. Note a same-cluster snapshot protects against procedural
+   mistakes, not against the cluster failing; ask whether **SyncIQ** replicates
+   `copo_live` off-cluster if you want cover for that.
 
 3. **Confirm the NFS mount layout on `ei-copo-prod-service`:**
    ```bash
