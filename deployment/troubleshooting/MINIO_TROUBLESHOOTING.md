@@ -153,8 +153,13 @@ of the above can happen.
 - **Deploy drift:** the live demo has run image tags ahead of what the repo
   compose pins (e.g. `copo-new-web:v3.2.1.3` live vs `v3.2.0.1` in repo). When
   redeploying, use the tag you actually want live so you don't downgrade the app.
-- **Production still uses the distributed config**
-  (`deployment/copo.compose.production.yaml`, endpoint `minio.copo-project.org`)
-  and could hit the same failure. Moving prod to single-node (or pinning slots to
-  nodes) is a separate, unmade decision — single-node trades cross-node redundancy
-  for robustness, so weigh that for prod.
+- **Production is moving to single-node** (decided 2026-09-01, after the failure
+  recurred on prod through 2026-08-27). The compose change is made in
+  `deployment/copo.compose.production.yaml`, but **do not deploy it on its own** —
+  single-node cannot read the distributed pool's drives, so deploying without
+  first migrating the objects destroys all production data. The full procedure,
+  including the non-destructive parallel-mirror method and the IAM step that
+  `mc mirror` does not cover, is in
+  [`MINIO_SINGLE_NODE_MIGRATION.md`](MINIO_SINGLE_NODE_MIGRATION.md).
+- The TL;DR wipe-the-volumes fix above is safe for **demo/dev only**, where losing
+  objects is acceptable. Never apply it to production.
