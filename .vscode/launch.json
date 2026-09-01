@@ -152,6 +152,19 @@
       "args": ["-A", "src", "beat", "-l", "critical"]
     },
     {
+      "name": "Python: Build manifest field layout/schema",
+      "type": "debugpy",
+      "request": "launch",
+      "python": "/opt/venv/bin/python",
+      "program": "${workspaceFolder}/manage.py",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}"
+      },
+      "args": ["build_manifest_field_layout"],
+      "django": true,
+      "justMyCode": false
+    },
+    {
       "name": "Python: Generate standards map",
       "type": "debugpy",
       "request": "launch",
@@ -205,7 +218,7 @@
           "remoteRoot": "/copo"
         }
       ]
-    },
+    }
   ],
   "compounds": [
     {

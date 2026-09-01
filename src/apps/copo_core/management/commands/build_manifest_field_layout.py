@@ -1,11 +1,11 @@
 '''
 This script generates minimal field layout JSON files for each manifest type,
-based on the field blocks, column letters, and other attributes defined in the 
+based on the field blocks, column letters, and other attributes defined in the
 Standard Operating Procedure (SOP).
-It groups and structures minimal field definitions such as name, label, 
+It groups and structures minimal field definitions such as name, label,
 required and type according to their position and role in the spreadsheet layout.
 
-The output JSON files are saved in the 
+The output JSON files are saved in the
 `/common/schema_versions/isa_mappings/manifest_field_layouts/` directory,
 one per manifest type and provide a simplified view of the manifest structure
 useful for validation, generation or documentation purposes.
@@ -442,6 +442,13 @@ class Command(BaseCommand):
 
             with open(file_path, 'w+') as f:
                 print(
-                    json.dumps(output, indent=4, sort_keys=False, default=str), file=f
+                    json.dumps(
+                        output,
+                        indent=4,
+                        sort_keys=False,
+                        default=str,
+                        ensure_ascii=False,
+                    ),
+                    file=f,
                 )
                 f.close()
