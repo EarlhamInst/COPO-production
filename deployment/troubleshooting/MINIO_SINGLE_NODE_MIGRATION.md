@@ -312,10 +312,21 @@ upload a file through COPO and download it again. Confirm the logs contain **no*
 `last pong too old` and no `InsufficientWriteQuorum` — with one node those errors
 are now structurally impossible, so their absence is the signal the fix landed.
 
-Also confirm the reverse proxy still resolves its upstream: `copo/copo-nginx-minio`
-fronts `minio.copo-project.org` and its config is baked into the image, not in
-this repo. If it targets `minio-1`/`minio-2` rather than `minio`, it will need a
-rebuild — check before the window, not during it.
+The reverse proxy needs **no change** — verified 2026-09-01. `copo_nginx`
+(`copo/copo-nginx-minio:v1.30.2`, running on `ei-copo-prod-frontend`) proxies to
+the Swarm **service name**, not the per-slot hostnames, in
+`/etc/nginx/conf.d/django_project.conf`:
+
+```nginx
+upstream minio          { server minio:9000; }   # minio.copo-project.org
+upstream minio_console  { server minio:9001; }   # minio-console.copo-project.org
+```
+
+Since the migration keeps the service named `minio` and keeps
+`--console-address ":9001"`, both upstreams resolve unchanged. No image rebuild
+is required. (Its config is baked into the image, not this repo, so re-verify
+with `docker exec $(docker ps -qf name=copo_nginx) grep -rn minio /etc/nginx/`
+on `ei-copo-prod-frontend` if the image tag ever changes.)
 
 ---
 
