@@ -1,8 +1,26 @@
 # Migrating production MinIO to single-node
 
-**Status:** procedure written 2026-09-01, **not yet executed**. The compose change
-is committed (`deployment/copo.compose.production.yaml`); the data migration below
-is the part that must be done by hand, in order.
+**Status: PART-EXECUTED, PAUSED before cutover (2026-09-01).**
+
+| Phase | State |
+|---|---|
+| 0 — Pre-flight | **Done.** IAM exported and copied off-host; sizing, volumes, nginx all verified. |
+| 1 — New drives | **Done.** `minio-sn-data1/2` created on `ei-copo-prod-service`. |
+| 2 — Mirror | **Done and converged.** 47/47 buckets, 105/105 objects. A second pass transferred 0 B. |
+| 3 — Quiesce, final sync, verify | **Not started.** This is where the outage begins. |
+| 4 — Cutover | **Not started.** |
+
+**Live right now:** the old distributed cluster is still serving normally, and a
+temporary `minio-sn` service is running alongside it on `ei-copo-prod-service`
+holding a complete copy. Nothing destructive has happened; the old pool on
+`minio-data{1,2}-{service,frontend}` is untouched.
+
+**To resume:** re-run the Phase 2 convergence pass first (it is idempotent) to
+pick up anything written since the pause, then continue at Phase 3.
+
+**To abandon:** `docker service rm minio-sn` on `ei-copo-prod-sm`, and optionally
+delete the `minio-sn-data*` volumes and their directories. The live cluster is
+unaffected.
 
 > **This is a data migration, not a config change.** Do not deploy the new compose
 > file on its own. Single-node MinIO cannot read the distributed pool's drives, so
