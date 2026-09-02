@@ -16,16 +16,34 @@ Production MinIO now runs **single-node, 2 drives, EC:1**, pinned to
 
 > ### The cutover did NOT use `docker stack deploy`
 >
-> **The compose file on the manager (`/home/fshaw/copo.compose.production.yaml`)
-> is badly stale and must not be deployed.** Diffed 2026-09-02 against live:
-> it pins `copo-new-web:v3.1.16` (live runs **v3.2.5**), `copo-nginx-minio:v1.25.3.3`
-> (live runs **v1.30.2**), uses `/usr/local/bin/daphne` (must be
-> `/opt/venv/bin/daphne`), and omits `copo_credential_encryption_key` entirely.
-> Deploying it would have downgraded the app nine releases and broken startup.
+> **Because `main` still carried the distributed MinIO config at the time.**
+> Deploying the stack mid-migration would have recreated `copo_minio` as 2
+> replicas against the *old* drives, undoing the migration. So only the MinIO
+> service was replaced, with `docker service` commands — see Phase 4. Web,
+> celery, nginx, mongo and postgres were left untouched.
 >
-> Whatever produces the running stack, it is not that file. Until that is
-> resolved, **replace individual services with `docker service` commands** rather
-> than redeploying the stack. The command used is recorded in Phase 4 below.
+> **Once this branch is merged that no longer applies:** `main` then describes
+> single-node, and a normal stack deploy is correct again.
+>
+> **Until it is merged, do not deploy prod** — a deploy from `main` reverts MinIO
+> to distributed and takes object storage down.
+
+> #### How prod is actually deployed (clarified 2026-09-02)
+>
+> Sherida copies `copo.compose.production.yaml` from GitHub onto the manager,
+> updates the image tags by hand, and runs `docker stack deploy` from her own
+> home directory (`/home/providencea`).
+>
+> **Do not be misled by `/home/fshaw/copo.compose.production.yaml`** on the
+> manager. That is a stale personal copy from 2026-05-28 that nothing deploys
+> from — it pins `copo-new-web:v3.1.16` and predates the CD-191 daphne fix. It
+> was mistaken for the deploy source during this migration and cost an
+> afternoon. It should be deleted.
+>
+> The practical consequence: **the repo is the deploy source**, so a change like
+> this one only reaches prod once it is on `main`. The image tags are the
+> exception — they are set by hand at deploy time and the repo's pins lag behind
+> releases, which are built from git tags by `.github/workflows/release.yml`.
 
 **Rollback (still available):** the old distributed pool is intact and untouched
 on `minio-data{1,2}-service` and `minio-data{1,2}-frontend`. To revert, remove
@@ -50,24 +68,16 @@ docker service update \
 If you ever replace a stack service by hand again, add these labels in the same
 breath — otherwise the trap is invisible until someone else's deploy fails.
 
-### Refresh the manager's deploy file
+### Delete the stale personal copy on the manager
 
-The stale file on the manager is a snapshot of commit `21d1042e` (2026-05-28)
-that was never updated. The **repo is the newer, correct version** — three things
-landed after that snapshot and never reached prod: Sherida's CD-191 daphne path
-fix (`42cfce15`), the per-user ENA credentials work that introduced
-`copo_credential_encryption_key` (`cb943ff3`), and the CD-209 EDP cleanup
-(`b5dec9f5`/`c5de5f16`).
+```bash
+rm /home/fshaw/copo.compose.production.yaml     # on ei-copo-prod-sm
+```
 
-Once this branch is merged, copy `deployment/copo.compose.production.yaml` from
-the repo over `/home/fshaw/copo.compose.production.yaml` on `ei-copo-prod-sm`.
-The `copo_credential_encryption_key` secret already exists in Swarm (verified
-2026-09-02), so the file is deployable.
-
-Note `copo_web`'s stack label records `copo/copo-new-web:v3.2.5`, so the stack
-was at some point deployed from a file matching live that is neither the
-manager's copy nor the pre-merge repo version. **That file is still
-unaccounted for** — worth finding, since it is the de facto deploy source.
+Nothing deploys from it — deploys come from `/home/providencea` — but it is a
+2026-05-28 snapshot pinning `copo-new-web:v3.1.16` and predating the CD-191
+daphne fix, and it was mistaken for the live deploy source during this
+migration. Removing it prevents a repeat.
 
 **Cleanup still outstanding:**
 - Old volumes `minio-data1/2` on **both** nodes — keep until the cutover is
