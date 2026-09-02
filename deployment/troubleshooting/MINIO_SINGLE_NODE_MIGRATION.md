@@ -1,26 +1,44 @@
 # Migrating production MinIO to single-node
 
-**Status: PART-EXECUTED, PAUSED before cutover (2026-09-01).**
+**Status: COMPLETED on production 2026-09-02.**
 
-| Phase | State |
+Production MinIO now runs **single-node, 2 drives, EC:1**, pinned to
+`ei-copo-prod-service`, serving 47 buckets / 105 objects. Verified end to end:
+`/minio/health/live` 200, S3 root 403, COPO 200.
+
+| Phase | Outcome |
 |---|---|
-| 0 — Pre-flight | **Done.** IAM exported and copied off-host; sizing, volumes, nginx all verified. |
-| 1 — New drives | **Done.** `minio-sn-data1/2` created on `ei-copo-prod-service`. |
-| 2 — Mirror | **Done and converged.** 47/47 buckets, 105/105 objects. A second pass transferred 0 B. |
-| 3 — Quiesce, final sync, verify | **Not started.** This is where the outage begins. |
-| 4 — Cutover | **Not started.** |
+| 0 — Pre-flight | IAM exported off-host; sizing, volumes, nginx upstream all verified. |
+| 1 — New drives | `minio-sn-data1/2` created (`local-persist`). |
+| 2 — Mirror | Converged: 47/47 buckets, 105/105 objects, second pass 0 B. |
+| 3 — Quiesce, sync, verify | App stopped; `--remove` pass empty; **exhaustive diff of all 105 object paths+sizes IDENTICAL**; IAM imported. |
+| 4 — Cutover | MinIO service replaced; nginx restarted; app restarted. |
 
-**Live right now:** the old distributed cluster is still serving normally, and a
-temporary `minio-sn` service is running alongside it on `ei-copo-prod-service`
-holding a complete copy. Nothing destructive has happened; the old pool on
-`minio-data{1,2}-{service,frontend}` is untouched.
+> ### The cutover did NOT use `docker stack deploy`
+>
+> **The compose file on the manager (`/home/fshaw/copo.compose.production.yaml`)
+> is badly stale and must not be deployed.** Diffed 2026-09-02 against live:
+> it pins `copo-new-web:v3.1.16` (live runs **v3.2.5**), `copo-nginx-minio:v1.25.3.3`
+> (live runs **v1.30.2**), uses `/usr/local/bin/daphne` (must be
+> `/opt/venv/bin/daphne`), and omits `copo_credential_encryption_key` entirely.
+> Deploying it would have downgraded the app nine releases and broken startup.
+>
+> Whatever produces the running stack, it is not that file. Until that is
+> resolved, **replace individual services with `docker service` commands** rather
+> than redeploying the stack. The command used is recorded in Phase 4 below.
 
-**To resume:** re-run the Phase 2 convergence pass first (it is idempotent) to
-pick up anything written since the pause, then continue at Phase 3.
+**Rollback (still available):** the old distributed pool is intact and untouched
+on `minio-data{1,2}-service` and `minio-data{1,2}-frontend`. To revert, remove
+`copo_minio` and recreate it distributed against those volumes. Objects written
+since cutover would need mirroring back first.
 
-**To abandon:** `docker service rm minio-sn` on `ei-copo-prod-sm`, and optionally
-delete the `minio-sn-data*` volumes and their directories. The live cluster is
-unaffected.
+**Cleanup still outstanding:**
+- Old volumes `minio-data1/2` on **both** nodes — keep until the cutover is
+  signed off, then `docker volume rm` and delete the directories.
+- `nta` / `ntb` netshoot services left running on prod from an old overlay ping
+  test: `docker service rm nta ntb` on `ei-copo-prod-sm`.
+- ~1.3 TiB of incomplete multipart uploads (`mc rm --incomplete --recursive`) —
+  the gap between 1.4 TiB reported used and ~58 GiB of real objects.
 
 > **This is a data migration, not a config change.** Do not deploy the new compose
 > file on its own. Single-node MinIO cannot read the distributed pool's drives, so
@@ -332,11 +350,42 @@ is not a blocker.
 
 ## Phase 4 — Cut over
 
+**Do not `docker stack deploy`** — see the warning at the top of this document.
+Replace only the MinIO service. On `ei-copo-prod-sm` (manager), as root:
+
 ```bash
-docker service rm minio-sn               # release the new volumes
-docker service rm copo_minio               # stop the old distributed cluster
-docker stack deploy -c deployment/copo.compose.production.yaml copo   # with your real tags
+docker service rm copo_minio minio-sn      # stops containers; drives untouched
+
+docker service create --name copo_minio \
+  --hostname minio \
+  --network name=copo_backend,alias=minio \
+  --network name=copo_frontend,alias=minio \
+  --endpoint-mode vip \
+  --constraint 'node.hostname==ei-copo-prod-service' \
+  --restart-condition any \
+  --limit-cpu 4 --limit-memory 32GB \
+  --reserve-cpu 1 --reserve-memory 2GB \
+  --secret minio_access_key --secret minio_secret_key \
+  --env MINIO_ROOT_USER_FILE=/run/secrets/minio_access_key \
+  --env MINIO_ROOT_PASSWORD_FILE=/run/secrets/minio_secret_key \
+  --mount type=volume,source=minio-sn-data1,target=/data1 \
+  --mount type=volume,source=minio-sn-data2,target=/data2 \
+  quay.io/minio/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1 \
+  server --console-address ":9001" /data1 /data2
 ```
+
+The `minio` alias must be set on **both** networks, and `--endpoint-mode vip`
+matches what prod has always run (the compose anchor's `dnsrr` never applied).
+
+**Then restart nginx — easily forgotten, and the symptom is confusing:**
+
+```bash
+docker service update --force copo_nginx
+```
+
+nginx resolves `server minio:9000` once at config load and caches the address.
+Recreating `copo_minio` allocates a new service VIP, so without this restart
+MinIO is healthy internally while `minio.copo-project.org` fails.
 
 The new `minio` service claims `minio-sn-data1/2` — the drives already
 holding the mirrored data — and comes up single-node with the same root

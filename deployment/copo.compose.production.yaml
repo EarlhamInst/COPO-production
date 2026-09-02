@@ -43,7 +43,13 @@ services:
       # NB: YAML merge keys are shallow, so this block REPLACES the `deploy:` in
       # the x-minio-common anchor rather than merging into it. Everything MinIO
       # needs must be repeated here or it silently does not apply.
-      endpoint_mode: dnsrr
+      #
+      # endpoint_mode is vip, NOT dnsrr, and deliberately so. The anchor asked for
+      # dnsrr but never applied (see above), so prod has always run vip. Keep it:
+      # nginx resolves `server minio:9000` once at config load and caches it, so a
+      # stable service VIP survives container restarts where a dnsrr task IP would
+      # not. Changing this requires restarting copo_nginx.
+      endpoint_mode: vip
       replicas: 1
       placement:
         constraints:
