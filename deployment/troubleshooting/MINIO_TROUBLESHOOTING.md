@@ -9,11 +9,12 @@ This has recurred multiple times on the demo/dev swarm (`ei-copo-demo-*`). The
 is to run demo/dev MinIO single-node**. Don't go down the firewall rabbit hole
 first — see below.
 
-> **Deployment status:** single-node is **NOT currently deployed**. Demo/dev (and
-> production) still run the **distributed** MinIO config in `copo.compose.yaml` /
-> `copo.compose.production.yaml`. The single-node setup below is a documented,
-> tested fix to **apply when this recurs** — it has not been committed to the
-> compose files. Treat the "TL;DR fix" as a change to make, not the current state.
+> **Deployment status (2026-09-02):** **production is now single-node** and is no
+> longer affected by anything in this document — see
+> [`MINIO_SINGLE_NODE_MIGRATION.md`](MINIO_SINGLE_NODE_MIGRATION.md).
+> **Demo/dev is still distributed** (`copo.compose.yaml`) and still exposed to
+> every failure mode described here. The "TL;DR fix" below is a change to make on
+> demo when this recurs, not the current state.
 
 ---
 
@@ -153,13 +154,14 @@ of the above can happen.
 - **Deploy drift:** the live demo has run image tags ahead of what the repo
   compose pins (e.g. `copo-new-web:v3.2.1.3` live vs `v3.2.0.1` in repo). When
   redeploying, use the tag you actually want live so you don't downgrade the app.
-- **Production is moving to single-node** (decided 2026-09-01, after the failure
-  recurred on prod through 2026-08-27). The compose change is made in
-  `deployment/copo.compose.production.yaml`, but **do not deploy it on its own** —
-  single-node cannot read the distributed pool's drives, so deploying without
-  first migrating the objects destroys all production data. The full procedure,
-  including the non-destructive parallel-mirror method and the IAM step that
-  `mc mirror` does not cover, is in
-  [`MINIO_SINGLE_NODE_MIGRATION.md`](MINIO_SINGLE_NODE_MIGRATION.md).
+- **Production is single-node as of 2026-09-02** — migrated with its data intact.
+  This document's failure modes **no longer apply to prod**; there is no peer and
+  no cross-node quorum there. See
+  [`MINIO_SINGLE_NODE_MIGRATION.md`](MINIO_SINGLE_NODE_MIGRATION.md) for what was
+  done and how to roll back.
+- **Demo/dev is still distributed and still fragile.** Everything above applies
+  to it unchanged. If it recurs there, the TL;DR wipe is the fast fix (demo
+  objects are expendable); the production migration doc is the template if the
+  data ever needs preserving.
 - The TL;DR wipe-the-volumes fix above is safe for **demo/dev only**, where losing
   objects is acceptable. Never apply it to production.
