@@ -468,6 +468,62 @@ on `ei-copo-prod-frontend` if the image tag ever changes.)
 
 ---
 
+## What is and is not reproducible from the deployment files
+
+**Reproducible from `deployment/copo.compose.production.yaml` alone** — the whole
+service definition: single-node `command`, `hostname: minio`, `replicas: 1`, the
+node constraint, `endpoint_mode: vip`, restart policy, resource limits, secrets
+and environment (via the anchor), both networks, and the `minio` network alias.
+Compose derives that alias from the **service name**, which is why the service
+had to stay named `minio` rather than being renamed — everything downstream
+(`ECS_ENDPOINT=http://minio:9000`, nginx's `upstream minio`) depends on it.
+`docker stack deploy` also applies the stack labels automatically.
+
+**NOT reproducible — three things must be restored by hand:**
+
+1. **The volumes.** `minio-sn-data1/2` are `external: true`, so Compose requires
+   them to already exist. On a rebuild, create them first on
+   `ei-copo-prod-service` (this applies to every volume in this file, not just
+   MinIO's — it is the existing convention here):
+   ```bash
+   mkdir -p /mnt/copo-data/prod_copo/minio-sn-data1-service \
+            /mnt/copo-data/prod_copo/minio-sn-data2-service
+   docker volume create -d local-persist \
+     -o mountpoint=/mnt/copo-data/prod_copo/minio-sn-data1-service --name=minio-sn-data1
+   docker volume create -d local-persist \
+     -o mountpoint=/mnt/copo-data/prod_copo/minio-sn-data2-service --name=minio-sn-data2
+   ```
+   Note the `local-persist` driver and the `-service` suffix: neither is
+   guessable from the compose file, which only names the volumes.
+2. **The service account.** COPO authenticates as `dfdDKFJLKIerKJO`, which lives
+   in MinIO's `.minio.sys/` and in no file anywhere. Its secret cannot be read
+   back from MinIO. Restoring it needs `mc admin cluster iam import` with the
+   export (kept off-host), or recreating it explicitly from the Swarm secrets
+   `ecs_access_key` / `ecs_secret_key`.
+3. **The object data.**
+
+So the compose file describes the *shape* of the deployment, not its *state*. A
+from-scratch rebuild is: create volumes → `stack deploy` → import IAM → restore
+objects.
+
+**To verify the running service still matches the file**, on `ei-copo-prod-sm`:
+
+```bash
+docker service inspect copo_minio --format \
+ 'cmd={{.Spec.TaskTemplate.ContainerSpec.Args}}
+host={{.Spec.TaskTemplate.ContainerSpec.Hostname}}
+mode={{.Spec.EndpointSpec.Mode}}
+reps={{.Spec.Mode.Replicated.Replicas}}
+place={{.Spec.TaskTemplate.Placement.Constraints}}
+nets={{range .Spec.TaskTemplate.Networks}}{{.Aliases}}{{end}}
+mounts={{range .Spec.TaskTemplate.ContainerSpec.Mounts}}{{.Source}}->{{.Target}} {{end}}'
+```
+
+Expect `/data1 /data2`, `minio`, `vip`, `1`, the `ei-copo-prod-service`
+constraint, `[minio] [minio]`, and the two `minio-sn-data*` mounts.
+
+---
+
 ## Rollback
 
 Nothing destructive happens until Phase 4, and even then the old drives survive:
