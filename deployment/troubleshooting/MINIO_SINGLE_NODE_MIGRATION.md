@@ -32,6 +32,43 @@ on `minio-data{1,2}-service` and `minio-data{1,2}-frontend`. To revert, remove
 `copo_minio` and recreate it distributed against those volumes. Objects written
 since cutover would need mirroring back first.
 
+### The service was created by hand, so it needed adopting into the stack
+
+Because Phase 4 used `docker service create` rather than `docker stack deploy`,
+`copo_minio` came up with **no labels**, while stack-managed services carry
+`com.docker.stack.namespace: copo`. An unlabelled service of the same name
+collides with a later stack deploy instead of being updated by it. Fixed
+2026-09-02 on `ei-copo-prod-sm`:
+
+```bash
+docker service update \
+  --label-add com.docker.stack.namespace=copo \
+  --label-add com.docker.stack.image=quay.io/minio/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1 \
+  copo_minio
+```
+
+If you ever replace a stack service by hand again, add these labels in the same
+breath — otherwise the trap is invisible until someone else's deploy fails.
+
+### Refresh the manager's deploy file
+
+The stale file on the manager is a snapshot of commit `21d1042e` (2026-05-28)
+that was never updated. The **repo is the newer, correct version** — three things
+landed after that snapshot and never reached prod: Sherida's CD-191 daphne path
+fix (`42cfce15`), the per-user ENA credentials work that introduced
+`copo_credential_encryption_key` (`cb943ff3`), and the CD-209 EDP cleanup
+(`b5dec9f5`/`c5de5f16`).
+
+Once this branch is merged, copy `deployment/copo.compose.production.yaml` from
+the repo over `/home/fshaw/copo.compose.production.yaml` on `ei-copo-prod-sm`.
+The `copo_credential_encryption_key` secret already exists in Swarm (verified
+2026-09-02), so the file is deployable.
+
+Note `copo_web`'s stack label records `copo/copo-new-web:v3.2.5`, so the stack
+was at some point deployed from a file matching live that is neither the
+manager's copy nor the pre-merge repo version. **That file is still
+unaccounted for** — worth finding, since it is the de facto deploy source.
+
 **Cleanup still outstanding:**
 - Old volumes `minio-data1/2` on **both** nodes — keep until the cutover is
   signed off, then `docker volume rm` and delete the directories.
