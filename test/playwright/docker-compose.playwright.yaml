@@ -62,4 +62,12 @@ services:
       # require rebuilding, since those are installed at build time. This also
       # means anything pytest writes under /copo (e.g. --output results) lands
       # directly in the repo on the host — no separate volume needed for that.
-      - /Users/fshaw/dev/COPO-production:/copo
+      #
+      # COPO_REPO_ROOT is set by scripts/run_playwright_tests.sh to the
+      # checkout that script was invoked from, so running the suite from a
+      # git worktree tests that worktree rather than the main checkout. It
+      # deliberately has no default: a wrong-but-plausible fallback (e.g. one
+      # developer's absolute path) silently runs the suite against the wrong
+      # tree, and the tests still pass or fail convincingly, which is far
+      # harder to spot than a compose error telling you the variable is unset.
+      - ${COPO_REPO_ROOT:?run the suite via test/playwright/scripts/run_playwright_tests.sh, which sets COPO_REPO_ROOT (or export it yourself to your checkout root)}:/copo

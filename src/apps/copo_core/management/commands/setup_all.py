@@ -28,10 +28,16 @@ STEPS = [
     ("Set up associated profile types", "setup_associated_profile_types", []),
     ("Set up profile types", "setup_profile_types", []),
     ("Set up news", "setup_news", []),
+     ("Generate standards map", "generate_standards_map", []),
+        ("Build manifest field layout/schema", "build_manifest_field_layout", []),
     ("Create superuser", "createsuperuser", []),  # interactive — prompts on stdin
     # Non-critical: skips with a warning if $COPO_TEST_USER_PASSWORD isn't set,
     # rather than aborting the whole bootstrap over an optional test-only step.
-    ("Create test user", "create_test_user", ["--password", os.environ.get("COPO_TEST_USER_PASSWORD", "")]),
+    (
+        "Create test user",
+        "create_test_user",
+        ["--password", os.environ.get("COPO_TEST_USER_PASSWORD", "")],
+    )
 ]
 
 
