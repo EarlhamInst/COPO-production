@@ -21,6 +21,12 @@ PROJECT_SETUP_DIR="$HOME/Desktop/project_setup"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLAYWRIGHT_COMPOSE="$SCRIPT_DIR/../docker-compose.playwright.yaml"
 
+# Mount whichever checkout this script was invoked from, rather than a path
+# baked into the compose file — so running the suite from a git worktree
+# actually tests that worktree. docker-compose.playwright.yaml reads this.
+COPO_REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+export COPO_REPO_ROOT
+
 if [ ! -d "$PROJECT_SETUP_DIR" ]; then
   echo "Expected local stack directory not found: $PROJECT_SETUP_DIR" >&2
   exit 1
@@ -64,5 +70,27 @@ fi
 PYTEST_ARGS+=("--output=test/playwright/test_results")
 
 cd "$PROJECT_SETUP_DIR"
+
+# copo_web's own bind mount is declared in the local stack's compose.yaml,
+# which lives outside this repo and names one fixed checkout. So when the
+# suite runs from a worktree, the *test* files come from COPO_REPO_ROOT but
+# the application under test still does not. That's harmless for test-only
+# changes and quietly misleading for app-code ones, so say so rather than
+# fail: repointing copo_web means recreating it, which also takes down the
+# Celery workers the submission tests depend on.
+WEB_CONTAINER="$(docker compose --env-file .env -f compose.yaml \
+  -f "$PLAYWRIGHT_COMPOSE" ps -q copo_web 2>/dev/null || true)"
+if [ -n "$WEB_CONTAINER" ]; then
+  WEB_MOUNT="$(docker inspect --format \
+    '{{range .Mounts}}{{if eq .Destination "/copo"}}{{.Source}}{{end}}{{end}}' \
+    "$WEB_CONTAINER" 2>/dev/null || true)"
+  if [ -n "$WEB_MOUNT" ] && [ "$WEB_MOUNT" != "$COPO_REPO_ROOT" ]; then
+    echo "WARNING: tests run from   $COPO_REPO_ROOT" >&2
+    echo "         copo_web serves  $WEB_MOUNT" >&2
+    echo "         Changes to test files take effect; changes to app code do NOT." >&2
+    echo >&2
+  fi
+fi
+
 docker compose --env-file .env -f compose.yaml -f "$PLAYWRIGHT_COMPOSE" \
   run --rm --service-ports copo_playwright pytest "${PYTEST_ARGS[@]}"
