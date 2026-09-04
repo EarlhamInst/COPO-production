@@ -6,11 +6,23 @@
 # After the steps have been followed especially Step #2, 
 # the Playwright container will be running. To execute tests run,
 #
-# $ docker run --rm --network host playwright:v1.60.0 pytest
+# $ docker run --rm --network host playwright:v1.62.1 pytest
 #
 services:
   copo_playwright:
-    image: playwright:v1.60.0
+    image: playwright:v1.62.1
+    # Build the image if that tag isn't present locally, rather than letting
+    # Docker try to pull it from a registry it was never pushed to and fail
+    # with a confusing "not found". This matters on every image bump: the tag
+    # is tied to the base image version, so a bump asks for a tag no existing
+    # developer has, and without this the next run just breaks for everyone.
+    #
+    # context has to be COPO_REPO_ROOT for the same reason the volume below
+    # does — compose resolves relative paths against the project directory
+    # (the local stack's, since that's the first -f), not this file's location.
+    build:
+      context: ${COPO_REPO_ROOT:?run the suite via test/playwright/scripts/run_playwright_tests.sh, which sets COPO_REPO_ROOT (or export it yourself to your checkout root)}
+      dockerfile: deployment/web/Dockerfile_playwright
     entrypoint: ["/bin/bash", "/copo/test/playwright/entrypoint.sh"]
     ports:
       - '5901:5900'
@@ -62,4 +74,12 @@ services:
       # require rebuilding, since those are installed at build time. This also
       # means anything pytest writes under /copo (e.g. --output results) lands
       # directly in the repo on the host — no separate volume needed for that.
-      - /Users/fshaw/dev/COPO-production:/copo
+      #
+      # COPO_REPO_ROOT is set by scripts/run_playwright_tests.sh to the
+      # checkout that script was invoked from, so running the suite from a
+      # git worktree tests that worktree rather than the main checkout. It
+      # deliberately has no default: a wrong-but-plausible fallback (e.g. one
+      # developer's absolute path) silently runs the suite against the wrong
+      # tree, and the tests still pass or fail convincingly, which is far
+      # harder to spot than a compose error telling you the variable is unset.
+      - ${COPO_REPO_ROOT:?run the suite via test/playwright/scripts/run_playwright_tests.sh, which sets COPO_REPO_ROOT (or export it yourself to your checkout root)}:/copo

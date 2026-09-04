@@ -17,12 +17,20 @@ that, and isn't meant to.
 - Your local stack must already be up and `copo_web` must be serving
   requests (`http://localhost:8000` should load in a normal browser tab). If
   it isn't, start it via VS Code's `Start all` compound first.
-- The `playwright:v1.60.0` image must be built at least once:
+- The `playwright:v1.62.1` image. You don't normally need to do anything here:
+  the compose service declares a `build:` section, so if that tag isn't already
+  on your machine the first run builds it (a few minutes, mostly pulling the
+  base image). To build it by hand — say, to rebuild after changing
+  `requirements/dev.txt`:
 
   ```
-  cd /Users/fshaw/dev/COPO-production
-  docker build . -f deployment/web/Dockerfile_playwright -t playwright:v1.60.0
+  docker build . -f deployment/web/Dockerfile_playwright -t playwright:v1.62.1
   ```
+
+  The tag tracks the base image version in `Dockerfile_playwright`, so it
+  changes whenever that's bumped. That's deliberate: a bump asks for a tag
+  nobody has yet, and the `build:` section turns what would be a confusing
+  "image not found" into one automatic rebuild.
 
   `Dockerfile_playwright` bakes the repo's source in at build time
   (`COPY . /copo`), but `docker-compose.playwright.yaml` then bind-mounts
@@ -31,6 +39,33 @@ that, and isn't meant to.
   `conftest.py`, or app code show up immediately on the next run; you only
   need to rebuild when *dependencies* change (`requirements/dev.txt`), since
   those are installed at build time and aren't part of the mount.
+
+  Which tree gets mounted comes from `COPO_REPO_ROOT`, which
+  `run_playwright_tests.sh` sets to the checkout it was invoked from. The
+  compose file has no fallback on purpose — mounting a wrong-but-plausible
+  path silently runs the suite against a different tree, and the results
+  still look convincing. Invoking `docker compose` by hand therefore needs
+  `COPO_REPO_ROOT` exported, or it stops with a message saying so.
+
+### Running from a git worktree
+
+The runner mounts whichever checkout you invoke it from, so running the suite
+inside a worktree tests that worktree's **test** files. `copo_web` is a
+different matter: its bind mount is declared in the local stack's own
+`compose.yaml`, outside this repo, and always points at one fixed checkout.
+So the app under test is *not* your worktree's app code. The runner detects
+the mismatch and warns:
+
+```
+WARNING: tests run from   .../.claude/worktrees/my-branch
+         copo_web serves  /Users/fshaw/dev/COPO-production
+         Changes to test files take effect; changes to app code do NOT.
+```
+
+Test-only changes (fixtures, assertions, helpers) are fine. To exercise
+worktree **app code**, repoint `copo_web` at it and recreate that service —
+which also restarts the Celery workers the submission tests depend on, so
+bring them back up via VS Code's `Start all` afterwards.
 
 ## Running the tests
 
