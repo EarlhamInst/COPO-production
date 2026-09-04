@@ -6,11 +6,23 @@
 # After the steps have been followed especially Step #2, 
 # the Playwright container will be running. To execute tests run,
 #
-# $ docker run --rm --network host playwright:v1.60.0 pytest
+# $ docker run --rm --network host playwright:v1.62.1 pytest
 #
 services:
   copo_playwright:
-    image: playwright:v1.60.0
+    image: playwright:v1.62.1
+    # Build the image if that tag isn't present locally, rather than letting
+    # Docker try to pull it from a registry it was never pushed to and fail
+    # with a confusing "not found". This matters on every image bump: the tag
+    # is tied to the base image version, so a bump asks for a tag no existing
+    # developer has, and without this the next run just breaks for everyone.
+    #
+    # context has to be COPO_REPO_ROOT for the same reason the volume below
+    # does — compose resolves relative paths against the project directory
+    # (the local stack's, since that's the first -f), not this file's location.
+    build:
+      context: ${COPO_REPO_ROOT:?run the suite via test/playwright/scripts/run_playwright_tests.sh, which sets COPO_REPO_ROOT (or export it yourself to your checkout root)}
+      dockerfile: deployment/web/Dockerfile_playwright
     entrypoint: ["/bin/bash", "/copo/test/playwright/entrypoint.sh"]
     ports:
       - '5901:5900'

@@ -17,12 +17,20 @@ that, and isn't meant to.
 - Your local stack must already be up and `copo_web` must be serving
   requests (`http://localhost:8000` should load in a normal browser tab). If
   it isn't, start it via VS Code's `Start all` compound first.
-- The `playwright:v1.60.0` image must be built at least once:
+- The `playwright:v1.62.1` image. You don't normally need to do anything here:
+  the compose service declares a `build:` section, so if that tag isn't already
+  on your machine the first run builds it (a few minutes, mostly pulling the
+  base image). To build it by hand — say, to rebuild after changing
+  `requirements/dev.txt`:
 
   ```
-  cd /Users/fshaw/dev/COPO-production
-  docker build . -f deployment/web/Dockerfile_playwright -t playwright:v1.60.0
+  docker build . -f deployment/web/Dockerfile_playwright -t playwright:v1.62.1
   ```
+
+  The tag tracks the base image version in `Dockerfile_playwright`, so it
+  changes whenever that's bumped. That's deliberate: a bump asks for a tag
+  nobody has yet, and the `build:` section turns what would be a confusing
+  "image not found" into one automatic rebuild.
 
   `Dockerfile_playwright` bakes the repo's source in at build time
   (`COPY . /copo`), but `docker-compose.playwright.yaml` then bind-mounts
