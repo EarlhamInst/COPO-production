@@ -240,7 +240,10 @@ $(document).ready(function () {
         $('#process_urls_button').fadeOut();
         var inner = '';
         $(d).each(function (idx, obj) {
-          inner += "curl -k -v --retry 30 --retry-delay 60 --retry-all-errors -T '" + obj.name + "' '" + obj.url + "'; ";
+          // -sS not -v: with --retry 30 --retry-delay 60 a long upload buries the
+          // retry messages under tens of thousands of TLS handshake lines. -sS
+          // keeps errors and retry notices; -w adds one result line per file.
+          inner += "curl -k -sS --retry 30 --retry-delay 60 --retry-all-errors -w 'http=%{http_code} sent=%{size_upload} time=%{time_total}s\\n' -T '" + obj.name + "' '" + obj.url + "'; ";
         });
         var out = "<kbd>nohup bash -c \"" + inner + "\" > upload.log 2>&1 &</kbd>";
         $('#command_area').html(out);
