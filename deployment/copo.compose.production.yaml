@@ -3,7 +3,7 @@ version: '3.9'
 # Settings and configurations that are common for all containers
 x-minio-common: &minio-common
   image: quay.io/minio/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1
-  command: server --console-address ":9001" http://minio-{1...2}/data{1...2}
+  command: server --console-address ":9001" /data1 /data2
   #healthcheck:
   #test: ["CMD", "mc", "ready", "local"]
   #interval: 5s
@@ -35,19 +35,40 @@ x-minio-common: &minio-common
 services:
   minio:
     <<: *minio-common
-    hostname: minio-{{.Task.Slot}}
+    hostname: minio
     volumes:
-      - minio-data1:/data1
-      - minio-data2:/data2
+      - minio-sn-data1:/data1
+      - minio-sn-data2:/data2
     deploy:
-      replicas: 2
+      # NB: YAML merge keys are shallow, so this block REPLACES the `deploy:` in
+      # the x-minio-common anchor rather than merging into it. Everything MinIO
+      # needs must be repeated here or it silently does not apply.
+      #
+      # endpoint_mode is vip, NOT dnsrr, and deliberately so. The anchor asked for
+      # dnsrr but never applied (see above), so prod has always run vip. Keep it:
+      # nginx resolves `server minio:9000` once at config load and caches it, so a
+      # stable service VIP survives container restarts where a dnsrr task IP would
+      # not. Changing this requires restarting copo_nginx.
+      endpoint_mode: vip
+      replicas: 1
       placement:
-        max_replicas_per_node: 1
         constraints:
-          - 'node.labels.minio-service==true'
+          - 'node.hostname==ei-copo-prod-service'
+      restart_policy:
+        condition: any
+      update_config:
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          cpus: '4'
+          memory: 32GB
+        reservations:
+          cpus: '1'
+          memory: 2GB
 
   web:
-    image: copo/copo-new-web:v3.2.0
+    image: copo/copo-new-web:v3.2.5
     entrypoint:
       - bash
       - -c
@@ -156,7 +177,7 @@ services:
       retries: 3
       start_period: 30s
   celery_job:
-    image: copo/copo-new-web:v3.2.0
+    image: copo/copo-new-web:v3.2.5
     entrypoint:
       - bash
       - -c
@@ -528,6 +549,13 @@ volumes:
     external: true
   singlecellschemas:
     external: true
+  # Single-node drives (live). Created on ei-copo-prod-service only.
+  minio-sn-data1:
+    external: true
+  minio-sn-data2:
+    external: true
+  # Old distributed drives, retained intact as the migration rollback.
+  # Unreferenced by any service; safe to delete once the cutover is signed off.
   minio-data1:
     external: true
   minio-data2:
