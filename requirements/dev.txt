@@ -1,6 +1,6 @@
 -r base.txt
 
-playwright==1.58.0
+playwright==1.62.0
 pytest-django==4.12.0
 pytest-playwright==0.7.2
 pytest-xdist==3.8.0
