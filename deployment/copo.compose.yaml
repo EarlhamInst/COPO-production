@@ -3,7 +3,7 @@ version: '3.9'
 # Settings and configurations that are common for all containers
 x-minio-common: &minio-common
   image: quay.io/minio/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1
-  command: server --console-address ":9001" http://minio-{1...2}/data{1...2}
+  command: server --console-address ":9001" /data1 /data2
   #healthcheck:
   #test: ["CMD", "mc", "ready", "local"]
   #interval: 5s
@@ -36,16 +36,36 @@ x-minio-common: &minio-common
 services:
   minio:
     <<: *minio-common
-    hostname: minio-{{.Task.Slot}}
+    hostname: minio
     volumes:
-      - minio-data1:/data1
-      - minio-data2:/data2
+      - minio-sn-data1:/data1
+      - minio-sn-data2:/data2
     deploy:
-      replicas: 2
+      # NB: YAML merge keys are shallow, so this block REPLACES the `deploy:` in
+      # the x-minio-common anchor rather than merging into it. Everything MinIO
+      # needs must be repeated here or it silently does not apply.
+      #
+      # endpoint_mode is vip, not dnsrr: nginx resolves `server minio:9000` once
+      # at config load and caches it, so a stable service VIP survives container
+      # restarts where a dnsrr task IP would not. Restart copo_nginx after
+      # replacing this service.
+      endpoint_mode: vip
+      replicas: 1
       placement:
-        max_replicas_per_node: 1
         constraints:
-          - 'node.labels.minio-service==true'
+          - 'node.hostname==ei-copo-demo-frontend'
+      restart_policy:
+        condition: any
+      update_config:
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2GB
+        reservations:
+          cpus: '0.4'
+          memory: 512mb
 
   web:
     image: copo/copo-new-web:v3.2.1.8
@@ -579,6 +599,20 @@ volumes:
     external: true
   singlecellschemas:
     external: true
+  # Single-node drives, on ei-copo-demo-frontend only, created by hand with the
+  # local-persist driver:
+  #   docker volume create -d local-persist \
+  #     -o mountpoint=/mnt/copo-data/demo_copo/minio-sn-data1-frontend \
+  #     --name=minio-sn-data1        (and likewise for data2)
+  minio-sn-data1:
+    external: true
+  minio-sn-data2:
+    external: true
+  # Old distributed drives, retained intact as the migration rollback.
+  # Unreferenced by any service. NOTE these differ per node: on demo-frontend
+  # they are local-persist on the Isilon mount, on demo-service plain `local`
+  # on the 30G root disk -- the erasure set spanned two storage types, which is
+  # part of why demo was slow and unstable. Safe to delete once signed off.
   minio-data1:
     external: true
   minio-data2:
