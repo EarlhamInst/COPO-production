@@ -144,6 +144,70 @@ of the above can happen.
 
 ---
 
+## MinIO won't start after a deploy — check the node label first
+
+Symptom: after `docker stack deploy`, `copo_minio` never comes up. `docker
+service ls` shows `0/1`, scaling it does nothing, and the COPO Data files page
+fails because it cannot reach S3. **This is a placement problem, not a MinIO
+problem** — look here before any of the quorum diagnosis below.
+
+MinIO is placed by node label (CD-220):
+
+```yaml
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - 'node.labels.minio-service==true'
+```
+
+It used to be `node.hostname==…`. That could never work in this file:
+**`copo.compose.yaml` is used by both demo and dev**, so a hostname from one
+cluster matches no node in the other, and the service simply has nowhere to run.
+
+The trade-off is that the compose file no longer pins MinIO to the node holding
+its drives — the label does, and the label is swarm state that no code review
+can see. Two ways it goes wrong:
+
+- **Label on no node** → nothing matches, service never starts (the CD-220
+  symptom above).
+- **Label on more than one node** → placement becomes a coin flip on every
+  restart, and MinIO can come up on a node where `minio-sn-data1/2` don't exist.
+  `max_replicas_per_node: 1` does not help: with `replicas: 1` it stops two
+  copies on one node, not the single copy on the wrong node.
+
+**Check, on the cluster's manager:**
+
+```bash
+docker node ls -q | xargs docker node inspect \
+  -f '{{.Description.Hostname}} {{.Spec.Labels}}'
+docker service ps copo_minio --format '{{.Name}} {{.Node}} {{.CurrentState}}'
+```
+
+Exactly one node should have `minio-service:true`, and it must be where the
+drives are:
+
+| Cluster | Manager | Node that must carry `minio-service` |
+|---|---|---|
+| demo | `ei-copo-demo-sm.cyverseuk.org` | `ei-copo-demo-frontend` |
+| dev | `ei-copo-dev-sm.cyverseuk.org` | `ei-copo-dev-frontend` |
+| prod | `ei-copo-prod-sm.cyverseuk.org` | `ei-copo-prod-service` |
+
+Prod's is the **opposite** node from demo's and dev's.
+
+**Fix**, on that cluster's manager:
+
+```bash
+docker node update --label-rm minio-service <wrong-node>
+docker node update --label-add minio-service=true <right-node>
+```
+
+Removing a label does not relocate a running service, so this is zero-downtime
+provided you are not changing the node MinIO is currently on. Verified across
+all three clusters on 2026-09-07 — see
+[`MINIO_SINGLE_NODE_MIGRATION.md`](MINIO_SINGLE_NODE_MIGRATION.md).
+
+---
+
 ## Notes
 
 - **App config:** the app reaches MinIO via `ECS_ENDPOINT` (internal) and

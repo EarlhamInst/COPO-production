@@ -489,7 +489,16 @@ had to stay named `minio` rather than being renamed — everything downstream
 (`ECS_ENDPOINT=http://minio:9000`, nginx's `upstream minio`) depends on it.
 `docker stack deploy` also applies the stack labels automatically.
 
-**NOT reproducible — three things must be restored by hand:**
+**NOT reproducible — four things must be restored by hand:**
+
+0. **The node label.** Placement is `node.labels.minio-service==true` (CD-220 —
+   it used to be `node.hostname==…`, which broke deploys because
+   `copo.compose.yaml` is shared by demo *and* dev, so a hostname from one
+   cluster matches no node in the other). The label is swarm state, not file
+   state: nothing in the repo sets it and no code review can see it. **It must
+   be on exactly one node per cluster, and that node must be the one holding
+   the drives** — see "Node label placement" below. Get this wrong and MinIO
+   either cannot schedule at all, or schedules onto a node without the data.
 
 1. **The volumes.** `minio-sn-data1/2` are `external: true`, so Compose requires
    them to already exist. On a rebuild, create them first on
@@ -529,8 +538,71 @@ nets={{range .Spec.TaskTemplate.Networks}}{{.Aliases}}{{end}}
 mounts={{range .Spec.TaskTemplate.ContainerSpec.Mounts}}{{.Source}}->{{.Target}} {{end}}'
 ```
 
-Expect `/data1 /data2`, `minio`, `vip`, `1`, the `ei-copo-prod-service`
-constraint, `[minio] [minio]`, and the two `minio-sn-data*` mounts.
+Expect `/data1 /data2`, `minio`, `vip`, `1`, the
+`node.labels.minio-service==true` constraint, `[minio] [minio]`, and the two
+`minio-sn-data*` mounts.
+
+---
+
+## Node label placement
+
+Since CD-220, MinIO is placed by node label rather than by hostname:
+
+```yaml
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - 'node.labels.minio-service==true'
+```
+
+This is the correct fix — a hostname cannot work in `copo.compose.yaml`, which
+demo and dev share — but it moves a guarantee out of the repo and into swarm
+state. **The compose file no longer pins MinIO to the node that holds its
+drives; the label does.** So the label must be on exactly one node per cluster,
+and it must be the node with the drives.
+
+`max_replicas_per_node: 1` does **not** protect you here. With `replicas: 1` it
+prevents two copies landing on one node; it does nothing to stop the single copy
+landing on the wrong one.
+
+**Check (on each manager):**
+
+```bash
+docker node ls -q | xargs docker node inspect \
+  -f '{{.Description.Hostname}} {{.Spec.Labels}}'
+```
+
+Exactly one node per cluster should show `minio-service:true`, and it must match
+where the service actually runs (`docker service ps copo_minio`):
+
+| Cluster | Manager | Node that must carry `minio-service` |
+|---|---|---|
+| prod | `ei-copo-prod-sm.cyverseuk.org` | `ei-copo-prod-service` |
+| demo | `ei-copo-demo-sm.cyverseuk.org` | `ei-copo-demo-frontend` |
+| dev | `ei-copo-dev-sm.cyverseuk.org` | `ei-copo-dev-frontend` |
+
+Note prod's node is the **opposite** of demo's and dev's — easy to get backwards.
+
+**To correct it**, run on that cluster's manager (not on the node itself, and
+not via `ssh` to the manager if you are already on it):
+
+```bash
+docker node update --label-rm minio-service <wrong-node>
+docker node update --label-add minio-service=true <right-node>
+```
+
+Removing a label does **not** relocate a running service, so this is
+zero-downtime as long as the node you are changing is not the one currently
+running MinIO.
+
+**History (2026-09-07):** when CD-220's compose change was first prepared, the
+label was set on **both** nodes in **all three** clusters, which would have made
+placement a coin flip on every restart rather than a rule. Dev was the live
+risk, because it had already been deployed with the label constraint while prod
+and demo still had their hostname pin. Corrected before the change merged; the
+table above is the verified end state. **The labels must be right *before* this
+config merges to a cluster, not after** — merging swaps a constraint that cannot
+drift for one that can.
 
 ---
 
