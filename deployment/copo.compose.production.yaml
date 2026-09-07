@@ -52,8 +52,9 @@ services:
       endpoint_mode: vip
       replicas: 1
       placement:
+        max_replicas_per_node: 1
         constraints:
-          - 'node.hostname==ei-copo-prod-service'
+          - 'node.labels.minio-service==true'
       restart_policy:
         condition: any
       update_config:
