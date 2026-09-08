@@ -19,8 +19,8 @@ billiard==4.2.4
 #biopy-isatab==0.1.1
 biopython==1.88
 bleach==6.4.0
-boto3==1.43.73
-botocore==1.43.73
+boto3==1.43.85
+botocore==1.43.85
 Brotli==1.2.0
 bs4==0.0.2
 cattrs==26.1.0
@@ -33,7 +33,7 @@ channels-redis==4.3.0
 #colored==1.4.3
 #configparser==3.7.4
 constantly==23.10.4
-cryptography==50.0.0
+cryptography==50.0.1
 daphne==4.2.3
 #-e git+https://github.com/IQSS/dataverse-client-python.git@5f95a11e2f32bcfabe28e6ad43b2f7edac60d983#egg=dataverse
 decorator==5.3.1
@@ -69,14 +69,14 @@ et-xmlfile==2.0.0
 #Genshi==0.7.3
 gevent==26.8.0
 greenlet==3.5.5
-gunicorn==26.1.0
+gunicorn==26.2.0
 #hiredis==1.0.0
 #html5lib==1.1
 #hurry.filesize==0.9
 hyperlink==21.0.0
 idna==3.19
 #imagesize==0.7.1
-importlib_metadata==9.0.0
+importlib_metadata==9.0.1
 Incremental==24.11.0
 #ipykernel==5.1.2
 #ipython==7.8.0
@@ -109,7 +109,7 @@ mccabe==0.7.0
 #mistune==0.8.4
 mock==5.2.0
 more-itertools==11.1.0
-msgpack==1.2.1
+msgpack==1.2.2
 #mzml2isa==0.5.1
 #nbconvert==5.6.0
 #nbformat==4.4.0
@@ -135,8 +135,8 @@ ply==3.11
 progressbar2==4.6.0
 #prometheus-client==0.7.1
 prompt-toolkit==3.0.53
-psycopg==3.3.4
-psycopg-binary==3.3.4
+psycopg==3.3.5
+psycopg-binary==3.3.5
 ptpython==3.0.32
 ptyprocess==0.7.0
 py==1.11.0
@@ -147,7 +147,7 @@ pycodestyle==2.14.0
 #Pygments==2.19.2
 #PyHamcrest==2.0.4
 #PyJWT==2.8.0
-pylint==4.0.7
+pylint==4.0.8
 pymongo==4.17.0
 #pyOpenSSL==25.1.0
 #pyparsing==3.1.2
@@ -203,7 +203,7 @@ urllib3==2.7.0
 user-agents==2.2.0
 validators==0.35.0
 vine==5.1.0
-wcwidth==0.8.2
+wcwidth==0.8.3
 #webencodings==0.5.1
 #widgetsnbextension==3.5.1
 #wrapt==1.16.0

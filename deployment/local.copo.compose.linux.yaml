@@ -10,7 +10,7 @@
 #
 ## Build main containers and playwright test container images
 # $ docker build . -f 'deployment/web/Dockerfile_local_linux' -t local_copo_web:v1.0.0
-# $ docker build . -f 'deployment/web/Dockerfile_playwright' -t playwright:v1.60.0
+# $ docker build . -f 'deployment/web/Dockerfile_playwright' -t playwright:v1.62.1
 #
 #
 ## Step #2 - Start the containers

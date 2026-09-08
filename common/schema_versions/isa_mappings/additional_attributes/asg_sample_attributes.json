@@ -576,7 +576,7 @@
         "standards": {
             "dwc": "sex",
             "ena": "sex",
-            "mixs": "ANIMALSEXENUM",
+            "mixs": "AnimalSexEnum",
             "tol": "SEX"
         },
         "type": "string",
@@ -793,7 +793,7 @@
             "2.5",
             "2.4.1"
         ],
-        "option_values":[
+        "option_values": [
             "DALHOUSIE UNIVERSITY",
             "GEOMAR HELMHOLTZ CENTRE",
             "NOVA SOUTHEASTERN UNIVERSITY",

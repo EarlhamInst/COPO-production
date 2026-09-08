@@ -697,7 +697,7 @@
         "standards": {
             "dwc": "sex",
             "ena": "sex",
-            "mixs": "ANIMALSEXENUM",
+            "mixs": "AnimalSexEnum",
             "tol": "SEX"
         },
         "type": "string",

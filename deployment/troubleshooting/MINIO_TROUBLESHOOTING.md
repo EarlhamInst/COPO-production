@@ -9,11 +9,12 @@ This has recurred multiple times on the demo/dev swarm (`ei-copo-demo-*`). The
 is to run demo/dev MinIO single-node**. Don't go down the firewall rabbit hole
 first — see below.
 
-> **Deployment status:** single-node is **NOT currently deployed**. Demo/dev (and
-> production) still run the **distributed** MinIO config in `copo.compose.yaml` /
-> `copo.compose.production.yaml`. The single-node setup below is a documented,
-> tested fix to **apply when this recurs** — it has not been committed to the
-> compose files. Treat the "TL;DR fix" as a change to make, not the current state.
+> **Deployment status (2026-09-02):** **production is now single-node** and is no
+> longer affected by anything in this document — see
+> [`MINIO_SINGLE_NODE_MIGRATION.md`](MINIO_SINGLE_NODE_MIGRATION.md).
+> **Demo/dev is still distributed** (`copo.compose.yaml`) and still exposed to
+> every failure mode described here. The "TL;DR fix" below is a change to make on
+> demo when this recurs, not the current state.
 
 ---
 
@@ -143,6 +144,70 @@ of the above can happen.
 
 ---
 
+## MinIO won't start after a deploy — check the node label first
+
+Symptom: after `docker stack deploy`, `copo_minio` never comes up. `docker
+service ls` shows `0/1`, scaling it does nothing, and the COPO Data files page
+fails because it cannot reach S3. **This is a placement problem, not a MinIO
+problem** — look here before any of the quorum diagnosis below.
+
+MinIO is placed by node label (CD-220):
+
+```yaml
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - 'node.labels.minio-service==true'
+```
+
+It used to be `node.hostname==…`. That could never work in this file:
+**`copo.compose.yaml` is used by both demo and dev**, so a hostname from one
+cluster matches no node in the other, and the service simply has nowhere to run.
+
+The trade-off is that the compose file no longer pins MinIO to the node holding
+its drives — the label does, and the label is swarm state that no code review
+can see. Two ways it goes wrong:
+
+- **Label on no node** → nothing matches, service never starts (the CD-220
+  symptom above).
+- **Label on more than one node** → placement becomes a coin flip on every
+  restart, and MinIO can come up on a node where `minio-sn-data1/2` don't exist.
+  `max_replicas_per_node: 1` does not help: with `replicas: 1` it stops two
+  copies on one node, not the single copy on the wrong node.
+
+**Check, on the cluster's manager:**
+
+```bash
+docker node ls -q | xargs docker node inspect \
+  -f '{{.Description.Hostname}} {{.Spec.Labels}}'
+docker service ps copo_minio --format '{{.Name}} {{.Node}} {{.CurrentState}}'
+```
+
+Exactly one node should have `minio-service:true`, and it must be where the
+drives are:
+
+| Cluster | Manager | Node that must carry `minio-service` |
+|---|---|---|
+| demo | `ei-copo-demo-sm.cyverseuk.org` | `ei-copo-demo-frontend` |
+| dev | `ei-copo-dev-sm.cyverseuk.org` | `ei-copo-dev-frontend` |
+| prod | `ei-copo-prod-sm.cyverseuk.org` | `ei-copo-prod-service` |
+
+Prod's is the **opposite** node from demo's and dev's.
+
+**Fix**, on that cluster's manager:
+
+```bash
+docker node update --label-rm minio-service <wrong-node>
+docker node update --label-add minio-service=true <right-node>
+```
+
+Removing a label does not relocate a running service, so this is zero-downtime
+provided you are not changing the node MinIO is currently on. Verified across
+all three clusters on 2026-09-07 — see
+[`MINIO_SINGLE_NODE_MIGRATION.md`](MINIO_SINGLE_NODE_MIGRATION.md).
+
+---
+
 ## Notes
 
 - **App config:** the app reaches MinIO via `ECS_ENDPOINT` (internal) and
@@ -153,8 +218,14 @@ of the above can happen.
 - **Deploy drift:** the live demo has run image tags ahead of what the repo
   compose pins (e.g. `copo-new-web:v3.2.1.3` live vs `v3.2.0.1` in repo). When
   redeploying, use the tag you actually want live so you don't downgrade the app.
-- **Production still uses the distributed config**
-  (`deployment/copo.compose.production.yaml`, endpoint `minio.copo-project.org`)
-  and could hit the same failure. Moving prod to single-node (or pinning slots to
-  nodes) is a separate, unmade decision — single-node trades cross-node redundancy
-  for robustness, so weigh that for prod.
+- **Production is single-node as of 2026-09-02** — migrated with its data intact.
+  This document's failure modes **no longer apply to prod**; there is no peer and
+  no cross-node quorum there. See
+  [`MINIO_SINGLE_NODE_MIGRATION.md`](MINIO_SINGLE_NODE_MIGRATION.md) for what was
+  done and how to roll back.
+- **Demo/dev is still distributed and still fragile.** Everything above applies
+  to it unchanged. If it recurs there, the TL;DR wipe is the fast fix (demo
+  objects are expendable); the production migration doc is the template if the
+  data ever needs preserving.
+- The TL;DR wipe-the-volumes fix above is safe for **demo/dev only**, where losing
+  objects is acceptable. Never apply it to production.

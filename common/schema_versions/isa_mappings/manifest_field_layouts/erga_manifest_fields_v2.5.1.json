@@ -152,8 +152,6 @@
                     "vegetative cell",
                     "vegetative structure",
                     "zygote",
-                    "not applicable",
-                    "not collected",
                     "not provided"
                 ]
             },
@@ -169,9 +167,7 @@
                     "FEMALE",
                     "MALE",
                     "SEXUAL_MORPH",
-                    "NOT_APPLICABLE",
-                    "NOT_COLLECTED",
-                    "NOT_PROVIDED"
+                    "NOT_COLLECTED"
                 ]
             },
             {
@@ -288,7 +284,7 @@
                 "type": "string",
                 "required": true,
                 "enum": [
-                    "Centro Nacional de An\u00e1lisis Gen\u00f3mico",
+                    "Centro Nacional de Análisis Genómico",
                     "DNA Sequencing and Genomics Laboratory, Helsinki Genomics Core Facility",
                     "Earlham Institute",
                     "Functional Genomics Center Zurich",
@@ -297,7 +293,7 @@
                     "Lausanne Genomic Technologies Facility",
                     "Leibniz Institute for the Analysis of Biodiversity Change, Museum Koenig, Bonn",
                     "NGS Bern",
-                    "NGS Competence Center T\u00fcbingen",
+                    "NGS Competence Center Tübingen",
                     "Neuromics Support Facility, UAntwerp, VIB",
                     "Norwegian Sequencing Centre",
                     "Sanger Institute",
@@ -524,7 +520,7 @@
                     "Lithuania",
                     "Luxembourg",
                     "Macau",
-                    "Macedonia",
+                    "North Macedonia",
                     "Madagascar",
                     "Malawi",
                     "Malaysia",
@@ -663,7 +659,7 @@
                 "column": "AD",
                 "type": "string",
                 "required": false,
-                "regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+                "regex": "(^[+-]?[0-9]+\\.?[0-9]*$)|(^not collected$)",
                 "unit": "DD"
             },
             {
@@ -672,7 +668,7 @@
                 "column": "AE",
                 "type": "string",
                 "required": false,
-                "regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+                "regex": "(^[+-]?[0-9]+\\.?[0-9]*$)|(^not collected$)",
                 "unit": "DD"
             },
             {
@@ -681,7 +677,7 @@
                 "column": "AF",
                 "type": "string",
                 "required": false,
-                "regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+                "regex": "(^[+-]?[0-9]+\\.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
                 "unit": "DD"
             },
             {
@@ -690,7 +686,7 @@
                 "column": "AG",
                 "type": "string",
                 "required": false,
-                "regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+                "regex": "(^[+-]?[0-9]+\\.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
                 "unit": "DD"
             },
             {
@@ -699,7 +695,7 @@
                 "column": "AH",
                 "type": "string",
                 "required": false,
-                "regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+                "regex": "(^[+-]?[0-9]+\\.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
                 "unit": "DD"
             },
             {
@@ -708,7 +704,7 @@
                 "column": "AI",
                 "type": "string",
                 "required": false,
-                "regex": "(^[+-]?[0-9]+.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
+                "regex": "(^[+-]?[0-9]+\\.?[0-9]*$)|(^not collected$)|(^not provided$)|(^restricted access$)",
                 "unit": "DD"
             },
             {
@@ -742,7 +738,7 @@
                 "column": "AM",
                 "type": "string",
                 "required": false,
-                "regex": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?)?$"
+                "regex": "^[12][0-9]{3}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01])(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?(/[0-9]{4}(-[0-9]{2}(-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?([+-][0-9]{1,2})?)?)?)?)?$"
             },
             {
                 "name": "ORIGINAL_GEOGRAPHIC_LOCATION",
@@ -757,7 +753,7 @@
                 "column": "AO",
                 "type": "string",
                 "required": false,
-                "regex": "(^[+-]?[0-9]+.?[0-9]{0,8}$)",
+                "regex": "(^[+-]?[0-9]+\\.?[0-9]{0,8}$)",
                 "unit": "DD"
             },
             {
@@ -766,7 +762,7 @@
                 "column": "AP",
                 "type": "string",
                 "required": false,
-                "regex": "(^[+-]?[0-9]+.?[0-9]{0,8}$)",
+                "regex": "(^[+-]?[0-9]+\\.?[0-9]{0,8}$)",
                 "unit": "DD"
             },
             {
@@ -902,9 +898,7 @@
                     "M",
                     "L",
                     "SINGLE_CELL",
-                    "NOT_APPLICABLE",
-                    "NOT_COLLECTED",
-                    "NOT_PROVIDED"
+                    "NOT_APPLICABLE"
                 ]
             }
         ]
@@ -1032,8 +1026,7 @@
                     "DNA_BARCODING_COMPLETED",
                     "DNA_BARCODE_EXEMPT",
                     "DNA_BARCODING_FAILED",
-                    "DNA_BARCODING_TO_BE_PERFORMED_GAL",
-                    "DNA_BARCODING_VIA_WSI_PROCESS"
+                    "DNA_BARCODING_TO_BE_PERFORMED_GAL"
                 ]
             }
         ]

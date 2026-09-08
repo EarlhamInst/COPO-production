@@ -18,16 +18,26 @@ SAMPLE_MANIFEST = os.path.join(TESTFILES_DIR, "COPO_FAANG_manifest_success1.xlsx
 SINGLECELL_MANIFEST = os.path.join(
     TESTFILES_DIR, "copo_single_cell_manifest_version_faang_sc_rnaseq_success1.xlsx"
 )
-# Filenames the single-cell manifest's file/expression_data_file sheets
-# reference literally -- ENA submission gates on an S3 object existing under
-# the profile's bucket with this exact key, so these must be byte-identical
-# to what's in the manifest (see copo_single_cell.py's
-# check_s3_bucket_for_files() call), not just "close enough".
+# Every filename the manifest's data row puts in a term_type=="file" column
+# -- across the file, expression_data_file and analysis_derived_data sheets.
+# submit_singlecell() hard-errors ("missing from storage") if any one of them
+# isn't already an object in the profile's bucket, so this list must track
+# the manifest exactly; a filename here that the manifest doesn't reference
+# is harmless, but one the manifest references and this list omits fails the
+# submission. Note Index 1/Index 2 File are *not* term_type=="file", so the
+# manifest's index filenames deliberately aren't uploaded.
+#
+# single_cell_read2_4.fastq.gz is a byte-identical copy of read1_4 (every
+# fastq.gz fixture in this directory has md5 3181f0f9...); the manifest's
+# Read 1/Read 2 Checksum cells are placeholders matching no real file, and
+# nothing in the submission path verifies them, so the duplicate is
+# equivalent to a distinct fixture here.
 SINGLECELL_DATA_FILES = [
     os.path.join(TESTFILES_DIR, "single_cell_read1_4.fastq.gz"),
-    os.path.join(TESTFILES_DIR, "single_cell_read1_5.fastq.gz"),
+    os.path.join(TESTFILES_DIR, "single_cell_read2_4.fastq.gz"),
     os.path.join(TESTFILES_DIR, "single_cell_expression_data_file4.h5ad"),
     os.path.join(TESTFILES_DIR, "single_cell_analysis_derived_from_file4.json"),
+    os.path.join(TESTFILES_DIR, "single_cell_white_list_barcode_file4.tsv"),
 ]
 
 # Checklist dropdown <option> values — confirmed live, both pages have their
