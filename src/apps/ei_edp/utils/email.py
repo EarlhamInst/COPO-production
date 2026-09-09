@@ -1,7 +1,7 @@
 from common.utils.copo_email import CopoEmail
 from common.utils.logger import Logger
 from django.conf import settings
-from django_tools.middlewares import ThreadLocal
+from django_tools.middlewares import threadlocal as ThreadLocal
 from django.urls import reverse
 
 logger = Logger()
