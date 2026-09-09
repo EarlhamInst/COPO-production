@@ -976,10 +976,10 @@ body > .popover .popover-content span:not(.text-bold) {
   color: #fff !important;
 }
 
+/* Ensure that the content of modals are scrollable */
 .bootstrap-dialog.form-modal .bootstrap-dialog-body {
-  max-height: calc(100vh - 160px) !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
 }
 
 .bootstrap-dialog.form-modal .modal-body {
@@ -987,7 +987,9 @@ body > .popover .popover-content span:not(.text-bold) {
   padding: 14px 16px !important;
   font-size: .82rem !important;
   color: var(--co-text) !important;
-  overflow: hidden !important;
+  max-height: calc(100vh - 160px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
 }
 
 .bootstrap-dialog.form-modal .bootstrap-dialog-footer,
