@@ -45,7 +45,7 @@
     {
       "help_tip": "Is this a standalone profile or part of a larger project?",
       "required": "true",
-      "default_value": "genomics",
+      "default_value": "biodata",
       "control_meta": {},
       "versions": [
         "type"
@@ -328,7 +328,8 @@
         "erga",
         "dtol",
         "dtolenv",
-        "genomics"
+        "genomics",
+        "biodata"
       ],
       "ref": "",
       "deprecated": false,
