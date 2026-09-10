@@ -7,12 +7,19 @@ from common.validators.helpers import checkOntologyTerm, checkNCBITaxonTerm, cle
 import requests
 from common.utils.helpers import get_env
 import xml.etree.ElementTree as ET
-from .validation_messages import MESSAGES
+
+from src.apps.ei_edp.utils.edp_utils import EDP_PROJECT_STUDY_FIELDS
+from src.apps.ei_edp.utils.edp_validation_messages import MESSAGES as EDP_PROJECT_MESSAGES
+from .validation_messages import MESSAGES as GENERAL_MESSAGES
+
 
 ena_browser_service = get_env("ENA_BROWSER_SERVICE")
 session = requests.Session()
 lg = settings.LOGGER
- 
+
+# Merge validation messages
+MESSAGES = GENERAL_MESSAGES | EDP_PROJECT_MESSAGES
+
 class MandatoryValuesValidator(Validator):
     def validate(self):
         schema = self.kwargs.get("schema", {})
@@ -35,11 +42,27 @@ class MandatoryValuesValidator(Validator):
                     null_rows.extend(self.data[self.data[key] == ""].index.tolist())
                     null_rows.extend(self.data[self.data[key].isna()].index.tolist())
                     for row in null_rows:
-                        error_msg = MESSAGES["missing_value"].format(
-                            component=component,
-                            column_name=field["term_label"],
-                            line_no=row + self.first_data_line_no,
-                        )
+                        error_msg = ''
+
+                        if component == 'study' and key in EDP_PROJECT_STUDY_FIELDS:
+                            '''
+                            EDP profile-specific missing value handling
+
+                            This is needed because there is no 'study' worksheet in downloaded LIMS manifests.
+                            Logic regarding the 'study' component is handled behind-the-scenes so this alternative
+                            approach prevents the generic missing value message and uses a specific one for the key.
+
+                            Original response: "Sheet 'study': Missing data in column 'Sample Return' at row '1'."
+                            Expected response: "Sheet 'sample': Missing response to 'Sample return requirement'."
+                            '''
+
+                            error_msg = MESSAGES[f'missing_value_{key}']
+                        else:
+                            error_msg = MESSAGES["missing_value"].format(
+                                component=component,
+                                column_name=field["term_label"],
+                                line_no=row + self.first_data_line_no,
+                            )
                         self.errors.append(error_msg)
                         self.flag = False
         return self.errors, self.warnings, self.flag, missing_mandatory_column_count

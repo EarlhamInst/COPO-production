@@ -12,6 +12,7 @@ from .lims import get_lims_adapter
 
 # Separator used when a profile owner enters multiple customer emails in a single field
 CUSTOMER_EMAIL_SPLITTER = ";"
+EDP_PROJECT_STUDY_FIELDS = ['customer_email', 'sample_return', 'health_safety']
 
 l = Logger()
 
