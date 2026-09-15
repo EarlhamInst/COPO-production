@@ -527,6 +527,12 @@ def _notify_transfer_progress(method, file_path, pct, profile_id, extra=None):
     )
 
 
+# Upper bound on a single file upload to ENA (Aspera or FTP). Large raw read files
+# (500GB+) at ~13MB/s need well over 12 hours; a shorter cap kills the upload and
+# restarts it from zero forever. check_for_stuck_transfers uses this too.
+ENA_UPLOAD_TIMEOUT_SECONDS = 48 * 60 * 60
+
+
 def _transfer_via_aspera(remote_path, file_paths, submission_id="", profile_id="",
                          webin_user=None, webin_password=None):
     """Attempt file transfer to ENA using Aspera CLI. Returns True on success.
@@ -550,7 +556,7 @@ def _transfer_via_aspera(remote_path, file_paths, submission_id="", profile_id="
 
     try:
         output = subprocess.check_output(
-            cmd, env=ascp_env, stderr=subprocess.STDOUT, timeout=12 * 60 * 60
+            cmd, env=ascp_env, stderr=subprocess.STDOUT, timeout=ENA_UPLOAD_TIMEOUT_SECONDS
         )
         lg.log(output)
         _notify_transfer_method(
@@ -625,7 +631,7 @@ def _do_ftp_transfers(ftp_base, file_paths, netrc_path, submission_id, profile_i
 
         _notify_transfer_method("FTP", f'Uploading {file_path} to ENA', profile_id)
 
-        deadline = time.time() + 12 * 60 * 60
+        deadline = time.time() + ENA_UPLOAD_TIMEOUT_SECONDS
         last_emit = 0.0
         last_pct = -1
         try:

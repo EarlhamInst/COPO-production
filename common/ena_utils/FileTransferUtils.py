@@ -9,7 +9,7 @@ from bson import ObjectId
 from botocore.exceptions import ClientError
 from common.utils.logger import Logger
 import gzip
-from .generic_helper import transfer_to_ena, get_submission_handle
+from .generic_helper import transfer_to_ena, get_submission_handle, ENA_UPLOAD_TIMEOUT_SECONDS
 from common.repositories import credentials as credential_resolver
 from common.utils.helpers import get_env, get_datetime, notify_submission_status
 from datetime import datetime
@@ -183,8 +183,10 @@ def check_for_stuck_transfers():
                     EnaFileTransfer().set_pending(tx["_id"])
                     Logger().log("resetting to pending transfer: " + tx["local_path"])
             elif tx_status == 5:
-                # these are the processes which could take a long time so should have a much longer timeout
-                if delta.total_seconds() > 60 * 60 * 12:
+                # upload to ENA: last_checked is not updated while the upload runs, so this
+                # must outlast the upload's own timeout (plus margin) or a still-running
+                # upload is reset and started a second time
+                if delta.total_seconds() > ENA_UPLOAD_TIMEOUT_SECONDS + 60 * 60:
                     EnaFileTransfer().set_pending(tx["_id"])
                     Logger().log("resetting to pending transfer: " + tx["local_path"])
 
