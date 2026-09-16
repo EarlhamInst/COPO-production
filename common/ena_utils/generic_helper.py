@@ -615,21 +615,66 @@ def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id="",
         os.remove(netrc_path)
 
 
+def _remote_ftp_size(ftp_url, netrc_path):
+    """Bytes already on ENA for this URL, or 0 if absent/unknown.
+
+    Used to decide whether to resume. Any failure (file not there yet, SIZE
+    refused, login denied, timeout) answers 0, i.e. upload from the start —
+    the same behaviour as before resume existed.
+    """
+    try:
+        out = subprocess.run(
+            ["curl", "-s", "-I", "--netrc-file", netrc_path, ftp_url],
+            capture_output=True, timeout=60,
+        )
+    except Exception as e:
+        lg.error(f'FTP size probe failed for {ftp_url}: {e}')
+        return 0
+    if out.returncode != 0:
+        return 0
+    m = re.search(rb'Content-Length:\s*(\d+)', out.stdout, re.IGNORECASE)
+    return int(m.group(1)) if m else 0
+
+
+def _build_ftp_upload_cmd(file_path, ftp_url, netrc_path, resume_from=0):
+    """curl argv for uploading file_path to ftp_url.
+
+    resume_from > 0 adds -C -, which makes curl APPEND from the remote file's
+    current size instead of truncating and starting again. A 600GB upload that
+    dies at 90% otherwise costs another full transfer.
+    """
+    # -# emits a progress bar to stderr; -N disables output buffering so we see it in real time
+    cmd = [
+        "curl", "-#", "-N", "-T", file_path,
+        ftp_url,
+        "--netrc-file", netrc_path,
+        "--ftp-create-dirs",
+        "--retry", "3",
+        "--retry-delay", "5",
+    ]
+    if resume_from > 0:
+        cmd += ["-C", "-"]
+    return cmd
+
+
 def _do_ftp_transfers(ftp_base, file_paths, netrc_path, submission_id, profile_id):
     for file_path in file_paths:
         file_name = os.path.basename(file_path)
         ftp_url = f"{ftp_base}{file_name}"
-        # -# emits a progress bar to stderr; -N disables output buffering so we see it in real time
-        cmd = [
-            "curl", "-#", "-N", "-T", file_path,
-            ftp_url,
-            "--netrc-file", netrc_path,
-            "--ftp-create-dirs",
-            "--retry", "3",
-            "--retry-delay", "5",
-        ]
+        resume_from = _remote_ftp_size(ftp_url, netrc_path)
+        cmd = _build_ftp_upload_cmd(file_path, ftp_url, netrc_path, resume_from)
 
-        _notify_transfer_method("FTP", f'Uploading {file_path} to ENA', profile_id)
+        if resume_from > 0:
+            local_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
+            lg.log(
+                f'FTP resuming {file_path} at {resume_from} bytes'
+                + (f' of {local_size}' if local_size else '')
+            )
+            _notify_transfer_method(
+                "FTP", f'Resuming upload of {file_path} to ENA', profile_id
+            )
+        else:
+            _notify_transfer_method("FTP", f'Uploading {file_path} to ENA', profile_id)
 
         deadline = time.time() + ENA_UPLOAD_TIMEOUT_SECONDS
         last_emit = 0.0
