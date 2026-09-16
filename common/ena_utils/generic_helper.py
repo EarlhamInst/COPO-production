@@ -496,7 +496,8 @@ def _notify_transfer_method(method, message, profile_id=""):
         )
 
 
-_PCT_RE = re.compile(r'(\d{1,3})%')
+# curl -# prints e.g. "23.7%"; skip the decimal part so we capture 23, not the tenths digit 7
+_PCT_RE = re.compile(r'(\d{1,3})(?:\.\d+)?%')
 
 
 def _progress_id_for(file_path, profile_id):
