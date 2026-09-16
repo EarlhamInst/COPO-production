@@ -9,6 +9,7 @@ from channels.layers import get_channel_layer
 from common.lookup.copo_enums import Loglvl, Logtype
 from common.utils import helpers
 from common.utils.logger import Logger
+import ftplib
 import re
 import shlex
 import subprocess
@@ -610,30 +611,48 @@ def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id="",
 
     netrc_path = _write_netrc_file(ftp_host, webin_token, webin_password)
     try:
-        return _do_ftp_transfers(ftp_base, file_paths, netrc_path, submission_id, profile_id)
+        return _do_ftp_transfers(
+            ftp_base, file_paths, netrc_path, submission_id, profile_id,
+            ftp_host=ftp_host, remote_path=remote_path,
+            login=webin_token, password=webin_password,
+        )
     finally:
         os.remove(netrc_path)
 
 
-def _remote_ftp_size(ftp_url, netrc_path):
-    """Bytes already on ENA for this URL, or 0 if absent/unknown.
+def _remote_ftp_size(ftp_host, remote_file, login, password, timeout=20):
+    """Bytes already on ENA for remote_file, or 0 if absent/unknown.
 
-    Used to decide whether to resume. Any failure (file not there yet, SIZE
-    refused, login denied, timeout) answers 0, i.e. upload from the start —
-    the same behaviour as before resume existed.
+    Used to decide whether to resume. Deliberately a plain ftplib SIZE on one
+    control connection: `curl -I` on an FTP file URL also does CWD and a LIST
+    over a data connection, which hung for 60s against Webin and defeated the
+    point of the probe.
+
+    Any failure (file not there yet, SIZE refused, login denied, timeout)
+    answers 0, i.e. upload from the start — the behaviour before resume
+    existed.
     """
     try:
-        out = subprocess.run(
-            ["curl", "-s", "-I", "--netrc-file", netrc_path, ftp_url],
-            capture_output=True, timeout=60,
-        )
+        ftp = ftplib.FTP(ftp_host, timeout=timeout)
     except Exception as e:
-        lg.error(f'FTP size probe failed for {ftp_url}: {e}')
+        lg.error(f'FTP size probe could not connect to {ftp_host}: {e}')
         return 0
-    if out.returncode != 0:
+    try:
+        ftp.login(login, password)
+        # SIZE is only defined for binary mode on many servers, vsftpd included.
+        ftp.voidcmd("TYPE I")
+        return ftp.size(remote_file) or 0
+    except Exception as e:
+        lg.log(f'FTP size probe found no resumable {remote_file}: {e}')
         return 0
-    m = re.search(rb'Content-Length:\s*(\d+)', out.stdout, re.IGNORECASE)
-    return int(m.group(1)) if m else 0
+    finally:
+        try:
+            ftp.quit()
+        except Exception:
+            try:
+                ftp.close()
+            except Exception:
+                pass
 
 
 def _build_ftp_upload_cmd(file_path, ftp_url, netrc_path, resume_from=0):
@@ -657,11 +676,15 @@ def _build_ftp_upload_cmd(file_path, ftp_url, netrc_path, resume_from=0):
     return cmd
 
 
-def _do_ftp_transfers(ftp_base, file_paths, netrc_path, submission_id, profile_id):
+def _do_ftp_transfers(ftp_base, file_paths, netrc_path, submission_id, profile_id,
+                      ftp_host=None, remote_path="", login=None, password=None):
     for file_path in file_paths:
         file_name = os.path.basename(file_path)
         ftp_url = f"{ftp_base}{file_name}"
-        resume_from = _remote_ftp_size(ftp_url, netrc_path)
+        resume_from = (
+            _remote_ftp_size(ftp_host, f"{remote_path}{file_name}", login, password)
+            if ftp_host and login else 0
+        )
         cmd = _build_ftp_upload_cmd(file_path, ftp_url, netrc_path, resume_from)
 
         if resume_from > 0:
