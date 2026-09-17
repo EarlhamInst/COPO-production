@@ -5,6 +5,7 @@ from datetime import datetime
 from common.dal.mongo_util import cursor_to_list
 from collections import defaultdict
 from . import generic_helper as ghlper
+from .run_filetype import ena_run_filetype
 from common.dal.profile_da import Profile
 from common.utils import helpers
 from lxml import etree
@@ -801,11 +802,10 @@ class EnaSubmissionHelper:
                 run_file_node = etree.SubElement(run_files_node, 'FILE')
                 run_file_node.set("filename", os.path.join(enafile_map[row[name]], row[name])) #TBC for remote_location
                 
-                _, file_extension = os.path.splitext(row[name])
-                if file_extension in [".cram", ".bam"]:
-                    run_file_node.set("filetype", file_extension[1:]) 
-                else :
-                    run_file_node.set("filetype", "fastq")  # todo: what about BAM, CRAM files?
+                run_file_node.set(
+                    "filetype",
+                    ena_run_filetype(row[name], row.get("read_file_type", "")),
+                )
                 run_file_node.set("checksum", row[name+"_checksum"])  # todo: is this correct as submission time?
                 run_file_node.set("checksum_method", "MD5")
 
