@@ -9,11 +9,15 @@ discarding the File Type the submitter picked in the manifest. ENA rejected a
     for file type "fastq".
 
 The manifest had declared OxfordNanopore_native, which is a valid ENA filetype.
+
+Imports common.ena_utils.run_filetype rather than ena_helper: the latter reads
+WEBIN_USER at module level and cannot be imported without a populated
+environment.
 """
 
 import pytest
 
-from common.ena_utils.ena_helper import _ena_run_filetype
+from common.ena_utils.run_filetype import ena_run_filetype
 
 
 @pytest.mark.parametrize(
@@ -38,17 +42,17 @@ from common.ena_utils.ena_helper import _ena_run_filetype
     ],
 )
 def test_filetype_resolution(file_name, declared_type, expected):
-    assert _ena_run_filetype(file_name, declared_type) == expected
+    assert ena_run_filetype(file_name, declared_type) == expected
 
 
 @pytest.mark.parametrize('declared_type', [None, float('nan'), 0, ''])
 def test_missing_declared_type_falls_back_to_extension(declared_type):
     """Rows come from a dataframe, so the value may be NaN, None or empty."""
-    assert _ena_run_filetype('reads.bam', declared_type) == 'bam'
+    assert ena_run_filetype('reads.bam', declared_type) == 'bam'
 
 
 def test_unknown_extension_without_declared_type_keeps_legacy_fastq():
     """Previous behaviour for anything unrecognised. ENA will reject a .tar.gz
     declared this way, which is the bug that prompted the change, but silently
     guessing OxfordNanopore_native for every archive would be worse."""
-    assert _ena_run_filetype('fast5.tar.gz', '') == 'fastq'
+    assert ena_run_filetype('fast5.tar.gz', '') == 'fastq'
