@@ -4,10 +4,10 @@ import requests
 from bson import ObjectId
 import common.dal.mongo_util as mutil
 from django.conf import settings
-from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from common.lookup.copo_enums import Loglvl, Logtype
 from common.utils import helpers
+from common.utils.channels import send_to_group
 from common.utils.logger import Logger
 import ftplib
 import re
@@ -198,7 +198,7 @@ def notify_status_change(profile_id=str(), submission_id=str()):
         group_name = 'submission_status_%s' % profile_id
 
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(group_name, event)
+        send_to_group(channel_layer, group_name, event)
 
     return True
 
@@ -223,7 +223,7 @@ def notify_sample_status(
         "html_id": html_id,
     }
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -251,7 +251,7 @@ def notify_frontend(
         "html_id": html_id,
     }
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -268,7 +268,7 @@ def notify_assembly_status(
     }
     channel_layer = get_channel_layer()
     group_name = 'assembly_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -283,7 +283,7 @@ def notify_read_status(action="message", msg=str(), data={}, html_id="", profile
     }
     channel_layer = get_channel_layer()
     group_name = 'read_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -300,7 +300,7 @@ def notify_tagged_seq_status(
     }
     channel_layer = get_channel_layer()
     group_name = 'tagged_seq_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 def notify_ena_object_status(action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()):
@@ -317,7 +317,7 @@ def notify_ena_object_status(action="message", msg=str(), data={}, html_id="", p
         "html_id": html_id,
     }
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 def notify_singlecell_status(action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()):
@@ -325,10 +325,7 @@ def notify_singlecell_status(action="message", msg=str(), data={}, html_id="", p
     event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
     channel_layer = get_channel_layer()
     group_name = 'singlecell_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        event
-    )
+    send_to_group(channel_layer, group_name, event)
     return True
 
 def notify_transfer_status(profile_id=str(), submission_id=str(), status_message=str()):
@@ -348,7 +345,7 @@ def notify_transfer_status(profile_id=str(), submission_id=str(), status_message
         group_name = 'submission_status_%s' % profile_id
 
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(group_name, event)
+        send_to_group(channel_layer, group_name, event)
 
     return True
 
