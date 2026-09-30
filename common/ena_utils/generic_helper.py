@@ -4,11 +4,12 @@ import requests
 from bson import ObjectId
 import common.dal.mongo_util as mutil
 from django.conf import settings
-from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from common.lookup.copo_enums import Loglvl, Logtype
 from common.utils import helpers
+from common.utils.channels import send_to_group
 from common.utils.logger import Logger
+import ftplib
 import re
 import shlex
 import subprocess
@@ -197,7 +198,7 @@ def notify_status_change(profile_id=str(), submission_id=str()):
         group_name = 'submission_status_%s' % profile_id
 
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(group_name, event)
+        send_to_group(channel_layer, group_name, event)
 
     return True
 
@@ -222,7 +223,7 @@ def notify_sample_status(
         "html_id": html_id,
     }
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -250,7 +251,7 @@ def notify_frontend(
         "html_id": html_id,
     }
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -267,7 +268,7 @@ def notify_assembly_status(
     }
     channel_layer = get_channel_layer()
     group_name = 'assembly_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -282,7 +283,7 @@ def notify_read_status(action="message", msg=str(), data={}, html_id="", profile
     }
     channel_layer = get_channel_layer()
     group_name = 'read_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -299,7 +300,7 @@ def notify_tagged_seq_status(
     }
     channel_layer = get_channel_layer()
     group_name = 'tagged_seq_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 def notify_ena_object_status(action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()):
@@ -316,7 +317,7 @@ def notify_ena_object_status(action="message", msg=str(), data={}, html_id="", p
         "html_id": html_id,
     }
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 def notify_singlecell_status(action="message", msg=str(), data={}, html_id="", profile_id="", checklist_id=str()):
@@ -324,10 +325,7 @@ def notify_singlecell_status(action="message", msg=str(), data={}, html_id="", p
     event = {"type": "msg", "action": action, "message": msg, "data": data, "html_id": html_id}
     channel_layer = get_channel_layer()
     group_name = 'singlecell_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        event
-    )
+    send_to_group(channel_layer, group_name, event)
     return True
 
 def notify_transfer_status(profile_id=str(), submission_id=str(), status_message=str()):
@@ -347,7 +345,7 @@ def notify_transfer_status(profile_id=str(), submission_id=str(), status_message
         group_name = 'submission_status_%s' % profile_id
 
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(group_name, event)
+        send_to_group(channel_layer, group_name, event)
 
     return True
 
@@ -496,7 +494,8 @@ def _notify_transfer_method(method, message, profile_id=""):
         )
 
 
-_PCT_RE = re.compile(r'(\d{1,3})%')
+# curl -# prints e.g. "23.7%"; skip the decimal part so we capture 23, not the tenths digit 7
+_PCT_RE = re.compile(r'(\d{1,3})(?:\.\d+)?%')
 
 
 def _progress_id_for(file_path, profile_id):
@@ -527,6 +526,12 @@ def _notify_transfer_progress(method, file_path, pct, profile_id, extra=None):
     )
 
 
+# Upper bound on a single file upload to ENA (Aspera or FTP). Large raw read files
+# (500GB+) at ~13MB/s need well over 12 hours; a shorter cap kills the upload and
+# restarts it from zero forever. check_for_stuck_transfers uses this too.
+ENA_UPLOAD_TIMEOUT_SECONDS = 48 * 60 * 60
+
+
 def _transfer_via_aspera(remote_path, file_paths, submission_id="", profile_id="",
                          webin_user=None, webin_password=None):
     """Attempt file transfer to ENA using Aspera CLI. Returns True on success.
@@ -550,7 +555,7 @@ def _transfer_via_aspera(remote_path, file_paths, submission_id="", profile_id="
 
     try:
         output = subprocess.check_output(
-            cmd, env=ascp_env, stderr=subprocess.STDOUT, timeout=12 * 60 * 60
+            cmd, env=ascp_env, stderr=subprocess.STDOUT, timeout=ENA_UPLOAD_TIMEOUT_SECONDS
         )
         lg.log(output)
         _notify_transfer_method(
@@ -604,28 +609,95 @@ def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id="",
 
     netrc_path = _write_netrc_file(ftp_host, webin_token, webin_password)
     try:
-        return _do_ftp_transfers(ftp_base, file_paths, netrc_path, submission_id, profile_id)
+        return _do_ftp_transfers(
+            ftp_base, file_paths, netrc_path, submission_id, profile_id,
+            ftp_host=ftp_host, remote_path=remote_path,
+            login=webin_token, password=webin_password,
+        )
     finally:
         os.remove(netrc_path)
 
 
-def _do_ftp_transfers(ftp_base, file_paths, netrc_path, submission_id, profile_id):
+def _remote_ftp_size(ftp_host, remote_file, login, password, timeout=20):
+    """Bytes already on ENA for remote_file, or 0 if absent/unknown.
+
+    Used to decide whether to resume. Deliberately a plain ftplib SIZE on one
+    control connection: `curl -I` on an FTP file URL also does CWD and a LIST
+    over a data connection, which hung for 60s against Webin and defeated the
+    point of the probe.
+
+    Any failure (file not there yet, SIZE refused, login denied, timeout)
+    answers 0, i.e. upload from the start — the behaviour before resume
+    existed.
+    """
+    try:
+        ftp = ftplib.FTP(ftp_host, timeout=timeout)
+    except Exception as e:
+        lg.error(f'FTP size probe could not connect to {ftp_host}: {e}')
+        return 0
+    try:
+        ftp.login(login, password)
+        # SIZE is only defined for binary mode on many servers, vsftpd included.
+        ftp.voidcmd("TYPE I")
+        return ftp.size(remote_file) or 0
+    except Exception as e:
+        lg.log(f'FTP size probe found no resumable {remote_file}: {e}')
+        return 0
+    finally:
+        try:
+            ftp.quit()
+        except Exception:
+            try:
+                ftp.close()
+            except Exception:
+                pass
+
+
+def _build_ftp_upload_cmd(file_path, ftp_url, netrc_path, resume_from=0):
+    """curl argv for uploading file_path to ftp_url.
+
+    resume_from > 0 adds -C -, which makes curl APPEND from the remote file's
+    current size instead of truncating and starting again. A 600GB upload that
+    dies at 90% otherwise costs another full transfer.
+    """
+    # -# emits a progress bar to stderr; -N disables output buffering so we see it in real time
+    cmd = [
+        "curl", "-#", "-N", "-T", file_path,
+        ftp_url,
+        "--netrc-file", netrc_path,
+        "--ftp-create-dirs",
+        "--retry", "3",
+        "--retry-delay", "5",
+    ]
+    if resume_from > 0:
+        cmd += ["-C", "-"]
+    return cmd
+
+
+def _do_ftp_transfers(ftp_base, file_paths, netrc_path, submission_id, profile_id,
+                      ftp_host=None, remote_path="", login=None, password=None):
     for file_path in file_paths:
         file_name = os.path.basename(file_path)
         ftp_url = f"{ftp_base}{file_name}"
-        # -# emits a progress bar to stderr; -N disables output buffering so we see it in real time
-        cmd = [
-            "curl", "-#", "-N", "-T", file_path,
-            ftp_url,
-            "--netrc-file", netrc_path,
-            "--ftp-create-dirs",
-            "--retry", "3",
-            "--retry-delay", "5",
-        ]
+        resume_from = (
+            _remote_ftp_size(ftp_host, f"{remote_path}{file_name}", login, password)
+            if ftp_host and login else 0
+        )
+        cmd = _build_ftp_upload_cmd(file_path, ftp_url, netrc_path, resume_from)
 
-        _notify_transfer_method("FTP", f'Uploading {file_path} to ENA', profile_id)
+        if resume_from > 0:
+            local_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
+            lg.log(
+                f'FTP resuming {file_path} at {resume_from} bytes'
+                + (f' of {local_size}' if local_size else '')
+            )
+            _notify_transfer_method(
+                "FTP", f'Resuming upload of {file_path} to ENA', profile_id
+            )
+        else:
+            _notify_transfer_method("FTP", f'Uploading {file_path} to ENA', profile_id)
 
-        deadline = time.time() + 12 * 60 * 60
+        deadline = time.time() + ENA_UPLOAD_TIMEOUT_SECONDS
         last_emit = 0.0
         last_pct = -1
         try:

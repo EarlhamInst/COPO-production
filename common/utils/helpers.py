@@ -5,8 +5,8 @@ import json
 import datetime
 
 from .logger import Logger
+from .channels import send_to_group
 from common.lookup.copo_enums import *
-from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django_tools.middlewares import threadlocal as ThreadLocal
 from django.conf import settings
@@ -112,12 +112,7 @@ def notify_frontend(
     }
     channel_layer = get_channel_layer()
 
-    # The following line sometimes causes a RuntimeError -
-    # 'you cannot use AsyncToSync in the same thread as an async event loop'
-    try:
-        async_to_sync(channel_layer.group_send)(group_name, event)
-    except RuntimeError:
-        pass
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -134,7 +129,7 @@ def notify_assembly_status(
     }
     channel_layer = get_channel_layer()
     group_name = 'assembly_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -151,7 +146,7 @@ def notify_annotation_status(
     }
     channel_layer = get_channel_layer()
     group_name = 'annotation_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -166,7 +161,7 @@ def notify_read_status(action="message", msg=str(), data={}, html_id="", profile
     }
     channel_layer = get_channel_layer()
     group_name = 'read_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -183,7 +178,7 @@ def notify_tagged_seq_status(
     }
     channel_layer = get_channel_layer()
     group_name = 'tagged_seq_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -203,7 +198,7 @@ def notify_ena_object_status(
         "html_id": html_id,
     }
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -220,7 +215,7 @@ def notify_singlecell_status(
     }
     channel_layer = get_channel_layer()
     group_name = 'singlecell_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
@@ -235,7 +230,7 @@ def notify_submission_status(action="message", msg=str(), data={}, html_id=""):
     }
     channel_layer = get_channel_layer()
     group_name = 'submission_status_%s' % data["profile_id"]
-    async_to_sync(channel_layer.group_send)(group_name, event)
+    send_to_group(channel_layer, group_name, event)
     return True
 
 
