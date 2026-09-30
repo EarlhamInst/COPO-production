@@ -299,12 +299,12 @@ class SapioAdapter(LIMSAdapter):
 
             if samples_without_plate:
                 l.error("Not all samples have been assigned to plates!")
-                return {"status": "warning", "project_id": project_id, "message": "Profile has been saved. However, it is failed to update to Sapio! "}
+                return {"status": "warning", "project_id": project_id, "message": "Profile has been saved. However, it failed to update in Sapio! "}
 
         except Exception as e:
             l.exception(e)
             l.error("Failed to create or update sapio project for profile id: " + str(profile["_id"]) + " Error: " + str(e))
-            return {"status": "warning", "project_id": project_id, "message": "Profile has been saved. However, it is failed to update to Sapio! "}
+            return {"status": "warning", "project_id": project_id, "message": "Profile has been saved. However, it failed to update in Sapio! "}
 
         return {"status": "success", "project_id": project_id}
 
@@ -317,7 +317,7 @@ class SapioAdapter(LIMSAdapter):
         except Exception as e:
             l.exception(e)
             l.error("Failed to delete sapio project " + str(project_id) + " Error: " + str(e))
-            return {"status": "warning", "message": "Profile has been deleted. However, it is failed to delete from Sapio! "}
+            return {"status": "warning", "message": "Profile has been deleted. However, it failed to delete from Sapio! "}
         return {"status": "success"}
 
     # ------------------------------------------------------------------ #

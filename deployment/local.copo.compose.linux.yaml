@@ -134,6 +134,7 @@ services:
       - ZENODOURL=https://zenodo.org/api
       - ZENODOTOKEN=${vault_zenodo_api_token}
       - ENA_BROWSER_SERVICE=https://www.ebi.ac.uk/ena/browser/api
+      - SAPIO_USE_API_USER=true
       - SAPIO_USERNAME=${vault_sapio_username}
       - SAPIO_PASSWORD=${vault_sapio_password}
       - SAPIO_API_TOKEN=${vault_sapio_api_token}
