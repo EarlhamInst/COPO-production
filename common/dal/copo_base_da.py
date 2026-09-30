@@ -11,13 +11,16 @@ class DataSchemas:
 
     @classmethod
     def get_ui_template(cls, schema):
-        if schema not in cls.ui_template_schemas:
+        # Cache under the same key that is read back; a miss is not cached so
+        # the schema is picked up once `setup_schemas` has been run
+        key = schema.upper()
+        if key not in cls.ui_template_schemas:
             data = cls.schemas_collection_handler.find_one(
-                {"schemaName": schema.upper(), "schemaType": "UI"}
+                {"schemaName": key, "schemaType": "UI"}
             )
             if data:
-                cls.ui_template_schemas[schema] = data.get("data", dict())
-        return cls.ui_template_schemas.get(schema.upper(), [])
+                cls.ui_template_schemas[key] = data.get("data", dict())
+        return cls.ui_template_schemas.get(key, dict())
 
     @classmethod
     def add_ui_template(cls, schema, template):
