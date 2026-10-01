@@ -15,7 +15,7 @@ autopep8==2.3.2
 #Babel==2.12.1
 backcall==0.2.0
 beautifulsoup4==4.15.0
-billiard==4.2.4
+billiard==4.3.0
 #biopy-isatab==0.1.1
 biopython==1.88
 bleach==6.4.0
