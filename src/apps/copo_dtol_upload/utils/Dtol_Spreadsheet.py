@@ -648,13 +648,12 @@ class DtolSpreadsheet:
         public_names = query_public_name_service(public_name_list)
         for name in public_names:
             status = name.get("attributes",{}).get("status","")
- 
+            specimen_id = name.get("attributes", {}).get("specimen_id", "")
 
             if status == "Rejected":
                 Sample().add_rejected_status_for_tolid(specimen_id)
                 continue
             elif status != "Pending":
-                specimen_id = name.get("attributes", {}).get("specimen_id", "")
                 taxon_id = name.get("attributes", {}).get("species_id", "")
                 tolid = name.get("id", "")
                 Sample().update_public_name(specimen_id=specimen_id, taxon_id=taxon_id, tolid=tolid)

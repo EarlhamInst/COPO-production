@@ -147,10 +147,25 @@ class Source(DAComponent):
             },
         )
 
-    def update_public_name(self, specimen_id, taxon_id, tolid):
+    def update_public_name(self, specimen_id, taxon_id, tolid, overwrite=False):
         condition = {'SPECIMEN_ID': specimen_id}
+
         if taxon_id:
             condition['TAXON_ID'] = str(taxon_id)
+
+        if not overwrite:
+            '''
+            Never replace an existing `public_name` (i.e. tolid). The TOLID service
+            at SANGER maintains a stable `public_name` once a reference genome is public
+            so individuals that update the SPECIMEN_ID, TAXON_ID and/ or SCIENTIFIC_NAME
+            have to set the `public_name` value to an empty string first.
+
+            See the "remove public name if specimen_id / taxon_id changes" logic
+            in the `update_records` function in `Dtol_Spreadsheet.py`.
+            '''
+
+            condition['public_name'] = {'$in': ['', None]}
+
         self.get_collection_handle().update_many(
             condition, {'$set': {'public_name': tolid}}
         )
@@ -545,10 +560,24 @@ class Sample(DAComponent):
 
             return rec
 
-    def update_public_name(self, specimen_id, taxon_id, tolid):
+    def update_public_name(self, specimen_id, taxon_id, tolid, overwrite=False):
         condition = {'SPECIMEN_ID': specimen_id}
         if taxon_id:
             condition['TAXON_ID'] = str(taxon_id)
+
+        if not overwrite:
+            '''
+            Never replace an existing `public_name` (i.e. tolid). The TOLID service
+            at SANGER maintains a stable `public_name` once a reference genome is public
+            so individuals that update the SPECIMEN_ID, TAXON_ID and/ or SCIENTIFIC_NAME
+            have to set the `public_name` value to an empty string first.
+
+            See the "remove public name if specimen_id / taxon_id changes" logic
+            in the `update_records` function in `Dtol_Spreadsheet.py`.
+            '''
+
+            condition['public_name'] = {'$in': ['', None]}
+
         self.get_collection_handle().update_many(
             condition, {'$set': {'public_name': tolid}}
         )

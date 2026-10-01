@@ -541,10 +541,10 @@ def process_pending_dtol_samples():
                         l.log("adding public names to samples")
                         specimen_id = name.get("attributes", {}).get("specimen_id", "")
                         taxon_id = name.get("attributes", {}).get("species_id", "")
-                        status = spec_tolid[0].get("attributes", {}).get("status","")
+                        status = name.get("attributes", {}).get("status","")
                         if  status == "Rejected":
                             Sample().add_rejected_status_for_tolid(
-                                name['specimen']["specimenId"])
+                                specimen_id)
                             processed = Sample().get_by_profile_and_field(submission["profile_id"], "SPECIMEN_ID",specimen_id)
                             processedids = [str(x) for x in processed]
                             # for sampleid in processedids:
