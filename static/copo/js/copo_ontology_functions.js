@@ -1,7 +1,3 @@
-/**
- * Created by fshaw on 22/03/2017.
- */
-
 $(document).ready(function () {
 
     get_ontologies_for_filter()

@@ -10,6 +10,11 @@ def create_biodata_profile(page, title, description):
     # the cookie/GDPR modals on a completely fresh page load.
     dismiss_tour_if_present(page)
     dismiss_onboarding_modals(page)
+    # ...and again after: when a startup modal *is* open, the tour holds off
+    # until it closes (waitForInitialModals() in tour-handler.js) and only
+    # then starts — after the first check above has already given up. Left
+    # in place, its overlay intercepts the "+" click below.
+    dismiss_tour_if_present(page)
 
     # The main "+" button creates a profile of whatever type is currently
     # selected in this dropdown — select biodata before opening the dialog,
