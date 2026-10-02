@@ -71,8 +71,9 @@ class LIMSAdapter(ABC):
     # Project lifecycle — called from the EDP profile save/delete hooks
     # ------------------------------------------------------------------ #
     @abstractmethod
-    def validate_profile_change(self, profile: Dict[str, Any],
-                                requested_sample_count: int) -> Dict[str, str]:
+    def validate_profile_change(
+        self, profile: Dict[str, Any], requested_sample_count: int
+    ) -> Dict[str, str]:
         """Guard a pending profile change before it is written to COPO.
 
         Replaces the Sapio-specific checks in `pre_save_edp_profile`: chiefly,
@@ -118,8 +119,9 @@ class LIMSAdapter(ABC):
     # Manifest — generation (read) and ingestion (write)
     # ------------------------------------------------------------------ #
     @abstractmethod
-    def get_project_samples(self, project_id: str,
-                            schemas: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def get_project_samples(
+        self, project_id: str, schemas: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Return existing LIMS samples to pre-fill a manifest.
 
         Replaces the sample read at the top of `write_manifest`. Each record is
@@ -139,8 +141,9 @@ class LIMSAdapter(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def submit_manifest(self, project_id: str, schemas: Dict[str, Any],
-                        components: Dict[str, Any]) -> Dict[str, str]:
+    def submit_manifest(
+        self, project_id: str, schemas: Dict[str, Any], components: Dict[str, Any]
+    ) -> Dict[str, str]:
         """Write an ingested manifest's values back into the LIMS.
 
         Replaces `submit_edp_to_sapio`. `components` is the COPO single-cell
@@ -181,4 +184,7 @@ class NullLIMSAdapter(LIMSAdapter):
         return {}
 
     def submit_manifest(self, project_id, schemas, components):
-        return {"status": "success", "message": "No LIMS configured; nothing submitted."}
+        return {
+            "status": "success",
+            "message": "No LIMS configured; nothing submitted.",
+        }

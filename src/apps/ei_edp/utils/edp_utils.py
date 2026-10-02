@@ -21,22 +21,26 @@ def get_sapio_sample_type_options():
     # Sample-type choices for the profile form dropdown, sourced from the LIMS.
     return get_lims_adapter().get_sample_type_options()
 
+
 def _add_to_edp_django_group(user_ids, action='add'):
     '''
-    Adds users to the 'ei_edp_users' Django group 
+    Adds users to the 'ei_edp_users' Django group
     by their IDs if they are not a member.
     '''
     if not user_ids:
         return
-    
+
     edp_django_group, _ = Group.objects.get_or_create(name='ei_edp_users')
-    
+
     if action == 'add':
         edp_django_group.user_set.add(*user_ids)
     elif action == 'remove':
         edp_django_group.user_set.remove(*user_ids)
     else:
-        l.error("Error occurred when adding user to EDP group. Invalid action. Use 'add' or 'remove'.")
+        l.error(
+            "Error occurred when adding user to EDP group. Invalid action. Use 'add' or 'remove'."
+        )
+
 
 def pre_save_edp_profile(auto_fields, **kwargs):
     """Validate EDP profile fields before saving.
@@ -127,7 +131,7 @@ def post_save_edp_profile(profile):
                 if user['id'] not in current_shared_users
                 and user['email'] != current_user.email
             }
-            
+
             if new_shared_user:
                 # Add users to the shared profile group
                 CopoGroup().add_users_to_group(
@@ -141,20 +145,27 @@ def post_save_edp_profile(profile):
                 Email().notify_shared_profile_to_existing_user(
                     profile, new_shared_user.values()
                 )
-                
+
         # Remove users who are no longer in the email list from the shared profile group
         CopoGroup().remove_users_from_group(
             group_id=group_id, user_ids=incorrect_shared_user_ids
         )
-        
+
         # Remove users from the 'ei_edp_users' Django group
-        _add_to_edp_django_group(list(map(int, incorrect_shared_user_ids)), action='remove')
+        _add_to_edp_django_group(
+            list(map(int, incorrect_shared_user_ids)), action='remove'
+        )
 
         if missing_user_emails:
             # Generate a UUID token per email address so uninvited users can claim access
             # via the join_shared_profile view without needing an existing COPO account
-            customer_emails_tokens = { str(uuid.uuid4()):email for email in missing_user_emails}
-            Profile().get_collection_handle().update_one({"_id":profile["_id"]},{"$set":{"customer_emails_tokens": customer_emails_tokens}})
+            customer_emails_tokens = {
+                str(uuid.uuid4()): email for email in missing_user_emails
+            }
+            Profile().get_collection_handle().update_one(
+                {"_id": profile["_id"]},
+                {"$set": {"customer_emails_tokens": customer_emails_tokens}},
+            )
             Email().notify_shared_profile_to_non_existent_user(
                 profile, customer_emails_tokens
             )
@@ -281,7 +292,7 @@ def join_shared_edp_profile(profile, token):
                 )
             else:
                 group_id = groups[0]["_id"]
-            
+
             # Add user to the shared profile group
             CopoGroup().add_user_to_group(group_id=group_id, user_id=str(user.id))
 
