@@ -37,6 +37,14 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY ./requirements/ /tmp/requirements/
 RUN pip install --use-deprecated=legacy-resolver -r /tmp/requirements/dev.txt
 
+# Cached Docker image layers may contain stale Debian packages and miss security fixes.
+# `OS_PATCH_ID` invalidates this layer on each release by applying 
+# fresh upgrades without rebuilding the layers above.
+ARG OS_PATCH_ID
+RUN echo "Applying OS security updates ${OS_PATCH_ID}" && \
+    apt-get update && apt-get upgrade -y && \
+    apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
 RUN mkdir /copo
 RUN mkdir /code
 
