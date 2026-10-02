@@ -1,9 +1,6 @@
-# COPO python file created 08/09/2017 by fshaw
-
 from json import loads
 from xml.etree.ElementTree import fromstring
 
-# ena_scrape python file created 30/08/2017 by fshaw
 import requests
 from xmljson import badgerfish as bf
 

@@ -1,8 +1,6 @@
 import re
-import os
 
 import PyPDF2
-from datetime import time
 
 # from dal.ena_da import EnaCollection
 import requests
@@ -28,16 +26,6 @@ def get_sample_html_from_details_id(details_id):
         out += '<tr><td>' + '<a rest_url="' + reverse('rest:get_sample_html', args=[str(s["_id"])]) + '" href="">' + s['Source_Name'] + '</a>' + '</td><td>' + s['Sample_Name'] + '</td><td>' + s['Individual_Name'] + '</td><td>' + s['Description'] + '</td></tr>'
     return out
 """
-
-
-def handle_uploaded_file(f):
-    # get timestamp
-    t = str(time.time()).replace('.', '')
-    k = 'file_' + f.name
-    path = os.path.join('/Users/fshaw/Desktop/test/', k)
-    destination = open(path, 'w+')
-    for chunk in f.chunks():
-        destination.write(chunk)
 
 
 # function does a pdf file test

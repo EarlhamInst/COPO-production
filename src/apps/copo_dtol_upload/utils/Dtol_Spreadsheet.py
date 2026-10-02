@@ -1,4 +1,3 @@
-# Created by fshaw at 03/04/2020
 import os
 import uuid
 import pickle
