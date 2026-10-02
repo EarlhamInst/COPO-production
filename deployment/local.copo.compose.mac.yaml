@@ -148,6 +148,10 @@ services:
     volumes:
       # Replace with the absolute path to your local COPO project directory
       - /<path-to-project-directory>/COPO-production:/copo
+    networks:
+      default:
+        aliases:
+          - copo-web
 
   copo_redis:
     image: redis:6.2.8
