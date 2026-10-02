@@ -18,6 +18,7 @@ from typing import List, Dict, Any
 import pandas as pd
 
 from common.utils.logger import Logger
+from sapiopylib.rest.User import SapioServerException
 from sapiopylib.rest.utils.recordmodel.PyRecordModel import PyRecordModel
 
 from .datamanager import Sapio
@@ -182,11 +183,26 @@ class SapioAdapter(LIMSAdapter):
             # Create samples up to the requested count if we don't have enough yet
             if not samples_under_project or len(samples_under_project) < no_of_samples:
                 existing_no_of_samples = len(samples_under_project) if samples_under_project else 0
-                sample_records = Sapio().dataRecordManager.add_data_records_with_data(data_type_name="Sample",
+
+                try:
+                    sample_records = Sapio().dataRecordManager.add_data_records_with_data(data_type_name="Sample",
                                                                                       field_map_list=[{"ExemplarSampleType": sample_type,
                                                                                                       "ContainerType": container_type,
                                                                                                       "C_LibraryType": library_type}
                                                                                                       for _ in range(existing_no_of_samples, no_of_samples)])
+                except SapioServerException as e:
+                    l.exception(e)
+                    body = getattr(getattr(e.client_error, "response", None), "text", "") or ""
+
+                    if "Duplicate values exist on fields that must be unique" in body:
+                        l.error(f"Sapio sample ID duplication when creating samples for project {project_id}: {body}")
+                        return {
+                            "status": "warning",
+                            "project_id": project_id,
+                            "message": "Profile has been saved but, the sample creation in Sapio failed "
+                            "because the generated sample ID(s) already exist."
+                            "\nPlease contact COPO or the LIMS team to check the Sapio sample ID counter.",
+                        }
                 samples: List[PyRecordModel] = Sapio().inst_man.add_existing_records(sample_records)
                 project.add_children(samples)
                 samples_under_project.extend(samples)
@@ -299,12 +315,12 @@ class SapioAdapter(LIMSAdapter):
 
             if samples_without_plate:
                 l.error("Not all samples have been assigned to plates!")
-                return {"status": "warning", "project_id": project_id, "message": "Profile has been saved. However, it failed to update in Sapio! "}
+                return {"status": "warning", "project_id": project_id, "message": "Profile has been saved but it failed to be updated in Sapio."}
 
         except Exception as e:
             l.exception(e)
             l.error("Failed to create or update sapio project for profile id: " + str(profile["_id"]) + " Error: " + str(e))
-            return {"status": "warning", "project_id": project_id, "message": "Profile has been saved. However, it failed to update in Sapio! "}
+            return {"status": "warning", "project_id": project_id, "message": "Profile has been saved but it failed to be updated in Sapio."}
 
         return {"status": "success", "project_id": project_id}
 
@@ -317,7 +333,7 @@ class SapioAdapter(LIMSAdapter):
         except Exception as e:
             l.exception(e)
             l.error("Failed to delete sapio project " + str(project_id) + " Error: " + str(e))
-            return {"status": "warning", "message": "Profile has been deleted. However, it failed to delete from Sapio! "}
+            return {"status": "warning", "message": "Profile has been deleted but it failed to be removed from Sapio."}
         return {"status": "success"}
 
     # ------------------------------------------------------------------ #
