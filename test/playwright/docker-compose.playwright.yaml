@@ -64,7 +64,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_SERVICE=copo_postgres
       - POSTGRES_PASSWORD=password
-      - COPO_TEST_USER_PASSWORD=${COPO_TEST_USER_PASSWORD}
+      - COPO_TEST_USER_PASSWORD=${vault_copo_test_user_password}
     depends_on:
       - copo_web
     volumes:
