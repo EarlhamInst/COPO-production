@@ -40,6 +40,8 @@ jobs:
         with:
           context: .
           file: deployment/web/Dockerfile
+          build-args: |
+            OS_PATCH_ID=${{ github.run_id }}-${{ github.run_attempt }}
           load: true
           push: false
           tags: ${{ steps.meta.outputs.tags }}
@@ -72,6 +74,8 @@ jobs:
         with:
           context: .
           file: deployment/web/Dockerfile
+          build-args: |
+            OS_PATCH_ID=${{ github.run_id }}-${{ github.run_attempt }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
