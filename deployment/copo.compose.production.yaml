@@ -2,7 +2,7 @@ version: '3.9'
 
 # Settings and configurations that are common for all containers
 x-minio-common: &minio-common
-  image: copo/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1
+  image: copo/copo-minio:RELEASE.2025-02-18T16-25-55Z-cpuv1
   command: server --console-address ":9001" /data1 /data2
   #healthcheck:
   #test: ["CMD", "mc", "ready", "local"]

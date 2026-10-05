@@ -7,7 +7,7 @@
 # release wherever it appears in this file.
 #
 # Build command:
-# $ docker buildx build --platform linux/amd64 -t copo/minio:RELEASE.2025-02-18T16-25-55Z-cpuv1 --push deployment/minio
+# $ docker buildx build --platform linux/amd64 -t copo/copo-minio:RELEASE.2025-02-18T16-25-55Z-cpuv1 --push deployment/minio
 #
 #
 # The `-cpuv1` suffix mirrors the upstream tag: built for `GOAMD64=v1` so it runs
