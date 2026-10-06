@@ -802,8 +802,7 @@ class Command(BaseCommand):
         singlecell.recordaction_buttons.set(
             [
                 delete_singlecell_multi,
-                download_singlecell_manifest_single,
-                submit_singlecell_single_ena,
+                download_singlecell_manifest_single
             ]
         )
         singlecell.title_buttons.set(
