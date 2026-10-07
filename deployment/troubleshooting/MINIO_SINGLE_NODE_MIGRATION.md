@@ -30,15 +30,18 @@ Production MinIO now runs **single-node, 2 drives, EC:1**, pinned to
 
 > #### How prod is actually deployed (clarified 2026-09-02)
 >
-> Sherida copies `copo.compose.production.yaml` from GitHub onto the manager,
-> updates the image tags by hand, and runs `docker stack deploy` from her own
-> home directory (`/home/providencea`).
+> The individual who deploys a copy of `copo.compose.production.yaml` from GitHub on the
+> Docker Swarm manager on the VM, will manually update the image tags for both `copo_web` 
+> service and `copo_celery` service. Then, the individual will run `docker stack deploy` 
+> from their home directory on the VM.
 >
-> **Do not be misled by `/home/fshaw/copo.compose.production.yaml`** on the
-> manager. That is a stale personal copy from 2026-05-28 that nothing deploys
-> from — it pins `copo-new-web:v3.1.16` and predates the CD-191 daphne fix. It
-> was mistaken for the deploy source during this migration and cost an
-> afternoon. It should be deleted.
+> **Do not trust other copies of `copo.compose.production.yaml`** in home
+> directories on the manager. Nothing deploys from them, and they go stale
+> without anyone noticing. During this migration, one such copy (dated
+> 2026-05-28, pinning `copo-new-web:v3.1.16` and predating the CD-191 daphne
+> fix) was mistaken for the deploy source and cost an afternoon. Stale copies
+> should be deleted. See
+> [Delete stale copies of the compose file](#delete-stale-copies-of-the-compose-file-on-the-manager).
 >
 > The practical consequence: **the repo is the deploy source**, so a change like
 > this one only reaches prod once it is on `main`. The image tags are the
@@ -68,16 +71,20 @@ docker service update \
 If you ever replace a stack service by hand again, add these labels in the same
 breath — otherwise the trap is invisible until someone else's deploy fails.
 
-### Delete the stale personal copy on the manager
+### Delete stale copies of the compose file on the manager
+
+The copy that the current deployer uses is what only matters. Any other
+`copo.compose.production.yaml` lying around in a home directory is a snapshot
+that nothing deploys from, and it can be mistaken for the live deploy source,
+as happened during this migration. List them on `ei-copo-prod-sm`:
 
 ```bash
-rm /home/fshaw/copo.compose.production.yaml     # on ei-copo-prod-sm
+ls -l /home/*/copo.compose.production.yaml
 ```
 
-Nothing deploys from it — deploys come from `/home/providencea` — but it is a
-2026-05-28 snapshot pinning `copo-new-web:v3.1.16` and predating the CD-191
-daphne fix, and it was mistaken for the live deploy source during this
-migration. Removing it prevents a repeat.
+Check with the owner of each copy that it isn't in use, then delete the stale
+ones. Replace `*` with the appropriate username of the current deployer's home 
+directory.
 
 **Cleanup still outstanding:**
 - Old volumes `minio-data1/2` on **both** nodes — keep until the cutover is

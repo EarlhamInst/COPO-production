@@ -1,4 +1,3 @@
-# Created by fshaw at 11/06/2018
 from django.core.exceptions import PermissionDenied
 
 def user_is_staff(function):

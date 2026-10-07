@@ -1,7 +1,3 @@
-/**
- * Created by fshaw on 05/11/14.
- */
-
 $(document).ready(function(){
 
     $('#submission_type').change(function(){
