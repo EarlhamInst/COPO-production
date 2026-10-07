@@ -248,6 +248,9 @@ function place_task_buttons(componentMeta) {
       button_types = ['submit', 'publish'];
       button_types.forEach(function (button_type) {
         action_button_name = button_type + '_singlecell_single_' + item;
+        // Do not show buttons that are already within the component's `recordActions` buttons
+        if (componentMeta.recordActions.includes(action_button_name)) return;
+        
         if (action_button_name in record_action_button_def) {
           button_str = record_action_button_def[action_button_name].template;
           var actionBTN = $(button_str);
