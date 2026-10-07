@@ -183,7 +183,7 @@ services:
       - MONGO_DB=copo_mongo
 
   copo_minio:
-    image: quay.io/minio/minio
+    image: copo/copo-minio:RELEASE.2025-02-18T16-25-55Z-cpuv1
     command: server /data --console-address ":9001"
     hostname: minio
     environment:
