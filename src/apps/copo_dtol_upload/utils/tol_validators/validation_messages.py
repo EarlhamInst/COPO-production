@@ -1,3 +1,5 @@
+from django.conf import settings
+
 MESSAGES = {
     'validation_message_wrong_specimen_taxon_pair': 'Invalid SPECIMEN_ID and TAXON pair: at row <strong>%s</strong>, '
                                                     'SPECIMEN_ID <strong>%s</strong> has already been used for a '
@@ -85,7 +87,7 @@ MESSAGES = {
     'validation_msg_invalid_list': "Invalid data: <strong>%s</strong> in column <strong>%s</strong> at row "
                                    "<strong>%s</strong>. If this is a location, start with the Country, adding more "
                                    "specific details separated with '|'. See list of allowed Country entries at "
-                                   "<a href='https://www.ebi.ac.uk/ena/browser/view/ERC000053'>https://www.ebi.ac.uk/ena/browser/view/ERC000053</a>",
+                                   f"<a href='https://{settings.ENA_URL_HOSTNAME}/ena/browser/view/ERC000053'>https://{settings.ENA_URL_HOSTNAME}/ena/browser/view/ERC000053</a>",
     'validation_msg_invalid_permit_filename': 'Invalid data: <strong>%s</strong> in column <strong>%s</strong> at '
                                               'row <strong>%s</strong>. Expected value should be <strong>%s</strong>',
     'validation_msg_invalid_regex_match': 'Invalid data: <strong>%s</strong> in column <strong>%s</strong> at '

@@ -661,7 +661,7 @@ class ReadChecklistHandler:
 
     def updateCheckList(self):
         urls = [
-            "https://www.ebi.ac.uk/ena/submit/report/checklists/getReadFields?format=xml"
+            f"https://{settings.ENA_URL_HOSTNAME}/ena/submit/report/checklists/getReadFields?format=xml"
         ]
         checklist_set = []
         for url in urls:

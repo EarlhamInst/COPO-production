@@ -3,6 +3,7 @@ import json
 import pandas as pd
 from uuid import uuid4
 from bson import ObjectId
+from django.conf import settings
 from django.urls import reverse
 from django.contrib.auth.models import User
 from common.lookup.lookup import HTML_TAGS
@@ -965,7 +966,7 @@ def get_submission_remote_url(submission_id=str()):
         prj = doc.get('accessions', dict()).get('project', list())
         if prj:
             result["urls"].append(
-                "https://www.ebi.ac.uk/ena/data/view/" + prj[0].get("accession", str()))
+                f"https://{settings.ENA_URL_HOSTNAME}/ena/browser/view/" + prj[0].get("accession", str()))
 
     # generate for other repository types here
 

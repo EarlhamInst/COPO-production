@@ -30,5 +30,6 @@ def copo_context(request):
         "record_action_button_def": RecordActionButton.objects.all(),
         "media_url": settings.MEDIA_URL,
         "upload_url": settings.UPLOAD_URL,
-        "image_file_extensions": settings.IMAGE_FILE_EXTENSIONS
+        "image_file_extensions": settings.IMAGE_FILE_EXTENSIONS,
+        "ena_url_hostname": settings.ENA_URL_HOSTNAME,
     }
