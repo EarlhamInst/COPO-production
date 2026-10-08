@@ -997,6 +997,17 @@ COMPONENTS_TOUR_CONFIG = {
                 ),
                 'placement': 'left',
             },
+            'component_table': {
+                'title': 'Uploaded data',
+                'content': (
+                    'View and manage the data that you have uploaded in this table.<br><br>'
+                    'To submit it, select one or more records in this table then, click '
+                    '<button class="tiny ui basic teal button submit-btn no-click">'
+                    '<i class="fa fa-paper-plane"></i>&nbsp;Submit to ENA</button> located '
+                    'at the top right of the table.'
+                ),
+                'placement': 'right',
+            },
         },
         'stages': {
             'overview': [
