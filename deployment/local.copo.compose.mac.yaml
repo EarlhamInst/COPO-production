@@ -94,6 +94,8 @@ services:
       - WEBIN_USER_PASSWORD=${vault_copo_webin_user_password}
       - CREDENTIAL_ENCRYPTION_KEY=${vault_copo_credential_encryption_key}
       - ENA_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/
+      - ENA_WEBIN_AUTH_URL=https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token?ttl=1
+      - ENA_URL_HOSTNAME=wwwdev.ebi.ac.uk
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD=password
       - MONGO_DB=copo_mongo
@@ -148,6 +150,10 @@ services:
     volumes:
       # Replace with the absolute path to your local COPO project directory
       - /<path-to-project-directory>/COPO-production:/copo
+    networks:
+      default:
+        aliases:
+          - copo-web
 
   copo_redis:
     image: redis:6.2.8
@@ -183,7 +189,7 @@ services:
       - MONGO_DB=copo_mongo
 
   copo_minio:
-    image: quay.io/minio/minio
+    image: copo/copo-minio:RELEASE.2025-02-18T16-25-55Z-cpuv1
     command: server /data --console-address ":9001"
     hostname: minio
     environment:

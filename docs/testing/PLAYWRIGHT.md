@@ -14,13 +14,42 @@ that, and isn't meant to.
 
 ## Prerequisites
 
-- Your local stack must already be up and `copo_web` must be serving
-  requests (`http://localhost:8000` should load in a normal browser tab). If
-  it isn't, start it via VS Code's `Start all` compound first.
-- The `playwright:v1.62.1` image. You don't normally need to do anything here:
-  the compose service declares a `build:` section, so if that tag isn't already
-  on your machine the first run builds it (a few minutes, mostly pulling the
-  base image). To build it by hand — say, to rebuild after changing
+**Step 1: Start the local project stack**
+
+  The container, `copo_web`, should be serving at `http://localhost:8000` 
+  in your browser. If it isn't, start it using VS Code's `Start all` compound 
+  from `launch.json`.
+
+**Step 2: Export environment variables**
+
+  Export `COPO_PROJECT_SETUP_DIR` and `COPO_LOCAL_COMPOSE_FILE_NAME` in
+  the terminal session (or permanently in your shell configuration file,
+  `~/.zshenv` (zsh, the macOS default) or `~/.bashrc` (bash) then, reload
+  with `source ~/.zshenv` or `source ~/.bashrc` (or open a new terminal)).
+  They should point to the path of your local project stack's setup directory and
+  the file name of its local Docker compose file (which is located inside the same directory).
+
+  `~/.zshenv` is preferred over `~/.zshrc` because `zsh` only reads `~/.zshrc` for
+  interactive shells so, the script will only work when typed into a terminal but
+  fails with "not set" when launched by anything else like an IDE task or a
+  background job etc..
+
+  There are no defaults in the `run_playwright_tests.sh` script because each 
+  developer's stack is located somewhere different. The script will stop and 
+  display an error message if either is not set or doesn't exist.
+
+  Example of setting the environment variables:
+  ```
+  export COPO_PROJECT_SETUP_DIR="$HOME/Desktop/project_setup"
+  export COPO_LOCAL_COMPOSE_FILE_NAME="compose.yaml"
+  ```
+
+**Step 3: Build latest Playwright Docker image (optional)**
+
+  You do not usually need to build the `playwright:v1.62.1` image because the
+  Docker compose service already declares a `build:` section which builds the tag on your 
+  local machine if it doesn't exist. This takes a few minutes to be built; it mainly involves 
+  pulling the base image. To build it by hand — say, to rebuild after changing
   `requirements/dev.txt`:
 
   ```
@@ -51,14 +80,16 @@ that, and isn't meant to.
 
 The runner mounts whichever checkout you invoke it from, so running the suite
 inside a worktree tests that worktree's **test** files. `copo_web` is a
-different matter: its bind mount is declared in the local stack's own
-`compose.yaml`, outside this repo, and always points at one fixed checkout.
+different matter because its bind mount is declared in the local stack's own 
+compose file. The environment variable, `$COPO_LOCAL_COMPOSE_FILE_NAME`, is 
+set outside the repository and will always point to a fixed checkout.
+
 So the app under test is *not* your worktree's app code. The runner detects
 the mismatch and warns:
 
-```
+```bash
 WARNING: tests run from   .../.claude/worktrees/my-branch
-         copo_web serves  /Users/fshaw/dev/COPO-production
+         copo_web serves  <path-to-project-directory-root>/COPO-production
          Changes to test files take effect; changes to app code do NOT.
 ```
 
@@ -69,7 +100,15 @@ bring them back up via VS Code's `Start all` afterwards.
 
 ## Running the tests
 
-```
+> Do not run the tests from inside the `copo_web` container's shell via 
+> `docker compose exec` or via VS Code `Dev Containers` extension; always run 
+> them from the root of the project's repository on your local machine.
+
+```bash
+# Navigate to the root of the project repository
+cd </path/to/project/repository>/COPO-production
+
+# Run entire Playwright test suite
 test/playwright/scripts/run_playwright_tests.sh
 ```
 
@@ -79,7 +118,7 @@ Docker itself). With no arguments, this runs the whole `test/playwright/`
 suite. Any other arguments you pass go straight through to `pytest`, e.g. to
 run one specific file:
 
-```
+```bash
 test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_login.py
 ```
 
@@ -91,7 +130,7 @@ the ones above never produces a trace file.
 To record a trace, add `-t` anywhere in the arguments (it expands to
 `--tracing=on -v` and is stripped before the rest is passed to pytest):
 
-```
+```bash
 test/playwright/scripts/run_playwright_tests.sh -t test/playwright/e2e/test_case_login.py
 ```
 
@@ -115,7 +154,7 @@ default**: a bare `run_playwright_tests.sh` run always passes
 
 To opt in and run them too, pass `-e` as the first argument:
 
-```
+```bash
 test/playwright/scripts/run_playwright_tests.sh -e
 ```
 
@@ -150,7 +189,7 @@ trace, copy it out before running again.
 
 Open a trace with:
 
-```
+```bash
 python -m playwright show-trace test/playwright/test_results/<test-name>/trace.zip
 ```
 
@@ -160,7 +199,6 @@ it — this is separate from the Playwright install inside the container.)
 Use this when a test fails and the pytest output alone doesn't explain why,
 or the first time you write a new test and want to confirm it's actually
 doing what you intended.
-
 
 ## Test-only login
 
@@ -182,6 +220,6 @@ its own built-in operator, not an invocation), and the commented-out
 fallback below it wouldn't have worked either — it starts `manage.py
 runserver` with no Postgres/Redis/Mongo/MinIO behind it, which the app needs
 just to boot. Making this real means standing up those services (Mongo
-needs a replica set + keyfile, per `project_setup/compose.yaml`) as GitHub
+needs a replica set + keyfile, per `$COPO_PROJECT_SETUP_DIR/$COPO_LOCAL_COMPOSE_FILE_NAME`) as GitHub
 Actions services — still outstanding work. Until then, run the suite locally
 as described above.

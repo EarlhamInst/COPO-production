@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render
 from common.dal.profile_da import Profile
 from django.contrib.auth.decorators import login_required
@@ -167,7 +168,7 @@ def save_sample_records(request):
             source_id = source_map.get(s["Organism"], None)
             if not tax_id:
                 curl_cmd = "curl " + \
-                        "https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/" + s["Organism"].replace(" ", "%20")
+                        f"https://{settings.ENA_URL_HOSTNAME}/ena/taxonomy/rest/scientific-name/" + s["Organism"].replace(" ", "%20")
                 receipt = subprocess.check_output(curl_cmd, shell=True)
                 # ToDo - exit if species not found
                 print(receipt)

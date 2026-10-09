@@ -1,9 +1,7 @@
-# COPO python file created 08/09/2017 by fshaw
-
+from django.conf import settings
 from json import loads
 from xml.etree.ElementTree import fromstring
 
-# ena_scrape python file created 30/08/2017 by fshaw
 import requests
 from xmljson import badgerfish as bf
 
@@ -25,7 +23,7 @@ def iterate_over_attributes(od, data_type):
 def query_ena(acc):
     # query ENA for primary accession
     # print('querying ena for: ' + acc)
-    resp = requests.get('http://www.ebi.ac.uk/ena/data/view/' + acc + '%26display%3Dxml')
+    resp = requests.get(f'http://{settings.ENA_URL_HOSTNAME}/ena/browser/view/' + acc + '%26display%3Dxml')
     ##print('decoding...')
     bt = resp.content
     st = bt.decode('utf-8')
@@ -53,7 +51,7 @@ def do_sub_element(el_list, el_type):
 
         for el in el_list:
             # do lookup
-            resp = requests.get('http://www.ebi.ac.uk/ena/data/view/' + el + '%26display%3Dxml').content
+            resp = requests.get(f'http://{settings.ENA_URL_HOSTNAME}/ena/browser/view/' + el + '%26display%3Dxml').content
             st = resp.decode('utf-8')
             et = fromstring(st)
             data = bf.data(et)
@@ -67,7 +65,7 @@ def query_bio_samples(acc):
     sample = dict()
     # get an additional information accessible through Biosamples
     resp = requests.get(
-        'https://www.ebi.ac.uk/biosamples/api/samples/search/findByText?text=' + acc + '%20AND%20external_references_name_crt=ENA')
+        f'https://{settings.ENA_URL_HOSTNAME}/biosamples/api/samples/search/findByText?text=' + acc + '%20AND%20external_references_name_crt=ENA')
     samples = loads(resp.content.decode('utf-8'))
     sub = samples['_embedded']['samples'][0]
     sub_chars = sub['characteristics']
