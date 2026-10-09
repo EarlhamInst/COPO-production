@@ -94,6 +94,8 @@ services:
       - WEBIN_USER_PASSWORD=${vault_copo_webin_user_password}
       - CREDENTIAL_ENCRYPTION_KEY=${vault_copo_credential_encryption_key}
       - ENA_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/
+      - ENA_WEBIN_AUTH_URL=https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token?ttl=1
+      - ENA_URL_HOSTNAME=wwwdev.ebi.ac.uk
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD=password
       - MONGO_DB=copo_mongo

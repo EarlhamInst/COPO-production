@@ -134,11 +134,9 @@ let dt_options = {
     $('.ena-accession').each(function (i, obj) {
       if ($(obj).prop('tagName') != 'TH' && $(obj).text() != '') {
         $(obj).html(
-          "<a class='no-underline' href='https://www.ebi.ac.uk/ena/browser/view/" +
+          `<a class='no-underline' href='${get_ena_browser_url($(obj).text())}' target='_blank'>` +
             $(obj).text() +
-            "' target='_blank'>" +
-            $(obj).text() +
-            '</a>'
+          '</a>'
         );
       }
     });

@@ -72,6 +72,10 @@
     <script src="{% static 'copo/validator1000hz/validator.min.js' %}"></script>
     <script src="{% static 'copo/rangeslider/rangeslider.min.js' %}"></script>
     <script src="{% static 'copo/jquery/js/jquery.alterclass.js' %}"></script>
+    
+    <script>
+        const ENA_URL_HOSTNAME = "{{ ena_url_hostname|escapejs }}" || "www.ebi.ac.uk";
+    </script>
 
     <script src="{% static 'copo/js/base.js' %}"></script>
     <script type="text/javascript"
