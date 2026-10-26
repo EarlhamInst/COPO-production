@@ -377,6 +377,21 @@ class EnaCheckListSpreadsheet:
     def get_filenames_from_manifest(self):
         return list(self.data["File name"])
 
+    def get_file_checksums_from_manifest(self):
+        # Paired reads have comma separated file names 
+        # and checksums listed in the same order
+        file_checksums = dict()
+        if 'File name' not in self.data.columns or 'File checksum' not in self.data.columns:
+            return file_checksums
+
+        for names, checksums in zip(self.data['File name'], self.data['File checksum']):
+            names = [x.strip() for x in str(names).split(',')]
+            checksums = [x.strip() for x in str(checksums).split(',')]
+            for idx, name in enumerate(names):
+                if name:
+                    file_checksums[name] = checksums[idx] if idx < len(checksums) else ''
+        return file_checksums
+
     """ revoked the changes 
     def check_manifest_compatibility(self):
         '''Checks whether the uploaded manifest's column set matches 

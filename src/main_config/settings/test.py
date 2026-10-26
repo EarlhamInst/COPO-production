@@ -30,6 +30,10 @@ _PLACEHOLDER_ENV = {
     'REDIS_HOST': 'redis.invalid',
     'REDIS_PORT': '6379',
     'SECRET_KEY': 'unittest-placeholder-secret-key-not-for-any-deployment',
+    # Must be email-shaped: common.ena_utils.ena_helper does
+    # WEBIN_USER.split("@")[1] at import time so it must contain an "@" symbol.
+    'WEBIN_USER': 'unittest-placeholder-webin-12345@example.invalid',
+    'WEBIN_USER_PASSWORD': 'unittest-placeholder-not-a-real-password',
 }
 
 for _key, _value in _PLACEHOLDER_ENV.items():

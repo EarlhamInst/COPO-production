@@ -70,6 +70,7 @@ AuditCollection = 'AuditCollection'
 SubmissionCollection = 'SubmissionCollection'
 SourceCollection = 'SourceCollection'
 DataFileCollection = 'DataFileCollection'
+DataFileChecksumCollection = 'DataFileChecksumCollection'
 RemoteFileCollection = 'RemoteFileCollection'
 DescriptionCollection = 'DescriptionCollection'
 ProfileCollection = 'Profiles'
@@ -129,7 +130,8 @@ handle_dict = dict(audit=get_collection_ref(AuditCollection),
                    enaChecklist=get_collection_ref(EnaChecklistCollection),
                    read=get_collection_ref(ReadObjectCollection),
                    singlecellSchemas = get_collection_ref(SinglecellSchemasCollection),
-                   singlecell = get_collection_ref(SinglecellCollection)
+                   singlecell = get_collection_ref(SinglecellCollection),
+                   datafileChecksum = get_collection_ref(DataFileChecksumCollection)
                 )
 
 

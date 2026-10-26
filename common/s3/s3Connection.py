@@ -8,11 +8,12 @@ from common.utils.helpers import notify_read_status
 from common.utils.logger import Logger
 from boto3.s3.transfer import TransferConfig
 import logging
-from common.dal.copo_da import EnaFileTransfer
+from common.dal.copo_da import EnaFileTransfer, DataFileChecksum
 from common.utils.helpers import get_env
 from src.apps.copo_file.utils.CopoFiles import delete_image_thumbnail
 
-class S3Connection():
+
+class S3Connection:
     """
     Class to handle interactions with ECS cloud storage via s3 service
     """
@@ -27,20 +28,37 @@ class S3Connection():
         self.expiration = 60 * 60 * 24
         self.path = '/'
         boto3.set_stream_logger(name='', level=logging.WARNING, format_string=None)
-        self.s3_client = boto3.client('s3', endpoint_url=self.ecs_endpoint, verify=False,  
-                                      config=Config(signature_version='s3v4', connect_timeout=120, read_timeout=240,
-                                                    retries={"max_attempts": 10}, s3={'addressing_style': "path"}),
-                                      aws_access_key_id=self.ecs_access_key_id,
-                                      aws_secret_access_key=self.ecs_secret_key)
-        
-        self.s3_client_external = boto3.client('s3', endpoint_url=self.ecs_endpoint_external, verify=False,  
-                                      config=Config(signature_version='s3v4', connect_timeout=120, read_timeout=240,
-                                                    retries={"max_attempts": 10}, s3={'addressing_style': "path"}),
-                                      aws_access_key_id=self.ecs_access_key_id,
-                                      aws_secret_access_key=self.ecs_secret_key)        
+        self.s3_client = boto3.client(
+            's3',
+            endpoint_url=self.ecs_endpoint,
+            verify=False,
+            config=Config(
+                signature_version='s3v4',
+                connect_timeout=120,
+                read_timeout=240,
+                retries={"max_attempts": 10},
+                s3={'addressing_style': "path"},
+            ),
+            aws_access_key_id=self.ecs_access_key_id,
+            aws_secret_access_key=self.ecs_secret_key,
+        )
+
+        self.s3_client_external = boto3.client(
+            's3',
+            endpoint_url=self.ecs_endpoint_external,
+            verify=False,
+            config=Config(
+                signature_version='s3v4',
+                connect_timeout=120,
+                read_timeout=240,
+                retries={"max_attempts": 10},
+                s3={'addressing_style': "path"},
+            ),
+            aws_access_key_id=self.ecs_access_key_id,
+            aws_secret_access_key=self.ecs_secret_key,
+        )
         # self.transport_params = {'client': self.s3_client}
-        Logger().debug(
-            msg=f"endpoint: {self.ecs_endpoint}")
+        Logger().debug(msg=f"endpoint: {self.ecs_endpoint}")
 
     def list_buckets(self):
         response = self.s3_client.list_buckets()
@@ -62,8 +80,6 @@ class S3Connection():
         return contents
     '''
 
-
-
     def list_objects(self, bucket):
         return self._get_all_s3_objects(Bucket=bucket)
 
@@ -75,7 +91,7 @@ class S3Connection():
             if continuation_token:
                 list_kwargs['ContinuationToken'] = continuation_token
 
-            try:    
+            try:
                 response = self.s3_client.list_objects_v2(**list_kwargs)
             except Exception as e:
                 Logger().exception(e)
@@ -90,15 +106,17 @@ class S3Connection():
                 return result
             continuation_token = response.get('NextContinuationToken')
 
-
-
-
     def get_object(self, bucket, key, loc, callback=None):
-        Logger().log("transfering file to: " + loc)
+        Logger().log("Transferring file to: " + loc)
         KB = 1024
         MB = KB * KB
-        config = TransferConfig(multipart_threshold=100 * MB, multipart_chunksize=64 * MB, io_chunksize=1 * MB,
-                                max_concurrency=3, use_threads=True )
+        config = TransferConfig(
+            multipart_threshold=100 * MB,
+            multipart_chunksize=64 * MB,
+            io_chunksize=1 * MB,
+            max_concurrency=3,
+            use_threads=True,
+        )
         with open(loc, 'wb') as data:
             self.s3_client.download_fileobj(
                 Bucket=bucket, Key=key, Fileobj=data, Config=config, Callback=callback
@@ -113,7 +131,7 @@ class S3Connection():
         except Exception:
             return 0
 
-    def get_presigned_url(self, bucket, key, expires_seconds=7*24*60*60):
+    def get_presigned_url(self, bucket, key, expires_seconds=7 * 24 * 60 * 60):
         '''
         Create a pre-signed url for uploading a single file to the s3 ECS
         :param bucket: name of the bucket to which the object sould be uploaded
@@ -122,13 +140,16 @@ class S3Connection():
         :return:
         '''
         try:
-            response = self.s3_client_external.generate_presigned_url('put_object', Params={'Bucket': bucket, 'Key': key},
-                                                              ExpiresIn=expires_seconds)
-            #response = response.replace("http://", "https://")
+            response = self.s3_client_external.generate_presigned_url(
+                'put_object',
+                Params={'Bucket': bucket, 'Key': key},
+                ExpiresIn=expires_seconds,
+            )
+            # response = response.replace("http://", "https://")
         except Exception as e:
             Logger().exception(e)
             response = e
-        
+
         return response
 
     def check_for_s3_bucket(self, uid):
@@ -170,7 +191,9 @@ class S3Connection():
             # return bucket_name
             return None
 
-    def check_s3_bucket_for_files(self, bucket_name, file_list, just_return_etags=False):
+    def check_s3_bucket_for_files(
+        self, bucket_name, file_list, just_return_etags=False
+    ):
         '''
         Checks bucket_name for files supplied in file_list
         :param bucket_name: name of the s3 bucket to search
@@ -196,7 +219,8 @@ class S3Connection():
                     "No data files were found in COPO.<br>"
                     "To upload them, use the <strong>Data files</strong> button "
                     "for the relevant profile on the <strong>Work Profiles</strong> page or "
-                    "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+                    "click the <i class='material-symbols-outlined icon pcomponent-material-icon blue no-click'>folder_open</i> "
+                    "file icon in the top navigation bar."
                 )
                 notify_read_status(
                     data={"profile_id": profile_id},
@@ -220,8 +244,12 @@ class S3Connection():
                     file = file.strip()
                     if not file:
                         continue
-                    notify_read_status(data={"profile_id": profile_id}, msg="Searching for: " + file, action="info",
-                                       html_id="sample_info")
+                    notify_read_status(
+                        data={"profile_id": profile_id},
+                        msg="Searching for: " + file,
+                        action="info",
+                        html_id="sample_info",
+                    )
                     # time.sleep(2)
                     for bucket_file in bucket_files:
 
@@ -242,7 +270,8 @@ class S3Connection():
                     f"Data files missing: {missing_files_text}.<br>"
                     "To upload them, use the <strong>Data files</strong> button "
                     "for the relevant profile on the <strong>Work profiles</strong> page or "
-                    "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+                    "click the <i class='material-symbols-outlined icon pcomponent-material-icon blue no-click'>folder_open</i>  "
+                    "file icon in the top navigation bar."
                 )
 
                 notify_read_status(
@@ -271,29 +300,43 @@ class S3Connection():
             return dict(), msg
         except Exception as e:
             Logger().exception(e)
-            notify_read_status(data={"profile_id": profile_id}, msg="An error has occurred: " + str(e), action="info",
-                               html_id="sample_info")
+            notify_read_status(
+                data={"profile_id": profile_id},
+                msg="An error has occurred: " + str(e),
+                action="info",
+                html_id="sample_info",
+            )
             raise e
 
     def validate_and_delete(self, target_id=str(), target_ids=list()):
-        from common.ena_utils.FileTransferUtils import get_transfer_status, TransferStatus
+        from common.ena_utils.FileTransferUtils import (
+            get_transfer_status,
+            TransferStatus,
+        )
+
         bucket_name = self.profile_id
 
-        filestatus_map = EnaFileTransfer().get_transfer_status_by_ecs_path(ecs_locations=[ f"{bucket_name}/{key}" for key in target_ids])
+        filestatus_map = EnaFileTransfer().get_transfer_status_by_ecs_path(
+            ecs_locations=[f"{bucket_name}/{key}" for key in target_ids]
+        )
         file_not_deleted = []
         status = False
         for key in target_ids:
             # ok to delete the file if there is no need to transfer to ENA
             enaFile = filestatus_map.get(f"{bucket_name}/{key}")
-            if not enaFile or get_transfer_status(enaFile) >= TransferStatus.DOWNLOADED_TO_LOCAL:
-                status = True          
+            if (
+                not enaFile
+                or get_transfer_status(enaFile) >= TransferStatus.DOWNLOADED_TO_LOCAL
+            ):
+                status = True
                 self.s3_client.delete_object(Bucket=bucket_name, Key=key)
+                DataFileChecksum().remove(bucket_name, [key])
 
                 # Clean up thumbnail images from disk for image file types
                 delete_image_thumbnail(key, self.profile_id)
             else:
                 file_not_deleted.append(key)
-                
+
         if status:
             return dict(
                 status="success",

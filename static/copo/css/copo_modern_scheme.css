@@ -199,6 +199,17 @@ body {
   box-shadow: var(--co-shadow-hover) !important;
 }
 
+.material-symbols-outlined.icon.pcomponent-material-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle;
+  width: auto !important;
+  margin: 0 !important;
+  text-decoration: none !important;
+  transition: all .15s !important;
+}
+
 /* Icon colour overrides — Semantic UI icons */
 .copo-page-icons .icon.item i.blue   { color: var(--co-biodata)  !important; }
 .copo-page-icons .icon.item i.olive  { color: #7a9a1e !important; }
@@ -229,6 +240,7 @@ body {
 
 /* Icon colour overrides — Material Symbols (colour class on the element itself) */
 #componentIcon.material-symbols-outlined.blue,
+.icon.pcomponent-material-icon.blue,
 .copo-page-icons .icon.item .pcomponent-material-icon.blue   { color: var(--co-biodata)  !important; }
 
 #componentIcon.material-symbols-outlined.olive,
@@ -1501,6 +1513,9 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 [data-theme="dark"] table.dataTable tbody tr.highlight_no_accession.even {
   background: #3d3216 !important;
 }
+[data-theme="dark"] table.dataTable tbody tr.highlight_rejected,
+[data-theme="dark"] table.dataTable tbody tr.highlight_rejected.odd,
+[data-theme="dark"] table.dataTable tbody tr.highlight_rejected.even,
 [data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status,
 [data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status.odd,
 [data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status.even {
@@ -1514,6 +1529,8 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 [data-theme="dark"] table.dataTable tbody tr.highlight_no_accession:hover td {
   background: #4c3f1b !important;
 }
+[data-theme="dark"] table.dataTable tbody tr.highlight_rejected:hover,
+[data-theme="dark"] table.dataTable tbody tr.highlight_rejected:hover td,
 [data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status:hover,
 [data-theme="dark"] table.dataTable tbody tr.highlight_error_file_processing_status:hover td {
   background: #4c2626 !important;

@@ -391,7 +391,7 @@ def test_full_submission_and_publish_journey(page: Page, tmp_path):
     # remote dev MinIO (measured directly server-side, not a hang -- see
     # project_demo_minio_distributed_fragility memory), so the default 60s
     # wasn't enough to cover all 4 files uploading sequentially in one request.
-    expect(page.locator("#page_alert_panel")).to_contain_text("File(s) have been uploaded!", timeout=300000)
+    expect(page.locator("#page_alert_panel")).to_contain_text("Files have been uploaded", timeout=300000)
 
     page.goto(f"/copo/copo_single_cell/view/{profile_id}/COPO_SINGLE_CELL/singlecell")
     page.wait_for_load_state("networkidle")

@@ -2,13 +2,15 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 import json
 import subprocess
-from common.dal.copo_da import  DataFile, EnaChecklist
+from common.dal.copo_da import DataFile, EnaChecklist
 from common.dal.submission_da import Submission
 from common.dal.profile_da import Profile
 from common.dal.sample_da import Sample, Source
-from common.utils import helpers 
+from common.utils import helpers
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from common.s3.s3Connection import S3Connection as s3
+from common.s3.checksum import verify_s3_checksums
+from common.schemas.utils.data_utils import join_with_and
 from pymongo import ReturnDocument
 import common.ena_utils.FileTransferUtils as tx
 from django.conf import settings
@@ -22,8 +24,8 @@ from common.validators.validator import Validator
 from .utils.ena_validator import ena_seq_validators as required_validators
 from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreadsheet, write_manifest
 
-from common.utils.helpers import get_datetime, get_not_deleted_flag,map_to_dict
-from .utils import ena_read  
+from common.utils.helpers import get_datetime, get_not_deleted_flag, map_to_dict
+from .utils import ena_read
 from io import BytesIO
 from src.apps.copo_core.views import web_page_access_checker
 from src.apps.copo_core.models import ProfileType
@@ -69,7 +71,13 @@ def parse_ena_spreadsheet(request):
         ):
             required_validators.append(element)
 
-    ena = EnaCheckListSpreadsheet(file=file, with_sample=(False if checklist_id=='read' else True),  checklist_id=checklist_id, component="sample", validators=required_validators)
+    ena = EnaCheckListSpreadsheet(
+        file=file,
+        with_sample=(False if checklist_id == 'read' else True),
+        checklist_id=checklist_id,
+        component="sample",
+        validators=required_validators,
+    )
     s3obj = s3()
     if name.endswith("xlsx") or name.endswith("xls"):
         fmt = 'xls'
@@ -81,6 +89,8 @@ def parse_ena_spreadsheet(request):
     if ena.loadManifest(fmt):
         l.log("Dtol manifest loaded")
         if ena.validate():
+            is_warning = False
+            
             l.log("About to collect Dtol manifest")
             # check s3 for bucket and files files
             bucket_name = profile_id
@@ -90,10 +100,47 @@ def parse_ena_spreadsheet(request):
             if s3obj.check_for_s3_bucket(bucket_name):
                 # get filenames from manifest
                 # check for files
-                result,_ = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=file_names)
+                result, _ = s3obj.check_s3_bucket_for_files(
+                    bucket_name=bucket_name, file_list=file_names
+                )
                 if not result:
                     # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
                     return HttpResponseBadRequest()
+
+                # The data file checksums provided in the manifest must
+                # match the checksums of the uploaded data files
+                mismatched, pending = verify_s3_checksums(
+                    bucket_name, ena.get_file_checksums_from_manifest(), result
+                )
+
+                if mismatched:
+                    mismatched_html = [f'<strong>{x}</strong>' for x in mismatched]
+                    msg = (
+                        f'Checksum mismatch for files: {join_with_and(mismatched_html)}.<br>'
+                        'Please correct the data file checksum in the manifest then, re-upload it.'
+                    )
+                    ghlper.notify_read_status(
+                        data={"profile_id": profile_id},
+                        msg=msg,
+                        action="error",
+                        html_id="sample_info",
+                    )
+                    return HttpResponseBadRequest()
+
+                # Data files that are still being hashed
+                # will be checked at submission time
+                if pending:
+                    pending_html = [f'<strong>{x}</strong>' for x in pending]
+                    is_warning = True
+                    ghlper.notify_read_status(
+                        data={"profile_id": profile_id},
+                        msg=(
+                            f'Data file checksums are still being calculated for: {join_with_and(pending_html)}. '
+                            'Their file checksums will be verified at submission time.'
+                        ),
+                        action="warning",
+                        html_id="sample_info",
+                    )
             else:
                 # bucket is missing, therefore create bucket and notify user to upload files
                 # msg = 's3 bucket not found, creating it'
@@ -108,7 +155,8 @@ def parse_ena_spreadsheet(request):
                     "No data files were found in COPO.<br>"
                     "To upload them, use the <strong>Data files</strong> button "
                     "for the relevant profile on the <strong>Work profiles</strong> page or "
-                    "access the <i class='ui icon blue file'></i> file icon in the top navigation bar."
+                    "click the <i class='material-symbols-outlined icon pcomponent-material-icon blue no-click'>folder_open</i> "
+                    "file icon in the top navigation bar."
                 )
 
                 ghlper.notify_read_status(
@@ -118,12 +166,15 @@ def parse_ena_spreadsheet(request):
                     html_id="sample_info",
                 )
                 return HttpResponseBadRequest()
-            ghlper.notify_read_status(
-                data={"profile_id": profile_id},
-                msg='Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.',
-                action="success",
-                html_id="sample_info",
-            )
+            
+            if not is_warning:
+                ghlper.notify_read_status(
+                    data={"profile_id": profile_id},
+                    msg='Spreadsheet is valid. Please click <b>Finish</b> to complete the upload.',
+                    action="success",
+                    html_id="sample_info",
+                )
+                
             ena.collect()
             return HttpResponse()
         return HttpResponseBadRequest()
@@ -141,10 +192,22 @@ def save_ena_records(request):
     profile_type = ProfileType.objects.get(type=profile["type"])
 
     uid = str(request.user.id)
-    checklist = EnaChecklist().get_checklist(checklist_id=request.session["checklist_id"], with_read=True, for_dtol=profile_type.is_dtol_profile)
-    column_name_mapping = { field["name"].upper() : key  for key, field in checklist["fields"].items() if not field.get("read_field", False) }
+    checklist = EnaChecklist().get_checklist(
+        checklist_id=request.session["checklist_id"],
+        with_read=True,
+        for_dtol=profile_type.is_dtol_profile,
+    )
+    column_name_mapping = {
+        field["name"].upper(): key
+        for key, field in checklist["fields"].items()
+        if not field.get("read_field", False)
+    }
     # checklist_read = EnaChecklist().get_collection_handle().find_one({"primary_id": "read"})
-    column_name_mapping_read = { field["label"].upper() : key  for key, field in checklist["fields"].items() if field.get("read_field", False) }
+    column_name_mapping_read = {
+        field["label"].upper(): key
+        for key, field in checklist["fields"].items()
+        if field.get("read_field", False)
+    }
     # bundle = list()
     # alias = str(uuid.uuid4())
     # bundle_meta = list()
@@ -152,8 +215,17 @@ def save_ena_records(request):
     datafile_list = list()
     # existing_bundle = list()
     # existing_bundle_meta = list()
-    sub = Submission().get_collection_handle().find_one(
-        {"profile_id": profile_id, "repository":"ena", "deleted": get_not_deleted_flag()})
+    sub = (
+        Submission()
+        .get_collection_handle()
+        .find_one(
+            {
+                "profile_id": profile_id,
+                "repository": "ena",
+                "deleted": get_not_deleted_flag(),
+            }
+        )
+    )
     # override the bundle files for every manifest upload
     # if sub:
     #    existing_bundle = sub["bundle"]
@@ -284,7 +356,7 @@ def save_ena_records(request):
                 insert_record["status"] = "accepted"
                 insert_record["biosampleAccession"] = s["biosampleAccession"]
                 insert_record["is_external"] = "1"
-                insert_record["profile_id"] = profile_id    
+                insert_record["profile_id"] = profile_id
 
             sample["name"] = s["biosampleAccession"]
 
@@ -488,7 +560,11 @@ def save_ena_records(request):
                 datafile_list.append(file_id)
 
             file_id2 = file_id
-            f_meta = {"file_id": f"{file_id1},{file_id2}", "file_name": s["File name"], "status": "pending"}
+            f_meta = {
+                "file_id": f"{file_id1},{file_id2}",
+                "file_name": s["File name"],
+                "status": "pending",
+            }
             tmp_pairing["_id2"] = file_id
             pairing.append(tmp_pairing)
             # Sample(profile_id=profile_id).get_collection_handle().update_one({"_id": ObjectId(sample_id)}, {"$addToSet": {"read": f_meta }} )
@@ -746,7 +822,17 @@ def copo_reads(request, profile_id, ui_component):
     profile_type = ProfileType.objects.get(type=profile["type"])
     if profile_type.is_dtol_profile:
         checklists = [x for x in checklists if x["primary_id"] == "read"]
-    return render(request, 'copo/copo_read.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids, "ui_component": ui_component})
+    return render(
+        request,
+        'copo/copo_read.html',
+        {
+            'profile_id': profile_id,
+            'profile': profile,
+            'checklists': checklists,
+            "profile_checklist_ids": profile_checklist_ids,
+            "ui_component": ui_component,
+        },
+    )
 
 
 @login_required
@@ -755,10 +841,26 @@ def download_initial_read_manifest(request, profile_id):
     profile = Profile().get_record(profile_id)
     samples = Sample().get_all_records_columns(filter_by={"profile_id": profile_id})
     profile_type = ProfileType.objects.get(type=profile["type"])
-    checklist = EnaChecklist().get_checklist(checklist_id="read", with_read=True, for_dtol=profile_type.is_dtol_profile, with_sample=False)
+    checklist = EnaChecklist().get_checklist(
+        checklist_id="read",
+        with_read=True,
+        for_dtol=profile_type.is_dtol_profile,
+        with_sample=False,
+    )
     bytesstring = BytesIO()
-    write_manifest(checklist=checklist, samples=samples, for_dtol=profile_type.is_dtol_profile, with_sample=False, file_path=bytesstring)
-            
-    response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response['Content-Disposition'] = f"attachment; filename=read_manifest_{profile_id}.xlsx"
+    write_manifest(
+        checklist=checklist,
+        samples=samples,
+        for_dtol=profile_type.is_dtol_profile,
+        with_sample=False,
+        file_path=bytesstring,
+    )
+
+    response = HttpResponse(
+        bytesstring.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    response['Content-Disposition'] = (
+        f"attachment; filename=read_manifest_{profile_id}.xlsx"
+    )
     return response

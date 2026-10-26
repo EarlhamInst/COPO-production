@@ -10,6 +10,9 @@ from common.utils import helpers
 from boto3.s3.transfer import TransferConfig
 import json
 import threading
+from common.dal.copo_da import DataFile, DataFileChecksum
+from common.s3.checksum import md5_of_uploaded_file, normalise_checksum
+from common.schemas.utils.data_utils import join_with_and
 
 
 @login_required
@@ -59,6 +62,16 @@ def process_urls(request):
     return HttpResponse(json.dumps(urls_list))
 
 
+def find_manifest_checksum_mismatches(profile_id, md5s):
+    # Find data files whose md5 file checksum differ 
+    # from the checksum provided in uploaded manifests
+    datafiles = DataFile().get_all_records_columns(
+        filter_by={'profile_id': profile_id, 'file_name': {'$in': list(md5s.keys())}},
+        projection={'_id': 0, 'file_name': 1, 'file_hash': 1})
+    return [d['file_name'] for d in datafiles
+            if d.get('file_hash') and normalise_checksum(d['file_hash']) != md5s[d['file_name']]]
+
+
 @login_required
 def upload_ecs_files(request, profile_id):
     channels_group_name = "s3_" + profile_id
@@ -87,6 +100,7 @@ def upload_ecs_files(request, profile_id):
     )
 
     total_files = len(files)
+    mismatched_files = []
     for file_idx, f in enumerate(files, start=1):
         file = files[f]
         key = file.name.replace(" ", "-")
@@ -128,6 +142,7 @@ def upload_ecs_files(request, profile_id):
                 action="upload_progress",
                 html_id="upload_progress", group_name=channels_group_name)
 
+        md5 = md5_of_uploaded_file(file)
         s3.s3_client.upload_fileobj(
             Fileobj=file,
             Bucket=bucket_name,
@@ -135,6 +150,21 @@ def upload_ecs_files(request, profile_id):
             Config=transfer_config,
             Callback=_progress,
         )
+        
+        etag = s3.s3_client.head_object(Bucket=bucket_name, Key=key)['ETag'].strip('"')
+        DataFileChecksum().set_md5(bucket_name, key, etag, md5)
+        mismatched_files += find_manifest_checksum_mismatches(profile_id, {key: md5})
+
+    if mismatched_files:
+        helpers.notify_frontend(
+            data={'profile_id': profile_id},
+            msg=(
+                'Uploaded files do not match the checksums provided in the manifest: '
+                f'{join_with_and(mismatched_files)}. Please check that the correct '
+                'data files were uploaded or that the manifest contains the correct checksums.'
+            ),
+            action='error',
+            html_id='file_info', group_name=channels_group_name)
 
     context = dict()
     context["table_data"] = generate_files_record(profile_id=profile_id)

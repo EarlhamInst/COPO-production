@@ -180,3 +180,6 @@ test/playwright/test_results/
 
 # Saved login session (cookies) for the storage_state fixture in conftest.py
 test/playwright/.auth_state.json
+
+# Do not track open files
+~$*

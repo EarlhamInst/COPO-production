@@ -534,28 +534,58 @@ $(document).on('document_ready', function () {
     table = $('#' + event.tableID).DataTable();
     //var numCols = $('#' + component + '_table thead th').length;
     var numCols = table.columns().nodes().length;
-    table.rows().nodes().to$().addClass('highlight_accession');
+
+    // Clear previous row highlighting so that a table row 
+    // never carries more than one class
+    table
+      .rows()
+      .nodes()
+      .to$()
+      .removeClass(
+        'highlight_accession highlight_no_accession highlight_rejected'
+      );
+
+    // Collect the repository status columns
+    // e.g. 'status_ena', 'status_zenodo'
+    var status_columns = [];
+    for (var i = 0; i < numCols; i++) {
+      var data_src = table.column(i).dataSrc();
+      if (typeof data_src === 'string' && data_src.startsWith('status_')) {
+        status_columns.push({
+          index: i,
+          repository: data_src.substring('status_'.length),
+        });
+      }
+    }
+
+    // A row is red if any repository rejected it, green if any repository
+    // has accepted it and returned an accession, otherwise amber.
+    // Tables without status columns stay green.
+    table.rows().every(function (rowIdx) {
+      var row_data = this.data();
+      var is_rejected = status_columns.some(function (column) {
+        return table.cell(rowIdx, column.index).data() === 'rejected';
+      });
+      if (is_rejected) {
+        $(this.node()).addClass('highlight_rejected');
+        return;
+      }
+      var is_accessioned =
+        status_columns.length === 0 ||
+        status_columns.some(function (column) {
+          var accession = row_data['accession_' + column.repository];
+          return (
+            table.cell(rowIdx, column.index).data() === 'accepted' &&
+            typeof accession === 'string' &&
+            accession.trim() !== ''
+          );
+        });
+      $(this.node()).addClass(
+        is_accessioned ? 'highlight_accession' : 'highlight_no_accession'
+      );
+    });
 
     for (var i = 0; i < numCols; i++) {
-      if (
-        $(table.column(i).header()).text().toUpperCase().startsWith('STATUS')
-      ) {
-        var no_accession_indices = table
-          .rows()
-          .eq(0)
-          .filter(function (rowIdx) {
-            return ['pending', 'processing', 'rejected'].includes(
-              table.cell(rowIdx, i).data()
-            )
-              ? true
-              : false;
-          });
-        table
-          .rows(no_accession_indices)
-          .nodes()
-          .to$()
-          .addClass('highlight_no_accession');
-      }
       if ($(table.column(i).header()).text() == 'ENA FILE PROCESSING STATUS') {
         var error = table
           .rows()
@@ -651,6 +681,7 @@ function upload_spreadsheet(file) {
         BootstrapDialog.show({
           title: 'Error',
           message: 'Error ' + data.status + ': ' + data.responseText,
+          type: BootstrapDialog.TYPE_DANGER
         });
       }
       */
@@ -685,7 +716,8 @@ function save_singlecell_data() {
       if (responseText != '') {
         BootstrapDialog.show({
           title: 'Error',
-          message: 'Error ' + data.status + ': ' + data.responseText,
+          message: data.responseText, // 'Error ' + data.status + ': ' + data.responseText,
+          type: BootstrapDialog.TYPE_DANGER,
         });
       }
     })

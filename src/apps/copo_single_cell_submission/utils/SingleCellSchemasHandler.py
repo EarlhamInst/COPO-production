@@ -792,10 +792,9 @@ class SinglecellschemasSpreadsheet:
                     file_name = row2[row["term_name"]].strip()
                     if file_name:
                         if row["term_checksum"]:
-                            if row2[row["term_checksum"]].strip():
-                                file_map[row2[row["term_name"]]] = row2[
-                                    row["term_checksum"]
-                                ]
+                            file_checksum = row2[row["term_checksum"]].strip()
+                            if file_checksum:
+                                file_map[row2[row["term_name"]]] = file_checksum
                             else:
                                 msg = (
                                     msg

@@ -5,6 +5,8 @@ from common.dal.profile_da import Profile
 from common.dal.submission_da import Submission
 from common.dal.sample_da import Sample, Source
 from common.s3.s3Connection import S3Connection as s3
+from common.s3.checksum import verify_s3_checksums
+from common.schemas.utils.data_utils import render_html_list
 from .da import SubmissionQueue
 from common.utils.helpers import get_datetime, get_not_deleted_flag, get_env, notify_read_status
 from common.dal.mongo_util import cursor_to_list
@@ -65,7 +67,7 @@ def submit_read(profile_id,  target_ids=list(), target_id=None, checklist_id=Non
     # with a confusing message.
     datafiles = DataFile().get_all_records_columns(
         filter_by={"_id": {"$in": [ObjectId(f) for f in file_ids]}},
-        projection={"file_name": 1},
+        projection={"file_name": 1, "file_hash": 1},
     )
     file_names = [df["file_name"] for df in datafiles if df.get("file_name")]
     if file_names:
@@ -83,6 +85,40 @@ def submit_read(profile_id,  target_ids=list(), target_id=None, checklist_id=Non
                     + ", ".join(f"<strong>{f}</strong>" for f in missing_files) + ".<br><br>"
                     + "Upload them via <strong>Data files</strong> on the "
                     "<strong>Work profiles</strong> page and try again."
+                ),
+            )
+
+        # The data file checksums provided in a manifest must match
+        # the checksum of the uploaded data files.
+        # This checking is done at this point because the data files
+        # may have been uploaded after the manifest was uploaded
+        # and validated.
+        mismatched, pending = verify_s3_checksums(
+            profile_id,
+            {df["file_name"]: df.get("file_hash", "") for df in datafiles if df.get("file_name")},
+            etags,
+        )
+
+        if mismatched:
+            mismatched_html = [f"<strong>{f}</strong>" for f in mismatched]
+            return dict(
+                status='error',
+                message=(
+                    'Submission failed because the uploaded data files do not match the file '
+                    'checksums provided in the manifest: <br>'
+                    + f'{render_html_list(mismatched_html)}'
+                    + 'Please correct the checksums in the manifest then, re-upload it.'
+                ),
+            )
+
+        if pending:
+            pending_html = [f"<strong>{f}</strong>" for f in pending]
+            return dict(
+                status='error',
+                message=(
+                    'Data file checksums are still being calculated for: <br>'
+                    f'{render_html_list(pending_html)}'
+                    'Please try again in a few minutes.'
                 ),
             )
 

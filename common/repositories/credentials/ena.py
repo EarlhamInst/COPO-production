@@ -39,7 +39,7 @@ class EnaCredentialProvider(RepositoryCredentialProvider):
         CredentialField(
             name="webin_user",
             label="Webin username",
-            help_text="Your ENA Webin submission account, e.g. Webin-12345@example.org",
+            help_text="Your ENA Webin submission account e.g. Webin-12345@example.org",
         ),
         CredentialField(name="webin_password", label="Webin password", secret=True),
     ]

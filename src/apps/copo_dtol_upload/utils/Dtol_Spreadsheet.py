@@ -568,7 +568,9 @@ class DtolSpreadsheet:
                 new_permit_filename = permit_filename[:-4] + "_" + str(current_date) + ".pdf"
                 permit_filename_mapping[permit_filename] = new_permit_filename
 
-        sample_data["_id"] = ""
+        # An object column, as pandas 3 does not allow
+        # an ObjectId to be stored in a string column
+        sample_data["_id"] = None
 
         for index, p in sample_data.iterrows():
             s = dict(p)
@@ -629,7 +631,9 @@ class DtolSpreadsheet:
                 public_name_list.append(
                     {"requested_taxonomy_id": int(sampl["species_list"][0]["TAXON_ID"]), "specimen_id": sampl["SPECIMEN_ID"]})
 
-            p["_id"] = sampl["_id"]
+            # `p` is a copy of the row so, store the sample ID in `sample_data`
+            # for the images to be linked to their samples below
+            sample_data.at[index, "_id"] = sampl["_id"]
 
             # for im in image_data:
             #    # create matching DataFile object for image is provided
@@ -693,7 +697,9 @@ class DtolSpreadsheet:
             sample_data = binary
 
         public_name_list = list()
-        sample_data["_id"] = ""
+        # An object column, as pandas 3 does not allow
+        # an ObjectId to be stored in a string column
+        sample_data["_id"] = None
         need_send_email = False
 
         # Create a permit filename mapping
@@ -715,6 +721,8 @@ class DtolSpreadsheet:
 
         for p in range(0, len(sample_data)):
             s = map_to_dict(sample_data.columns, sample_data.iloc[p, :])
+            # `_id` is not a manifest field to compare with the recorded sample
+            s.pop("_id", None)
             notify_frontend(data={"profile_id": self.profile_id},
                             msg="Updating Sample with ID: " +
                                 s["TUBE_OR_WELL_ID"] + "/" + s["SPECIMEN_ID"],

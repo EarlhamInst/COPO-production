@@ -350,9 +350,12 @@ def trim_parameter_value_label(label):
 
 def map_to_dict(x, y):
     # method to make output dict using keys from array x and values from array y
+    # `y` may be a pandas Series labelled by column name. In pandas 3,
+    # `y[idx]` looks up a label, not a position so, convert it to a list
+    values = list(y)
     out = dict()
     for idx, el in enumerate(x):
-        out[el] = y[idx]
+        out[el] = values[idx]
     return out
 
 

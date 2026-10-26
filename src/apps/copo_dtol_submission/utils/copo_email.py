@@ -306,7 +306,7 @@ class Email:
 
                         # Create an unordered list with headings for each profile type
                         html_list = ''.join(
-                            f'<h3>{profile_type} profile(s)</h3><ul>{"".join(f"<li>{profile}</li>" for profile in profiles)}</ul>'
+                            f'<h3>{profile_type} profiles</h3><ul>{"".join(f"<li>{profile}</li>" for profile in profiles)}</ul>'
                             for profile_type, profiles in profiles_by_type.items()
                         )
 
