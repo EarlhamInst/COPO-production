@@ -309,8 +309,7 @@ class ChecklistHandler:
         return checklist_set
 
     def updateCheckList(self):
-        urls = settings.ENA_CHECKLIST_URL
-        urls.extend(settings.COPO_SAMPLE_CHECKLIST_URL)
+        urls = [*settings.ENA_CHECKLIST_URL, *settings.COPO_SAMPLE_CHECKLIST_URL]
 
         checklist_set = []
 
