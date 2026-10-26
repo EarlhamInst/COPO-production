@@ -1,5 +1,5 @@
 #FROM python:3.10.13-bullseye
-FROM python:3.12.14-slim-bookworm
+FROM python:3.12.15-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1
 
@@ -26,12 +26,18 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     curl \
     python-is-python3 && \
     gem install sass && \
-    pip install --upgrade pip && \
+    # Pin `pip` so that the build cache is invalidated when a newer pip is wanted.
+    # An unpinned `pip install --upgrade pip` is reused from the cache and never
+    # upgrades. Increase this version when Docker Scout flags pip's vendored packages.
+    pip install --upgrade "pip==26.2.2" && \
     pip install "setuptools==78.1.1" && \
     apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment
-RUN python -m venv /opt/venv
+# Pin `pip` so that the build cache is invalidated when a newer pip is wanted.
+# An unpinned `pip install --upgrade pip` is reused from the cache and never
+# upgrades. Increase this version when Docker Scout flags pip's vendored packages.
+RUN python -m venv /opt/venv && /opt/venv/bin/pip install --upgrade pip "pip==26.2.2"
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY ./requirements/ /tmp/requirements/

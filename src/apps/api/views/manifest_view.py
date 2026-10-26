@@ -825,7 +825,7 @@ def validate_common_value(request):
                 f'specific location separated by | character. e.g. “United Kingdom | East Anglia | '
                 f'Norfolk | Norwich | University of East Anglia | UEA Broad”. '
                 f'See a list of allowed Country entries at '
-                f'https://www.ebi.ac.uk/ena/browser/view/ERC000053 '
+                f'https://{settings.ENA_URL_HOSTNAME}/ena/browser/view/ERC000053 '
             )
 
     else:

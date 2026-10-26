@@ -1,6 +1,7 @@
 import subprocess
 import json
 import datetime
+from django.conf import settings
 from common.utils.logger import Logger
 import requests
 import unicodedata
@@ -52,7 +53,7 @@ def check_biocollection(voucher_id, qualifier_type):
     Returns True if the voucher_id/qualifier_type combination is registered,
     False otherwise (including on network errors).
     """
-    url = f"https://www.ebi.ac.uk/ena/sah/api/validate"
+    url = f"https://{settings.ENA_URL_HOSTNAME}/ena/sah/api/validate"
 
     try:
         response = requests.get(url,params={"value":voucher_id, "qualifier_type":qualifier_type})
@@ -96,9 +97,9 @@ def check_taxon_ena_submittable(taxon, is_binomial_required=True, by="id"):
     # gevent — a synchronous curl blocks the whole event loop, stalling every
     # other concurrent celery task until the request returns.
     if by == "id":
-        url = "https://www.ebi.ac.uk/ena/taxonomy/rest/tax-id/" + taxon
+        url = f"https://{settings.ENA_URL_HOSTNAME}/ena/taxonomy/rest/tax-id/" + taxon
     elif by == "binomial":
-        url = "https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/" + taxon.replace(" ", "%20")
+        url = f"https://{settings.ENA_URL_HOSTNAME}/ena/taxonomy/rest/scientific-name/" + taxon.replace(" ", "%20")
     else:
         errors.append(MESSAGE['validation_msg_not_submittable_taxon'] % (taxon))
         return errors, taxinfo
@@ -165,7 +166,7 @@ def checkOntologyTerm(ontology_id, ancestor, term):
         for elm in data.get("elements",[]):
             # Accept a match on label or any synonym (handles both plain strings and
             # dicts with a "value" key, as OLS4 returns synonyms in both formats).
-            if term in elm.get("label",[]) or any( isinstance(synonym, str) and synonym == term  or synonym.get("value") == term for synonym in elm.get("synonym",[])) :
+            if term in elm.get("label",[]) or any((synonym == term) if isinstance(synonym, str) else (synonym.get("value") == term) for synonym in elm.get("synonym",[])) :
                 for ancestor_uri in elm.get("hierarchicalAncestor",[]):
                     # Ancestor URIs end with "{ontology_id}_{ancestor}" (case variants exist).
                     if ancestor_uri.endswith(f"{ontology_id}_{ancestor}") or ancestor_uri.endswith(f"{ontology_id.upper()}_{ancestor}"):

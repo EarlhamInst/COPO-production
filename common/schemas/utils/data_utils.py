@@ -83,6 +83,27 @@ def join_with_and(lst, conjunction='and'):
     else:
         return ', '.join(lst[:-1]) + f' {conjunction} ' + str(lst[-1])
 
+def render_html_list(lst, escape_html=False, list_type='ul'):
+    if not lst:
+        return ''
+    
+    if list_type not in ['ul', 'ol']:
+        # `ul` refers to a bullet list
+        # `ol` refers to a numbered list
+        list_type = 'ul'
+
+    if escape_html:
+        ''' 
+        HTML characters should be escaped so that 
+        their plain/raw text is rendered in HTML. 
+        This prevents XSS attacks like interpreting 
+        the `<script>` tag as an actual HTML/JavaScript 
+        element rather than displaying it as text.
+        '''
+        from html import escape
+        lst = [escape(item) for item in lst]
+
+    return f'<{list_type}>' + ''.join(f'<li>{item}</li>' for item in lst) + f'</{list_type}>'
 
 def json_to_object(data_object):
     # converts a dictionary to object

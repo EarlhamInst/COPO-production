@@ -458,6 +458,46 @@ function hasSelectedRows(tableId, btnType) {
   }
 }
 
+function isAnyModalOpen() {
+  return (
+    $('.modal:visible').length > 0 ||
+    $('.ui.modal.visible.active').length > 0 ||
+    $('.modal.in, .modal.show').length > 0 ||
+    $('body').hasClass('modal-open')
+  );
+}
+
+// Resolves once no AJAX request is in flight and no modal is open. Submit
+// actions may open a modal asynchronously (e.g. the repository credentials
+// popup opens after a status request), so wait for those requests to finish
+// and for any resulting modal(s) to close before showing the tour.
+function waitForModalToClose() {
+  return new Promise((resolve) => {
+    const check = () => {
+      let resumed = false;
+      const recheck = () => {
+        if (resumed) return;
+        resumed = true;
+        // A short delay allows chained modals 
+        // or follow-up requests to start
+        setTimeout(check, 300);
+      };
+
+      if ($.active > 0) {
+        $(document).one('ajaxStop', recheck);
+      } else if (isAnyModalOpen()) {
+        $(document).one('hidden.bs.modal', recheck); // Bootstrap modal close event
+        $('.ui.modal').one('hidden', recheck); // Semantic UI modal close event
+      } else {
+        resolve();
+      }
+    };
+
+    // Defer so that the submit button's click handlers run first
+    setTimeout(check, 0);
+  });
+}
+
 async function postSubmissionHandler(event) {
   const button = event.currentTarget;
   const tableId = button.dataset.table;
@@ -468,6 +508,9 @@ async function postSubmissionHandler(event) {
   // Submit stage → publish stage
   const publishProcessStep = tourStages?.['publish'];
   if (publishProcessStep && !localTourCache.has(`${componentName}:publish`)) {
+    // Don't show a tour step on top of any open modals
+    await waitForModalToClose();
+
     // Run tour only after the current tour has finished
     const currentTour = activeTour;
 

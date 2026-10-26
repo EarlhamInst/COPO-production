@@ -142,7 +142,7 @@ function render_ena_accession_function(data, type, row, meta) {
     return '';
   }
   if (type === 'display') {
-    var url = 'https://www.ebi.ac.uk/ena/browser/view/' + data;
+    var url = get_ena_browser_url(data);
     var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
     return html;
   } else {
@@ -250,7 +250,7 @@ function place_task_buttons(componentMeta) {
         action_button_name = button_type + '_singlecell_single_' + item;
         // Do not show buttons that are already within the component's `recordActions` buttons
         if (componentMeta.recordActions.includes(action_button_name)) return;
-        
+
         if (action_button_name in record_action_button_def) {
           button_str = record_action_button_def[action_button_name].template;
           var actionBTN = $(button_str);
@@ -295,8 +295,13 @@ function do_crud_action_feedback(meta) {
   // Route all CRUD feedback through the unified submission activity log
   // instead of cloning Bootstrap alert boxes into the sidebar.
   var statusMap = {
-    success: 'success', green: 'success', positive: 'success',
-    error: 'error', red: 'error', danger: 'error', negative: 'error',
+    success: 'success',
+    green: 'success',
+    positive: 'success',
+    error: 'error',
+    red: 'error',
+    danger: 'error',
+    negative: 'error',
     warning: 'warning',
   };
   var alertType = statusMap[meta.status] || 'info';
@@ -479,11 +484,33 @@ function getAlertElement(htmlId) {
 
 // Activity log palettes — keyed by alert type. 'fg' is the default/no-type colour.
 const ACTIVITY_LOG_THEMES = {
-  dark:  { bg: '#111',    fg: '#ddd',    error: '#ff6b6b', danger: '#ff6b6b', warning: '#e0b060', success: '#7bd88f', info: '#7aa7ff', progress: '#9aa'    },
-  light: { bg: '#f5f6f9', fg: '#2a2e36', error: '#b8362a', danger: '#b8362a', warning: '#9a6a00', success: '#2a8a4a', info: '#2a5fb0', progress: '#5a6470' },
+  dark: {
+    bg: '#111',
+    fg: '#ddd',
+    error: '#ff6b6b',
+    danger: '#ff6b6b',
+    warning: '#e0b060',
+    success: '#7bd88f',
+    info: '#7aa7ff',
+    progress: '#9aa',
+  },
+  light: {
+    bg: '#f5f6f9',
+    fg: '#2a2e36',
+    error: '#b8362a',
+    danger: '#b8362a',
+    warning: '#9a6a00',
+    success: '#2a8a4a',
+    info: '#2a5fb0',
+    progress: '#5a6470',
+  },
 };
 const _activityPalette = () =>
-  ACTIVITY_LOG_THEMES[document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'];
+  ACTIVITY_LOG_THEMES[
+    document.documentElement.getAttribute('data-theme') === 'dark'
+      ? 'dark'
+      : 'light'
+  ];
 const _setImp = (el, prop, val) => el.style.setProperty(prop, val, 'important');
 
 function _repaintActivityLog() {
@@ -492,15 +519,101 @@ function _repaintActivityLog() {
   const p = _activityPalette();
   _setImp(log, 'background', p.bg);
   _setImp(log, 'color', p.fg);
-  log.querySelectorAll(':scope > div').forEach(line =>
-    _setImp(line, 'color', p[line.getAttribute('data-alert-type')] || p.fg));
+  log
+    .querySelectorAll(':scope > div')
+    .forEach((line) =>
+      _setImp(line, 'color', p[line.getAttribute('data-alert-type')] || p.fg)
+    );
 }
 
 // One-shot observer: recolour the log live when the theme toggles.
 if (!document.documentElement._activityLogThemeWatcher) {
   const obs = new MutationObserver(_repaintActivityLog);
-  obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  obs.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  });
   document.documentElement._activityLogThemeWatcher = obs;
+}
+
+// Alert messages include a formatting markup like <br>, <strong>
+// and Semantic UI icons
+// (e.g. <i class='material-symbols-outlined icon pcomponent-material-icon blue no-click'>folder_open</i>)
+// to render them as HTML.
+//
+// The allowed list, `_ALERT_ALLOWED_TAGS` below, facilitates this. Any other
+// elements like script or style-like ones, are dropped with their
+// content so that they are unwrapped to their text only.
+// Attributes like 'class', 'title' and 'href' are okay.
+//
+const _ALERT_ALLOWED_TAGS = new Set([
+  'A',
+  'B',
+  'BR',
+  'CODE',
+  'DIV',
+  'EM',
+  'I',
+  'LI',
+  'OL',
+  'P',
+  'SPAN',
+  'STRONG',
+  'U',
+  'UL',
+]);
+const _ALERT_DROPPED_TAGS = new Set([
+  'SCRIPT',
+  'STYLE',
+  'IFRAME',
+  'OBJECT',
+  'EMBED',
+  'TEMPLATE',
+  'NOSCRIPT',
+  'SVG',
+  'MATH',
+]);
+const _ALERT_SAFE_HREF = /^(https?:|mailto:|\/|#)/i;
+
+function _sanitiseAlertNodes(srcParent, destParent) {
+  srcParent.childNodes.forEach((node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      destParent.appendChild(document.createTextNode(node.nodeValue));
+      return;
+    }
+    if (
+      node.nodeType !== Node.ELEMENT_NODE ||
+      _ALERT_DROPPED_TAGS.has(node.tagName)
+    )
+      return;
+
+    if (!_ALERT_ALLOWED_TAGS.has(node.tagName)) {
+      _sanitiseAlertNodes(node, destParent); // Unwrap to keep the children only
+      return;
+    }
+    const el = document.createElement(node.tagName.toLowerCase());
+    ['class', 'title'].forEach((attr) => {
+      if (node.hasAttribute(attr))
+        el.setAttribute(attr, node.getAttribute(attr));
+    });
+    if (node.tagName === 'A') {
+      const href = (node.getAttribute('href') || '').trim();
+      if (_ALERT_SAFE_HREF.test(href)) {
+        el.setAttribute('href', href);
+        el.setAttribute('target', '_blank');
+        el.setAttribute('rel', 'noopener noreferrer');
+      }
+    }
+    _sanitiseAlertNodes(node, el);
+    destParent.appendChild(el);
+  });
+}
+
+function _alertMessageToFragment(message) {
+  const parsed = new DOMParser().parseFromString(String(message), 'text/html');
+  const fragment = document.createDocumentFragment();
+  _sanitiseAlertNodes(parsed.body, fragment);
+  return fragment;
 }
 
 function displayAlert(alertType, alertMessage, opts) {
@@ -514,7 +627,11 @@ function displayAlert(alertType, alertMessage, opts) {
 
   // Strip legacy boxed alerts from both panels.
   const $panels = $infoPanel.add('#page_alert_panel');
-  $panels.find('.alert.alert-dismissable, .alert.alert-dismissible, .copo-alert-message, .page-notifications-node').remove();
+  $panels
+    .find(
+      '.alert.alert-dismissable, .alert.alert-dismissible, .copo-alert-message, .page-notifications-node'
+    )
+    .remove();
 
   const palette = _activityPalette();
 
@@ -522,15 +639,25 @@ function displayAlert(alertType, alertMessage, opts) {
   let $log = $panels.find('#submission-activity-log').first();
   if (!$log.length) {
     $log = $('<div id="submission-activity-log"/>').css({
-      background: palette.bg, color: palette.fg,
-      padding: '8px 10px', margin: '6px 0',
-      border: '1px solid #333', borderRadius: '4px',
-      maxHeight: '320px', overflowY: 'auto', overflowX: 'hidden',
+      background: palette.bg,
+      color: palette.fg,
+      padding: '8px 10px',
+      margin: '6px 0',
+      border: '1px solid #333',
+      borderRadius: '4px',
+      maxHeight: '320px',
+      overflowY: 'auto',
+      overflowX: 'hidden',
       fontFamily: 'ui-monospace,Menlo,Consolas,monospace',
-      fontSize: '12px', lineHeight: '1.4',
-      whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+      fontSize: '12px',
+      lineHeight: '1.4',
+      whiteSpace: 'pre-wrap',
+      wordBreak: 'break-all',
     });
-    ($('#page_alert_panel').length ? $('#page_alert_panel') : $infoPanel).prepend($log);
+    ($('#page_alert_panel').length
+      ? $('#page_alert_panel')
+      : $infoPanel
+    ).prepend($log);
   }
 
   const lineId = opts && opts.lineId;
@@ -543,7 +670,10 @@ function displayAlert(alertType, alertMessage, opts) {
   $line.attr('data-alert-type', alertType || '');
   // setProperty('important') so per-line colour beats dark-theme's .panel-body !important rule.
   _setImp($line[0], 'color', palette[alertType] || palette.fg);
-  $line.text(new Date().toLocaleTimeString() + ' ' + String(alertMessage).replace(/<[^>]+>/g, ''));
+  $line
+    .empty()
+    .append(document.createTextNode(new Date().toLocaleTimeString() + ' '))
+    .append(_alertMessageToFragment(alertMessage));
   $log.scrollTop($log[0].scrollHeight);
 
   // Toggle sidebar visibility to show it since content was added
@@ -559,7 +689,10 @@ function displayAlert(alertType, alertMessage, opts) {
 function deselect_records(tableID) {
   var table = $('#' + tableID).DataTable();
   table.rows().deselect();
-  $('#' + tableID).closest('.dataTables_wrapper').find('.copo-table-cbuttons').removeClass('has-selection');
+  $('#' + tableID)
+    .closest('.dataTables_wrapper')
+    .find('.copo-table-cbuttons')
+    .removeClass('has-selection');
 }
 
 function do_render_server_side_table(componentMeta) {
@@ -786,7 +919,9 @@ function do_render_server_side_table(componentMeta) {
       elem.toggleClass('selected');
 
       // Toggle action button visibility based on selection
-      var $cbuttons = $('#' + tableID).closest('.dataTables_wrapper').find('.copo-table-cbuttons');
+      var $cbuttons = $('#' + tableID)
+        .closest('.dataTables_wrapper')
+        .find('.copo-table-cbuttons');
       if (server_side_select[component].length > 0) {
         $cbuttons.addClass('has-selection');
       } else {
@@ -843,7 +978,6 @@ function do_render_server_side_table(componentMeta) {
   table_wrapper
     .find('.dataTables_scroll')
     .attr('data-tour-id', 'component_table component_table_with_accessions');
-
 
   //handle event for table details
   $('#' + tableID + ' tbody')
@@ -1246,7 +1380,6 @@ function do_render_component_table(data, componentMeta, columnDefs = null) {
   table_wrapper
     .find('.dataTables_scroll')
     .attr('data-tour-id', 'component_table component_table_with_accessions');
-
 
   // Handle event for table details
   $('#' + tableID + ' tbody')

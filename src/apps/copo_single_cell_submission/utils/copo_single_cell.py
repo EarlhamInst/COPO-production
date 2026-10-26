@@ -8,6 +8,7 @@ from common.utils.helpers import get_not_deleted_flag
 import requests
 from common.dal.submission_da import Submission
 from common.dal.mongo_util import cursor_to_list
+from common.schemas.utils.data_utils import render_html_list
 from django.conf import settings
 from bson import regex
 import os
@@ -16,6 +17,7 @@ from common.utils.helpers import get_env, get_current_user, notify_submission_st
 from . import zenodo_submission
 from . import ena_submission
 from common.s3.s3Connection import S3Connection as s3
+from common.s3.checksum import verify_s3_checksums
 from src.apps.copo_file.utils.CopoFiles import delete_image_thumbnail
 
 
@@ -59,7 +61,7 @@ def _query_ena_file_processing_status(accession_no):
         except Exception as e:
             l.exception(e)
         return result
-    
+
 def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), schema_name=str()):
     """Build the complete data structure for the single-cell UI DataTable.
 
@@ -606,8 +608,8 @@ def query_submit_result(profile_id, study_id,schema_name, repository="ena"):
         case _:
             # Any other status (pending, downloading, uploading, sending) means still in progress
             return dict(status='error', message="Submission is in progress, please try again later!")  
-        
-        
+
+
 def submit_singlecell(profile_id, study_id, schema_name="", repository="ena", credential_source="user"):
     """Initiate a single-cell submission to a repository (ENA or Zenodo).
 
@@ -665,7 +667,9 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena", cr
     # Guard against submitting when there's nothing to submit or submission is already running
     match final_status:
         case "accepted" | "published":
-            return dict(status='error', message="There is no pending change for submission!")
+            return dict(
+                status='error', message="There is no pending change for submission!"
+            )
         case "processing":
             return dict(status='error', message="Submission is in progress, please wait until it is completed!")
 
@@ -706,27 +710,66 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena", cr
         # Submit on a manifest whose data files were never uploaded, leading
         # to silently broken EnaFileTransfer rows and a confusing failure later.
         s3obj = s3()
-        etags, _ = s3obj.check_s3_bucket_for_files(bucket_name=profile_id, file_list=files, just_return_etags=True)
-        # Defensive: helper may return non-dict on bucket-missing/auth errors.
-        if not isinstance(etags, dict):
-            etags = {}
-        missing_files = [f for f in files if f not in etags]
+        file_etags, _ = s3obj.check_s3_bucket_for_files(bucket_name=profile_id, file_list=files, just_return_etags=True)
+
+        # Non-dict errors might be returned from the
+        # `check_s3_bucket_for_files` function.
+        # These errors might relate to bucket missing
+        # or authentication issues so ensure that `file_etags
+        # is a dictionary
+        if not isinstance(file_etags, dict):
+            file_etags = {}
+
+        missing_files = [f for f in files if f not in file_etags]
         if missing_files:
+            missing_files_html = [f"<strong>{f}</strong>" for f in missing_files]
             return dict(
                 status='error',
                 message=(
-                    "Cannot submit the following data files because they are missing from storage: "
-                    + ", ".join(f"<strong>{f}</strong>" for f in missing_files) + ".<br><br>"
-                    + "Upload them via <strong>Data files</strong> on the "
-                    "<strong>Work profiles</strong> page and try again."
+                    "Cannot submit the following data files because they are missing from storage: <br>"
+                    + f'{render_html_list(missing_files_html)}'
+                    + "Upload them via <strong>Data files</strong> button on the "
+                    + "<strong>Work profiles</strong> page and try again."
                 ),
             )
 
-        datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name": {"$in": files}}, projection={"_id": 1, "file_name": 1})
+        datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name": {"$in": files}}, projection={"_id": 1, "file_name": 1, "file_hash": 1})
+
+        # The data file checksums provided in a manifest must match
+        # the checksum of the uploaded data files.
+        # This checking is done at this point because the data files
+        # may have been uploaded after the manifest was uploaded
+        # and validated.
+        mismatched, pending = verify_s3_checksums(
+            profile_id, {f['file_name']: f.get('file_hash', '') for f in datafiles}, file_etags)
+
+        if mismatched:
+            mismatched_html = [f"<strong>{f}</strong>" for f in mismatched]
+            return dict(
+                status='error',
+                message=(
+                    'Submission failed because the uploaded data files do not match the file '
+                    'checksums provided in the manifest: <br>'
+                    + f'{render_html_list(mismatched_html)}'
+                    + 'Please correct the checksums in the manifest then, re-upload it.'
+                ),
+            )
+
+        if pending:
+            pending_html = [f"<strong>{f}</strong>" for f in pending]
+            return dict(
+                status='error',
+                message=(
+                    'Data file checksums are still being calculated for: <br>'
+                    f'{render_html_list(pending_html)}'
+                    'Please try again in a few minutes.'
+                ),
+            )
+
         errors = []
         # Create an EnaFileTransfer record for each file (tracks download/upload progress)
         for file in datafiles:
-            result, message = tx.make_transfer_record(file_id=file["_id"], submission_id=str(submissions[0]["_id"]), no_remote_location=True if repository == "zenodo" else False, etag=etags.get(file["file_name"], ""))
+            result, message = tx.make_transfer_record(file_id=file["_id"], submission_id=str(submissions[0]["_id"]), no_remote_location=True if repository == "zenodo" else False, etag=file_etags.get(file["file_name"], ""))
             if not result:
                 errors.append(message)
         if errors:
@@ -1007,7 +1050,6 @@ def make_snapshot(profile_id, target_ids, target_id, checklist_id, study_id):
         binary_file.write(bytesstring.getvalue())
     """
     return {"status":"error", "message": "Not Implemented yet."}
- 
 
 
 def get_snapshot_file(profile_id, study_id, snapshot_version):

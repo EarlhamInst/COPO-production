@@ -12,8 +12,9 @@ l = Logger()
 
 def generate_files_record(profile_id=str()):
     from common.s3.s3Connection import S3Connection as s3
+    from common.s3.checksum import get_s3_object_md5s
 
-    label = ['file_name', "S3_ETag", "last_uploaded", "size_in_bytes", "size_bytes"]
+    label = ['file_name', "md5", "last_uploaded", "size_in_bytes", "size_bytes"] # "S3_ETag"
     data_set = []
     columns = []
     columns.append(dict(data="record_id", visible=False))
@@ -40,14 +41,20 @@ def generate_files_record(profile_id=str()):
     )
     for x in label:
         col = dict(data=x, title=x.upper().replace("_", " "))
-        if x == "size_in_bytes":
+        if x == "file_name":
+            col["title"] = "File name"
+        elif x == "md5":
+            col["title"] = "Checksum"
+        # elif x == "S3_ETag":
+        #     col["title"] = "Checksum"
+        elif x == "last_uploaded":
+            col["title"] = "Last uploaded"
+        elif x == "size_in_bytes":
             col["title"] = "Size"
             col["render"] = size_render
         elif x == "size_bytes":
             col["title"] = "Size (bytes)"
             col["render"] = bytes_render
-        elif x == "S3_ETag":
-            col["title"] = "Checksum"
         columns.append(col)
 
     s3obj = s3()
@@ -61,6 +68,9 @@ def generate_files_record(profile_id=str()):
     if s3obj.check_for_s3_bucket(bucket_name):
         files = s3obj.list_objects(bucket_name)
         if files:
+            # Queue the hashing of large file uploads that are not yet hashed
+            md5s = get_s3_object_md5s(bucket_name, {file["Key"]: file["ETag"] for file in files})
+
             for file in files:
                 row_data = dict()
                 row_data["record_id"] = file["Key"]
@@ -69,7 +79,8 @@ def generate_files_record(profile_id=str()):
                 row_data["size_in_bytes"] = file["Size"]
                 row_data["size_bytes"] = file["Size"]
                 row_data["last_uploaded"] = file["LastModified"]
-                row_data["S3_ETag"] = file["ETag"].replace('"', '')
+                # row_data["S3_ETag"] = file["ETag"].replace('"', '')
+                row_data["md5"] = md5s.get(file["Key"]) or "Calculating..."
                 data_set.append(row_data)
                 # bucket_size += file["Size"]
 

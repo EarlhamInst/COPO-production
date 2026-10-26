@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+from common.utils.helpers import get_env
 
 class ZenodoClient:
     """
@@ -17,8 +18,8 @@ class ZenodoClient:
         """
         Initializes a new instance of the SapioClient class.
         """
-        self.url = os.getenv('ZENODOURL')
-        self.api_token = os.getenv('ZENODOTOKEN')
+        self.url = get_env('ZENODOURL')
+        self.api_token = get_env('ZENODOTOKEN')
         self.session = requests.Session()
         self.session.headers = {"Authorization": f"Bearer {self.api_token}"}
         

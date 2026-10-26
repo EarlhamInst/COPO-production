@@ -65,7 +65,7 @@
             '<span class="cred-modal-feedback"></span>' +
           '</div>' +
           '<div class="modal-footer">' +
-            '<button type="button" class="btn btn-default cred-modal-default">Use COPO default</button>' +
+            '<button type="button" class="btn btn-default cred-modal-default">Use COPO\'s default credentials</button>' +
             '<button type="button" class="btn btn-primary cred-modal-save">Save, validate &amp; submit</button>' +
           '</div>' +
         '</div></div>' +

@@ -99,14 +99,15 @@ $(document).ready(function () {
     var numCols = table.columns().nodes().length;
 
     for (var i = 0; i < numCols; i++) {
-      // Attach a tooltip to the Checksum header explaining S3 ETag semantics.
-      // For single-part uploads the ETag is a plain MD5; for multipart uploads
-      // it is an MD5-of-MD5s suffixed with -N (number of parts) and cannot be
-      // used to verify raw file integrity against other systems.
+      // Attach a tooltip to the 'Checksum' column that shows the 
+      // data file's actual MD5 file checksum and not the 'S3 ETag' 
+      // value which is related to multipart uploads.
       if ($(table.column(i).header()).text().trim() == 'Checksum') {
         $(table.column(i).header()).attr(
           'title',
-          'S3 ETag. For multipart-uploaded files this ends in -N and is not a plain MD5 \u2014 it cannot be used to verify file integrity against other systems. The MD5 used for ENA submission is computed separately when the file is downloaded for transfer.'
+          `MD5 checksum of the uploaded file. It is checked against the
+          checksum provided in the manifest. Large data files are hashed in the
+          background after upload and show "Calculating..." until they're done.`
         );
       }
       // Sum the raw byte values in the 'Size (bytes)' column to display
@@ -352,7 +353,7 @@ function upload_files(files) {
         $('#uploadModal').modal('hide');
         result_dict = {};
         result_dict['status'] = 'success';
-        result_dict['message'] = 'File(s) have been uploaded!';
+        result_dict['message'] = 'Files have been uploaded';
         do_crud_action_feedback(result_dict);
         globalDataBuffer = data;
         // If the response includes updated table data, trigger a full table redraw.

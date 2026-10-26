@@ -4,6 +4,7 @@ import subprocess
 from Bio import Entrez
 from common.dal.mongo_util import cursor_to_list
 from common.dal.sample_da import Sample
+from common.utils.helpers import get_env
 from django.core.management import BaseCommand
 from src.apps.copo_core.management.commands import update_samplefield
 
@@ -15,7 +16,7 @@ from src.apps.copo_core.management.commands import update_samplefield
 class Command(BaseCommand):
     # Show this when the user types help
     help = "Fix missing relationships between sample specimens"
-    Entrez.email = "EI.copo@earlham.ac.uk"
+    Entrez.email = get_env('PROJECT_TEAM_EMAIL')
 
     def get_sample_relationship(self, sample):
         organism_part = sample['ORGANISM_PART']
@@ -35,8 +36,7 @@ class Command(BaseCommand):
         # Retrieve the accession also known as biosample accession from the ENA webin submission portal
         # Look at the xml format in the DTOLSubmission class to see how to retrieve a value of a tag for the accession
         # Use the links sent to determine how to search for the biosample from the ENA website
-        sraAccession = "ERS12158254"
-        ena_api_search_service = "https://wwwdev.ebi.ac.uk/ena/portal/api/search"
+        ena_api_search_service = "https://www.ebi.ac.uk/ena/portal/api/search"
         curl_cmd = r"""curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'result=sample&query=secondary_sample_accession={}&fields=accession&format=json' {}""".format(
             sraAccession, ena_api_search_service)
 

@@ -412,7 +412,7 @@ def get_ena_remote_files(user_token=str(), pass_word=str()):
     )
 
     try:
-        response = requests.get('https://www.ebi.ac.uk/ena/submit/report/unsubmitted-files', headers=headers,
+        response = requests.get(f'https://{settings.ENA_URL_HOSTNAME}/ena/submit/report/unsubmitted-files', headers=headers,
                                 params=params, auth=(user_token, pass_word))
     except Exception as e:
         log_general_error('API call error ' + str(e))
