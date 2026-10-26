@@ -13,7 +13,7 @@ import common.dal.sample_da as da
 class Command(BaseCommand):
     help = "update metadata of samples - " \
         "provide comma separated biosamples:field:new_value"
-    Entrez.email = "ei.copo@earlham.ac.uk"
+    Entrez.email = helpers.get_env('PROJECT_TEAM_EMAIL')
 
     def __init__(self):
         self.TAXONOMY_FIELDS = ["TAXON_ID", "ORDER_OR_GROUP", "FAMILY", "GENUS",

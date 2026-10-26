@@ -19,7 +19,7 @@ from common.schema_versions.lookup.dtol_lookups import (
 )
 from common.schemas.utils.data_utils import join_with_and
 from common.utils.copo_email import CopoEmail
-from common.utils.helpers import get_datetime
+from common.utils.helpers import get_datetime, get_env
 from common.utils.logger import Logger
 
 l = Logger()
@@ -46,7 +46,7 @@ class EnaRecordSynchroniser:
         self.reports_directory_housekeeping_days = 5
         self.sync_report_file_name = f'{self.repository}-sync-report'
         # NB: settings.MAIL_ADDRESS does not work as the sender's email address
-        self.sync_report_recipient_email_address = 'ei.copo@earlham.ac.uk'
+        self.sync_report_recipient_email_address = get_env('PROJECT_TEAM_EMAIL')
 
         self.taxonomy_fields = [
             'COMMON_NAME',
@@ -898,7 +898,7 @@ class EnaRecordSynchroniser:
 
                         bulk_updates[collection_name].append(
                             UpdateOne(
-                                {'accession': record_accession}, {'$set': update_dict}
+                                {'biosampleAccession': record_accession}, {'$set': update_dict}
                             )
                         )
 

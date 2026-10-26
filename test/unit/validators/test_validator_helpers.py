@@ -13,7 +13,7 @@ from datetime import date, timedelta
 from unittest import mock
 import pytest
 
-from common.validators.helpers import clean_str, validate_date, check_biocollection
+from common.validators.helpers import clean_str, validate_date, check_biocollection, checkOntologyTerm
 
 
 def test_validate_date_accepts_a_past_date():
@@ -91,3 +91,38 @@ def test_check_biocollection_accepts_registered_voucher():
 
     with mock.patch('common.validators.helpers.requests.get', return_value=fake_response):
         assert check_biocollection('V12345', 'type1') is True
+
+def _ols_response(elements):
+    return mock.Mock(status_code=200, **{'json.return_value': {'elements': elements}})
+
+
+@pytest.mark.parametrize(
+    'synonyms',
+    [
+        ['encephalon', 'brain'],                       # plain strings
+        [{'value': 'encephalon'}, {'value': 'brain'}],  # dicts with "value"
+        ['encephalon', {'value': 'brain'}],            # mixed
+    ],
+)
+def test_check_ontology_term_matches_synonym_in_either_format(synonyms):
+    # OLS4 returns synonyms as plain strings or {"value": ...} dicts. A non-matching
+    # string synonym used to fall through to .get() and raise AttributeError.
+    element = {
+        'label': ['something else'],
+        'synonym': synonyms,
+        'hierarchicalAncestor': ['http://purl.obolibrary.org/obo/UBERON_0000061'],
+    }
+
+    with mock.patch('common.validators.helpers.requests.get', return_value=_ols_response([element])):
+        assert checkOntologyTerm('uberon', '0000061', 'brain') is True
+
+
+def test_check_ontology_term_rejects_when_no_string_synonym_matches():
+    element = {
+        'label': ['something else'],
+        'synonym': ['encephalon', 'cerebrum'],
+        'hierarchicalAncestor': ['http://purl.obolibrary.org/obo/UBERON_0000061'],
+    }
+
+    with mock.patch('common.validators.helpers.requests.get', return_value=_ols_response([element])):
+        assert checkOntologyTerm('uberon', '0000061', 'brain') is False

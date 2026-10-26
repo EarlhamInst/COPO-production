@@ -27,6 +27,10 @@
 # $ docker compose -f local.copo.compose.linux.yaml down
 # $ docker compose --env-file .env -f local.copo.compose.linux.yaml up -d
 #
+## Note: To stop then start containers but retain existing database 
+## data and applied migrations, run:
+# $ docker compose --env-file .env -f local.copo.compose.linux.yaml restart
+#
 #
 ## Step #3  - Run Django management commands in the terminal
 ## to set up the database and create a superuser (for a new deployment with empty DB only)
@@ -119,6 +123,7 @@ services:
       - MAIL_ADDRESS=data@earlham.ac.uk
       - MAIL_SERVER=outlook.office365.com
       - MAIL_USERNAME=eidata@nbi.ac.uk
+      - PROJECT_TEAM_EMAIL=ei.copo-dev@earlham.ac.uk
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
       - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
