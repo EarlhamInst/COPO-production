@@ -49,7 +49,7 @@ jobs:
           cache-to: type=registry,ref=copo/copo-new-web:buildcache,mode=max
 
       - name: Docker Scout — report HIGH findings (advisory)
-        uses: docker/scout-action@v1.24.0
+        uses: docker/scout-action@v1.26.0
         with:
           command: cves
           image: copo/copo-new-web:${{ steps.meta.outputs.version }}
@@ -57,7 +57,7 @@ jobs:
           exit-code: false
 
       - name: Docker Scout — enforce CRITICAL findings (fixable only)
-        uses: docker/scout-action@v1.24.0
+        uses: docker/scout-action@v1.26.0
         with:
           command: cves
           image: copo/copo-new-web:${{ steps.meta.outputs.version }}

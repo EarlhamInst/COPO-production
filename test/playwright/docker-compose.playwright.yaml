@@ -6,11 +6,11 @@
 # After the steps have been followed especially Step #2, 
 # the Playwright container will be running. To execute tests run,
 #
-# $ docker run --rm --network host playwright:v1.62.1 pytest
+# $ docker run --rm --network host playwright:v1.64.1 pytest
 #
 services:
   copo_playwright:
-    image: playwright:v1.62.1
+    image: playwright:v1.64.1
     # Build the image if that tag isn't present locally, rather than letting
     # Docker try to pull it from a registry it was never pushed to and fail
     # with a confusing "not found". This matters on every image bump: the tag

@@ -46,15 +46,15 @@ that, and isn't meant to.
 
 **Step 3: Build latest Playwright Docker image (optional)**
 
-  You do not usually need to build the `playwright:v1.62.1` image because the
+  You do not usually need to build the `playwright:v1.64.1` image because the
   Docker compose service already declares a `build:` section which builds the tag on your 
   local machine if it doesn't exist. This takes a few minutes to be built; it mainly involves 
   pulling the base image. To build it by hand — say, to rebuild after changing
   `requirements/dev.txt`:
 
-  ```
-  docker build . -f deployment/web/Dockerfile_playwright -t playwright:v1.62.1
-  ```
+```
+docker build . -f deployment/web/Dockerfile_playwright -t playwright:v1.64.1
+```
 
   The tag tracks the base image version in `Dockerfile_playwright`, so it
   changes whenever that's bumped. That's deliberate: a bump asks for a tag
