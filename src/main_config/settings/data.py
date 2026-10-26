@@ -102,6 +102,9 @@ ECS_ACCESS_KEY_ID = get_env('ECS_ACCESS_KEY_ID')
 ECS_SECRET_KEY = get_env('ECS_SECRET_KEY')
 ECS_ENDPOINT = get_env('ECS_ENDPOINT')
 
+# Settings for ENA
+ENA_URL_HOSTNAME = get_env('ENA_URL_HOSTNAME') or 'www.ebi.ac.uk'
+
 # settings for manifest
 MANIFEST_VERSION = {
     "ASG": "2.5",
@@ -122,13 +125,15 @@ ENA_CHECKLIST_CONFIG = {
     "ERT000002": {"skip": ["STRAIN", "LAB_HOST"]},
     "ERT000020": {"skip": ["STRAIN", "SPECVOUCH", "VARIETY", "IDBY"]},
 }
-ENA_BROWSER_API_URL = {'xml':'https://www.ebi.ac.uk/ena/browser/api/xml'}
+
+ENA_BROWSER_API_URL = {'xml': f'https://{ENA_URL_HOSTNAME}/ena/browser/api/xml'}
 
 ENA_CHECKLIST_URL = [
-    "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/ERT000002?type=sequence",
-    "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/ERT000020?type=sequence",
-    "https://www.ebi.ac.uk/ena/submit/report/checklists/xml/*?type=sample",
+    f"https://{ENA_URL_HOSTNAME}/ena/submit/report/checklists/xml/ERT000002?type=sequence",
+    f"https://{ENA_URL_HOSTNAME}/ena/submit/report/checklists/xml/ERT000020?type=sequence",
+    f"https://{ENA_URL_HOSTNAME}/ena/submit/report/checklists/xml/*?type=sample",
 ]
+
 COPO_SAMPLE_CHECKLIST_URL = [
     "https://raw.githubusercontent.com/EarlhamInst/COPO-schemas/refs/heads/main/samples/sample_checklist_dwc.xml",
     "https://raw.githubusercontent.com/EarlhamInst/COPO-schemas/refs/heads/main/samples/sample_checklist_faang.xml",

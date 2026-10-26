@@ -28,3 +28,7 @@ function apply_color() {
         $('.copo-panel-title').addClass('data_color');
     }
 }
+
+function get_ena_browser_url(accession) {
+  return `https://${ENA_URL_HOSTNAME}/ena/browser/view/${accession}`;
+}

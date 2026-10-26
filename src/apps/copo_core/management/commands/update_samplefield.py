@@ -13,7 +13,7 @@ import common.dal.sample_da as da
 class Command(BaseCommand):
     help = "update metadata of samples - " \
         "provide comma separated biosamples:field:new_value"
-    Entrez.email = "ei.copo@earlham.ac.uk"
+    Entrez.email = helpers.get_env('PROJECT_TEAM_EMAIL')
 
     def __init__(self):
         self.TAXONOMY_FIELDS = ["TAXON_ID", "ORDER_OR_GROUP", "FAMILY", "GENUS",
@@ -29,7 +29,7 @@ class Command(BaseCommand):
         # 'https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/'
         self.ena_service = helpers.get_env('ENA_SERVICE')
         self.ena_sample_retrieval = self.ena_service[:-len(
-            'submit/')] + "samples/"  # https://devwww.ebi.ac.uk/ena/submit/drop-box/samples/" \
+            'submit/')] + "samples/"  # https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples/" \
 
     def add_arguments(self, parser):
         parser.add_argument('samples', type=str)

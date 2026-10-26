@@ -142,7 +142,7 @@ function render_ena_accession_function(data, type, row, meta) {
     return '';
   }
   if (type === 'display') {
-    var url = 'https://www.ebi.ac.uk/ena/browser/view/' + data;
+    var url = get_ena_browser_url(data);
     var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
     return html;
   } else {

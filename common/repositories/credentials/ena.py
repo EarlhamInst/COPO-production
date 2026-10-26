@@ -14,8 +14,6 @@ from common.repositories.credentials.base import (
 )
 from common.utils.helpers import get_env
 
-ENA_WEBIN_AUTH_URL = "https://www.ebi.ac.uk/ena/submit/webin/auth/token?ttl=1"
-
 
 def _decompose(webin_user: str, password: str) -> dict:
     """Normalise a Webin username + password into the canonical cred dict.
@@ -67,7 +65,7 @@ class EnaCredentialProvider(RepositoryCredentialProvider):
 
         # Confirm `creds["webin_user"]` + `creds["password"]` are accepted by
         # Webin, and return (True, "...") on success or (False, "<reason>")
-        url = ENA_WEBIN_AUTH_URL
+        url = get_env('ENA_WEBIN_AUTH_URL')
         resp = r.post(url, json={"authRealms": ["ENA"], "password": creds["password"], "username": creds["webin_user"]})
         if resp.status_code == 200:
             return (True, "ENA Webin credentials are valid.")

@@ -51,6 +51,7 @@ services:
       - http_protocol=http
       - WEBIN_USER=${vault_copo_webin_user}
       - WEBIN_USER_PASSWORD=${vault_copo_webin_user_password}
+      - ENA_URL_HOSTNAME=wwwdev.ebi.ac.uk
       - REDIS_HOST=copo_redis
       - REDIS_PORT=6379
       - MONGO_USER=copo_user
@@ -65,6 +66,7 @@ services:
       - POSTGRES_SERVICE=copo_postgres
       - POSTGRES_PASSWORD=password
       - COPO_TEST_USER_PASSWORD=${vault_copo_test_user_password}
+      - PROJECT_TEAM_EMAIL=ei.copo-dev@earlham.ac.uk
     depends_on:
       - copo_web
     volumes:

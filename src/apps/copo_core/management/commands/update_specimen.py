@@ -24,7 +24,7 @@ class Command(BaseCommand):
         # 'https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/'
         self.ena_service = get_env('ENA_SERVICE')
         self.ena_sample_retrieval = self.ena_service[:-len(
-            'submit/')]+"samples/"  # https://devwww.ebi.ac.uk/ena/submit/drop-box/samples/" \
+            'submit/')]+"samples/"  # https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples/" \
 
     # A command must define handle()
     def handle(self, *args, **options):

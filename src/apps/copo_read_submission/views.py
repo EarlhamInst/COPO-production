@@ -139,19 +139,19 @@ def save_ena_records(request):
     profile = Profile().get_record(profile_id)
     profile_name = profile["title"]
     profile_type = ProfileType.objects.get(type=profile["type"])
-    
+
     uid = str(request.user.id)
     checklist = EnaChecklist().get_checklist(checklist_id=request.session["checklist_id"], with_read=True, for_dtol=profile_type.is_dtol_profile)
     column_name_mapping = { field["name"].upper() : key  for key, field in checklist["fields"].items() if not field.get("read_field", False) }
-    #checklist_read = EnaChecklist().get_collection_handle().find_one({"primary_id": "read"})
+    # checklist_read = EnaChecklist().get_collection_handle().find_one({"primary_id": "read"})
     column_name_mapping_read = { field["label"].upper() : key  for key, field in checklist["fields"].items() if field.get("read_field", False) }
-    #bundle = list()
-    #alias = str(uuid.uuid4())
-    #bundle_meta = list()
+    # bundle = list()
+    # alias = str(uuid.uuid4())
+    # bundle_meta = list()
     pairing = list()
     datafile_list = list()
-    #existing_bundle = list()
-    #existing_bundle_meta = list()
+    # existing_bundle = list()
+    # existing_bundle_meta = list()
     sub = Submission().get_collection_handle().find_one(
         {"profile_id": profile_id, "repository":"ena", "deleted": get_not_deleted_flag()})
     # override the bundle files for every manifest upload
@@ -227,8 +227,11 @@ def save_ena_records(request):
                 tax_id = organism_map.get(s["Organism"], None)
                 source_id = source_map.get(s["Organism"], None)
                 if not tax_id:
-                    curl_cmd = "curl " + \
-                            "https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/" + s["Organism"].replace(" ", "%20")
+                    curl_cmd = (
+                        "curl "
+                        + f"https://{settings.ENA_URL_HOSTNAME}/ena/taxonomy/rest/scientific-name/"
+                        + s["Organism"].replace(" ", "%20")
+                    )
                     receipt = subprocess.check_output(curl_cmd, shell=True)
                     # ToDo - exit if species not found
                     print(receipt)
@@ -300,11 +303,10 @@ def save_ena_records(request):
         checklist_id = request.session["checklist_id"]
         if checklist_id != "read":
             sample["checklist_id"] = checklist_id
-        
+
         if "Organism" in s:
             sample["taxon_id"] = organism_map.get(s["Organism"], None)
 
-            
         for key, value in s.items():
             header = key
             header = header.replace(" (optional)", "", -1)

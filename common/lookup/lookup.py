@@ -2,6 +2,7 @@
 
 import os
 from .resolver import RESOLVER
+from django.conf import settings
 
 # Minimum field lengths enforced at manifest upload time and during ENA submission.
 PROFILE_TITLE_MIN_LENGTH = 20
@@ -60,7 +61,6 @@ UI_CONFIG_MAPPINGS = os.path.join(RESOLVER['uimodels_copo'], 'mappings')
 
 # path to mapping based on schema version:
 UI_CONFIG_MAPPINGS_BASED_ON_SCHEMA_VERSION = os.path.join(RESOLVER['isa_mappings'])
-
 
 
 # •••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••#
@@ -511,7 +511,7 @@ DROP_DOWNS = {
         {
             "value": "biosample",
             "label": "Biosample Standard",
-            "description": "Biosmaple samples are based on <a href='https://www.ebi.ac.uk/biosamples/' target='_blank'>BioSamples</a>. They are "
+            "description": f"Biosmaple samples are based on <a href='https://{settings.ENA_URL_HOSTNAME}/biosamples/' target='_blank'>BioSamples</a>. They are "
                            "<strong>repository agnostic</strong>, and are better suited for describing samples in a generic manner or in contexts "
                            "where the target repository isn't known in advance."
         },
@@ -717,11 +717,11 @@ WIZARD_FILES = {
 ONTOLOGY_LKUPS = {
     'ontologies_to_search': 'go,co,po',
     'fields_to_search': 'label,description,short_form',
-    'ebi_ols_autocomplete': 'http://www.ebi.ac.uk/ols/api/select?q={term!s}&ontology={'
+    'ebi_ols_autocomplete': 'https://www.ebi.ac.uk/ols4/api/select?q={term!s}&ontology={'
                             'ontology_names!s}&rows=50&local=true&type=class&fieldList=iri,label,short_form,obo_id,ontology_name,ontology_prefix,'
                             'description,type,id',
     'ontology_file_uri': 'http://data.bioontology.org/ontologies/',
-    'copo_ontologies': os.path.join(RESOLVER['lookup'], "ontology_references.json")
+    'copo_ontologies': os.path.join(RESOLVER['lookup'], "ontology_references.json"),
 }
 
 # •••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••#
