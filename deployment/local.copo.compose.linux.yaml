@@ -23,6 +23,11 @@
 #    values containing special characters, e.g. a WEBIN password with '&'.
 #    `export $(cat .env)` leaves those quotes inside the value and breaks them.)
 #
+## Note: To stop then start containers, run
+# $ docker compose -f local.copo.compose.linux.yaml down
+# $ docker compose --env-file .env -f local.copo.compose.linux.yaml up -d
+#
+#
 ## Step #3  - Run Django management commands in the terminal
 ## to set up the database and create a superuser (for a new deployment with empty DB only)
 # $ docker ps
