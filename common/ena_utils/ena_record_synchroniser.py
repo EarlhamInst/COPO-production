@@ -898,7 +898,7 @@ class EnaRecordSynchroniser:
 
                         bulk_updates[collection_name].append(
                             UpdateOne(
-                                {'accession': record_accession}, {'$set': update_dict}
+                                {'biosampleAccession': record_accession}, {'$set': update_dict}
                             )
                         )
 
