@@ -39,6 +39,7 @@ set -euo pipefail
 PROJECT_SETUP_DIR="${COPO_PROJECT_SETUP_DIR:-}"
 LOCAL_COMPOSE_FILE_NAME="${COPO_LOCAL_COMPOSE_FILE_NAME:-}"
 MISSING_VARS=0
+PROJECT_LOCAL_URL="http://localhost:8000/" # Can also use `127.0.0.1` instead of `localhost` if preferred.
 
 # Check whether the required environment variables are set
 if [ -z "$PROJECT_SETUP_DIR" ]; then
@@ -147,5 +148,15 @@ if [ -n "$WEB_CONTAINER" ]; then
   fi
 fi
 
+# `--no-deps` (in the command below) stops the Playwright test run from starting or 
+# recreating `copo_web` container as doing so would kill the VS Code debugger 
+# session running Django and Celery inside it.
+# As such, a pre-check ensures that COPO is actually being served before running the tests.
+if ! curl -s -o /dev/null --max-time 10 "$PROJECT_LOCAL_URL"; then
+  echo "COPO is not responding on $PROJECT_LOCAL_URL." >&2
+  echo "Start the 'Python: Django' and 'Python: Celery Workers' debug configurations for copo_web first." >&2
+  exit 1
+fi
+
 docker compose --env-file .env -f "$LOCAL_COMPOSE_FILE_NAME" -f "$PLAYWRIGHT_COMPOSE" \
-  run --rm --service-ports copo_playwright pytest "${PYTEST_ARGS[@]}"
+  run --rm --no-deps --service-ports copo_playwright pytest "${PYTEST_ARGS[@]}"

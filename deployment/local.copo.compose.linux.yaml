@@ -23,7 +23,7 @@
 #    values containing special characters, e.g. a WEBIN password with '&'.
 #    `export $(cat .env)` leaves those quotes inside the value and breaks them.)
 #
-## Note: To stop then start containers, run
+## Note: To stop then start containers but lose existing data, run:
 # $ docker compose -f local.copo.compose.linux.yaml down
 # $ docker compose --env-file .env -f local.copo.compose.linux.yaml up -d
 #
@@ -83,10 +83,10 @@
 
 version: '3.9'
 services:
-  web:
+  copo_web:
     image: local_copo_web:v1.0.0 # Replace with your local image name
     command: >
-      bash -c "code-server serve-local --disable-telemetry --auth  none --host 0.0.0.0 --port 8000"
+      bash -c "pip install -q --use-deprecated=legacy-resolver -r /copo/requirements/dev.txt; code-server serve-local --disable-telemetry --auth  none --host 0.0.0.0 --port 8000"
     ports:
       - '8000:8000'
     environment:
@@ -103,6 +103,8 @@ services:
       - ENA_URL_HOSTNAME=wwwdev.ebi.ac.uk
       - CREDENTIAL_ENCRYPTION_KEY=${vault_copo_credential_encryption_key}
       - ENA_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/
+      - ENA_WEBIN_AUTH_URL=https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token?ttl=1
+      - ENA_URL_HOSTNAME=wwwdev.ebi.ac.uk
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD=password
       - MONGO_DB=copo_mongo
@@ -145,6 +147,7 @@ services:
       - http_protocol=http
       - ZENODOURL=https://zenodo.org/api
       - ZENODOTOKEN=${vault_zenodo_api_token}
+      - ENA_BROWSER_SERVICE=https://www.ebi.ac.uk/ena/browser/api # Has to be production ENA browser API endpoint
     depends_on:
       - copo_redis
       - copo_postgres
@@ -158,6 +161,10 @@ services:
     volumes:
       # Replace with the absolute path to your local COPO project directory
       - /<path-to-project-directory>/COPO-production:/copo
+    networks:
+      default:
+        aliases:
+          - copo-web
 
   copo_redis:
     image: redis:6.2.8
