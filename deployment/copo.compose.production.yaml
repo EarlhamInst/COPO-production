@@ -114,6 +114,7 @@ services:
       - MAIL_ADDRESS=data@earlham.ac.uk
       - MAIL_SERVER=outlook.office365.com
       - MAIL_USERNAME=eidata@nbi.ac.uk
+      - PROJECT_TEAM_EMAIL=ei.copo@earlham.ac.uk
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
       - ENA_ENDPOINT_REPORT=https://www.ebi.ac.uk/ena/submit/report/
@@ -225,6 +226,7 @@ services:
       - MAIL_ADDRESS=data@earlham.ac.uk
       - MAIL_SERVER=outlook.office365.com
       - MAIL_USERNAME=eidata@nbi.ac.uk
+      - PROJECT_TEAM_EMAIL=ei.copo@earlham.ac.uk
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
       - ENA_ENDPOINT_REPORT=https://www.ebi.ac.uk/ena/submit/report/

@@ -4,6 +4,7 @@ import subprocess
 from Bio import Entrez
 from common.dal.mongo_util import cursor_to_list
 from common.dal.sample_da import Sample
+from common.utils.helpers import get_env
 from django.core.management import BaseCommand
 from src.apps.copo_core.management.commands import update_samplefield
 
@@ -15,7 +16,7 @@ from src.apps.copo_core.management.commands import update_samplefield
 class Command(BaseCommand):
     # Show this when the user types help
     help = "Fix missing relationships between sample specimens"
-    Entrez.email = "EI.copo@earlham.ac.uk"
+    Entrez.email = get_env('PROJECT_TEAM_EMAIL')
 
     def get_sample_relationship(self, sample):
         organism_part = sample['ORGANISM_PART']
