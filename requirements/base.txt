@@ -59,7 +59,7 @@ django-tools==0.59.0
 django-user-agents==0.4.0
 django-crispy-forms==2.7
 crispy-bootstrap5==2026.9
-djangorestframework==3.18.1
+djangorestframework==3.18.2
 docopt==0.6.2
 #docutils==0.12
 entrypoints==0.4.2
