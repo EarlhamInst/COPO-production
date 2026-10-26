@@ -137,6 +137,7 @@ ENA_CHECKLIST_URL = [
 COPO_SAMPLE_CHECKLIST_URL = [
     "https://raw.githubusercontent.com/EarlhamInst/COPO-schemas/refs/heads/main/samples/sample_checklist_dwc.xml",
     "https://raw.githubusercontent.com/EarlhamInst/COPO-schemas/refs/heads/main/samples/sample_checklist_faang.xml",
+    "https://raw.githubusercontent.com/EarlhamInst/COPO-schemas/refs/heads/main/samples/sample_checklist_faang_mouse_brain.xml"
 ]
 
 SINGLE_CELL_SCHEMAS_URL = {
