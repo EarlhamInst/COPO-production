@@ -236,6 +236,9 @@ class SapioAdapter(LIMSAdapter):
 
                 # Attach existing profile that was created in COPO to its project
                 # department in Sapio if the link is missing
+                project: PyRecordModel = Sapio().inst_man.add_existing_record(
+                    project_record
+                )
                 self._attach_project_to_department(project)
 
             # Load all samples and plates currently linked to this project
