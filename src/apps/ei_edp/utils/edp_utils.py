@@ -5,6 +5,7 @@ from sapiopylib.rest.utils.recordmodel.PyRecordModel import PyRecordModel
 
 from common.dal.copo_da import CopoGroup
 from common.dal.profile_da import Profile
+from common.schemas.utils.data_utils import render_html_list
 from common.utils import helpers
 from common.utils.logger import Logger
 from src.apps.copo_core.models import User
@@ -70,7 +71,6 @@ def pre_save_edp_profile(auto_fields, **kwargs):
     if not target_id:
         return {"status": "success"}
     profile = Profile().get_record(target_id)
-    requested_sample_count = auto_fields.get("copo.profile.no_of_samples", [])
 
     # LIMS-specific validation (e.g. can't drop below committed samples) is
     # delegated to the active adapter.
@@ -93,13 +93,13 @@ def post_save_edp_profile(profile):
        Samples are assigned to 96-well plates; new plates are created
        automatically if needed.
 
-    Returns {"status": "success"} on success, or
-    {"status": "warning", "message": ...} if the profile saved to COPO but the
-    Sapio sync failed (so the caller can show a partial-success message).
+    If EDP profiles fail to be shared via email, their project creations in Sapio
+    will still go ahead. All this occurs after the profile has been saved in COPO.
     """
     project_record = None
 
     current_user = helpers.get_current_user()
+    email_obj = Email()
 
     # --- COPO profile sharing ---
     customer_emails = profile.get("customer_emails", "")
@@ -153,7 +153,7 @@ def post_save_edp_profile(profile):
                 _add_to_edp_django_group(list(map(int, new_shared_user.keys())))
 
                 # Send an email about the shared profile
-                Email().notify_shared_profile_to_existing_user(
+                email_obj.notify_shared_profile_to_existing_user(
                     profile, new_shared_user.values()
                 )
 
@@ -177,11 +177,12 @@ def post_save_edp_profile(profile):
                 {"_id": profile["_id"]},
                 {"$set": {"customer_emails_tokens": customer_emails_tokens}},
             )
-            Email().notify_shared_profile_to_non_existent_user(
+            email_obj.notify_shared_profile_to_non_existent_user(
                 profile, customer_emails_tokens
             )
 
     # --- LIMS project sync ---
+    # Runs whether or not emails have been successfully sent about the created profiles
     # Delegate project/sample synchronisation to the active LIMS adapter. The
     # adapter returns the (possibly newly minted) project id, which we persist
     # on the profile so subsequent saves update rather than recreate. The id is
@@ -194,11 +195,29 @@ def post_save_edp_profile(profile):
             {"_id": profile["_id"]}, {"$set": {"sapio_project_id": project_id}}
         )
 
+    messages = []
+    status = 'success'
     if result.get("status") != "success":
-        return {
-            "status": result.get("status", "warning"),
-            "message": result.get("message", ""),
-        }
+        status = result.get('status', 'warning')
+        messages.append(result.get('message', ''))
+        
+    if email_obj.failed_emails:
+        if status == 'success':
+            status = 'warning'
+        messages.append(
+            'Profile has been saved but, it could not be shared to the following email addresses:<br>'
+            + f'{render_html_list(sorted(email_obj.failed_emails))}'
+            + 'Please check the email addresses or contact the COPO team.'
+        )
+        
+    if email_obj.skipped_emails:
+        messages.append(
+            'An email address was not set up on this server so, an email was not sent about the created profile to:<br>'
+            + f'{render_html_list(sorted(email_obj.skipped_emails))}'
+        )
+
+    if messages:
+        return {'status': status, 'message': ' '.join(messages)}
 
     return {"status": "success"}
 
