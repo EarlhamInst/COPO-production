@@ -714,9 +714,15 @@ class SingleCellSchemasHandler:
     def get_sample_name_field(self, schema):
         if self.sample_name_field:
             return self.sample_name_field
-        
+
         identifier_map = SinglecellSchemas().get_identifier_map(schemas=schema)
         return identifier_map.get('sample', '')
+
+    def carry_over_existing_rows(self, profile_id, schemas, existing_record, singlecell_record):
+        # Retain existing spreadsheet rows that newly uploaded manifests usually 
+        # leave out by adding them to `singlecell_record`. By default, a manifest 
+        # upload replaces the existing rows so nothing is kept.
+        pass
 
 
 class SinglecellschemasSpreadsheet:

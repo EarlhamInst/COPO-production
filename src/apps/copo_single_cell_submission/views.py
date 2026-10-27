@@ -358,6 +358,12 @@ def save_singlecell_records(request, profile_id, schema_name):
                 content=f'Study already exists with different checklist: {existing_record["checklist_id"]}',
             )
 
+        # Carry over any existing rows that the schema 
+        # dictates that the upload must not drop.
+        get_schema_class(schema_name, SchemaClassType.HANDLER)().carry_over_existing_rows(
+            profile_id, schemas, existing_record, singlecell_record
+        )
+
         global_repositories = set()
         for repositories in submission_repository.values():
             global_repositories.update(repositories)
@@ -481,6 +487,10 @@ def save_singlecell_records(request, profile_id, schema_name):
                                     component_sorted_data_df[identifier]
                                     == row[identifier]
                                 ].sort_index(axis=1)
+                                # The row is not in the new manifest upload  
+                                # so there is nothing to compare it with
+                                if tmp_data.empty:
+                                    continue
 
                                 if (
                                     not tmp_data.iloc[0]

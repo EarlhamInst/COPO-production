@@ -104,21 +104,21 @@ class SapioAdapter(LIMSAdapter):
         samples_under_project: List[PyRecordModel] = project.get_children_of_type(
             'Sample'
         )
-        if samples_under_project:
-            if len(samples_under_project) > int(no_of_samples):
-                # Count how many samples already have a customer name - those can't be deleted
-                diff = len(samples_under_project) - int(profile["no_of_samples"])
-                for sample in samples_under_project:
-                    if not sample.get_field_value("C_CustomerSampleName"):
-                        diff -= 1
-
-                    if diff <= 0:
-                        break
-                if diff > 0:
-                    return {
-                        "status": "error",
-                        "message": f"Sapio Project {profile['sapio_project_id']} has customer samples associated. Cannot decrease the no. of samples.",
-                    }
+        # Samples that have a customer's name associated with them and 
+        # have been submitted, cannot be deleted. As a result, the 
+        # sample count can only drop as far as the number of samples submitted.
+        submitted_sample_count = sum(
+            1
+            for sample in samples_under_project
+            if sample.get_field_value("C_CustomerSampleName")
+        )
+        if no_of_samples < submitted_sample_count:
+            return {
+                'status': 'error',
+                'message': f'{submitted_sample_count} of {len(samples_under_project)} samples '
+                f'in Sapio project {sapio_project_id} have already been submitted so, the '
+                f'number of samples cannot be set lower than {submitted_sample_count}.',
+            }
 
         return {"status": "success"}
 
@@ -311,10 +311,12 @@ class SapioAdapter(LIMSAdapter):
                 project.add_children(samples)
                 samples_under_project.extend(samples)
 
-            # Remove excess samples, but only those without a customer name (named samples are committed)
+            # Remove excess samples, but only those without a customer name (named samples are committed).
+            # Given that samples are sorted by plate, excess samples will be removed from the last
+            # plate first then, the removal process will work backwards to avoid leaving gaps on earlier plates
             diff = len(samples_under_project) - no_of_samples
             if diff > 0:
-                for sample in samples_under_project:
+                for sample in reversed(samples_under_project):
                     if not sample.get_field_value("C_CustomerSampleName"):
                         samples_to_remove.append(sample)
                         diff -= 1

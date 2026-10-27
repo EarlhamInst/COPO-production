@@ -16,6 +16,7 @@ from openpyxl.styles import (
 from openpyxl.comments import Comment
 from openpyxl.worksheet.datavalidation import DataValidation
 from common.dal.profile_da import Profile
+from src.apps.copo_single_cell_submission.utils.da import SinglecellSchemas
 from src.apps.copo_single_cell_submission.utils.SingleCellSchemasHandler import (
     SingleCellSchemasHandler,
     SinglecellschemasSpreadsheet,
@@ -24,6 +25,24 @@ from .lims import get_lims_adapter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from common.ena_utils.generic_helper import notify_singlecell_status
 from openpyxl.worksheet.formula import ArrayFormula
+
+
+def get_submitted_sample_ids(project_id, schemas):
+    '''This function returns the IDs of samples from a Sapio LIMS project 
+    that have already been submitted.
+
+    A sample counts as being submitted once its `Submitter Sample Reference` has been
+    written to the LIMS (for Sapio, `C_CustomerSampleName`). Its manifest row
+    can no longer change, so it is left out of new manifests, rejected on
+    upload and kept when a later manifest is uploaded.
+    '''
+    if not project_id:
+        return set()
+    return {
+        str(record["sample_id"])
+        for record in get_lims_adapter().get_project_samples(project_id, schemas)
+        if record.get("sample_id") and record.get("submitter_sample_reference")
+    }
 
 
 class EDPSchemasHandler(SingleCellSchemasHandler):
@@ -54,9 +73,20 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
         # sheet, plus study-level values for the manifest header.
         lims_sample_records = []
         lims_project_metadata = {}
+        has_lims_samples = False
         if sapio_project_id:
             lims_sample_records = lims.get_project_samples(sapio_project_id, schemas)
             lims_project_metadata = lims.get_project_metadata(sapio_project_id)
+            has_lims_samples = bool(lims_sample_records)
+            # Submitted samples cannot be later changed.
+            # As such, a manifest will only list the ones that are yet 
+            # to be submitted like when the sample count on a profile  
+            # has increased
+            lims_sample_records = [
+                record
+                for record in lims_sample_records
+                if not record.get('submitter_sample_reference')
+            ]
 
         # Cell formats
         alignment = Alignment(wrap_text=True, vertical="center", horizontal="center")
@@ -200,7 +230,7 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
 
                     worksheet_helper_current_row += 1
 
-                if component_name == "sample" and lims_sample_records:
+                if component_name == "sample" and has_lims_samples:
                     sapio_component_data_df = pd.DataFrame.from_records(
                         lims_sample_records
                     )
@@ -363,6 +393,57 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
 
         workbook.save(file_path)
 
+    def carry_over_existing_rows(self, profile_id, schemas, existing_record, singlecell_record):
+        # Keep the rows of samples that have already been submitted to the Sapio's LIMS that a
+        # downloaded manifest leaves out after the sample count has been increased
+        for component_name, existing_component_data in existing_record['components'].items():
+            component_data_df = singlecell_record['components'].get(component_name)
+            
+            if component_data_df is None or not existing_component_data:
+                continue
+            rows_to_keep_df = self._get_rows_to_keep(
+                profile_id,
+                schemas,
+                pd.DataFrame.from_records(existing_component_data),
+                component_data_df,
+            )
+            if rows_to_keep_df.empty:
+                continue
+            
+            # Merge the manifest's columns back into the existing record
+            rows_to_keep_df = rows_to_keep_df[
+                [c for c in component_data_df.columns if c in rows_to_keep_df.columns]
+            ]
+            singlecell_record['components'][component_name] = (
+                pd.concat([rows_to_keep_df, component_data_df], ignore_index=True)
+                .astype(object)
+                .fillna('')
+            )
+
+    def _get_rows_to_keep(self, profile_id, schemas, existing_data_df, new_data_df):
+        # Get rows of samples that already exist and have been submitted already
+        # to Sapio's LIMS that a manifest upload tends to leave out
+        if 'sample_id' not in existing_data_df.columns:
+            return existing_data_df.iloc[0:0]
+
+        if not hasattr(self, '_submitted_sample_ids'):
+            profile = Profile().get_record(profile_id) or {}
+            self._submitted_sample_ids = get_submitted_sample_ids(
+                profile.get('sapio_project_id', ''), schemas
+            )
+            
+        sample_ids = existing_data_df['sample_id'].astype(str)
+        uploaded_sample_ids = (
+            set(new_data_df['sample_id'].astype(str))
+            if 'sample_id' in new_data_df.columns
+            else set()
+        )
+        
+        return existing_data_df[
+            sample_ids.isin(self._submitted_sample_ids)
+            & ~sample_ids.isin(uploaded_sample_ids)
+        ]
+
 
 class EDPSchemasSpreadsheet(SinglecellschemasSpreadsheet):
     def loadManifest(self, m_format):
@@ -451,6 +532,38 @@ class EDPSchemasSpreadsheet(SinglecellschemasSpreadsheet):
                 component_df = component_df.astype(object).fillna("")
                 self.data[sheetname] = component_df
                 self.new_data[sheetname] = component_df.rename(columns=new_column_name)
+
+            # Rows for samples already submitted to the LIMS can't be uploaded
+            # again; only samples added since (by increasing the sample count)
+            # can be submitted
+            uploaded_sample_ids = set()
+            for component_df in self.new_data.values():
+                if "sample_id" in component_df.columns:
+                    uploaded_sample_ids.update(
+                        str(sample_id)
+                        for sample_id in component_df["sample_id"]
+                        if sample_id != ""
+                    )
+            if uploaded_sample_ids:
+                schemas = SinglecellSchemas().get_schema(
+                    schema_name=self.schema_name, target_id=self.checklist_id
+                )
+                already_submitted = sorted(
+                    uploaded_sample_ids
+                    & get_submitted_sample_ids(sapio_project_id, schemas)
+                )
+                if already_submitted:
+                    notify_singlecell_status(
+                        data={"profile_id": self.profile_id},
+                        msg="These samples have already been submitted and can't be "
+                        "uploaded again: " + ", ".join(already_submitted)
+                        + ". Please download a new blank manifest, which lists only "
+                        "the samples still to be submitted.",
+                        action="error",
+                        html_id=self.component_info,
+                        checklist_id=self.checklist_id,
+                    )
+                    return False
             """
             if "index" in workbook.sheetnames:
                 index_ws = workbook["index"]
