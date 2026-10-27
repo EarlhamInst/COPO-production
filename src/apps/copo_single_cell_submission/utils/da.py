@@ -64,7 +64,12 @@ class SinglecellSchemas(DAComponent):
         return {}
 
     #target_id is the checklist_id
-    def get_schema(self, schema_name="", schemas=dict(), target_id=str()):        
+    def get_schema(self, schema_name="", schemas=None, target_id=str()):
+        # Avoid sharing the default dict() between function 
+        # calls by setting a new dict for each call
+        if schemas is None:
+            schemas = dict()
+            
         if schemas:
             singlecell_schemas = schemas
          
