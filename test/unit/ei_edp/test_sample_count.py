@@ -64,8 +64,8 @@ def test_cannot_drop_below_submitted_samples(total, submitted, requested):
 
     assert result['status'] == 'error'
     assert result['message'] == (
-        f'{submitted} of {total} samples in Sapio Project {PROJECT_ID} have already been '
-        f"submitted, so the number of samples can't be set lower than {submitted}."
+        f'{submitted} of {total} samples in Sapio project {PROJECT_ID} have already been '
+        f'submitted so, the number of samples cannot be set lower than {submitted}.'
     )
 
 
