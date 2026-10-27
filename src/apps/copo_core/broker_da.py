@@ -122,7 +122,10 @@ class BrokerDA:
             )
 
         status = record_object.get("status", "success")
-        report_metadata["message"] += " " + record_object.get("message", "")
+        if status == 'error':
+            report_metadata['message'] = record_object.get('message', '')
+        else:
+            report_metadata["message"] += " " + record_object.get("message", "")
 
         report_metadata["status"] = status
         self.context["action_feedback"] = report_metadata

@@ -47,18 +47,25 @@ def _add_to_edp_django_group(user_ids, action='add'):
 
 
 def pre_save_edp_profile(auto_fields, **kwargs):
-    """Validate EDP profile fields before saving.
+    '''Validate EDP profile fields before saving their details to the database
 
-    Called by the COPO profile save machinery before writing to the database.
-    Returns {"status": "error", "message": ...} to abort the save, or
-    {"status": "success"} to allow it.
+    - The requested sample count is a non-negative whole number.
+    - If the profile already has a linked Sapio project, verify that the project
+      still exists in Sapio and the requested sample count does not drop below the
+      number of samples that have already been submitted (in other words, users
+      cannot silently delete submitted samples).
+    '''
+    raw_sample_count = auto_fields.get('copo.profile.no_of_samples', '')
+    try:
+        requested_sample_count = int(str(raw_sample_count).strip() or 0)
+    except ValueError:
+        requested_sample_count = -1
+    if requested_sample_count < 0:
+        return {
+            'status': 'error',
+            'message': f"Number of samples must be a whole number of 0 or more, got '{raw_sample_count}'.",
+        }
 
-    Checks:
-    - If the profile already has a linked Sapio project, verifies the project
-      still exists and that the requested sample count doesn't drop below the
-      number of samples that already have customer names assigned (i.e. can't
-      silently delete committed samples).
-    """
     target_id = kwargs.get("target_id", "")
     if not target_id:
         return {"status": "success"}
