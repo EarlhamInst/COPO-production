@@ -1007,6 +1007,7 @@ class SinglecellschemasSpreadsheet:
 
                         starting_line = self.schema_components.get(component, {}).get("first_data_line_no", 2)
                         df = df.iloc[1 + starting_line:]
+                        self.data[component] = df
                         new_column_name = {
                             name: name.replace(" (optional)", "", -1)
                             for name in df.columns.values.tolist()

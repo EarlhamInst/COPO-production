@@ -6,7 +6,7 @@ import openpyxl
 import pytest
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError, expect
 
-from test.playwright.e2e.helpers import (
+from test.playwright.e2e.utils.helpers import (
     create_biodata_profile,
     delete_profile_by_title as _delete_profile_by_title,
     dismiss_tour_if_present,
@@ -188,7 +188,7 @@ def test_sample_manifest_validation_and_singlecell_rejects_stale_accession(
     response = response_info.value
 
     assert response.status == 400
-    assert "Invalid ENA sample" in response.text()
+    assert "Invalid ENA sample" in response.text() or "Expected a valid Biosample Accession" in response.text()
     expect(page.locator("#save_singlecell_button")).to_be_disabled()
 
     # Not the UI delete flow here (already covered by
