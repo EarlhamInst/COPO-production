@@ -5,7 +5,7 @@ import pytest
 import requests
 
 from test.playwright.config.settings import BASE_URL, TEST_USER_PASSWORD, TEST_USER_USERNAME
-from test.playwright.e2e.helpers import run_django_shell
+from test.playwright.e2e.utils.helpers import run_django_shell
 
 # pytest-playwright provides `browser` and `context` fixtures out of the box.
 # We override `context` here so every test's browser context starts already

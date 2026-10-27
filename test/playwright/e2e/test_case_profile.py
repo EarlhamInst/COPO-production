@@ -4,14 +4,16 @@ import time
 import pytest
 from playwright.sync_api import Page
 
-from test.playwright.e2e.helpers import (
+from test.playwright.e2e.utils.edp_helpers import (
     EDP_PROFILE_FIELDS,
-    create_biodata_profile,
     create_edp_profile,
-    delete_profile,
-    delete_profile_by_title,
     edp_jira_ticket_number,
     read_sapio_project,
+)
+from test.playwright.e2e.utils.helpers import (
+    create_biodata_profile,
+    delete_profile,
+    delete_profile_by_title,
 )
 
 # Both profile titles and descriptions must be at least 20 characters long

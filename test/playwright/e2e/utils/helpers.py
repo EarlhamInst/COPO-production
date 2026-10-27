@@ -1,32 +1,8 @@
-import json
 import subprocess
 import sys
 import time
 
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, expect
-
-from common.utils.helpers import get_env
-
-# EDP profile form values agreed for the Sapio test instance. The JIRA ticket
-# number is deliberately not here: it becomes the Sapio ProjectName, so each
-# run makes its own (see edp_jira_ticket_number()) to find its project in
-# Sapio unambiguously.
-EDP_PROFILE_FIELDS = {
-    'sample_type': 'Tissue',
-    'library_type': 'Illumina premade library',
-    'container_type': 'Plate',
-    'no_of_samples': 1,
-    'budget_user': 'copo-playwright-test-user',
-    # An invalid email address is used for the `customer_emails` field in the EDP profile
-    # instead of the project team's development/test email address to avoid sending 
-    # actual emails during tests.
-    # Emails sent to addresses ending with `.invalid` can never be delivered.
-    'customer_emails': 'copo-playwright@example.invalid',
-}
-
-
-def edp_jira_ticket_number():
-    return f'copo-playwright-test-{int(time.time())}'
 
 
 def run_django_shell(code):
@@ -108,37 +84,7 @@ def poll_sample_accession(profile_id, timeout=1200, interval=10):
     raise AssertionError(f'Timed out waiting for a real BioSample accession (last status={status!r})')
 
 
-def read_sapio_project(project_id, project_fields=(), sample_fields=()):
-    # Reads directly from Sapio and not from COPO's copy in Mongo database, 
-    # so that a test can confirm what actually was recorded/saved in the LIMS. 
-    # Uses the adapter's sample loader so 'samples under this 
-    # project' means exactly what COPO means by it when submitting.
-    #
-    # Returns {'exists': bool, 'project': {field: value}, 'samples': [{field: value}, ...]}.
-    code = (
-        'import json\n'
-        'from src.apps.ei_edp.utils.lims.sapio.adapter import SapioAdapter\n'
-        'from src.apps.ei_edp.utils.lims.sapio.datamanager import Sapio\n'
-        f'project_id = {project_id!r}\n'
-        'records = Sapio().dataRecordManager.query_data_records(\n'
-        "    data_type_name='Project', data_field_name='C_ProjectIdentifier', value_list=[project_id]\n"
-        ').result_list\n'
-        "result = {'exists': bool(records), 'project': {}, 'samples': []}\n"
-        'if records:\n'
-        f"    result['project'] = {{f: records[0].get_field_value(f) for f in {list(project_fields)!r}}}\n"
-        "    result['samples'] = [\n"
-        f'        {{f: s.get_field_value(f) for f in {list(sample_fields)!r}}}\n'
-        '        for s in SapioAdapter()._load_project_samples(project_id)\n'
-        '    ]\n'
-        "print('SAPIO_RESULT:' + json.dumps(result, default=str))\n"
-    )
-    marker_line = next(
-        line for line in run_django_shell(code).splitlines() if line.startswith('SAPIO_RESULT:')
-    )
-    return json.loads(marker_line[len('SAPIO_RESULT:'):])
-
-
-def _open_new_profile_form(page, profile_type):
+def open_new_profile_form(page, profile_type):
     page.goto('/copo')
     # Tour first: its overlay can sit on top of (and block clicking into)
     # the cookie/GDPR modals on a completely fresh page load.
@@ -157,7 +103,7 @@ def _open_new_profile_form(page, profile_type):
     page.click('.new-component-template')
 
 
-def _close_profile_form_if_open(page):
+def close_profile_form_if_open(page):
     # Whether the dialog auto-closes after a successful save appears to be
     # genuinely non-deterministic (same code path passes reliably elsewhere,
     # fails here) rather than a fixed delay we can just wait out — so don't
@@ -178,7 +124,7 @@ def create_biodata_profile(page, title, description):
     # Both title and description must be at least 20 characters — the app
     # rejects a short title client-side with 'Profile title must be at
     # least 20 characters.' (found the hard way; same rule for description).
-    _open_new_profile_form(page, 'biodata')
+    open_new_profile_form(page, 'biodata')
 
     page.fill('#copo\\.profile\\.title', title)
     page.fill('#copo\\.profile\\.description', description)
@@ -192,69 +138,8 @@ def create_biodata_profile(page, title, description):
     # the new card sometimes lags behind it. Give that render more room.
     expect(profile_card).to_be_visible(timeout=15000)
 
-    _close_profile_form_if_open(page)
+    close_profile_form_if_open(page)
     return profile_card
-
-
-def create_edp_profile(
-    page,
-    title,
-    description,
-    *,
-    sample_type,
-    library_type,
-    container_type,
-    no_of_samples,
-    jira_ticket_number,
-    budget_user,
-    customer_emails,
-):
-    # Saving an EDP profile is not local-only: post_save_edp_profile()
-    # creates a Sapio project (plus its samples and plates) and stores the
-    # project's identifier back on the profile, and the 'Sample type'
-    # dropdown's options are themselves loaded from Sapio when the form
-    # opens. Every caller therefore needs the Sapio test instance reachable.
-    #
-    # Returns (profile_card, profile_id, sapio_project_id).
-    _open_new_profile_form(page, 'ei_edp')
-
-    page.fill('#copo\\.profile\\.title', title)
-    page.fill('#copo\\.profile\\.description', description)
-    page.select_option('#copo\\.profile\\.sample_type', sample_type)
-    page.select_option('#copo\\.profile\\.library_type', library_type)
-    # <option> values are lower-case ('plate'/'tube'); select by the visible
-    # label so callers can pass what the user sees.
-    page.select_option('#copo\\.profile\\.container_type', label=container_type)
-    page.fill('#copo\\.profile\\.no_of_samples', str(no_of_samples))
-    page.fill('#copo\\.profile\\.jira_ticket_number', jira_ticket_number)
-    page.fill('#copo\\.profile\\.budget_user', budget_user)
-    page.fill('#copo\\.profile\\.customer_emails', customer_emails)
-
-    # Check the save's response rather than only the card appearing: a
-    # Sapio sync failure still saves the COPO profile (and renders its card)
-    # but reports a non-success status here.
-    with page.expect_response(
-        lambda r: 'copo_forms' in r.url and r.request.method == 'POST', timeout=120000
-    ) as response_info:
-        page.click('#btnFormSave')
-    feedback = response_info.value.json().get('action_feedback', {})
-    assert feedback.get('status') == 'success', f'EDP profile save failed: {feedback}'
-
-    profile_card = page.locator('.panel-heading', has_text=title)
-    # The Sapio sync happens inside the save request, and the card's
-    # re-render has been seen to take well past create_biodata_profile()'s
-    # 15s budget (one exploratory run never showed it within 60s at all,
-    # the next showed it within 8s).
-    expect(profile_card).to_be_visible(timeout=60000)
-
-    _close_profile_form_if_open(page)
-
-    # The card's title <span> carries the profile id; the Sapio project id
-    # sits in the card's hidden 'View more details' popover content, so
-    # read it with text_content() rather than waiting for it to be visible.
-    profile_id = profile_card.locator('.row-title span').first.get_attribute('id')
-    sapio_project_id = (page.locator(f'#sapio_project_id_{profile_id}').text_content() or '').strip()
-    return profile_card, profile_id, sapio_project_id
 
 
 def delete_profile(page, title):
