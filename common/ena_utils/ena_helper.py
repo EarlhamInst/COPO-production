@@ -57,7 +57,6 @@ class EnaSubmissionHelper:
     def logging_debug(self, message=str()):
         ghlper.logging_debug(message, self.submission_id)
 
-
     def push_action(self, message, action):
         notify_submission_status(data={"profile_id": self.profile_id},  msg=message, action=action, html_id="submission_info")
 
@@ -159,38 +158,37 @@ class EnaSubmissionHelper:
         return self.write_xml_file(output_location, xml_object=root, file_name='submission_release.xml')
 
     def write_xml_file(self, output_location=str(), xml_object=None, file_name=str()):
-            """
+        """
             function writes xml to the specified location or to a default one
             :param location:
             :param xml_object:
             :param file_name:
             :return:
             """
-            output_location_submission_id = os.path.join(output_location, self.submission_id)
-            if not os.path.exists(output_location_submission_id):
-                os.makedirs(output_location_submission_id)
+        output_location_submission_id = os.path.join(output_location, self.submission_id)
+        if not os.path.exists(output_location_submission_id):
+            os.makedirs(output_location_submission_id)
 
-            result = dict(status=True, value='')
+        result = dict(status=True, value='')
 
+        xml_file_path = os.path.join(output_location_submission_id, file_name)
+        tree = etree.ElementTree(xml_object)
 
-            xml_file_path = os.path.join(output_location_submission_id, file_name)
-            tree = etree.ElementTree(xml_object)
+        try:
+            tree.write(xml_file_path, encoding="utf8", xml_declaration=True, pretty_print=True)
+        except Exception as e:
+            ghlper.logging_exception(e)
+            message = 'Error writing xml file ' + file_name + ": " + str(e)
+            self.logging_error(message)
+            result['message'] = message
+            result['status'] = False
+            raise e
 
-            try:
-                tree.write(xml_file_path, encoding="utf8", xml_declaration=True, pretty_print=True)
-            except Exception as e:
-                ghlper.logging_exception(e)
-                message = 'Error writing xml file ' + file_name + ": " + str(e)
-                self.logging_error(message)
-                result['message'] = message
-                result['status'] = False
-                raise e
+        lg.log(file_name + ' successfully written to  ' + xml_file_path)
 
-            lg.log(file_name + ' successfully written to  ' + xml_file_path)
+        result['value'] = xml_file_path
 
-            result['value'] = xml_file_path
-
-            return result
+        return result
 
     def get_sra_contacts(self):
         """
@@ -292,7 +290,7 @@ class EnaSubmissionHelper:
 
         # save sample accession for new sample only
         self.write_xml_file(output_location=output_location, xml_object=root, file_name="samples_receipt.xml")
-        #ghlper.logging_info("Saving samples accessions to the database", submission_id)
+        # ghlper.logging_info("Saving samples accessions to the database", submission_id)
         sample_accessions = list()
         sample_ids = list()
         for accession in root.findall('SAMPLE'):
@@ -308,7 +306,7 @@ class EnaSubmissionHelper:
                     sample_id=sample_id
                 )
             )
-            
+
         if is_new:
             submission_handler = Submission().get_collection_handle()
             submission_record = submission_handler.find_one({"_id": ObjectId(self.submission_id)}, {"accessions": 1})
@@ -328,7 +326,7 @@ class EnaSubmissionHelper:
                 # update submission status
                 status_message = "Samples successfully registered, accessions saved."
                 self.logging_info(status_message)
-    
+
             # update sample status
             Sample(profile_id=self.profile_id).update_accession(sample_accessions)
         else:
@@ -356,9 +354,8 @@ class EnaSubmissionHelper:
         # create sample xml
         message = "Registering samples with BioSamples..."
         self.logging_info(message)
-        #ghlper.logging_info(message, str(submission_id))
-        #notify_submission_status(data={"profile_id": profile_id}, msg=message, action="info", html_id="sample_info")
-
+        # ghlper.logging_info(message, str(submission_id))
+        # notify_submission_status(data={"profile_id": profile_id}, msg=message, action="info", html_id="sample_info")
 
         parser = etree.XMLParser(remove_blank_text=True)
 
@@ -449,12 +446,11 @@ class EnaSubmissionHelper:
 
             # add sample collection date & collection location TODO
 
-
         if not sra_samples:  # no samples to submit
             log_message = "No new samples to register!"
             self.logging_info(log_message)
-            #ghlper.logging_info(log_message, submission_id)
-            #notify_read_status(data={"profile_id": profile_id},
+            # ghlper.logging_info(log_message, submission_id)
+            # notify_read_status(data={"profile_id": profile_id},
             #                    msg=log_message, action="info", html_id="sample_info")
             return dict(status=True, value='')
 
@@ -497,11 +493,9 @@ class EnaSubmissionHelper:
 
         # create project xml
         log_message = "Registering project..."
-        #ghlper.logging_info(log_message, self.submission_id)
-        #ghlper.update_submission_status(status='info', message=log_message, submission_id=self.submission_id)
+        # ghlper.logging_info(log_message, self.submission_id)
+        # ghlper.update_submission_status(status='info', message=log_message, submission_id=self.submission_id)
         self.logging_info(log_message)
-
-
 
         parser = etree.XMLParser(remove_blank_text=True)
         root = etree.parse(SRA_PROJECT_TEMPLATE, parser).getroot()
@@ -510,7 +504,7 @@ class EnaSubmissionHelper:
         project = root.find('PROJECT')
 
         # set project descriptors
-        #study = singlecell.get("components", {}).get("study", [{}])[0]
+        # study = singlecell.get("components", {}).get("study", [{}])[0]
         project.set("alias", self.submission_id+":"+ study["study_id"])
         project.set("center_name", self.sra_settings["sra_center"])
 
@@ -565,7 +559,7 @@ class EnaSubmissionHelper:
         else:
             result = self.process_project(output_location, root, submission_xml_path, study, singlecell_id)
 
-        #Submission().remove_component_from_submission(sub_id=str(self.submission_id), component="study", component_ids=[singlecell["study_id"]])
+        # Submission().remove_component_from_submission(sub_id=str(self.submission_id), component="study", component_ids=[singlecell["study_id"]])
 
         if result['status'] is False:
             message = result.get('message', "Study not registered.")
@@ -574,7 +568,7 @@ class EnaSubmissionHelper:
             message = f"Study {study['study_id']} has been registered successfully to ENA."
             self.logging_info(message)
 
-        #Submission().add_component_submission_accession(sub_id=str(self.submission_id), component="study", accessions=new_accessions)
+        # Submission().add_component_submission_accession(sub_id=str(self.submission_id), component="study", accessions=new_accessions)
 
         return result
 
@@ -654,8 +648,7 @@ class EnaSubmissionHelper:
             )
             return result
 
-
-         # save project accession
+        # save project accession
         self.write_xml_file(output_location=output_location, xml_object=root, file_name="project_receipt.xml")
         self.logging_info("Saving project accessions to the database")
         project_accessions = dict()
@@ -672,7 +665,7 @@ class EnaSubmissionHelper:
                     release_date=release_date,
                     study_id=study_id  # assuming study_id is the last part of the alias
                 )
-            
+
             Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "accepted", "state": status,  "accession": accession, "release_date": release_date, "error": ""})
 
             # See the matching comment on the rejected path above:
@@ -707,7 +700,6 @@ class EnaSubmissionHelper:
             self.logging_info (status_message)
         return dict(status=True, value='')
 
-
     def register_files(self, submission_xml_path=str(), modify_submission_xml_path=str(), component_df=pd.DataFrame(), identifier_map={}, singlecell=None, file_component_name="file"):   
         """
         function creates and submits datafile xml
@@ -739,8 +731,8 @@ class EnaSubmissionHelper:
                 continue
 
             self.logging_info(log_message)
-            #ghlper.logging_info(log_message, self.submission_id)
-            #notify_submission_status(data={"profile_id": self.profile_id}, msg=log_message, action="info", html_id="datafile_info")
+            # ghlper.logging_info(log_message, self.submission_id)
+            # notify_submission_status(data={"profile_id": self.profile_id}, msg=log_message, action="info", html_id="datafile_info")
 
             parser = etree.XMLParser(remove_blank_text=True)
             experiment_root = etree.parse(SRA_EXPERIMENT_TEMPLATE, parser).getroot()
@@ -808,7 +800,6 @@ class EnaSubmissionHelper:
             # write experiement xml
             result = self.write_xml_file(output_location=submission_location, xml_object=experiment_root,
                                             file_name="experiment.xml")
-            
 
             if result['status'] is False:
                 errors.append(result['message'])
@@ -832,7 +823,7 @@ class EnaSubmissionHelper:
 
                 run_file_node = etree.SubElement(run_files_node, 'FILE')
                 run_file_node.set("filename", os.path.join(enafile_map[row[name]], row[name])) #TBC for remote_location
-                
+
                 run_file_node.set(
                     "filetype",
                     ena_run_filetype(row[name], row.get("read_file_type", "")),
@@ -922,7 +913,7 @@ class EnaSubmissionHelper:
             if is_new:
                 submission_record = Submission().get_collection_handle().update_one({"_id": ObjectId(self.submission_id)},
                                                             {"$addToSet": {"accessions.run": run_dict, "accessions.experiment": experiment_dict}})
-                
+
             Singlecell().update_component_status(id=singlecell["_id"], component=file_component_name, identifier=file_identifier, identifier_value=row[file_identifier], repository="ena", 
                                                  status_column_value={"status": "accepted", "accession": run_dict["accession"], 'run_accession':run_dict["accession"],
                                                                       'experiment_accession': experiment_dict["accession"], "error": ""})
@@ -940,19 +931,17 @@ class EnaSubmissionHelper:
 
         return result
 
-
     def release_study(self,  singlecell=None):
         result = dict(status="error", message='')
         study = singlecell.get("components", {}).get("study", [{}])[0]
         study_accession = study.get('accession_ena', str())
         if not study_accession:
-        # get study accession
+            # get study accession
             message = f'Study accession not found for study: {study["study_id"]}!'
             self.logging_error(message)
             result['message'] = message
             return result
-        
- 
+
         # get study status from API
         project_status = ghlper.get_study_status(user_token=self.user_token, pass_word=self.pass_word,
                                         project_accession=study_accession)
@@ -960,7 +949,7 @@ class EnaSubmissionHelper:
         if not project_status:
             message = f'Cannot determine project release status for study: {study["study_id"]}!'
             result['message'] = message
-            #self.logging_error(message)
+            # self.logging_error(message)
             return result
 
         release_status = project_status[0].get(
@@ -1013,7 +1002,6 @@ class EnaSubmissionHelper:
                 lg.log("Unrecognised response from ENA " + str(e))
                 message = " Unrecognised response from ENA - " + str(
                     receipt) + " Please try again later, if it persists contact admins"
-                
 
             except Exception as e:
                 lg.exception(e)
@@ -1040,7 +1028,6 @@ class EnaSubmissionHelper:
                     result['message'] = message
                     return result
 
-
             accession = {"state": "PUBLIC", "release_date": get_datetime()}
             Singlecell().update_component_status(
                 id=singlecell["_id"], component="study", identifier="study_id", identifier_value=study["study_id"],
@@ -1048,7 +1035,6 @@ class EnaSubmissionHelper:
             result["status"] = "success"
             result["message"] = f'Study {study["study_id"]} has been released successfully to ENA.'
             return result
-
 
     def register_sequencing_annotation(self, identifier=str(), analysis_component_data_df=pd.DataFrame(), 
                           analysis_run_ref_data_df=pd.DataFrame(),analysis_file_data_df=pd.DataFrame(), parent_map=dict(), singlecell_id=str(), analysis_component_name="sequencing_annotation"):
@@ -1062,16 +1048,15 @@ class EnaSubmissionHelper:
         self.logging_info(f"Submitting sequencing annotation records...")
         study_id = analysis_component_data_df["study_id"].values[0]
 
-        #sub_ids.append(sub["_id"])
+        # sub_ids.append(sub["_id"])
         analysis_set_dom_new = ET.Element("ANALYSIS_SET")
         analysis_set_dom_edit = ET.Element("ANALYSIS_SET")
         seq_annotation_id_new = []
         seq_annotation_id_edit = []
 
-
         ena_files = EnaFileTransfer().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"local_path":1,  "remote_path":1})
         data_files = DataFile().get_all_records_columns(filter_by={"profile_id":self.profile_id}, projection={"file_name":1,  "file_hash":1 })
-        
+
         analysis_file_data_df["file_hash"] = analysis_file_data_df["sequencing_annotation_file"].map( 
                             {data_file["file_name"] : data_file.get("file_hash", "") 
                              for data_file in data_files if data_file.get("file_hash","") } )
@@ -1079,9 +1064,8 @@ class EnaSubmissionHelper:
                             {ena_file["local_path"].split("/")[-1] : ena_file.get("remote_path", "") 
                              for ena_file in ena_files if ena_file.get("remote_path","") } )
 
-
         for index, seq_annotation in analysis_component_data_df.iterrows():
-            
+
             analysis_run_ref_df = pd.DataFrame()
 
             if not analysis_run_ref_data_df.empty:
@@ -1097,7 +1081,7 @@ class EnaSubmissionHelper:
             analysis_file_df = pd.DataFrame()
             if not analysis_file_data_df.empty:
                 analysis_file_df = analysis_file_data_df.loc[analysis_file_data_df[parent_map["sequencing_annotation_file"][analysis_component_name]]==seq_annotation[identifier]] 
- 
+
             analysis_dom = self._build_analysis_dom(seq_annotation, run_accessions, experiment_accessions, analysis_file_df)
             if seq_annotation.get("accession_ena",""):
                 analysis_set_dom_edit.append(analysis_dom)
@@ -1112,7 +1096,6 @@ class EnaSubmissionHelper:
         if len(seq_annotation_id_edit) > 0:
             submission_dom = self._build_submission_dom(is_new=False)
             self._submit_ena_v2(submission_dom=submission_dom,  analysis_dom=analysis_set_dom_edit, study_id=study_id, analysis_ids=seq_annotation_id_edit, analysis_component_name=analysis_component_name)
-
 
     def _build_analysis_dom(self, seq_annotation, run_accessions, experiment_accessions, analysis_file_df):
         """
@@ -1133,7 +1116,7 @@ class EnaSubmissionHelper:
         </ANALYSIS>
         </ANALYSIS_SET>
         """
-        #analysis_set = ET.Element("ANALYSIS_SET")
+        # analysis_set = ET.Element("ANALYSIS_SET")
         analysis = ET.Element("ANALYSIS", alias=str(seq_annotation["study_id"] + ":" + seq_annotation["sequencing_annotation_id"]))
         ET.SubElement(analysis, "TITLE").text = seq_annotation["sequencing_annotation_title"]
         ET.SubElement(analysis, "DESCRIPTION").text = seq_annotation["sequencing_annotation_description"]
@@ -1159,11 +1142,9 @@ class EnaSubmissionHelper:
 
         return  analysis
 
-
-
     def register_assembly(self, identifier=str(), assembly_component_data_df=pd.DataFrame(), 
                         assembly_run_ref_data_df=pd.DataFrame(),assembly_file_data_df=pd.DataFrame(), parent_map=dict(), singlecell_id=str()):
-        
+
         if assembly_component_data_df.empty:
             message = "No assembly data to submit"
             self.logging_info(message)
@@ -1198,7 +1179,7 @@ class EnaSubmissionHelper:
 
             assembly_file_df = assembly_file_data_df.loc[assembly_file_data_df[parent_map["assembly_file"]["assembly"]]==row[identifier]] 
             if assembly_file_df.empty:
-                    self.logging_error("no assembly file found")
+                self.logging_error("no assembly file found")
 
             for _, file_row in assembly_file_df.iterrows():
                 file_path_for_manifest = enafile_map.get(file_row["assembly_file"], "")
@@ -1214,7 +1195,7 @@ class EnaSubmissionHelper:
 
             if not assembly_run_ref_data_df.empty:
                 assembly_run_ref_df = assembly_run_ref_data_df.loc[assembly_run_ref_data_df[parent_map["assembly_run_ref"]["assembly"]]==row[identifier]]
-    
+
                 run_accessions = []
                 if "run_accession_ena" in assembly_run_ref_df.columns:
                     run_accessions= assembly_run_ref_df["run_accession_ena"].values.tolist()
@@ -1235,14 +1216,14 @@ class EnaSubmissionHelper:
             with open(manifest_path, "w") as destination:
                 destination.write(manifest_content)
 
-            #verify submission
+            # verify submission
             self.logging_info("validating assembly")
 
             if not row.get("coverage", ""):
                 submission_type = "transcriptome"
             else:
                 submission_type = "genome"
-                
+
             return_code, output = self.validate_assembly(file_path=manifest_path, submission_type=submission_type)
             """
         
@@ -1273,9 +1254,9 @@ class EnaSubmissionHelper:
                 self.logging_info("submitting assembly")
                 return_code, output = self.submit_assembly(file_path=str(manifest_path), submission_type=submission_type)
                 if return_code != 0 :
-                    #handle possibility submission is not successfull
-                    #this may happen for instance if the same assembly has already been submitted, which would not get caught
-                    #by the validation step
+                    # handle possibility submission is not successfull
+                    # this may happen for instance if the same assembly has already been submitted, which would not get caught
+                    # by the validation step
                     self.logging_error("assembly submission failed: " + output)
                     return {"status": False, "message": output}
                 accession = re.search(r"ERZ\d*\w" , output).group(0).strip()
@@ -1287,7 +1268,7 @@ class EnaSubmissionHelper:
                 )
                 update_result = Submission().get_collection_handle().update_one({"_id": ObjectId(self.submission_id), "accessions.assembly.alias":assembly_accession["alias"]},
                                                                 {"$set": {"accessions.assembly.$": assembly_accession}})
-                    
+
                 if update_result.matched_count == 0:
                     Submission().get_collection_handle().update_one({"_id": ObjectId(self.submission_id)},
                                                                 {"$addToSet": {"accessions.assembly": assembly_accession}})
@@ -1332,8 +1313,6 @@ class EnaSubmissionHelper:
             result['message'] = message
         return result
 
-
-
     def validate_assembly(self, file_path, submission_type):
         test = ""
         if "dev" in ena_service:
@@ -1352,7 +1331,6 @@ class EnaSubmissionHelper:
         self.logging_debug(output)
         return return_code, output
 
-
     def submit_assembly(self, file_path, submission_type):
         test = ""
         if "dev" in ena_service:
@@ -1362,7 +1340,7 @@ class EnaSubmissionHelper:
         # print(webin_cmd)
         # try/except as it turns out this can fail even if validate is successfull
         try:
-            #self.logging_info("submitting assembly")
+            # self.logging_info("submitting assembly")
             output = subprocess.check_output(webin_cmd,stderr=subprocess.STDOUT, shell=True)
             output = output.decode("ascii")
             return_code = 0
@@ -1372,10 +1350,9 @@ class EnaSubmissionHelper:
             output = output.decode("ascii") + " ERROR return code " + str(cpe.returncode)
         self.logging_debug(output)
 
-        #todo delete files after successfull submission
-        #todo decide if keeping manifest.txt and store accession in assembly objec too
+        # todo delete files after successfull submission
+        # todo decide if keeping manifest.txt and store accession in assembly objec too
         return return_code, output
-
 
     def _build_submission_dom(self, is_new=True):
         """
@@ -1399,8 +1376,6 @@ class EnaSubmissionHelper:
         add = ET.SubElement(action, action_str)
         return submission_set
 
-
-
     def _submit_ena_v2(self, submission_dom, analysis_dom, study_id, analysis_ids, analysis_component_name):
         webin = ET.Element("WEBIN")
         webin.append(submission_dom)
@@ -1416,25 +1391,25 @@ class EnaSubmissionHelper:
                 receipt = response.text
                 ghlper.logging_info("ENA RECEIPT " + receipt)
                 if response.status_code == requests.codes.ok:
-                    #receipt = subprocess.check_output(curl_cmd, shell=True)
+                    # receipt = subprocess.check_output(curl_cmd, shell=True)
                     return self._handle_async_receipt(receipt, study_id, analysis_ids, analysis_component_name )
                 else:
                     ghlper.logging_info(response.status_codes, response.text)
                     message = 'API call error ' + "Submitting project xml to ENA via CURL. CURL command is: " + ena_v2_service_async
                     self.logging_error(message)
-                    #reset_seq_annotation_submission_status(sub["_id"])
+                    # reset_seq_annotation_submission_status(sub["_id"])
             except ET.ParseError as e:
                 ghlper.logging_exception(e)
                 message = " Unrecognised response from ENA - " + str(
                     receipt) + " Please try again later, if it persists contact admins"
                 self.logging_error(message)
-                #reset_seq_annotation_submission_status(sub["_id"])
+                # reset_seq_annotation_submission_status(sub["_id"])
                 return False
             except Exception as e:
                 ghlper.logging_exception(e)
                 message = 'API call error ' + "Submitting project xml to ENA via CURL. href is: " + ena_v2_service_async
                 self.logging_error(message)
-                #reset_seq_annotation_submission_status(sub["_id"])
+                # reset_seq_annotation_submission_status(sub["_id"])
                 return False
 
     def _handle_async_receipt(self, receipt, study_id, analysis_ids, analysis_component_name):

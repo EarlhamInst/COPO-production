@@ -92,8 +92,6 @@ services:
       - WEBIN_USER_PASSWORD_FILE=/run/secrets/copo_webin_user_password
       - ENA_WEBIN_AUTH_URL=https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token?ttl=1
       - ENA_URL_HOSTNAME=wwwdev.ebi.ac.uk
-      - ENA_WEBIN_AUTH_URL=https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token?ttl=1
-      - ENA_URL_HOSTNAME=wwwdev.ebi.ac.uk
       - CREDENTIAL_ENCRYPTION_KEY_FILE=/run/secrets/copo_credential_encryption_key
       - ENA_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/
       - MONGO_USER=copo_user
@@ -134,7 +132,7 @@ services:
       - ENA_V1_SAMPLE_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples
       - ZENODOURL=https://zenodo.org/api
       - ZENODOTOKEN_FILE=/run/secrets/copo_zenodo_token
-      - ENA_BROWSER_SERVICE=https://wwwdev.ebi.ac.uk/ena/browser/api
+      - ENA_BROWSER_SERVICE=https://www.ebi.ac.uk/ena/browser/api # Has to be production ENA browser API endpoint
       - SAPIO_USE_API_USER=true
       - SAPIO_USERNAME_FILE=/run/secrets/sapio_username
       - SAPIO_PASSWORD_FILE=/run/secrets/sapio_password

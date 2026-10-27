@@ -24,7 +24,6 @@ botocore==1.43.108
 Brotli==1.2.1
 bs4==0.0.2
 cattrs==26.2.1
-cattrs==26.2.1
 celery==5.6.3
 certifi==2026.10.23
 #cffi==1.16.0
@@ -200,7 +199,6 @@ txaio==26.6.1
 #typing==3.6.2
 ua-parser==1.0.2
 urllib3==2.8.0
-urllib3==2.8.0
 user-agents==2.2.0
 validators==0.36.0
 vine==5.1.0
@@ -218,4 +216,4 @@ tzdata==2026.5
 geopy==2.5.0
 titlecase==2.4.1
 PyLD==3.3.0
-sapiopylib==2026.9.4.310
+sapiopylib==2025.10.7.295
