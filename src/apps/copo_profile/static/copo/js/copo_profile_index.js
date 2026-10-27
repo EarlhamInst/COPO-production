@@ -682,12 +682,16 @@ function deleteProfileRecord(profileRecordId) {
               target_id: profileRecordId,
             },
           })
-            .done(function () {
-              // Show a feedback message to the user
-              const actionFeedback = {
-                message: 'Profile deleted!',
-                status: 'success',
-              };
+            .done(function (data) {
+              // Show a feedback message to the user.
+              // A warning is displayed when a profile is deleted but its 
+              // clean-up process did not complete successfully.
+              // This can occur in cases like when a Sapio project under an EDP profile
+              // could not be removed successfully.
+              const actionFeedback =
+                data && data.action_feedback && data.action_feedback.status
+                  ? data.action_feedback
+                  : { message: 'Profile deleted!', status: 'success' };
 
               do_crud_action_feedback(actionFeedback);
 

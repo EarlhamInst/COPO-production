@@ -251,14 +251,16 @@ def delete_profile(request):
     response = HttpResponse(content_type="application/json")
     response.status_code = 200
     profile_undeleted = []
+    feedback = {}
 
     if not profile_id:
         response.status_code = 405
     else:
-        if not Profile().validate_and_delete(profile_id):
+        feedback = Profile().validate_and_delete(profile_id)
+        if feedback.get('status') == 'error':
             profile_undeleted.append(profile_id)
             response.status_code = 405
-    undeleted_json = json.dumps({"undeleted": [profile_undeleted]})
+    undeleted_json = json.dumps({"undeleted": [profile_undeleted], 'action_feedback': feedback})
     response.write(undeleted_json)
     return response
 

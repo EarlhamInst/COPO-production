@@ -384,10 +384,11 @@ class Profile(DAComponent):
         condition = {"profile_id": profile_id}
         for da in ["submission", "sample", "datafile", "singlecell"]:
             if handle_dict[da].count_documents(condition) > 0:
-                return False
+                return {'status': 'error', 'message': 'Profile could not be removed.'}
         rec = self.get_record(profile_id)
         self.get_collection_handle().delete_one({"_id": ObjectId(profile_id)})
 
+        feedback = {'status': 'success', 'message': 'Profile deleted!'}
         profile_type_def = ProfileType.objects.filter(type=rec["type"]).first()
 
         if profile_type_def:
@@ -397,11 +398,16 @@ class Profile(DAComponent):
                 provider = post_action[0:index]
                 method = post_action[index + 1 :]
                 result = getattr(get_class(provider), method)(rec)
-                if result:
-                    rec["status"] = result.get("status", "success")
-                    rec["message"] = result.get("message", "")
+                # The profile has already been deleted so a failed post-delete
+                # action is displayed as a warning rather than an error
+                if result and result.get('status', 'success') != 'success':
+                    feedback = {
+                        'status': 'warning',
+                        'message': result.get('message', '')
+                        or 'Profile was deleted but, some follow-up tasks could not be completed.',
+                    }
 
-        return True
+        return feedback
 
     def validate_record(self, auto_fields=dict(), validation_result=dict(), **kwargs):
         """
