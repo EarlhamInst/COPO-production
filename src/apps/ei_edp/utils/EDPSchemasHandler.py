@@ -1,6 +1,7 @@
 from common.utils.logger import Logger
 import pandas as pd
 import os
+import uuid
 from django.conf import settings
 from openpyxl.utils.cell import get_column_letter
 from openpyxl import load_workbook
@@ -389,6 +390,13 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
 
                     # move sample_metadata sheet to the end
                     workbook.move_sheet(workbook["sample_metadata"], offset=10)
+
+        # Password-protect locked sheets with a random password
+        # so that users cannot unlock them to edit locked cells
+        sheet_password = uuid.uuid4().hex
+        for worksheet in workbook.worksheets:
+            if worksheet.protection.sheet:
+                worksheet.protection.password = sheet_password
 
         workbook.save(file_path)
 
