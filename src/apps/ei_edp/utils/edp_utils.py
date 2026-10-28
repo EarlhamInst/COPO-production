@@ -1,6 +1,9 @@
+import operator
 import uuid
+from functools import reduce
 
 from django.contrib.auth.models import Group
+from django.db.models import Q
 from sapiopylib.rest.utils.recordmodel.PyRecordModel import PyRecordModel
 
 from common.dal.copo_da import CopoGroup
@@ -123,24 +126,34 @@ def post_save_edp_profile(profile):
             group_id = groups[0]["_id"]
         current_shared_users = CopoGroup().get_users_for_group_info(group_id=group_id)
 
-        missing_user_emails = set(emails)
+        emails_in_lowercase = {email.lower(): email for email in emails} # Case-insensitivity is considered
         # Users currently in the group who are no longer in the email list should be removed
         incorrect_shared_user_ids = [
             str(user["id"])
             for user in current_shared_users
-            if user.get("email", "") not in emails
+            if (user.get('email') or '').lower() not in emails_in_lowercase
         ]
-        users = User.objects.filter(email__in=emails).values(
-            'id', 'email', 'first_name'
-        )
+        users = User.objects.filter(
+            reduce(
+                operator.or_,
+                (Q(email__iexact=email) for email in emails_in_lowercase),
+                Q(pk__in=[]),
+            )
+        ).values('id', 'email', 'first_name')
+        existing_user_emails = {user['email'].lower() for user in users}
+        missing_user_emails = {
+            email
+            for lower_email, email in emails_in_lowercase.items()
+            if lower_email not in existing_user_emails
+        }
         if users:
-            missing_user_emails = set(emails) - {user["email"] for user in users}
+            current_shared_user_ids = {user['id'] for user in current_shared_users}
             # Add any new users who are not already in the group (and aren't the profile owner)
             new_shared_user = {
                 str(user['id']): user
                 for user in users
-                if user['id'] not in current_shared_users
-                and user['email'] != current_user.email
+                if user['id'] not in current_shared_user_ids
+                and user['email'].lower() != (current_user.email or '').lower()
             }
 
             if new_shared_user:
@@ -337,7 +350,7 @@ def join_shared_edp_profile(profile, token):
             if email.strip()
         ]
 
-        if user.email in emails:
+        if user.email.lower() in {email.lower() for email in emails}:
             groups = CopoGroup().get_group_by_profile(profile_id=profile["_id"])
             if not groups:
                 group_id = CopoGroup().create_group_for_profile(

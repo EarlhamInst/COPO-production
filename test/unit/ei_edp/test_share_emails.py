@@ -166,3 +166,140 @@ def test_sapio_failure_is_not_hidden_by_a_skipped_email(save):
     )
 
     assert result == {'status': 'warning', 'message': 'Sapio sync failed. ' + SKIPPED_MESSAGE}
+
+
+def test_only_newly_added_users_are_emailed():
+    # Saving the profile again shouldn't re-email users it is already shared with
+    with mock.patch.object(edp_utils, 'helpers') as helpers, \
+            mock.patch.object(edp_utils, 'CopoGroup') as copo_group, \
+            mock.patch.object(edp_utils, 'User') as user, \
+            mock.patch.object(edp_utils, 'Profile'), \
+            mock.patch.object(edp_utils, '_add_to_edp_django_group'), \
+            mock.patch.object(edp_utils, 'Email') as email, \
+            mock.patch.object(edp_utils, 'get_lims_adapter') as get_lims_adapter:
+        helpers.get_current_user.return_value.email = 'owner@earlham.ac.uk'
+        copo_group.return_value.get_group_by_profile.return_value = [{'_id': 'group1'}]
+        copo_group.return_value.get_users_for_group_info.return_value = [USERS[0]]
+        user.objects.filter.return_value.values.return_value = USERS
+        email.return_value.failed_emails = []
+        email.return_value.skipped_emails = []
+        get_lims_adapter.return_value.sync_project.return_value = {'status': 'success'}
+
+        profile = {**PROFILE, 'customer_emails': 'good@earlham.ac.uk;bad@earlham.ac.uk'}
+        edp_utils.post_save_edp_profile(profile)
+
+    copo_group.return_value.add_users_to_group.assert_called_once_with(
+        group_id='group1', user_ids=['3']
+    )
+    _, emailed_users = email.return_value.notify_shared_profile_to_existing_user.call_args.args
+    assert list(emailed_users) == [USERS[1]]
+
+
+# --- Email addresses are matched case-insensitively ---
+
+@pytest.fixture
+def share():
+    # post_save_edp_profile saved by owner@earlham.ac.uk, with COPO's groups,
+    # users and database stubbed out
+    with mock.patch.object(edp_utils, 'helpers') as helpers, \
+            mock.patch.object(edp_utils, 'CopoGroup') as copo_group, \
+            mock.patch.object(edp_utils, 'User') as user, \
+            mock.patch.object(edp_utils, 'Profile'), \
+            mock.patch.object(edp_utils, '_add_to_edp_django_group'), \
+            mock.patch.object(edp_utils, 'Email') as email, \
+            mock.patch.object(edp_utils, 'get_lims_adapter') as get_lims_adapter:
+        helpers.get_current_user.return_value.email = 'owner@earlham.ac.uk'
+        copo_group.return_value.get_group_by_profile.return_value = [{'_id': 'group1'}]
+        email.return_value.failed_emails = []
+        email.return_value.skipped_emails = []
+        get_lims_adapter.return_value.sync_project.return_value = {'status': 'success'}
+
+        def run(customer_emails, existing_users=(), shared_users=()):
+            copo_group.return_value.get_users_for_group_info.return_value = list(shared_users)
+            user.objects.filter.return_value.values.return_value = list(existing_users)
+            profile = {**PROFILE, 'customer_emails': customer_emails}
+            edp_utils.post_save_edp_profile(profile)
+            return email.return_value, copo_group.return_value
+
+        yield run
+
+
+def test_owner_entering_their_email_in_different_case_is_not_emailed(share):
+    owner = {'id': 1, 'email': 'owner@earlham.ac.uk', 'first_name': 'Owner'}
+
+    email, copo_group = share('Owner@Earlham.ac.uk', existing_users=[owner])
+
+    email.notify_shared_profile_to_non_existent_user.assert_not_called()
+    email.notify_shared_profile_to_existing_user.assert_not_called()
+    copo_group.add_users_to_group.assert_not_called()
+
+
+def test_existing_user_entered_in_different_case_is_not_invited_to_create_an_account(share):
+    email, copo_group = share('GOOD@earlham.ac.uk', existing_users=[USERS[0]])
+
+    email.notify_shared_profile_to_non_existent_user.assert_not_called()
+    copo_group.add_users_to_group.assert_called_once_with(group_id='group1', user_ids=['2'])
+
+
+def test_shared_user_entered_in_different_case_stays_in_the_group(share):
+    _, copo_group = share(
+        'Good@Earlham.ac.uk', existing_users=[USERS[0]], shared_users=[USERS[0]]
+    )
+
+    copo_group.remove_users_from_group.assert_called_once_with(group_id='group1', user_ids=[])
+
+
+def test_same_new_address_in_different_cases_is_invited_once(share):
+    email, _ = share('new@earlham.ac.uk; NEW@earlham.ac.uk')
+
+    _, tokens = email.notify_shared_profile_to_non_existent_user.call_args.args
+    assert len(tokens) == 1
+
+
+def test_new_user_is_invited_at_the_address_as_entered(share):
+    email, _ = share('New.User@Earlham.ac.uk')
+
+    _, tokens = email.notify_shared_profile_to_non_existent_user.call_args.args
+    assert list(tokens.values()) == ['New.User@Earlham.ac.uk']
+
+
+def test_blank_customer_emails_do_not_crash_the_save(share):
+    email, copo_group = share(' ; ')
+
+    email.notify_shared_profile_to_non_existent_user.assert_not_called()
+    email.notify_shared_profile_to_existing_user.assert_not_called()
+    copo_group.add_users_to_group.assert_not_called()
+
+
+# --- Joining a shared profile from an invite link ---
+
+@pytest.fixture
+def join():
+    # join_shared_edp_profile for a logged-in user with id 2, with COPO's
+    # groups stubbed out
+    with mock.patch.object(edp_utils, 'helpers') as helpers, \
+            mock.patch.object(edp_utils, 'CopoGroup') as copo_group, \
+            mock.patch.object(edp_utils, '_add_to_edp_django_group'):
+        copo_group.return_value.get_group_by_profile.return_value = [{'_id': 'group1'}]
+
+        def run(user_email, customer_emails):
+            helpers.get_current_user.return_value.id = 2
+            helpers.get_current_user.return_value.email = user_email
+            profile = {**PROFILE, 'type': 'ei_edp', 'customer_emails': customer_emails}
+            return edp_utils.join_shared_edp_profile(profile, 'token1'), copo_group.return_value
+
+        yield run
+
+
+def test_user_whose_email_differs_in_case_can_join(join):
+    result, copo_group = join('good@earlham.ac.uk', 'Good@Earlham.ac.uk')
+
+    assert result == {'status': 'success'}
+    copo_group.add_user_to_group.assert_called_once_with(group_id='group1', user_id='2')
+
+
+def test_user_not_in_customer_emails_cannot_join(join):
+    result, copo_group = join('other@earlham.ac.uk', 'Good@Earlham.ac.uk')
+
+    assert result['status'] == 'error'
+    copo_group.add_user_to_group.assert_not_called()
