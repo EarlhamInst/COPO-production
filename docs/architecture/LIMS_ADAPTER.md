@@ -54,7 +54,7 @@ directly to a place the old inline Sapio code lived:
 1. **Inputs and outputs speak COPO's language, never the LIMS's.** Methods take
    the COPO `profile` dict and single-cell `schemas`, and return records keyed
    by COPO `term_name`. All translation to LIMS field names - e.g. Sapio's
-   `sapio_name` schema column (`"Object:Field"`) - lives *inside* the adapter.
+   `sapio_name` schema column (`"Object:Field"`) - lives _inside_ the adapter.
 2. **Status-returning methods use the house `{"status": ..., "message": ...}`
    convention**, so they drop straight into the existing profile-hook call
    sites.
@@ -155,7 +155,7 @@ with no-ops and empty reads.
   abort is wanted for Sapio, it must be threaded back through the interface.
 - **`sync_project` returns `project_id` on every path, including partial
   failure.** This preserves the original behaviour where a newly minted project
-  id was persisted immediately, so a mid-sync crash does not cause a *duplicate*
+  id was persisted immediately, so a mid-sync crash does not cause a _duplicate_
   project on retry.
 - **Manifest generation now issues two LIMS reads** (`get_project_samples` +
   `get_project_metadata`) where the old code queried the project once. Minor;
@@ -163,9 +163,9 @@ with no-ops and empty reads.
 - **The `sapio_name` schema column still exists** in the single-cell schemas.
   It is read only inside `SapioAdapter`. Moving that mapping out of the schema
   and into each adapter (so the schema is fully LIMS-neutral) is a deliberate
-  *future* step, not done here - don't gold-plate before a second LIMS exists.
+  _future_ step, not done here - don't gold-plate before a second LIMS exists.
 - **Profile fields** (`sapio_project_id`, `sample_type`, `container_type`,
-  `library_type`, `budget_user`) remain Sapio-flavoured on the COPO profile.
+  `library_type`, `budget_holder`) remain Sapio-flavoured on the COPO profile.
   Generalising these to neutral names + an adapter-declared blob is a separate
   future step.
 
@@ -191,4 +191,4 @@ with no-ops and empty reads.
 **No automated tests exist for this flow yet** (consistent with the platform-wide
 gap noted in `DECOUPLING_ANALYSIS.md` §7). A characterization test running the
 profile hooks against `NullLIMSAdapter` - no external stack required - is the
-cheapest first net and is now possible *because* of this decoupling.
+cheapest first net and is now possible _because_ of this decoupling.

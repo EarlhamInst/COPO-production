@@ -16,75 +16,76 @@ that, and isn't meant to.
 
 **Step 1: Start the local project stack**
 
-  The container, `copo_web`, should be serving at `http://localhost:8000` 
-  in your browser. If it isn't, start it using VS Code's `Start all` compound 
-  from `launch.json`.
+The container, `copo_web`, should be serving at `http://localhost:8000`
+in your browser. If it isn't, start it using VS Code's `Start all` compound
+from `launch.json`.
 
 **Step 2: Export environment variables**
 
-  Export `COPO_PROJECT_SETUP_DIR` and `COPO_LOCAL_COMPOSE_FILE_NAME` in
-  the terminal session (or permanently in your shell configuration file,
-  `~/.zshenv` (zsh, the macOS default) or `~/.bashrc` (bash) then, reload
-  with `source ~/.zshenv` or `source ~/.bashrc` (or open a new terminal)).
-  They should point to the path of your local project stack's setup directory and
-  the file name of its local Docker compose file (which is located inside the same directory).
+Export `COPO_PROJECT_SETUP_DIR` and `COPO_LOCAL_COMPOSE_FILE_NAME` in
+the terminal session (or permanently in your shell configuration file,
+`~/.zshenv` (zsh, the macOS default) or `~/.bashrc` (bash) then, reload
+with `source ~/.zshenv` or `source ~/.bashrc` (or open a new terminal)).
+They should point to the path of your local project stack's setup directory and
+the file name of its local Docker compose file (which is located inside the same directory).
 
-  `~/.zshenv` is preferred over `~/.zshrc` because `zsh` only reads `~/.zshrc` for
-  interactive shells so, the script will only work when typed into a terminal but
-  fails with "not set" when launched by anything else like an IDE task or a
-  background job etc..
+`~/.zshenv` is preferred over `~/.zshrc` because `zsh` only reads `~/.zshrc` for
+interactive shells so, the script will only work when typed into a terminal but
+fails with "not set" when launched by anything else like an IDE task or a
+background job etc..
 
-  There are no defaults in the `run_playwright_tests.sh` script because each 
-  developer's stack is located somewhere different. The script will stop and 
-  display an error message if either is not set or doesn't exist.
+There are no defaults in the `run_playwright_tests.sh` script because each
+developer's stack is located somewhere different. The script will stop and
+display an error message if either is not set or doesn't exist.
 
-  Example of setting the environment variables:
-  ```
-  export COPO_PROJECT_SETUP_DIR="$HOME/Desktop/project_setup"
-  export COPO_LOCAL_COMPOSE_FILE_NAME="compose.yaml"
-  ```
+Example of setting the environment variables:
+
+```
+export COPO_PROJECT_SETUP_DIR="$HOME/Desktop/project_setup"
+export COPO_LOCAL_COMPOSE_FILE_NAME="compose.yaml"
+```
 
 **Step 3: Build latest Playwright Docker image (optional)**
 
-  You do not usually need to build the `playwright:v1.64.1` image because the
-  Docker compose service already declares a `build:` section which builds the tag on your 
-  local machine if it doesn't exist. This takes a few minutes to be built; it mainly involves 
-  pulling the base image. To build it by hand — say, to rebuild after changing
-  `requirements/dev.txt`:
+You do not usually need to build the `playwright:v1.64.1` image because the
+Docker compose service already declares a `build:` section which builds the tag on your
+local machine if it doesn't exist. This takes a few minutes to be built; it mainly involves
+pulling the base image. To build it by hand — say, to rebuild after changing
+`requirements/dev.txt`:
 
 ```
 docker build . -f deployment/web/Dockerfile_playwright -t playwright:v1.64.1
 ```
 
-  The tag tracks the base image version in `Dockerfile_playwright`, so it
-  changes whenever that's bumped. That's deliberate: a bump asks for a tag
-  nobody has yet, and the `build:` section turns what would be a confusing
-  "image not found" into one automatic rebuild.
+The tag tracks the base image version in `Dockerfile_playwright`, so it
+changes whenever that's bumped. That's deliberate: a bump asks for a tag
+nobody has yet, and the `build:` section turns what would be a confusing
+"image not found" into one automatic rebuild.
 
-  `Dockerfile_playwright` bakes the repo's source in at build time
-  (`COPY . /copo`), but `docker-compose.playwright.yaml` then bind-mounts
-  your actual working tree over the top of that at container-start time —
-  same pattern as `copo_web`. So in practice, edits to test files,
-  `conftest.py`, or app code show up immediately on the next run; you only
-  need to rebuild when *dependencies* change (`requirements/dev.txt`), since
-  those are installed at build time and aren't part of the mount.
+`Dockerfile_playwright` bakes the repo's source in at build time
+(`COPY . /copo`), but `docker-compose.playwright.yaml` then bind-mounts
+your actual working tree over the top of that at container-start time —
+same pattern as `copo_web`. So in practice, edits to test files,
+`conftest.py`, or app code show up immediately on the next run; you only
+need to rebuild when _dependencies_ change (`requirements/dev.txt`), since
+those are installed at build time and aren't part of the mount.
 
-  Which tree gets mounted comes from `COPO_REPO_ROOT`, which
-  `run_playwright_tests.sh` sets to the checkout it was invoked from. The
-  compose file has no fallback on purpose — mounting a wrong-but-plausible
-  path silently runs the suite against a different tree, and the results
-  still look convincing. Invoking `docker compose` by hand therefore needs
-  `COPO_REPO_ROOT` exported, or it stops with a message saying so.
+Which tree gets mounted comes from `COPO_REPO_ROOT`, which
+`run_playwright_tests.sh` sets to the checkout it was invoked from. The
+compose file has no fallback on purpose — mounting a wrong-but-plausible
+path silently runs the suite against a different tree, and the results
+still look convincing. Invoking `docker compose` by hand therefore needs
+`COPO_REPO_ROOT` exported, or it stops with a message saying so.
 
 ### Running from a git worktree
 
 The runner mounts whichever checkout you invoke it from, so running the suite
 inside a worktree tests that worktree's **test** files. `copo_web` is a
-different matter because its bind mount is declared in the local stack's own 
-compose file. The environment variable, `$COPO_LOCAL_COMPOSE_FILE_NAME`, is 
+different matter because its bind mount is declared in the local stack's own
+compose file. The environment variable, `$COPO_LOCAL_COMPOSE_FILE_NAME`, is
 set outside the repository and will always point to a fixed checkout.
 
-So the app under test is *not* your worktree's app code. The runner detects
+So the app under test is _not_ your worktree's app code. The runner detects
 the mismatch and warns:
 
 ```bash
@@ -100,8 +101,8 @@ bring them back up via VS Code's `Start all` afterwards.
 
 ## Running the tests
 
-> Do not run the tests from inside the `copo_web` container's shell via 
-> `docker compose exec` or via VS Code `Dev Containers` extension; always run 
+> Do not run the tests from inside the `copo_web` container's shell via
+> `docker compose exec` or via VS Code `Dev Containers` extension; always run
 > them from the root of the project's repository on your local machine.
 
 ```bash
@@ -168,7 +169,7 @@ In essence, the Playwright tests under the EDP profile workflow perform the foll
 
 1. Creating an EDP profile which then creates its Sapio project
 2. Submitting the FAANG sample (using the manifest located at `test/testfiles/COPO_FAANG_manifest_success1.xlsx`) to ENA and getting back a real biosample accession
-3. Downloading a pre-filled LIMS manifest, with C4 (`budget_user`), C5 (`sapio_project_id`) and F5 (`jira_ticket_number`) matching the profile;
+3. Downloading a pre-filled LIMS manifest, with C4 (`budget_holder`), C5 (`sapio_project_id`) and F5 (`related_enq`) matching the profile;
 4. Filling in the answers then, validating and saving the LIMS manifest
 5. Submitting to Sapio returning success
 6. Reading the project back from Sapio where every mapped manifest field is matched
@@ -207,7 +208,6 @@ To view a test live:
 test/playwright/scripts/run_playwright_tests.sh --headed
 ```
 
-
 ## Viewing a trace after the fact
 
 `-t` (or `--tracing=on` directly) records a full scrubbable timeline
@@ -219,7 +219,7 @@ to cwd would otherwise land at the repo root).
 
 **pytest-playwright wipes the entire output directory at the start of every
 run**, traced or not — so a trace from a previous run disappears the moment
-you start the *next* run, not after it. If you want to keep a specific
+you start the _next_ run, not after it. If you want to keep a specific
 trace, copy it out before running again.
 
 Open a trace with:

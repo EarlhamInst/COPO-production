@@ -48,14 +48,14 @@ SAMPLE_METADATA_LOOKUPS = {
 
 # EDP profile form values agreed for the Sapio test instance. The JIRA ticket
 # number is deliberately not here: it becomes the Sapio ProjectName, so each
-# run makes its own (see edp_jira_ticket_number()) to find its project in
+# run makes its own (see edp_related_enq()) to find its project in
 # Sapio unambiguously.
 EDP_PROFILE_FIELDS = {
     'sample_type': 'Tissue',
     'library_type': 'Illumina premade library',
     'container_type': 'Plate',
     'no_of_samples': 1,
-    'budget_user': 'copo-playwright-test-user',
+    'budget_holder': 'copo-playwright-test-user',
     
     # The project team's development/test email address (which is set in
     # docker-compose.playwright.yaml) will receive emails about the 
@@ -66,7 +66,7 @@ EDP_PROFILE_FIELDS = {
     'customer_emails': get_env('PROJECT_TEAM_EMAIL') or 'copo-playwright@example.invalid',
 }
 
-def edp_jira_ticket_number():
+def edp_related_enq():
     return f'copo-playwright-test-{int(time.time())}'
 
 def header_columns(sheet, row):
@@ -304,8 +304,8 @@ def create_edp_profile(
     library_type,
     container_type,
     no_of_samples,
-    jira_ticket_number,
-    budget_user,
+    related_enq,
+    budget_holder,
     customer_emails,
 ):
     # Saving an EDP profile is not local-only: post_save_edp_profile()
@@ -325,8 +325,8 @@ def create_edp_profile(
     # label so callers can pass what the user sees.
     page.select_option('#copo\\.profile\\.container_type', label=container_type)
     page.fill('#copo\\.profile\\.no_of_samples', str(no_of_samples))
-    page.fill('#copo\\.profile\\.jira_ticket_number', jira_ticket_number)
-    page.fill('#copo\\.profile\\.budget_user', budget_user)
+    page.fill('#copo\\.profile\\.related_enq', related_enq)
+    page.fill('#copo\\.profile\\.budget_holder', budget_holder)
     page.fill('#copo\\.profile\\.customer_emails', customer_emails)
 
     # Check the save's response rather than only the card appearing: a

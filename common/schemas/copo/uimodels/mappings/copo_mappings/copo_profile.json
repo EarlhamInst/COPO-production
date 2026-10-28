@@ -343,7 +343,7 @@
       "regex": "^[A-Z][A-Z0-9]{2,11}(,[A-Z][A-Z0-9]{2,11})*$"
     },
     {
-      "help_tip": "Please input sample type",
+      "help_tip": "Choose a type of sample from the available options",
       "required": "true",
       "default_value": "",
       "placeholder": "select sample type",
@@ -363,16 +363,16 @@
       "type": "string",
       "show_in_table": true,
       "control": "select",
-      "option_values":{
+      "option_values": {
         "callback": {
           "parameter": {},
           "function": "get_sapio_sample_type_options",
           "provider": "src.apps.ei_edp.utils.edp_utils"
-       }
+        }
       }
     },
     {
-      "help_tip": "Please input library type",
+      "help_tip": "Choose a type of library from the available options",
       "required": "false",
       "default_value": "",
       "control_meta": {},
@@ -392,7 +392,7 @@
       "type": "string",
       "show_in_table": true,
       "control": "select",
-      "option_values":[
+      "option_values": [
         {
           "value": "Illumina premade library",
           "label": "Illumina premade library"
@@ -400,11 +400,11 @@
         {
           "value": "PacBio  premade library",
           "label": "PacBio  premade library"
-        }    
+        }
       ]
     },
     {
-      "help_tip": "Please input number of samples",
+      "help_tip": "Please input the number of samples",
       "required": "true",
       "default_value": "",
       "control_meta": {},
@@ -424,8 +424,8 @@
       "show_in_table": true,
       "control": "text"
     },
-   {
-      "help_tip": "Please input JIRA ticket number",
+    {
+      "help_tip": "Please input related ENQs",
       "required": "true",
       "default_value": "",
       "control_meta": {},
@@ -438,15 +438,15 @@
       "ref": "",
       "deprecated": false,
       "hidden": "false",
-      "label": "JIRA ticket number",
+      "label": "Related ENQ",
       "show_in_form": true,
-      "id": "copo.profile.jira_ticket_number",
+      "id": "copo.profile.related_enq",
       "type": "string",
       "show_in_table": true,
       "control": "text"
     },
     {
-      "help_tip": "Please input budget user",
+      "help_tip": "Please input the name of the budget holder",
       "required": "true",
       "default_value": "",
       "control_meta": {},
@@ -459,15 +459,15 @@
       "ref": "",
       "deprecated": false,
       "hidden": "false",
-      "label": "Budget user",
+      "label": "Budget holder",
       "show_in_form": true,
-      "id": "copo.profile.budget_user",
+      "id": "copo.profile.budget_holder",
       "type": "string",
       "show_in_table": true,
       "control": "text"
     },
     {
-      "help_tip": "Please select container type",
+      "help_tip": "Choose a type of container from the available options",
       "required": "true",
       "default_value": "plate",
       "placeholder": "select container type",
@@ -487,7 +487,7 @@
       "type": "string",
       "show_in_table": true,
       "control": "select",
-      "option_values":[
+      "option_values": [
         {
           "value": "tube",
           "label": "Tube"
@@ -495,7 +495,7 @@
         {
           "value": "plate",
           "label": "Plate"
-        }    
+        }
       ]
     },
     {
@@ -512,59 +512,58 @@
       "ref": "",
       "deprecated": false,
       "hidden": "false",
-      "label": "Sapio Project ID",
+      "label": "Sapio project ID",
       "show_in_form": false,
       "id": "copo.profile.sapio_project_id",
       "type": "string",
       "show_in_table": true,
       "control": "text",
       "readonly": "true"
-  },
-  {
-    "help_tip": "Customer Emails associated with Sapio Project, separated by semicolon (;)",
-    "required": "true",
-    "default_value": "",
-    "control_meta": {},
-    "versions": [
-      "ei_edp"
-    ],
-    "specifications": [
-      "ei_edp"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Customer Emails",
-    "show_in_form": true,
-    "id": "copo.profile.customer_emails",
-    "type": "string",
-    "show_in_table": true,
-    "control": "textarea",
-    "regex": "^(?!.*\\.{2,})(?!.*-{2,})[\\w.-]+@[a-zA-Z\\d.-]+\\.[a-zA-Z]{2,}([ ;]{1,}(?!.*\\.{2,})(?!.*-{2,})[\\w.-]+@[a-zA-Z\\d.-]+\\.[a-zA-Z]{2,})*$"
-  },
-  {
-    "help_tip": "",
-    "required": "false",
-    "default_value": "",
-    "control_meta": {},
-    "versions": [
-      "ei_edp"
-    ],
-    "specifications": [
-      "ei_edp"
-    ],
-    "ref": "",
-    "deprecated": false,
-    "hidden": "false",
-    "label": "Customer Emails",
-    "show_in_form": false,
-    "id": "copo.profile.customer_emails_tokens",
-    "type": "string",
-    "show_in_table": false,
-    "control": "text"
-  }
-  ] ,
- 
+    },
+    {
+      "help_tip": "A list of customer emails associated with the Sapio project, separated by semicolon (;)",
+      "required": "true",
+      "default_value": "",
+      "control_meta": {},
+      "versions": [
+        "ei_edp"
+      ],
+      "specifications": [
+        "ei_edp"
+      ],
+      "ref": "",
+      "deprecated": false,
+      "hidden": "false",
+      "label": "Customer emails",
+      "show_in_form": true,
+      "id": "copo.profile.customer_emails",
+      "type": "string",
+      "show_in_table": true,
+      "control": "textarea",
+      "regex": "^(?!.*\\.{2,})(?!.*-{2,})[\\w.-]+@[a-zA-Z\\d.-]+\\.[a-zA-Z]{2,}([ ;]{1,}(?!.*\\.{2,})(?!.*-{2,})[\\w.-]+@[a-zA-Z\\d.-]+\\.[a-zA-Z]{2,})*$"
+    },
+    {
+      "help_tip": "",
+      "required": "false",
+      "default_value": "",
+      "control_meta": {},
+      "versions": [
+        "ei_edp"
+      ],
+      "specifications": [
+        "ei_edp"
+      ],
+      "ref": "",
+      "deprecated": false,
+      "hidden": "false",
+      "label": "Customer emails",
+      "show_in_form": false,
+      "id": "copo.profile.customer_emails_tokens",
+      "type": "string",
+      "show_in_table": false,
+      "control": "text"
+    }
+  ],
   "description": "Attributes for COPO Profile schema.",
   "title": "Profile mappings"
 }

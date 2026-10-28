@@ -7,7 +7,7 @@ from playwright.sync_api import Page
 from test.playwright.e2e.utils.edp_helpers import (
     EDP_PROFILE_FIELDS,
     create_edp_profile,
-    edp_jira_ticket_number,
+    edp_related_enq,
     read_sapio_project,
 )
 from test.playwright.e2e.utils.helpers import (
@@ -38,9 +38,9 @@ def test_create_and_delete_edp_profile(page: Page, sapio_test_instance):
     edp_profile_title = TITLE.format(profile_type='EDP')
     delete_profile_by_title(edp_profile_title)
 
-    jira_ticket_number = edp_jira_ticket_number()
+    related_enq = edp_related_enq()
     _, _, project_id = create_edp_profile(
-        page, edp_profile_title, DESCRIPTION, jira_ticket_number=jira_ticket_number, **EDP_PROFILE_FIELDS
+        page, edp_profile_title, DESCRIPTION, related_enq=related_enq, **EDP_PROFILE_FIELDS
     )
     assert re.fullmatch(r'PR\d+', project_id), f'Unexpected Sapio project id {project_id!r}'
 
@@ -50,8 +50,8 @@ def test_create_and_delete_edp_profile(page: Page, sapio_test_instance):
         sample_fields=['SampleId'],
     )
     assert sapio['exists'], f'Sapio project {project_id} was not created'
-    assert sapio['project']['ProjectName'] == jira_ticket_number
-    assert sapio['project']['C_BudgetHolder'] == EDP_PROFILE_FIELDS['budget_user']
+    assert sapio['project']['ProjectName'] == related_enq
+    assert sapio['project']['C_BudgetHolder'] == EDP_PROFILE_FIELDS['budget_holder']
     assert int(sapio['project']['C_SampleCount']) == EDP_PROFILE_FIELDS['no_of_samples']
     assert len(sapio['samples']) == EDP_PROFILE_FIELDS['no_of_samples']
 

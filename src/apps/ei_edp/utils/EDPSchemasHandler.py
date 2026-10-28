@@ -127,8 +127,8 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
         workbook = load_workbook(settings.SINGLE_CELL_SCHEMAS_TEMPLATE_URL["EI_EDP"])
         worksheet_sample = workbook["sample"]
 
-        worksheet_sample["F5"] = profile.get("jira_ticket_number", "")
-        worksheet_sample["C4"] = profile.get("budget_user", "")
+        worksheet_sample["F5"] = profile.get("related_enq", "")
+        worksheet_sample["C4"] = profile.get("budget_holder", "")
         worksheet_sample["C5"] = profile.get("sapio_project_id", "")
 
         if lims_project_metadata:

@@ -161,8 +161,8 @@ class SapioAdapter(LIMSAdapter):
         # persist it and avoid creating a duplicate project on retry.
         project_id = profile.get("sapio_project_id", "")
 
-        # ProjectName is Required in Sapio; use jira_ticket_number with fallback to profile title.
-        project_name = profile.get("jira_ticket_number") or profile.get("title") or ""
+        # ProjectName is Required in Sapio; use related_enq with fallback to profile title.
+        project_name = profile.get("related_enq") or profile.get("title") or ""
         if not project_name:
             return {"status": "success", "project_id": project_id}
         project_record = None
@@ -176,8 +176,8 @@ class SapioAdapter(LIMSAdapter):
                     "ProjectDesc": profile.get("description") or "",
                     "C_SampleCount": int(profile.get("no_of_samples") or 0),
                 }
-                if profile.get("budget_user"):
-                    project_fields["C_BudgetHolder"] = profile["budget_user"]
+                if profile.get("budget_holder"):
+                    project_fields["C_BudgetHolder"] = profile["budget_holder"]
                 project_records = Sapio().dataRecordManager.add_data_records_with_data(
                     data_type_name="Project", field_map_list=[project_fields]
                 )
@@ -228,9 +228,9 @@ class SapioAdapter(LIMSAdapter):
                 project_record.set_field_value(
                     "C_SampleCount", int(profile.get("no_of_samples") or 0)
                 )
-                if profile.get("budget_user"):
+                if profile.get("budget_holder"):
                     project_record.set_field_value(
-                        "C_BudgetHolder", profile["budget_user"]
+                        "C_BudgetHolder", profile["budget_holder"]
                     )
                 Sapio().dataRecordManager.commit_data_records([project_record])
 

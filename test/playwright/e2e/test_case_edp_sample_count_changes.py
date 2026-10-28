@@ -18,7 +18,7 @@ from test.playwright.e2e.utils.edp_helpers import (
 from test.playwright.e2e.utils.edp_helpers import (
     EDP_PROFILE_FIELDS,
     create_edp_profile,
-    edp_jira_ticket_number,
+    edp_related_enq,
     read_sapio_project,
 )
 from test.playwright.e2e.utils.helpers import delete_profile_by_title
@@ -51,7 +51,7 @@ def test_edp_samples_submitted_in_batches(page: Page, tmp_path, sapio_test_insta
         page,
         PROFILE_TITLE,
         PROFILE_DESCRIPTION,
-        jira_ticket_number=edp_jira_ticket_number(),
+        related_enq=edp_related_enq(),
         **{**EDP_PROFILE_FIELDS, 'no_of_samples': 1},
     )
     assert re.fullmatch(r'PR\d+', project_id), f'Unexpected Sapio project id {project_id!r}'

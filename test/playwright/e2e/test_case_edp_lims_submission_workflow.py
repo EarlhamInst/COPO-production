@@ -18,7 +18,7 @@ from test.playwright.e2e.utils.edp_helpers import (
 from test.playwright.e2e.utils.edp_helpers import (
     EDP_PROFILE_FIELDS,
     create_edp_profile,
-    edp_jira_ticket_number,
+    edp_related_enq,
     read_sapio_project,
 )
 from test.playwright.e2e.utils.helpers import (
@@ -81,9 +81,9 @@ def test_edp_manifest_submission_to_sapio(page: Page, tmp_path, sapio_test_insta
     # post-delete hook), so an interrupted run doesn't leak projects.
     delete_profile_by_title(PROFILE_TITLE)
 
-    jira_ticket_number = edp_jira_ticket_number()
+    related_enq = edp_related_enq()
     _, profile_id, project_id = create_edp_profile(
-        page, PROFILE_TITLE, PROFILE_DESCRIPTION, jira_ticket_number=jira_ticket_number, **EDP_PROFILE_FIELDS
+        page, PROFILE_TITLE, PROFILE_DESCRIPTION, related_enq=related_enq, **EDP_PROFILE_FIELDS
     )
     assert re.fullmatch(r'PR\d+', project_id), f'Unexpected Sapio project id {project_id!r}'
 
@@ -97,8 +97,8 @@ def test_edp_manifest_submission_to_sapio(page: Page, tmp_path, sapio_test_insta
     # the manifest, so they prove the profile -> manifest pre-fill works.
     project_sheet = openpyxl.load_workbook(downloaded_manifest)['sample']
     assert project_sheet['C5'].value == project_id
-    assert project_sheet['C4'].value == EDP_PROFILE_FIELDS['budget_user']
-    assert project_sheet['F5'].value == jira_ticket_number
+    assert project_sheet['C4'].value == EDP_PROFILE_FIELDS['budget_holder']
+    assert project_sheet['F5'].value == related_enq
 
     patched_manifest = tmp_path / 'edp_manifest_patched.xlsx'
     sapio_sample_id, expected = build_edp_manifest(downloaded_manifest, patched_manifest, accession)
@@ -132,7 +132,7 @@ def test_edp_manifest_submission_to_sapio(page: Page, tmp_path, sapio_test_insta
     )
     assert sapio['exists'], f'Sapio project {project_id} not found'
     assert str(sapio['project']['RecordId']) == record_id, "COPO's Sapio accession isn't the project's record id"
-    assert sapio['project']['ProjectName'] == jira_ticket_number
+    assert sapio['project']['ProjectName'] == related_enq
 
     sapio_sample = next((s for s in sapio['samples'] if s['SampleId'] == sapio_sample_id), None)
     assert sapio_sample, f'Sample {sapio_sample_id} not found under Sapio project {project_id}'
