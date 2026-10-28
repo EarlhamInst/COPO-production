@@ -155,6 +155,71 @@ class SapioAdapter(LIMSAdapter):
 
         department.add_child(project)
 
+    def _sync_plate_well_elements(self, plates: List[PyRecordModel]):
+        # Sync 'PlateDesignerWellElement' records with the samples on each plate.
+        # Create missing ones and delete those whose sample is no longer on the plate.
+        # Sapio's Plate View needs one per well to show the sample; without it the
+        # well is shown as a black colour with no sample details on hover.
+        if not plates:
+            return
+
+        existing_well_elements = []
+        page_criteria = None
+        while True:
+            page = Sapio().dataRecordManager.query_data_records(
+                data_type_name='PlateDesignerWellElement',
+                data_field_name='PlateRecordId',
+                value_list=[plate.record_id for plate in plates],
+                paging_criteria=page_criteria,
+            )
+            existing_well_elements.extend(page.result_list)
+            if not page.is_next_page_available:
+                break
+            page_criteria = page.next_page_criteria
+
+        samples_on_plates = {
+            (plate.record_id, sample.record_id): sample
+            for plate in plates
+            for sample in plate.get_children_of_type('Sample')
+        }
+        well_elements_to_keep = set()
+        well_elements_to_delete = []
+        for well_element in existing_well_elements:
+            key = (
+                well_element.get_field_value('PlateRecordId'),
+                well_element.get_field_value('AliquotSampleRecordId'),
+            )
+            if key in samples_on_plates and key not in well_elements_to_keep:
+                well_elements_to_keep.add(key)
+            else:
+                well_elements_to_delete.append(well_element)
+
+        # Samples are treated as both the original source and the aliquot 
+        # if they are placed directly onto a plate without being split 
+        # or transferred from another container.
+        new_well_elements = [
+            {
+                'PlateRecordId': plate_record_id,
+                'RowPosition': sample.get_field_value('RowPosition'),
+                'ColPosition': sample.get_field_value('ColPosition'),
+                'Layer': 1,
+                'SourceDataTypeName': 'Sample',
+                'SourceRecordId': sample.record_id,
+                'AliquotSampleRecordId': sample.record_id,
+                'IsControl': False,
+            }
+            for (plate_record_id, _), sample in samples_on_plates.items()
+            if (plate_record_id, sample.record_id) not in well_elements_to_keep
+        ]
+
+        if well_elements_to_delete:
+            Sapio().dataRecordManager.delete_data_record_list(well_elements_to_delete)
+        if new_well_elements:
+            Sapio().dataRecordManager.add_data_records_with_data(
+                data_type_name='PlateDesignerWellElement',
+                field_map_list=new_well_elements,
+            )
+
     def sync_project(self, profile: Dict[str, Any]) -> Dict[str, Any]:
         # The project ID might be minted below on first save.
         # Returned in all paths (including partial failure) so the caller can
@@ -285,6 +350,7 @@ class SapioAdapter(LIMSAdapter):
                                     "ExemplarSampleType": sample_type,
                                     "ContainerType": container_type,
                                     "C_LibraryType": library_type,
+                                    'ExemplarSampleStatus': 'Logged',
                                 }
                                 for _ in range(existing_no_of_samples, no_of_samples)
                             ],
@@ -474,6 +540,10 @@ class SapioAdapter(LIMSAdapter):
                 [sample.get_data_record() for sample in samples_to_remove],
                 recursive_delete=True,
             )
+            
+            # Give each plated sample a well element so that it shows 
+            # as a coloured well in Sapio's Plate View
+            self._sync_plate_well_elements(project.get_children_of_type('Plate'))
 
             if samples_without_plate:
                 l.error("Not all samples have been assigned to plates!")
