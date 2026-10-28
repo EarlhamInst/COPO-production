@@ -169,7 +169,7 @@ In essence, the Playwright tests under the EDP profile workflow perform the foll
 
 1. Creating an EDP profile which then creates its Sapio project
 2. Submitting the FAANG sample (using the manifest located at `test/testfiles/COPO_FAANG_manifest_success1.xlsx`) to ENA and getting back a real biosample accession
-3. Downloading a pre-filled LIMS manifest, with C4 (`budget_holder`), C5 (`sapio_project_id`) and F5 (`related_enq`) matching the profile;
+3. Downloading a pre-filled LIMS manifest, with C4 (`budget_holder`) and C5 (`sapio_project_id`) matching the profile and F5 (JIRA PIP) left blank for EI staff;
 4. Filling in the answers then, validating and saving the LIMS manifest
 5. Submitting to Sapio returning success
 6. Reading the project back from Sapio where every mapped manifest field is matched

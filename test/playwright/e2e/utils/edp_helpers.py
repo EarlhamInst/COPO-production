@@ -20,7 +20,7 @@ from common.utils.helpers import get_env
 TESTFILES_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..', 'testfiles'))
 SAMPLE_MANIFEST = os.path.join(TESTFILES_DIR, 'COPO_FAANG_manifest_success1.xlsx')
 # Holds only what a customer fills in. Everything EI/Sapio generates per
-# project (Project ID, budget holder, JIRA ticket, Sample ID, EI sample name,
+# project (Project ID, budget holder, Related ENA, Sample ID, EI sample name,
 # plate and well) changes every run, so the test downloads the manifest COPO
 # pre-fills for this run's profile and copies these answers into it.
 EDP_LIMS_MANIFEST = os.path.join(TESTFILES_DIR, 'edp_lims_test_manifest_tissue_success1.xlsx')
@@ -46,9 +46,9 @@ SAMPLE_METADATA_LOOKUPS = {
     'BioSample Accession': 'biosampleAccession',
 }
 
-# EDP profile form values agreed for the Sapio test instance. The JIRA ticket
-# number is deliberately not here: it becomes the Sapio ProjectName, so each
-# run makes its own (see edp_related_enq()) to find its project in
+# EDP profile form values agreed for the Sapio test instance. The Related ENQ
+# is not indicated. It becomes the Sapio ProjectName so that each
+# run creates a unique one (see edp_related_enq()) to find its project in
 # Sapio unambiguously.
 EDP_PROFILE_FIELDS = {
     'sample_type': 'Tissue',

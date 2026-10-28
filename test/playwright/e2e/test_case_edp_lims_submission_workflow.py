@@ -98,7 +98,9 @@ def test_edp_manifest_submission_to_sapio(page: Page, tmp_path, sapio_test_insta
     project_sheet = openpyxl.load_workbook(downloaded_manifest)['sample']
     assert project_sheet['C5'].value == project_id
     assert project_sheet['C4'].value == EDP_PROFILE_FIELDS['budget_holder']
-    assert project_sheet['F5'].value == related_enq
+    # The `JIRA PIP` field will be filled in later by the PM team
+    # so it should not be pre-filled from the profile
+    assert project_sheet['F5'].value is None
 
     patched_manifest = tmp_path / 'edp_manifest_patched.xlsx'
     sapio_sample_id, expected = build_edp_manifest(downloaded_manifest, patched_manifest, accession)
