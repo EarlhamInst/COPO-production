@@ -489,11 +489,11 @@
       "control": "select",
       "option_values": [
         {
-          "value": "tube",
+          "value": "Tube",
           "label": "Tube"
         },
         {
-          "value": "plate",
+          "value": "Plate",
           "label": "Plate"
         }
       ]

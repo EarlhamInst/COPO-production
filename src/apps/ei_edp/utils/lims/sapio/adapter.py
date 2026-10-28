@@ -332,7 +332,7 @@ class SapioAdapter(LIMSAdapter):
 
             no_of_samples = int(profile.get("no_of_samples") or 0)
             sample_type = profile.get("sample_type") or ""
-            container_type = profile.get("container_type") or ""
+            container_type = (profile.get("container_type") or "").capitalize()
             library_type = profile.get("library_type") or ""
 
             # Create samples up to the requested count if we don't have enough yet
@@ -430,9 +430,12 @@ class SapioAdapter(LIMSAdapter):
                 if plate:
                     plate.remove_children(samples)
 
+            # Only projects identified as 'plate' projects should have samples placed on plates
+            is_plate_container = container_type == 'Plate'
+
             # Find samples not yet assigned to any plate (PlateId and StorageUnitPath both unset)
             samples_without_plate = set()
-            if samples_under_project:
+            if is_plate_container and samples_under_project:
                 for sample in samples_under_project:
                     assigned_plate = sample.get_field_value("PlateId")
                     if not assigned_plate:
@@ -442,6 +445,20 @@ class SapioAdapter(LIMSAdapter):
 
             # Fill empty slots in existing plates first before creating new ones
             Sapio().relationship_man.load_children(plates_under_project, 'Sample')
+
+            # Take samples off any plates they were placed on while the
+            # container type was 'plate' and remove their well elements
+            if not is_plate_container:
+                for plate in plates_under_project:
+                    samples_under_plate = plate.get_children_of_type('Sample')
+                    if not samples_under_plate:
+                        continue
+                    for sample in samples_under_plate:
+                        sample.set_field_value('PlateId', None)
+                        sample.set_field_value('ColPosition', None)
+                        sample.set_field_value('RowPosition', None)
+                    plate.remove_children(samples_under_plate)
+
             if samples_without_plate:
                 for plate in plates_under_project:
                     sample_for_plate: List[PyRecordModel] = []
