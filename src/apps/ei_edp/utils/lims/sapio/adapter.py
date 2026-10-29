@@ -27,6 +27,15 @@ from .datamanager import Sapio
 
 l = Logger()
 
+# `Customer Supplied` refers to when customers take
+# measurements and report them in a manifest
+CUSTOMER_SUPPLIED_DATUM_TYPE = 'Customer Supplied'
+
+# Samples are arranged onto standard 96-well plates (8 rows × 12 columns)
+PLATE_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+PLATE_COLUMNS = 12
+PLATE_WELLS = len(PLATE_ROWS) * PLATE_COLUMNS
+
 
 def _describe_error(error: Exception) -> str:
     """One-line summary of a Sapio request failure: status + URL, never the body.
@@ -462,11 +471,11 @@ class SapioAdapter(LIMSAdapter):
             if samples_without_plate:
                 for plate in plates_under_project:
                     sample_for_plate: List[PyRecordModel] = []
-                    # Build a position map for every well in a standard 96-well plate (8 rows × 12 columns)
+                    # Build a position map for every well in the plate
                     plate_assignments = {
                         (str(column), row): False
-                        for column in range(1, 13)
-                        for row in ["A", "B", "C", "D", "E", "F", "G", "H"]
+                        for column in range(1, PLATE_COLUMNS + 1)
+                        for row in PLATE_ROWS
                     }
                     samples_under_plate: List[PyRecordModel] = (
                         plate.get_children_of_type('Sample')
@@ -478,7 +487,7 @@ class SapioAdapter(LIMSAdapter):
                         )
                         plate_assignments[plate_assignments_key] = True
 
-                    for _ in range(len(samples_under_plate), 96):
+                    for _ in range(len(samples_under_plate), PLATE_WELLS):
                         if not samples_without_plate:
                             break
                         key = next(
@@ -502,15 +511,15 @@ class SapioAdapter(LIMSAdapter):
 
             # If samples still remain unplated, create as many new 96-well plates as needed
             if samples_without_plate:
-                no_of_plates_needed = math.ceil(len(samples_without_plate) / 96)
+                no_of_plates_needed = math.ceil(len(samples_without_plate) / PLATE_WELLS)
                 new_plate_records = (
                     Sapio().dataRecordManager.add_data_records_with_data(
                         data_type_name="Plate",
                         field_map_list=[
                             {
                                 "PlateSampleType": sample_type,
-                                "PlateColumns": 12,
-                                "PlateRows": 8,
+                                "PlateColumns": PLATE_COLUMNS,
+                                "PlateRows": len(PLATE_ROWS),
                             }
                             for _ in range(no_of_plates_needed)
                         ],
@@ -526,10 +535,10 @@ class SapioAdapter(LIMSAdapter):
                     sample_for_plate: List[PyRecordModel] = []
                     plate_assignments = {
                         (str(column), row): False
-                        for column in range(1, 13)
-                        for row in ["A", "B", "C", "D", "E", "F", "G", "H"]
+                        for column in range(1, PLATE_COLUMNS + 1)
+                        for row in PLATE_ROWS
                     }
-                    for _ in range(96):
+                    for _ in range(PLATE_WELLS):
                         if not samples_without_plate:
                             break
                         key = next(

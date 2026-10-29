@@ -7,12 +7,13 @@ from sapiopylib.rest.utils.recordmodel.RecordModelManager import (
     RecordModelRelationshipManager,
 )
 from sapiopylib.rest.PicklistService import PicklistManager
+from django.conf import settings
 from common.utils.helpers import get_not_deleted_flag, get_env
 from common.utils.logger import Logger
 
 SAPIO_USERNAME = get_env("SAPIO_USERNAME")
 SAPIO_PASSWORD = get_env("SAPIO_PASSWORD")
-SAPIO_API_URL = get_env("SAPIO_API_URL")
+SAPIO_API_URL = settings.SAPIO_API_URL
 SAPIO_API_TOKEN = get_env("SAPIO_API_TOKEN")
 SAPIO_USE_API_USER = str(get_env("SAPIO_USE_API_USER")).lower() == "true"
 

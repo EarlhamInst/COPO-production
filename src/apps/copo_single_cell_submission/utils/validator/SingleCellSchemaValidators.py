@@ -8,7 +8,7 @@ import requests
 from common.utils.helpers import get_env
 import xml.etree.ElementTree as ET
 
-from src.apps.ei_edp.utils.edp_utils import EDP_PROJECT_STUDY_FIELDS
+from src.apps.ei_edp.utils.constants import EDP_PROJECT_STUDY_FIELDS
 from src.apps.ei_edp.utils.edp_validation_messages import MESSAGES as EDP_PROJECT_MESSAGES
 from .validation_messages import MESSAGES as GENERAL_MESSAGES
 
