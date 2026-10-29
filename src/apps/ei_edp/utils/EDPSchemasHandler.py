@@ -138,7 +138,7 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
                 worksheet_sample["L8"] = lims_project_metadata.get("sample_return")
                 worksheet_sample["L8"].protection = Protection(locked=False)
 
-        worksheet_helper = workbook["How to complete the Manifest"]
+        worksheet_helper = workbook["How to complete the manifest"]
         worksheet_helper.protection.sheet = True
 
         for checklist in checklists.keys():
@@ -507,7 +507,7 @@ class EDPSchemasSpreadsheet(SinglecellschemasSpreadsheet):
             self.new_data["study"] = study_df
 
             for sheetname in workbook.sheetnames:
-                if sheetname in ["How to complete the Manifest", "sample_metadata"]:
+                if sheetname in ["How to complete the manifest", "sample_metadata"]:
                     continue
                 if sheetname not in self.schemas:
                     notify_singlecell_status(

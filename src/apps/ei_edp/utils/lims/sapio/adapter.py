@@ -1,4 +1,4 @@
-"""Sapio implementation of the LIMS adapter.
+'''Sapio implementation of the LIMS adapter.
 
 All `sapiopylib` usage for the EDP flow lives here. The logic in each method was
 lifted verbatim (behaviour-preserving) from the previous inline Sapio code in
@@ -10,7 +10,7 @@ Sapio-specific concepts that must not leak into the generic `LIMSAdapter`
 interface are contained here: the `Project`/`Sample`/`Plate` data model, the
 96-well plate packing, and the `sapio_name` ("Object:Field") schema-column
 convention used to map COPO terms to Sapio fields.
-"""
+'''
 
 import math
 from typing import Any, Dict, List
@@ -62,6 +62,24 @@ def _describe_error(error: Exception) -> str:
         return f"could not reach {request.url}"
     return type(error).__name__
 
+
+def _is_blank(value):
+    if value is None:
+        return True
+    if isinstance(value, float) and math.isnan(value):
+        return True
+    return isinstance(value, str) and not value.strip()
+
+
+def _to_number(value):
+    # QCDatum's QC fields (A260280, RIN, ...) are Decimal fields in Sapio, but
+    # manifest cells can arrive as strings
+    if isinstance(value, str):
+        try:
+            return float(value.strip())
+        except ValueError:
+            return value
+    return value
 
 class SapioAdapter(LIMSAdapter):
 
@@ -705,6 +723,76 @@ class SapioAdapter(LIMSAdapter):
             )
         return metadata
 
+    def _set_customer_supplied_qc_datum(
+        self, sample: PyRecordModel, qc_values: Dict[str, Any]
+    ):
+        # One 'QCDatum' child is mapped per Sample with the 'Customer Supplied' Instrument Type (i.e. DatumType).
+        # Sapio will later fill in the units, the 'Linked Sample' parent link and the default
+        # 'Passed' value for the 'QC Status' field or 'Pending Approval' status for the 'Instrument Data Status' field.
+        qc_datum = next(
+            (
+                child
+                for child in sample.get_children_of_type('QCDatum')
+                if child.get_field_value('DatumType') == CUSTOMER_SUPPLIED_DATUM_TYPE
+            ),
+            None,
+        )
+        if not qc_datum:
+            qc_datum = Sapio().inst_man.add_new_record('QCDatum')
+            sample.add_child(qc_datum)
+
+        sample_id = sample.get_field_value('SampleId')
+        qc_datum.set_field_value('DatumType', CUSTOMER_SUPPLIED_DATUM_TYPE)
+        qc_datum.set_field_value('SampleId', sample_id)
+        qc_datum.set_field_value(
+            'DataRecordName', f'{CUSTOMER_SUPPLIED_DATUM_TYPE} {sample_id}'
+        )
+
+        # The concentration and volume for the sample are copied onto the record
+        for sample_field, qc_datum_field in (
+            ('Concentration', 'Concentration'),
+            ('Volume', 'C_Volume'),
+        ):
+            value = sample.get_field_value(sample_field)
+            if not _is_blank(value):
+                qc_datum.set_field_value(qc_datum_field, value)
+
+        for sapio_field, value in qc_values.items():
+            qc_datum.set_field_value(sapio_field, _to_number(value))
+
+    def _set_customer_supplied_index_barcode(
+        self, sample: PyRecordModel, index_values: Dict[str, Any]
+    ):
+        # One 'IndexBarcode' child is mapped per 'Sample'
+        # with no link to an index kit.
+        index_barcodes = sample.get_children_of_type('IndexBarcode')
+        if index_barcodes:
+            index_barcode = index_barcodes[0]
+        else:
+            index_barcode = Sapio().inst_man.add_new_record('IndexBarcode')
+            sample.add_child(index_barcode)
+
+        for sapio_field, value in index_values.items():
+            index_barcode.set_field_value(sapio_field, value)
+
+        # 'Sample Name' on an index refers to the customer's name for the sample
+        sample_id = sample.get_field_value('SampleId')
+        customer_sample_name = sample.get_field_value('C_CustomerSampleName')
+        index_barcode.set_field_value('SampleId', sample_id)
+        index_barcode.set_field_value('OtherSampleId', customer_sample_name)
+        index_barcode.set_field_value(
+            'DataRecordName',
+            ' '.join(
+                str(value)
+                for value in (
+                    index_barcode.get_field_value('IndexId'),
+                    sample_id,
+                    customer_sample_name,
+                )
+                if not _is_blank(value)
+            ),
+        )
+
     def submit_manifest(
         self, project_id: str, schemas: Dict[str, Any], components: Dict[str, Any]
     ) -> Dict[str, Any]:
@@ -781,6 +869,29 @@ class SapioAdapter(LIMSAdapter):
 
         project_sapio_mapping = sapio_object_dict.get("Project", {})
         sample_sapio_mapping = sapio_object_dict.get("Sample", {})
+        
+        # 'QC' means Quality control. It refers to the lab measurements 
+        # that check whether samples meet required sequence standards.
+        qc_datum_sapio_mapping = sapio_object_dict.get('QCDatum', {})
+        
+        index_barcode_sapio_mapping = {
+            term_name: sapio_field
+            for term_name, sapio_field in sapio_object_dict.get('IndexBarcode', {}).items()
+            if sapio_field not in ('SampleId', 'OtherSampleId')
+        }
+
+        # QC values that customers supply reside on a 'QCDatum' in Sapio and are displayed 
+        # as 'Instrument Data' while the indices reside on a 'IndexBarcode' child that 
+        # is displayed as 'Assigned Index' in Sapio.
+        # Existing 'QCDatum' and 'IndexBarcode' children are loaded for 
+        # existing project samples to avoid creating duplicates.
+        if samples_under_project:
+            if qc_datum_sapio_mapping:
+                Sapio().relationship_man.load_children(samples_under_project, 'QCDatum')
+            if index_barcode_sapio_mapping:
+                Sapio().relationship_man.load_children(
+                    samples_under_project, 'IndexBarcode'
+                )
 
         # Flag manifest sample IDs in COPO that have no matching samples
         # in Sapio so that they can be reported to the user
@@ -833,6 +944,28 @@ class SapioAdapter(LIMSAdapter):
                         sapio_field = sample_sapio_mapping.get(column, "")
                         if sapio_field:
                             sapio_sample.set_field_value(sapio_field, row[column])
+
+                    qc_values = {
+                        qc_datum_sapio_mapping[column]: row[column]
+                        for column in component_data_df.columns
+                        if column in qc_datum_sapio_mapping
+                        and not _is_blank(row[column])
+                    }
+                    
+                    if qc_values:
+                        self._set_customer_supplied_qc_datum(sapio_sample, qc_values)
+
+                    index_values = {
+                        index_barcode_sapio_mapping[column]: row[column]
+                        for column in component_data_df.columns
+                        if column in index_barcode_sapio_mapping
+                        and not _is_blank(row[column])
+                    }
+                    
+                    if index_values:
+                        self._set_customer_supplied_index_barcode(
+                            sapio_sample, index_values
+                        )
 
         Sapio().rec_man.store_and_commit()
 
