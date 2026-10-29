@@ -75,7 +75,7 @@ gunicorn==26.2.0
 hyperlink==21.0.0
 idna==3.20
 #imagesize==0.7.1
-importlib_metadata==9.1.0
+importlib_metadata==10.1.0
 Incremental==24.11.0
 #ipykernel==5.1.2
 #ipython==7.8.0
@@ -91,7 +91,7 @@ Jinja2==3.1.6
 #jmespath==1.0.1
 # jsonpath-rw==1.4.0
 # jsonpath-rw-ext==1.2.2
-jsonpath-ng==1.13.0
+jsonpath-ng==1.14.0
 jsonpickle==4.1.4
 jsonref==1.1.0
 #jsonschema==4.17.3
@@ -108,7 +108,7 @@ mccabe==0.7.0
 #mistune==0.8.4
 mock==5.2.0
 more-itertools==11.2.1
-msgpack==1.2.3
+msgpack==1.2.4
 #mzml2isa==0.5.1
 #nbconvert==5.6.0
 #nbformat==4.4.0
@@ -202,7 +202,7 @@ urllib3==2.8.0
 user-agents==2.2.0
 validators==0.36.0
 vine==5.1.0
-wcwidth==0.9.3
+wcwidth==0.9.4
 #webencodings==0.5.1
 #widgetsnbextension==3.5.1
 #wrapt==1.16.0
