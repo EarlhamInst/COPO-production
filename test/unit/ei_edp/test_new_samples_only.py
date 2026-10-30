@@ -164,7 +164,7 @@ def load(path):
     spreadsheet.schemas = {
         'sample': {
             'sample_id': {'term_label': 'Sample ID'},
-            'submitter_sample_reference': {'term_label': 'Submitter Sample Reference'},
+            'submitter_sample_reference': {'term_label': 'Submitter sample reference'},
         },
         'index': {
             'sample_id': {'term_label': 'Sample ID'},
