@@ -14,12 +14,14 @@ from common.utils.logger import Logger
 from src.apps.copo_core.models import User
 from src.apps.copo_single_cell_submission.utils.da import Singlecell, SinglecellSchemas
 
+from .EDPSchemasHandler import get_pending_samples
+from .edp_validation_messages import MESSAGES
 from .email import Email
 from .lims import get_lims_adapter
 
 # Separator used when a profile owner enters multiple customer emails
-CUSTOMER_EMAIL_SPLITTER = ";"
-
+CUSTOMER_EMAIL_SPLITTER = ';'
+EDP_SCHEMA_NAME = 'EI_EDP'
 
 l = Logger()
 
@@ -304,6 +306,31 @@ def submit_edp_to_sapio(profile_id, study_id):
         status_column_value=status_column_value,
     )
     return result
+
+
+def check_lims_blank_manifest(profile_id):
+    # A warning is displayed if a user tries to download a blank 
+    # LIMS manifest when all the requested samples from the EDP profile 
+    # level have already been submitted.
+    # Otherwise, the blank manifest is downloaded.
+    profile = Profile().get_record(profile_id) or {}
+    sapio_project_id = profile.get('sapio_project_id', '')
+    if not sapio_project_id:
+        return {
+            'status': 'error',
+            'message': MESSAGES['missing_sapio_project'],
+        }
+
+    schemas = (
+        SinglecellSchemas()
+        .get_collection_handle()
+        .find_one({'name': EDP_SCHEMA_NAME})['schemas']
+    )
+    
+    if not get_pending_samples(sapio_project_id, schemas):
+        return {'status': 'warning', 'message': MESSAGES['all_samples_submitted']}
+    
+    return {'status': 'success', 'message': ''}
 
 
 def join_shared_edp_profile(profile, token):

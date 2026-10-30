@@ -366,6 +366,57 @@ $(document).on('document_ready', function () {
         size: BootstrapDialog.SIZE_WIDE,
       });
     });
+  
+  // With regard the logic for LIMS manifests under EDP profiles,
+  // check whether there are Sapio samples still remaining to be
+  // submitted before a blank manifest can be downloaded
+  // If there are none, display a warning message.
+  $(document).on(
+    'click',
+    '.download-blank-manifest-template',
+    function (e) {
+      if (schema_name !== 'EI_EDP') {
+        return;
+      }
+      e.preventDefault();
+      let manifestURL = $(this).attr('href');
+
+      $.ajax({
+        url: copoFormsURL,
+        type: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
+        data: {
+          task: 'check_lims_blank_manifest',
+          component: component,
+          profile_id: $('#profile_id').val(),
+        },
+      })
+        .done(function (data) {
+          let feedback = (data && data.action_feedback) || {};
+          if (feedback.status === 'success') {
+            window.location.href = manifestURL;
+            return;
+          }
+          BootstrapDialog.show({
+            title: 'Blank manifest unavailable',
+            message:
+              feedback.message || 'The blank manifest could not be downloaded.',
+            type:
+              feedback.status === 'warning'
+                ? BootstrapDialog.TYPE_WARNING
+                : BootstrapDialog.TYPE_DANGER,
+          });
+        })
+        .fail(function () {
+          BootstrapDialog.show({
+            title: 'Error',
+            message:
+              'The blank manifest could not be downloaded. Please try again.',
+            type: BootstrapDialog.TYPE_DANGER,
+          });
+        });
+    }
+  );
 
   $('#singlecell_spreadsheet_modal').on('show.bs.modal', function (event) {
     var modal = $(this);

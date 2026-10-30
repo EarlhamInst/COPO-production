@@ -23,6 +23,7 @@ from src.apps.copo_single_cell_submission.utils.SingleCellSchemasHandler import 
     SinglecellschemasSpreadsheet,
 )
 from .lims import get_lims_adapter
+from .edp_validation_messages import MESSAGES
 from openpyxl.utils.dataframe import dataframe_to_rows
 from common.ena_utils.generic_helper import notify_singlecell_status
 from openpyxl.worksheet.formula import ArrayFormula
@@ -46,6 +47,18 @@ def get_submitted_sample_ids(project_id, schemas):
     }
 
 
+def get_pending_samples(project_id, schemas):
+    '''This function returns the samples from a Sapio LIMS project
+    that are yet to be submitted. These are the samples that a 
+    downloaded blank manifest will list.
+    '''
+    return [
+        record
+        for record in get_lims_adapter().get_project_samples(project_id, schemas)
+        if not record.get('submitter_sample_reference')
+    ]
+
+
 class EDPSchemasHandler(SingleCellSchemasHandler):
     sample_name_field = 'submitter_sample_reference'
 
@@ -66,28 +79,25 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
 
         profile = Profile().get_record(profile_id)
         if not profile:
-            raise Exception(f"Profile {profile_id} not found")
+            raise Exception(MESSAGES['profile_not_found'].format(profile_id=profile_id))
 
         sapio_project_id = profile.get("sapio_project_id", None)
-        lims = get_lims_adapter()
+        
+        # Sample rows in LIMS manifests originate from the Sapio project so, without
+        # Sapio project, there is nothing for the user to fill in.
+        if not sapio_project_id:
+            raise Exception(MESSAGES['missing_sapio_project'])
+
         # Existing LIMS samples (keyed by COPO term_name) to pre-fill the sample
         # sheet, plus study-level values for the manifest header.
-        lims_sample_records = []
-        lims_project_metadata = {}
-        has_lims_samples = False
-        if sapio_project_id:
-            lims_sample_records = lims.get_project_samples(sapio_project_id, schemas)
-            lims_project_metadata = lims.get_project_metadata(sapio_project_id)
-            has_lims_samples = bool(lims_sample_records)
-            # Submitted samples cannot be later changed.
-            # As such, a manifest will only list the ones that are yet 
-            # to be submitted like when the sample count on a profile  
-            # has increased
-            lims_sample_records = [
-                record
-                for record in lims_sample_records
-                if not record.get('submitter_sample_reference')
-            ]
+        # A blank manifest will only list samples that are yet to be
+        # submitted like when the sample count on a profile has increased.
+        # Submitted samples can be updated by uploading their original
+        # manifest again with amendments.
+        lims_sample_records = get_pending_samples(sapio_project_id, schemas)
+        if not lims_sample_records:
+            raise Exception(MESSAGES['all_samples_submitted'])
+        lims_project_metadata = get_lims_adapter().get_project_metadata(sapio_project_id)
 
         # Cell formats
         alignment = Alignment(wrap_text=True, vertical="center", horizontal="center")
@@ -230,12 +240,13 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
 
                     worksheet_helper_current_row += 1
 
-                if component_name == "sample" and has_lims_samples:
+                if component_name == "sample":
                     sapio_component_data_df = pd.DataFrame.from_records(
                         lims_sample_records
                     )
 
                     worksheet_sample = workbook.create_sheet("sample_metadata")
+                    worksheet_sample.protection.sheet = True
                     sample_metadata_columns = [
                         "submitter_sample_reference",
                         "taxon_id",

@@ -681,6 +681,13 @@ class BrokerDA:
             self.context["table_data"] = copo_single_cell.generate_singlecell_record(profile_id=self.profile_id,checklist_id=checklist_id, study_id=study_id)
             self.context["component"] = "singlecell"
         return self.context        
+
+    def do_check_lims_blank_manifest(self):
+        self.context['action_feedback'] = edp_utils.check_lims_blank_manifest(
+            profile_id=self.profile_id
+        )
+        return self.context
+
     def do_make_snapshot(self):
         target_id = self.param_dict.get("target_id", str())
         target_ids  = self.param_dict.get("target_ids", [])
