@@ -89,7 +89,7 @@ def manifest_sample_ids(path):
     ]
 
 
-def build_edp_manifest(downloaded_path, patched_path, accession, submitter_reference=None):
+def build_lims_manifest(downloaded_path, patched_path, accession, submitter_reference=None):
     # Fills the one sample row of a downloaded manifest with the answers file.
     # Returns (sapio_sample_id, expected) where expected maps each schema
     # label to the value this manifest submits for it.
@@ -195,7 +195,7 @@ def submit_sample_to_ena(page, profile_id):
     return poll_sample_accession(profile_id)
 
 
-def download_edp_manifest(page, profile_id, path):
+def download_lims_manifest(page, profile_id, path):
     # The blank LIMS manifest, pre-filled with the project's samples still
     # to be submitted
     response = page.request.get(
@@ -206,7 +206,7 @@ def download_edp_manifest(page, profile_id, path):
     return path
 
 
-def upload_edp_manifest(page, profile_id, path):
+def upload_lims_manifest(page, profile_id, path):
     # Opens the LIMS page afresh and uploads the manifest. Returns the
     # validation response; the reasons for a rejection only reach the page
     # (#singlecell_info) via the websocket.
@@ -223,13 +223,13 @@ def upload_edp_manifest(page, profile_id, path):
     return response_info.value
 
 
-def save_edp_manifest(page):
+def save_lims_manifest(page):
     expect(page.locator('#save_singlecell_button')).to_be_enabled(timeout=60000)
     page.click('#save_singlecell_button')
     page.wait_for_load_state('networkidle')
 
 
-def submit_edp_to_sapio(page):
+def submit_lims_manifest_to_sapio(page):
     # Same table mechanics as the single-cell journey: the study tab's table
     # is `singlecell_table_study`, the toolbar is cloned into every tab (so
     # scope the click to the study table's own button), and the study tab
@@ -253,7 +253,7 @@ def submit_edp_to_sapio(page):
 
 
 def poll_sapio_study_status(profile_id, study_id, timeout=60, interval=5):
-    # submit_edp_to_sapio() records the outcome on the singlecell study as
+    # submit_lims_manifest_to_sapio() records the outcome on the singlecell study as
     # status_sapio / accession_sapio / error_sapio (update_component_status
     # suffixes each key with the repository).
     code = (

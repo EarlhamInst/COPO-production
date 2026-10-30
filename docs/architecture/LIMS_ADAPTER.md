@@ -47,7 +47,7 @@ directly to a place the old inline Sapio code lived:
 | `delete_project(project_id)`                               | `post_delete_edp_profile`             | Delete the project and dependents                                   |
 | `get_project_samples(project_id, schemas)`                 | `write_manifest` (sample read)        | Existing samples, keyed by COPO `term_name`, to pre-fill a manifest |
 | `get_project_metadata(project_id)`                         | `write_manifest` (L8/L9 reads)        | Study-level header values (`health_and_safety`, `sample_return`)    |
-| `submit_manifest(project_id, schemas, components)`         | `submit_edp_to_sapio`                 | Write an ingested manifest's values back into the LIMS              |
+| `submit_manifest(project_id, schemas, components)`         | `submit_lims_manifest_to_sapio`       | Write an ingested manifest's values back into the LIMS              |
 
 ### Design rules that keep the interface LIMS-neutral
 
@@ -115,13 +115,13 @@ LIMS_ADAPTER = "src.apps.ei_edp.utils.lims.sapio.adapter.SapioAdapter"
 The five external call sites were **not** changed - they still call the same
 `edp_utils` functions, which are now thin delegators to `get_lims_adapter()`:
 
-| Caller                                                                 | Function                  | Delegates to                                            |
-| ---------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------- |
-| `copo_core/management/commands/setup_profile_types.py` (profile hooks) | `pre_save_edp_profile`    | `validate_profile_change`                               |
-| "                                                                      | `post_save_edp_profile`   | `sync_project` (+ COPO group/email sharing stays local) |
-| "                                                                      | `post_delete_edp_profile` | `delete_project`                                        |
-| `copo_core/broker_da.py`                                               | `submit_edp_to_sapio`     | `submit_manifest`                                       |
-| `ei_edp/utils/EDPSchemaHandler.py`                                     | `write_manifest`          | `get_project_samples`, `get_project_metadata`           |
+| Caller                                                                 | Function                        | Delegates to                                            |
+| ---------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------- |
+| `copo_core/management/commands/setup_profile_types.py` (profile hooks) | `pre_save_edp_profile`          | `validate_profile_change`                               |
+| "                                                                      | `post_save_edp_profile`         | `sync_project` (+ COPO group/email sharing stays local) |
+| "                                                                      | `post_delete_edp_profile`       | `delete_project`                                        |
+| `copo_core/broker_da.py`                                               | `submit_lims_manifest_to_sapio` | `submit_manifest`                                       |
+| `ei_edp/utils/EDPSchemaHandler.py`                                     | `write_manifest`                | `get_project_samples`, `get_project_metadata`           |
 
 Note that `post_save_edp_profile` keeps its COPO-native work (customer-email
 group sharing, invite tokens, persisting the returned `project_id` to the

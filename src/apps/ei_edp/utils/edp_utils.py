@@ -250,7 +250,7 @@ def post_delete_edp_profile(profile):
     return {"status": "success"}
 
 
-def submit_edp_to_sapio(profile_id, study_id):
+def submit_lims_manifest_to_sapio(profile_id, study_id):
     '''Push submission data from COPO into the linked Sapio project.
 
     Reads the manifest data stored in the `SingleCellCollection` and maps each

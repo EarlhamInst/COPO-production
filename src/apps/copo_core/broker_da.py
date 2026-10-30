@@ -709,7 +709,7 @@ class BrokerDA:
         checklist_id = self.request_dict.get("singlecell_checklist_id", str())
         study_id = self.request_dict.get("study_id", "")
 
-        result = edp_utils.submit_edp_to_sapio(
+        result = edp_utils.submit_lims_manifest_to_sapio(
             profile_id=self.profile_id, study_id=study_id
         )
 

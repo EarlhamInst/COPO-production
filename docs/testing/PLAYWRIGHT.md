@@ -160,7 +160,7 @@ button. Tests that need Sapio **fail** if it can't be queried, since that's a
 local setup problem rather than a third-party outage.
 
 The EDP tests (`test_create_and_delete_edp_profile`,
-`test_edp_manifest_submission_to_sapio`) create a real project in Sapio for
+`test_lims_manifest_submission_to_sapio`) create a real project in Sapio for
 every run, read it back to check what landed, and delete it again. A run that is interrupted leaves its project
 behind until the next run of the same test, which deletes leftovers by
 profile title (deleting an EDP profile deletes its Sapio project).

@@ -148,7 +148,7 @@ class LIMSAdapter(ABC):
     ) -> Dict[str, str]:
         """Write an ingested manifest's values back into the LIMS.
 
-        Replaces `submit_edp_to_sapio`. `components` is the COPO single-cell
+        Replaces `submit_lims_manifest_to_sapio`. `components` is the COPO single-cell
         submission payload (study- and sample-level rows); the adapter maps each
         COPO term to its LIMS field and applies study fields to the project and
         sample fields to the matching samples.
