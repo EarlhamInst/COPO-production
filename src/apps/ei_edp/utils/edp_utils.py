@@ -15,13 +15,13 @@ from src.apps.copo_core.models import User
 from src.apps.copo_single_cell_submission.utils.da import Singlecell, SinglecellSchemas
 
 from .EDPSchemaHandler import get_pending_samples
+from .constants import EDP_PROFILE_TYPE, EDP_SCHEMA_NAME, EDP_USERS_GROUP
 from .edp_validation_messages import MESSAGES
 from .email import Email
 from .lims import get_lims_adapter
 
 # Separator used when a profile owner enters multiple customer emails
 CUSTOMER_EMAIL_SPLITTER = ';'
-EDP_SCHEMA_NAME = 'EI_EDP'
 
 l = Logger()
 
@@ -39,7 +39,7 @@ def _add_to_edp_django_group(user_ids, action='add'):
     if not user_ids:
         return
 
-    edp_django_group, _ = Group.objects.get_or_create(name='ei_edp_users')
+    edp_django_group, _ = Group.objects.get_or_create(name=EDP_USERS_GROUP)
 
     if action == 'add':
         edp_django_group.user_set.add(*user_ids)
@@ -360,7 +360,7 @@ def join_shared_edp_profile(profile, token):
     profile type dropdown menu.
     """
     type = profile["type"]
-    if type != "ei_edp":
+    if type != EDP_PROFILE_TYPE:
         return {
             "status": "error",
             "message": MESSAGES['not_edp_profile'].format(profile_title=profile['title']),
