@@ -128,11 +128,13 @@ def test_asks_the_lims_once_per_save(lims):
     lims.get_project_samples.assert_called_once()
 
 
-# --- Uploading: reject already-submitted samples ---
+# --- Uploading: update existing samples ---
 
-def manifest(tmp_path, sample_ids):
+def manifest(tmp_path, sample_ids, references=None):
     # The parts of the EDP manifest that loadManifest reads: the project
-    # header on the sample sheet, its table from row 28, and the index sheet
+    # header on the sample sheet, its table from row 28, and the index sheet.
+    # `references` sets a sample's Submitter sample reference (default: ref<ID>)
+    references = references or {}
     workbook = openpyxl.Workbook()
     sample_sheet = workbook.active
     sample_sheet.title = 'sample'
@@ -145,7 +147,7 @@ def manifest(tmp_path, sample_ids):
     index_sheet.append(['Sample ID', 'Submitter Library Name'])
     for row, sample_id in enumerate(sample_ids, start=29):
         sample_sheet.cell(row, 1, sample_id)
-        sample_sheet.cell(row, 2, f'ref{sample_id}')
+        sample_sheet.cell(row, 2, references.get(sample_id, f'ref{sample_id}'))
         index_sheet.append([sample_id, f'lib{sample_id}'])
     path = tmp_path / 'manifest.xlsx'
     workbook.save(path)
@@ -185,8 +187,19 @@ def test_accepts_samples_not_yet_submitted(lims, tmp_path):
     assert not any(c.kwargs.get('action') == 'error' for c in notify.call_args_list)
 
 
-def test_rejects_samples_already_submitted(lims, tmp_path):
-    loaded, notify = load(manifest(tmp_path, ['S1', 'S3', 'S2']))
+def test_accepts_samples_already_submitted(lims, tmp_path):
+    loaded, notify = load(
+        manifest(tmp_path, ['S1', 'S3', 'S2'], references={'S1': 'cust1', 'S2': 'cust2'})
+    )
+
+    assert loaded is True
+    assert not any(c.kwargs.get('action') == 'error' for c in notify.call_args_list)
+
+
+def test_rejects_changed_submitter_reference(lims, tmp_path):
+    loaded, notify = load(
+        manifest(tmp_path, ['S1', 'S3', 'S2'], references={'S1': 'cust1', 'S2': 'changed'})
+    )
 
     assert loaded is False
     notify.assert_called_with(
