@@ -4,7 +4,7 @@ COPO's EDP flow needs to talk to a Laboratory Information Management System
 (LIMS) at a handful of well-defined points: when a profile is saved or deleted,
 when a manifest is generated or ingested, and when the sample-type dropdown is
 built. Historically all of these called Sapio (via `sapiopylib`) directly from
-`edp_utils.py` and `EDPSchemasHandler.py`.
+`edp_utils.py` and `EDPSchemaHandler.py`.
 
 `LIMSAdapter` is the seam that decouples that. Each supported LIMS ships a
 concrete subclass; the active one is chosen at runtime from the
@@ -28,6 +28,8 @@ Design rules that keep the interface LIMS-neutral:
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
+
+from ..edp_validation_messages import MESSAGES
 
 
 class LIMSUnavailable(Exception):
@@ -190,5 +192,5 @@ class NullLIMSAdapter(LIMSAdapter):
     def submit_manifest(self, project_id, schemas, components):
         return {
             "status": "success",
-            "message": "No LIMS configured; nothing submitted.",
+            "message": MESSAGES['no_lims_configured'],
         }

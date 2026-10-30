@@ -12,7 +12,7 @@ from unittest import mock
 
 import pytest
 
-from src.apps.ei_edp.utils import EDPSchemasHandler as edp_module
+from src.apps.ei_edp.utils import EDPSchemaHandler as edp_module
 from src.apps.ei_edp.utils import edp_utils
 from src.apps.ei_edp.utils.edp_validation_messages import MESSAGES
 

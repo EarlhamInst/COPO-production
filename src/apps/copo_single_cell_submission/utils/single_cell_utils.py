@@ -1,8 +1,8 @@
 from enum import Enum
 
-from src.apps.ei_edp.utils.EDPSchemasHandler import (
-    EDPSchemasHandler,
-    EDPSchemasSpreadsheet,
+from src.apps.ei_edp.utils.EDPSchemaHandler import (
+    EDPSchemaHandler,
+    EDPSchemaSpreadsheet,
 )
 from .SingleCellSchemasHandler import (
     SinglecellschemasSpreadsheet,
@@ -19,8 +19,8 @@ class SchemaClassType(str, Enum):
 # the `DEFAULT_SCHEMA_CLASSES` dictionary.
 SCHEMA_CLASS_MAP = {
     'EI_EDP': {
-        SchemaClassType.HANDLER: EDPSchemasHandler,
-        SchemaClassType.SPREADSHEET: EDPSchemasSpreadsheet,
+        SchemaClassType.HANDLER: EDPSchemaHandler,
+        SchemaClassType.SPREADSHEET: EDPSchemaSpreadsheet,
     },
 }
 

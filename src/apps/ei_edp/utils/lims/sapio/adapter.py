@@ -2,7 +2,7 @@
 
 All `sapiopylib` usage for the EDP flow lives here. The logic in each method was
 lifted verbatim (behaviour-preserving) from the previous inline Sapio code in
-`edp_utils.py` and `EDPSchemasHandler.py`; only the surrounding COPO-native
+`edp_utils.py` and `EDPSchemaHandler.py`; only the surrounding COPO-native
 plumbing (profile fetches, group/email sharing, worksheet building) stayed
 behind in those modules.
 
@@ -22,6 +22,7 @@ from sapiopylib.rest.utils.recordmodel.PyRecordModel import PyRecordModel
 
 from common.utils.logger import Logger
 
+from ...edp_validation_messages import MESSAGES
 from ..base import LIMSAdapter, LIMSUnavailable
 from .datamanager import Sapio
 
@@ -123,7 +124,9 @@ class SapioAdapter(LIMSAdapter):
         if not project_records or len(project_records) == 0:
             return {
                 "status": "error",
-                "message": f"Sapio Project {profile['sapio_project_id']} not found.",
+                "message": MESSAGES['sapio_project_not_found'].format(
+                    project_id=profile['sapio_project_id']
+                ),
             }
         project_record = project_records[0]
         project: PyRecordModel = Sapio().inst_man.add_existing_record(project_record)
@@ -142,9 +145,11 @@ class SapioAdapter(LIMSAdapter):
         if no_of_samples < submitted_sample_count:
             return {
                 'status': 'error',
-                'message': f'{submitted_sample_count} of {len(samples_under_project)} samples '
-                f'in Sapio project {sapio_project_id} have already been submitted so, the '
-                f'number of samples cannot be set lower than {submitted_sample_count}.',
+                'message': MESSAGES['sample_count_below_submitted'].format(
+                    submitted_sample_count=submitted_sample_count,
+                    total_sample_count=len(samples_under_project),
+                    project_id=sapio_project_id,
+                ),
             }
 
         return {"status": "success"}
@@ -164,7 +169,9 @@ class SapioAdapter(LIMSAdapter):
         )
 
         if not department_records:
-            msg = f"The department '{settings.SAPIO_PROJECT_DEPARTMENT}' is not found in Sapio."
+            msg = MESSAGES['sapio_department_not_found'].format(
+                department=settings.SAPIO_PROJECT_DEPARTMENT
+            )
             l.error(msg)
             return {'status': 'error', 'project_id': '', 'message': msg}
 
@@ -397,9 +404,7 @@ class SapioAdapter(LIMSAdapter):
                         return {
                             "status": "warning",
                             "project_id": project_id,
-                            "message": "Profile has been saved but, the sample creation in Sapio failed "
-                            "because the generated sample ID(s) already exist."
-                            "\nPlease contact COPO or the LIMS team to check the Sapio sample ID counter.",
+                            "message": MESSAGES['sapio_duplicate_sample_ids'],
                         }
                 samples: List[PyRecordModel] = Sapio().inst_man.add_existing_records(
                     sample_records
@@ -594,7 +599,7 @@ class SapioAdapter(LIMSAdapter):
                 return {
                     "status": "warning",
                     "project_id": project_id,
-                    "message": "Profile has been saved but it failed to be updated in Sapio.",
+                    "message": MESSAGES['sapio_project_update_failed'],
                 }
 
         except Exception as e:
@@ -608,7 +613,7 @@ class SapioAdapter(LIMSAdapter):
             return {
                 "status": "warning",
                 "project_id": project_id,
-                "message": "Profile has been saved but it failed to be updated in Sapio.",
+                "message": MESSAGES['sapio_project_update_failed'],
             }
 
         return {"status": "success", "project_id": project_id}
@@ -637,7 +642,7 @@ class SapioAdapter(LIMSAdapter):
             )
             return {
                 "status": "warning",
-                "message": "Profile has been deleted but it failed to be removed from Sapio.",
+                "message": MESSAGES['sapio_project_delete_failed'],
             }
         return {"status": "success"}
 
@@ -802,8 +807,9 @@ class SapioAdapter(LIMSAdapter):
             l.exception(error)
             return {
                 'status': 'error',
-                'message': f'Failed to submit manifest and attach its data to project {project_id} in Sapio: '
-                + _describe_error(error),
+                'message': MESSAGES['sapio_manifest_submission_failed'].format(
+                    project_id=project_id, error=_describe_error(error)
+                ),
             }
 
     def _submit_manifest(
@@ -821,7 +827,7 @@ class SapioAdapter(LIMSAdapter):
         if not project_records or len(project_records) == 0:
             return {
                 "status": "error",
-                "message": f"Sapio Project {project_id} not found.",
+                "message": MESSAGES['sapio_project_not_found'].format(project_id=project_id),
             }
 
         project_record = project_records[0]
@@ -972,16 +978,16 @@ class SapioAdapter(LIMSAdapter):
         if skipped_samples:
             return {
                 'status': 'warning',
-                'message': f'EDP data was submitted to Sapio Project {project_id} but the '
-                f'following sample IDs were not found in the project and were skipped: '
-                f'{', '.join(skipped_samples)}',
+                'message': MESSAGES['sapio_manifest_samples_skipped'].format(
+                    project_id=project_id, sample_ids=', '.join(skipped_samples)
+                ),
                 'record_id': project.record_id,
                 'skipped_samples': skipped_samples,
             }
 
         return {
             "status": "success",
-            "message": f"EDP data submitted to Sapio Project {project_id} successfully.",
+            "message": MESSAGES['sapio_manifest_submitted'].format(project_id=project_id),
             "record_id": project.record_id,
             "skipped_samples": [],
         }

@@ -20,6 +20,7 @@ from bson import ObjectId
 
 from src.apps.ei_edp.utils import edp_utils
 from src.apps.ei_edp.utils import email as email_module
+from src.apps.ei_edp.utils.edp_validation_messages import MESSAGES
 from src.apps.ei_edp.utils.email import Email
 
 PROFILE = {'_id': ObjectId(), 'title': 'Customer project', 'user_id': 1}
@@ -118,13 +119,11 @@ def save():
         yield run
 
 
-FAILED_MESSAGE = (
-    'Profile has been saved but, it could not be shared to the following email addresses:<br>'
-    '<ul><li>new@earlham.ac.uk</li></ul>Please check the email addresses or contact the COPO team.'
+FAILED_MESSAGE = MESSAGES['profile_share_failed'].format(
+    emails='<ul><li>new@earlham.ac.uk</li></ul>'
 )
-SKIPPED_MESSAGE = (
-    'An email address was not set up on this server so, an email was not sent about the '
-    'created profile to:<br><ul><li>new@earlham.ac.uk</li></ul>'
+SKIPPED_MESSAGE = MESSAGES['profile_email_not_sent'].format(
+    emails='<ul><li>new@earlham.ac.uk</li></ul>'
 )
 
 

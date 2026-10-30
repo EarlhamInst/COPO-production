@@ -23,6 +23,7 @@ from src.apps.copo_single_cell_submission.utils.SingleCellSchemasHandler import 
     SinglecellschemasSpreadsheet,
 )
 from .lims import get_lims_adapter
+from .constants import EDP_SCHEMA_NAME
 from .edp_validation_messages import MESSAGES
 from openpyxl.utils.dataframe import dataframe_to_rows
 from common.ena_utils.generic_helper import notify_singlecell_status
@@ -33,15 +34,24 @@ def get_submitted_sample_ids(project_id, schemas):
     '''This function returns the IDs of samples from a Sapio LIMS project 
     that have already been submitted.
 
-    A sample counts as being submitted once its `Submitter Sample Reference` has been
-    written to the LIMS (for Sapio, `C_CustomerSampleName`). Its manifest row
-    can no longer change, so it is left out of new manifests, rejected on
-    upload and kept when a later manifest is uploaded.
+    A sample counts as being submitted once its `Submitter sample reference` has been
+    written to the LIMS (in Sapio, it is called `C_CustomerSampleName`). It is left out of
+    new manifests and kept when a later manifest is uploaded without it.
+    '''
+    return set(get_submitted_sample_references(project_id, schemas))
+
+
+def get_submitted_sample_references(project_id, schemas):
+    '''This function maps the ID of each submitted sample in a Sapio LIMS
+    project to its `Submitter sample reference`.
+
+    A submitted sample can be uploaded again to update its details in the
+    LIMS but, its `Submitter sample reference` must stay the same.
     '''
     if not project_id:
-        return set()
+        return {}
     return {
-        str(record["sample_id"])
+        str(record["sample_id"]): str(record['submitter_sample_reference']).strip()
         for record in get_lims_adapter().get_project_samples(project_id, schemas)
         if record.get("sample_id") and record.get("submitter_sample_reference")
     }
@@ -59,7 +69,7 @@ def get_pending_samples(project_id, schemas):
     ]
 
 
-class EDPSchemasHandler(SingleCellSchemasHandler):
+class EDPSchemaHandler(SingleCellSchemasHandler):
     sample_name_field = 'submitter_sample_reference'
 
     def write_manifest(
@@ -135,7 +145,7 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
         if version:
             version = "_v" + version
 
-        workbook = load_workbook(settings.SINGLE_CELL_SCHEMAS_TEMPLATE_URL["EI_EDP"])
+        workbook = load_workbook(settings.SINGLE_CELL_SCHEMAS_TEMPLATE_URL[EDP_SCHEMA_NAME])
         worksheet_sample = workbook["sample"]
 
         worksheet_sample["C4"] = profile.get("budget_holder", "")
@@ -332,7 +342,7 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
                             # options = submitter_sample_reference
                             # av_range = DefinedName('submitter_sample_reference', attr_text="sample_metadata!$A$2:$A$8")
                             # worksheet.defined_names.add(av_range)
-                            formula1 = '=sample_metadata!$A$2:$A$1000'
+                            formula1 = 'sample_metadata!$A$2:$A$1000'
 
                         else:
                             options = field["choice"]
@@ -399,8 +409,12 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
                             f"=VLOOKUP({reference_column_letter}{title_row + 1}:{reference_column_letter}{data_row_index},sample_metadata!$A:$D,{lookup_mapping[field['term_name']]},FALSE)",
                         )
 
-                    # move sample_metadata sheet to the end
-                    workbook.move_sheet(workbook["sample_metadata"], offset=10)
+        # Move the `sample_metadata` worksheet to the end
+        if 'sample_metadata' in workbook.sheetnames:
+            workbook.move_sheet(
+                'sample_metadata',
+                offset=len(workbook.sheetnames) - 1 - workbook.sheetnames.index('sample_metadata'),
+            )
 
         # Password-protect locked sheets with a random password
         # so that users cannot unlock them to edit locked cells
@@ -463,7 +477,7 @@ class EDPSchemasHandler(SingleCellSchemasHandler):
         ]
 
 
-class EDPSchemasSpreadsheet(SinglecellschemasSpreadsheet):
+class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
     def loadManifest(self, m_format):
         self.data = {}
         if self.profile_id is not None:
@@ -551,32 +565,35 @@ class EDPSchemasSpreadsheet(SinglecellschemasSpreadsheet):
                 self.data[sheetname] = component_df
                 self.new_data[sheetname] = component_df.rename(columns=new_column_name)
 
-            # Rows for samples already submitted to the LIMS can't be uploaded
-            # again; only samples added since (by increasing the sample count)
-            # can be submitted
-            uploaded_sample_ids = set()
-            for component_df in self.new_data.values():
-                if "sample_id" in component_df.columns:
-                    uploaded_sample_ids.update(
-                        str(sample_id)
-                        for sample_id in component_df["sample_id"]
-                        if sample_id != ""
-                    )
-            if uploaded_sample_ids:
+            # Rows for samples already submitted to the LIMS can be uploaded
+            # again to update their details in the LIMS. Each row is matched
+            # to its LIMS sample by `Sample ID` but, the `Submitter sample reference`
+            # that marked the sample as submitted must not change
+            sample_df = self.new_data.get("sample")
+            if (
+                sample_df is not None
+                and {'sample_id', 'submitter_sample_reference'} <= set(sample_df.columns)
+            ):
                 schemas = SinglecellSchemas().get_schema(
                     schema_name=self.schema_name, target_id=self.checklist_id
                 )
-                already_submitted = sorted(
-                    uploaded_sample_ids
-                    & get_submitted_sample_ids(sapio_project_id, schemas)
+                submitted_references = get_submitted_sample_references(
+                    sapio_project_id, schemas
                 )
-                if already_submitted:
+                changed_references = sorted(
+                    str(sample_id)
+                    for sample_id, reference in zip(
+                        sample_df['sample_id'], sample_df['submitter_sample_reference']
+                    )
+                    if str(sample_id) in submitted_references
+                    and str(reference).strip() != submitted_references[str(sample_id)]
+                )
+                if changed_references:
                     notify_singlecell_status(
                         data={"profile_id": self.profile_id},
-                        msg="These samples have already been submitted and can't be "
-                        "uploaded again: " + ", ".join(already_submitted)
-                        + ". Please download a new blank manifest, which lists only "
-                        "the samples still to be submitted.",
+                        msg=MESSAGES['submitter_sample_reference_changed'].format(
+                            sample_ids=", ".join(changed_references)
+                        ),
                         action="error",
                         html_id=self.component_info,
                         checklist_id=self.checklist_id,

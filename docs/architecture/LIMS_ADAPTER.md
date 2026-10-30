@@ -6,7 +6,7 @@ COPO's EDP (Earlham Data Portal) flow integrates with a Laboratory Information
 Management System (LIMS) to create projects, reconcile samples, pre-fill
 manifests, and push submitted data back. Historically this was hardwired to
 **Sapio** (via `sapiopylib`): the Sapio calls lived inline in
-`src/apps/ei_edp/utils/edp_utils.py` and `EDPSchemasHandler.py`.
+`src/apps/ei_edp/utils/edp_utils.py` and `EDPSchemaHandler.py`.
 
 This document describes the `LIMSAdapter` interface that decouples that
 integration so any facility can plug in their own LIMS (Benchling, Illumina
@@ -121,7 +121,7 @@ The five external call sites were **not** changed - they still call the same
 | "                                                                      | `post_save_edp_profile`   | `sync_project` (+ COPO group/email sharing stays local) |
 | "                                                                      | `post_delete_edp_profile` | `delete_project`                                        |
 | `copo_core/broker_da.py`                                               | `submit_edp_to_sapio`     | `submit_manifest`                                       |
-| `ei_edp/utils/EDPSchemasHandler.py`                                    | `write_manifest`          | `get_project_samples`, `get_project_metadata`           |
+| `ei_edp/utils/EDPSchemaHandler.py`                                     | `write_manifest`          | `get_project_samples`, `get_project_metadata`           |
 
 Note that `post_save_edp_profile` keeps its COPO-native work (customer-email
 group sharing, invite tokens, persisting the returned `project_id` to the

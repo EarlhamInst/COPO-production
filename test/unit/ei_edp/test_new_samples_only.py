@@ -18,10 +18,11 @@ import openpyxl
 import pandas as pd
 import pytest
 
-from src.apps.ei_edp.utils import EDPSchemasHandler as edp_module
-from src.apps.ei_edp.utils.EDPSchemasHandler import (
-    EDPSchemasHandler,
-    EDPSchemasSpreadsheet,
+from src.apps.ei_edp.utils import EDPSchemaHandler as edp_module
+from src.apps.ei_edp.utils.edp_validation_messages import MESSAGES
+from src.apps.ei_edp.utils.EDPSchemaHandler import (
+    EDPSchemaHandler,
+    EDPSchemaSpreadsheet,
     get_submitted_sample_ids,
 )
 
@@ -65,7 +66,7 @@ def carry_over(existing, uploaded):
     singlecell_record = {'components': {c: pd.DataFrame(d) for c, d in uploaded.items()}}
     with mock.patch.object(edp_module, 'Profile') as profile:
         profile.return_value.get_record.return_value = {'sapio_project_id': PROJECT_ID}
-        EDPSchemasHandler().carry_over_existing_rows(
+        EDPSchemaHandler().carry_over_existing_rows(
             PROFILE_ID, {}, existing_record, singlecell_record
         )
     return singlecell_record['components']
@@ -150,7 +151,7 @@ def manifest(tmp_path, sample_ids):
 
 
 def load(path):
-    spreadsheet = EDPSchemasSpreadsheet.__new__(EDPSchemasSpreadsheet)
+    spreadsheet = EDPSchemaSpreadsheet.__new__(EDPSchemaSpreadsheet)
     spreadsheet.file = path
     spreadsheet.profile_id = PROFILE_ID
     spreadsheet.schema_name = 'EI_EDP'
@@ -188,8 +189,7 @@ def test_rejects_samples_already_submitted(lims, tmp_path):
     assert loaded is False
     notify.assert_called_with(
         data={'profile_id': PROFILE_ID},
-        msg="These samples have already been submitted and can't be uploaded again: S1, S2. "
-        'Please download a new blank manifest, which lists only the samples still to be submitted.',
+        msg=MESSAGES['submitter_sample_reference_changed'].format(sample_ids='S2'),
         action='error',
         html_id='singlecell_info',
         checklist_id='version_tissue',

@@ -14,6 +14,7 @@ from unittest import mock
 import pytest
 
 from src.apps.ei_edp.utils import edp_utils
+from src.apps.ei_edp.utils.edp_validation_messages import MESSAGES
 from src.apps.ei_edp.utils.lims.sapio import adapter as sapio_adapter
 from src.apps.ei_edp.utils.lims.sapio.adapter import SapioAdapter
 
@@ -63,9 +64,8 @@ def test_cannot_drop_below_submitted_samples(total, submitted, requested):
     result = validate(total, submitted, requested)
 
     assert result['status'] == 'error'
-    assert result['message'] == (
-        f'{submitted} of {total} samples in Sapio project {PROJECT_ID} have already been '
-        f'submitted so, the number of samples cannot be set lower than {submitted}.'
+    assert result['message'] == MESSAGES['sample_count_below_submitted'].format(
+        submitted_sample_count=submitted, total_sample_count=total, project_id=PROJECT_ID
     )
 
 
@@ -77,7 +77,10 @@ def test_missing_sapio_project_is_an_error():
             {'sapio_project_id': PROJECT_ID}, 1
         )
 
-    assert result == {'status': 'error', 'message': f'Sapio Project {PROJECT_ID} not found.'}
+    assert result == {
+        'status': 'error',
+        'message': MESSAGES['sapio_project_not_found'].format(project_id=PROJECT_ID),
+    }
 
 
 @pytest.fixture
@@ -105,7 +108,7 @@ def test_invalid_sample_count_is_rejected(adapter, raw):
 
     assert result == {
         'status': 'error',
-        'message': f"Number of samples must be a whole number of 0 or more, got '{raw}'.",
+        'message': MESSAGES['invalid_sample_count'].format(sample_count=raw),
     }
     adapter.validate_profile_change.assert_not_called()
 

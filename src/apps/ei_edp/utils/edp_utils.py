@@ -14,7 +14,7 @@ from common.utils.logger import Logger
 from src.apps.copo_core.models import User
 from src.apps.copo_single_cell_submission.utils.da import Singlecell, SinglecellSchemas
 
-from .EDPSchemasHandler import get_pending_samples
+from .EDPSchemaHandler import get_pending_samples
 from .edp_validation_messages import MESSAGES
 from .email import Email
 from .lims import get_lims_adapter
@@ -68,7 +68,7 @@ def pre_save_edp_profile(auto_fields, **kwargs):
     if requested_sample_count < 0:
         return {
             'status': 'error',
-            'message': f"Number of samples must be a whole number of 0 or more, got '{raw_sample_count}'.",
+            'message': MESSAGES['invalid_sample_count'].format(sample_count=raw_sample_count),
         }
 
     target_id = kwargs.get("target_id", "")
@@ -219,15 +219,16 @@ def post_save_edp_profile(profile):
         if status == 'success':
             status = 'warning'
         messages.append(
-            'Profile has been saved but, it could not be shared to the following email addresses:<br>'
-            + f'{render_html_list(sorted(email_obj.failed_emails))}'
-            + 'Please check the email addresses or contact the COPO team.'
+            MESSAGES['profile_share_failed'].format(
+                emails=render_html_list(sorted(email_obj.failed_emails))
+            )
         )
         
     if email_obj.skipped_emails:
         messages.append(
-            'An email address was not set up on this server so, an email was not sent about the created profile to:<br>'
-            + f'{render_html_list(sorted(email_obj.skipped_emails))}'
+            MESSAGES['profile_email_not_sent'].format(
+                emails=render_html_list(sorted(email_obj.skipped_emails))
+            )
         )
 
     if messages:
@@ -248,40 +249,49 @@ def post_delete_edp_profile(profile):
 
 
 def submit_edp_to_sapio(profile_id, study_id):
-    """Push single-cell submission data from COPO into the linked Sapio project.
+    '''Push submission data from COPO into the linked Sapio project.
 
-    Reads the manifest data stored in the Singlecell collection and maps each
+    Reads the manifest data stored in the `SingleCellCollection` and maps each
     field to its corresponding Sapio field using the `sapio_name` column in the
     schema (format: "<SapioDataType>:<FieldName>", e.g. "Sample:C_LibraryType").
 
-    Study-level fields are written to the Sapio Project record and broadcast to
+    Study-level fields are written to the Sapio `Project` record and broadcast to
     all samples. Sample-level fields are matched by SampleId to the correct
-    Sapio Sample record.
-    """
+    Sapio `Sample` record.
+    '''
     profile = Profile().get_record(profile_id)
+    profile_title = profile.get('title', '')
+    
     if not profile:
-        return {"status": "error", "message": f"Profile {profile_id} not found."}
-
-    singlecell = (
+        return {
+            "status": "error",
+            "message": MESSAGES['profile_not_found'].format(profile_id=profile_id, profile_title=profile_title),
+        }
+        
+    # Retrieve documents for the given profile 
+    # and study from the `SingleCellCollection`
+    records = (
         Singlecell()
         .get_collection_handle()
         .find_one({"profile_id": profile_id, "study_id": study_id})
     )
-    if not singlecell:
+    if not records:
         return {
             "status": "error",
-            "message": f"Singlecell submission for profile {profile_id} and study {study_id} not found.",
+            "message": MESSAGES['submission_not_found'].format(
+                profile_id=profile_id, profile_title=profile_title, study_id=study_id
+            ),
         }
 
-    singlecell_components = singlecell.get("components", {})
+    record_components = records.get("components", {})
     schemas = SinglecellSchemas().get_schema(
-        schema_name=singlecell["schema_name"], target_id=singlecell["checklist_id"]
+        schema_name=records["schema_name"], target_id=records["checklist_id"]
     )
 
-    # The COPO term → LIMS field mapping and the write itself are the adapter's
+    # The COPO term --> LIMS field mapping and the write itself are the adapter's
     # responsibility; here study_id is the LIMS project identifier.
     result = get_lims_adapter().submit_manifest(
-        study_id, schemas, singlecell_components
+        study_id, schemas, record_components
     )
 
     # Record the outcome of a record submission in the
@@ -298,7 +308,7 @@ def submit_edp_to_sapio(profile_id, study_id):
         status_column_value['accession'] = str(record_id) if record_id else ''
 
     Singlecell().update_component_status(
-        id=singlecell['_id'],
+        id=records['_id'],
         component='study',
         identifier='study_id',
         identifier_value=study_id,
@@ -351,11 +361,11 @@ def join_shared_edp_profile(profile, token):
     if type != "ei_edp":
         return {
             "status": "error",
-            "message": f"Profile {profile['_id']} is not an Earlham Data Profile (EDP) profile.",
+            "message": MESSAGES['not_edp_profile'].format(profile_title=profile['title']),
         }
     user = helpers.get_current_user()
     if user.id == profile["user_id"]:
-        return {"status": "error", "message": f"Profile owner cannot join the profile."}
+        return {"status": "error", "message": MESSAGES['profile_owner_cannot_join']}
 
     if user.email == '' or user.email is None:
         # New user with no email - resolve their address from the invite token
@@ -363,7 +373,7 @@ def join_shared_edp_profile(profile, token):
         if not email:
             return {
                 "status": "error",
-                "message": f"User is not authorised to join the profile.",
+                "message": MESSAGES['user_not_authorised_to_join'],
             }
         user.email = email
         user.save()
@@ -396,5 +406,5 @@ def join_shared_edp_profile(profile, token):
             return {"status": "success"}
         return {
             "status": "error",
-            "message": f"Customer with email '{user.email}' is not authorised to join the profile.",
+            "message": MESSAGES['customer_not_authorised_to_join'].format(email=user.email),
         }
