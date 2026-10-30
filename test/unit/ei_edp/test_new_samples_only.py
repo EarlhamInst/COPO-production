@@ -4,7 +4,9 @@ When an EDP profile's sample count is increased after some samples have been
 submitted to the LIMS, the customer submits only the new samples:
 
 - the blank manifest lists only the samples not yet submitted
-- an upload that includes an already-submitted sample is rejected
+- a manifest upload that includes samples that have already 
+  been submitted will perform an update on those samples it as long as
+  their 'Submitter sample reference' field values are unchanged
 - saving the new manifest keeps the earlier, submitted samples' rows, since
   an upload otherwise replaces every row of the COPO record
 
@@ -138,7 +140,7 @@ def manifest(tmp_path, sample_ids):
     sample_sheet['L8'] = 'No'
     sample_sheet['L9'] = 'No'
     sample_sheet.cell(28, 1, 'Sample ID')
-    sample_sheet.cell(28, 2, 'Submitter Sample Reference')
+    sample_sheet.cell(28, 2, 'Submitter sample reference')
     index_sheet = workbook.create_sheet('index')
     index_sheet.append(['Sample ID', 'Submitter Library Name'])
     for row, sample_id in enumerate(sample_ids, start=29):

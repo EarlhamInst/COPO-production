@@ -18,12 +18,12 @@ from test.playwright.e2e.utils.helpers import (
 TITLE = "Submission Journey Manifest Validation"
 DESCRIPTION = "A description that is at least twenty characters long."
 
-TESTFILES_DIR = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "testfiles")
+TEST_FILES_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "test_files")
 )
-SAMPLE_MANIFEST = os.path.join(TESTFILES_DIR, "COPO_FAANG_manifest_success1.xlsx")
+SAMPLE_MANIFEST = os.path.join(TEST_FILES_DIR, "COPO_FAANG_manifest_success1.xlsx")
 SINGLECELL_MANIFEST = os.path.join(
-    TESTFILES_DIR, "copo_single_cell_manifest_version_faang_sc_rnaseq_success1.xlsx"
+    TEST_FILES_DIR, "copo_single_cell_manifest_version_faang_sc_rnaseq_success1.xlsx"
 )
 # Every filename the manifest's data row puts in a term_type=="file" column
 # -- across the file, expression_data_file and analysis_derived_data sheets.
@@ -40,11 +40,11 @@ SINGLECELL_MANIFEST = os.path.join(
 # nothing in the submission path verifies them, so the duplicate is
 # equivalent to a distinct fixture here.
 SINGLECELL_DATA_FILES = [
-    os.path.join(TESTFILES_DIR, "single_cell_read1_4.fastq.gz"),
-    os.path.join(TESTFILES_DIR, "single_cell_read2_4.fastq.gz"),
-    os.path.join(TESTFILES_DIR, "single_cell_expression_data_file4.h5ad"),
-    os.path.join(TESTFILES_DIR, "single_cell_analysis_derived_from_file4.json"),
-    os.path.join(TESTFILES_DIR, "single_cell_white_list_barcode_file4.tsv"),
+    os.path.join(TEST_FILES_DIR, "single_cell_read1_4.fastq.gz"),
+    os.path.join(TEST_FILES_DIR, "single_cell_read2_4.fastq.gz"),
+    os.path.join(TEST_FILES_DIR, "single_cell_expression_data_file4.h5ad"),
+    os.path.join(TEST_FILES_DIR, "single_cell_analysis_derived_from_file4.json"),
+    os.path.join(TEST_FILES_DIR, "single_cell_white_list_barcode_file4.tsv"),
 ]
 
 # Checklist dropdown <option> values — confirmed live, both pages have their

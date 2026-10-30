@@ -168,7 +168,7 @@ profile title (deleting an EDP profile deletes its Sapio project).
 In essence, the Playwright tests under the EDP profile workflow perform the following steps in sequence:
 
 1. Creating an EDP profile which then creates its Sapio project
-2. Submitting the FAANG sample (using the manifest located at `test/testfiles/COPO_FAANG_manifest_success1.xlsx`) to ENA and getting back a real biosample accession
+2. Submitting the FAANG sample (using the manifest located at `test/test_files/COPO_FAANG_manifest_success1.xlsx`) to ENA and getting back a real biosample accession
 3. Downloading a pre-filled LIMS manifest, with C4 (`budget_holder`) and C5 (`sapio_project_id`) matching the profile and F5 (JIRA PIP) left blank for EI staff;
 4. Filling in the answers then, validating and saving the LIMS manifest
 5. Submitting to Sapio returning success
@@ -240,7 +240,7 @@ doing what you intended.
 Browser tests should log in as a local test user via username/password, not
 by driving the real ORCID OAuth flow — ORCID is a third-party service with
 no test credentials, and automating a real login through it is inherently
-fragile (this is why the pre-existing suites under `test/testcases/` are
+fragile (this is why the pre-existing suites under `test/test_cases/` are
 mostly broken). `create_test_user` (run automatically as part of
 `setup_all`) creates a local user that logs in via allauth's plain
 username/password form at `/accounts/login/`, which works with zero

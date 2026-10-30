@@ -26,7 +26,7 @@ from test.playwright.e2e.utils.helpers import delete_profile_by_title
 PROFILE_TITLE = 'Playwright EDP Sample Count Changes'
 PROFILE_DESCRIPTION = 'A description that is at least twenty characters long.'
 # The second batch's sample reuses the first one's ENA sample under its own
-# customer name (Submitter Sample Reference: letters and digits, max 15)
+# customer name (`Submitter sample reference`: letters and digits, max 15)
 SECOND_SUBMITTER_REFERENCE = 'sample1batch2'
 
 
@@ -73,8 +73,8 @@ def test_edp_samples_submitted_in_batches(page: Page, tmp_path, sapio_test_insta
     # --- Lowering the count below the submitted samples is refused ---
     feedback = edit_edp_profile_sample_count(page, PROFILE_TITLE, 0)
     message = (
-        f'1 of 1 samples in Sapio Project {project_id} have already been submitted, '
-        "so the number of samples can't be set lower than 1."
+        f'1 of 1 samples in Sapio project {project_id} have already been submitted '
+        "so, the number of samples cannot be set lower than 1."
     )
     assert feedback == {'status': 'error', 'message': message}
     expect(page.locator('.modal.in .formMessageDiv')).to_contain_text(message)
@@ -85,7 +85,7 @@ def test_edp_samples_submitted_in_batches(page: Page, tmp_path, sapio_test_insta
     assert feedback.get('status') == 'success', f'Increasing the sample count failed: {feedback}'
     sapio_samples = {s['SampleId']: s['C_CustomerSampleName'] for s in _sapio_samples(project_id)}
     assert len(sapio_samples) == 2, f'Expected 2 Sapio samples, found {sapio_samples}'
-    assert sapio_samples[first_sample_id] == first_expected['Submitter Sample Reference']
+    assert sapio_samples[first_sample_id] == first_expected['Submitter sample reference']
     (second_sample_id,) = set(sapio_samples) - {first_sample_id}
 
     # --- The blank manifest lists only the new sample ---
@@ -96,7 +96,8 @@ def test_edp_samples_submitted_in_batches(page: Page, tmp_path, sapio_test_insta
     response = upload_edp_manifest(page, profile_id, first_manifest)
     assert response.status == 400
     expect(page.locator('#singlecell_info')).to_contain_text(
-        f"These samples have already been submitted and can't be uploaded again: {first_sample_id}",
+        "The 'Submitter sample reference' field of a submitted sample cannot be changed. "
+        f"Please restore the original 'Submitter sample reference' value of these samples: {first_sample_id}.",
         timeout=30000,
     )
 
@@ -118,7 +119,7 @@ def test_edp_samples_submitted_in_batches(page: Page, tmp_path, sapio_test_insta
 
     sapio_samples = {s['SampleId']: s['C_CustomerSampleName'] for s in _sapio_samples(project_id)}
     assert sapio_samples == {
-        first_sample_id: first_expected['Submitter Sample Reference'],
+        first_sample_id: first_expected['Submitter sample reference'],
         second_sample_id: SECOND_SUBMITTER_REFERENCE,
     }
 

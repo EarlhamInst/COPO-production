@@ -17,13 +17,13 @@ from test.playwright.e2e.utils.helpers import (
 
 from common.utils.helpers import get_env
 
-TESTFILES_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..', 'testfiles'))
-SAMPLE_MANIFEST = os.path.join(TESTFILES_DIR, 'COPO_FAANG_manifest_success1.xlsx')
+TEST_FILES_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'test_files'))
+SAMPLE_MANIFEST = os.path.join(TEST_FILES_DIR, 'COPO_FAANG_manifest_success1.xlsx')
 # Holds only what a customer fills in. Everything EI/Sapio generates per
 # project (Project ID, budget holder, Related ENA, Sample ID, EI sample name,
 # plate and well) changes every run, so the test downloads the manifest COPO
 # pre-fills for this run's profile and copies these answers into it.
-EDP_LIMS_MANIFEST = os.path.join(TESTFILES_DIR, 'edp_lims_test_manifest_tissue_success1.xlsx')
+EDP_LIMS_MANIFEST = os.path.join(TEST_FILES_DIR, 'edp_lims_test_manifest_tissue_success1.xlsx')
 
 FAANG_SAMPLE_CHECKLIST = 'COPO_FAANG'
 # The EI_EDP schema's checklists_filter maps sample type 'Tissue' to this
@@ -31,19 +31,19 @@ FAANG_SAMPLE_CHECKLIST = 'COPO_FAANG'
 EDP_CHECKLIST = 'version_tissue'
 
 # The manifest's study-level answers, keyed by their EI_EDP schema label.
-STUDY_CELLS = {'Email Address': 'E6', 'Sample Return': 'L8', 'Health and Safety': 'L9'}
+STUDY_CELLS = {'Email address': 'E6', 'Sample return': 'L8', 'Health and Safety': 'L9'}
 # The sample sheet's EI-only block (Sample ID ... Project ID) ends where this
 # column starts; every column from here rightwards is the customer's.
-FIRST_SUBMITTER_LABEL = 'Submitter Sample Reference'
+FIRST_SUBMITTER_LABEL = 'Submitter sample reference'
 # These three are VLOOKUP array formulas into the sample_metadata sheet,
 # which COPO fills from the profile's own ENA samples. COPO reads the upload
-# with data_only=True (EDPSchemasSpreadsheet.loadManifest), i.e. it reads
+# with data_only=True (EDPSchemaSpreadsheet.loadManifest), i.e. it reads
 # Excel's cached formula results -- and a workbook saved by openpyxl has none,
 # so the formulas would read back empty. Resolve them here instead.
 SAMPLE_METADATA_LOOKUPS = {
-    'NCBI Taxon ID': 'taxon_id',
-    'Scientific Name (Latin)': 'scientific_name',
-    'BioSample Accession': 'biosampleAccession',
+    'NCBI taxon ID': 'taxon_id',
+    'Scientific name (Latin)': 'scientific_name',
+    'Biosample accession': 'biosampleAccession',
 }
 
 # EDP profile form values agreed for the Sapio test instance. The Related ENQ
@@ -128,7 +128,7 @@ def build_edp_manifest(downloaded_path, patched_path, accession, submitter_refer
     assert reference in metadata, (
         f'Sample {reference!r} is missing from the downloaded sample_metadata sheet '
         f"(found {sorted(metadata)}); the ENA sample's name must match the manifest's "
-        f'Submitter Sample Reference'
+        f'Submitter sample reference'
     )
     assert metadata[reference]['biosampleAccession'] == accession
 

@@ -1,12 +1,10 @@
 '''Unit tests for changing the number of samples on an EDP profile.
 
-Saving an EDP profile syncs its sample count to the linked Sapio project. Once
-samples have been submitted (their Submitter Sample Reference is written to
-Sapio's `C_CustomerSampleName`), they can't be deleted, so the count may only
-go down as far as the number of submitted samples. The check used to compare
-against the count already saved on the profile rather than the new one, so a
-decrease below the submitted samples was let through and left COPO and Sapio
-disagreeing about the number of samples.
+Saving an EDP profile synchronises its sample count to the linked Sapio project. Once
+samples have been submitted (their `Submitter sample reference` field from the 
+LIMS manifest is written to Sapio's `C_CustomerSampleName` field), they 
+cannot be deleted, so the sample  count may only go down as far as the 
+number of submitted samples.
 '''
 
 from unittest import mock

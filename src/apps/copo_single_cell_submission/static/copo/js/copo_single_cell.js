@@ -104,8 +104,8 @@ $(document).on('document_ready', function () {
                 rec.transcript_status === 'error'
                   ? 'error'
                   : rec.transcript_status === 'info'
-                  ? 'info'
-                  : 'success';
+                    ? 'info'
+                    : 'success';
               displayAlert(action, rec.transcript_message);
             }
           }
@@ -292,7 +292,7 @@ $(document).on('document_ready', function () {
       table.rows.add(d.data['table_data']).draw();
       table.columns.adjust().draw();
       table.search('').columns().search('').draw();
-      
+
       $('.alert:visible .alert-message')
         .filter((_, el) => {
           // Prevent duplicate '... Done' suffix
@@ -513,61 +513,6 @@ $(document).on('document_ready', function () {
     .css('color', 'white')
     .css('background-color', colour);
 
-  //******************************Functions Block******************************//
-
-  function do_record_task(event) {
-    var task = event.task.toLowerCase(); //action to be performed e.g., 'Edit', 'Delete'
-    var tableID = event.tableID; //get target table
-    var profile_id = $('#profile_id').val(); //get profile id
-    var schema_name = $('#schema_name').val(); //get schema name
-
-    //retrieve target records and execute task
-    var table = $('#' + tableID).DataTable();
-    var records = []; //
-    $.map(table.rows('.selected').data(), function (item) {
-      records.push(item);
-    });
-
-    var args_dict = {
-      singlecell_checklist_id: get_checklist_id(),
-      schema_name: schema_name,
-    };
-
-    // Download sample manifest
-    if (task == 'download-singlecell-manifest') {
-      $('#download-singlecell-manifest-link').attr(
-        'href',
-        '/copo/copo_single_cell/download_manifest/' +
-          profile_id +
-          '/' +
-          schema_name +
-          '/' +
-          records[0].study_id
-      );
-      $('#download-singlecell-manifest-link span').trigger('click');
-      return;
-    } else {
-      var study_id = '';
-      for (var i = 0; i < records.length; i++) {
-        if (study_id == '') {
-          study_id = records[i].study_id;
-        } else if (study_id != records[i].study_id) {
-          study_id = '';
-          break;
-        }
-      }
-      args_dict['study_id'] = study_id;
-
-      // Before an ENA submission, make sure we know which credentials to use:
-      // the user's own (if valid) or a one-off COPO default chosen in a popup.
-      if (task == 'submit_singlecell_ena') {
-        ensureRepositoryCredentialsThenSubmit('singlecell', 'ena', task, records, args_dict);
-      } else {
-        form_generic_task('singlecell', task, records, args_dict);
-      }
-    }
-  }
-
   $('body').on('posttablerefresh', function (event) {
     if (event.tableID == componentMeta.tableID + '_study') {
       if (current_study_id == '') {
@@ -586,7 +531,7 @@ $(document).on('document_ready', function () {
     //var numCols = $('#' + component + '_table thead th').length;
     var numCols = table.columns().nodes().length;
 
-    // Clear previous row highlighting so that a table row 
+    // Clear previous row highlighting so that a table row
     // never carries more than one class
     table
       .rows()
@@ -682,6 +627,66 @@ $(document).on('document_ready', function () {
     }
   );
 });
+
+//****************************** Functions block ******************************//
+function do_record_task(event) {
+    var task = event.task.toLowerCase(); //action to be performed e.g., 'Edit', 'Delete'
+    var tableID = event.tableID; //get target table
+    var profile_id = $('#profile_id').val(); //get profile id
+    var schema_name = $('#schema_name').val(); //get schema name
+
+    //retrieve target records and execute task
+    var table = $('#' + tableID).DataTable();
+    var records = []; //
+    $.map(table.rows('.selected').data(), function (item) {
+      records.push(item);
+    });
+
+    var args_dict = {
+      singlecell_checklist_id: get_checklist_id(),
+      schema_name: schema_name,
+    };
+
+    // Download sample manifest
+    if (task == 'download-singlecell-manifest') {
+      $('#download-singlecell-manifest-link').attr(
+        'href',
+        '/copo/copo_single_cell/download_manifest/' +
+          profile_id +
+          '/' +
+          schema_name +
+          '/' +
+          records[0].study_id
+      );
+      $('#download-singlecell-manifest-link span').trigger('click');
+      return;
+    } else {
+      var study_id = '';
+      for (var i = 0; i < records.length; i++) {
+        if (study_id == '') {
+          study_id = records[i].study_id;
+        } else if (study_id != records[i].study_id) {
+          study_id = '';
+          break;
+        }
+      }
+      args_dict['study_id'] = study_id;
+
+      // Before an ENA submission, make sure we know which credentials to use:
+      // the user's own (if valid) or a one-off COPO default chosen in a popup.
+      if (task == 'submit_singlecell_ena') {
+        ensureRepositoryCredentialsThenSubmit(
+          'singlecell',
+          'ena',
+          task,
+          records,
+          args_dict
+        );
+      } else {
+        form_generic_task('singlecell', task, records, args_dict);
+      }
+    }
+}
 
 function upload_spreadsheet(file) {
   $('#warning_info').fadeOut('fast');

@@ -100,8 +100,6 @@ def post_save_edp_profile(profile):
     If EDP profiles fail to be shared via email, their project creations in Sapio
     will still go ahead. All this occurs after the profile has been saved in COPO.
     """
-    project_record = None
-
     current_user = helpers.get_current_user()
     email_obj = Email()
 
@@ -127,7 +125,11 @@ def post_save_edp_profile(profile):
             group_id = groups[0]["_id"]
         current_shared_users = CopoGroup().get_users_for_group_info(group_id=group_id)
 
-        emails_in_lowercase = {email.lower(): email for email in emails} # Case-insensitivity is considered
+        # Case-insensitivity is considered in email addresses provided
+        emails_in_lowercase = {
+            email.lower(): email for email in emails
+        } 
+        
         # Users currently in the group who are no longer in the email list should be removed
         incorrect_shared_user_ids = [
             str(user["id"])
@@ -214,7 +216,7 @@ def post_save_edp_profile(profile):
     if result.get("status") != "success":
         status = result.get('status', 'warning')
         messages.append(result.get('message', ''))
-        
+
     if email_obj.failed_emails:
         if status == 'success':
             status = 'warning'
@@ -223,7 +225,7 @@ def post_save_edp_profile(profile):
                 emails=render_html_list(sorted(email_obj.failed_emails))
             )
         )
-        
+
     if email_obj.skipped_emails:
         messages.append(
             MESSAGES['profile_email_not_sent'].format(

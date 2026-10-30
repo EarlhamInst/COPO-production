@@ -6,7 +6,7 @@ COPO is a Django genomics-metadata submission platform (~50k+ LOC in the analyse
 
 This is an **analysis deliverable**, not a change to execute immediately. Findings were gathered by parallel exploration of the working tree and verified against real files.
 
-The single most important finding up front: **there is essentially no test coverage** — one real test file (`test/testcases/test_copologinlogout.py`) for the whole platform. This is the dominant constraint and reshapes every recommendation below: safe mechanical extractions first, characterization tests before any structural surgery.
+The single most important finding up front: **there is essentially no test coverage** — one real test file (`test/test_cases/test_copologinlogout.py`) for the whole platform. This is the dominant constraint and reshapes every recommendation below: safe mechanical extractions first, characterization tests before any structural surgery.
 
 ---
 
