@@ -398,8 +398,8 @@
           "label": "Illumina premade library"
         },
         {
-          "value": "PacBio  premade library",
-          "label": "PacBio  premade library"
+          "value": "PacBio premade library",
+          "label": "PacBio premade library"
         }
       ]
     },
@@ -521,7 +521,7 @@
       "readonly": "true"
     },
     {
-      "help_tip": "A list of customer emails associated with the Sapio project, separated by semicolon (;)",
+      "help_tip": "Please supply the email address of one or more persons to whom the sequencing data should be sent to. Separate multiple addresses with a semicolon (;) or a space.",
       "required": "true",
       "default_value": "",
       "control_meta": {},
@@ -540,7 +540,7 @@
       "type": "string",
       "show_in_table": true,
       "control": "textarea",
-      "regex": "^(?!.*\\.{2,})(?!.*-{2,})[\\w.-]+@[a-zA-Z\\d.-]+\\.[a-zA-Z]{2,}([ ;]{1,}(?!.*\\.{2,})(?!.*-{2,})[\\w.-]+@[a-zA-Z\\d.-]+\\.[a-zA-Z]{2,})*$"
+      "regex": "^(?!.*\\.{2,})(?!.*-{2,})[\\w.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}([ ;]+[\\w.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})*$"
     },
     {
       "help_tip": "",
