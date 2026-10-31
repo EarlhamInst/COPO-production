@@ -521,7 +521,7 @@
       "readonly": "true"
     },
     {
-      "help_tip": "Please supply the email address of one or more persons to whom the sequencing data should be sent to. Separate multiple addresses with a semicolon (;) or a space.",
+      "help_tip": "Please provide a valid email address. Separate multiple email addresses with a semicolon (;).",
       "required": "true",
       "default_value": "",
       "control_meta": {},
@@ -540,7 +540,7 @@
       "type": "string",
       "show_in_table": true,
       "control": "textarea",
-      "regex": "^(?!.*\\.{2,})(?!.*-{2,})[\\w.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}([ ;]+[\\w.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})*$"
+      "regex": "^(?!.*\\.{2,})(?!.*-{2,})[\\w.+'-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}(\\s*;\\s*[\\w.+'-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})*\\s*;?\\s*$"
     },
     {
       "help_tip": "",
