@@ -1,4 +1,5 @@
 var current_study_id = '';
+var component;
 //var schema_name = $("#schema_name").val();
 
 function get_checklist_id() {
@@ -308,7 +309,7 @@ $(document).on('document_ready', function () {
   });
 
   //******************************Event Handlers Block*************************//
-  var component = $('#nav_component_name').val();
+  component = $('#nav_component_name').val();
   var copoFormsURL = '/copo/copo_forms/';
   //var copoVisualsURL = "/copo/copo_visuals/";
   var csrftoken = $.cookie('csrftoken');
@@ -348,75 +349,46 @@ $(document).on('document_ready', function () {
   });
 
   // Close the alert message once the close button is clicked
-  // since the boostrap event is strangely not registered to do so
+  // since the bootstrap event is strangely not registered to do so
   $(document).on('click', '#page_alert_panel .alert .close', function () {
     $(this).closest('.alert').remove();
   });
 
-  //add new component button
+  // Upload manifest logic
   $(document)
     .off('click', '.new-singlecell-spreadsheet-template')
     .on('click', '.new-singlecell-spreadsheet-template', function (event) {
-      $('#singlecell_spreadsheet_modal #span_checklist').html(
-        get_selected_checklist_name()
+      // Check whether a manifest can be uploaded for the component
+      // e.g. for LIMS manifest submissions under EDP profiles,
+      // samples must have already been submitted.
+      // If the check fails, display a warning message.
+      proceedIfCheckPasses(
+        'check_manifest_upload',
+        'Manifest upload unavailable',
+        'The manifest could not be uploaded.',
+        showManifestUploadModal
       );
-      $('#singlecell_spreadsheet_modal').modal({
-        //"closable": false,
-        show: true,
-        size: BootstrapDialog.SIZE_WIDE,
-      });
     });
-  
-  // With regard the logic for LIMS manifests under EDP profiles,
-  // check whether there are Sapio samples still remaining to be
-  // submitted before a blank manifest can be downloaded
-  // If there are none, display a warning message.
-  $(document).on(
-    'click',
-    '.download-blank-manifest-template',
-    function (e) {
-      if (schema_name !== 'EI_EDP') {
-        return;
-      }
-      e.preventDefault();
-      let manifestURL = $(this).attr('href');
 
-      $.ajax({
-        url: copoFormsURL,
-        type: 'POST',
-        headers: { 'X-CSRFToken': csrftoken },
-        data: {
-          task: 'check_lims_blank_manifest',
-          component: component,
-          profile_id: $('#profile_id').val(),
-        },
-      })
-        .done(function (data) {
-          let feedback = (data && data.action_feedback) || {};
-          if (feedback.status === 'success') {
-            window.location.href = manifestURL;
-            return;
-          }
-          BootstrapDialog.show({
-            title: 'Blank manifest unavailable',
-            message:
-              feedback.message || 'The blank manifest could not be downloaded.',
-            type:
-              feedback.status === 'warning'
-                ? BootstrapDialog.TYPE_WARNING
-                : BootstrapDialog.TYPE_DANGER,
-          });
-        })
-        .fail(function () {
-          BootstrapDialog.show({
-            title: 'Error',
-            message:
-              'The blank manifest could not be downloaded. Please try again.',
-            type: BootstrapDialog.TYPE_DANGER,
-          });
-        });
-    }
-  );
+  // Download blank manifest logic
+  $(document).on('click', '.download-blank-manifest-template', function (e) {
+    e.preventDefault();
+    let manifestURL = $(this).attr('href');
+
+    // Check whether a blank manifest can be downloaded for the component
+    // e.g. for LIMS manifest submissions under EDP profiles,
+    // samples must have already been submitted and some Sapio samples
+    // must still be remaining to be submitted.
+    // If the check fails, display a warning message.
+    proceedIfCheckPasses(
+      'check_blank_manifest',
+      'Blank manifest unavailable',
+      'The blank manifest could not be downloaded.',
+      function () {
+        window.location.href = manifestURL;
+      }
+    );
+  });
 
   $('#singlecell_spreadsheet_modal').on('show.bs.modal', function (event) {
     var modal = $(this);
@@ -630,62 +602,62 @@ $(document).on('document_ready', function () {
 
 //****************************** Functions block ******************************//
 function do_record_task(event) {
-    var task = event.task.toLowerCase(); //action to be performed e.g., 'Edit', 'Delete'
-    var tableID = event.tableID; //get target table
-    var profile_id = $('#profile_id').val(); //get profile id
-    var schema_name = $('#schema_name').val(); //get schema name
+  var task = event.task.toLowerCase(); //action to be performed e.g., 'Edit', 'Delete'
+  var tableID = event.tableID; //get target table
+  var profile_id = $('#profile_id').val(); //get profile id
+  var schema_name = $('#schema_name').val(); //get schema name
 
-    //retrieve target records and execute task
-    var table = $('#' + tableID).DataTable();
-    var records = []; //
-    $.map(table.rows('.selected').data(), function (item) {
-      records.push(item);
-    });
+  //retrieve target records and execute task
+  var table = $('#' + tableID).DataTable();
+  var records = []; //
+  $.map(table.rows('.selected').data(), function (item) {
+    records.push(item);
+  });
 
-    var args_dict = {
-      singlecell_checklist_id: get_checklist_id(),
-      schema_name: schema_name,
-    };
+  var args_dict = {
+    singlecell_checklist_id: get_checklist_id(),
+    schema_name: schema_name,
+  };
 
-    // Download sample manifest
-    if (task == 'download-singlecell-manifest') {
-      $('#download-singlecell-manifest-link').attr(
-        'href',
-        '/copo/copo_single_cell/download_manifest/' +
-          profile_id +
-          '/' +
-          schema_name +
-          '/' +
-          records[0].study_id
-      );
-      $('#download-singlecell-manifest-link span').trigger('click');
-      return;
-    } else {
-      var study_id = '';
-      for (var i = 0; i < records.length; i++) {
-        if (study_id == '') {
-          study_id = records[i].study_id;
-        } else if (study_id != records[i].study_id) {
-          study_id = '';
-          break;
-        }
-      }
-      args_dict['study_id'] = study_id;
-
-      // Before an ENA submission, make sure we know which credentials to use:
-      // the user's own (if valid) or a one-off COPO default chosen in a popup.
-      if (task == 'submit_singlecell_ena') {
-        ensureRepositoryCredentialsThenSubmit(
-          'singlecell',
-          'ena',
-          task,
-          records,
-          args_dict
-        );
-      } else {
-        form_generic_task('singlecell', task, records, args_dict);
+  // Download sample manifest
+  if (task == 'download-singlecell-manifest') {
+    $('#download-singlecell-manifest-link').attr(
+      'href',
+      '/copo/copo_single_cell/download_manifest/' +
+        profile_id +
+        '/' +
+        schema_name +
+        '/' +
+        records[0].study_id
+    );
+    $('#download-singlecell-manifest-link span').trigger('click');
+    return;
+  } else {
+    var study_id = '';
+    for (var i = 0; i < records.length; i++) {
+      if (study_id == '') {
+        study_id = records[i].study_id;
+      } else if (study_id != records[i].study_id) {
+        study_id = '';
+        break;
       }
     }
+    args_dict['study_id'] = study_id;
+
+    // Before an ENA submission, make sure we know which credentials to use:
+    // the user's own (if valid) or a one-off COPO default chosen in a popup.
+    if (task == 'submit_singlecell_ena') {
+      ensureRepositoryCredentialsThenSubmit(
+        'singlecell',
+        'ena',
+        task,
+        records,
+        args_dict
+      );
+    } else {
+      form_generic_task('singlecell', task, records, args_dict);
+    }
+  }
 }
 
 function upload_spreadsheet(file) {
@@ -752,6 +724,58 @@ function upload_spreadsheet(file) {
         .prop('disabled', false);
       $('#file').val('');
     });
+}
+
+// Ask the server to run a check given by `task` before an action
+// goes ahead. If the check passes, `onSuccess` is called to carry out
+// the action. Otherwise, a warning or error message is
+// displayed in a dialog entitled `title` or `fallbackMessage` if the
+// check returns no message or the request failed.
+function proceedIfCheckPasses(task, title, fallbackMessage, onSuccess) {
+  $.ajax({
+    url: copoFormsURL,
+    type: 'POST',
+    headers: { 'X-CSRFToken': csrftoken },
+    data: {
+      task: task,
+      component: component,
+      profile_id: $('#profile_id').val(),
+      schema_name: $('#schema_name').val(),
+    },
+  })
+    .done(function (data) {
+      let feedback = (data && data.action_feedback) || {};
+      if (feedback.status === 'success') {
+        onSuccess();
+        return;
+      }
+      BootstrapDialog.show({
+        title: title,
+        message: feedback.message || fallbackMessage,
+        type:
+          feedback.status === 'warning'
+            ? BootstrapDialog.TYPE_WARNING
+            : BootstrapDialog.TYPE_DANGER,
+      });
+    })
+    .fail(function () {
+      BootstrapDialog.show({
+        title: 'Error',
+        message: fallbackMessage + ' Please try again.',
+        type: BootstrapDialog.TYPE_DANGER,
+      });
+    });
+}
+
+function showManifestUploadModal() {
+  $('#singlecell_spreadsheet_modal #span_checklist').html(
+    get_selected_checklist_name()
+  );
+  $('#singlecell_spreadsheet_modal').modal({
+    //"closable": false,
+    show: true,
+    size: BootstrapDialog.SIZE_WIDE,
+  });
 }
 
 function save_singlecell_data() {

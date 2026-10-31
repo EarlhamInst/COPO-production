@@ -16,6 +16,7 @@ from common.schemas.utils import data_utils
 from common.utils import helpers
 from src.apps.copo_barcoding_submission.utils.EnaTaggedSequence import EnaTaggedSequence
 from src.apps.copo_single_cell_submission.utils import copo_single_cell
+from src.apps.ei_edp.utils import constants as edp_constants
 from src.apps.ei_edp.utils import edp_utils
 
 
@@ -704,33 +705,60 @@ class BrokerDA:
         return self._publish_singlecell(repository="zenodo")
 
     def do_submit_singlecell_sapio(self):
-        target_id = self.param_dict.get("target_id", str())
-        target_ids = self.param_dict.get("target_ids", [])
-        checklist_id = self.request_dict.get("singlecell_checklist_id", str())
-        study_id = self.request_dict.get("study_id", "")
+        checklist_id = self.request_dict.get('singlecell_checklist_id', str())
+        study_id = self.request_dict.get('study_id', '')
 
         result = edp_utils.submit_lims_manifest_to_sapio(
             profile_id=self.profile_id, study_id=study_id
         )
 
         report_metadata = dict()
-        report_metadata["status"] = result.get("status", "success")
-        report_metadata["message"] = result.get("message", "success")
-        self.context["action_feedback"] = report_metadata
+        report_metadata['status'] = result.get('status', 'success')
+        report_metadata['message'] = result.get('message', 'success')
+        self.context['action_feedback'] = report_metadata
 
         # Refresh on both 'success' and 'warning' messages so that
         # the 'Status' and 'Error' columns redraw
-        if result.get("status", "success") in ("success", "warning"):
-            self.context["table_data"] = copo_single_cell.generate_singlecell_record(
+        if result.get('status', 'success') in ('success', 'warning'):
+            self.context['table_data'] = copo_single_cell.generate_singlecell_record(
                 profile_id=self.profile_id, checklist_id=checklist_id, study_id=study_id
             )
-            self.context["component"] = "singlecell"
+            self.context['component'] = 'singlecell'
         return self.context
 
-    def do_check_lims_blank_manifest(self):
-        self.context['action_feedback'] = edp_utils.check_lims_blank_manifest(
-            profile_id=self.profile_id
-        )
+    def do_check_blank_manifest(self):
+        # Checks whether a blank manifest can be downloaded
+        feedback = {'status': 'success', 'message': ''}
+
+        match self.request_dict.get('schema_name', str()):
+            case edp_constants.EDP_SCHEMA_NAME:
+                # Samples must be submitted under EDP profiles before a
+                # blank LIMS manifest can be downloaded and some samples in
+                # its LIMS project must still be remaining to be submitted.
+                feedback = edp_utils.check_edp_samples_submitted(
+                    profile_id=self.profile_id
+                )
+                if feedback['status'] == 'success':
+                    feedback = edp_utils.check_lims_blank_manifest(
+                        profile_id=self.profile_id
+                    )
+
+        self.context['action_feedback'] = feedback
+        return self.context
+
+    def do_check_manifest_upload(self):
+        # Checks whether a manifest can be uploaded
+        feedback = {'status': 'success', 'message': ''}
+
+        match self.request_dict.get('schema_name', str()):
+            case edp_constants.EDP_SCHEMA_NAME:
+                # Samples must be submitted under EDP profiles before a
+                # LIMS manifest describing them can be uploaded.
+                feedback = edp_utils.check_edp_samples_submitted(
+                    profile_id=self.profile_id
+                )
+
+        self.context['action_feedback'] = feedback
         return self.context
 
     def do_make_snapshot(self):

@@ -8,6 +8,7 @@ from sapiopylib.rest.utils.recordmodel.PyRecordModel import PyRecordModel
 
 from common.dal.copo_da import CopoGroup
 from common.dal.profile_da import Profile
+from common.dal.sample_da import Sample
 from common.schemas.utils.data_utils import render_html_list
 from common.utils import helpers
 from common.utils.logger import Logger
@@ -16,6 +17,7 @@ from src.apps.copo_single_cell_submission.utils.da import Singlecell, Singlecell
 
 from .EDPSchemaHandler import get_pending_samples
 from .constants import (
+    BIOSAMPLE_ACCESSION,
     EDP_PROFILE_TYPE,
     EDP_SCHEMA_NAME,
     EDP_USERS_GROUP,
@@ -354,6 +356,26 @@ def check_lims_blank_manifest(profile_id):
     if not get_pending_samples(sapio_project_id, schemas):
         return {'status': 'warning', 'message': MESSAGES['all_samples_submitted']}
     
+    return {'status': 'success', 'message': ''}
+
+
+def check_edp_samples_submitted(profile_id):
+    # A warning is displayed if a user tries to download a blank LIMS
+    # manifest or upload a LIMS manifest before any samples have been
+    # submitted under an EDP profile since a LIMS manifest describes
+    # those samples.
+    # Otherwise, the user can proceed with the download or upload.
+    submitted_samples = Sample().get_collection_handle().count_documents(
+        {
+            'profile_id': profile_id,
+            'deleted': helpers.get_not_deleted_flag(),
+            BIOSAMPLE_ACCESSION: {'$exists': True, '$nin': ['', None]},
+        },
+        limit=1,
+    )
+    if not submitted_samples:
+        return {'status': 'warning', 'message': MESSAGES['no_samples_submitted']}
+
     return {'status': 'success', 'message': ''}
 
 

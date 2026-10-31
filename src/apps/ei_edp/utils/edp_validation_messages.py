@@ -31,6 +31,13 @@ MESSAGES = {
         'Sheet <strong>sample</strong>: Missing response to <strong>Sample return requirement</strong>.'
     ),
     'no_lims_configured': 'No LIMS configured; nothing submitted.',
+    'no_samples_submitted': (
+        'No samples have been submitted for this profile yet.\n\n'
+        'Please upload and submit samples first using the <strong>Samples</strong> '
+        'button for this profile on the <strong>Work profiles</strong> page or '
+        "click the <i class='material-symbols-outlined icon pcomponent-material-icon olive no-click'>labs</i> "
+        'icon in the top navigation bar. Then, return to this page to download or upload a LIMS manifest.'
+    ),
     'not_edp_profile': 'Profile {profile_title} is not an Earlham Data Profile (EDP) profile.',
     'profile_email_not_sent': (
         'An email address was not set up on this server so, an email was not sent about the created profile to:<br>'
