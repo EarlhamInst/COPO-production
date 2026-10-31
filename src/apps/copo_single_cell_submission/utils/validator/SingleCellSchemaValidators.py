@@ -106,8 +106,9 @@ class IncorrectValueValidator(Validator):
                         elif type == "string":
                             regex = field.get("term_regex","")
                             if regex and pd.notna(regex):
-
-                                if not re.match(regex.strip(), str(row)):
+                                # Use `re.fullmatch()` instead of `re.match()`
+                                # to ensure that the entire cell content matches the regex pattern
+                                if not re.fullmatch(regex.strip(), str(row)):
                                     error_msg = MESSAGES["invalid_column_value_regex"].format(
                                         component=component,
                                         invalid_value=row,
