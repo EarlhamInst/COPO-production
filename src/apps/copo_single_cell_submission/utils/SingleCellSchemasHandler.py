@@ -48,7 +48,10 @@ class SingleCellSchemasHandler:
 
     def _parseSchemas(self, schema_name, xls):
 
-        enums_df = pd.read_excel(xls, "allowed_values", dtype=str)
+        # Only empty cells are treated as missing values. Otherwise, pandas
+        # treats allowed values such as 'None', 'NA' or 'null' as missing
+        # values and they would be dropped from the dropdown menu options
+        enums_df = pd.read_excel(xls, 'allowed_values', dtype=str, keep_default_na=False)
         components_df = pd.read_excel(xls, "components", index_col="key")
         standards_df = pd.read_excel(xls, "standards", index_col="key") if "standards" in xls.sheet_names else pd.DataFrame()
         technology_df = pd.read_excel(xls, "technologies", index_col="key") if "technologies" in xls.sheet_names else pd.DataFrame()
@@ -59,7 +62,7 @@ class SingleCellSchemasHandler:
 
         enums_dict = {}
         for c in enums_df.columns:
-            a = enums_df[c].dropna()
+            a = enums_df[c][enums_df[c] != '']
             enums_dict[c] = a.to_list()
 
         component_schemas_dict = {}
