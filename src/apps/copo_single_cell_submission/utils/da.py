@@ -69,39 +69,42 @@ class SinglecellSchemas(DAComponent):
         # calls by setting a new dict for each call
         if schemas is None:
             schemas = dict()
-            
-        if schemas:
-            singlecell_schemas = schemas
-         
-        elif schema_name:
+
+        singlecell_schemas = schemas
+        if not singlecell_schemas and schema_name:
             singlecell = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name},{"schemas":1})
             singlecell_schemas = singlecell["schemas"]
 
-        if singlecell_schemas and target_id:
-            for component, item in singlecell_schemas.items():
-                component_schema_df = pd.DataFrame.from_records(item)
-                component_schema_df = component_schema_df.drop(component_schema_df[pd.isna(component_schema_df[target_id])].index)
-                if component_schema_df.empty:
-                    continue    
+        if not (singlecell_schemas and target_id):
+            return schemas
 
-                component_schema_df["label"] = component_schema_df["term_label"]
-                component_schema_df["control"] = "text"
-                component_schema_df["show_as_attribute"] = True
-                component_schema_df["id"] = component_schema_df["term_name"]
-                schemas[component] = component_schema_df.to_dict(orient="records")      
-        return schemas
+        # Build the filtered schemas in a new dict so that the `schemas``
+        # passed in are left unchanged and can be filtered again for
+        # another checklist
+        checklist_schemas = dict()
+        for component, item in singlecell_schemas.items():
+            component_schema_df = pd.DataFrame.from_records(item)
+            component_schema_df = component_schema_df.drop(component_schema_df[pd.isna(component_schema_df[target_id])].index)
+            if component_schema_df.empty:
+                continue
+
+            component_schema_df['label'] = component_schema_df['term_label']
+            component_schema_df['control'] = 'text'
+            component_schema_df['show_as_attribute'] = True
+            component_schema_df['id'] = component_schema_df['term_name']
+            checklist_schemas[component] = component_schema_df.to_dict(orient='records')
+        return checklist_schemas
 
 
-    def get_schemas(self, schema_name, schemas=dict(), target_ids=[]):
-        singlecell_schemas = schemas
+    def get_schemas(self, schema_name, schemas=None, target_ids=None):
+        singlecell_schemas = schemas or dict()
         if not singlecell_schemas and schema_name:
             singlecell = SinglecellSchemas().get_collection_handle().find_one({"name":schema_name},{"schemas":1})
             singlecell_schemas = singlecell["schemas"]
         result = {}
         if singlecell_schemas and target_ids:
             for target_id in target_ids:
-                schemas = self.get_schema(schemas=schemas, target_id=target_id)
-                result[target_id] = schemas
+                result[target_id] = self.get_schema(schemas=singlecell_schemas, target_id=target_id)
         return result
     
 
