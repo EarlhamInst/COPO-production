@@ -22,6 +22,63 @@ from sapiopylib.rest.utils.recordmodel.PyRecordModel import PyRecordModel
 
 from common.utils.logger import Logger
 
+from ...constants import (
+    LIMS_HEALTH_AND_SAFETY,
+    LIMS_SAMPLE_RETURN,
+    PROFILE_BUDGET_HOLDER,
+    PROFILE_CONTAINER_TYPE,
+    PROFILE_DESCRIPTION,
+    PROFILE_LIBRARY_TYPE,
+    PROFILE_NO_OF_SAMPLES,
+    PROFILE_RELATED_ENQ,
+    PROFILE_SAMPLE_TYPE,
+    PROFILE_SAPIO_PROJECT_ID,
+    PROFILE_TITLE,
+    SAMPLE_ID,
+    SAMPLE_TO_QC_DATUM_FIELDS,
+    SAPIO_ALIQUOT_SAMPLE_RECORD_ID,
+    SAPIO_BUDGET_HOLDER,
+    SAPIO_COL_POSITION,
+    SAPIO_CONTAINER_TYPE,
+    SAPIO_CUSTOMER_SAMPLE_NAME,
+    SAPIO_DATA_RECORD_NAME,
+    SAPIO_DATUM_TYPE,
+    SAPIO_DEPARTMENT_DATA_TYPE,
+    SAPIO_DIRECTORY_DATA_TYPE,
+    SAPIO_EXEMPLAR_SAMPLE_STATUS,
+    SAPIO_EXEMPLAR_SAMPLE_TYPE,
+    SAPIO_HEALTH_AND_SAFETY,
+    SAPIO_INDEX_BARCODE_DATA_TYPE,
+    SAPIO_INDEX_ID,
+    SAPIO_IS_CONTROL,
+    SAPIO_LAYER,
+    SAPIO_LIBRARY_TYPE,
+    SAPIO_NAME,
+    SAPIO_OTHER_SAMPLE_ID,
+    SAPIO_PLATE_COLUMNS,
+    SAPIO_PLATE_DATA_TYPE,
+    SAPIO_PLATE_ID,
+    SAPIO_PLATE_RECORD_ID,
+    SAPIO_PLATE_ROWS,
+    SAPIO_PLATE_SAMPLE_TYPE,
+    SAPIO_PLATE_WELL_ELEMENT_DATA_TYPE,
+    SAPIO_PROJECT_DATA_TYPE,
+    SAPIO_PROJECT_DESC,
+    SAPIO_PROJECT_IDENTIFIER,
+    SAPIO_PROJECT_NAME,
+    SAPIO_QC_DATUM_DATA_TYPE,
+    SAPIO_RECORD_ID,
+    SAPIO_ROW_POSITION,
+    SAPIO_SAMPLE_COUNT,
+    SAPIO_SAMPLE_DATA_TYPE,
+    SAPIO_SAMPLE_ID,
+    SAPIO_SAMPLE_RETURN,
+    SAPIO_SOURCE_DATA_TYPE_NAME,
+    SAPIO_SOURCE_RECORD_ID,
+    SAPIO_STORAGE_UNIT_PATH,
+    TERM_ACCESS,
+    TERM_NAME,
+)
 from ...edp_validation_messages import MESSAGES
 from ..base import LIMSAdapter, LIMSUnavailable
 from .datamanager import Sapio
@@ -107,7 +164,7 @@ class SapioAdapter(LIMSAdapter):
     def validate_profile_change(
         self, profile: Dict[str, Any], requested_sample_count
     ) -> Dict[str, str]:
-        sapio_project_id = profile.get("sapio_project_id", "")
+        sapio_project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, "")
         if not sapio_project_id:
             return {"status": "success"}
 
@@ -115,8 +172,8 @@ class SapioAdapter(LIMSAdapter):
         project_records = (
             Sapio()
             .dataRecordManager.query_data_records(
-                data_type_name="Project",
-                data_field_name="C_ProjectIdentifier",
+                data_type_name=SAPIO_PROJECT_DATA_TYPE,
+                data_field_name=SAPIO_PROJECT_IDENTIFIER,
                 value_list=[sapio_project_id],
             )
             .result_list
@@ -125,14 +182,14 @@ class SapioAdapter(LIMSAdapter):
             return {
                 "status": "error",
                 "message": MESSAGES['sapio_project_not_found'].format(
-                    project_id=profile['sapio_project_id']
+                    project_id=profile[PROFILE_SAPIO_PROJECT_ID]
                 ),
             }
         project_record = project_records[0]
         project: PyRecordModel = Sapio().inst_man.add_existing_record(project_record)
-        Sapio().relationship_man.load_children([project], 'Sample')
+        Sapio().relationship_man.load_children([project], SAPIO_SAMPLE_DATA_TYPE)
         samples_under_project: List[PyRecordModel] = project.get_children_of_type(
-            'Sample'
+            SAPIO_SAMPLE_DATA_TYPE
         )
         # Samples that have a customer's name associated with them and 
         # have been submitted, cannot be deleted. As a result, the 
@@ -140,7 +197,7 @@ class SapioAdapter(LIMSAdapter):
         submitted_sample_count = sum(
             1
             for sample in samples_under_project
-            if sample.get_field_value("C_CustomerSampleName")
+            if sample.get_field_value(SAPIO_CUSTOMER_SAMPLE_NAME)
         )
         if no_of_samples < submitted_sample_count:
             return {
@@ -161,8 +218,8 @@ class SapioAdapter(LIMSAdapter):
         department_records = (
             Sapio()
             .dataRecordManager.query_data_records(
-                data_type_name='VeloxDepartment',
-                data_field_name='DataRecordName',
+                data_type_name=SAPIO_DEPARTMENT_DATA_TYPE,
+                data_field_name=SAPIO_DATA_RECORD_NAME,
                 value_list=[settings.SAPIO_PROJECT_DEPARTMENT],
             )
             .result_list
@@ -178,12 +235,12 @@ class SapioAdapter(LIMSAdapter):
         department: PyRecordModel = Sapio().inst_man.add_existing_record(
             department_records[0]
         )
-        Sapio().relationship_man.load_children([department], 'Project')
+        Sapio().relationship_man.load_children([department], SAPIO_PROJECT_DATA_TYPE)
 
         # Skip if the project is already linked to the department in Sapio
         if any(
             child.record_id == project.record_id
-            for child in department.get_children_of_type('Project')
+            for child in department.get_children_of_type(SAPIO_PROJECT_DATA_TYPE)
         ):
             return
 
@@ -201,8 +258,8 @@ class SapioAdapter(LIMSAdapter):
         page_criteria = None
         while True:
             page = Sapio().dataRecordManager.query_data_records(
-                data_type_name='PlateDesignerWellElement',
-                data_field_name='PlateRecordId',
+                data_type_name=SAPIO_PLATE_WELL_ELEMENT_DATA_TYPE,
+                data_field_name=SAPIO_PLATE_RECORD_ID,
                 value_list=[plate.record_id for plate in plates],
                 paging_criteria=page_criteria,
             )
@@ -214,14 +271,14 @@ class SapioAdapter(LIMSAdapter):
         samples_on_plates = {
             (plate.record_id, sample.record_id): sample
             for plate in plates
-            for sample in plate.get_children_of_type('Sample')
+            for sample in plate.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
         }
         well_elements_to_keep = set()
         well_elements_to_delete = []
         for well_element in existing_well_elements:
             key = (
-                well_element.get_field_value('PlateRecordId'),
-                well_element.get_field_value('AliquotSampleRecordId'),
+                well_element.get_field_value(SAPIO_PLATE_RECORD_ID),
+                well_element.get_field_value(SAPIO_ALIQUOT_SAMPLE_RECORD_ID),
             )
             if key in samples_on_plates and key not in well_elements_to_keep:
                 well_elements_to_keep.add(key)
@@ -233,14 +290,14 @@ class SapioAdapter(LIMSAdapter):
         # or transferred from another container.
         new_well_elements = [
             {
-                'PlateRecordId': plate_record_id,
-                'RowPosition': sample.get_field_value('RowPosition'),
-                'ColPosition': sample.get_field_value('ColPosition'),
-                'Layer': 1,
-                'SourceDataTypeName': 'Sample',
-                'SourceRecordId': sample.record_id,
-                'AliquotSampleRecordId': sample.record_id,
-                'IsControl': False,
+                SAPIO_PLATE_RECORD_ID: plate_record_id,
+                SAPIO_ROW_POSITION: sample.get_field_value(SAPIO_ROW_POSITION),
+                SAPIO_COL_POSITION: sample.get_field_value(SAPIO_COL_POSITION),
+                SAPIO_LAYER: 1,
+                SAPIO_SOURCE_DATA_TYPE_NAME: SAPIO_SAMPLE_DATA_TYPE,
+                SAPIO_SOURCE_RECORD_ID: sample.record_id,
+                SAPIO_ALIQUOT_SAMPLE_RECORD_ID: sample.record_id,
+                SAPIO_IS_CONTROL: False,
             }
             for (plate_record_id, _), sample in samples_on_plates.items()
             if (plate_record_id, sample.record_id) not in well_elements_to_keep
@@ -250,7 +307,7 @@ class SapioAdapter(LIMSAdapter):
             Sapio().dataRecordManager.delete_data_record_list(well_elements_to_delete)
         if new_well_elements:
             Sapio().dataRecordManager.add_data_records_with_data(
-                data_type_name='PlateDesignerWellElement',
+                data_type_name=SAPIO_PLATE_WELL_ELEMENT_DATA_TYPE,
                 field_map_list=new_well_elements,
             )
 
@@ -258,10 +315,10 @@ class SapioAdapter(LIMSAdapter):
         # The project ID might be minted below on first save.
         # Returned in all paths (including partial failure) so the caller can
         # persist it and avoid creating a duplicate project on retry.
-        project_id = profile.get("sapio_project_id", "")
+        project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, "")
 
         # ProjectName is Required in Sapio; use related_enq with fallback to profile title.
-        project_name = profile.get("related_enq") or profile.get("title") or ""
+        project_name = profile.get(PROFILE_RELATED_ENQ) or profile.get(PROFILE_TITLE) or ""
         if not project_name:
             return {"status": "success", "project_id": project_id}
         project_record = None
@@ -271,25 +328,25 @@ class SapioAdapter(LIMSAdapter):
                 # Field names here must match the Project data type in the Sapio instance.
                 # C_ProjectIdentifier is auto-generated by Sapio and used as our foreign key.
                 project_fields = {
-                    "ProjectName": project_name,
-                    "ProjectDesc": profile.get("description") or "",
-                    "C_SampleCount": int(profile.get("no_of_samples") or 0),
+                    SAPIO_PROJECT_NAME: project_name,
+                    SAPIO_PROJECT_DESC: profile.get(PROFILE_DESCRIPTION) or "",
+                    SAPIO_SAMPLE_COUNT: int(profile.get(PROFILE_NO_OF_SAMPLES) or 0),
                 }
-                if profile.get("budget_holder"):
-                    project_fields["C_BudgetHolder"] = profile["budget_holder"]
+                if profile.get(PROFILE_BUDGET_HOLDER):
+                    project_fields[SAPIO_BUDGET_HOLDER] = profile[PROFILE_BUDGET_HOLDER]
                 project_records = Sapio().dataRecordManager.add_data_records_with_data(
-                    data_type_name="Project", field_map_list=[project_fields]
+                    data_type_name=SAPIO_PROJECT_DATA_TYPE, field_map_list=[project_fields]
                 )
 
-                project_id = project_records[0].get_field_value('C_ProjectIdentifier')
+                project_id = project_records[0].get_field_value(SAPIO_PROJECT_IDENTIFIER)
                 project_record = project_records[0]
 
                 # Attach the new project to Directory 1 (the root directory in Sapio)
                 directories = (
                     Sapio()
                     .dataRecordManager.query_data_records(
-                        data_type_name="Directory",
-                        data_field_name="RecordId",
+                        data_type_name=SAPIO_DIRECTORY_DATA_TYPE,
+                        data_field_name=SAPIO_RECORD_ID,
                         value_list=[1],
                     )
                     .result_list
@@ -298,7 +355,7 @@ class SapioAdapter(LIMSAdapter):
                 directory: PyRecordModel = Sapio().inst_man.add_existing_record(
                     directory_record
                 )
-                Sapio().relationship_man.load_children([directory], 'Project')
+                Sapio().relationship_man.load_children([directory], SAPIO_PROJECT_DATA_TYPE)
                 project: PyRecordModel = Sapio().inst_man.add_existing_record(
                     project_record
                 )
@@ -311,8 +368,8 @@ class SapioAdapter(LIMSAdapter):
                 project_records = (
                     Sapio()
                     .dataRecordManager.query_data_records(
-                        data_type_name="Project",
-                        data_field_name="C_ProjectIdentifier",
+                        data_type_name=SAPIO_PROJECT_DATA_TYPE,
+                        data_field_name=SAPIO_PROJECT_IDENTIFIER,
                         value_list=[project_id],
                     )
                     .result_list
@@ -320,16 +377,16 @@ class SapioAdapter(LIMSAdapter):
                 if not project_records or len(project_records) == 0:
                     raise Exception(f"Failed to find project '{project_id}' in Sapio")
                 project_record = project_records[0]
-                project_record.set_field_value("ProjectName", project_name)
+                project_record.set_field_value(SAPIO_PROJECT_NAME, project_name)
                 project_record.set_field_value(
-                    "ProjectDesc", profile.get("description") or ""
+                    SAPIO_PROJECT_DESC, profile.get(PROFILE_DESCRIPTION) or ""
                 )
                 project_record.set_field_value(
-                    "C_SampleCount", int(profile.get("no_of_samples") or 0)
+                    SAPIO_SAMPLE_COUNT, int(profile.get(PROFILE_NO_OF_SAMPLES) or 0)
                 )
-                if profile.get("budget_holder"):
+                if profile.get(PROFILE_BUDGET_HOLDER):
                     project_record.set_field_value(
-                        "C_BudgetHolder", profile["budget_holder"]
+                        SAPIO_BUDGET_HOLDER, profile[PROFILE_BUDGET_HOLDER]
                     )
                 Sapio().dataRecordManager.commit_data_records([project_record])
 
@@ -344,16 +401,16 @@ class SapioAdapter(LIMSAdapter):
             project: PyRecordModel = Sapio().inst_man.add_existing_record(
                 project_record
             )
-            Sapio().relationship_man.load_children([project], 'Sample')
+            Sapio().relationship_man.load_children([project], SAPIO_SAMPLE_DATA_TYPE)
             samples_under_project: List[PyRecordModel] = project.get_children_of_type(
-                'Sample'
+                SAPIO_SAMPLE_DATA_TYPE
             )
             samples_under_project = sorted(
-                samples_under_project, key=lambda x: x.get_field_value("PlateId")
+                samples_under_project, key=lambda x: x.get_field_value(SAPIO_PLATE_ID)
             )
-            Sapio().relationship_man.load_children([project], 'Plate')
+            Sapio().relationship_man.load_children([project], SAPIO_PLATE_DATA_TYPE)
             plates_under_project: List[PyRecordModel] = project.get_children_of_type(
-                'Plate'
+                SAPIO_PLATE_DATA_TYPE
             )
 
             # Track which plates need samples removed after deletion
@@ -362,12 +419,12 @@ class SapioAdapter(LIMSAdapter):
 
             existing_plate_ids_under_project = set()
             for plate in plates_under_project:
-                existing_plate_ids_under_project.add(plate.get_field_value("PlateId"))
+                existing_plate_ids_under_project.add(plate.get_field_value(SAPIO_PLATE_ID))
 
-            no_of_samples = int(profile.get("no_of_samples") or 0)
-            sample_type = profile.get("sample_type") or ""
-            container_type = (profile.get("container_type") or "").capitalize()
-            library_type = profile.get("library_type") or ""
+            no_of_samples = int(profile.get(PROFILE_NO_OF_SAMPLES) or 0)
+            sample_type = profile.get(PROFILE_SAMPLE_TYPE) or ""
+            container_type = (profile.get(PROFILE_CONTAINER_TYPE) or "").capitalize()
+            library_type = profile.get(PROFILE_LIBRARY_TYPE) or ""
 
             # Create samples up to the requested count if we don't have enough yet
             if not samples_under_project or len(samples_under_project) < no_of_samples:
@@ -378,13 +435,13 @@ class SapioAdapter(LIMSAdapter):
                 try:
                     sample_records = (
                         Sapio().dataRecordManager.add_data_records_with_data(
-                            data_type_name="Sample",
+                            data_type_name=SAPIO_SAMPLE_DATA_TYPE,
                             field_map_list=[
                                 {
-                                    "ExemplarSampleType": sample_type,
-                                    "ContainerType": container_type,
-                                    "C_LibraryType": library_type,
-                                    'ExemplarSampleStatus': 'Logged',
+                                    SAPIO_EXEMPLAR_SAMPLE_TYPE: sample_type,
+                                    SAPIO_CONTAINER_TYPE: container_type,
+                                    SAPIO_LIBRARY_TYPE: library_type,
+                                    SAPIO_EXEMPLAR_SAMPLE_STATUS: 'Logged',
                                 }
                                 for _ in range(existing_no_of_samples, no_of_samples)
                             ],
@@ -418,10 +475,10 @@ class SapioAdapter(LIMSAdapter):
             diff = len(samples_under_project) - no_of_samples
             if diff > 0:
                 for sample in reversed(samples_under_project):
-                    if not sample.get_field_value("C_CustomerSampleName"):
+                    if not sample.get_field_value(SAPIO_CUSTOMER_SAMPLE_NAME):
                         samples_to_remove.append(sample)
                         diff -= 1
-                        assigned_plate_id = sample.get_field_value("PlateId")
+                        assigned_plate_id = sample.get_field_value(SAPIO_PLATE_ID)
                         if assigned_plate_id:
                             if (
                                 assigned_plate_id
@@ -447,12 +504,12 @@ class SapioAdapter(LIMSAdapter):
 
             # Sync sample type fields on all remaining samples
             for sample in samples_under_project:
-                sample.set_field_value("ExemplarSampleType", sample_type)
-                sample.set_field_value("ContainerType", container_type)
-                sample.set_field_value("C_LibraryType", library_type)
+                sample.set_field_value(SAPIO_EXEMPLAR_SAMPLE_TYPE, sample_type)
+                sample.set_field_value(SAPIO_CONTAINER_TYPE, container_type)
+                sample.set_field_value(SAPIO_LIBRARY_TYPE, library_type)
 
             plates_under_project_map = {
-                plate.get_field_value("PlateId"): plate
+                plate.get_field_value(SAPIO_PLATE_ID): plate
                 for plate in plates_under_project
             }
 
@@ -469,26 +526,26 @@ class SapioAdapter(LIMSAdapter):
             samples_without_plate = set()
             if is_plate_container and samples_under_project:
                 for sample in samples_under_project:
-                    assigned_plate = sample.get_field_value("PlateId")
+                    assigned_plate = sample.get_field_value(SAPIO_PLATE_ID)
                     if not assigned_plate:
-                        assigned_plate = sample.get_field_value("StorageUnitPath")
+                        assigned_plate = sample.get_field_value(SAPIO_STORAGE_UNIT_PATH)
                         if not assigned_plate:
                             samples_without_plate.add(sample)
 
             # Fill empty slots in existing plates first before creating new ones
-            Sapio().relationship_man.load_children(plates_under_project, 'Sample')
+            Sapio().relationship_man.load_children(plates_under_project, SAPIO_SAMPLE_DATA_TYPE)
 
             # Take samples off any plates they were placed on while the
             # container type was 'plate' and remove their well elements
             if not is_plate_container:
                 for plate in plates_under_project:
-                    samples_under_plate = plate.get_children_of_type('Sample')
+                    samples_under_plate = plate.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
                     if not samples_under_plate:
                         continue
                     for sample in samples_under_plate:
-                        sample.set_field_value('PlateId', None)
-                        sample.set_field_value('ColPosition', None)
-                        sample.set_field_value('RowPosition', None)
+                        sample.set_field_value(SAPIO_PLATE_ID, None)
+                        sample.set_field_value(SAPIO_COL_POSITION, None)
+                        sample.set_field_value(SAPIO_ROW_POSITION, None)
                     plate.remove_children(samples_under_plate)
 
             if samples_without_plate:
@@ -501,12 +558,12 @@ class SapioAdapter(LIMSAdapter):
                         for row in PLATE_ROWS
                     }
                     samples_under_plate: List[PyRecordModel] = (
-                        plate.get_children_of_type('Sample')
+                        plate.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
                     )
                     for sample in samples_under_plate:
                         plate_assignments_key = (
-                            sample.get_field_value("ColPosition"),
-                            sample.get_field_value("RowPosition"),
+                            sample.get_field_value(SAPIO_COL_POSITION),
+                            sample.get_field_value(SAPIO_ROW_POSITION),
                         )
                         plate_assignments[plate_assignments_key] = True
 
@@ -524,11 +581,11 @@ class SapioAdapter(LIMSAdapter):
                         sample = samples_without_plate.pop()
                         sample_for_plate.append(sample)
                         sample.set_field_value(
-                            "PlateId", plate.get_field_value("PlateId")
+                            SAPIO_PLATE_ID, plate.get_field_value(SAPIO_PLATE_ID)
                         )
                         plate_assignments[key] = True
-                        sample.set_field_value("ColPosition", key[0])
-                        sample.set_field_value("RowPosition", key[1])
+                        sample.set_field_value(SAPIO_COL_POSITION, key[0])
+                        sample.set_field_value(SAPIO_ROW_POSITION, key[1])
                     if sample_for_plate:
                         plate.add_children(sample_for_plate)
 
@@ -537,12 +594,12 @@ class SapioAdapter(LIMSAdapter):
                 no_of_plates_needed = math.ceil(len(samples_without_plate) / PLATE_WELLS)
                 new_plate_records = (
                     Sapio().dataRecordManager.add_data_records_with_data(
-                        data_type_name="Plate",
+                        data_type_name=SAPIO_PLATE_DATA_TYPE,
                         field_map_list=[
                             {
-                                "PlateSampleType": sample_type,
-                                "PlateColumns": PLATE_COLUMNS,
-                                "PlateRows": len(PLATE_ROWS),
+                                SAPIO_PLATE_SAMPLE_TYPE: sample_type,
+                                SAPIO_PLATE_COLUMNS: PLATE_COLUMNS,
+                                SAPIO_PLATE_ROWS: len(PLATE_ROWS),
                             }
                             for _ in range(no_of_plates_needed)
                         ],
@@ -552,7 +609,7 @@ class SapioAdapter(LIMSAdapter):
                     new_plate_records
                 )
                 project.add_children(new_plates)
-                Sapio().relationship_man.load_children(new_plates, 'Sample')
+                Sapio().relationship_man.load_children(new_plates, SAPIO_SAMPLE_DATA_TYPE)
 
                 for plate in new_plates:
                     sample_for_plate: List[PyRecordModel] = []
@@ -575,11 +632,11 @@ class SapioAdapter(LIMSAdapter):
                         sample = samples_without_plate.pop()
                         sample_for_plate.append(sample)
                         sample.set_field_value(
-                            "PlateId", plate.get_field_value("PlateId")
+                            SAPIO_PLATE_ID, plate.get_field_value(SAPIO_PLATE_ID)
                         )
                         plate_assignments[key] = True
-                        sample.set_field_value("ColPosition", key[0])
-                        sample.set_field_value("RowPosition", key[1])
+                        sample.set_field_value(SAPIO_COL_POSITION, key[0])
+                        sample.set_field_value(SAPIO_ROW_POSITION, key[1])
                     if sample_for_plate:
                         plate.add_children(sample_for_plate)
 
@@ -592,7 +649,7 @@ class SapioAdapter(LIMSAdapter):
             
             # Give each plated sample a well element so that it shows 
             # as a coloured well in Sapio's Plate View
-            self._sync_plate_well_elements(project.get_children_of_type('Plate'))
+            self._sync_plate_well_elements(project.get_children_of_type(SAPIO_PLATE_DATA_TYPE))
 
             if samples_without_plate:
                 l.error("Not all samples have been assigned to plates!")
@@ -623,8 +680,8 @@ class SapioAdapter(LIMSAdapter):
             record = (
                 Sapio()
                 .dataRecordManager.query_data_records(
-                    data_type_name="Project",
-                    data_field_name="C_ProjectIdentifier",
+                    data_type_name=SAPIO_PROJECT_DATA_TYPE,
+                    data_field_name=SAPIO_PROJECT_IDENTIFIER,
                     value_list=[project_id],
                 )
                 .result_list[0]
@@ -658,22 +715,22 @@ class SapioAdapter(LIMSAdapter):
         sapio_column_map = {}
         sample_schema = schemas.get("sample", [])
         for field in sample_schema:
-            sapio_name = field.get("sapio_name")
+            sapio_name = field.get(SAPIO_NAME)
             # sapio_name can be NaN (a float) when the schema cell is blank - guard on
             # str, not truthiness, since NaN is truthy and ":" in <float> raises.
             if isinstance(sapio_name, str) and ":" in sapio_name:
                 sapio_object = sapio_name.split(":")[0]
                 sapio_field = sapio_name.split(":")[1]
-                if sapio_object.lower() == "sample":
-                    sapio_column_map[field["term_name"]] = sapio_field
+                if sapio_object.lower() == SAPIO_SAMPLE_DATA_TYPE.lower():
+                    sapio_column_map[field[TERM_NAME]] = sapio_field
         return sapio_column_map
 
     def _load_project_samples(self, project_id: str) -> List[PyRecordModel]:
         project_records = (
             Sapio()
             .dataRecordManager.query_data_records(
-                data_type_name="Project",
-                data_field_name="C_ProjectIdentifier",
+                data_type_name=SAPIO_PROJECT_DATA_TYPE,
+                data_field_name=SAPIO_PROJECT_IDENTIFIER,
                 value_list=[project_id],
             )
             .result_list
@@ -683,8 +740,8 @@ class SapioAdapter(LIMSAdapter):
             return []
         project_record = project_records[0]
         project: PyRecordModel = Sapio().inst_man.add_existing_record(project_record)
-        Sapio().relationship_man.load_children([project], 'Sample')
-        return project.get_children_of_type('Sample')
+        Sapio().relationship_man.load_children([project], SAPIO_SAMPLE_DATA_TYPE)
+        return project.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
 
     def get_project_samples(
         self, project_id: str, schemas: Dict[str, Any]
@@ -705,8 +762,8 @@ class SapioAdapter(LIMSAdapter):
         project_records = (
             Sapio()
             .dataRecordManager.query_data_records(
-                data_type_name="Project",
-                data_field_name="C_ProjectIdentifier",
+                data_type_name=SAPIO_PROJECT_DATA_TYPE,
+                data_field_name=SAPIO_PROJECT_IDENTIFIER,
                 value_list=[project_id],
             )
             .result_list
@@ -716,15 +773,15 @@ class SapioAdapter(LIMSAdapter):
             return {}
         project_record = project_records[0]
         project: PyRecordModel = Sapio().inst_man.add_existing_record(project_record)
-        Sapio().relationship_man.load_children([project], 'Sample')
+        Sapio().relationship_man.load_children([project], SAPIO_SAMPLE_DATA_TYPE)
         samples_under_project: List[PyRecordModel] = project.get_children_of_type(
-            'Sample'
+            SAPIO_SAMPLE_DATA_TYPE
         )
 
-        metadata = {"health_and_safety": project.get_field_value("C_HandS")}
+        metadata = {LIMS_HEALTH_AND_SAFETY: project.get_field_value(SAPIO_HEALTH_AND_SAFETY)}
         if samples_under_project:
-            metadata["sample_return"] = samples_under_project[0].get_field_value(
-                "C_SampleReturn"
+            metadata[LIMS_SAMPLE_RETURN] = samples_under_project[0].get_field_value(
+                SAPIO_SAMPLE_RETURN
             )
         return metadata
 
@@ -737,27 +794,27 @@ class SapioAdapter(LIMSAdapter):
         qc_datum = next(
             (
                 child
-                for child in sample.get_children_of_type('QCDatum')
-                if child.get_field_value('DatumType') == CUSTOMER_SUPPLIED_DATUM_TYPE
+                for child in sample.get_children_of_type(SAPIO_QC_DATUM_DATA_TYPE)
+                if child.get_field_value(SAPIO_DATUM_TYPE) == CUSTOMER_SUPPLIED_DATUM_TYPE
             ),
             None,
         )
         if not qc_datum:
-            qc_datum = Sapio().inst_man.add_new_record('QCDatum')
+            qc_datum = Sapio().inst_man.add_new_record(SAPIO_QC_DATUM_DATA_TYPE)
             sample.add_child(qc_datum)
 
-        sample_id = sample.get_field_value('SampleId')
-        qc_datum.set_field_value('DatumType', CUSTOMER_SUPPLIED_DATUM_TYPE)
-        qc_datum.set_field_value('SampleId', sample_id)
+        sample_id = sample.get_field_value(SAPIO_SAMPLE_ID)
+        qc_datum.set_field_value(SAPIO_DATUM_TYPE, CUSTOMER_SUPPLIED_DATUM_TYPE)
+        qc_datum.set_field_value(SAPIO_SAMPLE_ID, sample_id)
         qc_datum.set_field_value(
-            'DataRecordName', f'{CUSTOMER_SUPPLIED_DATUM_TYPE} {sample_id}'
+            SAPIO_DATA_RECORD_NAME, f'{CUSTOMER_SUPPLIED_DATUM_TYPE} {sample_id}'
         )
 
-        # The concentration and volume for the sample are copied onto the record
-        for sample_field, qc_datum_field in (
-            ('Concentration', 'Concentration'),
-            ('Volume', 'C_Volume'),
-        ):
+        # A field from the schema can only point to one record type in Sapio
+        # so, relevant sample fields (like 'Concentration' and 'Volume') are 
+        # copied onto the `QCDatum` record in Sapio since more than one 
+        # record type applies to them.
+        for sample_field, qc_datum_field in SAMPLE_TO_QC_DATUM_FIELDS.items():
             value = sample.get_field_value(sample_field)
             if not _is_blank(value):
                 qc_datum.set_field_value(qc_datum_field, value)
@@ -770,11 +827,12 @@ class SapioAdapter(LIMSAdapter):
     ):
         # One 'IndexBarcode' child is mapped per 'Sample'
         # with no link to an index kit.
-        index_barcodes = sample.get_children_of_type('IndexBarcode')
+        # In Sapio, an 'IndexBarcode' record is displayed as 'Assigned Index'
+        index_barcodes = sample.get_children_of_type(SAPIO_INDEX_BARCODE_DATA_TYPE)
         if index_barcodes:
             index_barcode = index_barcodes[0]
         else:
-            index_barcode = Sapio().inst_man.add_new_record('IndexBarcode')
+            index_barcode = Sapio().inst_man.add_new_record(SAPIO_INDEX_BARCODE_DATA_TYPE)
             sample.add_child(index_barcode)
 
         for sapio_field, value in index_values.items():
@@ -785,11 +843,11 @@ class SapioAdapter(LIMSAdapter):
         sample_id = sample.get_field_value(SAPIO_SAMPLE_ID)
         index_barcode.set_field_value(SAPIO_SAMPLE_ID, sample_id)
         index_barcode.set_field_value(
-            'DataRecordName',
+            SAPIO_DATA_RECORD_NAME,
             ' '.join(
                 str(value)
                 for value in (
-                    index_barcode.get_field_value('IndexId'),
+                    index_barcode.get_field_value(SAPIO_INDEX_ID),
                     sample_id,
                     index_barcode.get_field_value(SAPIO_OTHER_SAMPLE_ID),
                 )
@@ -817,8 +875,8 @@ class SapioAdapter(LIMSAdapter):
         project_records = (
             Sapio()
             .dataRecordManager.query_data_records(
-                data_type_name="Project",
-                data_field_name="C_ProjectIdentifier",
+                data_type_name=SAPIO_PROJECT_DATA_TYPE,
+                data_field_name=SAPIO_PROJECT_IDENTIFIER,
                 value_list=[project_id],
             )
             .result_list
@@ -833,56 +891,56 @@ class SapioAdapter(LIMSAdapter):
 
         # Load samples under the project and index by SampleId for fast lookup
         project: PyRecordModel = Sapio().inst_man.add_existing_record(project_record)
-        Sapio().relationship_man.load_children([project], 'Sample')
+        Sapio().relationship_man.load_children([project], SAPIO_SAMPLE_DATA_TYPE)
         samples_under_project: List[PyRecordModel] = project.get_children_of_type(
-            'Sample'
+            SAPIO_SAMPLE_DATA_TYPE
         )
         samples_under_project_map = {
-            s.get_field_value("SampleId"): s for s in samples_under_project
+            s.get_field_value(SAPIO_SAMPLE_ID): s for s in samples_under_project
         }
 
         # Build a mapping from COPO term_name → Sapio field name, grouped by Sapio data type.
         # Only fields with a sapio_name in "DataType:FieldName" format and not marked
         # "protected" are included.
-        sapio_mapping_df = pd.DataFrame(columns=["term_name", "sapio_name"])
+        sapio_mapping_df = pd.DataFrame(columns=[TERM_NAME, SAPIO_NAME])
         for component_name, component_schema in schemas.items():
             component_schema_df = pd.DataFrame.from_records(component_schema)
             sapio_component_mapping_df = component_schema_df[
                 (
-                    ~pd.isna(component_schema_df["sapio_name"])
-                    & (component_schema_df["sapio_name"].str.contains(":"))
-                    & (component_schema_df["term_manifest_behavior"] != "protected")
+                    ~pd.isna(component_schema_df[SAPIO_NAME])
+                    & (component_schema_df[SAPIO_NAME].str.contains(":"))
+                    & (component_schema_df[TERM_ACCESS] != "protected")
                 )
-            ][["term_name", "sapio_name"]]
+            ][[TERM_NAME, SAPIO_NAME]]
             sapio_mapping_df = pd.concat(
                 [sapio_mapping_df, sapio_component_mapping_df], ignore_index=True
             )
 
-        sapio_mapping_df["sapio_object"] = sapio_mapping_df["sapio_name"].apply(
+        sapio_mapping_df["sapio_object"] = sapio_mapping_df[SAPIO_NAME].apply(
             lambda x: x.split(":")[0]
         )
-        sapio_mapping_df["sapio_field"] = sapio_mapping_df["sapio_name"].apply(
+        sapio_mapping_df["sapio_field"] = sapio_mapping_df[SAPIO_NAME].apply(
             lambda x: x.split(":")[1]
         )
-        sapio_mapping_df.drop(columns=["sapio_name"], inplace=True)
+        sapio_mapping_df.drop(columns=[SAPIO_NAME], inplace=True)
 
         # Convert to {DataType: {term_name: sapio_field}} dict for O(1) lookups below
         sapio_object_dict = {}
         for c, sapio_object_df in sapio_mapping_df.groupby("sapio_object", sort=False):
-            sapio_object_df.set_index("term_name", inplace=True)
+            sapio_object_df.set_index(TERM_NAME, inplace=True)
             sapio_object_dict[c] = sapio_object_df["sapio_field"].to_dict()
 
-        project_sapio_mapping = sapio_object_dict.get("Project", {})
-        sample_sapio_mapping = sapio_object_dict.get("Sample", {})
+        project_sapio_mapping = sapio_object_dict.get(SAPIO_PROJECT_DATA_TYPE, {})
+        sample_sapio_mapping = sapio_object_dict.get(SAPIO_SAMPLE_DATA_TYPE, {})
         
         # 'QC' means Quality control. It refers to the lab measurements 
         # that check whether samples meet required sequence standards.
-        qc_datum_sapio_mapping = sapio_object_dict.get('QCDatum', {})
+        qc_datum_sapio_mapping = sapio_object_dict.get(SAPIO_QC_DATUM_DATA_TYPE, {})
         
         index_barcode_sapio_mapping = {
             term_name: sapio_field
-            for term_name, sapio_field in sapio_object_dict.get('IndexBarcode', {}).items()
-            if sapio_field not in ('SampleId', 'OtherSampleId')
+            for term_name, sapio_field in sapio_object_dict.get(SAPIO_INDEX_BARCODE_DATA_TYPE, {}).items()
+            if sapio_field != SAPIO_SAMPLE_ID
         }
 
         # QC values that customers supply reside on a 'QCDatum' in Sapio and are displayed 
@@ -892,10 +950,10 @@ class SapioAdapter(LIMSAdapter):
         # existing project samples to avoid creating duplicates.
         if samples_under_project:
             if qc_datum_sapio_mapping:
-                Sapio().relationship_man.load_children(samples_under_project, 'QCDatum')
+                Sapio().relationship_man.load_children(samples_under_project, SAPIO_QC_DATUM_DATA_TYPE)
             if index_barcode_sapio_mapping:
                 Sapio().relationship_man.load_children(
-                    samples_under_project, 'IndexBarcode'
+                    samples_under_project, SAPIO_INDEX_BARCODE_DATA_TYPE
                 )
 
         # Flag manifest sample IDs in COPO that have no matching samples
@@ -916,7 +974,7 @@ class SapioAdapter(LIMSAdapter):
                 columns=[
                     column
                     for column in columns
-                    if column not in component_schema_df["term_name"].values
+                    if column not in component_schema_df[TERM_NAME].values
                 ],
                 inplace=True,
             )
@@ -936,7 +994,7 @@ class SapioAdapter(LIMSAdapter):
             if component_name == "sample":
                 # Sample fields are matched by SampleId to the specific Sapio Sample record
                 for index, row in component_data_df.iterrows():
-                    sapio_sample_id = row.get("sample_id", "")
+                    sapio_sample_id = row.get(SAMPLE_ID, "")
                     sapio_sample = samples_under_project_map.get(sapio_sample_id, None)
                     if not sapio_sample:
                         l.error(

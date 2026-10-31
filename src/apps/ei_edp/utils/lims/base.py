@@ -29,6 +29,7 @@ Design rules that keep the interface LIMS-neutral:
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
+from ..constants import PROFILE_SAPIO_PROJECT_ID
 from ..edp_validation_messages import MESSAGES
 
 
@@ -178,7 +179,7 @@ class NullLIMSAdapter(LIMSAdapter):
         return {"status": "success"}
 
     def sync_project(self, profile):
-        return {"status": "success", "project_id": profile.get("sapio_project_id", "")}
+        return {"status": "success", "project_id": profile.get(PROFILE_SAPIO_PROJECT_ID, "")}
 
     def delete_project(self, project_id):
         return {"status": "success"}

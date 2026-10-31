@@ -15,7 +15,19 @@ from src.apps.copo_core.models import User
 from src.apps.copo_single_cell_submission.utils.da import Singlecell, SinglecellSchemas
 
 from .EDPSchemaHandler import get_pending_samples
-from .constants import EDP_PROFILE_TYPE, EDP_SCHEMA_NAME, EDP_USERS_GROUP
+from .constants import (
+    EDP_PROFILE_TYPE,
+    EDP_SCHEMA_NAME,
+    EDP_USERS_GROUP,
+    PROFILE_CUSTOMER_EMAILS,
+    PROFILE_CUSTOMER_EMAILS_TOKENS,
+    PROFILE_NO_OF_SAMPLES,
+    PROFILE_SAPIO_PROJECT_ID,
+    PROFILE_TITLE,
+    PROFILE_TYPE,
+    PROFILE_USER_ID,
+    STUDY_ID,
+)
 from .edp_validation_messages import MESSAGES
 from .email import Email
 from .lims import get_lims_adapter
@@ -60,7 +72,7 @@ def pre_save_edp_profile(auto_fields, **kwargs):
       number of samples that have already been submitted (in other words, users
       cannot silently delete submitted samples).
     '''
-    raw_sample_count = auto_fields.get('copo.profile.no_of_samples', '')
+    raw_sample_count = auto_fields.get(f'copo.profile.{PROFILE_NO_OF_SAMPLES}', '')
     try:
         requested_sample_count = int(str(raw_sample_count).strip() or 0)
     except ValueError:
@@ -104,7 +116,7 @@ def post_save_edp_profile(profile):
     email_obj = Email()
 
     # --- COPO profile sharing ---
-    customer_emails = profile.get("customer_emails", "")
+    customer_emails = profile.get(PROFILE_CUSTOMER_EMAILS, "")
     if customer_emails:
         emails = [
             email.strip()
@@ -118,8 +130,8 @@ def post_save_edp_profile(profile):
         if not groups:
             group_id = CopoGroup().create_group_for_profile(
                 profile_id=profile["_id"],
-                group_name=profile["title"],
-                owner_id=profile["user_id"],
+                group_name=profile[PROFILE_TITLE],
+                owner_id=profile[PROFILE_USER_ID],
             )
         else:
             group_id = groups[0]["_id"]
@@ -191,7 +203,7 @@ def post_save_edp_profile(profile):
             }
             Profile().get_collection_handle().update_one(
                 {"_id": profile["_id"]},
-                {"$set": {"customer_emails_tokens": customer_emails_tokens}},
+                {"$set": {PROFILE_CUSTOMER_EMAILS_TOKENS: customer_emails_tokens}},
             )
             email_obj.notify_shared_profile_to_non_existent_user(
                 profile, customer_emails_tokens
@@ -205,10 +217,10 @@ def post_save_edp_profile(profile):
     # returned even on partial failure, so a retry finds the existing project.
     result = get_lims_adapter().sync_project(profile)
     project_id = result.get("project_id", "")
-    if project_id and project_id != profile.get("sapio_project_id", ""):
-        profile["sapio_project_id"] = project_id
+    if project_id and project_id != profile.get(PROFILE_SAPIO_PROJECT_ID, ""):
+        profile[PROFILE_SAPIO_PROJECT_ID] = project_id
         Profile().get_collection_handle().update_one(
-            {"_id": profile["_id"]}, {"$set": {"sapio_project_id": project_id}}
+            {"_id": profile["_id"]}, {"$set": {PROFILE_SAPIO_PROJECT_ID: project_id}}
         )
 
     messages = []
@@ -245,8 +257,8 @@ def post_delete_edp_profile(profile):
     Uses recursive_delete=True so Sapio cleans up all child records
     (Samples, Plates, etc.) along with the Project.
     """
-    if profile.get("sapio_project_id", ""):
-        return get_lims_adapter().delete_project(profile["sapio_project_id"])
+    if profile.get(PROFILE_SAPIO_PROJECT_ID, ""):
+        return get_lims_adapter().delete_project(profile[PROFILE_SAPIO_PROJECT_ID])
     return {"status": "success"}
 
 
@@ -262,7 +274,7 @@ def submit_lims_manifest_to_sapio(profile_id, study_id):
     Sapio `Sample` record.
     '''
     profile = Profile().get_record(profile_id)
-    profile_title = profile.get('title', '')
+    profile_title = profile.get(PROFILE_TITLE, '')
     
     if not profile:
         return {
@@ -275,7 +287,7 @@ def submit_lims_manifest_to_sapio(profile_id, study_id):
     records = (
         Singlecell()
         .get_collection_handle()
-        .find_one({"profile_id": profile_id, "study_id": study_id})
+        .find_one({"profile_id": profile_id, STUDY_ID: study_id})
     )
     if not records:
         return {
@@ -312,7 +324,7 @@ def submit_lims_manifest_to_sapio(profile_id, study_id):
     Singlecell().update_component_status(
         id=records['_id'],
         component='study',
-        identifier='study_id',
+        identifier=STUDY_ID,
         identifier_value=study_id,
         repository='sapio',
         status_column_value=status_column_value,
@@ -326,7 +338,7 @@ def check_lims_blank_manifest(profile_id):
     # level have already been submitted.
     # Otherwise, the blank manifest is downloaded.
     profile = Profile().get_record(profile_id) or {}
-    sapio_project_id = profile.get('sapio_project_id', '')
+    sapio_project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, '')
     if not sapio_project_id:
         return {
             'status': 'error',
@@ -359,19 +371,19 @@ def join_shared_edp_profile(profile, token):
     the customer is added to it so that the EDP profile can be accessed in the
     profile type dropdown menu.
     """
-    type = profile["type"]
+    type = profile[PROFILE_TYPE]
     if type != EDP_PROFILE_TYPE:
         return {
             "status": "error",
-            "message": MESSAGES['not_edp_profile'].format(profile_title=profile['title']),
+            "message": MESSAGES['not_edp_profile'].format(profile_title=profile[PROFILE_TITLE]),
         }
     user = helpers.get_current_user()
-    if user.id == profile["user_id"]:
+    if user.id == profile[PROFILE_USER_ID]:
         return {"status": "error", "message": MESSAGES['profile_owner_cannot_join']}
 
     if user.email == '' or user.email is None:
         # New user with no email - resolve their address from the invite token
-        email = profile.get("customer_emails_tokens", {}).get(token, "")
+        email = profile.get(PROFILE_CUSTOMER_EMAILS_TOKENS, {}).get(token, "")
         if not email:
             return {
                 "status": "error",
@@ -380,7 +392,7 @@ def join_shared_edp_profile(profile, token):
         user.email = email
         user.save()
 
-    customer_emails = profile.get("customer_emails", "")
+    customer_emails = profile.get(PROFILE_CUSTOMER_EMAILS, "")
     if customer_emails:
         emails = [
             email.strip()
@@ -393,8 +405,8 @@ def join_shared_edp_profile(profile, token):
             if not groups:
                 group_id = CopoGroup().create_group_for_profile(
                     profile_id=profile["_id"],
-                    group_name=profile["title"],
-                    owner_id=profile["user_id"],
+                    group_name=profile[PROFILE_TITLE],
+                    owner_id=profile[PROFILE_USER_ID],
                 )
             else:
                 group_id = groups[0]["_id"]

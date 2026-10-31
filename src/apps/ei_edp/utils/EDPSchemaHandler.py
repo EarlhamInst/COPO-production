@@ -23,7 +23,28 @@ from src.apps.copo_single_cell_submission.utils.SingleCellSchemasHandler import 
     SinglecellschemasSpreadsheet,
 )
 from .lims import get_lims_adapter
-from .constants import EDP_SCHEMA_NAME
+from .constants import (
+    BIOSAMPLE_ACCESSION,
+    CHOICE,
+    EDP_SCHEMA_NAME,
+    HEALTH_SAFETY,
+    LIMS_HEALTH_AND_SAFETY,
+    LIMS_SAMPLE_RETURN,
+    PROFILE_BUDGET_HOLDER,
+    PROFILE_SAPIO_PROJECT_ID,
+    SAMPLE_ID,
+    SAMPLE_RETURN,
+    SCIENTIFIC_NAME,
+    STUDY_ID,
+    SUBMITTER_SAMPLE_REFERENCE,
+    TAXON_ID,
+    TERM_ACCESS,
+    TERM_DESCRIPTION,
+    TERM_LABEL,
+    TERM_LENGTH,
+    TERM_NAME,
+    TERM_TYPE,
+)
 from .edp_validation_messages import MESSAGES
 from openpyxl.utils.dataframe import dataframe_to_rows
 from common.ena_utils.generic_helper import notify_singlecell_status
@@ -51,9 +72,9 @@ def get_submitted_sample_references(project_id, schemas):
     if not project_id:
         return {}
     return {
-        str(record["sample_id"]): str(record['submitter_sample_reference']).strip()
+        str(record[SAMPLE_ID]): str(record[SUBMITTER_SAMPLE_REFERENCE]).strip()
         for record in get_lims_adapter().get_project_samples(project_id, schemas)
-        if record.get("sample_id") and record.get("submitter_sample_reference")
+        if record.get(SAMPLE_ID) and record.get(SUBMITTER_SAMPLE_REFERENCE)
     }
 
 
@@ -65,12 +86,12 @@ def get_pending_samples(project_id, schemas):
     return [
         record
         for record in get_lims_adapter().get_project_samples(project_id, schemas)
-        if not record.get('submitter_sample_reference')
+        if not record.get(SUBMITTER_SAMPLE_REFERENCE)
     ]
 
 
 class EDPSchemaHandler(SingleCellSchemasHandler):
-    sample_name_field = 'submitter_sample_reference'
+    sample_name_field = SUBMITTER_SAMPLE_REFERENCE
 
     def write_manifest(
         self,
@@ -91,7 +112,7 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
         if not profile:
             raise Exception(MESSAGES['profile_not_found'].format(profile_id=profile_id))
 
-        sapio_project_id = profile.get("sapio_project_id", None)
+        sapio_project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, None)
         
         # Sample rows in LIMS manifests originate from the Sapio project so, without
         # Sapio project, there is nothing for the user to fill in.
@@ -148,14 +169,14 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
         workbook = load_workbook(settings.SINGLE_CELL_SCHEMAS_TEMPLATE_URL[EDP_SCHEMA_NAME])
         worksheet_sample = workbook["sample"]
 
-        worksheet_sample["C4"] = profile.get("budget_holder", "")
-        worksheet_sample["C5"] = profile.get("sapio_project_id", "")
+        worksheet_sample["C4"] = profile.get(PROFILE_BUDGET_HOLDER, "")
+        worksheet_sample["C5"] = profile.get(PROFILE_SAPIO_PROJECT_ID, "")
 
         if lims_project_metadata:
-            worksheet_sample["L9"] = lims_project_metadata.get("health_and_safety")
+            worksheet_sample["L9"] = lims_project_metadata.get(LIMS_HEALTH_AND_SAFETY)
             worksheet_sample["L9"].protection = Protection(locked=False)
-            if "sample_return" in lims_project_metadata:
-                worksheet_sample["L8"] = lims_project_metadata.get("sample_return")
+            if LIMS_SAMPLE_RETURN in lims_project_metadata:
+                worksheet_sample["L8"] = lims_project_metadata.get(LIMS_SAMPLE_RETURN)
                 worksheet_sample["L8"].protection = Protection(locked=False)
 
         worksheet_helper = workbook["How to complete the manifest"]
@@ -199,9 +220,9 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
                 # pandas 3 refuses to fill a float64 column with "" (raises
                 # TypeError); cast to object first so blank cells fill cleanly.
                 component_schema_df = component_schema_df.astype(object).fillna("")
-                component_schema_df["choice"] = component_schema_df[
-                    component_schema_df["term_type"].isin(["enum", "suggested_enum"])
-                ]["term_name"].apply(
+                component_schema_df[CHOICE] = component_schema_df[
+                    component_schema_df[TERM_TYPE].isin(["enum", "suggested_enum"])
+                ][TERM_NAME].apply(
                     lambda x: singlecell_schema.get("enums", []).get(x, [])
                 )
 
@@ -219,11 +240,11 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
 
                 for _, field in component_schema_df.iterrows():
 
-                    if field["term_manifest_behavior"] == "protected":
+                    if field[TERM_ACCESS] == "protected":
                         continue
 
-                    label = field["term_label"]
-                    description = field.get("term_description", label)
+                    label = field[TERM_LABEL]
+                    description = field.get(TERM_DESCRIPTION, label)
 
                     cell = worksheet_helper.cell(
                         row=worksheet_helper_current_row, column=1
@@ -236,7 +257,7 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
                         cell.style = mandatory_style
                     elif field[schema_checklist] == "O":
                         cell.style = optional_style
-                    if field["term_manifest_behavior"] == "protected":
+                    if field[TERM_ACCESS] == "protected":
                         cell.style = protected_style
 
                     cell_desc = worksheet_helper.cell(
@@ -258,10 +279,10 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
                     worksheet_sample = workbook.create_sheet("sample_metadata")
                     worksheet_sample.protection.sheet = True
                     sample_metadata_columns = [
-                        "submitter_sample_reference",
-                        "taxon_id",
-                        "scientific_name",
-                        "biosampleAccession",
+                        SUBMITTER_SAMPLE_REFERENCE,
+                        TAXON_ID,
+                        SCIENTIFIC_NAME,
+                        BIOSAMPLE_ACCESSION,
                     ]
                     submitter_sample_reference = []
                     worksheet_sample.append(sample_metadata_columns)
@@ -273,7 +294,7 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
                         ):
                             worksheet_sample.append(r)
                         submitter_sample_reference = component_data_df[
-                            "submitter_sample_reference"
+                            SUBMITTER_SAMPLE_REFERENCE
                         ].tolist()
                     component_data_df = sapio_component_data_df
 
@@ -295,27 +316,27 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
                 reference_column_letter = "I"
                 for _, field in component_schema_df.iterrows():
                     column_index += 1
-                    if field["term_name"] == "submitter_sample_reference":
+                    if field[TERM_NAME] == SUBMITTER_SAMPLE_REFERENCE:
                         reference_column_letter = get_column_letter(column_index)
-                    name = field["term_label"]
+                    name = field[TERM_LABEL]
                     cell = worksheet.cell(row=title_row, column=column_index)
                     cell.value = name
-                    description = field.get("term_description", name)
+                    description = field.get(TERM_DESCRIPTION, name)
                     if description:
-                        comment = Comment(field.get("term_description", name), "COPO")
+                        comment = Comment(field.get(TERM_DESCRIPTION, name), "COPO")
                         cell.comment = comment
                     if field[checklist] == "M":
                         cell.style = mandatory_style
                     elif field[checklist] == "O":
                         cell.style = optional_style
-                    if field["term_manifest_behavior"] == "protected":
+                    if field[TERM_ACCESS] == "protected":
                         cell.style = protected_style
                         if title_row > 1:
                             cell_highlight = worksheet.cell(
                                 row=title_row - 1, column=column_index
                             )
                             cell_highlight.fill = protected_style.fill
-                    elif field["term_manifest_behavior"] == "hidden":
+                    elif field[TERM_ACCESS] == "hidden":
                         worksheet.column_dimensions[
                             get_column_letter(column_index)
                         ].hidden = True
@@ -331,21 +352,21 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
                         get_column_letter(column_index)
                     ].width = 17.83
 
-                    type = field.get("term_type", "string")
+                    type = field.get(TERM_TYPE, "string")
                     formula1 = None
                     if (
                         type in ["enum", "suggested_enum"]
-                        or field["term_name"] == "submitter_sample_reference"
+                        or field[TERM_NAME] == SUBMITTER_SAMPLE_REFERENCE
                     ):
                         # Create a data-validation object with list validation
-                        if field["term_name"] == "submitter_sample_reference":
+                        if field[TERM_NAME] == SUBMITTER_SAMPLE_REFERENCE:
                             # options = submitter_sample_reference
                             # av_range = DefinedName('submitter_sample_reference', attr_text="sample_metadata!$A$2:$A$8")
                             # worksheet.defined_names.add(av_range)
                             formula1 = 'sample_metadata!$A$2:$A$1000'
 
                         else:
-                            options = field["choice"]
+                            options = field[CHOICE]
                             if options:
                                 formula1 = '"' + ",".join(options) + '"'
 
@@ -366,7 +387,7 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
                             worksheet.add_data_validation(dv)
                             dv.add(cell_start_end)
                     elif type == "string":
-                        length = field["term_length"]
+                        length = field[TERM_LENGTH]
                         if length and int(length) > 0:
                             cell_start_end = '%s%d:%s%d' % (
                                 get_column_letter(column_index),
@@ -389,18 +410,21 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
 
                     # VLOOKUP column indices into the sample_metadata table (A=1 key, B=2, C=3, D=4)
                     lookup_mapping = {
-                        "taxon_id": 2,
-                        "scientific_name": 3,
-                        "biosampleAccession": 4,
+                        TAXON_ID: 2,
+                        SCIENTIFIC_NAME: 3,
+                        BIOSAMPLE_ACCESSION: 4,
                     }
 
                     data_row_index = title_row
                     for _, row in component_data_df.iterrows():
                         data_row_index += 1
+                        # Lookup columns are filled in by an array formula as shown below below
+                        if field[TERM_NAME] in lookup_mapping:
+                            continue
                         cell = worksheet.cell(row=data_row_index, column=column_index)
-                        cell.value = row.get(field["term_name"], "")
+                        cell.value = row.get(field[TERM_NAME], "")
 
-                    if field["term_name"] in lookup_mapping.keys():
+                    if field[TERM_NAME] in lookup_mapping.keys():
                         column_letter = get_column_letter(column_index)
                         # exact-match VLOOKUP keyed on the submitter_sample_reference
                         # column (not a hardcoded 'I'), against the sample_metadata table
@@ -467,19 +491,19 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
     def _get_rows_to_keep(self, profile_id, schemas, existing_data_df, new_data_df):
         # Get rows of samples that already exist and have been submitted already
         # to Sapio's LIMS that a manifest upload tends to leave out
-        if 'sample_id' not in existing_data_df.columns:
+        if SAMPLE_ID not in existing_data_df.columns:
             return existing_data_df.iloc[0:0]
 
         if not hasattr(self, '_submitted_sample_ids'):
             profile = Profile().get_record(profile_id) or {}
             self._submitted_sample_ids = get_submitted_sample_ids(
-                profile.get('sapio_project_id', ''), schemas
+                profile.get(PROFILE_SAPIO_PROJECT_ID, ''), schemas
             )
             
-        sample_ids = existing_data_df['sample_id'].astype(str)
+        sample_ids = existing_data_df[SAMPLE_ID].astype(str)
         uploaded_sample_ids = (
-            set(new_data_df['sample_id'].astype(str))
-            if 'sample_id' in new_data_df.columns
+            set(new_data_df[SAMPLE_ID].astype(str))
+            if SAMPLE_ID in new_data_df.columns
             else set()
         )
         
@@ -512,7 +536,7 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
             health_safety = sample_ws["L9"].value
 
             if not sapio_project_id or sapio_project_id != profile.get(
-                "sapio_project_id", ""
+                PROFILE_SAPIO_PROJECT_ID, ""
             ):
                 notify_singlecell_status(
                     data={"profile_id": self.profile_id},
@@ -529,14 +553,14 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
 
             study_dict = [
                 {
-                    "study_id": (
-                        profile["sapio_project_id"]
-                        if "sapio_project_id" in profile
+                    STUDY_ID: (
+                        profile[PROFILE_SAPIO_PROJECT_ID]
+                        if PROFILE_SAPIO_PROJECT_ID in profile
                         else ""
                     ),
-                    "customer_email": emails,
-                    "sample_return": is_returned,
-                    "health_safety": health_safety,
+                    CUSTOMER_EMAIL: emails,
+                    SAMPLE_RETURN: is_returned,
+                    HEALTH_SAFETY: health_safety,
                 }
             ]
             study_df = pd.DataFrame.from_records(study_dict)
@@ -564,11 +588,11 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
                 component_data = list(component_data)
                 component_df = pd.DataFrame(component_data, columns=cols)
                 new_column_name = {
-                    item["term_label"]: key
+                    item[TERM_LABEL]: key
                     for key, item in self.schemas[sheetname].items()
                 }
                 component_df["Project ID"] = (
-                    profile["sapio_project_id"] if "sapio_project_id" in profile else ""
+                    profile[PROFILE_SAPIO_PROJECT_ID] if PROFILE_SAPIO_PROJECT_ID in profile else ""
                 )
                 component_df = component_df.loc[
                     :, ~component_df.columns.str.contains('^Unnamed')
@@ -596,7 +620,7 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
             sample_df = self.new_data.get("sample")
             if (
                 sample_df is not None
-                and {'sample_id', 'submitter_sample_reference'} <= set(sample_df.columns)
+                and {SAMPLE_ID, SUBMITTER_SAMPLE_REFERENCE} <= set(sample_df.columns)
             ):
                 schemas = SinglecellSchemas().get_schema(
                     schema_name=self.schema_name, target_id=self.checklist_id
@@ -607,7 +631,7 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
                 changed_references = sorted(
                     str(sample_id)
                     for sample_id, reference in zip(
-                        sample_df['sample_id'], sample_df['submitter_sample_reference']
+                        sample_df[SAMPLE_ID], sample_df[SUBMITTER_SAMPLE_REFERENCE]
                     )
                     if str(sample_id) in submitted_references
                     and str(reference).strip() != submitted_references[str(sample_id)]
@@ -631,10 +655,10 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
                 index_data = list(index_data)
                 index_df = pd.DataFrame(index_data,columns=cols)
                 new_column_name = {
-                    item["term_label"]: key
+                    item[TERM_LABEL]: key
                     for key, item in self.schemas["index"].items()
                 }
-                index_df["Project ID"]= profile["sapio_project_id"] if "sapio_project_id" in profile else ""
+                index_df["Project ID"]= profile[PROFILE_SAPIO_PROJECT_ID] if PROFILE_SAPIO_PROJECT_ID in profile else ""
                 index_df = index_df.astype(object).fillna("")
                 self.data["index"] = index_df
                 self.new_data["index"] = index_df.rename(columns=new_column_name)

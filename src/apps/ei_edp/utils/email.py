@@ -4,6 +4,8 @@ from django.conf import settings
 from django_tools.middlewares import threadlocal as ThreadLocal
 from django.urls import reverse
 
+from .constants import PROFILE_TITLE
+
 logger = Logger()
 
 
@@ -33,7 +35,7 @@ class Email:
 
         if profile and customer_emails_token:
             for token, email in customer_emails_token.items():
-                msg = f"<h4>COPO Profile Shared with You</h4><p>A COPO profile named '{profile.get("title", "")}' has been shared with you. Please use the link below to create your COPO account and access the profile.</p><p><a href='{uri}{reverse("copo:join_shared_profile", kwargs={"profile_id":str(profile["_id"]), "token":token})}'>Create an account on COPO</a></p>"
+                msg = f"<h4>COPO Profile Shared with You</h4><p>A COPO profile named '{profile.get(PROFILE_TITLE, "")}' has been shared with you. Please use the link below to create your COPO account and access the profile.</p><p><a href='{uri}{reverse("copo:join_shared_profile", kwargs={"profile_id":str(profile["_id"]), "token":token})}'>Create an account on COPO</a></p>"
                 self._send(email, subj, msg)
 
     def notify_shared_profile_to_existing_user(self, profile, users):
@@ -44,7 +46,7 @@ class Email:
 
         if profile and users:
             for user in users:
-                msg = f"Dear {user["first_name"]}, <h4>COPO Profile Shared with You</h4><p>A COPO profile named '{profile.get('title', '')}' has been shared with you. Please log in to your COPO account to access the profile.</p>"
+                msg = f"Dear {user["first_name"]}, <h4>COPO Profile Shared with You</h4><p>A COPO profile named '{profile.get(PROFILE_TITLE, '')}' has been shared with you. Please log in to your COPO account to access the profile.</p>"
                 self._send(user["email"], subj, msg)
 
     def _send(self, email, subj, msg):

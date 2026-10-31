@@ -50,7 +50,7 @@ def _sapio_field_mapping():
         f"schema = SinglecellSchemas().get_schema(schema_name='EI_EDP', target_id={EDP_CHECKLIST!r})\n"
         'fields = [\n'
         "    {'label': str(f.get('term_label', '')).strip(), 'sapio_name': f.get('sapio_name'),\n"
-        "     'behavior': f.get('term_manifest_behavior')}\n"
+        "     'behaviour': f.get('term_access')}\n"
         "    for component in ('study', 'sample') for f in schema.get(component, [])\n"
         ']\n'
         "print('MAPPING_RESULT:' + json.dumps(fields, default=str))\n"
@@ -59,7 +59,7 @@ def _sapio_field_mapping():
     mapping = {}
     for field in json.loads(marker_line[len('MAPPING_RESULT:'):]):
         sapio_name = field['sapio_name']
-        if not isinstance(sapio_name, str) or ':' not in sapio_name or field['behavior'] == 'protected':
+        if not isinstance(sapio_name, str) or ':' not in sapio_name or field['behaviour'] == 'protected':
             continue
         sapio_object, sapio_field = sapio_name.split(':', 1)
         if sapio_object in ('Project', 'Sample') and sapio_field:
