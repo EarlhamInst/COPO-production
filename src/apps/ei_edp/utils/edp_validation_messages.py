@@ -10,6 +10,13 @@ MESSAGES = {
     'invalid_sample_count': (
         "Number of samples must be a whole number of 0 or more, got '{sample_count}'."
     ),
+    # Shown in the manifest's lookup columns (Excel formula text: no double quotes, max 255 characters)
+    'lookup_missing_submitter_sample_reference': (
+        'Select a Submitter sample reference in this row to fill in this value'
+    ),
+    'lookup_unknown_submitter_sample_reference': (
+        'Submitter sample reference not found. Select one from the dropdown menu'
+    ),
     'missing_sapio_project': (
         'This profile has no Sapio project associated with it. '
         'Save the profile again to retry the project synchronisation to Sapio.'

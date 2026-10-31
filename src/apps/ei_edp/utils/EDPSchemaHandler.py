@@ -404,9 +404,17 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
                         column_letter = get_column_letter(column_index)
                         # exact-match VLOOKUP keyed on the submitter_sample_reference
                         # column (not a hardcoded 'I'), against the sample_metadata table
+                        lookup_index = lookup_mapping[field[TERM_NAME]]
+                        reference_range = f"{reference_column_letter}{title_row + 1}:{reference_column_letter}{data_row_index}"
                         worksheet[f"{column_letter}{title_row + 1}"] = ArrayFormula(
                             f"{column_letter}{title_row + 1}:{column_letter}{data_row_index}",
-                            f"=VLOOKUP({reference_column_letter}{title_row + 1}:{reference_column_letter}{data_row_index},sample_metadata!$A:$D,{lookup_mapping[field['term_name']]},FALSE)",
+                            # An appropriate error message is shown to users when a value for the 
+                            # `submitter_sample_reference` field is missing or unknown
+                            # rather than the default and automatic value `#N/A`
+                            # NB: Double quotes must be used in spreadsheet formulas not single quotes.
+                            f'=IF({reference_range}="","{MESSAGES["lookup_missing_submitter_sample_reference"]}",'
+                            f'IFERROR(VLOOKUP({reference_range},sample_metadata!$A:$D,{lookup_index},FALSE),'
+                            f'"{MESSAGES["lookup_unknown_submitter_sample_reference"]}"))',
                         )
 
         # Move the `sample_metadata` worksheet to the end
@@ -415,6 +423,10 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
                 'sample_metadata',
                 offset=len(workbook.sheetnames) - 1 - workbook.sheetnames.index('sample_metadata'),
             )
+
+        # The `openpyxl` library cannot evaluate formulas so the spreadsheet application
+        # is asked to recalculate on open to prevent the `VLOOKUP` formula cells from showing no value
+        workbook.calculation.fullCalcOnLoad = True
 
         # Password-protect locked sheets with a random password
         # so that users cannot unlock them to edit locked cells
@@ -562,6 +574,18 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
                     :, ~component_df.columns.str.contains('^Unnamed')
                 ]
                 component_df = component_df.astype(object).fillna("")
+                
+                # The lookup columns might show a prompt instead of a value when the
+                # `submitter_sample_reference` field is missing a value or it is unknown
+                # If this occurs, the value is treated as blank and the prompt text
+                # is never saved as the metadata for the sample.
+                component_df = component_df.replace(
+                    [
+                        MESSAGES['lookup_missing_submitter_sample_reference'],
+                        MESSAGES['lookup_unknown_submitter_sample_reference'],
+                    ],
+                    '',
+                )
                 self.data[sheetname] = component_df
                 self.new_data[sheetname] = component_df.rename(columns=new_column_name)
 
