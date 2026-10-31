@@ -47,6 +47,7 @@
   --co-dtolenv:  #f0a44a;
   --co-erga:     #e25098;
   --co-asg:      #8060d0;
+  --co-edp: #c0392b;
 
   /* Standardised component button size */
   --co-btn-w: 120px;
@@ -215,11 +216,12 @@ body {
 .copo-page-icons .icon.item i.olive  { color: #7a9a1e !important; }
 .copo-page-icons .icon.item i.orange { color: var(--co-dtolenv)  !important; }
 .copo-page-icons .icon.item i.green  { color: var(--co-dtol)     !important; }
+.copo-page-icons .icon.item i.grey  { color: #767676 !important; }
 .copo-page-icons .icon.item i.violet { color: var(--co-asg)      !important; }
 .copo-page-icons .icon.item i.yellow { color: #b89a14 !important; }
 .copo-page-icons .icon.item i.pink   { color: var(--co-erga)     !important; }
 .copo-page-icons .icon.item i.teal   { color: var(--co-genomics) !important; }
-.copo-page-icons .icon.item i.red    { color: #c0392b !important; }
+.copo-page-icons .icon.item i.red    { color: var(--co-edp) !important; }
 .copo-page-icons .icon.item i.bright-coral { color: #e05555 !important; }
 
 /* Material Symbols icon styling */
@@ -252,6 +254,9 @@ body {
 #componentIcon.material-symbols-outlined.green,
 .copo-page-icons .icon.item .pcomponent-material-icon.green  { color: var(--co-dtol)     !important; }
 
+#componentIcon.material-symbols-outlined.grey,
+.copo-page-icons .icon.item .pcomponent-material-icon.grey  { color: #767676 !important; }
+
 #componentIcon.material-symbols-outlined.violet,
 .copo-page-icons .icon.item .pcomponent-material-icon.violet { color: var(--co-asg)      !important; }
 
@@ -265,7 +270,7 @@ body {
 .copo-page-icons .icon.item .pcomponent-material-icon.teal   { color: var(--co-genomics) !important; }
 
 #componentIcon.material-symbols-outlined.red,
-.copo-page-icons .icon.item .pcomponent-material-icon.red    { color: #c0392b !important; }
+.copo-page-icons .icon.item .pcomponent-material-icon.red    { color: var(--co-edp) !important; }
 
 /* Inline Material Symbol icons used in Getting Started sections — must match
    the colours and glyphs of the real navbar component icons. */
@@ -279,11 +284,12 @@ body {
 .material-symbols-outlined.inline-nav-icon.olive  { color: #7a9a1e; }
 .material-symbols-outlined.inline-nav-icon.orange { color: var(--co-dtolenv); }
 .material-symbols-outlined.inline-nav-icon.green  { color: var(--co-dtol); }
+.material-symbols-outlined.inline-nav-icon.grey  { color: #767676; }
 .material-symbols-outlined.inline-nav-icon.violet { color: var(--co-asg); }
 .material-symbols-outlined.inline-nav-icon.yellow { color: #b89a14; }
 .material-symbols-outlined.inline-nav-icon.pink   { color: var(--co-erga); }
 .material-symbols-outlined.inline-nav-icon.teal   { color: var(--co-genomics); }
-.material-symbols-outlined.inline-nav-icon.red    { color: #c0392b; }
+.material-symbols-outlined.inline-nav-icon.red    { color: var(--co-edp); }
 
 /* Dark-mode variants — brighter so they remain legible against the dark
    surface. Var-based colours already shift via the dark :root block, but
@@ -292,6 +298,7 @@ body {
 [data-theme="dark"] .material-symbols-outlined.inline-nav-icon.olive  { color: #b8d650 !important; }
 [data-theme="dark"] .material-symbols-outlined.inline-nav-icon.orange { color: #f0a44a !important; }
 [data-theme="dark"] .material-symbols-outlined.inline-nav-icon.green  { color: #5fd47e !important; }
+[data-theme="dark"] .material-symbols-outlined.inline-nav-icon.grey  { color: #b0b0b0 !important; }
 [data-theme="dark"] .material-symbols-outlined.inline-nav-icon.violet { color: #9d80e8 !important; }
 [data-theme="dark"] .material-symbols-outlined.inline-nav-icon.yellow { color: #e6c948 !important; }
 [data-theme="dark"] .material-symbols-outlined.inline-nav-icon.pink   { color: #f06aac !important; }
@@ -678,11 +685,12 @@ a.pcomponent-button-template .pcomponent-button {
 .pcomponent-button.ui.button.olive   i { color: #7a9a1e !important; }
 .pcomponent-button.ui.button.orange  i { color: var(--co-dtolenv)  !important; }
 .pcomponent-button.ui.button.green   i { color: var(--co-dtol)     !important; }
+.pcomponent-button.ui.button.grey    i { color: #767676 !important; }
 .pcomponent-button.ui.button.violet  i { color: var(--co-asg)      !important; }
 .pcomponent-button.ui.button.yellow  i { color: #b89a14 !important; }
 .pcomponent-button.ui.button.pink    i { color: var(--co-erga)     !important; }
 .pcomponent-button.ui.button.teal    i { color: var(--co-genomics)  !important; }
-.pcomponent-button.ui.button.red     i { color: #c0392b !important; }
+.pcomponent-button.ui.button.red     i { color: var(--co-edp)!important; }
 .pcomponent-button.ui.button.bright-coral i { color: #e05555 !important; }
 .pcomponent-button.ui.button.terra-cotta  i { color: #c06050 !important; }
 .pcomponent-button.ui.button.coral-pink   i { color: #d96080 !important; }
@@ -692,11 +700,12 @@ a.pcomponent-button-template .pcomponent-button {
 .pcomponent-button.ui.button.olive:hover   { background: #f4f7e8 !important; border-color: #7a9a1e !important; }
 .pcomponent-button.ui.button.orange:hover  { background: #fdf3e8 !important; border-color: var(--co-dtolenv)  !important; }
 .pcomponent-button.ui.button.green:hover   { background: #edf7f0 !important; border-color: var(--co-dtol)     !important; }
+.pcomponent-button.ui.button.grey:hover    { background: #f2f2f2 !important; border-color: #767676 !important; }
 .pcomponent-button.ui.button.violet:hover  { background: #f2eef9 !important; border-color: var(--co-asg)      !important; }
 .pcomponent-button.ui.button.yellow:hover  { background: #fbf7e6 !important; border-color: #b89a14 !important; }
 .pcomponent-button.ui.button.pink:hover    { background: #fceef4 !important; border-color: var(--co-erga)     !important; }
 .pcomponent-button.ui.button.teal:hover    { background: #ecf6f5 !important; border-color: var(--co-genomics)  !important; }
-.pcomponent-button.ui.button.red:hover     { background: #fceeed !important; border-color: #c0392b !important; }
+.pcomponent-button.ui.button.red:hover     { background: #fceeed !important; border-color: var(--co-edp) !important; }
 
 /* Images dropdown */
 .images-pcomponent-dropdown-button-template .pcomponent-button {
@@ -1371,6 +1380,8 @@ a, button, .btn { transition: color .15s, background .15s, border-color .15s !im
 [data-theme="dark"] .pcomponent-button.ui.button.olive:hover   { background: #1e2418 !important; }
 [data-theme="dark"] .pcomponent-button.ui.button.orange:hover  { background: #282018 !important; }
 [data-theme="dark"] .pcomponent-button.ui.button.green:hover   { background: #1a2820 !important; }
+[data-theme="dark"] .pcomponent-button.ui.button.grey i        { color: #b0b0b0 !important; }
+[data-theme="dark"] .pcomponent-button.ui.button.grey:hover    { background: #222222 !important; }
 [data-theme="dark"] .pcomponent-button.ui.button.violet:hover  { background: #201a2c !important; }
 [data-theme="dark"] .pcomponent-button.ui.button.yellow:hover  { background: #28241a !important; }
 [data-theme="dark"] .pcomponent-button.ui.button.pink:hover    { background: #281a22 !important; }

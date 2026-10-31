@@ -639,9 +639,10 @@ class Command(BaseCommand):
         lims_integration = Component().create_component(
             name="lims_integration",
             title="LIMS integration",
-            widget_icon="dna",
+            widget_icon="clipboard list",
             widget_colour="grey",
-            widget_icon_class="fa fa-dna",
+            widget_icon_class="fa fa-clipboard-list",
+            material_icon="lab_profile",
             table_id="singlecell_table",
             reverse_url="copo_single_cell_submission:copo_singlecell",
             subtitle="#component_subtitle",
