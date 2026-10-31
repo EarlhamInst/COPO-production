@@ -780,11 +780,10 @@ class SapioAdapter(LIMSAdapter):
         for sapio_field, value in index_values.items():
             index_barcode.set_field_value(sapio_field, value)
 
-        # 'Sample Name' on an index refers to the customer's name for the sample
-        sample_id = sample.get_field_value('SampleId')
-        customer_sample_name = sample.get_field_value('C_CustomerSampleName')
-        index_barcode.set_field_value('SampleId', sample_id)
-        index_barcode.set_field_value('OtherSampleId', customer_sample_name)
+        # 'Sample Name' on an index is the `submitter_library_name` which
+        # is mapped from the LIMS manifest via the 'OtherSampleId' Sapio field
+        sample_id = sample.get_field_value(SAPIO_SAMPLE_ID)
+        index_barcode.set_field_value(SAPIO_SAMPLE_ID, sample_id)
         index_barcode.set_field_value(
             'DataRecordName',
             ' '.join(
@@ -792,7 +791,7 @@ class SapioAdapter(LIMSAdapter):
                 for value in (
                     index_barcode.get_field_value('IndexId'),
                     sample_id,
-                    customer_sample_name,
+                    index_barcode.get_field_value(SAPIO_OTHER_SAMPLE_ID),
                 )
                 if not _is_blank(value)
             ),
@@ -968,7 +967,9 @@ class SapioAdapter(LIMSAdapter):
                         and not _is_blank(row[column])
                     }
                     
-                    if index_values:
+                    # The `submitter_library_name` field is mandatory so an 'IndexBarcode'
+                    # record type in Sapio is only created when an index value is also provided
+                    if any(field != SAPIO_OTHER_SAMPLE_ID for field in index_values):
                         self._set_customer_supplied_index_barcode(
                             sapio_sample, index_values
                         )
