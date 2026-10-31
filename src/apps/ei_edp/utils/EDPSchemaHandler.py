@@ -26,6 +26,7 @@ from .lims import get_lims_adapter
 from .constants import (
     BIOSAMPLE_ACCESSION,
     CHOICE,
+    CUSTOMER_EMAIL,
     EDP_SCHEMA_NAME,
     HEALTH_SAFETY,
     LIMS_HEALTH_AND_SAFETY,
