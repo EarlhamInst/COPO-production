@@ -38,6 +38,8 @@ SUBMITTER_SAMPLE_REFERENCE = 'submitter_sample_reference'
 TAXON_ID = 'taxon_id'
 SCIENTIFIC_NAME = 'scientific_name'
 BIOSAMPLE_ACCESSION = 'biosampleAccession'
+PRESERVATIVE = 'preservative'
+APPLICABLE_REGULATIONS = 'applicable_regulations'
 
 # Study fields from an EDP profile that correspond to cells
 # in a LIMS manifest that must have a value filled in
@@ -115,4 +117,20 @@ SAPIO_OTHER_SAMPLE_ID = 'OtherSampleId'
 SAMPLE_TO_QC_DATUM_FIELDS = {
     SAPIO_CONCENTRATION: SAPIO_CONCENTRATION,
     SAPIO_VOLUME: SAPIO_QC_VOLUME,
+}
+
+# LIMS manifest values that are swapped for the value Sapio
+# expects before they are submitted, keyed by the field's term name.
+# Values are matched case-insensitively. Values that are not listed
+# are submitted as they are. Extend this when a manifest value
+# differs from Sapio's picklist value for the same answer.
+COPO_TO_SAPIO_VALUES = {
+    APPLICABLE_REGULATIONS: {
+        'None': 'Not relevant',
+        'UK-GDPR': 'GDPR',
+        'EU-GDPR': 'GDPR',
+    },
+    PRESERVATIVE: {
+        'None': 'Not relevant', # This isn't an option in Sapio's picklist for `preservative`.
+    },
 }

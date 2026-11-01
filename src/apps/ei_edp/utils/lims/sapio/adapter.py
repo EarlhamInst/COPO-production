@@ -23,6 +23,7 @@ from sapiopylib.rest.utils.recordmodel.PyRecordModel import PyRecordModel
 from common.utils.logger import Logger
 
 from ...constants import (
+    COPO_TO_SAPIO_VALUES,
     LIMS_HEALTH_AND_SAFETY,
     LIMS_SAMPLE_RETURN,
     PROFILE_BUDGET_HOLDER,
@@ -127,6 +128,27 @@ def _is_blank(value):
     if isinstance(value, float) and math.isnan(value):
         return True
     return isinstance(value, str) and not value.strip()
+
+
+def _to_sapio_value(term_name, value):
+    # Swap a LIMS manifest value for the value that Sapio expects
+    # if the field has one listed in `COPO_TO_SAPIO_VALUES`.
+    # Values typed into a `suggested_enum`` dropdown menu can list more
+    # than one answer separated by semicolons (e.g. 'UK-GDPR; CITES')
+    # so, each answer is swapped separately and any duplicates
+    # are removed (e.g. 'UK-GDPR; EU-GDPR' becomes 'GDPR').
+    sapio_values = {
+        copo_value.upper(): sapio_value
+        for copo_value, sapio_value in COPO_TO_SAPIO_VALUES.get(term_name, {}).items()
+    }
+    if not isinstance(value, str) or not sapio_values:
+        return value
+
+    answers = [answer.strip() for answer in value.split(';') if answer.strip()]
+    swapped_answers = [sapio_values.get(answer.upper(), answer) for answer in answers]
+    if swapped_answers == answers:
+        return value
+    return '; '.join(dict.fromkeys(swapped_answers))
 
 
 def _to_number(value):
@@ -978,6 +1000,13 @@ class SapioAdapter(LIMSAdapter):
                 ],
                 inplace=True,
             )
+
+            # Swap manifest values for the values Sapio expects
+            for column in component_data_df.columns:
+                if column in COPO_TO_SAPIO_VALUES:
+                    component_data_df[column] = component_data_df[column].apply(
+                        lambda value, column=column: _to_sapio_value(column, value)
+                    )
 
             if component_name == "study":
                 # Study fields map to the Sapio Project record, and some also propagate to all samples
