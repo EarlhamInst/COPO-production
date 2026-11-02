@@ -193,7 +193,7 @@ titlecase==2.4.1
 toml==0.10.2
 tornado==6.6
 #traitlets==4.3.3
-Twisted==26.4.0
+Twisted==26.10.0rc1
 txaio==26.6.1
 # typed-ast==1.5.5
 #typing==3.6.2
