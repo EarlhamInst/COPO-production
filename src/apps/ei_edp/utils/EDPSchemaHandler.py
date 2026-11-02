@@ -299,6 +299,14 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
                         ].tolist()
                     component_data_df = sapio_component_data_df
 
+                # Individual libraries have one index per sample so, the `Sample ID`
+                # is prefilled with a row for each LIMS sample. For a pool of libraries,
+                # the user overwrites it with the `Sample ID` of the pool.
+                if component_name == "index" and component_data_df.empty:
+                    component_data_df = pd.DataFrame(
+                        {SAMPLE_ID: [record.get(SAMPLE_ID, "") for record in lims_sample_records]}
+                    )
+
                 if component_name == "study":
                     continue
 
@@ -343,7 +351,15 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
                         ].hidden = True
                     else:
                         # unprotect the cell of the column
-                        for i in range(1, len(lims_sample_records) + 1):
+                        # Sample rows come from the LIMS but, a pool of libraries can have
+                        # more indexes than samples so, the other worksheets unprotect the
+                        # same rows as the data validations
+                        unprotected_row_count = (
+                            len(lims_sample_records)
+                            if component_name == "sample"
+                            else 1000 - title_row
+                        )
+                        for i in range(1, unprotected_row_count + 1):
                             cell_under_column = worksheet.cell(
                                 row=title_row + i, column=column_index
                             )
