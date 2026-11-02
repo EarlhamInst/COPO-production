@@ -104,17 +104,21 @@ class IncorrectValueValidator(Validator):
                                 self.errors.append(error_msg)
                                 self.flag = False
                         elif type == "string":
+                            # A regex cell that is empty or only has whitespace means that
+                            # there is no regex. Otherwise, it would be an empty pattern
+                            # that no value can match
                             regex = field.get("term_regex","")
-                            if regex and pd.notna(regex):
+                            regex = regex.strip() if isinstance(regex, str) else ""
+                            if regex:
                                 # Use `re.fullmatch()` instead of `re.match()`
                                 # to ensure that the entire cell content matches the regex pattern
-                                if not re.fullmatch(regex.strip(), str(row)):
+                                if not re.fullmatch(regex, str(row)):
                                     error_msg = MESSAGES["invalid_column_value_regex"].format(
                                         component=component,
                                         invalid_value=row,
                                         column_name=field["term_label"],
                                         line_no=i + self.first_data_line_no,
-                                        field_description=field.get("term_error_message", "") or field.get("term_description", f"Expected a value matching the pattern: {regex.strip()}")
+                                        field_description=field.get("term_error_message", "") or field.get("term_description", f"Expected a value matching the pattern: {regex}")
                                     )
                                     self.errors.append(error_msg)
                                     self.flag = False
