@@ -14,8 +14,8 @@ PROFILE_NO_OF_SAMPLES = 'no_of_samples'
 PROFILE_SAMPLE_TYPE = 'sample_type'
 PROFILE_CONTAINER_TYPE = 'container_type'
 PROFILE_LIBRARY_TYPE = 'library_type'
-PROFILE_CUSTOMER_EMAILS = 'customer_emails'
-PROFILE_CUSTOMER_EMAILS_TOKENS = 'customer_emails_tokens'
+PROFILE_USER_EMAIL = 'user_email'
+PROFILE_USER_EMAIL_TOKEN = 'user_email_token'
 
 # -- Column names that describe each field in the EDP schema --
 TERM_NAME = 'term_name'
@@ -30,7 +30,7 @@ CHOICE = 'choice' # Enum/dropdown menu options
 
 # -- Fields in LIMS manifests --
 STUDY_ID = 'study_id'
-CUSTOMER_EMAIL = 'customer_email'
+USER_EMAIL = 'user_email'
 SAMPLE_RETURN = 'sample_return'
 HEALTH_SAFETY = 'health_safety'
 SAMPLE_ID = 'sample_id'
@@ -43,7 +43,7 @@ APPLICABLE_REGULATIONS = 'applicable_regulations'
 
 # Study fields from an EDP profile that correspond to cells
 # in a LIMS manifest that must have a value filled in
-EDP_PROJECT_STUDY_FIELDS = [CUSTOMER_EMAIL, SAMPLE_RETURN, HEALTH_SAFETY]
+EDP_PROJECT_STUDY_FIELDS = [USER_EMAIL, SAMPLE_RETURN, HEALTH_SAFETY]
 
 # -- Project-level metadata keys returned by a LIMS adapter --
 LIMS_HEALTH_AND_SAFETY = 'health_and_safety'

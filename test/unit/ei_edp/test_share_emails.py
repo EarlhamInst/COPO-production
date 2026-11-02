@@ -1,6 +1,6 @@
 '''Unit tests for sharing an EDP profile by email.
 
-Saving an EDP profile shares it with the customer email addresses and emails
+Saving an EDP profile shares it with the user email addresses and emails
 each of them. A failed email used to raise straight out of the save: the
 profile was already stored in COPO, but the Sapio sync that runs next never
 happened, and the user only saw "Errors occurred". Now every address ends up
@@ -113,7 +113,7 @@ def save():
             email.return_value.skipped_emails = list(skipped_emails)
             if sync_result:
                 lims.sync_project.return_value = sync_result
-            profile = {**PROFILE, 'customer_emails': 'new@earlham.ac.uk', 'sapio_project_id': 'PR0001'}
+            profile = {**PROFILE, 'user_email': 'new@earlham.ac.uk', 'sapio_project_id': 'PR0001'}
             return edp_utils.post_save_edp_profile(profile), lims
 
         yield run
@@ -184,7 +184,7 @@ def test_only_newly_added_users_are_emailed():
         email.return_value.skipped_emails = []
         get_lims_adapter.return_value.sync_project.return_value = {'status': 'success'}
 
-        profile = {**PROFILE, 'customer_emails': 'good@earlham.ac.uk;bad@earlham.ac.uk'}
+        profile = {**PROFILE, 'user_email': 'good@earlham.ac.uk;bad@earlham.ac.uk'}
         edp_utils.post_save_edp_profile(profile)
 
     copo_group.return_value.add_users_to_group.assert_called_once_with(
@@ -213,10 +213,10 @@ def share():
         email.return_value.skipped_emails = []
         get_lims_adapter.return_value.sync_project.return_value = {'status': 'success'}
 
-        def run(customer_emails, existing_users=(), shared_users=()):
+        def run(user_email, existing_users=(), shared_users=()):
             copo_group.return_value.get_users_for_group_info.return_value = list(shared_users)
             user.objects.filter.return_value.values.return_value = list(existing_users)
-            profile = {**PROFILE, 'customer_emails': customer_emails}
+            profile = {**PROFILE, 'user_email': user_email}
             edp_utils.post_save_edp_profile(profile)
             return email.return_value, copo_group.return_value
 
@@ -262,7 +262,7 @@ def test_new_user_is_invited_at_the_address_as_entered(share):
     assert list(tokens.values()) == ['New.User@Earlham.ac.uk']
 
 
-def test_blank_customer_emails_do_not_crash_the_save(share):
+def test_blank_user_email_does_not_crash_the_save(share):
     email, copo_group = share(' ; ')
 
     email.notify_shared_profile_to_non_existent_user.assert_not_called()
@@ -281,10 +281,10 @@ def join():
             mock.patch.object(edp_utils, '_add_to_edp_django_group'):
         copo_group.return_value.get_group_by_profile.return_value = [{'_id': 'group1'}]
 
-        def run(user_email, customer_emails):
+        def run(profile_creator_email, user_email):
             helpers.get_current_user.return_value.id = 2
-            helpers.get_current_user.return_value.email = user_email
-            profile = {**PROFILE, 'type': 'ei_edp', 'customer_emails': customer_emails}
+            helpers.get_current_user.return_value.email = profile_creator_email
+            profile = {**PROFILE, 'type': 'ei_edp', 'user_email': user_email}
             return edp_utils.join_shared_edp_profile(profile, 'token1'), copo_group.return_value
 
         yield run
@@ -297,7 +297,7 @@ def test_user_whose_email_differs_in_case_can_join(join):
     copo_group.add_user_to_group.assert_called_once_with(group_id='group1', user_id='2')
 
 
-def test_user_not_in_customer_emails_cannot_join(join):
+def test_user_not_in_user_email_cannot_join(join):
     result, copo_group = join('other@earlham.ac.uk', 'Good@Earlham.ac.uk')
 
     assert result['status'] == 'error'

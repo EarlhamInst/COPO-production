@@ -26,15 +26,15 @@ class Email:
         self.failed_emails = []
 
     def notify_shared_profile_to_non_existent_user(
-        self, profile, customer_emails_token
+        self, profile, user_email_token
     ):
         subj = "COPO Profile Shared with You"
         uri = self._get_uri()
         if settings.ENVIRONMENT_TYPE != "prod":
             subj = f'[{settings.ENVIRONMENT_TYPE.upper()} SERVER NOTIFICATION] - {subj}'
 
-        if profile and customer_emails_token:
-            for token, email in customer_emails_token.items():
+        if profile and user_email_token:
+            for token, email in user_email_token.items():
                 msg = f"<h4>COPO Profile Shared with You</h4><p>A COPO profile named '{profile.get(PROFILE_TITLE, "")}' has been shared with you. Please use the link below to create your COPO account and access the profile.</p><p><a href='{uri}{reverse("copo:join_shared_profile", kwargs={"profile_id":str(profile["_id"]), "token":token})}'>Create an account on COPO</a></p>"
                 self._send(email, subj, msg)
 

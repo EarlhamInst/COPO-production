@@ -21,8 +21,8 @@ from .constants import (
     EDP_PROFILE_TYPE,
     EDP_SCHEMA_NAME,
     EDP_USERS_GROUP,
-    PROFILE_CUSTOMER_EMAILS,
-    PROFILE_CUSTOMER_EMAILS_TOKENS,
+    PROFILE_USER_EMAIL,
+    PROFILE_USER_EMAIL_TOKEN,
     PROFILE_NO_OF_SAMPLES,
     PROFILE_SAPIO_PROJECT_ID,
     PROFILE_TITLE,
@@ -34,8 +34,8 @@ from .edp_validation_messages import MESSAGES
 from .email import Email
 from .lims import get_lims_adapter
 
-# Separator used when a profile owner enters multiple customer emails
-CUSTOMER_EMAIL_SPLITTER = ';'
+# Separator used when a profile owner enters multiple user emails
+USER_EMAIL_SPLITTER = ';'
 
 l = Logger()
 
@@ -100,7 +100,7 @@ def post_save_edp_profile(profile):
 
     This function does two things:
 
-    1. COPO profile sharing - if the profile has a `customer_emails` field,
+    1. COPO profile sharing - if the profile has a `user_email` field,
        ensures each email address is added to the COPO group for this profile.
        Users that already exist in COPO get an email notification immediately;
        users that don't have a COPO account yet get a token-based invite link.
@@ -118,11 +118,11 @@ def post_save_edp_profile(profile):
     email_obj = Email()
 
     # --- COPO profile sharing ---
-    customer_emails = profile.get(PROFILE_CUSTOMER_EMAILS, "")
-    if customer_emails:
+    user_email = profile.get(PROFILE_USER_EMAIL, "")
+    if user_email:
         emails = [
             email.strip()
-            for email in customer_emails.split(CUSTOMER_EMAIL_SPLITTER)
+            for email in user_email.split(USER_EMAIL_SPLITTER)
             if email.strip()
         ]
 
@@ -200,15 +200,15 @@ def post_save_edp_profile(profile):
         if missing_user_emails:
             # Generate a UUID token per email address so uninvited users can claim access
             # via the join_shared_profile view without needing an existing COPO account
-            customer_emails_tokens = {
+            user_email_tokens = {
                 str(uuid.uuid4()): email for email in missing_user_emails
             }
             Profile().get_collection_handle().update_one(
                 {"_id": profile["_id"]},
-                {"$set": {PROFILE_CUSTOMER_EMAILS_TOKENS: customer_emails_tokens}},
+                {"$set": {PROFILE_USER_EMAIL_TOKEN: user_email_tokens}},
             )
             email_obj.notify_shared_profile_to_non_existent_user(
-                profile, customer_emails_tokens
+                profile, user_email_tokens
             )
 
     # --- LIMS project sync ---
@@ -405,7 +405,7 @@ def join_shared_edp_profile(profile, token):
 
     if user.email == '' or user.email is None:
         # New user with no email - resolve their address from the invite token
-        email = profile.get(PROFILE_CUSTOMER_EMAILS_TOKENS, {}).get(token, "")
+        email = profile.get(PROFILE_USER_EMAIL_TOKEN, {}).get(token, "")
         if not email:
             return {
                 "status": "error",
@@ -414,11 +414,11 @@ def join_shared_edp_profile(profile, token):
         user.email = email
         user.save()
 
-    customer_emails = profile.get(PROFILE_CUSTOMER_EMAILS, "")
-    if customer_emails:
+    user_email = profile.get(PROFILE_USER_EMAIL, "")
+    if user_email:
         emails = [
             email.strip()
-            for email in customer_emails.split(CUSTOMER_EMAIL_SPLITTER)
+            for email in user_email.split(USER_EMAIL_SPLITTER)
             if email.strip()
         ]
 

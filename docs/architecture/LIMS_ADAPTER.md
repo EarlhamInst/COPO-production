@@ -123,7 +123,7 @@ The five external call sites were **not** changed - they still call the same
 | `copo_core/broker_da.py`                                               | `submit_lims_manifest_to_sapio` | `submit_manifest`                                       |
 | `ei_edp/utils/EDPSchemaHandler.py`                                     | `write_manifest`                | `get_project_samples`, `get_project_metadata`           |
 
-Note that `post_save_edp_profile` keeps its COPO-native work (customer-email
+Note that `post_save_edp_profile` keeps its COPO-native work (user-email
 group sharing, invite tokens, persisting the returned `project_id` to the
 profile) - only the LIMS project/sample sync moved into the adapter.
 

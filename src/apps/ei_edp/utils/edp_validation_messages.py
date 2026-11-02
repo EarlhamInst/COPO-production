@@ -21,7 +21,7 @@ MESSAGES = {
         'This profile has no Sapio project associated with it. '
         'Save the profile again to retry the project synchronisation to Sapio.'
     ),
-    'missing_value_customer_email': (
+    'missing_value_user_email': (
         'Sheet <strong>sample</strong>: Missing response to <strong>Email address</strong> requirement.'
     ),
     'missing_value_health_safety': (

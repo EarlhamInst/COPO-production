@@ -26,7 +26,7 @@ from .lims import get_lims_adapter
 from .constants import (
     BIOSAMPLE_ACCESSION,
     CHOICE,
-    CUSTOMER_EMAIL,
+    USER_EMAIL,
     EDP_SCHEMA_NAME,
     HEALTH_SAFETY,
     LIMS_HEALTH_AND_SAFETY,
@@ -575,7 +575,7 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
                         if PROFILE_SAPIO_PROJECT_ID in profile
                         else ""
                     ),
-                    CUSTOMER_EMAIL: emails,
+                    USER_EMAIL: emails,
                     SAMPLE_RETURN: is_returned,
                     HEALTH_SAFETY: health_safety,
                 }

@@ -66,7 +66,7 @@ EDP_PROFILE_FIELDS = {
     # COPO skips sending emails when an email is not set up (like during CI). The
     # profile creation will still proceed.
     # The reserved `.invalid` fallback is never emailed.
-    'customer_emails': get_env('PROJECT_TEAM_EMAIL') or 'copo-playwright@example.invalid',
+    'user_email': get_env('PROJECT_TEAM_EMAIL') or 'copo-playwright@example.invalid',
 }
 
 def edp_related_enq():
@@ -331,7 +331,7 @@ def create_edp_profile(
     no_of_samples,
     related_enq,
     budget_holder,
-    customer_emails,
+    user_email,
 ):
     # Saving an EDP profile is not local-only: post_save_edp_profile()
     # creates a Sapio project (plus its samples and plates) and stores the
@@ -354,7 +354,7 @@ def create_edp_profile(
     page.fill('#copo\\.profile\\.no_of_samples', str(no_of_samples))
     page.fill('#copo\\.profile\\.related_enq', related_enq)
     page.fill('#copo\\.profile\\.budget_holder', budget_holder)
-    page.fill('#copo\\.profile\\.customer_emails', customer_emails)
+    page.fill('#copo\\.profile\\.user_email', user_email)
 
     # Check the save's response rather than only the card appearing: a
     # Sapio sync failure still saves the COPO profile (and renders its card)
