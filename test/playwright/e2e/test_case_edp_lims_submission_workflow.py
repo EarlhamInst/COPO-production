@@ -36,23 +36,30 @@ PROFILE_TITLE_FOR_SAMPLE_BATCH_SUBMISSION = 'Playwright EDP Sample Count Changes
 PROFILE_DESCRIPTION_FOR_SAMPLE_BATCH_SUBMISSION = 'A description that is at least twenty characters long.'
 
 # The second batch's sample reuses the first one's ENA sample under its own
-# customer name (`Submitter sample reference`: letters and digits, max 15)
+# customer name (`Submitter Sample Reference`: letters and digits, max 15)
 SECOND_SUBMITTER_REFERENCE = 'sample1batch2'
 
-def _sapio_field_mapping():
+def _sapio_field_mapping(expected):
     # Which Sapio field each manifest label is written to, straight from the
     # EI_EDP schema's sapio_name column ('Object:Field') -- the same mapping
     # SapioAdapter._submit_manifest() uses. Only Project and Sample fields
     # that aren't 'protected' are written by the adapter.
+    #
+    # Each expected manifest value is also swapped for the value Sapio stores
+    # (e.g. 'UK-GDPR' -> 'GDPR') with the adapter's own _to_sapio_value().
     code = (
         'import json\n'
         'from src.apps.copo_single_cell_submission.utils.da import SinglecellSchemas\n'
+        'from src.apps.ei_edp.utils.lims.sapio.adapter import _to_sapio_value\n'
+        f"expected = json.loads({json.dumps(expected, default=str)!r})\n"
         f"schema = SinglecellSchemas().get_schema(schema_name='EI_EDP', target_id={EDP_CHECKLIST!r})\n"
-        'fields = [\n'
-        "    {'label': str(f.get('term_label', '')).strip(), 'sapio_name': f.get('sapio_name'),\n"
-        "     'behaviour': f.get('term_access')}\n"
-        "    for component in ('study', 'sample') for f in schema.get(component, [])\n"
-        ']\n'
+        'fields = []\n'
+        "for component in ('study', 'sample'):\n"
+        '    for f in schema.get(component, []):\n'
+        "        label = str(f.get('term_label', '')).strip()\n"
+        "        fields.append({'label': label, 'sapio_name': f.get('sapio_name'),\n"
+        "                       'behaviour': f.get('term_access'),\n"
+        "                       'sapio_value': _to_sapio_value(f.get('term_name'), expected.get(label))})\n"
         "print('MAPPING_RESULT:' + json.dumps(fields, default=str))\n"
     )
     marker_line = next(line for line in run_django_shell(code).splitlines() if line.startswith('MAPPING_RESULT:'))
@@ -63,7 +70,7 @@ def _sapio_field_mapping():
             continue
         sapio_object, sapio_field = sapio_name.split(':', 1)
         if sapio_object in ('Project', 'Sample') and sapio_field:
-            mapping[field['label']] = (sapio_object, sapio_field)
+            mapping[field['label']] = (sapio_object, sapio_field, field['sapio_value'])
     return mapping
 
 def _sapio_samples(project_id):
@@ -129,14 +136,14 @@ def test_edp_samples_submitted_in_batches(page: Page, tmp_path, sapio_test_insta
     assert feedback.get('status') == 'success', f'Increasing the sample count failed: {feedback}'
     sapio_samples = {s['SampleId']: s['C_CustomerSampleName'] for s in _sapio_samples(project_id)}
     assert len(sapio_samples) == 2, f'Expected 2 Sapio samples, found {sapio_samples}'
-    assert sapio_samples[first_sample_id] == first_expected['Submitter sample reference']
+    assert sapio_samples[first_sample_id] == first_expected['Submitter Sample Reference']
     (second_sample_id,) = set(sapio_samples) - {first_sample_id}
 
     # --- The blank manifest lists only the new sample ---
     second_downloaded = download_lims_manifest(page, profile_id, tmp_path / 'second_downloaded.xlsx')
     assert manifest_sample_ids(second_downloaded) == [second_sample_id]
 
-    # --- Changing the `Submitter sample reference` field value of 
+    # --- Changing the `Submitter Sample Reference` field value of 
     # submitted samples is not allowed because it is used as an identifier in Sapio ---
     changed_manifest = tmp_path / 'first_changed_reference.xlsx'
     build_lims_manifest(
@@ -145,8 +152,8 @@ def test_edp_samples_submitted_in_batches(page: Page, tmp_path, sapio_test_insta
     response = upload_lims_manifest(page, profile_id, changed_manifest)
     assert response.status == 400
     expect(page.locator('#singlecell_info')).to_contain_text(
-        "The 'Submitter sample reference' field of a submitted sample cannot be changed. "
-        f"Please restore the original 'Submitter sample reference' value of these samples: {first_sample_id}.",
+        "The 'Submitter Sample Reference' field of a submitted sample cannot be changed. "
+        f"Please restore the original 'Submitter Sample Reference' value of these samples: {first_sample_id}.",
         timeout=30000,
     )
 
@@ -168,7 +175,7 @@ def test_edp_samples_submitted_in_batches(page: Page, tmp_path, sapio_test_insta
 
     sapio_samples = {s['SampleId']: s['C_CustomerSampleName'] for s in _sapio_samples(project_id)}
     assert sapio_samples == {
-        first_sample_id: first_expected['Submitter sample reference'],
+        first_sample_id: first_expected['Submitter Sample Reference'],
         second_sample_id: SECOND_SUBMITTER_REFERENCE,
     }
 
@@ -228,10 +235,10 @@ def test_lims_manifest_submission_to_sapio(page: Page, tmp_path, sapio_test_inst
     record_id = poll_sapio_study_status(profile_id, project_id)
 
     # --- Read the project back from Sapio ---
-    mapping = _sapio_field_mapping()
+    mapping = _sapio_field_mapping(expected)
     checks = [
-        (label, sapio_object, sapio_field, expected[label])
-        for label, (sapio_object, sapio_field) in mapping.items()
+        (label, sapio_object, sapio_field, sapio_value)
+        for label, (sapio_object, sapio_field, sapio_value) in mapping.items()
         if expected.get(label) not in (None, '')
     ]
     assert checks, "No manifest fields map to Sapio -- has the EI_EDP schema's sapio_name column changed?"

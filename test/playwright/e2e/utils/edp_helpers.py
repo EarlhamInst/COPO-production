@@ -31,19 +31,19 @@ FAANG_SAMPLE_CHECKLIST = 'COPO_FAANG'
 EDP_CHECKLIST = 'version_tissue'
 
 # The manifest's study-level answers, keyed by their EI_EDP schema label.
-STUDY_CELLS = {'Email address': 'E6', 'Sample return': 'L8', 'Health and Safety': 'L9'}
+STUDY_CELLS = {'Email address': 'E6', 'Sample Return': 'L8', 'Health and Safety': 'L9'}
 # The sample sheet's EI-only block (Sample ID ... Project ID) ends where this
 # column starts; every column from here rightwards is the customer's.
-FIRST_SUBMITTER_LABEL = 'Submitter sample reference'
+FIRST_SUBMITTER_LABEL = 'Submitter Sample Reference'
 # These three are VLOOKUP array formulas into the sample_metadata sheet,
 # which COPO fills from the profile's own ENA samples. COPO reads the upload
 # with data_only=True (EDPSchemaSpreadsheet.loadManifest), i.e. it reads
 # Excel's cached formula results -- and a workbook saved by openpyxl has none,
 # so the formulas would read back empty. Resolve them here instead.
 SAMPLE_METADATA_LOOKUPS = {
-    'NCBI taxon ID': 'taxon_id',
-    'Scientific name (Latin)': 'scientific_name',
-    'Biosample accession': 'biosampleAccession',
+    'NCBI Taxon ID': 'taxon_id',
+    'Scientific Name (Latin)': 'scientific_name',
+    'Biosample Accession': 'biosampleAccession',
 }
 
 # EDP profile form values agreed for the Sapio test instance. The Related ENQ
@@ -52,7 +52,10 @@ SAMPLE_METADATA_LOOKUPS = {
 # Sapio unambiguously.
 EDP_PROFILE_FIELDS = {
     'sample_type': 'Tissue',
-    'library_type': 'Illumina premade library',
+    # A library type e.g. 'Illumina premade library'
+    # is only needed for the premade library checklists
+    # not the 'Tissue' LIMS manifests which this test uses
+    'library_type': None, 
     'container_type': 'Plate',
     'no_of_samples': 1,
     'budget_holder': 'copo-playwright-test-user',
@@ -111,6 +114,15 @@ def build_lims_manifest(downloaded_path, patched_path, accession, submitter_refe
     answer_columns = header_columns(answer_sheet, answer_header_row)
     data_row, answer_row = header_row + 1, answer_header_row + 1
 
+    # The answers file must be for the same checklist as the downloaded
+    # manifest, so every column the download asks for has an answer
+    missing_columns = sorted(set(columns) - set(answer_columns))
+    extra_columns = sorted(set(answer_columns) - set(columns))
+    assert not missing_columns and not extra_columns, (
+        f'{os.path.basename(EDP_LIMS_MANIFEST)} does not match the downloaded {EDP_CHECKLIST} '
+        f'manifest. Missing columns: {missing_columns}. Extra columns: {extra_columns}.'
+    )
+
     sapio_sample_id = sample_sheet.cell(data_row, columns['Sample ID']).value
     assert sapio_sample_id, 'Downloaded manifest has no pre-filled Sapio Sample ID'
     assert sample_sheet.cell(data_row + 1, columns['Sample ID']).value in (None, ''), (
@@ -128,7 +140,7 @@ def build_lims_manifest(downloaded_path, patched_path, accession, submitter_refe
     assert reference in metadata, (
         f'Sample {reference!r} is missing from the downloaded sample_metadata sheet '
         f"(found {sorted(metadata)}); the ENA sample's name must match the manifest's "
-        f'Submitter sample reference'
+        f'Submitter Sample Reference'
     )
     assert metadata[reference]['biosampleAccession'] == accession
 
@@ -145,14 +157,16 @@ def build_lims_manifest(downloaded_path, patched_path, accession, submitter_refe
         sample_sheet.cell(data_row, column).value = expected[label] = value
 
     # The index sheet's Sample ID is the Earlham Institute's (EI's) (Sapio's) ID for the sample, which
-    # only exists once the profile has been saved.
-    index_sheet, answer_index_sheet = downloaded['index'], answers['index']
-    index_columns = header_columns(index_sheet, 1)
-    for label, answer_column in header_columns(answer_index_sheet, 1).items():
-        if label in ('Project ID', 'Sample ID'):
-            continue
-        index_sheet.cell(2, index_columns[label]).value = answer_index_sheet.cell(2, answer_column).value
-    index_sheet.cell(2, index_columns['Sample ID']).value = sapio_sample_id
+    # only exists once the profile has been saved. Only the premade library
+    # checklists have an index sheet; the Tissue checklist does not.
+    if 'index' in downloaded.sheetnames:
+        index_sheet, answer_index_sheet = downloaded['index'], answers['index']
+        index_columns = header_columns(index_sheet, 1)
+        for label, answer_column in header_columns(answer_index_sheet, 1).items():
+            if label in ('Project ID', 'Sample ID'):
+                continue
+            index_sheet.cell(2, index_columns[label]).value = answer_index_sheet.cell(2, answer_column).value
+        index_sheet.cell(2, index_columns['Sample ID']).value = sapio_sample_id
 
     downloaded.save(patched_path)
     return sapio_sample_id, expected
@@ -213,6 +227,17 @@ def upload_lims_manifest(page, profile_id, path):
     page.goto(f'/copo/copo_single_cell/view/{profile_id}/EI_EDP/lims_integration')
     page.wait_for_load_state('networkidle')
     dismiss_tour_if_present(page)
+
+    # The expected checklist is hardcoded rather than read from the schema's
+    # checklists_filter, which the page itself is built from, so that a
+    # mistake in the filter fails the test instead of being repeated by it
+    offered_checklists = page.locator('#checklist_id option').evaluate_all(
+        'options => options.map(option => option.value).filter(Boolean)'
+    )
+    assert offered_checklists == [EDP_CHECKLIST], (
+        f"A {EDP_PROFILE_FIELDS['sample_type']!r} profile should only be offered "
+        f'{EDP_CHECKLIST!r}, found {offered_checklists}'
+    )
 
     page.select_option('#checklist_id', EDP_CHECKLIST)
     page.click('.new-singlecell-spreadsheet-template')
@@ -301,7 +326,7 @@ def create_edp_profile(
     description,
     *,
     sample_type,
-    library_type,
+    library_type=None,
     container_type,
     no_of_samples,
     related_enq,
@@ -320,7 +345,9 @@ def create_edp_profile(
     page.fill('#copo\\.profile\\.title', title)
     page.fill('#copo\\.profile\\.description', description)
     page.select_option('#copo\\.profile\\.sample_type', sample_type)
-    page.select_option('#copo\\.profile\\.library_type', library_type)
+    
+    if library_type:
+        page.select_option('#copo\\.profile\\.library_type', library_type)
     # <option> values are lower-case ('plate'/'tube'); select by the visible
     # label so callers can pass what the user sees.
     page.select_option('#copo\\.profile\\.container_type', label=container_type)
