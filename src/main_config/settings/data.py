@@ -183,8 +183,7 @@ SINGLE_CELL_SCHEMAS_URL = {
 }
 
 SINGLE_CELL_SCHEMAS_TEMPLATE_URL = {
-    # "EI_EDP" : f"https://github.com/EarlhamInst/COPO-schemas/raw/refs/heads/main/edp/edp_schema_template_v{MANIFEST_VERSION['EI_EDP']}.xlsx"
-    "EI_EDP": f"edp_schema_template_v{MANIFEST_VERSION['EI_EDP']}.xlsx"
+    "EI_EDP" : f"https://github.com/EarlhamInst/COPO-schemas/raw/refs/heads/main/edp/edp_schema_template_v{MANIFEST_VERSION['EI_EDP']}.xlsx"
 }
 
 IMAGE_FILE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.bmp']
