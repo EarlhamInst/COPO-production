@@ -12,23 +12,23 @@ MESSAGES = {
     ),
     # Shown in the manifest's lookup columns (Excel formula text: no double quotes, max 255 characters)
     'lookup_missing_submitter_sample_reference': (
-        'Select a Submitter sample reference in this row to fill in this value'
+        'Select a Submitter Sample Reference in this row to fill in this value'
     ),
     'lookup_unknown_submitter_sample_reference': (
-        'Submitter sample reference not found. Select one from the dropdown menu'
+        'Submitter Sample Reference not found. Select one from the dropdown menu'
     ),
     'missing_sapio_project': (
         'This profile has no Sapio project associated with it. '
         'Save the profile again to retry the project synchronisation to Sapio.'
     ),
     'missing_value_customer_email': (
-        'Sheet <strong>sample</strong>: Missing response to <strong>Email address requirement</strong>.'
+        'Sheet <strong>sample</strong>: Missing response to <strong>Email address</strong> requirement.'
     ),
     'missing_value_health_safety': (
         'Sheet <strong>sample</strong>: Missing response to <strong>Health and Safety</strong> risk.'
     ),
     'missing_value_sample_return': (
-        'Sheet <strong>sample</strong>: Missing response to <strong>Sample return requirement</strong>.'
+        'Sheet <strong>sample</strong>: Missing response to <strong>Sample return</strong> requirement.'
     ),
     'no_lims_configured': 'No LIMS configured; nothing submitted.',
     'no_samples_submitted': (
@@ -80,8 +80,8 @@ MESSAGES = {
         ' and study {study_id}.'
     ),
     'submitter_sample_reference_changed': (
-        "The 'Submitter sample reference' field of a submitted sample cannot be changed. "
-        "Please restore the original 'Submitter sample reference' value of these samples: {sample_ids}."
+        "The 'Submitter Sample Reference' field of a submitted sample cannot be changed. "
+        "Please restore the original 'Submitter Sample Reference' value of these samples: {sample_ids}."
     ),
     'user_not_authorised_to_join': 'User is not authorised to join the profile.',
 }

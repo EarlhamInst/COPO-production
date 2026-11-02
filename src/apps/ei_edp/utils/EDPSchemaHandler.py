@@ -56,7 +56,7 @@ def get_submitted_sample_ids(project_id, schemas):
     '''This function returns the IDs of samples from a Sapio LIMS project 
     that have already been submitted.
 
-    A sample counts as being submitted once its `Submitter sample reference` has been
+    A sample counts as being submitted once its `Submitter Sample Reference` has been
     written to the LIMS (in Sapio, it is called `C_CustomerSampleName`). It is left out of
     new manifests and kept when a later manifest is uploaded without it.
     '''
@@ -65,10 +65,10 @@ def get_submitted_sample_ids(project_id, schemas):
 
 def get_submitted_sample_references(project_id, schemas):
     '''This function maps the ID of each submitted sample in a Sapio LIMS
-    project to its `Submitter sample reference`.
+    project to its `Submitter Sample Reference`.
 
     A submitted sample can be uploaded again to update its details in the
-    LIMS but, its `Submitter sample reference` must stay the same.
+    LIMS but, its `Submitter Sample Reference` must stay the same.
     '''
     if not project_id:
         return {}
@@ -616,7 +616,7 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
 
             # Rows for samples already submitted to the LIMS can be uploaded
             # again to update their details in the LIMS. Each row is matched
-            # to its LIMS sample by `Sample ID` but, the `Submitter sample reference`
+            # to its LIMS sample by `Sample ID` but, the `Submitter Sample Reference`
             # that marked the sample as submitted must not change
             sample_df = self.new_data.get("sample")
             if (

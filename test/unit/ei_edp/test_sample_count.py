@@ -1,7 +1,7 @@
 '''Unit tests for changing the number of samples on an EDP profile.
 
 Saving an EDP profile synchronises its sample count to the linked Sapio project. Once
-samples have been submitted (their `Submitter sample reference` field from the 
+samples have been submitted (their `Submitter Sample Reference` field from the 
 LIMS manifest is written to Sapio's `C_CustomerSampleName` field), they 
 cannot be deleted, so the sample  count may only go down as far as the 
 number of submitted samples.

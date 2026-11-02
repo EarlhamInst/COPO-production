@@ -6,7 +6,7 @@ submitted to the LIMS, the customer submits only the new samples:
 - the blank manifest lists only the samples not yet submitted
 - a manifest upload that includes samples that have already 
   been submitted will perform an update on those samples it as long as
-  their 'Submitter sample reference' field values are unchanged
+  their 'Submitter Sample Reference' field values are unchanged
 - saving the new manifest keeps the earlier, submitted samples' rows, since
   an upload otherwise replaces every row of the COPO record
 
@@ -133,7 +133,7 @@ def test_asks_the_lims_once_per_save(lims):
 def manifest(tmp_path, sample_ids, references=None):
     # The parts of the EDP manifest that loadManifest reads: the project
     # header on the sample sheet, its table from row 28, and the index sheet.
-    # `references` sets a sample's Submitter sample reference (default: ref<ID>)
+    # `references` sets a sample's Submitter Sample Reference (default: ref<ID>)
     references = references or {}
     workbook = openpyxl.Workbook()
     sample_sheet = workbook.active
@@ -142,7 +142,7 @@ def manifest(tmp_path, sample_ids, references=None):
     sample_sheet['L8'] = 'No'
     sample_sheet['L9'] = 'No'
     sample_sheet.cell(28, 1, 'Sample ID')
-    sample_sheet.cell(28, 2, 'Submitter sample reference')
+    sample_sheet.cell(28, 2, 'Submitter Sample Reference')
     index_sheet = workbook.create_sheet('index')
     index_sheet.append(['Sample ID', 'Submitter Library Name'])
     for row, sample_id in enumerate(sample_ids, start=29):
@@ -166,7 +166,7 @@ def load(path):
     spreadsheet.schemas = {
         'sample': {
             'sample_id': {'term_label': 'Sample ID'},
-            'submitter_sample_reference': {'term_label': 'Submitter sample reference'},
+            'submitter_sample_reference': {'term_label': 'Submitter Sample Reference'},
         },
         'index': {
             'sample_id': {'term_label': 'Sample ID'},
