@@ -13,6 +13,7 @@ from common.utils.helpers import get_datetime, get_not_deleted_flag,map_to_dict
 from .utils import copo_sample
 from src.apps.ei_edp.utils import edp_utils
 from src.apps.ei_edp.utils.constants import EDP_PROFILE_TYPE
+from src.apps.ei_edp.utils.edp_validators import SampleCountValidator
 from io import BytesIO
 from common.utils.logger import Logger
 from common.ena_utils import generic_helper as ghlper
@@ -81,6 +82,11 @@ def parse_sample_spreadsheet(request):
         if inspect.isclass(element) and issubclass(element, Validator) and not element.__name__ == "Validator":
             required_validators.append(element)
     """
+
+    # Under EDP profiles, the manifest cannot add more samples than are left to upload
+    profile = Profile().get_record(profile_id) or {}
+    if profile.get('type') == EDP_PROFILE_TYPE:
+        required_validators.append(SampleCountValidator)
 
     ena = EnaCheckListSpreadsheet(file=file, checklist_id=checklist_id, component="sample", validators=required_validators, with_read=False)
     #s3obj = s3()

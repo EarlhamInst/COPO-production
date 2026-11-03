@@ -390,8 +390,51 @@ def check_blank_sample_manifest(profile):
 
     return {'status': 'success', 'message': ''}
 
+def check_sample_submission(profile, sample_ids):
+    # An error is displayed if a user tries to submit more samples under an
+    # EDP profile than the number of samples requested on the profile.
+    # A sample counts as submitted once it has a BioSample accession or it
+    # is queued for submission. Selected samples that have already been
+    # submitted are submitted again as updates so, they are not counted again.
+    profile_type = profile.get(PROFILE_TYPE)
+    
+    if profile_type != EDP_PROFILE_TYPE:
+        return {'status': 'success', 'message': ''}
 
-def check_edp_samples_submitted(profile_id):
+    profile_id = str(profile['_id'])
+
+    submitted_sample_ids = {
+        str(sample['_id'])
+        for sample in Sample().get_collection_handle().find(
+            {
+                'profile_id': profile_id,
+                'deleted': helpers.get_not_deleted_flag(),
+                '$or': [
+                    {BIOSAMPLE_ACCESSION: {'$exists': True, '$nin': ['', None]}},
+                    {'status': {'$in': ['processing', 'sending']}},
+                ],
+            },
+            {'_id': 1},
+        )
+    }
+    new_sample_count = len(set(map(str, sample_ids)) - submitted_sample_ids)
+
+    requested_sample_count = get_requested_sample_count(profile)
+    samples_left_to_submit = max(requested_sample_count - len(submitted_sample_ids), 0)
+    if new_sample_count > samples_left_to_submit:
+        return {
+            'status': 'error',
+            'message': MESSAGES['too_many_samples_to_submit'].format(
+                requested_sample_count=requested_sample_count,
+                submitted_sample_count=len(submitted_sample_ids),
+                samples_left_to_submit=samples_left_to_submit,
+            ),
+        }
+
+    return {'status': 'success', 'message': ''}
+
+
+def check_edp_samples_submitted(profile):
     # A warning is displayed if a user tries to download a blank LIMS
     # manifest or upload a LIMS manifest before any samples have been
     # submitted under an EDP profile since a LIMS manifest describes

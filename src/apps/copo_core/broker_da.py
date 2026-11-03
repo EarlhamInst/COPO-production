@@ -507,12 +507,25 @@ class BrokerDA:
         return self.context
 
     def do_submit_sample(self):
+        profile = Profile().get_record(self.profile_id) or {}
         target_id = self.param_dict.get("target_id", str())
         target_ids = self.param_dict.get("target_ids", [])
         sample_checklist_id = self.request_dict.get("sample_checklist_id", str())
         # "user" resolves the submitter's own Webin creds (COPO default fallback);
         # "copo_default" is the popup's one-off "use COPO default" choice.
         credential_source = self.request_dict.get("credential_source", "user")
+
+        match profile.get('type'):
+            case edp_constants.EDP_PROFILE_TYPE:
+                # Under EDP profiles, no more samples can be submitted
+                # than the number of samples requested on the profile
+                result = edp_utils.check_sample_submission(
+                    profile=profile,
+                    sample_ids=[target_id] if target_id else target_ids,
+                )
+                if result['status'] != 'success':
+                    self.context['action_feedback'] = result
+                    return self.context
 
         result = copo_sample.submit_sample(
             profile_id=self.profile_id,

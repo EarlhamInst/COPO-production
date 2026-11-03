@@ -88,5 +88,20 @@ MESSAGES = {
         "The 'Submitter Sample Reference' field of a submitted sample cannot be changed. "
         "Please restore the original 'Submitter Sample Reference' value of these samples: {sample_ids}."
     ),
+    'too_many_samples': (
+        'The manifest has <strong>{new_sample_count}</strong> new samples but only '
+        '<strong>{samples_left_to_upload}</strong> more samples can be uploaded under '
+        'this profile.<br>'
+        'Please remove the extra samples from the manifest, delete any '
+        'pending samples that are no longer needed, update existing samples by using '
+        'their sample names or increase the number of samples on the profile.'
+    ),
+    'too_many_samples_to_submit': (
+        'This profile requests <strong>{requested_sample_count}</strong> samples and '
+        '<strong>{submitted_sample_count}</strong> have been submitted so, only '
+        '<strong>{samples_left_to_submit}</strong> more can be submitted.<br>'
+        'Please deselect some samples, delete pending samples that are no longer '
+        'needed or increase the number of samples on the profile.'
+    ),
     'user_not_authorised_to_join': 'User is not authorised to join the profile.',
 }
