@@ -97,7 +97,7 @@ def test_form_value_is_passed_on_as_a_number(adapter, raw, expected):
     result = edp_utils.pre_save_edp_profile({'copo.profile.no_of_samples': raw}, target_id='p1')
 
     assert result == {'status': 'success'}
-    adapter.validate_profile_change.assert_called_once_with({'sapio_project_id': PROJECT_ID}, expected)
+    adapter.validate_profile_change.assert_called_once_with({'sapio_project_id': PROJECT_ID}, expected, [])
 
 
 @pytest.mark.parametrize('raw', ['abc', '-1', '2.5'])

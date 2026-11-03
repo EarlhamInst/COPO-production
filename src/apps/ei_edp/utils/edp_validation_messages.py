@@ -48,6 +48,12 @@ MESSAGES = {
         'An email address was not set up on this server so, an email was not sent about the created profile to:<br>'
         '{emails}'
     ),
+    'profile_fields_locked': (
+        '{submitted_sample_count} of {total_sample_count} samples '
+        'in Sapio project {project_id} have already been submitted so, the '
+        'following cannot be changed: {fields}. To submit samples of a '
+        'different type, create a new profile.'
+    ),
     'profile_not_found': 'Profile <strong>{profile_title}</strong> (with ID: {profile_id}) not found.',
     'profile_owner_cannot_join': 'Profile owner cannot join the profile.',
     'profile_share_failed': (

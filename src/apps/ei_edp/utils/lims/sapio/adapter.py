@@ -26,6 +26,7 @@ from ...constants import (
     COPO_TO_SAPIO_VALUES,
     LIMS_HEALTH_AND_SAFETY,
     LIMS_SAMPLE_RETURN,
+    LOCKED_PROFILE_FIELDS,
     PROFILE_BUDGET_HOLDER,
     PROFILE_CONTAINER_TYPE,
     PROFILE_DESCRIPTION,
@@ -184,7 +185,7 @@ class SapioAdapter(LIMSAdapter):
     # Project lifecycle
     # ------------------------------------------------------------------ #
     def validate_profile_change(
-        self, profile: Dict[str, Any], requested_sample_count
+        self, profile: Dict[str, Any], requested_sample_count, changed_fields=()
     ) -> Dict[str, str]:
         sapio_project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, "")
         if not sapio_project_id:
@@ -228,6 +229,19 @@ class SapioAdapter(LIMSAdapter):
                     submitted_sample_count=submitted_sample_count,
                     total_sample_count=len(samples_under_project),
                     project_id=sapio_project_id,
+                ),
+            }
+
+        # The sample, container and library types are written to every sample
+        # in the project on each save so, they cannot change once any have been submitted
+        if changed_fields and submitted_sample_count:
+            return {
+                'status': 'error',
+                'message': MESSAGES['profile_fields_locked'].format(
+                    submitted_sample_count=submitted_sample_count,
+                    total_sample_count=len(samples_under_project),
+                    project_id=sapio_project_id,
+                    fields=', '.join(LOCKED_PROFILE_FIELDS[field] for field in changed_fields),
                 ),
             }
 

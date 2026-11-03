@@ -17,6 +17,15 @@ PROFILE_LIBRARY_TYPE = 'library_type'
 PROFILE_USER_EMAIL = 'user_email'
 PROFILE_USER_EMAIL_TOKEN = 'user_email_token'
 
+# Profile fields (with their form labels) that cannot be changed once samples
+# have been submitted. The sample type decides which LIMS manifest is offered
+# and all three are written to every sample in the LIMS project on each save.
+LOCKED_PROFILE_FIELDS = {
+    PROFILE_SAMPLE_TYPE: 'Sample type',
+    PROFILE_CONTAINER_TYPE: 'Container type',
+    PROFILE_LIBRARY_TYPE: 'Library type',
+}
+
 # -- Column names that describe each field in the EDP schema --
 TERM_NAME = 'term_name'
 TERM_LABEL = 'term_label'

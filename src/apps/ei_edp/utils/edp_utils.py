@@ -21,6 +21,7 @@ from .constants import (
     EDP_PROFILE_TYPE,
     EDP_SCHEMA_NAME,
     EDP_USERS_GROUP,
+    LOCKED_PROFILE_FIELDS,
     PROFILE_USER_EMAIL,
     PROFILE_USER_EMAIL_TOKEN,
     PROFILE_NO_OF_SAMPLES,
@@ -73,6 +74,9 @@ def pre_save_edp_profile(auto_fields, **kwargs):
       still exists in Sapio and the requested sample count does not drop below the
       number of samples that have already been submitted (in other words, users
       cannot silently delete submitted samples).
+    - Once samples have been submitted, the sample, container and library types
+      cannot be changed since they would be overwritten on the submitted samples
+      and a different LIMS manifest would be offered for the profile.
     '''
     raw_sample_count = auto_fields.get(f'copo.profile.{PROFILE_NO_OF_SAMPLES}', '')
     try:
@@ -90,9 +94,20 @@ def pre_save_edp_profile(auto_fields, **kwargs):
         return {"status": "success"}
     profile = Profile().get_record(target_id)
 
+    # Locked fields that the form is changing. Fields missing from the form are left as they are.
+    changed_fields = [
+        field
+        for field in LOCKED_PROFILE_FIELDS
+        if f'copo.profile.{field}' in auto_fields
+        and str(auto_fields[f'copo.profile.{field}'] or '').strip()
+        != str(profile.get(field) or '').strip()
+    ]
+
     # LIMS-specific validation (e.g. can't drop below committed samples) is
     # delegated to the active adapter.
-    return get_lims_adapter().validate_profile_change(profile, requested_sample_count)
+    return get_lims_adapter().validate_profile_change(
+        profile, requested_sample_count, changed_fields
+    )
 
 
 def post_save_edp_profile(profile):

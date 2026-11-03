@@ -75,13 +75,19 @@ class LIMSAdapter(ABC):
     # ------------------------------------------------------------------ #
     @abstractmethod
     def validate_profile_change(
-        self, profile: Dict[str, Any], requested_sample_count: int
+        self,
+        profile: Dict[str, Any],
+        requested_sample_count: int,
+        changed_fields: List[str] = (),
     ) -> Dict[str, str]:
         """Guard a pending profile change before it is written to COPO.
 
         Replaces the Sapio-specific checks in `pre_save_edp_profile`: chiefly,
         refuse a sample-count reduction that would delete samples the lab has
         already committed to (e.g. named/registered samples).
+
+        `changed_fields` lists the `LOCKED_PROFILE_FIELDS` the change would
+        alter; refuse it if any samples have already been committed to.
 
         Return `{"status": "success"}` to allow the save, or
         `{"status": "error", "message": ...}` to abort it.
@@ -175,7 +181,7 @@ class NullLIMSAdapter(LIMSAdapter):
     def get_sample_type_options(self) -> List[Dict[str, str]]:
         return []
 
-    def validate_profile_change(self, profile, requested_sample_count):
+    def validate_profile_change(self, profile, requested_sample_count, changed_fields=()):
         return {"status": "success"}
 
     def sync_project(self, profile):
