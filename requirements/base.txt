@@ -4,7 +4,7 @@ hiredis==3.5.0
 #alabaster==0.7.12
 #amqp==5.2.0
 appnope==1.0.0
-asgiref==3.12.1
+asgiref==3.13.0
 #asn1crypto==0.24.0
 astroid==4.3.4
 async-timeout==5.0.1
@@ -42,8 +42,8 @@ defusedxml==0.7.1
 Deprecated==3.0.0
 dict-toolbox==5.0.0
 dict.sorted==1.0.0
-Django==6.1.1
-django-allauth==65.19.7
+Django==6.1.2
+django-allauth==65.21.0
 django-allow-cidr==0.8.0
 django-appconf==1.2.0
 django-tinymce==5.0.0
@@ -59,7 +59,7 @@ django-tools==0.59.0
 django-user-agents==0.4.0
 django-crispy-forms==2.7
 crispy-bootstrap5==2026.9
-djangorestframework==3.18.2
+djangorestframework==3.18.3
 docopt==0.6.2
 #docutils==0.12
 entrypoints==0.4.2
