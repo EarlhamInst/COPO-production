@@ -44,10 +44,16 @@
     value="{% url 'copo_read_submission:download_initial_manifest' profile_id=profile_id %}"
   /-->
   {% for checklist in checklists %}
+    <!-- Blank manifests under EDP profiles are generated so that only the
+         samples left to upload can be filled in -->
     <input
       type="hidden"
       id="blank_manifest_url_{{checklist.primary_id}}"
+      {% if is_edp_profile %}
+      value="{% url 'copo_sample:download_blank_manifest' profile_id=profile_id sample_checklist_id=checklist.primary_id %}"
+      {% else %}
       value="{{ checklist.primary_id  | get_blank_manifest_url  }}"
+      {% endif %}
     />
   {% endfor %}
   <input

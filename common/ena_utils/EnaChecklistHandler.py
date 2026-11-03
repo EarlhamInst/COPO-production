@@ -5,6 +5,7 @@ from common.utils.logger import Logger
 import pandas as pd
 import os
 import io
+import uuid
 from django.conf import settings
 from openpyxl.utils.cell import get_column_letter
 from common.utils.helpers import (
@@ -369,8 +370,8 @@ class EnaCheckListSpreadsheet:
         self.with_read = with_read
         self.req = ThreadLocal.get_current_request()
         self.profile_id = self.req.session.get("profile_id", None)
-        profile = Profile().get_record(self.profile_id)
-        profile_type = ProfileType.objects.get(type=profile["type"])
+        self.profile = Profile().get_record(self.profile_id)
+        profile_type = ProfileType.objects.get(type=self.profile["type"])
 
         self.checklist_id = checklist_id
         self.checklist = EnaChecklist().get_checklist(
@@ -542,6 +543,7 @@ class EnaCheckListSpreadsheet:
             try:
                 errors, warnings, flag, self.isupdate = v(
                     profile_id=self.profile_id,
+                    profile=self.profile,
                     checklist=self.checklist,
                     data=self.new_data,
                     fields=None,
@@ -798,7 +800,12 @@ def write_manifest(
     with_sample=True,
     samples=None,
     file_path=None,
+    editable_row_count=None,
 ):
+    # If `editable_row_count` is set, only that number of rows below the
+    # header can be filled in. 
+    # The rows below the editable rows are greyed out and the
+    # worksheet is protected so that no more rows can be added or filled in.
     df = pd.DataFrame.from_dict(list(checklist["fields"].values()), orient='columns')
 
     """
@@ -878,6 +885,16 @@ def write_manifest(
                 column_index, column_index, column_length, cell_format
             )
 
+            if editable_row_count is not None:
+                # Unlock the cells that can be filled in
+                unlocked_format = writer.book.add_format({'locked': False})
+                if field_type.startswith("TEXT_"):
+                    unlocked_format.set_num_format('@')
+                for row in range(1, editable_row_count + 1):
+                    writer.sheets[sheet_name].write_blank(
+                        row, column_index, None, unlocked_format
+                    )
+
             if "choice" in field:
                 choice = [safe_stringify(x) for x in field["choice"] if not pd.isna(x)]
                 column_letter = get_column_letter(column_index + 1)
@@ -925,6 +942,28 @@ def write_manifest(
                             'show_error': 1 if field_type == "TEXT_CHOICE_FIELD" else 0,
                         },
                     )
+
+        if editable_row_count is not None:
+            # Grey out the rows that cannot be filled in by users.
+            worksheet = writer.sheets[sheet_name]
+            worksheet.conditional_format(
+                editable_row_count + 1,
+                0,
+                1048575,
+                len(df1.columns) - 1,
+                {
+                    'type': 'formula',
+                    'criteria': 'TRUE',
+                    'format': writer.book.add_format({'bg_color': '#D3D3D3'}),
+                },
+            )
+            
+            # Password-protect the worksheet with a random password so that
+            # users cannot unlock it. Columns and rows can still be resized.
+            worksheet.protect(
+                uuid.uuid4().hex, {'format_columns': True, 'format_rows': True}
+            )
+
         sheet_name = 'field_descriptions'
         df.to_excel(writer, sheet_name=sheet_name)
 

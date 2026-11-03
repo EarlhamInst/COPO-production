@@ -354,6 +354,26 @@ $(document).on('document_ready', function () {
         });
     });
 
+  // Download blank manifest logic
+  $(document).on('click', '.download-blank-manifest-template', function (e) {
+    e.preventDefault();
+    let manifestURL = $(this).attr('href');
+
+    // Check whether a blank manifest can be downloaded for the component
+    // e.g. under EDP profiles, some of the samples requested on the
+    // profile must still be remaining to be uploaded.
+    // If the check fails, display a warning message.
+    proceedIfCheckPasses(
+      'check_blank_manifest',
+      component,
+      'Blank manifest unavailable',
+      'The blank manifest could not be downloaded.',
+      function () {
+        window.location.href = manifestURL;
+      }
+    );
+  });
+
   $('#checklist_id').change(function () {
     $('.searchable-select').trigger('change.select2'); // Refresh select2 dropdown
     if ($.fn.dataTable.isDataTable('#' + componentMeta.tableID)) {

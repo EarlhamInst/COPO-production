@@ -364,6 +364,7 @@ $(document).on('document_ready', function () {
       // If the check fails, display a warning message.
       proceedIfCheckPasses(
         'check_manifest_upload',
+        component,
         'Manifest upload unavailable',
         'The manifest could not be uploaded.',
         showManifestUploadModal
@@ -382,6 +383,7 @@ $(document).on('document_ready', function () {
     // If the check fails, display a warning message.
     proceedIfCheckPasses(
       'check_blank_manifest',
+      component,
       'Blank manifest unavailable',
       'The blank manifest could not be downloaded.',
       function () {
@@ -723,47 +725,6 @@ function upload_spreadsheet(file) {
         .find('#save_singlecell_button')
         .prop('disabled', false);
       $('#file').val('');
-    });
-}
-
-// Ask the server to run a check given by `task` before an action
-// goes ahead. If the check passes, `onSuccess` is called to carry out
-// the action. Otherwise, a warning or error message is
-// displayed in a dialog entitled `title` or `fallbackMessage` if the
-// check returns no message or the request failed.
-function proceedIfCheckPasses(task, title, fallbackMessage, onSuccess) {
-  $.ajax({
-    url: copoFormsURL,
-    type: 'POST',
-    headers: { 'X-CSRFToken': csrftoken },
-    data: {
-      task: task,
-      component: component,
-      profile_id: $('#profile_id').val(),
-      schema_name: $('#schema_name').val(),
-    },
-  })
-    .done(function (data) {
-      let feedback = (data && data.action_feedback) || {};
-      if (feedback.status === 'success') {
-        onSuccess();
-        return;
-      }
-      BootstrapDialog.show({
-        title: title,
-        message: feedback.message || fallbackMessage,
-        type:
-          feedback.status === 'warning'
-            ? BootstrapDialog.TYPE_WARNING
-            : BootstrapDialog.TYPE_DANGER,
-      });
-    })
-    .fail(function () {
-      BootstrapDialog.show({
-        title: 'Error',
-        message: fallbackMessage + ' Please try again.',
-        type: BootstrapDialog.TYPE_DANGER,
-      });
     });
 }
 

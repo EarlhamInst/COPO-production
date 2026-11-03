@@ -10,7 +10,9 @@ from django.http import HttpResponse, JsonResponse
 from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreadsheet, write_manifest
 from common.ena_utils import generic_helper as ghlper
 from common.utils.helpers import get_datetime, get_not_deleted_flag,map_to_dict
-from .utils import copo_sample  
+from .utils import copo_sample
+from src.apps.ei_edp.utils import edp_utils
+from src.apps.ei_edp.utils.constants import EDP_PROFILE_TYPE
 from io import BytesIO
 from common.utils.logger import Logger
 from common.ena_utils import generic_helper as ghlper
@@ -39,7 +41,8 @@ def copo_general_samples(request, profile_id, ui_component):
     profile_checklist_ids = Sample().get_distinct_checklist(profile_id)
     if not profile_checklist_ids:
         profile_checklist_ids = []
-    return render(request, 'copo/copo_general_sample.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids, 'ui_component': ui_component})
+    is_edp_profile = profile.get("type") == EDP_PROFILE_TYPE
+    return render(request, 'copo/copo_general_sample.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids, 'ui_component': ui_component, 'is_edp_profile': is_edp_profile})
 
 
 @login_required
@@ -203,7 +206,8 @@ def save_sample_records(request):
 @login_required
 @web_page_access_checker
 def download_manifest(request, profile_id, sample_checklist_id):
-
+    # Download a manifest filled with the samples uploaded under the
+    # checklist so that they can be updated and uploaded again
     samples = Sample(profile_id=profile_id).execute_query({"checklist_id" : sample_checklist_id, "profile_id": profile_id, 'deleted': get_not_deleted_flag()})
     if not samples:
         return HttpResponse(status=404, content="No record found")
@@ -212,4 +216,29 @@ def download_manifest(request, profile_id, sample_checklist_id):
     write_manifest(checklist=checklist, with_read=False, samples=samples, file_path=bytesstring)
     response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response['Content-Disposition'] = f"attachment; filename={sample_checklist_id}_sample_manifest.xlsx"
+    return response
+
+
+@login_required
+@web_page_access_checker
+def download_blank_manifest(request, profile_id, sample_checklist_id):
+    # Under EDP profiles, only as many rows as there are samples
+    # left to upload can be filled in the blank manifest
+    profile = Profile().get_record(profile_id)
+    if not profile:
+        return HttpResponse(status=404, content="Profile not found")
+    checklist = EnaChecklist().get_checklist(sample_checklist_id, with_read=False)
+    if not checklist:
+        return HttpResponse(status=404, content="Checklist not found")
+
+    editable_row_count = None
+    if profile.get("type") == EDP_PROFILE_TYPE:
+        editable_row_count = edp_utils.get_samples_left_to_upload(profile)
+
+    bytesstring = BytesIO()
+    write_manifest(checklist=checklist, with_read=False, file_path=bytesstring, editable_row_count=editable_row_count)
+    version = settings.MANIFEST_VERSION.get(sample_checklist_id, str())
+    file_name = settings.MANIFEST_FILE_NAME.format(sample_checklist_id, "_v" + version if version else "")
+    response = HttpResponse(bytesstring.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response['Content-Disposition'] = f"attachment; filename={file_name}"
     return response

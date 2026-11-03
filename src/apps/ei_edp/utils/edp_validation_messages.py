@@ -4,6 +4,11 @@ MESSAGES = {
         'so, a blank manifest cannot be downloaded. If you would like to submit '
         'more samples, increase the number of samples on the profile.'
     ),
+    'all_samples_uploaded': (
+        'All of the samples requested for this profile have already been uploaded '
+        'so, a blank manifest cannot be downloaded. If you would like to upload '
+        'more samples, increase the number of samples on the profile.'
+    ),
     'customer_not_authorised_to_join': (
         "Customer with email '{email}' is not authorised to join the profile."
     ),

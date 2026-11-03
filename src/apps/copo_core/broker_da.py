@@ -727,6 +727,8 @@ class BrokerDA:
         return self.context
 
     def do_check_blank_manifest(self):
+        profile = Profile().get_record(self.profile_id) or {}
+        
         # Checks whether a blank manifest can be downloaded
         feedback = {'status': 'success', 'message': ''}
 
@@ -736,12 +738,20 @@ class BrokerDA:
                 # blank LIMS manifest can be downloaded and some samples in
                 # its LIMS project must still be remaining to be submitted.
                 feedback = edp_utils.check_edp_samples_submitted(
-                    profile_id=self.profile_id
+                    profile=profile
                 )
                 if feedback['status'] == 'success':
                     feedback = edp_utils.check_lims_blank_manifest(
-                        profile_id=self.profile_id
+                        profile=profile
                     )
+
+        if self.component == 'general_sample':
+            # Under EDP profiles, some of the samples requested on the
+            # profile must still be remaining to be uploaded before a
+            # blank sample manifest can be downloaded.
+            feedback = edp_utils.check_blank_sample_manifest(
+                profile=profile
+            )
 
         self.context['action_feedback'] = feedback
         return self.context

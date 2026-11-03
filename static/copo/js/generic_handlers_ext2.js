@@ -1503,3 +1503,44 @@ function load_records(componentMeta, args_dict, columnDefs = null) {
     }
   });
 }
+
+// Ask the server to run a check given by `task` for `component` before
+// an action goes ahead. If the check passes, `onSuccess` is called to
+// carry out the action. Otherwise, a warning or error message is
+// displayed in a dialog entitled `title` or `fallbackMessage` if the
+// check returns no message or the request failed.
+function proceedIfCheckPasses(task, component, title, fallbackMessage, onSuccess) {
+  $.ajax({
+    url: copoFormsURL,
+    type: 'POST',
+    headers: { 'X-CSRFToken': $.cookie('csrftoken') },
+    data: {
+      task: task,
+      component: component,
+      profile_id: $('#profile_id').val(),
+      schema_name: $('#schema_name').val(),
+    },
+  })
+    .done(function (data) {
+      let feedback = (data && data.action_feedback) || {};
+      if (feedback.status === 'success') {
+        onSuccess();
+        return;
+      }
+      BootstrapDialog.show({
+        title: title,
+        message: feedback.message || fallbackMessage,
+        type:
+          feedback.status === 'warning'
+            ? BootstrapDialog.TYPE_WARNING
+            : BootstrapDialog.TYPE_DANGER,
+      });
+    })
+    .fail(function () {
+      BootstrapDialog.show({
+        title: 'Error',
+        message: fallbackMessage + ' Please try again.',
+        type: BootstrapDialog.TYPE_DANGER,
+      });
+    });
+}

@@ -359,6 +359,38 @@ def check_lims_blank_manifest(profile_id):
     return {'status': 'success', 'message': ''}
 
 
+def get_requested_sample_count(profile):
+    # The form's field is free text so, the count can be stored as a string
+    return int(str(profile.get(PROFILE_NO_OF_SAMPLES) or 0).strip() or 0)
+
+
+def get_samples_left_to_upload(profile):
+    # The number of samples that can still be uploaded under an EDP profile
+    # i.e. the number of samples requested on the profile less those
+    # that have already been uploaded
+    uploaded_sample_count = Sample().get_collection_handle().count_documents(
+        {
+            'profile_id': str(profile['_id']),
+            'deleted': helpers.get_not_deleted_flag(),
+        }
+    )
+    return max(get_requested_sample_count(profile) - uploaded_sample_count, 0)
+
+
+def check_blank_sample_manifest(profile):
+    # A warning is displayed if a user tries to download a blank sample
+    # manifest under an EDP profile when all the samples requested
+    # on the profile have already been uploaded.
+    # Otherwise, the blank manifest is downloaded.
+    if profile.get(PROFILE_TYPE) != EDP_PROFILE_TYPE:
+        return {'status': 'success', 'message': ''}
+
+    if not get_samples_left_to_upload(profile):
+        return {'status': 'warning', 'message': MESSAGES['all_samples_uploaded']}
+
+    return {'status': 'success', 'message': ''}
+
+
 def check_edp_samples_submitted(profile_id):
     # A warning is displayed if a user tries to download a blank LIMS
     # manifest or upload a LIMS manifest before any samples have been
