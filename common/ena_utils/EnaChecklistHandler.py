@@ -464,8 +464,11 @@ class EnaCheckListSpreadsheet:
                 new_column_name = { name : name.replace(" (optional)", "",-1).upper() for name in self.data.columns.values.tolist() }
                 self.new_data = self.data.rename(columns=new_column_name)    
 
-                new_column_name = { value["label"].upper() : key for key, value in self.checklist["fields"].items() }
-                self.new_data.rename(columns=new_column_name, inplace=True)    
+                new_column_name = {
+                    value["label"].upper(): key
+                    for key, value in self.checklist["fields"].items()
+                }
+                self.new_data = self.new_data.rename(columns=new_column_name)
 
             except Exception as e:
                 # if error notify via web socket
@@ -691,8 +694,15 @@ class ReadChecklistHandler:
             write_manifest(checklist, for_dtol=False, with_sample=False)
 
 
-def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, samples=None, file_path=None):
-    df = pd.DataFrame.from_dict(list(checklist["fields"].values()), orient='columns')
+def write_manifest(
+    checklist,
+    for_dtol=False,
+    with_read=True,
+    with_sample=True,
+    samples=None,
+    file_path=None,
+):
+    df = pd.DataFrame(list(checklist["fields"].values()))
 
     """
     if for_dtol:
@@ -706,8 +716,8 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
     if with_sample and with_read:
         df = df.loc[(df["shown_when_no_sample"] == False) | (df["shown_when_no_sample"].isnull())]
     """
-    df.sort_values(by=['mandatory','name'], inplace=True)
-    df.loc[df["mandatory"] == "mandatory" , "label"] = df["label"]
+    df = df.sort_values(by=['mandatory', 'name'])
+    df.loc[df["mandatory"] == "mandatory", "label"] = df["label"]
     df.loc[df["mandatory"] != "mandatory", "label"] = df["label"] + " (optional)"
 
     df1 = df.transpose()
@@ -720,9 +730,13 @@ def write_manifest(checklist, for_dtol=False, with_read=True, with_sample=True, 
 
     if samples is not None:
         sample_df = pd.DataFrame.from_records(samples)
-        new_column_name = { key : field["label" ]+ (" (optional)" if  field["mandatory"] != 'mandatory' else "") for key, field in checklist["fields"].items() }
-        sample_df.rename(columns=new_column_name, inplace=True)
-        sample_df.drop(columns=sample_df.columns.difference(df1.columns), inplace=True)
+        new_column_name = {
+            key: field["label"]
+            + (" (optional)" if field["mandatory"] != 'mandatory' else "")
+            for key, field in checklist["fields"].items()
+        }
+        sample_df = sample_df.rename(columns=new_column_name)
+        sample_df = sample_df.drop(columns=sample_df.columns.difference(df1.columns))
 
         #sample_df = sample_df.rename(columns={"name": "Sample"})
         df1 = pd.concat([df1, sample_df], axis=0, join="outer")

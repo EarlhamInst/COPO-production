@@ -333,11 +333,11 @@ def save_singlecell_records(request, profile_id, schema_name):
                 name: name.replace(" (optional)", "", -1)
                 for name in component_data_df.columns.values.tolist()
             }
-            component_data_df.rename(columns=new_column_name, inplace=True)
+            component_data_df = component_data_df.rename(columns=new_column_name)
             new_column_name = {
                 field["term_label"]: field["term_name"] for field in component_schema
             }
-            component_data_df.rename(columns=new_column_name, inplace=True)
+            component_data_df = component_data_df.rename(columns=new_column_name)
             singlecell_record["components"][component_name] = component_data_df
 
     if not singlecell_record['components']:
@@ -426,13 +426,12 @@ def save_singlecell_records(request, profile_id, schema_name):
                     )
 
                     if not component_data_df.empty:
-                        existing_component_data_cannnot_delete_df.drop(
+                        existing_component_data_cannnot_delete_df = existing_component_data_cannnot_delete_df.drop(
                             existing_component_data_cannnot_delete_df[
                                 existing_component_data_cannnot_delete_df[
                                     identifier
                                 ].isin(component_data_df[identifier])
                             ].index,
-                            inplace=True,
                         )
                     if not existing_component_data_cannnot_delete_df.empty:
                         errors.append(
@@ -468,8 +467,8 @@ def save_singlecell_records(request, profile_id, schema_name):
                         existing_component_common_columns_df = (
                             existing_component_data_df[common_columns]
                         )
-                        existing_component_common_columns_df.sort_index(
-                            axis=1, inplace=True
+                        existing_component_common_columns_df = existing_component_common_columns_df.sort_index(
+                            axis=1
                         )
                         component_sorted_data_df = component_data_df.sort_index(axis=1)
 

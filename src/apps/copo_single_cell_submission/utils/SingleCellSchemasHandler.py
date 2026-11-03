@@ -74,7 +74,7 @@ class SingleCellSchemasHandler:
                 l.error(f"Invalid regex: {row['term_regex']} for {row['term_name']}")
             raise Exception("Invalid regex")
 
-        schemas_df.drop(columns=["regex_valid"], inplace=True)
+        schemas_df = schemas_df.drop(columns=["regex_valid"])
 
         empty_values = ""
         column_names = ["component_name", "term_name", "term_label", "term_type"]
@@ -92,7 +92,7 @@ class SingleCellSchemasHandler:
             checklist_schema_df = schemas_df.drop(
                 schemas_df[pd.isna(schemas_df[checklist_id])].index
             )
-            checklist_schema_df.reset_index(inplace=True)
+            checklist_schema_df = checklist_schema_df.reset_index()
             for c in (
                 checklist_schema_df.groupby(["component_name", "term_name"])
                 .size()
@@ -240,7 +240,7 @@ class SingleCellSchemasHandler:
                         component_schema_df["mandatory"] = component_schema_df[
                             schema_checklist
                         ]
-                        component_schema_df.set_index(keys="term_name", inplace=True)
+                        component_schema_df = component_schema_df.set_index(keys="term_name")
 
                         # component_schema_df.sort_values(by=['mandatory','term_label'], inplace=True)
                         component_schema_df.loc[
@@ -283,15 +283,14 @@ class SingleCellSchemasHandler:
                                     for field in schema
                                     if field[schema_checklist] in ["M", "O"]
                                 }
-                                component_data_df.drop(
+                                component_data_df = component_data_df.drop(
                                     columns=list(
                                         set(component_data_df.columns)
                                         - set(new_column_name.keys())
                                     ),
-                                    inplace=True,
                                 )
-                                component_data_df.rename(
-                                    columns=new_column_name, inplace=True
+                                component_data_df = component_data_df.rename(
+                                    columns=new_column_name
                                 )
 
                                 component_schema_df_transposed = pd.concat(
@@ -405,7 +404,7 @@ class SingleCellSchemasHandler:
                                         pd.isna(referenced_schema_df[schema_checklist])
                                     ].index
                                 )
-                                referenced_schema_df.reset_index(inplace=True)
+                                referenced_schema_df = referenced_schema_df.reset_index()
                                 if not referenced_schema_df.empty:
                                     referenced_field = referenced_schema_df.loc[
                                         referenced_schema_df['identifier']
@@ -563,15 +562,14 @@ class SingleCellSchemasHandler:
                                 if field[schema_checklist] in ["M", "O"]
                             }
 
-                            component_data_df.drop(
+                            component_data_df = component_data_df.drop(
                                 columns=list(
                                     set(component_data_df.columns)
                                     - set(new_column_name.keys())
                                 ),
-                                inplace=True,
                             )
-                            component_data_df.rename(
-                                columns=new_column_name, inplace=True
+                            component_data_df = component_data_df.rename(
+                                columns=new_column_name
                             )
                             component_data_df = component_data_df.astype(object).fillna("")
                             component_data_df["@type"] = url_prefix + reverse(
@@ -752,7 +750,7 @@ class SinglecellschemasSpreadsheet:
         msg = ""
         for component, df in self.new_data.items():
             schema = self.schemas[component]
-            schema_df = pd.DataFrame.from_dict(list(schema.values()))
+            schema_df = pd.DataFrame(list(schema.values()))
             schema_file_df = schema_df.loc[
                 schema_df['term_type'] == 'file', ["term_name"]
             ]
@@ -873,7 +871,7 @@ class SinglecellschemasSpreadsheet:
                     df = df.apply(lambda x: x.str.strip())
                     # remove the rows with all empty values or 0
                     df = df.replace("", np.nan)
-                    df.dropna(how="all", inplace=True)
+                    df = df.dropna(how="all")
                     df = df.astype(object).fillna("")
                     self.data[key] = df
 
@@ -915,7 +913,7 @@ class SinglecellschemasSpreadsheet:
                         component_schema_df["mandatory"] = component_schema_df[
                             self.checklist_id
                         ]
-                        component_schema_df.set_index(keys="term_name", inplace=True)
+                        component_schema_df = component_schema_df.set_index(keys="term_name")
 
                         self.schemas[component] = component_schema_df.to_dict("index")
 
@@ -954,8 +952,8 @@ class SinglecellschemasSpreadsheet:
                             item["term_label"]: key
                             for key, item in self.schemas[component].items()
                         }
-                        self.new_data[component].rename(
-                            columns=new_column_name, inplace=True
+                        self.new_data[component] = self.new_data[component].rename(
+                            columns=new_column_name
                         )
                         self.new_data[component] = self.new_data[component].iloc[
                             3:
