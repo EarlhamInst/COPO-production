@@ -208,6 +208,73 @@ To view a test live:
 test/playwright/scripts/run_playwright_tests.sh --headed
 ```
 
+### Examples of commands to watch test live
+
+**Note**: Make sure that the steps have been followed in the **Prerequisites** section above.
+
+The key to watching a test live is to connect TigerVNC to `localhost:5901` once the run starts 
+and add the `--headed` flag to the test command.
+
+**Run the tests from the project root repository** not from within a Docker container then, connect 
+TigerVNC to `localhost:5901` once the run starts. Tests marked `external` call the 
+real instance of ENA, Sapio or Zenodo services so they need `-e` otherwise, they're skipped.
+
+**Entire test suite**
+
+```bash
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright --headed
+```
+
+**Login** (`test_case_login.py`)
+
+```bash
+# Entire file
+test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_login.py --headed
+
+test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_login.py::test_login --headed
+test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_login.py::test_login_rejects_bad_credentials --headed
+test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_login.py::test_login_shows_gdpr_modal_then_logout --headed
+```
+
+**Profile** (`test_case_profile.py`)
+
+```bash
+# Entire file
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_profile.py --headed
+
+test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_profile.py::test_create_and_delete_biodata_profile --headed
+
+# external (Sapio)
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_profile.py::test_create_and_delete_edp_profile --headed
+```
+
+**EDP LIMS submission** (`test_case_edp_lims_submission_workflow.py`, both tests external: Sapio and ENA)
+
+```bash
+# Entire file
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_edp_lims_submission_workflow.py --headed
+
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_edp_lims_submission_workflow.py::test_edp_samples_submitted_in_batches --headed
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_edp_lims_submission_workflow.py::test_lims_manifest_submission_to_sapio --headed
+```
+
+**Single-cell submission** (`test_case_singlecell_submission_journey.py`)
+
+```bash
+# Entire file
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py --headed
+
+test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_singlecell_submission_journey.py::test_sample_manifest_validation_and_singlecell_rejects_stale_accession --headed
+
+# External (ENA and Zenodo)
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_submission_and_publish_journey --headed
+```
+
+**Optional flags** (add them to any command above):
+- `--slowmo 500` pauses 500 ms between browser actions so that the steps are easier to follow.
+- `-t` records a trace to `test/playwright/test_results/<test-name>/trace.zip`.
+- `-v` lists each test as it runs.
+
 ## Viewing a trace after the fact
 
 `-t` (or `--tracing=on` directly) records a full scrubbable timeline
