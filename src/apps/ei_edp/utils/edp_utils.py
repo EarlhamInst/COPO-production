@@ -334,12 +334,11 @@ def submit_lims_manifest_to_sapio(profile_id, study_id):
     return result
 
 
-def check_lims_blank_manifest(profile_id):
+def check_lims_blank_manifest(profile):
     # A warning is displayed if a user tries to download a blank 
     # LIMS manifest when all the requested samples from the EDP profile 
     # level have already been submitted.
     # Otherwise, the blank manifest is downloaded.
-    profile = Profile().get_record(profile_id) or {}
     sapio_project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, '')
     if not sapio_project_id:
         return {
@@ -440,6 +439,7 @@ def check_edp_samples_submitted(profile):
     # submitted under an EDP profile since a LIMS manifest describes
     # those samples.
     # Otherwise, the user can proceed with the download or upload.
+    profile_id = str(profile['_id'])
     submitted_samples = Sample().get_collection_handle().count_documents(
         {
             'profile_id': profile_id,

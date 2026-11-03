@@ -15,6 +15,7 @@ from src.apps.copo_core import broker_da as broker_module
 from src.apps.ei_edp.utils.constants import EDP_SCHEMA_NAME
 
 PROFILE_ID = 'profile1'
+PROFILE = {'_id': PROFILE_ID, 'type': 'ei_edp'}
 SUCCESS = {'status': 'success', 'message': ''}
 NO_SAMPLES = {'status': 'warning', 'message': 'no samples submitted'}
 ALL_SUBMITTED = {'status': 'warning', 'message': 'all samples submitted'}
@@ -22,7 +23,9 @@ ALL_SUBMITTED = {'status': 'warning', 'message': 'all samples submitted'}
 
 def run(task, schema_name, samples_submitted=SUCCESS, blank_manifest=SUCCESS):
     with mock.patch.object(broker_module, 'DAComponent'), \
+            mock.patch.object(broker_module, 'Profile') as profile_da, \
             mock.patch.object(broker_module, 'edp_utils') as edp_utils:
+        profile_da.return_value.get_record.return_value = PROFILE
         edp_utils.check_edp_samples_submitted.return_value = samples_submitted
         edp_utils.check_lims_blank_manifest.return_value = blank_manifest
         broker = broker_module.BrokerDA(
@@ -52,7 +55,7 @@ def test_lims_blank_manifest_warns_when_no_samples_submitted():
     )
 
     assert feedback == NO_SAMPLES
-    edp_utils.check_edp_samples_submitted.assert_called_once_with(profile_id=PROFILE_ID)
+    edp_utils.check_edp_samples_submitted.assert_called_once_with(profile=PROFILE)
     edp_utils.check_lims_blank_manifest.assert_not_called()
 
 
@@ -62,7 +65,7 @@ def test_lims_blank_manifest_warns_when_no_samples_remain():
     )
 
     assert feedback == ALL_SUBMITTED
-    edp_utils.check_lims_blank_manifest.assert_called_once_with(profile_id=PROFILE_ID)
+    edp_utils.check_lims_blank_manifest.assert_called_once_with(profile=PROFILE)
 
 
 def test_lims_blank_manifest_downloads_when_both_checks_pass():
@@ -78,5 +81,5 @@ def test_lims_manifest_upload_depends_on_samples_submitted(samples_submitted):
     )
 
     assert feedback == samples_submitted
-    edp_utils.check_edp_samples_submitted.assert_called_once_with(profile_id=PROFILE_ID)
+    edp_utils.check_edp_samples_submitted.assert_called_once_with(profile=PROFILE)
     edp_utils.check_lims_blank_manifest.assert_not_called()

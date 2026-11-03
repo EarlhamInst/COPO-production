@@ -19,7 +19,7 @@ def check(submitted_sample_count):
     with mock.patch.object(edp_utils, 'Sample') as sample_da:
         count_documents = sample_da.return_value.get_collection_handle.return_value.count_documents
         count_documents.return_value = submitted_sample_count
-        return edp_utils.check_edp_samples_submitted(PROFILE_ID), count_documents
+        return edp_utils.check_edp_samples_submitted({'_id': PROFILE_ID}), count_documents
 
 
 def test_warns_when_no_samples_submitted():

@@ -16,26 +16,22 @@ from src.apps.ei_edp.utils import EDPSchemaHandler as edp_module
 from src.apps.ei_edp.utils import edp_utils
 from src.apps.ei_edp.utils.edp_validation_messages import MESSAGES
 
-PROFILE_ID = 'profile1'
 PROJECT_ID = 'PR0001'
 SCHEMAS = {'sample': []}
 
 
 def check(profile, lims_samples=()):
-    with mock.patch.object(edp_utils, 'Profile') as profile_da, \
-            mock.patch.object(edp_utils, 'SinglecellSchemas') as schemas_da, \
+    with mock.patch.object(edp_utils, 'SinglecellSchemas') as schemas_da, \
             mock.patch.object(edp_module, 'get_lims_adapter') as get_lims_adapter:
-        profile_da.return_value.get_record.return_value = profile
         schemas_da.return_value.get_collection_handle.return_value.find_one.return_value = {
             'schemas': SCHEMAS
         }
         get_lims_adapter.return_value.get_project_samples.return_value = list(lims_samples)
-        return edp_utils.check_lims_blank_manifest(PROFILE_ID), get_lims_adapter.return_value
+        return edp_utils.check_lims_blank_manifest(profile), get_lims_adapter.return_value
 
 
 @pytest.mark.parametrize('profile', [
-    None,  # Profile not found
-    {},
+    {},  # Profile not found
     {'sapio_project_id': ''},
 ])
 def test_error_without_sapio_project(profile):

@@ -770,6 +770,8 @@ class BrokerDA:
         return self.context
 
     def do_check_manifest_upload(self):
+        profile = Profile().get_record(self.profile_id) or {}
+
         # Checks whether a manifest can be uploaded
         feedback = {'status': 'success', 'message': ''}
 
@@ -778,7 +780,7 @@ class BrokerDA:
                 # Samples must be submitted under EDP profiles before a
                 # LIMS manifest describing them can be uploaded.
                 feedback = edp_utils.check_edp_samples_submitted(
-                    profile_id=self.profile_id
+                    profile=profile
                 )
 
         self.context['action_feedback'] = feedback
