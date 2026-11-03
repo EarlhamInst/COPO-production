@@ -944,12 +944,12 @@ class SapioAdapter(LIMSAdapter):
         sapio_mapping_df["sapio_field"] = sapio_mapping_df[SAPIO_NAME].apply(
             lambda x: x.split(":")[1]
         )
-        sapio_mapping_df.drop(columns=[SAPIO_NAME], inplace=True)
+        sapio_mapping_df = sapio_mapping_df.drop(columns=[SAPIO_NAME])
 
         # Convert to {DataType: {term_name: sapio_field}} dict for O(1) lookups below
         sapio_object_dict = {}
         for c, sapio_object_df in sapio_mapping_df.groupby("sapio_object", sort=False):
-            sapio_object_df.set_index(TERM_NAME, inplace=True)
+            sapio_object_df = sapio_object_df.set_index(TERM_NAME)
             sapio_object_dict[c] = sapio_object_df["sapio_field"].to_dict()
 
         project_sapio_mapping = sapio_object_dict.get(SAPIO_PROJECT_DATA_TYPE, {})
@@ -992,13 +992,12 @@ class SapioAdapter(LIMSAdapter):
 
             # Drop columns not in the schema (e.g. internal COPO metadata fields)
             columns = component_data_df.columns
-            component_data_df.drop(
+            component_data_df = component_data_df.drop(
                 columns=[
                     column
                     for column in columns
                     if column not in component_schema_df[TERM_NAME].values
                 ],
-                inplace=True,
             )
 
             # Swap manifest values for the values Sapio expects

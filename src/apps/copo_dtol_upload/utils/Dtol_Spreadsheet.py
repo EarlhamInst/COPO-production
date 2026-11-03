@@ -191,9 +191,9 @@ class DtolSpreadsheet:
                                 action="error",
                                 html_id="sample_info")
                     return False
-                self.data.replace(r'^s*$', np.nan, regex=True, inplace=True)                
+                self.data = self.data.replace(r'^s*$', np.nan, regex=True)                
                 self.data = self.data.dropna(how='all')
-                self.data.replace(np.nan, '', regex=True, inplace=True)                
+                self.data = self.data.replace(np.nan, '', regex=True)                
                 self.data = self.data.apply(lambda x: x.astype(str))
                 self.data = self.data.apply(lambda x: x.str.strip())
                 self.data.columns = self.data.columns.str.replace(" ", "")

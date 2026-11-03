@@ -329,11 +329,11 @@ def save_singlecell_records(request, profile_id, schema_name):
                 name: name.replace(" (optional)", "", -1)
                 for name in component_data_df.columns.values.tolist()
             }
-            component_data_df.rename(columns=new_column_name, inplace=True)
+            component_data_df = component_data_df.rename(columns=new_column_name)
             new_column_name = {
                 field["term_label"]: field["term_name"] for field in component_schema
             }
-            component_data_df.rename(columns=new_column_name, inplace=True)
+            component_data_df = component_data_df.rename(columns=new_column_name)
             singlecell_record["components"][component_name] = component_data_df
 
     if not singlecell_record['components']:
@@ -428,13 +428,12 @@ def save_singlecell_records(request, profile_id, schema_name):
                     )
 
                     if not component_data_df.empty:
-                        existing_component_data_cannnot_delete_df.drop(
+                        existing_component_data_cannnot_delete_df = existing_component_data_cannnot_delete_df.drop(
                             existing_component_data_cannnot_delete_df[
                                 existing_component_data_cannnot_delete_df[
                                     identifier
                                 ].isin(component_data_df[identifier])
                             ].index,
-                            inplace=True,
                         )
                     if not existing_component_data_cannnot_delete_df.empty:
                         errors.append(
@@ -470,8 +469,8 @@ def save_singlecell_records(request, profile_id, schema_name):
                         existing_component_common_columns_df = (
                             existing_component_data_df[common_columns]
                         )
-                        existing_component_common_columns_df.sort_index(
-                            axis=1, inplace=True
+                        existing_component_common_columns_df = existing_component_common_columns_df.sort_index(
+                            axis=1
                         )
                         component_sorted_data_df = component_data_df.sort_index(axis=1)
 
@@ -758,11 +757,11 @@ def copo_singlecell(request, schema_name, profile_id, ui_component):
             singlecell_checklists_df = pd.DataFrame.from_dict(
                 singlecell_checklists, orient="index"
             )
-            singlecell_checklists_df.reset_index(inplace=True)
+            singlecell_checklists_df = singlecell_checklists_df.reset_index()
             checklists_filter_df = checklists_filter_df.merge(
                 singlecell_checklists_df, left_on="key", right_on="index", how="inner"
             )
-            checklists_filter_df.set_index("key", inplace=True)
+            checklists_filter_df = checklists_filter_df.set_index("key")
             singlecell_checklists = checklists_filter_df.to_dict(orient="index")
 
         for key, item in singlecell_checklists.items():

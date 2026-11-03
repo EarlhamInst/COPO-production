@@ -1011,7 +1011,7 @@ def generate_manifest_template(manifest_type, manifest_template_path, initial_da
         :, ~metadataEntry_worksheet_dataframe.columns.str.startswith('Unnamed')
     ]
     # Remove NaNs columns
-    metadataEntry_worksheet_dataframe.dropna(axis=0, how='all', inplace=True)
+    metadataEntry_worksheet_dataframe = metadataEntry_worksheet_dataframe.dropna(axis=0, how='all')
 
     # Get column names from the 'Data Validation' worksheet from the blank manifest
     dataValidation_worksheet_dataframe = pd.DataFrame(
@@ -1020,11 +1020,10 @@ def generate_manifest_template(manifest_type, manifest_template_path, initial_da
 
     # Concatenate the common field and its common values with the respective column names
     # from the blank manifest template
-    initial_data.drop(
+    initial_data = initial_data.drop(
         columns=initial_data.columns.difference(
             metadataEntry_worksheet_dataframe.columns
         ),
-        inplace=True,
     )
     metadataEntry_worksheet_concatenation = pd.concat(
         [metadataEntry_worksheet_dataframe, initial_data], ignore_index=True
@@ -1045,7 +1044,7 @@ def generate_manifest_template(manifest_type, manifest_template_path, initial_da
             :, ~dataValidation_worksheet_dataframe.columns.str.startswith('Unnamed')
         ]
         # Remove NaNs columns
-        dataValidation_worksheet_dataframe.dropna(axis=0, how='all', inplace=True)
+        dataValidation_worksheet_dataframe = dataValidation_worksheet_dataframe.dropna(axis=0, how='all')
 
         # Add Data Validation worksheet to the generated manifest
         # worksheet using data from the blank manifest worksheet

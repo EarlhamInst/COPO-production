@@ -111,7 +111,7 @@ class EnaTaggedSequence:
             TaggedSequenceChecklist().get_collection_handle().find_one_and_update({"primary_id": checklist["primary_id"]},
                                                                             {"$set": checklist},
                                                                             upsert=True)
-            df = pd.DataFrame.from_dict(list(checklist["fields"].values()), orient='columns')
+            df = pd.DataFrame(list(checklist["fields"].values()))
             df1 = df
             df.loc[df["mandatory"] == "mandatory", "name"] = df["name"]
             df.loc[df["mandatory"] != "mandatory", "name"] = df["name"] + " (optional)"
@@ -798,13 +798,12 @@ class EnaTaggedSequence:
 
         df = pd.DataFrame(tagged_seqs)
 
-        df.drop(['SPECIMEN_ID', 'TAXON_ID'], axis=1, inplace=True)
-        df.drop(
+        df = df.drop(['SPECIMEN_ID', 'TAXON_ID'], axis=1)
+        df = df.drop(
             [x for x in df.columns if x not in fields.keys() or df[x][0].strip() == ""],
             axis=1,
-            inplace=True,
         )
-        df.rename(columns=new_column_name, inplace=True)
+        df = df.rename(columns=new_column_name)
 
         with open(tsv_file, "w") as destination:
             destination.write(
@@ -1007,13 +1006,13 @@ class EnaTaggedSequence:
             df["DT_RowId"] = df.record_id
             df.DT_RowId = 'row_' + df.DT_RowId
             df = df.drop('_id', axis='columns')
-            df.replace(np.nan, '', regex=True, inplace=True)
+            df = df.replace(np.nan, '', regex=True)
 
             for name in df.columns:
                 if name in ["record_id", "DT_RowId", "status", "accession", "error"]:
                     continue
                 if name not in label:
-                    df.drop(name, axis='columns', inplace=True)
+                    df = df.drop(name, axis='columns')
 
             data_set = df.to_dict('records')
 

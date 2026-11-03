@@ -277,7 +277,7 @@ class ProcessValidationQueue:
             if 'NEW_PURPOSE_OF_SPECIMEN' in self.data.columns:
                 self.data["PURPOSE_OF_SPECIMEN"] = self.data["NEW_PURPOSE_OF_SPECIMEN"]
                 # Delete the created column
-                self.data.drop(columns=["NEW_PURPOSE_OF_SPECIMEN"], inplace=True)
+                self.data = self.data.drop(columns=["NEW_PURPOSE_OF_SPECIMEN"])
 
             # Update data in database    
             ValidationQueue().update_manifest_data(qm["_id"], pickle.dumps(self.data))

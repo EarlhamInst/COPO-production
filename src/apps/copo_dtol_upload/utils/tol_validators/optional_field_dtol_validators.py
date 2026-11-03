@@ -161,7 +161,7 @@ class PermitColumnsValidator(Validator):
                     result, prefix
                 )
                 # Drop the column created
-                self.data.drop(columns=[f"{prefix}"], inplace=True)
+                del self.data[f"{prefix}"]
 
         return self.errors, self.warnings, self.flag
 

@@ -50,9 +50,9 @@ class SinglecellSchemas(DAComponent):
             component_df = pd.DataFrame.from_dict(components, orient='index')
             #component_df = component_df.set_index("key", inplace=True)
             not_repository_columns = [column for column in component_df.columns if not column.startswith("repository_")]
-            component_df.drop(not_repository_columns, axis=1, inplace=True)
-            component_df.dropna(how="all", inplace=True)
-            component_df.rename(columns=lambda x: x.replace("repository_", ""), inplace=True)
+            component_df = component_df.drop(not_repository_columns, axis=1)
+            component_df = component_df.dropna(how="all")
+            component_df = component_df.rename(columns=lambda x: x.replace("repository_", ""))
             component_df = component_df.astype(object).fillna("")
             return component_df
 

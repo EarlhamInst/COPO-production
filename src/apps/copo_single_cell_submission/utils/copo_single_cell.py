@@ -242,7 +242,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
             # Strip columns not in the schema (e.g. internal MongoDB fields)
             for column in component_data_df.columns:
                 if column not in column_keys.get(component_name, []):
-                    component_data_df.drop(column, axis=1, inplace=True)
+                    component_data_df = component_data_df.drop(column, axis=1)
 
             if component_name != "study":
                 # Propagate the worst-case submission status from child components up to study level.
@@ -928,7 +928,7 @@ def get_accession(profile_id, study_id, schema_name="", repository="", is_publis
                                     if col not in keys
                                         and any(col.lower().startswith(f"{p}_") for p in prefix)}
 
-        component_df_new.rename(columns=new_column_mapper, inplace=True)
+        component_df_new = component_df_new.rename(columns=new_column_mapper)
 
         # If this component doesn't have sample_id directly, try to get it via parent hierarchy
         # so we can join with the sample component for a complete view

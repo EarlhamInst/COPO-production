@@ -350,8 +350,8 @@ class CgCoreSchemas:
                 attr_df.index = attr_df.id
                 schema_df = pd.concat([schema_df, attr_df], sort=False)
 
-        schema_df.rename(
-            index=str, columns={"ref": "dc", "id": "copo_id"}, inplace=True
+        schema_df = schema_df.rename(
+            index=str, columns={"ref": "dc", "id": "copo_id"}
         )
 
         dc_list = schema_df.to_dict('records')
