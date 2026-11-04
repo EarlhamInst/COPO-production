@@ -378,7 +378,7 @@ $(document).ready(function () {
     wsprotocol = 'wss://';
   }
 
-  socket = new WebSocket(
+  socket = new ReconnectingWebSocket(
     wsprotocol + window.location.host + '/ws/sample_status/' + profileId
   );
   socket2 = new ReconnectingWebSocket(
