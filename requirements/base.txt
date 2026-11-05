@@ -39,7 +39,7 @@ daphne==4.2.3
 decorator==5.3.1
 #deepdiff==4.0.7
 defusedxml==0.7.1
-Deprecated==3.0.0
+Deprecated==3.0.1
 dict-toolbox==5.0.0
 dict.sorted==1.0.0
 Django==6.1.2
@@ -91,7 +91,7 @@ Jinja2==3.1.6
 #jmespath==1.0.1
 # jsonpath-rw==1.4.0
 # jsonpath-rw-ext==1.2.2
-jsonpath-ng==1.14.0
+jsonpath-ng==1.15.0
 jsonpickle==4.1.4
 jsonref==1.1.0
 #jsonschema==4.17.3
@@ -118,7 +118,7 @@ nest-asyncio==1.6.0
 #notebook==6.0.1
 #numexpr==2.14.1
 numpy==2.5.4
-oauthlib==4.0.0
+oauthlib==4.0.1
 openpyxl==3.1.5
 ordered-set==4.1.0
 packaging==26.3
@@ -139,7 +139,7 @@ psycopg-binary==3.3.6
 ptpython==3.0.32
 ptyprocess==0.7.0
 py==1.11.0
-pyasn1==0.6.4
+pyasn1==0.6.5
 pyasn1-modules==0.4.2
 pycodestyle==2.15.0
 #pycparser==2.22
@@ -153,10 +153,10 @@ pymongo==4.19.0
 PyPDF2==3.0.1
 #pyrsistent==0.15.4
 pytest==9.1.1
-python-dateutil==2.9.0.post0
+python-dateutil==4.0.0
 #python-utils==3.8.2
 python3-openid==3.2.0
-pytz==2026.5
+pytz==2026.6
 #PyYAML==6.0.1
 #pyzmq==22.3.0
 #qtconsole==4.5.5
@@ -169,7 +169,7 @@ requests==2.34.2
 requests-oauthlib==2.0.0
 #rjsmin==1.2.2
 #rsa==3.4.2
-roc-validator==0.13.0
+roc-validator==0.13.1
 s3transfer==0.19.3
 #Send2Trash==1.5.0
 service-identity==26.1.0
@@ -182,7 +182,7 @@ six==1.17.0
 #snowballstemmer==1.2.1
 soupsieve==3.0.4
 sphinxcontrib-websupport==2.0.0
-sqlparse==0.6.0
+sqlparse==0.6.1
 supervisor==4.3.0
 #tables==3.7.0
 tabulate==0.10.0
@@ -193,7 +193,7 @@ titlecase==2.4.1
 toml==0.10.2
 tornado==6.6
 #traitlets==4.3.3
-Twisted==26.10.0rc1
+Twisted==26.10.0
 txaio==26.6.1
 # typed-ast==1.5.5
 #typing==3.6.2
@@ -212,7 +212,7 @@ XlsxWriter==3.3.0
 zipp==4.1.2
 zope.interface==8.7
 pillow==13.0.0
-tzdata==2026.5
+tzdata==2026.6
 geopy==2.5.0
 titlecase==2.4.1
 PyLD==3.3.0
