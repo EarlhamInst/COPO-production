@@ -139,7 +139,7 @@ psycopg-binary==3.3.6
 ptpython==3.0.32
 ptyprocess==0.7.0
 py==1.11.0
-pyasn1==0.6.4
+pyasn1==0.6.5
 pyasn1-modules==0.4.2
 pycodestyle==2.15.0
 #pycparser==2.22
