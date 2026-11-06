@@ -974,7 +974,7 @@ body > .popover .popover-content span:not(.text-bold) {
 .bootstrap-dialog.form-modal .bootstrap-dialog-title,
 .bootstrap-dialog.form-modal .modal-title {
   color: #fff !important;
-  font-size: .88rem !important;
+  font-size: 16px !important;
   font-weight: 600 !important;
   letter-spacing: .01em !important;
 }
