@@ -1012,7 +1012,7 @@ body > .popover .popover-content span:not(.text-bold) {
 }
 
 .bootstrap-dialog.form-modal label {
-  font-size: .76rem !important;
+  font-size: 1rem !important;
   font-weight: 600 !important;
   color: var(--co-muted) !important;
   text-transform: uppercase !important;
@@ -1027,7 +1027,7 @@ body > .popover .popover-content span:not(.text-bold) {
 .bootstrap-dialog.form-modal .form-control {
   border-radius: 6px !important;
   border: 1px solid var(--co-border) !important;
-  font-size: .82rem !important;
+  font-size: 1rem !important;
   background: var(--co-surface) !important;
   color: var(--co-text) !important;
   padding: 5px 10px !important;
