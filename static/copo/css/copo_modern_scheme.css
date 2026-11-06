@@ -989,7 +989,7 @@ body > .popover .popover-content span:not(.text-bold) {
 }
 
 .bootstrap-dialog.form-modal .bootstrap-dialog-body {
-  max-height: calc(100vh - 160px) !important;
+  max-height: calc(100vh - 200px) !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
 }
@@ -999,6 +999,7 @@ body > .popover .popover-content span:not(.text-bold) {
   padding: 14px 16px !important;
   font-size: .82rem !important;
   color: var(--co-text) !important;
+  max-height: none !important;
   overflow: hidden !important;
 }
 
