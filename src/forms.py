@@ -59,6 +59,5 @@ class AssemblyForm(forms.Form):
         #attrs={'accept': '.fasta.gz, .fas.gz, .fsa.gz, fna.gz, .fa.gz, .fasta.bz2, .fas.bz2, .fsa.bz2, .fna.bz2, .fa.bz2'}
          ))
     flatfile = forms.FileField(label="FLATFILE", required=False)
-    agp = forms.FileField(label="AGP", required=False)
     chromosome_list = forms.FileField(label="CHROMOSOME_LIST", required=False)
     unlocalised_list = forms.FileField(label="UNLOCALISED_LIST", required=False)

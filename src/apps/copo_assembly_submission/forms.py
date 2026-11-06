@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit
 
+from src.apps.copo_assembly_submission.utils.EnaAssembly import ASSEMBLY_FILE_FIELDS, ASSEMBLY_FIELD_EXT_MAP
+
 class AssemblyForm(forms.Form):
 
     def __init__(self, *args, sample_accession=None, study_accession=None, assembly=None, run_accession=None, ecs_files=None, **kwargs):
@@ -22,7 +24,7 @@ class AssemblyForm(forms.Form):
             self.fields['sample'].required = False
             self.fields['sample'].hidden = True
             pass
-            # todo this bit does not really work, a drop down menu shows up no matter what (altough empty and optional)
+            # todo this bit does not really work, a drop down menu shows up no matter what (although empty and optional)
             # so it works but it's an aesthetic problem
             # self.fields['sample'].hidden = True
             # self.fields['sample'].label = ''
@@ -37,12 +39,18 @@ class AssemblyForm(forms.Form):
         if ecs_files:
             files_choices.extend([(x,x) for x in ecs_files])
         
-        file_fields = ["fasta", "flatfile", "agp", "chromosome_list", "unlocalised_list"]
-        for field in file_fields:
+        for field in ASSEMBLY_FILE_FIELDS:
             self.fields[field].initial = None
             self.fields[field].widget.attrs['readonly'] = True  
             self.fields[field].choices = files_choices
-        
+            
+            # Filter the ECS files (i.e. files that the user has uploaded) to 
+            # include only those files with valid extensions for the field
+            valid_file_extensions = tuple(ASSEMBLY_FIELD_EXT_MAP[field])
+            self.fields[field].choices = [('', 'None')] + [
+                (x, x) for x in (ecs_files or []) if x.endswith(valid_file_extensions)
+            ]
+                
         if run_accession:
             tuplelist = []
             for x in run_accession:
@@ -84,7 +92,6 @@ class AssemblyForm(forms.Form):
     
     fasta = forms.ChoiceField(label="FASTA", required=False )
     flatfile = forms.ChoiceField(label="FLATFILE", required=False )
-    agp = forms.ChoiceField(label="AGP", required=False)
     chromosome_list = forms.ChoiceField(label="CHROMOSOME_LIST", required=False)
     unlocalised_list = forms.ChoiceField(label="UNLOCALISED_LIST", required=False)
     #fasta = forms.FileField(label="FASTA", required=False, widget=forms.FileInput(

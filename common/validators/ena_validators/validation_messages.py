@@ -14,6 +14,12 @@ MESSAGES = {
     'invalid_column_value_ontology': (
         'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'
         'Expected value from ontology <strong><a href="{ontology_link}" target="_blank">{ontology_name}</a></strong>'),
+    
+    'invalid_compressed_file': '<strong>{file_name}</strong> is not a valid {file_extension} compressed file',
+    
+    'invalid_file_extension': (
+        'Invalid file <strong>{file_name}</strong>.<br>'
+        '<details><summary>Expected file extensions</summary>{valid_exts}</details>'),
 
     'mismatched_value': (
         'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'

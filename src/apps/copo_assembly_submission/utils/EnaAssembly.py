@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import subprocess
 import re
+from botocore.exceptions import ClientError
 from django.conf import settings
 from django_tools.middlewares import threadlocal as ThreadLocal
 from common.utils.helpers import get_env, get_datetime, get_deleted_flag, get_not_deleted_flag
@@ -36,7 +37,7 @@ l = Logger()
 # (SAG)’
 # Transcriptome Assemblies: here the webin-cli command is different as -context transcriptome (instead of genome),
 # assembly type is ‘isolate’, there are no fields [coverage, mingaplength, moleculetype] in the manifest, and the only
-# file types allowed are FASTA and flatfile
+# file types allowed are FASTA and Flatfile
 # Metatranscriptome Assemblies: as transcriptome assembly
 
 
@@ -44,6 +45,20 @@ pass_word = get_env('WEBIN_USER_PASSWORD')
 user_token = get_env('WEBIN_USER').split("@")[0]
 ena_service = get_env('ENA_SERVICE')
 
+VALID_CHROMOSOME_FILE_EXTS = ['.gz','.bz2']
+VALID_FASTA_FILE_EXTS = ['.fasta.gz', '.fas.gz', '.fsa.gz', '.fna.gz', '.fa.gz', '.fasta.bz2', '.fas.bz2', '.fsa.bz2', '.fna.bz2', '.fa.bz2']
+ASSEMBLY_FIELD_EXT_MAP = {
+    'fasta': VALID_FASTA_FILE_EXTS,
+    'flatfile': ['.gz', '.bz2'],
+    'chromosome_list': VALID_CHROMOSOME_FILE_EXTS,
+    'unlocalised_list': VALID_CHROMOSOME_FILE_EXTS,
+}
+ASSEMBLY_FILE_FIELDS = list(ASSEMBLY_FIELD_EXT_MAP.keys())
+
+FILE_COMPRESSION_SIGNATURES = {
+    '.gz': b'\x1f\x8b',
+    '.bz2': b'BZh',
+}
 
 """
 def upload_assembly_files(files):
@@ -72,6 +87,16 @@ def upload_assembly_files(files):
     output = "done"
     return output
 """
+
+def _get_file_header(s3obj, bucket, key, n=3):
+    try: 
+        response = s3obj.s3_client.get_object(Bucket=bucket, Key=key, Range=f'bytes=0-{n - 1}')
+        return response['Body'].read()
+    except ClientError as e:
+        l.error(f'Failed to get file header for {key}: {str(e)}')
+        return b''
+    
+
 def validate_assembly(form, profile_id, assembly_id):
     #check assemblyname unique
     form["assemblyname"] = '_'.join(form["assemblyname"].split())
@@ -92,7 +117,6 @@ def validate_assembly(form, profile_id, assembly_id):
     Path(these_assemblies).mkdir(parents=True,exist_ok=True)
     #these_assemblies_url_path = f"{settings.MEDIA_URL}ena_assembly_files/{profile_id}"
     #manifest_content =""
-    file_fields = ["fasta", "flatfile", "agp", "chromosome_list", "unlocalised_list"]
     file_ids = []
 
 
@@ -111,9 +135,22 @@ def validate_assembly(form, profile_id, assembly_id):
         sub_id = sub["_id"]   
 
     files = []
-    for field in file_fields:
+    for field in ASSEMBLY_FILE_FIELDS:
         if not form[field]:
             continue
+        
+        # Check if the file has a valid extension for the given field
+        valid_exts = ASSEMBLY_FIELD_EXT_MAP.get(field, [])
+        valid_values  = (
+            '<ul>'
+            + ''.join(f'<li>{v}</li>' for v in valid_exts)
+            + '</ul>'
+        )
+        if not any(form[field].endswith(ext) for ext in valid_exts):
+            error_message = MESSAGES['invalid_file_extension'].format(file_name=form[field], valid_exts=valid_values)
+            return {"error": error_message}
+        
+        # Check for duplicate files
         if form[field] in files:
             error_message = MESSAGES['duplicate_file_error'].format(file_name=form[field])
             return {"error": error_message}
@@ -131,8 +168,18 @@ def validate_assembly(form, profile_id, assembly_id):
         if not s3_file_etags:
             # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
             return {"error": 'Files not found, please upload files to COPO and try again'}
-
-    files = [ form[field] for field in file_fields if form[field]]
+        
+        # Check if the file contents match the compression it claims to be
+        for f_name in files:
+            expected = next((m for ext, m in FILE_COMPRESSION_SIGNATURES.items() if f_name.endswith(ext)), None)
+            if expected and not _get_file_header(s3obj, bucket_name, f_name).startswith(expected):
+                file_ext = Path(f_name).suffix
+                return {
+                    'error': MESSAGES['invalid_compressed_file'].format(file_name=f_name, file_extension=file_ext)
+                }
+                
+    # Check if any of the files is already being used in another submission
+    files = [form[field] for field in ASSEMBLY_FILE_FIELDS if form[field]]   
     datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name":{"$in": files}, "deleted": {"$ne": get_deleted_flag()}})
     existing_datafile_map = {f["file_name"]: f for f in datafiles}
     existing_assemblies = Assembly().get_all_records_columns(filter_by={"profile_id": profile_id, "deleted": {"$ne": get_deleted_flag()}})
@@ -141,7 +188,7 @@ def validate_assembly(form, profile_id, assembly_id):
         for file_id in existing_assembly["files"]:
             existing_assemblies_map[file_id] = existing_assembly
 
-    for field in file_fields:
+    for field in ASSEMBLY_FILE_FIELDS:
         f_name = form[field]
         if not f_name:
             continue
@@ -193,7 +240,6 @@ def validate_assembly(form, profile_id, assembly_id):
             return {"success": "Assembly submission has been scheduled!", "table_data": table_data, "component": "assembly"}
     else:
         return {"success": "Assembly has been updated but no submission", "table_data": table_data, "component": "assembly"}                 
-
 
 
 def _submit_assembly(file_path, profile_id, submission_type):
@@ -253,7 +299,6 @@ def process_assembly_pending_submission():
    #sub_ids = []
     if not submissions:
         return
-    file_fields = ["fasta", "flatfile", "agp", "chromosome_list", "unlocalised_list"]
     ena_fields = []
     for x in Assembly().get_schema().get("schema_dict"):
         if x.get("ena_assembly_submisison", False):
@@ -286,7 +331,7 @@ def process_assembly_pending_submission():
             for field in ena_fields:
                 value = assembly.get(field, None)
                 if value:
-                    if field in file_fields:
+                    if field in ASSEMBLY_FILE_FIELDS:
                         manifest_content += field.upper() + "\t" + join(these_assemblies, value) + "\n"
                     else:
                         manifest_content += field.upper() + "\t" + str(value) + "\n"
