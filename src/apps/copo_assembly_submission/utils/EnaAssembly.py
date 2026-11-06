@@ -25,6 +25,9 @@ from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_projec
 from common.dal.mongo_util import cursor_to_list
 from common.ena_utils.ena_helper import EnaSubmissionHelper
 from common.validators.ena_validators.validation_messages import MESSAGES
+from .assembly_utils import (
+    ASSEMBLY_FIELD_EXT_MAP, ASSEMBLY_FILE_FIELDS, FILE_COMPRESSION_SIGNATURES,
+)
 
 l = Logger()
 # other types of assemblies (not individualss or cultured isolates):
@@ -45,20 +48,6 @@ pass_word = get_env('WEBIN_USER_PASSWORD')
 user_token = get_env('WEBIN_USER').split("@")[0]
 ena_service = get_env('ENA_SERVICE')
 
-VALID_CHROMOSOME_FILE_EXTS = ['.gz','.bz2']
-VALID_FASTA_FILE_EXTS = ['.fasta.gz', '.fas.gz', '.fsa.gz', '.fna.gz', '.fa.gz', '.fasta.bz2', '.fas.bz2', '.fsa.bz2', '.fna.bz2', '.fa.bz2']
-ASSEMBLY_FIELD_EXT_MAP = {
-    'fasta': VALID_FASTA_FILE_EXTS,
-    'flatfile': ['.gz', '.bz2'],
-    'chromosome_list': VALID_CHROMOSOME_FILE_EXTS,
-    'unlocalised_list': VALID_CHROMOSOME_FILE_EXTS,
-}
-ASSEMBLY_FILE_FIELDS = list(ASSEMBLY_FIELD_EXT_MAP.keys())
-
-FILE_COMPRESSION_SIGNATURES = {
-    '.gz': b'\x1f\x8b',
-    '.bz2': b'BZh',
-}
 
 """
 def upload_assembly_files(files):

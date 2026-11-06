@@ -23,6 +23,10 @@ import requests
 from common.utils.logger import Logger
 lg = Logger()
 from src.apps.copo_assembly_submission.utils.da import Assembly
+from src.apps.copo_assembly_submission.utils.assembly_utils import (
+    get_assembly_file_error, matches_expected_file_signature, read_file_header,
+)
+from common.validators.ena_validators.validation_messages import MESSAGES
 import re
 import glob
 import xml.etree.ElementTree as ET
@@ -1169,17 +1173,35 @@ class EnaSubmissionHelper:
             if assembly_file_df.empty:
                     self.logging_error("no assembly file found")
 
+            # Check that all assembly files exist and have the correct format
+            file_errors = []
             for _, file_row in assembly_file_df.iterrows():
-                file_path_for_manifest = enafile_map.get(file_row["assembly_file"], "")
-                if file_path_for_manifest and not (file_path_for_manifest.endswith(".gz") or file_path_for_manifest.endswith(".bz2")):
-                    message = (
-                        f"Assembly file <strong>{os.path.basename(file_path_for_manifest)}</strong> "
-                        "must be compressed (.gz or .bz2) before submission. "
-                        "Please re-upload a compressed version of the file."
-                    )
-                    self.logging_error(message)
-                    return dict(status=False, message=message)
-                manifest_content += file_row["assembly_file_type"].upper() + "\t" + file_path_for_manifest + "\n"
+                file_name = file_row['assembly_file']
+                file_error = get_assembly_file_error(file_row['assembly_file_type'], file_name)
+                file_path_for_manifest = enafile_map.get(file_name, '')
+                
+                if not file_error and not file_path_for_manifest:
+                    file_error = MESSAGES['missing_assembly_file'].format(file_name=file_name)
+                
+                if not file_error and not matches_expected_file_signature(file_name, read_file_header(file_path_for_manifest)):
+                    file_error = MESSAGES['invalid_compressed_file'].format(
+                        file_name=file_name, file_extension=os.path.splitext(file_name)[1])
+                
+                if file_error:
+                    file_errors.append(file_error)
+                    continue
+                
+                manifest_content += f"{file_row['assembly_file_type'].upper()}\t{file_path_for_manifest}\n"
+
+            if file_errors:
+                error = '<br>'.join(file_errors)
+                self.logging_error(f'Assembly {row[identifier]} has invalid files: {error}')
+                Singlecell().update_component_status(id=singlecell_id, component='assembly', identifier=identifier, 
+                    identifier_value=row[identifier], repository='ena', 
+                    status_column_value={'status': 'rejected', 'error': error}
+                )
+                errors.append(error)
+                continue
 
             if not assembly_run_ref_data_df.empty:
                 assembly_run_ref_df = assembly_run_ref_data_df.loc[assembly_run_ref_data_df[parent_map["assembly_run_ref"]["assembly"]]==row[identifier]]

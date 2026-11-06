@@ -8,6 +8,7 @@ import requests
 from common.utils.helpers import get_env
 import xml.etree.ElementTree as ET
 from .validation_messages import MESSAGES as msg
+from src.apps.copo_assembly_submission.utils.assembly_utils import get_assembly_file_error
 
 ena_sample_service = get_env("ENA_V1_SAMPLE_SERVICE")
 session = requests.Session()
@@ -157,3 +158,38 @@ class StudyComponentValidator(Validator):
                 self.errors.append("Only one study is allowed")
                 self.flag = False
         return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
+
+
+class AssemblyFileValidator(Validator):
+    # Check the `assembly_file` worksheet against the file types and extensions that ENA accepts
+
+    def validate(self):
+        component = self.kwargs.get('component', '')
+        if component != 'assembly_file':
+            return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+
+        if not {'assembly_file_type', 'assembly_file'}.issubset(self.data.columns):
+            # Missing columns are reported by `MandatoryValuesValidator`
+            return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+
+        schema = self.kwargs.get('schema', {})
+        file_type_choices = schema.get('assembly_file_type', {}).get('choice') or []
+
+        for i, row in self.data.iterrows():
+            file_type = str(row['assembly_file_type'] or '').strip()
+            file_name = str(row['assembly_file'] or '').strip()
+
+            # Empty values are reported by `MandatoryValuesValidator` and values
+            # outside the dropdown by `IncorrectValueValidator`
+            if not file_type or not file_name:
+                continue
+            if file_type_choices and file_type not in file_type_choices:
+                continue
+
+            error = get_assembly_file_error(file_type, file_name)
+            if error:
+                self.errors.append(
+                    f'Sheet <strong>{component}</strong>, row <strong>{i + 2}</strong>: {error}')
+                self.flag = False
+
+        return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')

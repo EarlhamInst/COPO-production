@@ -1,13 +1,20 @@
 '''Unit tests for assembly file checks and ENA error reporting.
 
-Assemblies are submitted to ENA with Webin-CLI. Checks include:
+Assemblies are submitted to ENA with Webin-CLI from either the assembly
+form under ASG, ERGA or DToL profiles or from the  `assembly_file` 
+worksheet in a reads manifest under Biodata profiles.
 
+Checks include:
+
+- The file type must be one ENA accepts, e.g. AGP is no longer accepted.
 - The file name must have an extension accepted for its field, e.g. a
   FASTA file must end in .fasta.gz, .fa.gz, etc.
 - A file named .gz or .bz2 must actually be gzip or bzip2 compressed,
-  which is checked from its first bytes in S3.
+  which is checked from its first bytes (in S3 for the assembly form
+  and in the downloaded reads manifest file for the 
+  `assembly_file` worksheet).
 
-ENA’s Webin-CLI will reject the manifest.txt file and report errors 
+ENA's Webin-CLI will reject the manifest.txt file and report errors 
 such as Unknown field: AGP or Invalid FASTA file suffix:. These 
 errors are saved against the assembly and displayed to the user.
 
@@ -23,13 +30,15 @@ import json
 from pathlib import Path
 from unittest import mock
 
+import pandas as pd
 import pytest
 from botocore.exceptions import ClientError
 from django.test import override_settings
 
+from common.ena_utils import ena_helper
 from common.validators.ena_validators.validation_messages import MESSAGES
 from src.apps.copo_assembly_submission import forms
-from src.apps.copo_assembly_submission.utils import EnaAssembly
+from src.apps.copo_assembly_submission.utils import EnaAssembly, assembly_utils
 
 # The assembly fields COPO knows about. In the app these are loaded into
 # MongoDB from this file, so the unit tests read the file directly.
@@ -274,3 +283,234 @@ def test_ena_validation_error_is_shown_to_the_user(pending_submission, ena_error
     result.ghlper.notify_assembly_status.assert_any_call(
         data={'profile_id': PROFILE_ID}, msg=expected_error, action='error', html_id='assembly_info')
     result.helper.submit_assembly.assert_not_called()  # Nothing is submitted after a failed validation
+
+
+# `assembly_file` worksheet in a reads manifest under Biodata profiles
+#
+# Assemblies under Biodata profiles are listed in the `assembly_file` worksheet of
+# the reads manifest, with one row per file and its type (FASTA, ...). The
+# sheet is checked when the manifest is uploaded and again when the
+# assemblies are submitted to ENA (in the `register_assembly` function).
+
+# File types in the `assembly_file_type` dropdown menu from the reads main schema spreadshsheet
+WORKSHEET_FILE_TYPES = ['FASTA', 'FLATFILE', 'CHROMOSOME_LIST', 'UNLOCALISED_LIST']
+
+
+@pytest.mark.parametrize('file_type, file_name', [
+    ('FASTA', 'genome.fasta.gz'),
+    ('FASTA', 'genome.fa.bz2'),
+    ('fasta', 'genome.fna.gz'),
+    ('FLATFILE', 'genome.embl.gz'),
+    ('CHROMOSOME_LIST', 'chromosomes.txt.gz'),
+    ('UNLOCALISED_LIST', 'unlocalised.txt.bz2'),
+])
+def test_valid_worksheet_assembly_file_has_no_error(file_type, file_name):
+    assert assembly_utils.get_assembly_file_error(file_type, file_name) == ''
+
+
+def test_agp_worksheet_assembly_file_is_rejected():
+    error = assembly_utils.get_assembly_file_error('AGP', 'scaffolds.agp.gz')
+
+    assert error.startswith('Assembly file type <strong>AGP</strong> of file <strong>scaffolds.agp.gz</strong>')
+    for file_type in ('FASTA', 'FLATFILE', 'CHROMOSOME_LIST', 'UNLOCALISED_LIST'):
+        assert f'<li>{file_type}</li>' in error
+    assert '<li>AGP</li>' not in error
+
+
+@pytest.mark.parametrize('file_type, file_name', [
+    ('FASTA', 'genome.fasta'),
+    ('FASTA', 'genome.txt.gz'),
+    ('CHROMOSOME_LIST', 'chromosomes.txt'),
+    ('FLATFILE', 'genome.embl'),
+])
+def test_worksheet_assembly_file_with_invalid_extension_is_rejected(file_type, file_name):
+    error = assembly_utils.get_assembly_file_error(file_type, file_name)
+
+    assert error.startswith(f'Invalid file <strong>{file_name}</strong>')
+
+
+# Checked when the manifest is uploaded
+
+def run_assembly_file_validator(rows, component='assembly_file'):
+    from src.apps.copo_single_cell_submission.utils.validator.SingleCellSchemaValidators import (
+        AssemblyFileValidator)
+
+    data = pd.DataFrame(rows, columns=['assembly_file_type', 'assembly_file'])
+    schema = {'assembly_file_type': {'choice': WORKSHEET_FILE_TYPES}}
+    errors, _, flag, _ = AssemblyFileValidator(
+        profile_id=PROFILE_ID, fields=None, data=data, errors=[], warnings=[], flag=True,
+        schema=schema, component=component, isupdate=False).validate()
+    return errors, flag
+
+
+def test_worksheet_validator_accepts_valid_files():
+    errors, flag = run_assembly_file_validator([
+        ('FASTA', 'genome.fasta.gz'),
+        ('CHROMOSOME_LIST', 'chromosomes.txt.gz'),
+    ])
+
+    assert flag is True
+    assert errors == []
+
+
+@pytest.mark.parametrize('file_type, file_name, expected_error', [
+    ('FASTA', 'genome.fasta', 'Invalid file <strong>genome.fasta</strong>'),
+    ('CHROMOSOME_LIST', 'chromosomes.txt', 'Invalid file <strong>chromosomes.txt</strong>'),
+])
+def test_worksheet_validator_reports_invalid_file_with_its_row(file_type, file_name, expected_error):
+    errors, flag = run_assembly_file_validator([
+        ('FASTA', 'genome.fasta.gz'),
+        (file_type, file_name),
+    ])
+
+    assert flag is False
+    assert len(errors) == 1
+    # Row 1 is the header, so the second data row is row 3
+    assert errors[0].startswith(f'Sheet <strong>assembly_file</strong>, row <strong>3</strong>: {expected_error}')
+
+
+@pytest.mark.parametrize('file_type, file_name', [
+    ('NOT_A_TYPE', 'genome.fasta'),  # Reported by `IncorrectValueValidator`
+    ('AGP', 'scaffolds.agp.gz'),  # Not in the dropdown menu, so reported by `IncorrectValueValidator`
+    ('', 'genome.fasta'),  # Reported by `MandatoryValuesValidator`
+    ('FASTA', ''),  # Reported by `MandatoryValuesValidator`
+])
+def test_worksheet_validator_leaves_other_errors_to_other_validators(file_type, file_name):
+    errors, flag = run_assembly_file_validator([(file_type, file_name)])
+
+    assert flag is True
+    assert errors == []
+
+
+def test_worksheet_validator_ignores_other_sheets():
+    errors, flag = run_assembly_file_validator([('AGP', 'scaffolds.agp')], component='sequencing_annotation')
+
+    assert flag is True
+    assert errors == []
+
+
+# Checked when the assembly is submitted to ENA
+
+@pytest.fixture
+def register_assembly(tmp_path):
+    '''Run EnaSubmissionHelper.register_assembly for one assembly, with Webin-CLI mocked.
+
+    Yields a function taking the assembly_file rows and the files downloaded
+    to COPO ({file name: content}), which returns the mocks so tests can check
+    what was written to the manifest and shown to the user.
+    '''
+    download_dir = tmp_path / 'downloads'
+    download_dir.mkdir()
+
+    with mock.patch.object(ena_helper, 'Assembly') as assembly, \
+            mock.patch.object(ena_helper, 'EnaFileTransfer') as ena_file_transfer, \
+            mock.patch.object(ena_helper, 'Singlecell') as singlecell, \
+            mock.patch.object(ena_helper, 'ghlper'), \
+            mock.patch.object(ena_helper, 'notify_submission_status'), \
+            mock.patch.object(ena_helper.tempfile, 'gettempdir', return_value=str(tmp_path)):
+        assembly.return_value.get_schema.return_value = ASSEMBLY_SCHEMA
+
+        helper = ena_helper.EnaSubmissionHelper.__new__(ena_helper.EnaSubmissionHelper)
+        helper.profile_id = PROFILE_ID
+        helper.submission_id = 'sub1'
+        # Fail ENA Webin-CLI validation so the test stops after the manifest is written
+        helper.validate_assembly = mock.Mock(return_value=(1, 'ERROR return code 1'))
+        helper.submit_assembly = mock.Mock()
+
+        def run(file_rows, downloaded_files):
+            transfers = []
+            for file_name, content in downloaded_files.items():
+                local_path = download_dir / file_name
+                local_path.write_bytes(content)
+                transfers.append({'local_path': str(local_path)})
+            ena_file_transfer.return_value.get_all_records_columns.return_value = transfers
+
+            assembly_df = pd.DataFrame([{
+                'study_id': 'study1', 'assembly_id': 'assembly1', 'assemblyname': 'my_assembly',
+                'study_accession': 'PRJEB1', 'biosampleAccession': 'SAMEA12345', 'coverage': '30',
+            }])
+            file_df = pd.DataFrame(
+                [('assembly1', t, f) for t, f in file_rows],
+                columns=['assembly_id', 'assembly_file_type', 'assembly_file'])
+
+            result = helper.register_assembly(
+                identifier='assembly_id', assembly_component_data_df=assembly_df,
+                assembly_file_data_df=file_df, parent_map={'assembly_file': {'assembly': 'assembly_id'}},
+                singlecell_id='singlecell1')
+
+            manifest_path = tmp_path / PROFILE_ID / 'study1' / 'assembly1' / 'manifest.txt'
+            return mock.Mock(
+                result=result,
+                manifest=manifest_path.read_text() if manifest_path.exists() else None,
+                download_dir=download_dir,
+                helper=helper,
+                update_component_status=singlecell.return_value.update_component_status,
+            )
+
+        yield run
+
+
+def assert_assembly_rejected(run, expected_error):
+    assert run.result['status'] is False
+    assert expected_error in run.result['message']
+    run.update_component_status.assert_called_once_with(
+        id='singlecell1', component='assembly', identifier='assembly_id', identifier_value='assembly1',
+        repository='ena', status_column_value={'status': 'rejected', 'error': expected_error})
+    run.helper.validate_assembly.assert_not_called()  # Rejected before ENA Webin-CLI is run
+    assert run.manifest is None
+
+
+def test_valid_worksheet_assembly_files_are_written_to_the_manifest(register_assembly):
+    run = register_assembly(
+        [('FASTA', 'genome.fasta.gz'), ('CHROMOSOME_LIST', 'chromosomes.txt.bz2')],
+        {'genome.fasta.gz': gzip.compress(FASTA_CONTENT),
+         'chromosomes.txt.bz2': bz2.compress(b'chr1\t1\tChromosome\n')})
+
+    assert f'FASTA\t{run.download_dir / "genome.fasta.gz"}\n' in run.manifest
+    assert f'CHROMOSOME_LIST\t{run.download_dir / "chromosomes.txt.bz2"}\n' in run.manifest
+    run.helper.validate_assembly.assert_called_once()
+
+
+def test_agp_worksheet_assembly_file_is_rejected_at_submission(register_assembly):
+    # e.g. A manifest uploaded before the `AGP` data file type was rejected on upload
+    run = register_assembly(
+        [('FASTA', 'genome.fasta.gz'), ('AGP', 'scaffolds.agp.gz')],
+        {'genome.fasta.gz': gzip.compress(FASTA_CONTENT), 'scaffolds.agp.gz': gzip.compress(b'agp')})
+
+    assert_assembly_rejected(run, assembly_utils.get_assembly_file_error('AGP', 'scaffolds.agp.gz'))
+
+
+def test_worksheet_assembly_file_with_invalid_extension_is_rejected_at_submission(register_assembly):
+    run = register_assembly([('FASTA', 'genome.fasta')], {'genome.fasta': FASTA_CONTENT})
+
+    assert_assembly_rejected(run, assembly_utils.get_assembly_file_error('FASTA', 'genome.fasta'))
+
+
+@pytest.mark.parametrize('file_name, content', [
+    ('genome.fasta.gz', FASTA_CONTENT),  # Plain text renamed to .gz
+    ('genome.fasta.bz2', gzip.compress(FASTA_CONTENT)),  # gzip renamed to .bz2
+    ('genome.fasta.gz', b''),  # Empty file
+])
+def test_worksheet_assembly_file_not_really_compressed_is_rejected_at_submission(
+        register_assembly, file_name, content):
+    run = register_assembly([('FASTA', file_name)], {file_name: content})
+
+    assert_assembly_rejected(run, MESSAGES['invalid_compressed_file'].format(
+        file_name=file_name, file_extension=Path(file_name).suffix))
+
+
+def test_worksheet_assembly_file_not_downloaded_is_rejected_at_submission(register_assembly):
+    run = register_assembly([('FASTA', 'genome.fasta.gz')], {})
+
+    assert_assembly_rejected(run, MESSAGES['missing_assembly_file'].format(file_name='genome.fasta.gz'))
+
+
+def test_all_invalid_worksheet_assembly_files_are_reported_together(register_assembly):
+    run = register_assembly(
+        [('AGP', 'scaffolds.agp.gz'), ('FASTA', 'genome.fasta')],
+        {'scaffolds.agp.gz': gzip.compress(b'agp'), 'genome.fasta': FASTA_CONTENT})
+
+    assert_assembly_rejected(run, '<br>'.join([
+        assembly_utils.get_assembly_file_error('AGP', 'scaffolds.agp.gz'),
+        assembly_utils.get_assembly_file_error('FASTA', 'genome.fasta'),
+    ]))
