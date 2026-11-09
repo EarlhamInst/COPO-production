@@ -62,6 +62,14 @@ var dialog = new BootstrapDialog({
   },
 });
 
+function get_checklist_id() {
+  if ($('#checklist_id').length > 0) {
+    return $('#checklist_id').find(':selected').val();
+  } else {
+    return 'ERT000002';
+  }
+}
+
 $(document).ready(function () {
   profile_id = $('#profile_id').val();
   //var uid = document.location.href;
@@ -229,7 +237,7 @@ $(document).ready(function () {
         '/copo/copo_taggedseq/ena_taggedseq_manifest_validate/' +
         profile_id +
         '?checklist_id=' +
-        $('#checklist_id').find(':selected').val();
+        get_checklist_id();
       dialog.realize();
       dialog.getModal().addClass('spreadsheet-modal');
       dialog.setMessage($('<div></div>').load(url));
@@ -397,7 +405,7 @@ function upload_spreadsheet(file) {
   $('#warning_info2').fadeOut('fast');
   var csrftoken = $.cookie('csrftoken');
   form = new FormData();
-  form.append('checklist_id', $('#checklist_id').find(':selected').val());
+  form.append('checklist_id', get_checklist_id());
   form.append('file', file);
   var percent = $('.percent');
   jQuery
