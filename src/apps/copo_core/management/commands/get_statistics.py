@@ -1382,7 +1382,19 @@ class UserStatistics(MongoDB):
         '''     
         Users are considered as active if they have logged into COPO within a specified
         period (default: 12 months), counting backwards from the current date
-        and submitted samples as well as data files 
+        and submitted samples as well as data files
+        
+        NB: Users must submit samples before they can submit data files. This is due to the 
+            following reasons for the various submission types:
+
+            - Reads: Samples must be submitted first and data files must be linked to those samples.
+            - Assemblies: Reads must be submitted first, which requires samples to have been submitted 
+              and data files linked to those reads. Assembly data files must also be linked to the relevant assemblies.
+              
+            - Single-cell: Samples must be submitted first, along with the relevant data files and reads.
+            - Barcoding: Samples must be submitted first.
+            - Sequence annotation: Samples must be submitted first, along with the relevant data files 
+              and reads/experiments.
         '''
         d_to = datetime.now(timezone.utc)
         d_from = d_to - relativedelta(months=months)
@@ -1437,7 +1449,13 @@ class UserStatistics(MongoDB):
                 last_login__lt=d_to,
             ).values_list('id', flat=True)
         )
-
+        
+        # All users who logged in during the period, whether 
+        # or not they made any submissions
+        total_active_users = User.objects.filter(
+            last_login__gte=d_from, last_login__lt=d_to
+        ).count()
+        
         active_sample_users = sample_user_ids & active_user_ids
         active_data_file_users = data_file_user_ids & active_user_ids
         active_users_with_both = active_sample_users & active_data_file_users
@@ -1445,7 +1463,11 @@ class UserStatistics(MongoDB):
         print(
             f'\nActive number of users who submitted samples and data files {date_period}:\n'
         )
-        print(f'   Number of active users: {len(active_user_ids)}')
+
+        print(f'   Number of active users: {total_active_users}')
+        print(f'      - Who submitted samples or data files: {len(active_user_ids)}')
+        print(f'      - Who did not submit samples or data files: {total_active_users - len(active_user_ids)}\n')
+
         print(f'   Submitted samples: {len(active_sample_users)}')
         print(f'   Submitted data files: {len(active_data_file_users)}')
         print(f'   Submitted both samples and data files: {len(active_users_with_both)}')
