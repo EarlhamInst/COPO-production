@@ -4,6 +4,7 @@ import pymongo
 import urllib.parse
 
 from datetime import datetime, timezone
+from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import User
 from django.core.management import BaseCommand
 from django.http import HttpResponse
@@ -1107,9 +1108,9 @@ class UserStatistics(MongoDB):
                                                         },
                                                     ]
                                                 },
-                                                # For 'is_archived' field, '0' means not archived, '1' means archived.
+                                                # For 'is_archived' field, `False` means not archived, `True` means archived.
                                                 # Submitted data files that have been successfully transferred to ENA are considered as archived data files.
-                                                # {'$eq': ['$is_archived', '1']},
+                                                # {'$eq': ['$is_archived', True]},
                                                 # For 'status' field, these are the possible values: 'pending', 'processing', 'complete' and 'ena_complete'
                                                 {'$eq': ['$status', 'ena_complete']},
                                                 # For 'transfer_status' field, these are the possible values:
@@ -1143,9 +1144,9 @@ class UserStatistics(MongoDB):
                 [
                     {
                         '$match': {
-                            # For 'is_archived' field, '0' means not archived, '1' means archived.
+                            # For 'is_archived' field, `False` means not archived, `True` means archived.
                             # Submitted data files that have been successfully transferred to ENA are considered as archived data files.
-                            # 'is_archived': '1',
+                            # 'is_archived': True,
                             # For 'status' field, these are the possible values: 'pending', 'processing', 'complete' and 'ena_complete'
                             'status': 'ena_complete',
                             # For 'transfer_status' field, these are the possible values:
@@ -1376,6 +1377,83 @@ class UserStatistics(MongoDB):
 
     # ______________________________________
 
+    # Get count of active users who submitted both samples and data files in the last 12 months
+    def get_active_users_with_samples_and_data_files_submitted(self, months=12):
+        '''     
+        Users are considered as active if they have logged into COPO within a specified
+        period (default: 12 months), counting backwards from the current date
+        and submitted samples as well as data files 
+        '''
+        d_to = datetime.now(timezone.utc)
+        d_from = d_to - relativedelta(months=months)
+        date_period = (
+            f"between {d_from.strftime('%B %Y')} and {d_to.strftime('%B %Y')}"
+        )
+
+        # Map profile IDs to their owner's user ID
+        profile_user_map = {
+            str(x['_id']): x.get('user_id')
+            for x in self.profile_collection.find({}, {'user_id': 1})
+        }
+
+        # Profile IDs with submitted samples i.e. accepted samples within the period
+        sample_profile_ids = self.sample_collection.distinct(
+            'profile_id',
+            {'status': 'accepted', 'time_created': {'$gte': d_from, '$lt': d_to}},
+        )
+
+        # Profile IDs with data files submitted to ENA within the period
+        data_file_profile_ids = self.ena_file_collection.distinct(
+            'profile_id',
+            {
+                # Possible values for the 'status' field in EnaFileTransferCollection
+                # - 'pending', 'processing', 'complete' and 'ena_complete'
+                'status': 'ena_complete',
+                # For the 'transfer_status' field, `5` means transfer file to ENA
+                # Other possible values: 2 which means get file from minio
+                # 3 which means NIL, 4 which means NIL 
+                # 5 which means transfer file to ENA
+                'transfer_status': 5,
+                'last_checked': {'$gte': d_from, '$lt': d_to},
+            },
+        )
+        
+        def _get_user_ids(profile_ids):
+            # Resolve profile IDs to user IDs for profiles that exist
+            return {
+                profile_user_map[str(pid)]
+                for pid in profile_ids
+                if profile_user_map.get(str(pid)) is not None
+            }
+            
+        sample_user_ids = _get_user_ids(sample_profile_ids)
+        data_file_user_ids = _get_user_ids(data_file_profile_ids)
+
+        # Count only active users i.e. users who have logged in within the period
+        active_user_ids = set(
+            User.objects.filter(
+                id__in=sample_user_ids | data_file_user_ids,
+                last_login__gte=d_from,
+                last_login__lt=d_to,
+            ).values_list('id', flat=True)
+        )
+
+        active_sample_users = sample_user_ids & active_user_ids
+        active_data_file_users = data_file_user_ids & active_user_ids
+        active_users_with_both = active_sample_users & active_data_file_users
+
+        print(
+            f'\nActive number of users who submitted samples and data files {date_period}:\n'
+        )
+        print(f'   Number of active users: {len(active_user_ids)}')
+        print(f'   Submitted samples: {len(active_sample_users)}')
+        print(f'   Submitted data files: {len(active_data_file_users)}')
+        print(f'   Submitted both samples and data files: {len(active_users_with_both)}')
+
+        print('\n________________________________________\n')
+    
+    # ______________________________________
+
 
 # The class must be named Command and subclass BaseCommand
 class Command(BaseCommand):
@@ -1402,14 +1480,10 @@ class Command(BaseCommand):
         # )
         sample_stats.get_sample_statistics_between_dates()
         # sample_stats.get_sample_statistics_by_associated_project(apply_date_filter=True)
-        # user_stats.get_average_samples_submitted_per_user(apply_date_filter=True)
         # sample_stats.get_sequencing_centres_used_for_sample_submission(
         #     apply_date_filter=True
         # )
         # sample_stats.get_gal_partner_used_for_sample_submission(apply_date_filter=True)
-        # single_cell_stats.get_single_cell_statistics(
-        #     schema_type=None, apply_date_filter=True
-        # )
 
         # ______________________
 
@@ -1441,6 +1515,10 @@ class Command(BaseCommand):
         # single_cell_stats.get_single_cell_statistics(
         #     schema_type='COPO_SINGLE_CELL', apply_date_filter=False
         # )
+        
+        # single_cell_stats.get_single_cell_statistics(
+        #     schema_type=None, apply_date_filter=True
+        # )
 
         # ______________________
 
@@ -1464,4 +1542,9 @@ class Command(BaseCommand):
         ## Get email address of all users
         # user_stats.get_email_addresses_of_registered_users(only_with_profiles=False)
 
+        ## Get active users who have submitted samples and data files in the last 12 months
+        user_stats.get_active_users_with_samples_and_data_files_submitted()
+        
+        # Get average number of samples submitted per user with date filter applied
+        # user_stats.get_average_samples_submitted_per_user(apply_date_filter=True)
     # ______________________________________
