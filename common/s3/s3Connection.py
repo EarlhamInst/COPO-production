@@ -324,9 +324,18 @@ class S3Connection:
         for key in target_ids:
             # ok to delete the file if there is no need to transfer to ENA
             enaFile = filestatus_map.get(f"{bucket_name}/{key}")
+            file_transfer_status = get_transfer_status(enaFile) if enaFile else None
+            
             if (
                 not enaFile
-                or get_transfer_status(enaFile) >= TransferStatus.DOWNLOADED_TO_LOCAL
+                or (
+                    file_transfer_status is not None
+                    and file_transfer_status >= TransferStatus.DOWNLOADED_TO_LOCAL
+                )
+                or file_transfer_status in [
+                    TransferStatus.ARCHIVE_TRANSFERRED_TO_ENA,
+                    TransferStatus.ARCHIVE_COMPLETED_VALIDATION_IN_ENA,
+                ]
             ):
                 status = True
                 self.s3_client.delete_object(Bucket=bucket_name, Key=key)

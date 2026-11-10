@@ -132,7 +132,7 @@ def make_transfer_record(
                     tx["transfer_status"] = 5
                 elif get_transfer_status(ena_file) in [TransferStatus.ARCHIVE, TransferStatus.ARCHIVE_TRANSFERRED_TO_ENA, TransferStatus.ARCHIVE_COMPLETED_VALIDATION_IN_ENA]:
                     tx["transfer_status"] = 1
-                    tx["is_archive"] = "0"
+                    tx["is_archived"] = False
                 tx["remote_path"] = remote_location
                 need_update = True
 
@@ -586,26 +586,26 @@ def get_transfer_status(tx):
     """
     if tx:
         transfer_status = tx.get("transfer_status", 0)
-        is_archive = tx.get("is_archive", "0")
+        is_archived = tx.get("is_archived", False)
         status = tx.get("status", str())
         # terminal failure — record will not progress without user resubmission.
         # Covers the new "failed" status and the legacy "error" / transfer_status==10 pair.
         if status in ("failed", "error") or transfer_status == 10:
             return TransferStatus.FAILED
-        #if the file has been uploaded to ENA, the status won't change without regarding to the is_archive flag
+        #if the file has been uploaded to ENA, the status won't change without regarding to the is_archived flag
         if transfer_status == 5 and status == "ena_complete":
-            if is_archive == "1":
+            if is_archived:
                 return TransferStatus.ARCHIVE_COMPLETED_VALIDATION_IN_ENA
             else: 
                 return TransferStatus.COMPLETED_VALIDATION_IN_ENA
         elif transfer_status == 5 and status == "complete":
-            if is_archive == "1":
+            if is_archived:
                 return TransferStatus.ARCHIVE_TRANSFERRED_TO_ENA
             else:
                 return TransferStatus.TRANSFERRED_TO_ENA
         
         #if the file is archived, then return False
-        if is_archive == "1":
+        if is_archived:
             return TransferStatus.ARCHIVE
         
         if transfer_status == 5 and status == "pending":
@@ -731,7 +731,7 @@ def housekeeping_local_uploads():
             #],
             'status': {"$in": ["complete", "ena_complete"]},
             "last_checked": {"$lt": time},
-            "is_archived": {"$ne": "1"},
+            "is_archived": {"$ne": True},
         }
     )
     if ena_files:
@@ -744,7 +744,7 @@ def housekeeping_local_uploads():
                 Logger().error(f"Error deleting file {ena_file['local_path']}: {e}")
         # delete ena_file records
         EnaFileTransfer().get_collection_handle().update_many(
-            {"_id": {"$in": [ena_file["_id"] for ena_file in ena_files]}},{"$set": {"is_archived": "1", "last_checked": get_datetime()}}
+            {"_id": {"$in": [ena_file["_id"] for ena_file in ena_files]}},{"$set": {"is_archived": True, "last_checked": get_datetime()}}
         )
 
 
