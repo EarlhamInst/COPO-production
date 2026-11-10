@@ -8,6 +8,7 @@ from common.utils.helpers import (
 )
 from common.dal.copo_da import EnaFileTransfer, DataFile
 from common.dal.submission_da import Submission
+from src.apps.copo_seq_annotation_submission.utils.seq_annotation_utils import SEQUENCE_ANNOTATION_TYPES_MAP
 from .da import SequenceAnnotation
 from common.utils.logger import Logger
 from common.s3.s3Connection import S3Connection as s3
@@ -41,6 +42,9 @@ def validate_annotation(form_data, formset, profile_id, seq_annotation_id=None):
     bucket_name = profile_id
 
     form_data["profile_id"] = profile_id
+    form_data['annotation_type'] = form_data.get('annotation_type') or 'sequence_annotation'
+    annotation_type = form_data['annotation_type']
+    
     s3obj = s3()
     dt = get_datetime()
     files = []
@@ -67,6 +71,10 @@ def validate_annotation(form_data, formset, profile_id, seq_annotation_id=None):
 
     if len(files) == 0:
         return {"error": 'At least one annotation file is required'}
+    
+    # Decoupled annotation types accept only one GFF3 data file
+    if annotation_type == 'decoupled_annotation' and len(files) != 1:
+        return {'error': 'A decoupled annotation must have exactly one GFF3 file'}
 
     if s3obj.check_for_s3_bucket(bucket_name):
         # get filenames from manifest
@@ -106,7 +114,7 @@ def validate_annotation(form_data, formset, profile_id, seq_annotation_id=None):
             html_id="annotation_info",
         )
         return {"error": msg}
-
+    
     sub = (
         Submission()
         .get_collection_handle()
@@ -140,17 +148,17 @@ def validate_annotation(form_data, formset, profile_id, seq_annotation_id=None):
         }
     )
     existing_datafile_map = {f["file_name"]: f for f in datafiles}
-    existing_annotions = SequenceAnnotation().get_all_records_columns(
+    existing_annotations = SequenceAnnotation().get_all_records_columns(
         filter_by={
             "profile_id": profile_id,
             "filenames": {"$in": files},
             "deleted": {"$ne": get_deleted_flag()},
         }
     )
-    existing_annotion_map = {}
-    for f in existing_annotions:
+    existing_annotation_map = {}
+    for f in existing_annotations:
         for f_name in f["filenames"]:
-            existing_annotion_map[f_name] = f
+            existing_annotation_map[f_name] = f
 
     for f_name in files:
         file_location = join(
@@ -160,10 +168,10 @@ def validate_annotation(form_data, formset, profile_id, seq_annotation_id=None):
         existing_file = existing_datafile_map.get(f_name, None)
         if existing_file:
             if existing_file["file_location"] == file_location:
-                existing_annotion = existing_annotion_map.get(f_name, None)
-                if existing_annotion and (
+                existing_annotation = existing_annotation_map.get(f_name, None)
+                if existing_annotation and (
                     seq_annotation_id
-                    and existing_annotion["_id"] != ObjectId(seq_annotation_id)
+                    and existing_annotation["_id"] != ObjectId(seq_annotation_id)
                     or not seq_annotation_id
                 ):
                     return {

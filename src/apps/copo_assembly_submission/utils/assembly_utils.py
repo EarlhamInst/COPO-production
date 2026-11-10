@@ -1,3 +1,4 @@
+from common.utils.helpers import FILE_COMPRESSION_SIGNATURES, FILE_SIGNATURE_LENGTH
 from common.validators.ena_validators.validation_messages import MESSAGES
 
 VALID_CHROMOSOME_FILE_EXTS = ['.gz', '.bz2']
@@ -13,11 +14,7 @@ ASSEMBLY_FIELD_EXT_MAP = {
 }
 ASSEMBLY_FILE_FIELDS = list(ASSEMBLY_FIELD_EXT_MAP.keys())
 
-FILE_COMPRESSION_SIGNATURES = {
-    '.gz': b'\x1f\x8b',
-    '.bz2': b'BZh',
-}
-FILE_SIGNATURE_LENGTH = max(len(s) for s in FILE_COMPRESSION_SIGNATURES.values())
+
 
 
 def has_valid_extension(file_name, valid_exts):

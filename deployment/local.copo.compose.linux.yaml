@@ -27,7 +27,7 @@
 # $ docker compose -f local.copo.compose.linux.yaml down
 # $ docker compose --env-file .env -f local.copo.compose.linux.yaml up -d
 #
-## Note: To stop then start containers but retain existing database 
+## Note: To stop then start containers but retain existing database
 ## data and applied migrations, run:
 # $ docker compose --env-file .env -f local.copo.compose.linux.yaml restart
 #
@@ -129,6 +129,7 @@ services:
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
       - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
+      - ENA_PORTAL_SEARCH_URL=https://wwwdev.ebi.ac.uk/ena/portal/api/search
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH=${vault_copo_bioimage_path}
       - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk

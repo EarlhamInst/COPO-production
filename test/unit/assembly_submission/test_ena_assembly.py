@@ -36,6 +36,7 @@ from botocore.exceptions import ClientError
 from django.test import override_settings
 
 from common.ena_utils import ena_helper
+from common.utils.helpers import get_file_header
 from common.validators.ena_validators.validation_messages import MESSAGES
 from src.apps.copo_assembly_submission import forms
 from src.apps.copo_assembly_submission.utils import EnaAssembly, assembly_utils
@@ -155,19 +156,19 @@ def test_validate_assembly_reports_invalid_extension(validate_mocks, field, file
 def test_gzip_header_matches_gzip_signature():
     s3obj = make_s3obj(gzip.compress(FASTA_CONTENT))
 
-    assert EnaAssembly._get_file_header(s3obj, PROFILE_ID, 'genome.fasta.gz').startswith(GZIP_SIGNATURE)
+    assert get_file_header(s3obj, PROFILE_ID, 'genome.fasta.gz').startswith(GZIP_SIGNATURE)
 
 
 def test_bzip2_header_matches_bzip2_signature():
     s3obj = make_s3obj(bz2.compress(FASTA_CONTENT))
 
-    assert EnaAssembly._get_file_header(s3obj, PROFILE_ID, 'genome.fasta.bz2').startswith(BZIP2_SIGNATURE)
+    assert get_file_header(s3obj, PROFILE_ID, 'genome.fasta.bz2').startswith(BZIP2_SIGNATURE)
 
 
 def test_only_the_first_bytes_are_requested():
     s3obj = make_s3obj(gzip.compress(FASTA_CONTENT))
 
-    header = EnaAssembly._get_file_header(s3obj, PROFILE_ID, 'genome.fasta.gz')
+    header = get_file_header(s3obj, PROFILE_ID, 'genome.fasta.gz')
 
     assert len(header) == 3
     s3obj.s3_client.get_object.assert_called_once_with(
@@ -177,7 +178,7 @@ def test_only_the_first_bytes_are_requested():
 def test_renamed_plain_text_does_not_match_gzip_signature():
     s3obj = make_s3obj(FASTA_CONTENT)
 
-    assert not EnaAssembly._get_file_header(s3obj, PROFILE_ID, 'genome.fasta.gz').startswith(GZIP_SIGNATURE)
+    assert not get_file_header(s3obj, PROFILE_ID, 'genome.fasta.gz').startswith(GZIP_SIGNATURE)
 
 
 @pytest.mark.parametrize('code', ['InvalidRange', 'NoSuchKey', 'AccessDenied'])
@@ -185,7 +186,7 @@ def test_s3_error_returns_empty_header(code):
     # e.g. `InvalidRange` is returned for a ranged `GET` of an empty file
     error = ClientError({'Error': {'Code': code}}, 'GetObject')
 
-    assert EnaAssembly._get_file_header(make_s3obj(error=error), PROFILE_ID, 'genome.fasta.gz') == b''
+    assert get_file_header(make_s3obj(error=error), PROFILE_ID, 'genome.fasta.gz') == b''
 
 
 @pytest.mark.parametrize('file_name, content', [

@@ -2,10 +2,10 @@ import os
 from pathlib import Path
 import subprocess
 import re
-from botocore.exceptions import ClientError
+import requests
 from django.conf import settings
 from django_tools.middlewares import threadlocal as ThreadLocal
-from common.utils.helpers import get_env, get_datetime, get_deleted_flag, get_not_deleted_flag
+from common.utils.helpers import FILE_COMPRESSION_SIGNATURES, get_env, get_datetime, get_deleted_flag, get_file_header, get_not_deleted_flag
 from common.lookup.lookup import ENA_CLI
 from common.dal.copo_da import EnaFileTransfer, DataFile
 from common.dal.submission_da import Submission
@@ -26,7 +26,7 @@ from common.dal.mongo_util import cursor_to_list
 from common.ena_utils.ena_helper import EnaSubmissionHelper
 from common.validators.ena_validators.validation_messages import MESSAGES
 from .assembly_utils import (
-    ASSEMBLY_FIELD_EXT_MAP, ASSEMBLY_FILE_FIELDS, FILE_COMPRESSION_SIGNATURES,
+    ASSEMBLY_FIELD_EXT_MAP, ASSEMBLY_FILE_FIELDS,
 )
 
 l = Logger()
@@ -47,7 +47,7 @@ l = Logger()
 pass_word = get_env('WEBIN_USER_PASSWORD')
 user_token = get_env('WEBIN_USER').split("@")[0]
 ena_service = get_env('ENA_SERVICE')
-
+PORTAL_SEARCH_URL = get_env('ENA_PORTAL_SEARCH_URL')
 
 """
 def upload_assembly_files(files):
@@ -77,13 +77,7 @@ def upload_assembly_files(files):
     return output
 """
 
-def _get_file_header(s3obj, bucket, key, n=3):
-    try: 
-        response = s3obj.s3_client.get_object(Bucket=bucket, Key=key, Range=f'bytes=0-{n - 1}')
-        return response['Body'].read()
-    except ClientError as e:
-        l.error(f'Failed to get file header for {key}: {str(e)}')
-        return b''
+
     
 
 def validate_assembly(form, profile_id, assembly_id):
@@ -161,7 +155,7 @@ def validate_assembly(form, profile_id, assembly_id):
         # Check if the file contents match the compression it claims to be
         for f_name in files:
             expected = next((m for ext, m in FILE_COMPRESSION_SIGNATURES.items() if f_name.endswith(ext)), None)
-            if expected and not _get_file_header(s3obj, bucket_name, f_name).startswith(expected):
+            if expected and not get_file_header(s3obj, bucket_name, f_name).startswith(expected):
                 file_ext = Path(f_name).suffix
                 return {
                     'error': MESSAGES['invalid_compressed_file'].format(file_name=f_name, file_extension=file_ext)
@@ -453,3 +447,50 @@ def generate_additional_columns(profile_id):
                 EnaFileTransfer().complete_remote_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived)        
 
     return pd.DataFrame.from_dict(result)
+
+def get_study_assembly_accessions(study_accession):
+    # Map assembly name to a versioned GCA accession e.g. {'mCanAur2': 'GCA_977927465.1'}
+    # GFF3 data files can only be submitted after the assembly has been submitted and processed 
+    # because they depend on the GCA accession which is assigned after processing
+    response = requests.post(PORTAL_SEARCH_URL, 
+        auth=(user_token, pass_word),
+        data={
+        'result': 'assembly',
+        'query': f'study_accession="{study_accession}"',
+        'fields': 'assembly_name,assembly_set_accession',
+        'format': 'json',
+    }, timeout=30)
+    response.raise_for_status()
+    return {r['assembly_name']: r['assembly_set_accession'] for r in response.json()}
+
+def update_assembly_gca_accessions():
+    # Assemblies submitted to ENA will have an ERZxxxx accession but no GCAxxxx accession as yet
+    # This function will query ENA for the GCAxxxx accession and update the assembly 
+    # record with it once ENA assigns it
+    assemblies = Assembly().get_all_records_columns(filter_by={
+        'accession': {'$nin': ['', None]},
+        'gca_accession': {'$in': ['', None]},
+        'deleted': get_not_deleted_flag(),
+    })
+    
+    by_study = {}
+    for assembly in assemblies:
+        by_study.setdefault(assembly.get('study', ''), []).append(assembly)
+
+    for study_accession, study_assemblies in by_study.items():
+        if not study_accession:
+            continue
+        
+        try:
+            gca_accession_map = get_study_assembly_accessions(study_accession)
+        except requests.RequestException as e:
+            l.error(f'Failed to get GCA accessions for study {study_accession}: {e}')
+            continue 
+        
+        # Set the GCA accession for each assembly record based on the
+        # mapping of assembly names to their corresponding GCA accessions
+        for assembly in study_assemblies:
+            gca_accession = gca_accession_map.get(assembly['assemblyname'])
+            if gca_accession:
+                Assembly().get_collection_handle().update_one(
+                    {'_id': assembly['_id']}, {'$set': {'gca_accession': gca_accession}})

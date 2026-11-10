@@ -6,6 +6,7 @@ import datetime
 
 from .logger import Logger
 from .channels import send_to_group
+from botocore.exceptions import ClientError
 from common.lookup.copo_enums import *
 from channels.layers import get_channel_layer
 from django_tools.middlewares import threadlocal as ThreadLocal
@@ -81,6 +82,12 @@ def get_env(env_key):
 
 public_name_service = get_env('PUBLIC_NAME_SERVICE')
 l = Logger()
+
+FILE_COMPRESSION_SIGNATURES = {
+    '.gz': b'\x1f\x8b',
+    '.bz2': b'BZh',
+}
+FILE_SIGNATURE_LENGTH = max(len(s) for s in FILE_COMPRESSION_SIGNATURES.values())
 
 
 def notify_frontend(
@@ -553,3 +560,11 @@ def build_unified_context(context_urls, output_path):
     # Save the merged context to a file
     with open(output_path, 'w') as f:
         json.dump(merged, f, indent=2)
+
+def get_file_header(s3obj, bucket, key, n=3):
+    try: 
+        response = s3obj.s3_client.get_object(Bucket=bucket, Key=key, Range=f'bytes=0-{n - 1}')
+        return response['Body'].read()
+    except ClientError as e:
+        l.error(f'Failed to get file header for {key}: {str(e)}')
+        return b''

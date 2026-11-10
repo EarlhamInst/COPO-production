@@ -1,5 +1,4 @@
 from django import forms  
-from django.core.exceptions import ValidationError
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit
 
@@ -34,15 +33,12 @@ class AssemblyForm(forms.Form):
             self.fields["study"].disabled = True
             self.fields["sample"].disabled = True
             self.fields["id"].initial =  str(assembly["_id"])
-
-        files_choices = [("", 'None')]
-        if ecs_files:
-            files_choices.extend([(x,x) for x in ecs_files])
         
+        # Set up the file fields with initial values, read-only 
+        # attributes, and filtered choices based on valid extensions
         for field in ASSEMBLY_FILE_FIELDS:
             self.fields[field].initial = None
             self.fields[field].widget.attrs['readonly'] = True  
-            self.fields[field].choices = files_choices
             
             # Filter the ECS files (i.e. files that the user has uploaded) to 
             # include only those files with valid extensions for the field
@@ -125,4 +121,4 @@ class AssemblyForm(forms.Form):
  
 
         if error:
-            raise ValidationError(error)
+            raise forms.ValidationError(error)

@@ -33,6 +33,101 @@
       "show_as_attribute": true,
       "control_meta": {},
       "versions": [
+        "title"
+      ],
+      "unique_items": [],
+      "deprecated": false,
+      "hidden": "false",
+      "id": "copo.seqannotation.title",
+      "label": "TITLE",
+      "show_in_form": true,
+      "ref": "",
+      "type": "string",
+      "required": "true",
+      "show_in_table": true,
+      "control": "text"
+    },
+    {
+      "help_tip": "",
+      "unique": false,
+      "default_value": "sequence_annotation",
+      "show_as_attribute": true,
+      "control_meta": {},
+      "versions": [
+        "annotation_type"
+      ],
+      "unique_items": [],
+      "deprecated": false,
+      "hidden": "false",
+      "id": "copo.seqannotation.annotation_type",
+      "label": "ANNOTATION TYPE",
+      "show_in_form": true,
+      "ref": "",
+      "type": "string",
+      "required": "false",
+      "show_in_table": true,
+      "control": "select",
+      "option_values": [
+        {
+          "value": "sequence_annotation",
+          "label": "Sequence annotation"
+        },
+        {
+          "value": "decoupled_annotation",
+          "label": "GFF3 (decoupled)"
+        }
+      ]
+    },
+    {
+      "help_tip": "",
+      "unique": false,
+      "default_value": "",
+      "show_as_attribute": true,
+      "control_meta": {},
+      "versions": [
+        "description"
+      ],
+      "unique_items": [],
+      "deprecated": false,
+      "hidden": "false",
+      "id": "copo.seqannotation.description",
+      "label": "DESCRIPTION",
+      "show_in_form": true,
+      "ref": "",
+      "type": "string",
+      "required": "false",
+      "show_in_table": true,
+      "control": "text"
+    },
+    {
+      "help_tip": "The identifier of the genome assembly (e.g. GCA_xxxxxxxxx.1) or the INSDC sequence accession of the targeted sequence.",
+      "unique": false,
+      "default_value": "",
+      "show_as_attribute": true,
+      "control_meta": {},
+      "versions": [
+        "primary_id"
+      ],
+      "unique_items": [],
+      "deprecated": false,
+      "hidden": "false",
+      "id": "copo.seqannotation.primary_id",
+      "label": "PRIMARY ID",
+      "show_in_form": true,
+      "ref": "",
+      "regex": "^GCA_\\d+\\.\\d+$",
+      "type": "string",
+      "required": "false",
+      "show_in_table": true,
+      "control": "text"
+    },
+    {
+      "help_tip": "",
+      "unique": false,
+      "default_value": "",
+      "show_as_attribute": true,
+      "control_meta": {},
+      "versions": [
         "sample"
       ],
       "unique_items": [],
@@ -43,7 +138,7 @@
       "show_in_form": true,
       "ref": "",
       "type": "string",
-      "required": "true",
+      "required": "false",
       "show_in_table": true,
       "control": "text"
     },
@@ -85,48 +180,6 @@
       "show_in_form": true,
       "ref": "",
       "type": "array",
-      "required": "false",
-      "show_in_table": true,
-      "control": "text"
-    },    
-    {
-      "help_tip": "",
-      "unique": false,
-      "default_value": "",
-      "show_as_attribute": true,
-      "control_meta": {},
-      "versions": [
-        "title"
-      ],
-      "unique_items": [],
-      "deprecated": false,
-      "hidden": "false",
-      "id": "copo.seqannotation.title",
-      "label": "TITLE",
-      "show_in_form": true,
-      "ref": "",
-      "type": "string",
-      "required": "true",
-      "show_in_table": true,
-      "control": "text"
-    },
-    {
-      "help_tip": "",
-      "unique": false,
-      "default_value": "",
-      "show_as_attribute": true,
-      "control_meta": {},
-      "versions": [
-        "description"
-      ],
-      "unique_items": [],
-      "deprecated": false,
-      "hidden": "false",
-      "id": "copo.seqannotation.description",
-      "label": "DESCRIPTION",
-      "show_in_form": true,
-      "ref": "",
-      "type": "string",
       "required": "false",
       "show_in_table": true,
       "control": "text"
@@ -172,7 +225,7 @@
       "required": "false",
       "show_in_table": true,
       "control": "text"
-    },    
+    },
     {
       "help_tip": "",
       "unique": false,
@@ -193,7 +246,7 @@
       "required": "false",
       "show_in_table": false,
       "control": "text"
-    },        
+    },
     {
       "help_tip": "",
       "required": "true",
@@ -307,6 +360,6 @@
       "required": "false",
       "show_in_table": true,
       "control": "text"
-    }        
+    }
   ]
 }

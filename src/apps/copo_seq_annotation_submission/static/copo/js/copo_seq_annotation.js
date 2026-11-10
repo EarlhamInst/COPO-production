@@ -246,7 +246,15 @@ $(document).ready(function () {
     */
 
   //******************************Functions Block******************************//
-
+  
+  function toggleAnnotationTypeFields($modal) {
+    // Decoupled annotations types target an assembly (PRIMARY ID) while other types 
+    // like sequence annotation types need the others need sample/run/experiment fields
+    const isDecoupled = $modal.find('#id_annotation_type').val() === 'decoupled_annotation';
+    $modal.find('#div_id_primary_id').toggle(isDecoupled);
+    $modal.find('#div_id_sample, #div_id_run, #div_id_experiment').toggle(!isDecoupled);
+  }
+  
   function handle_add_n_edit(url) {
     dialog.realize();
     dialog.getButton('submit_annotation_button').disable();
@@ -260,22 +268,52 @@ $(document).ready(function () {
               $('<div>' + msg + xhr.status + ' ' + xhr.statusText + '</div>')
             );
           } else {
+            const $modal = $('.modal-dialog');
+
             dialog.getButton('submit_annotation_button').enable();
-            $('.modal-dialog')
+
+            // Show or hide fields based on the sequence annotation type
+            toggleAnnotationTypeFields($modal);
+            $modal
+              .find('#id_annotation_type')
+              .off('change')
+              .on('change', function () {
+                toggleAnnotationTypeFields($modal);
+
+                // Reload only the file rows in the form,
+                // with the data files and file types for the new annotation type
+                const annotationType = encodeURIComponent($(this).val());
+                $modal
+                  .find('#annotation_files_formset')
+                  .load(
+                    `${url}?annotation_type=${annotationType} #annotation_files_formset > *`,
+                    function (response, status, xhr) {
+                      if (status === 'error') {
+                        BootstrapDialog.show({
+                          title: 'Error',
+                          message: `Could not load the file options: ${xhr.status} ${xhr.statusText}`,
+                          type: BootstrapDialog.TYPE_DANGER,
+                        });
+                      }
+                    }
+                  );
+              });
+    
+            $modal
               .find('#id_sample')
               .off('change')
               .on('change', function (event) {
                 console.log('changed');
                 event.preventDefault();
 
-                value = $('.modal-dialog')
+                value = $modal
                   .find('#id_sample')
                   .find(':selected')
                   .val();
                 if (value == undefined || value === '') {
-                  var $el = $('.modal-dialog').find('#id_run');
+                  var $el = $modal.find('#id_run');
                   $el.empty(); // remove old options
-                  $el = $('.modal-dialog').find('#id_experiment');
+                  $el = $modal.find('#id_experiment');
                   $el.empty(); // remove old options
                   return;
                 }
@@ -296,7 +334,7 @@ $(document).ready(function () {
                     });
                   })
                   .done(function (data) {
-                    var $el = $('.modal-dialog').find('#id_run');
+                    var $el = $modal.find('#id_run');
                     //run = $el.find(':selected').val();
 
                     let run = [];
@@ -317,7 +355,7 @@ $(document).ready(function () {
                       );
                     });
 
-                    $el = $('.modal-dialog').find('#id_experiment');
+                    $el = $modal.find('#id_experiment');
                     let experiment = [];
                     $el.find(':selected').each(function () {
                       experiment.push($(this).val());
@@ -341,18 +379,18 @@ $(document).ready(function () {
                     );
                   });
               });
-            selected_sample = $('.modal-dialog')
+            selected_sample = $modal
               .find('#id_sample')
               .find(':selected')
               .val();
             if (selected_sample == '') {
-              var $el = $('.modal-dialog').find('#id_run');
+              var $el = $modal.find('#id_run');
               $el.empty(); // remove old options
-              $el = $('.modal-dialog').find('#id_experiment');
+              $el = $modal.find('#id_experiment');
               $el.empty(); // remove old options
             } else {
               var event = jQuery.Event('change');
-              $('.modal-dialog')
+              $modal
                 .find('#id_sample')
                 .val(selected_sample)
                 .trigger(event);
