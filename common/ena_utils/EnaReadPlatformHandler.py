@@ -1,7 +1,8 @@
 import requests
 import xml.etree.ElementTree as ET
 
-from requests.exceptions import RequestException
+from requests.exceptions import ConnectionError, RequestException, Timeout
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from common.dal.copo_da import EnaReadPlatformCollection
 from common.utils.helpers import (
@@ -12,6 +13,10 @@ from common.utils.logger import Logger
 
 
 l = Logger()
+
+# (connect, read) timeouts in seconds
+REQUEST_TIMEOUT = (10, 60)
+MAX_ATTEMPTS = 3
 
 ''''
 Example structure of the XML to be parsed
@@ -54,6 +59,19 @@ Example structure of the XML to be parsed
 </xs:schema>
 '''
 
+@retry(
+    stop=stop_after_attempt(MAX_ATTEMPTS),
+    wait=wait_exponential(multiplier=1, min=2, max=10),  # e.g. 2s, 4s, ... between attempts
+    retry=retry_if_exception_type((Timeout, ConnectionError)),
+    reraise=True,
+)
+def get_url_text(url):
+    '''Download url and return its text, retrying timeouts and connection errors.'''
+    response = requests.get(url, timeout=REQUEST_TIMEOUT)
+    response.raise_for_status()
+    return response.text
+
+
 class EnaReadPlatformHandler:
     def __init__(self):
         self.headers = {
@@ -66,14 +84,9 @@ class EnaReadPlatformHandler:
 
     def _load_platform(self, url):
         try:
-            response = requests.get(url, timeout=20)
-            response.raise_for_status()
-            return response.text
+            return get_url_text(url)
         except RequestException as e:
-            l.exception(f'Request failed: {e}')
-            return None
-        except ET.ParseError as e:
-            l.exception(f'XML parsing failed: {e}')
+            l.exception(f'Request failed after {MAX_ATTEMPTS} attempts: {e}')
             return None
 
     def _parse_platform(self, xml_str):
@@ -141,6 +154,8 @@ class EnaReadPlatformHandler:
         platform_set = []
         for url in self.urls:
             xml_str = self._load_platform(url)
+            if xml_str is None:
+                continue  # Keep the platforms saved from the last update
             platform_set.extend(self._parse_platform(xml_str))
 
         for platform in platform_set:
