@@ -53,11 +53,13 @@ $(document).ready(function () {
     if (!$viewport || !$viewport.length) return null;
     var $log = $viewport.find('#submission-activity-log');
     if (!$log.length) {
+      let palette = _activityPalette();
+      
       $log = $('<div/>', {
         id: 'submission-activity-log',
         css: {
-          background: '#111',
-          color: '#ddd',
+          background: palette.bg,
+          color: palette.fg,
           padding: '8px 10px',
           margin: '6px 0',
           border: '1px solid #333',
@@ -81,18 +83,19 @@ $(document).ready(function () {
     if (!$log) return null;
     var action = (opts && opts.action) || 'info';
     var lineId = opts && opts.lineId;
-    var color =
-      action === 'error' ? '#ff6b6b' :
-      action === 'progress' ? '#9aa' :
-      action === 'success' ? '#7bd88f' : '#ddd';
     var $line = lineId ? $log.find('#' + lineId) : $();
     if (!$line.length) {
-      $line = $('<div/>').css('color', color);
+      $line = $('<div/>');
       if (lineId) $line.attr('id', lineId);
       $log.append($line);
-    } else {
-      $line.css('color', color);
     }
+    
+    // Use the shared theme palette from generic_handlers_ext2.js, as displayAlert does.
+    // Without data-alert-type, _repaintActivityLog resets the line to the
+    // default text colour whenever the theme changes
+    let palette = _activityPalette();
+    $line.attr('data-alert-type', action);
+    _setImp($line[0], 'color', palette[action] || palette.fg);
     $line.text(text);
     $log.scrollTop($log[0].scrollHeight);
     return $line;
