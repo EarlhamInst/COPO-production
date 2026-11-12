@@ -15,7 +15,7 @@ autopep8==2.3.2
 #Babel==2.12.1
 backcall==0.2.0
 beautifulsoup4==4.15.0
-billiard==4.3.1
+billiard==4.3.2
 #biopy-isatab==0.1.1
 biopython==1.88
 bleach==6.4.0
@@ -24,7 +24,7 @@ botocore==1.43.119
 Brotli==1.2.1
 bs4==0.0.2
 cattrs==26.2.1
-celery==5.6.3
+celery==5.7.0
 certifi==2026.10.23
 #cffi==1.16.0
 channels==4.3.2
@@ -99,7 +99,7 @@ jsonref==1.1.0
 #jupyter-client==5.3.3
 #jupyter-console==6.0.0
 #jupyter-core==4.5.0
-kombu==5.6.2
+kombu==5.7.0
 #lazy-object-proxy==1.10.0
 lxml==6.1.3
 #MarkupSafe==2.1.5
