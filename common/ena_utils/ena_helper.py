@@ -482,7 +482,8 @@ class EnaSubmissionHelper:
         else:
             message = "Samples registered successfully."
             self.logging_info(message)
-        notify_read_status(data={"profile_id": self.profile_id}, msg=message, action="refresh_table", html_id="sample_info")
+        notify_read_status(data={"profile_id": self.profile_id}, msg=message, action="error" if result['status'] is False else "success", html_id="sample_info")
+        notify_read_status(data={"profile_id": self.profile_id}, msg="", action="refresh_table", html_id="sample_info")
         return result
 
     def register_project(self, submission_xml_path=str(), modify_submission_xml_path=str(), study=None, singlecell_id=None):

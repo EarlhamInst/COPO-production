@@ -169,7 +169,8 @@ def process_pending_submission_ena():
                                                                                                    analysis_component_name=submission_components["sequencing_annotation"]
                                                                                                    )
 
-                ena_submission_helper.push_action(message="Submission done", action="refresh_table")
+                ena_submission_helper.push_action(message="Submission done", action="success")
+                ena_submission_helper.push_action(message="", action="refresh_table")
 
             except Exception as e:
                 l.exception(e)
