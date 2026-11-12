@@ -115,7 +115,7 @@
       "label": "PRIMARY ID",
       "show_in_form": true,
       "ref": "",
-      "regex": "^GCA_\\d+\\.\\d+$",
+      "regex": "^GCA_\\d{9}\\.\\d+$",
       "type": "string",
       "required": "false",
       "show_in_table": true,

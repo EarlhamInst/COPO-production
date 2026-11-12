@@ -1,14 +1,13 @@
 from common.utils.helpers import FILE_COMPRESSION_SIGNATURES, FILE_SIGNATURE_LENGTH
 from common.validators.ena_validators.validation_messages import MESSAGES
 
-VALID_CHROMOSOME_FILE_EXTS = ['.gz', '.bz2']
-VALID_FASTA_FILE_EXTS = ['.fasta.gz', '.fas.gz', '.fsa.gz', '.fna.gz', '.fa.gz',
-                         '.fasta.bz2', '.fas.bz2', '.fsa.bz2', '.fna.bz2', '.fa.bz2']
+VALID_CHROMOSOME_FILE_EXTS = ['.gz']
+VALID_FASTA_FILE_EXTS = ['.fasta.gz', '.fas.gz', '.fsa.gz', '.fna.gz', '.fa.gz']
 
 # AGP is no longer accepted by ENA, so it is not listed
 ASSEMBLY_FIELD_EXT_MAP = {
     'fasta': VALID_FASTA_FILE_EXTS,
-    'flatfile': ['.gz', '.bz2'],
+    'flatfile': ['.gz'],
     'chromosome_list': VALID_CHROMOSOME_FILE_EXTS,
     'unlocalised_list': VALID_CHROMOSOME_FILE_EXTS,
 }
@@ -23,22 +22,6 @@ def has_valid_extension(file_name, valid_exts):
 
 def to_html_list(values):
     return '<ul>' + ''.join(f'<li>{v}</li>' for v in values) + '</ul>'
-
-
-def get_expected_signature(file_name):
-    '''Return the magic bytes expected for the file's compression extension, or None.'''
-    return next((sig for ext, sig in FILE_COMPRESSION_SIGNATURES.items()
-                 if str(file_name).endswith(ext)), None)
-
-
-def matches_expected_file_signature(file_name, header):
-    '''True if the file header matches the compression its extension claims.
-
-    Files whose extension does not imply a compression are not checked.
-    '''
-    expected = get_expected_signature(file_name)
-    return expected is None or (header or b'').startswith(expected)
-
 
 def read_file_header(file_path, n=FILE_SIGNATURE_LENGTH):
     try:

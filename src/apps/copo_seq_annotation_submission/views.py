@@ -8,9 +8,12 @@ from rest_framework import status
 from common.dal.profile_da import Profile
 from common.dal.submission_da import Submission
 from common.s3.s3Connection import S3Connection
-from common.utils.helpers import notify_annotation_status
+from common.utils.helpers import get_not_deleted_flag, notify_annotation_status
+from src.apps.copo_assembly_submission.utils.da import Assembly
 from src.apps.copo_core.views import web_page_access_checker
-from src.apps.copo_seq_annotation_submission.utils.seq_annotation_utils import SEQUENCE_ANNOTATION_TYPES, SEQUENCE_ANNOTATION_TYPES_MAP
+from src.apps.copo_seq_annotation_submission.utils.seq_annotation_utils import (
+    SEQUENCE_ANNOTATION_TYPES, SEQUENCE_ANNOTATION_TYPES_MAP, get_assembly_accession_choices,
+)
 from .forms import AnnotationFilesForm, AnnotationForm
 from .utils.da import SequenceAnnotation
 from .utils import EnaAnnotation
@@ -24,8 +27,12 @@ def copo_seq_annotation(request, profile_id="", ui_component=None):
     return render(request, 'copo/copo_seq_annotation.html', {'profile_id': profile_id, 'profile': profile, "ui_component": ui_component})
 
 @login_required
-def ena_annotation(request, profile_id, seq_annotation_id=None):    
+def ena_annotation(request, profile_id, seq_annotation_id=None):  
     request.session["profile_id"] = profile_id
+    # Get the GCA accessions of assemblies to populate the options for the PRIMARY ID dropdown menu
+    assemblies = Assembly().get_all_records_columns(filter_by={'profile_id': profile_id, 'deleted': get_not_deleted_flag()})
+    assembly_accession_choices, pending_assembly_names = get_assembly_accession_choices(assemblies)
+
     is_error = False
     seq_annotation = None
 
@@ -101,6 +108,8 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
             run_accession=run_accession,
             experiment_accession=experiment_accession,
             seq_annotation=seq_annotation,
+            assembly_accession_choices=assembly_accession_choices,
+            pending_assembly_names=pending_assembly_names,
         )
 
         formset = AnnotationFilesFormSet(
@@ -162,6 +171,8 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
             run_accession=run_accession,
             experiment_accession=experiment_accession,
             seq_annotation=seq_annotation,
+            assembly_accession_choices=assembly_accession_choices,
+            pending_assembly_names=pending_assembly_names,
         )
         # Show the annotation type in the form
         form.fields['annotation_type'].initial = seq_annotation_type

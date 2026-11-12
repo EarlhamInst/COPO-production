@@ -1,16 +1,17 @@
 import os
+from pathlib import Path
+import shutil
 import pandas as pd
 from bson import ObjectId
 from datetime import datetime
 from common.dal.mongo_util import cursor_to_list
 from collections import defaultdict
 from . import generic_helper as ghlper
-from .run_filetype import ena_run_filetype
 from common.dal.profile_da import Profile
 from common.utils import helpers
 from lxml import etree
 from common.schemas.utils.data_utils import simple_utc
-from common.utils.helpers import notify_submission_status, notify_read_status, get_datetime, get_env, json_to_pytype
+from common.utils.helpers import matches_expected_file_signature, notify_submission_status, notify_read_status, get_datetime, get_env, json_to_pytype
 from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SETTINGS, SRA_RUN_TEMPLATE,SRA_EXPERIMENT_TEMPLATE, SRA_SUBMISSION_MODIFY_TEMPLATE, SRA_SUBMISSION_TEMPLATE, ENA_CLI
 import subprocess
 import tempfile
@@ -24,11 +25,11 @@ from common.utils.logger import Logger
 lg = Logger()
 from src.apps.copo_assembly_submission.utils.da import Assembly
 from src.apps.copo_assembly_submission.utils.assembly_utils import (
-    get_assembly_file_error, matches_expected_file_signature, read_file_header,
+    get_assembly_file_error, read_file_header,
 )
+from src.apps.copo_seq_annotation_submission.utils.seq_annotation_utils import get_sequence_annotation_file_error
 from common.validators.ena_validators.validation_messages import MESSAGES
 import re
-import glob
 import xml.etree.ElementTree as ET
 import json
 
@@ -39,6 +40,52 @@ user_token = get_env('WEBIN_USER').split("@")[0]
 webin_user = get_env('WEBIN_USER')
 webin_domain = get_env('WEBIN_USER').split("@")[1]
 ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
+
+ENA_READ_FILE_TYPES = (
+    'fastq', 'bam', 'cram', 'sff', 'srf', 'sra', 'fasta', 'tab',
+    'OxfordNanopore_native', 'PacBio_HDF5', 'CompleteGenomics_native',
+    'Helicos_native', 'Illumina_native', 'SOLiD_native', '454_native',
+)
+
+_ENA_READ_FILE_TYPES_BY_LOWER = {value.lower(): value for value in ENA_READ_FILE_TYPES}
+
+READ_FILE_TYPE_EXTS = {
+    'fastq': ['.fastq.gz', '.fq.gz', '.fastq.bz2', '.fq.bz2'],
+    'bam': ['.bam'],
+    'cram': ['.cram'],
+    'OxfordNanopore_native': ['.tar.gz'],
+}
+WEBIN_CLI_REPORT_LINE_PREFIXES = ('ERROR', 'WARNING')
+
+def evaluate_read_file_type(file_name, declared_type=''):
+    if isinstance(declared_type, str):
+        canonical = _ENA_READ_FILE_TYPES_BY_LOWER.get(declared_type.strip().lower())
+        if canonical:
+            return canonical
+
+    _, file_extension = os.path.splitext(file_name or '')
+    if file_extension in ('.cram', '.bam'):
+        return file_extension[1:]
+    return 'fastq'
+
+def get_webin_cli_report(output_dir):
+    '''Return the errors and warnings from every Webin-CLI report under output_dir.
+
+    Webin-CLI writes '<manifest>.report' next to the manifest for manifest errors
+    (return code 2), and '<outputDir>/<context>/<name>/validate/*.report' for file
+    validation errors (return code 3). Searching the whole folder finds both, without
+    guessing the newest '<name>' folder, so output_dir should hold one submission only.
+
+    Only ERROR and WARNING lines are kept, to leave out Java stack traces. Lines are
+    joined with <br> because the result is shown on the page.
+    '''
+    lines = []
+    for report_path in sorted(Path(output_dir).rglob('*.report')):
+        report_text = report_path.read_text(errors='replace')
+        lines.extend(line for line in report_text.splitlines()
+                     if line.startswith(WEBIN_CLI_REPORT_LINE_PREFIXES))
+    return '<br>'.join(lines)
+
 
 class EnaSubmissionHelper:
     def __init__(self, submission_id=str(), profile_id=str(), credentials=None):
@@ -56,6 +103,7 @@ class EnaSubmissionHelper:
         self.pass_word = credentials.get("password") or pass_word
         self.webin_user = credentials.get("webin_user") or webin_user
         self.webin_domain = credentials.get("webin_domain") or webin_domain
+
 
     def logging_debug(self, message=str()):
         ghlper.logging_debug(message, self.submission_id)
@@ -82,6 +130,22 @@ class EnaSubmissionHelper:
         ghlper.logging_error(message, self.submission_id)
         notify_submission_status(data={"profile_id": self.profile_id},
                             msg=message, action="error", html_id="submission_info")
+
+    def run_webin_cli(self, manifest_path, context, action, output_dir=None):
+        # `action` can be 'validate' or 'submit'
+        test = ' -test ' if 'dev' in ena_service else ''
+        output_option = f'-outputDir {output_dir}' if output_dir else ''
+        webin_cmd = (f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token} -password '{self.pass_word}' "
+                    f"{test} -context {context} -manifest {manifest_path} {output_option} -{action} -ascp")
+        self.logging_debug(webin_cmd.replace(self.pass_word, 'xxxxxx'))
+        try:
+            output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True).decode('ascii')
+            return_code = 0
+        except subprocess.CalledProcessError as cpe:
+            return_code = cpe.returncode
+            output = cpe.stdout.decode('ascii') + ' ERROR return code ' + str(cpe.returncode)
+        self.logging_debug(output)
+        return return_code, output
 
     def get_submission_xml(self, output_location=str()):
         """
@@ -808,9 +872,9 @@ class EnaSubmissionHelper:
                 
                 run_file_node.set(
                     "filetype",
-                    ena_run_filetype(row[name], row.get("read_file_type", "")),
+                    evaluate_read_file_type(row[name], row.get('read_file_type', '')),
                 )
-                run_file_node.set("checksum", row[name+"_checksum"])  # todo: is this correct as submission time?
+                run_file_node.set("checksum", row[name+"_checksum"])  # todo: is this correct at submission time?
                 run_file_node.set("checksum_method", "MD5")
 
             # write run xml
@@ -1048,10 +1112,12 @@ class EnaSubmissionHelper:
         analysis_file_data_df["file_hash"] = analysis_file_data_df["sequencing_annotation_file"].map( 
                             {data_file["file_name"] : data_file.get("file_hash", "") 
                              for data_file in data_files if data_file.get("file_hash","") } )
-        analysis_file_data_df["remote_path"] = analysis_file_data_df["sequencing_annotation_file"].map( 
-                            {ena_file["local_path"].split("/")[-1] : ena_file.get("remote_path", "") 
+        analysis_file_data_df["remote_path"] = analysis_file_data_df["sequencing_annotation_file"].map(
+                            {ena_file["local_path"].split("/")[-1] : ena_file.get("remote_path", "")
                              for ena_file in ena_files if ena_file.get("remote_path","") } )
-
+        local_path_map = {ena_file['local_path'].split('/')[-1]: ena_file['local_path']
+                          for ena_file in ena_files if ena_file.get('local_path', '')}
+        errors = []
 
         for index, seq_annotation in analysis_component_data_df.iterrows():
             
@@ -1069,8 +1135,20 @@ class EnaSubmissionHelper:
 
             analysis_file_df = pd.DataFrame()
             if not analysis_file_data_df.empty:
-                analysis_file_df = analysis_file_data_df.loc[analysis_file_data_df[parent_map["sequencing_annotation_file"][analysis_component_name]]==seq_annotation[identifier]] 
- 
+                analysis_file_df = analysis_file_data_df.loc[analysis_file_data_df[parent_map["sequencing_annotation_file"][analysis_component_name]]==seq_annotation[identifier]]
+
+            # Check the files' extensions and compression, as register_assembly does.
+            # e.g. A manifest uploaded before these checks were added on upload
+            file_errors = self._get_sequence_annotation_file_errors(analysis_file_df, local_path_map)
+            if file_errors:
+                error = '<br>'.join(file_errors)
+                self.logging_error(f'Sequencing annotation {seq_annotation[identifier]} has invalid files: {error}')
+                Singlecell().update_component_status(id=singlecell_id, component=analysis_component_name,
+                    identifier=identifier, identifier_value=seq_annotation[identifier], repository='ena',
+                    status_column_value={'status': 'rejected', 'error': error})
+                errors.append(error)
+                continue
+
             analysis_dom = self._build_analysis_dom(seq_annotation, run_accessions, experiment_accessions, analysis_file_df)
             if seq_annotation.get("accession_ena",""):
                 analysis_set_dom_edit.append(analysis_dom)
@@ -1085,6 +1163,29 @@ class EnaSubmissionHelper:
         if len(seq_annotation_id_edit) > 0:
             submission_dom = self._build_submission_dom(is_new=False)
             self._submit_ena_v2(submission_dom=submission_dom,  analysis_dom=analysis_set_dom_edit, study_id=study_id, analysis_ids=seq_annotation_id_edit, analysis_component_name=analysis_component_name)
+
+        if errors:
+            result['status'] = False
+            result['message'] = f'Sequencing annotation not registered due to the following errors: {", ".join(errors)}'
+        return result
+
+    @staticmethod
+    def _get_sequence_annotation_file_errors(analysis_file_df, local_path_map):
+        # Return file type, extension and compression errors for one sequencing annotation's files.
+        file_errors = []
+        for _, file_row in analysis_file_df.iterrows():
+            file_name = file_row['sequencing_annotation_file']
+            file_error = get_sequence_annotation_file_error(file_name, file_row.get('sequencing_annotation_file_type'))
+            local_path = local_path_map.get(file_name, '')
+
+            if not file_error and local_path and os.path.exists(local_path) and \
+                    not matches_expected_file_signature(file_name, read_file_header(local_path)):
+                file_error = MESSAGES['invalid_compressed_file'].format(
+                    file_name=file_name, file_extension=os.path.splitext(file_name)[1])
+
+            if file_error:
+                file_errors.append(file_error)
+        return file_errors
 
 
     def _build_analysis_dom(self, seq_annotation, run_accessions, experiment_accessions, analysis_file_df):
@@ -1219,7 +1320,10 @@ class EnaSubmissionHelper:
                     result['message'] = message
                     return result
 
+            # One folder per assembly, emptied first so Webin-CLI reports from an earlier
+            # attempt are not shown again. The data files are elsewhere (their local_path).
             submission_folder = os.path.join(tempfile.gettempdir(), self.profile_id, row["study_id"], row[identifier])
+            shutil.rmtree(submission_folder, ignore_errors=True)
             os.makedirs(submission_folder, exist_ok=True)
             manifest_path = os.path.join(submission_folder,"manifest.txt")
 
@@ -1234,7 +1338,8 @@ class EnaSubmissionHelper:
             else:
                 submission_type = "genome"
                 
-            return_code, output = self.validate_assembly(file_path=manifest_path, submission_type=submission_type)
+            return_code, output = self.validate_assembly(file_path=manifest_path, submission_type=submission_type,
+                output_dir=submission_folder)
             """
         
             test = ""
@@ -1262,7 +1367,8 @@ class EnaSubmissionHelper:
             error = ""
             if return_code == 0:
                 self.logging_info("submitting assembly")
-                return_code, output = self.submit_assembly(file_path=str(manifest_path), submission_type=submission_type)
+                return_code, output = self.submit_assembly(file_path=str(manifest_path), submission_type=submission_type,
+                    output_dir=submission_folder)
                 if return_code != 0 :
                     #handle possibility submission is not successfull
                     #this may happen for instance if the same assembly has already been submitted, which would not get caught
@@ -1290,17 +1396,10 @@ class EnaSubmissionHelper:
                                                      with_child_components=True)
                 self.logging_info(f"Registering assembly {row[identifier]}...successfully submitted to ENA with accession {accession}")
             else:
-                error = output
-                if return_code == 2:
-                    with open(os.path.join(submission_folder,"manifest.txt.report")) as report_file:
-                        error = output + " " + report_file.read()
-                elif return_code == 3:
-                    directories = sorted(glob.glob(f"{submission_folder}/{submission_type}/*"),key=os.path.getmtime)
-                    with open(f"{directories[-1]}/validate/webin-cli.report") as report_file:
-                        report_text = report_file.read()
-                    # Strip Java stack traces — keep only ERROR/WARNING lines
-                    clean_lines = [l for l in report_text.splitlines() if l.startswith("ERROR") or l.startswith("WARNING")]
-                    error = "\n".join(clean_lines) if clean_lines else report_text
+                # Webin-CLI writes its reports in the manifest's folder (manifest.txt.report
+                # for manifest errors, <context>/<name>/validate/*.report for file errors)
+                report = get_webin_cli_report(submission_folder)
+                error = f'{output}<br>{report}' if report else output
                 Singlecell().update_component_status(id=singlecell_id, component="assembly", identifier=identifier, identifier_value=row[identifier], repository="ena", status_column_value={"status": "rejected", "error":error})
 
             if error:
@@ -1325,47 +1424,14 @@ class EnaSubmissionHelper:
 
 
 
-    def validate_assembly(self, file_path, submission_type):
-        test = ""
-        if "dev" in ena_service:
-            test = " -test "
-        webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token} -password '{self.pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -validate -ascp"
-        self.logging_debug(webin_cmd.replace(self.pass_word, "xxxxxx"))
-        try:
-            self.logging_info("validating assembly")
-            output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True)
-            output = output.decode("ascii")
-            return_code = 0
-        except subprocess.CalledProcessError as cpe:
-            return_code = cpe.returncode
-            output = cpe.stdout
-            output = output.decode("ascii") + " ERROR return code " + str(cpe.returncode)
-        self.logging_debug(output)
-        return return_code, output
+    def validate_assembly(self, file_path, submission_type, output_dir=None):
+        return self.run_webin_cli(file_path, submission_type, 'validate', output_dir=output_dir)
 
 
-    def submit_assembly(self, file_path, submission_type):
-        test = ""
-        if "dev" in ena_service:
-            test = " -test "
-        webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token}  -password '{self.pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
-        Logger().debug(msg=webin_cmd.replace(self.pass_word, "xxxxxx"))
-        # print(webin_cmd)
-        # try/except as it turns out this can fail even if validate is successfull
-        try:
-            #self.logging_info("submitting assembly")
-            output = subprocess.check_output(webin_cmd,stderr=subprocess.STDOUT, shell=True)
-            output = output.decode("ascii")
-            return_code = 0
-        except subprocess.CalledProcessError as cpe:
-            return_code = cpe.returncode
-            output = cpe.stdout
-            output = output.decode("ascii") + " ERROR return code " + str(cpe.returncode)
-        self.logging_debug(output)
-
-        #todo delete files after successfull submission
-        #todo decide if keeping manifest.txt and store accession in assembly objec too
-        return return_code, output
+    def submit_assembly(self, file_path, submission_type, output_dir=None):
+        # TODO: Delete files after successfull submission
+        # TODO: Decide if keeping manifest.txt and store accession in assembly objec too
+        return self.run_webin_cli(file_path, submission_type, 'submit', output_dir=output_dir)
 
 
     def _build_submission_dom(self, is_new=True):

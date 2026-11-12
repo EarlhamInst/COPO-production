@@ -3,6 +3,7 @@ import requests
 import jsonref
 import json
 import datetime
+import zlib
 
 from .logger import Logger
 from .channels import send_to_group
@@ -20,6 +21,14 @@ from tenacity import (
 )
 import re
 from typing import List
+
+GFF3_CHECK_BYTES = 64 * 1024
+GFF3_NUM_COLUMNS = 9
+GFF3_MAX_ERRORS = 10 
+GFF3_VERSION_PATTERN = re.compile(r'^##gff-version\s+3(\.\d+)*\s*$')
+# A taxonomy URI ending in the taxon ID e.g. https://www.ebi.ac.uk/ena/taxonomy/rest/tax-id/6239
+# or https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=6239
+GFF3_SPECIES_PATTERN = re.compile(r'^##species\s+https?://\S*?\d+\s*$')
 
 def get_class(kls):
     parts = kls.split('.')
@@ -561,6 +570,7 @@ def build_unified_context(context_urls, output_path):
     with open(output_path, 'w') as f:
         json.dump(merged, f, indent=2)
 
+
 def get_file_header(s3obj, bucket, key, n=3):
     try: 
         response = s3obj.s3_client.get_object(Bucket=bucket, Key=key, Range=f'bytes=0-{n - 1}')
@@ -568,3 +578,103 @@ def get_file_header(s3obj, bucket, key, n=3):
     except ClientError as e:
         l.error(f'Failed to get file header for {key}: {str(e)}')
         return b''
+
+
+def get_gff3_errors(s3obj, bucket, key):
+    # Return issues found at the start of a gzipped GFF3 file in S3, or [] if none.
+    raw = get_file_header(s3obj, bucket, key, n=GFF3_CHECK_BYTES)
+    try:
+        # 16 + MAX_WBITS reads gzip; decompressing the start of a file is fine
+        content = zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(raw)
+    except zlib.error:
+        return ['The file could not be read as gzip; it may be damaged']
+    # The read stopped part-way through the file, so its last line is likely cut off
+    is_partial = len(raw) >= GFF3_CHECK_BYTES
+    return get_gff3_content_errors(content, is_partial=is_partial)
+
+
+def get_gff3_content_errors(content, is_partial=False):
+    '''Return issues with uncompressed GFF3 content (bytes) against ENA's rules or [].
+
+    Checks the version line '##sequence-region' and '##species' directives, ASCII,
+    nine tab-separated columns, and 1-based coordinates with start <= end.
+
+    `is_partial` refers to whether the file content is the start of a longer file 
+    so its last line is ignored.
+    '''
+    lines = content.split(b'\n')
+    if is_partial:
+        lines = lines[:-1]
+
+    errors = []
+    declared_seqids = set()
+    undeclared_seqids = set()  # reported once each, not on every feature line
+    has_valid_species = False
+    species_line_number = None
+
+    if not lines or not GFF3_VERSION_PATTERN.match(lines[0].decode('ascii', errors='replace').strip()):
+        errors.append("The first line must be '##gff-version 3'")
+
+    for line_number, raw_line in enumerate(lines, start=1):
+        raw_line = raw_line.rstrip(b'\r')
+        if not raw_line.strip():
+            continue
+        if not raw_line.isascii():
+            errors.append(f'Line {line_number}: only ASCII characters are allowed')
+            continue
+        line = raw_line.decode('ascii')
+
+        if line.startswith('##FASTA'):
+            break  # the rest of the file is peptide sequences, not features
+        if line.startswith('##sequence-region'):
+            parts = line.split()
+            if len(parts) != 4 or not parts[2].isdigit() or not parts[3].isdigit():
+                errors.append(f"Line {line_number}: '##sequence-region' must be '##sequence-region seqid start end'")
+            else:
+                declared_seqids.add(parts[1])
+            continue
+        if line.startswith('##species'):
+            species_line_number = species_line_number or line_number
+            has_valid_species = has_valid_species or bool(GFF3_SPECIES_PATTERN.match(line))
+            continue
+        if line.startswith('#'):
+            continue  # other directives and comments
+
+        columns = line.split('\t')
+        if len(columns) != GFF3_NUM_COLUMNS:
+            errors.append(f'Line {line_number}: expected {GFF3_NUM_COLUMNS} tab-separated columns, '
+                          f'found {len(columns)}')
+            continue
+
+        seqid, start, end = columns[0], columns[3], columns[4]
+        if seqid not in declared_seqids and seqid not in undeclared_seqids:
+            undeclared_seqids.add(seqid)
+            errors.append(f"Line {line_number}: sequence '{seqid}' has no '##sequence-region' line before its features")
+        if not (start.isdigit() and end.isdigit() and int(start) >= 1 and int(end) >= 1):
+            errors.append(f'Line {line_number}: start and end must be whole numbers of 1 or more '
+                          f"(coordinates are 1-based), found '{start}' and '{end}'")
+        elif int(start) > int(end):
+            errors.append(f'Line {line_number}: start ({start}) must not be greater than end ({end})')
+
+    if not declared_seqids and not undeclared_seqids:
+        # No features were read either, so say what is missing
+        errors.append("At least one '##sequence-region' line is required")
+    if not has_valid_species:
+        if species_line_number:
+            errors.append(f"Line {species_line_number}: '##species' must be a taxonomy URL ending in the taxon ID "
+                          '(e.g. https://www.ebi.ac.uk/ena/taxonomy/rest/tax-id/6239), not an organism name')
+        else:
+            errors.append("A '##species' line with a taxonomy URL "
+                          '(e.g. https://www.ebi.ac.uk/ena/taxonomy/rest/tax-id/6239) is required')
+
+    if len(errors) > GFF3_MAX_ERRORS:
+        errors = errors[:GFF3_MAX_ERRORS] + [f'... and {len(errors) - GFF3_MAX_ERRORS} more problems']
+    return errors
+
+
+def matches_expected_file_signature(file_name, header):
+    # Checks whether a data file header matches the compression that its file extension claims
+    expected_file_signature = next((sig for ext, sig in FILE_COMPRESSION_SIGNATURES.items()
+                 if str(file_name).endswith(ext)), None)
+    
+    return expected_file_signature is None or (header or b'').startswith(expected_file_signature)

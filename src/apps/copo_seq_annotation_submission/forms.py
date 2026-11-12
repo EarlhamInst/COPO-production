@@ -1,15 +1,27 @@
-import re
-
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout,  Row, Column
 
-from src.apps.copo_seq_annotation_submission.utils.seq_annotation_utils import SEQUENCE_ANNOTATION_TYPES, SEQUENCE_ANNOTATION_TYPES_MAP
+from src.apps.copo_seq_annotation_submission.utils.seq_annotation_utils import (
+    SEQUENCE_ANNOTATION_FILE_TYPE_EXTS, SEQUENCE_ANNOTATION_TYPES, SEQUENCE_ANNOTATION_TYPES_MAP,
+)
 
 class AnnotationForm(forms.Form):
 
-    def __init__(self, *args, sample_accession=None, study_accession=None, run_accession=None, experiment_accession=None, seq_annotation=None,  **kwargs):
+    def __init__(self, *args, sample_accession=None, study_accession=None, run_accession=None, experiment_accession=None, seq_annotation=None,
+                 assembly_accession_choices=None, pending_assembly_names=None, **kwargs):
         super(AnnotationForm, self).__init__(initial=seq_annotation, *args, **kwargs)
+        self.fields['primary_id'].choices = [('', 'Select an assembly')] + list(assembly_accession_choices or [])
+        
+        if pending_assembly_names:
+            self.fields['primary_id'].help_text = (
+                'Waiting for ENA to assign a GCA accession: ' + ', '.join(pending_assembly_names)
+                + '. Assemblies can be annotated once they have one, which can take a few days.')
+        elif not assembly_accession_choices:
+            self.fields['primary_id'].help_text = (
+                'No assemblies with a GCA accession were found. Submit the assembly first; '
+                'ENA assigns its GCA accession a few days after submission.')
+
         if study_accession:
             self.fields['study'].initial = study_accession
             self.fields['study'].widget.attrs['readonly'] = True
@@ -42,17 +54,17 @@ class AnnotationForm(forms.Form):
     study = forms.CharField(label="STUDY",
                             widget=forms.TextInput(attrs={'placeholder': 'Study accession'}))
     
-    title = forms.CharField(label="ANNOTATION TITLE", widget=forms.TextInput(attrs={'placeholder': 'Annotation title user-provided'}))
+    title = forms.CharField(label="ANNOTATION TITLE", widget=forms.TextInput(attrs={'placeholder': 'Title of the annotation'}))
 
     annotation_type = forms.ChoiceField(label="ANNOTATION TYPE",
                     choices=[('sequence_annotation', 'Sequence annotation'), 
                         ('decoupled_annotation', 'Decoupled annotation')])
         
     description = forms.CharField(label="DESCRIPTION", required=False,
-                                  widget=forms.Textarea(attrs={'placeholder': 'Free text description of the sequence annotation'}))    
+                                  widget=forms.Textarea(attrs={'placeholder': 'Free text description of the annotation'}))    
         
-    primary_id = forms.CharField(label="PRIMARY ID", required=False,
-                                widget=forms.TextInput(attrs={'placeholder': 'The identifier of a genome assembly e.g. GCA_xxxxxxxxx.1'}))
+    # Primary ID choices are set in the `__init__` function above from the profile's assemblies
+    primary_id = forms.ChoiceField(label="PRIMARY ID", required=False)
         
     sample = forms.ChoiceField(label="SAMPLE", required=False)
     run = forms.MultipleChoiceField(label="RUN", required=False)
@@ -67,7 +79,6 @@ class AnnotationForm(forms.Form):
         cleaned_data = super().clean()
         sample_field = cleaned_data.get('sample')
         annotation_type =  cleaned_data.get('annotation_type')
-        primary_id = cleaned_data.get('primary_id')
         error = {}
 
         if annotation_type == 'sequence_annotation':
@@ -88,12 +99,6 @@ class AnnotationForm(forms.Form):
             for field in ['study', 'primary_id', 'description']:
                 if not cleaned_data.get(field, ''):
                     error.update({field: f"Please provide a '{field}' for 'Decoupled annotation' annotations"})
-                
-                # Check if primary_id matches the expected regex pattern
-                if field == 'primary_id' and primary_id:
-                    pattern = r'^GCA_\d+\.\d+$'
-                    if not re.match(pattern, primary_id):
-                        error.update({field: f"Invalid accession provided for '{field}'. Expected format: 'GCA_xxxxxxxxx.1'"})
         if error:
             raise forms.ValidationError(error)
         
@@ -127,3 +132,17 @@ class AnnotationFilesForm(forms.Form):
 
     file = forms.ChoiceField(label="FILE", required=True)
     type = forms.ChoiceField(label="TYPE", required=True)
+
+    def clean(self):
+        # Verify that the selected file matches its chosen file type
+        # e.g. a 'gff' file must end in .gff or .gff.gz.
+        cleaned_data = super().clean()
+        file_name = cleaned_data.get('file')
+        file_type = cleaned_data.get('type')
+
+        if file_name and file_type in SEQUENCE_ANNOTATION_FILE_TYPE_EXTS:
+            valid_exts = SEQUENCE_ANNOTATION_FILE_TYPE_EXTS[file_type]
+            if not file_name.endswith(tuple(valid_exts)):
+                self.add_error('file', f"'{file_name}' does not match its file type '{file_type}'. "
+                    f"Expected a file ending in {', '.join(valid_exts)}")
+        return cleaned_data

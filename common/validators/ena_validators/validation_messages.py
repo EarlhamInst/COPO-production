@@ -39,6 +39,14 @@ MESSAGES = {
             
     'missing_value': 'Missing data detected in column <strong>{column_name}</strong> at row <strong>{row}</strong>.',
     
+    'file_type_extension_mismatch': (
+        'File <strong>{file_name}</strong> does not match its file type <strong>{file_type}</strong>.<br>'
+        '<details><summary>Expected file extensions for {file_type}</summary>{valid_exts}</details>'),
+
+    'unsupported_sequence_annotation_file_type': (
+        'Sequence annotation file type <strong>{file_type}</strong> of file <strong>{file_name}</strong> is not accepted by ENA.<br>'
+        '<details><summary>Accepted file types</summary>{valid_types}</details>'),
+
     'unsupported_assembly_file_type': (
         'Assembly file type <strong>{file_type}</strong> of file <strong>{file_name}</strong> is not accepted by ENA.<br>'
         '<details><summary>Accepted file types</summary>{valid_types}</details>'),

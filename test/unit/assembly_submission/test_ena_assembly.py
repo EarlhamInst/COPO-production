@@ -9,7 +9,9 @@ Checks include:
 - The file type must be one ENA accepts, e.g. AGP is no longer accepted.
 - The file name must have an extension accepted for its field, e.g. a
   FASTA file must end in .fasta.gz, .fa.gz, etc.
-- A file named .gz or .bz2 must actually be gzip or bzip2 compressed,
+- ENA requires assembly data files to be gzip compressed, so only .gz
+  names are accepted (bzip2 is not documented by ENA for assemblies).
+- A file named .gz must actually be gzip compressed,
   which is checked from its first bytes (in S3 for the assembly form
   and in the downloaded reads manifest file for the 
   `assembly_file` worksheet).
@@ -36,6 +38,7 @@ from botocore.exceptions import ClientError
 from django.test import override_settings
 
 from common.ena_utils import ena_helper
+from common.utils import helpers
 from common.utils.helpers import get_file_header
 from common.validators.ena_validators.validation_messages import MESSAGES
 from src.apps.copo_assembly_submission import forms
@@ -55,9 +58,10 @@ BZIP2_SIGNATURE = b'BZh'
 
 @pytest.fixture(autouse=True)
 def silent_assembly_logger():
-    # EnaAssembly logs through Logger, which writes logs/<date>.log into the repo
+    # EnaAssembly and get_file_header log through Logger, which writes logs/<date>.log into the repo
     with mock.patch.object(EnaAssembly, 'l', mock.MagicMock()), \
-            mock.patch.object(EnaAssembly, 'Logger', mock.MagicMock()):
+            mock.patch.object(EnaAssembly, 'Logger', mock.MagicMock()), \
+            mock.patch.object(helpers, 'l', mock.MagicMock()):
         yield
 
 
@@ -103,11 +107,11 @@ def test_assembly_schema_has_no_agp_field():
 
 @pytest.mark.parametrize('field, file_name', [
     ('fasta', 'genome.fasta.gz'),
-    ('fasta', 'genome.fa.bz2'),
+    ('fasta', 'genome.fa.gz'),
     ('fasta', 'genome.fna.gz'),
     ('flatfile', 'genome.embl.gz'),
     ('chromosome_list', 'chromosomes.txt.gz'),
-    ('unlocalised_list', 'unlocalised.txt.bz2'),
+    ('unlocalised_list', 'unlocalised.txt.gz'),
 ])
 def test_valid_extensions_are_accepted(field, file_name):
     assert any(file_name.endswith(ext) for ext in EnaAssembly.ASSEMBLY_FIELD_EXT_MAP[field])
@@ -120,6 +124,11 @@ def test_valid_extensions_are_accepted(field, file_name):
     ('chromosome_list', 'chromosomes.txt'),
     ('unlocalised_list', 'unlocalised.txt'),
     ('flatfile', 'genome.embl'),
+    # ENA only accepts gzip for assemblies
+    ('fasta', 'genome.fa.bz2'),
+    ('flatfile', 'genome.embl.bz2'),
+    ('chromosome_list', 'chromosomes.txt.bz2'),
+    ('unlocalised_list', 'unlocalised.txt.bz2'),
 ])
 def test_invalid_extensions_are_rejected(field, file_name):
     assert not any(file_name.endswith(ext) for ext in EnaAssembly.ASSEMBLY_FIELD_EXT_MAP[field])
@@ -191,7 +200,7 @@ def test_s3_error_returns_empty_header(code):
 
 @pytest.mark.parametrize('file_name, content', [
     ('genome.fasta.gz', FASTA_CONTENT),  # Plain text renamed to .gz
-    ('genome.fasta.bz2', gzip.compress(FASTA_CONTENT)),  # gzip renamed to .bz2
+    ('genome.fasta.gz', bz2.compress(FASTA_CONTENT)),  # bzip2 renamed to .gz
     ('genome.fasta.gz', b''),  # empty file
 ])
 def test_validate_assembly_reports_file_not_really_compressed(validate_mocks, file_name, content):
@@ -299,11 +308,11 @@ WORKSHEET_FILE_TYPES = ['FASTA', 'FLATFILE', 'CHROMOSOME_LIST', 'UNLOCALISED_LIS
 
 @pytest.mark.parametrize('file_type, file_name', [
     ('FASTA', 'genome.fasta.gz'),
-    ('FASTA', 'genome.fa.bz2'),
+    ('FASTA', 'genome.fa.gz'),
     ('fasta', 'genome.fna.gz'),
     ('FLATFILE', 'genome.embl.gz'),
     ('CHROMOSOME_LIST', 'chromosomes.txt.gz'),
-    ('UNLOCALISED_LIST', 'unlocalised.txt.bz2'),
+    ('UNLOCALISED_LIST', 'unlocalised.txt.gz'),
 ])
 def test_valid_worksheet_assembly_file_has_no_error(file_type, file_name):
     assert assembly_utils.get_assembly_file_error(file_type, file_name) == ''
@@ -463,12 +472,12 @@ def assert_assembly_rejected(run, expected_error):
 
 def test_valid_worksheet_assembly_files_are_written_to_the_manifest(register_assembly):
     run = register_assembly(
-        [('FASTA', 'genome.fasta.gz'), ('CHROMOSOME_LIST', 'chromosomes.txt.bz2')],
+        [('FASTA', 'genome.fasta.gz'), ('CHROMOSOME_LIST', 'chromosomes.txt.gz')],
         {'genome.fasta.gz': gzip.compress(FASTA_CONTENT),
-         'chromosomes.txt.bz2': bz2.compress(b'chr1\t1\tChromosome\n')})
+         'chromosomes.txt.gz': gzip.compress(b'chr1\t1\tChromosome\n')})
 
     assert f'FASTA\t{run.download_dir / "genome.fasta.gz"}\n' in run.manifest
-    assert f'CHROMOSOME_LIST\t{run.download_dir / "chromosomes.txt.bz2"}\n' in run.manifest
+    assert f'CHROMOSOME_LIST\t{run.download_dir / "chromosomes.txt.gz"}\n' in run.manifest
     run.helper.validate_assembly.assert_called_once()
 
 
@@ -489,7 +498,7 @@ def test_worksheet_assembly_file_with_invalid_extension_is_rejected_at_submissio
 
 @pytest.mark.parametrize('file_name, content', [
     ('genome.fasta.gz', FASTA_CONTENT),  # Plain text renamed to .gz
-    ('genome.fasta.bz2', gzip.compress(FASTA_CONTENT)),  # gzip renamed to .bz2
+    ('genome.fasta.gz', bz2.compress(FASTA_CONTENT)),  # bzip2 renamed to .gz
     ('genome.fasta.gz', b''),  # Empty file
 ])
 def test_worksheet_assembly_file_not_really_compressed_is_rejected_at_submission(

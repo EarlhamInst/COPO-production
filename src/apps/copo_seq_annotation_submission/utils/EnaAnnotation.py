@@ -1,10 +1,18 @@
+from pathlib import Path
+import re
+import shutil
+
 from django.conf import settings
 from django_tools.middlewares import threadlocal as ThreadLocal
+from common.ena_utils.ena_helper import EnaSubmissionHelper, get_webin_cli_report
 from common.utils.helpers import (
     get_env,
     get_datetime,
     get_deleted_flag,
+    get_file_header,
+    get_gff3_errors,
     get_not_deleted_flag,
+    matches_expected_file_signature
 )
 from common.dal.copo_da import EnaFileTransfer, DataFile
 from common.dal.submission_da import Submission
@@ -51,6 +59,15 @@ def validate_annotation(form_data, formset, profile_id, seq_annotation_id=None):
     file_ids = []
     file_types = {}
     files_type_list = []
+    
+    # Prevent users from editing submitted sequence annotations because ENA rejects
+    # submission with the same annotation name
+    if seq_annotation_id and annotation_type == 'decoupled_annotation':
+        existing = SequenceAnnotation().get_record(seq_annotation_id)
+        if existing and existing.get('accession'):
+          return {'error': 'This annotation has already been submitted to ENA and cannot be changed'}
+
+    
     for f in formset:
         formset_data = f.cleaned_data
         f_name = formset_data.get("file", "").strip()
@@ -86,9 +103,22 @@ def validate_annotation(form_data, formset, profile_id, seq_annotation_id=None):
         if not s3_file_etags:
             # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
             return {
-                "error": 'Files not found, please upload files to COPO and try again'
+                "error": 'Files not found. Please upload the data files to COPO and try again'
             }
+            
+        # Check if the data file is a gzip file for Decoupled annotation types
+        if annotation_type == 'decoupled_annotation':
+            f_name = files[0]
+            header = get_file_header(s3obj, bucket_name, f_name)
+            if not matches_expected_file_signature(f_name, header):
+                return {'error': MESSAGES['invalid_compressed_file'].format(
+                    file_name=f_name, file_extension=Path(f_name).suffix)}
 
+            # Catch the most common GFF3 problems before Webin-CLI does (start of the file only)
+            gff3_errors = get_gff3_errors(s3obj, bucket_name, f_name)
+            if gff3_errors:
+                return {'error': f'<strong>{f_name}</strong> is not a valid GFF3 file:<br>'
+                    + '<br>'.join(gff3_errors)}
     else:
         # bucket is missing, therefore create bucket and notify user to upload files
         # msg = "s3 bucket not found, creating it"
@@ -215,7 +245,11 @@ def validate_annotation(form_data, formset, profile_id, seq_annotation_id=None):
                 return_document=ReturnDocument.AFTER,
             )
         )
-        tx.make_transfer_record(file_id=str(inserted["_id"]), submission_id=str(sub_id))
+        tx.make_transfer_record(
+            file_id=str(inserted["_id"]),
+            submission_id=str(sub_id),
+            no_remote_location=(annotation_type == 'decoupled_annotation')
+        )
         file_ids.append(str(inserted["_id"]))
     form_data["files"] = file_ids
     form_data["filenames"] = files
@@ -402,6 +436,50 @@ def submit_ena_dtol_v2(submission_dom, analysis_dom, sub, seq_annotation_ids):
             reset_seq_annotation_submission_status(sub["_id"])
             return False
 
+def submit_decoupled_annotation(seq_annotation, sub):
+    # Validate and submit a GFF3 annotation with Webin-CLI (-context annotation)
+    profile_id = sub['profile_id']
+    annotation_id = str(seq_annotation['_id'])
+    work_dir = Path(settings.MEDIA_ROOT) / 'ena_annotation_files' / profile_id / annotation_id
+    shutil.rmtree(work_dir, ignore_errors=True)
+    work_dir.mkdir(parents=True, exist_ok=True)
+
+    gff3_file = DataFile().get_record(seq_annotation['files'][0])
+    manifest = '\n'.join([
+        f"NAME\t{seq_annotation['title']}_{annotation_id}",
+        f"STUDY\t{seq_annotation['study']}",
+        'ANALYSIS_TYPE\tDECOUPLED_ANNOTATION',
+        f"PRIMARY_ID\t{seq_annotation['primary_id']}",
+        f"GFF3\t{gff3_file['file_location']}",
+        f"DESCRIPTION\t{seq_annotation['description']}",
+    ]) + '\n'
+    manifest_path = work_dir / 'manifest.txt'
+    manifest_path.write_text(manifest)
+
+    helper = EnaSubmissionHelper(profile_id=profile_id, submission_id=str(sub['_id']))
+    notify_annotation_status(data={'profile_id': profile_id}, msg='Validating GFF3 annotation',
+                             action='info', html_id='annotation_info')
+    return_code, output = helper.run_webin_cli(manifest_path, 'annotation', 'validate', output_dir=work_dir)
+    if return_code == 0:
+        return_code, output = helper.run_webin_cli(manifest_path, 'annotation', 'submit', output_dir=work_dir)
+
+    # Remove it from the pending list either way, like assemblies
+    Submission().update_seq_annotation_submission(sub_id=str(sub['_id']), seq_annotation_id=annotation_id)
+
+    match = re.search(r'ERZ\d+', output) if return_code == 0 else None
+    if match:
+        SequenceAnnotation().add_accession(annotation_id, match.group(0))
+        Submission().add_annotation_accessions(sub['_id'], match.group(0))
+        notify_annotation_status(data={'profile_id': profile_id}, msg='GFF3 annotation has been submitted',
+                                 action='info', html_id='annotation_info')
+        return
+
+    report = get_webin_cli_report(work_dir)
+    error = f'{output}<br>{report}' if report else output
+    SequenceAnnotation().update_seq_annotation_error([annotation_id], None, error)
+    notify_annotation_status(data={'profile_id': profile_id}, msg=error,
+                             action='error', html_id='annotation_info')
+
 
 def handle_async_receipt(receipt, sub, seq_annotation_ids):
     result = json.loads(receipt)
@@ -431,6 +509,7 @@ def process_seq_annotation_pending_submission():
         analysis_set_dom_edit = ET.Element("ANALYSIS_SET")
         seq_annotation_id_new = []
         seq_annotation_id_edit = []
+        
         for seq_annotation_id in sub["seq_annotations"]:
             seq_annotation = SequenceAnnotation().get_record(seq_annotation_id)
             if not seq_annotation:
@@ -446,6 +525,14 @@ def process_seq_annotation_pending_submission():
                     sub_id=str(sub["_id"]), seq_annotation_id=seq_annotation_id
                 )
                 continue
+            
+            # Skip decoupled annotation types because they are submitted 
+            # separately via the `submit_decoupled_annotation` function
+            if (seq_annotation.get('annotation_type') or 'sequence_annotation') == 'decoupled_annotation':
+                submit_decoupled_annotation(seq_annotation, sub)
+                continue
+            
+            # Build the analysis DOM for sequence annotation types
             analysis_dom = build_analysis_dom(seq_annotation, sub)
             if seq_annotation.get("accession", ""):
                 analysis_set_dom_edit.append(analysis_dom)
@@ -645,24 +732,37 @@ def update_seq_annotation_submission_pending():
         all_file_uploaded = True
         for seq_annotation_id in sub["seq_annotations"]:
             seq_annotation = SequenceAnnotation().get_record(seq_annotation_id)
+            
             if not seq_annotation:
                 Submission().update_seq_annotation_submission(
                     sub_id=str(sub["_id"]), seq_annotation_id=seq_annotation_id
                 )
                 continue
+            
+            annotation_type = seq_annotation.get('annotation_type') or 'sequence_annotation'
+
             for f in seq_annotation["files"]:
-                enaFile = (
+                ena_file = (
                     EnaFileTransfer()
                     .get_collection_handle()
                     .find_one({"file_id": f, "profile_id": sub["profile_id"]})
                 )
-                if enaFile:
-                    if enaFile["status"] != "complete":
-                        all_file_uploaded = False
-                        break
-                else:
-                    """it should not happen"""
+                if not ena_file:
+                    # It should not happen
                     l.error("file not found " + f)
+                    continue
+
+                if annotation_type == 'decoupled_annotation':
+                    transfer_status = tx.get_transfer_status(ena_file)
+                    done = (transfer_status != tx.TransferStatus.FAILED
+                            and transfer_status >= tx.TransferStatus.DOWNLOADED_TO_LOCAL)
+                else:
+                    done = ena_file['status'] == 'complete'
+                    
+                if not done:
+                    all_file_uploaded = False
+                    break
+                
         if all_file_uploaded:
             all_uploaded_sub_ids.append(sub["_id"])
 
@@ -701,7 +801,7 @@ def generate_additional_columns(profile_id):
     result = []
     submissions = Submission().get_records_by_field("profile_id", profile_id)
 
-    enaFiles = (
+    ena_files = (
         SequenceAnnotation()
         .get_collection_handle()
         .aggregate(
@@ -738,9 +838,9 @@ def generate_additional_columns(profile_id):
             ]
         )
     )
-    enaFilesMap = {
-        enaFile["accession"]: enaFile.get("ecs_location", "")
-        for enaFile in list(enaFiles)
+    ena_files_map = {
+        ena_file["accession"]: ena_file.get("ecs_location", "")
+        for ena_file in list(ena_files)
     }
 
     if submissions and len(submissions) > 0:
@@ -765,7 +865,7 @@ def generate_additional_columns(profile_id):
                     if accession_obj.get("accession", "")
                 ]
                 ecs_locations_with_file_archived = [
-                    enaFilesMap[accession_obj["accession"]]
+                    ena_files_map[accession_obj["accession"]]
                     for accession_obj in seq_annotation_accessions
                     if accession_obj.get("accession", "")
                     and "File archived"
