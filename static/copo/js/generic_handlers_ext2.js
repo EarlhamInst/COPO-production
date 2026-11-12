@@ -10,6 +10,9 @@ const alertClassMap = {
   error: 'alert-danger',
 };
 
+// HTML element IDs that only belong to the manifest upload/validation modals
+const MODAL_ONLY_ALERT_IDS = ['sample_info'];
+
 // Show/hide the sidebar info tab based on whether there's alert content.
 // The sidebar itself is always open by default — users can manually collapse
 // it via #toggleSidebarInfoBtn.
@@ -473,6 +476,11 @@ function getAlertElement(htmlId) {
   if ($modalElement.length) {
     return { $el: $modalElement, inModal: true };
   }
+
+  // Prevent modal messages from being displayed on pages as
+  // alert messages if multiple browser tabs are open
+  if (MODAL_ONLY_ALERT_IDS.includes(htmlId))
+    return { $el: $(), inModal: false };
 
   const $pageElement = $('.copo-sidebar').find(`#${htmlId}`);
   if ($pageElement.length) {
