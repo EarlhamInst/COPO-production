@@ -2131,9 +2131,17 @@ class EnaReads:
         ghlper.update_submission_status(
             status='success', message=status_message, submission_id=self.submission_id
         )
+        # Send the message and the table refresh separately so that the
+        # frontend colours the message by its status rather than as 'refresh_table'
         notify_read_status(
             data={"profile_id": self.profile_id},
             msg=status_message,
+            action="success",
+            html_id="sample_info",
+        )
+        notify_read_status(
+            data={"profile_id": self.profile_id},
+            msg="",
             action="refresh_table",
             html_id="sample_info",
         )
