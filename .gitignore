@@ -162,8 +162,11 @@ bundle_*.xml
 !.vscode/extensions.json
 .history
 sass.*
-webin-cli.jar
 .DS_Store
+
+# Ignore ENA Webin-CLI installation files and leftover `.tmp` files
+tools/reposit/ena_cli/
+webin-cli.jar
 
 #ignore logs folder
 logs/*

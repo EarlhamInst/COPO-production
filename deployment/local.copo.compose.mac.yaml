@@ -91,7 +91,7 @@ services:
   copo_web:
     image: local_copo_web:v1.0.0 # Replace with your local image name
     command: >
-      bash -c "pip install -q --use-deprecated=legacy-resolver -r /copo/requirements/dev.txt; sleep infinity"
+      bash -c "bash /copo/shared_tools/scripts/setup/install_webin_cli.sh; pip install -q --use-deprecated=legacy-resolver -r /copo/requirements/dev.txt; sleep infinity"
     ports:
       - '8000:8000'
     environment:

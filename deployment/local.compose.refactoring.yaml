@@ -3,7 +3,7 @@ services:
   new_web:
     image: copo_new:v1.0.u2204
     command: >
-      bash -c "code-server serve-local --disable-telemetry --auth none --host 0.0.0.0 --port 8101"
+      bash -c "bash /copo/shared_tools/scripts/setup/install_webin_cli.sh; code-server serve-local --disable-telemetry --auth none --host 0.0.0.0 --port 8101"
     ports:
       - "8001:8001"
       - "8101:8101"
