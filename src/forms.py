@@ -33,31 +33,31 @@ class AssemblyForm(forms.Form):
                             widget=forms.TextInput(attrs={'placeholder': 'Study accession'}))
     sample = forms.ChoiceField(label="SAMPLE")
     sample_text = forms.CharField(label="SAMPLE", widget=forms.TextInput(attrs={'placeholder': 'Sample accession'}), required=False)
-    assemblyname = forms.CharField(label="ASSEMBLYNAME", widget=forms.TextInput(attrs={'placeholder': 'Unique '
+    assemblyname = forms.CharField(label="ASSEMBLY NAME", widget=forms.TextInput(attrs={'placeholder': 'Unique '
                                                                                                       'assembly name,'
                                                                                                       ' user-provided'}))
-    assembly_type = forms.ChoiceField(label="ASSEMBLY_TYPE", choices=[('clone', 'clone'), ('isolate', 'isolate')])
+    assembly_type = forms.ChoiceField(label="ASSEMBLY TYPE", choices=[('clone', 'clone'), ('isolate', 'isolate')])
     coverage = forms.FloatField(label="COVERAGE", widget=forms.TextInput(attrs={'placeholder': 'The estimated depth of '
                                                                                                'sequencing coverage'}))
-    program = forms.CharField(label="PROGRAM", widget=forms.TextInput(attrs={'placeholder': 'The assembly program'}))
+    program = forms.CharField(label="PROGRAMME", widget=forms.TextInput(attrs={'placeholder': 'The assembly program'}))
     platform = forms.CharField(label="PLATFORM", widget=forms.TextInput(attrs={'placeholder': 'The sequencing '
                                                                                               'platform, '
                                                                                               'or comma-separated '
                                                                                               'list of platforms'}))
-    mingaplength = forms.IntegerField(label="MINGAPLENGTH", required=False,
+    mingaplength = forms.IntegerField(label="MINIMUM GAP LENGTH", required=False,
                                       widget=forms.TextInput(
                                           attrs={'placeholder': 'Minimum length of consecutive Ns to '
                                                                 'be considered a gap'}))
-    moleculetype = forms.ChoiceField(label="MOLECULETYPE", required=False,
+    moleculetype = forms.ChoiceField(label="MOLECULE TYPE", required=False,
                                      choices=[('genomic DNA', 'genomic DNA'), ('genomic RNA', 'genomic RNA'),
                                               ("viral cRNA", "viral cRNA")])
     description = forms.CharField(label="DESCRIPTION", required=False,
                                   widget=forms.Textarea(attrs={'placeholder': 'Free text description of the genome '
                                                                               'assembly'}))
-    run_ref = forms.MultipleChoiceField(label="RUN_REF", required=False)
+    run_ref = forms.MultipleChoiceField(label="RUN REFERENCE", required=False)
     fasta = forms.FileField(label="FASTA", required=False, widget=forms.FileInput(
         #attrs={'accept': '.fasta.gz, .fas.gz, .fsa.gz, fna.gz, .fa.gz, .fasta.bz2, .fas.bz2, .fsa.bz2, .fna.bz2, .fa.bz2'}
          ))
     flatfile = forms.FileField(label="FLATFILE", required=False)
-    chromosome_list = forms.FileField(label="CHROMOSOME_LIST", required=False)
-    unlocalised_list = forms.FileField(label="UNLOCALISED_LIST", required=False)
+    chromosome_list = forms.FileField(label="CHROMOSOME LIST", required=False)
+    unlocalised_list = forms.FileField(label="UNLOCALISED LIST", required=False)
