@@ -17,7 +17,7 @@ from common.utils.helpers import (
     get_not_deleted_flag,
     get_db_data_sources
 )
-from common.schemas.utils.data_utils import simple_utc
+from common.schemas.utils.data_utils import simple_utc, render_html_list
 from django.conf import settings
 from common.ena_utils import generic_helper as ghlper
 from common.dal.copo_da import EnaChecklist, EnaFileTransfer
@@ -1331,15 +1331,21 @@ class EnaReads:
 
         # retrieve file upload status
 
-        file_submit_status_map = EnaFileTransfer().get_transfer_status_by_local_path(profile_id=self.profile_id, local_paths=list(datafiles_df.datafile_location))
+        local_file_paths = list(datafiles_df.datafile_location)
+        file_submit_status_map = EnaFileTransfer().get_transfer_status_by_local_path(profile_id=self.profile_id, local_paths=local_file_paths)
+        status_for_files_in_remote = [
+            tx.TransferStatus.TRANSFERRED_TO_ENA,
+            tx.TransferStatus.COMPLETED_VALIDATION_IN_ENA,
+            tx.TransferStatus.ARCHIVE_COMPLETED_VALIDATION_IN_ENA,
+            tx.TransferStatus.ARCHIVE_TRANSFERRED_TO_ENA,
+        ]
         files_not_in_remote = []
-        for local_path, enaFile in file_submit_status_map.items():
-            transfer_status = tx.get_transfer_status(enaFile)
-            if transfer_status  not in [ tx.TransferStatus.TRANSFERRED_TO_ENA, 
-                                         tx.TransferStatus.COMPLETED_VALIDATION_IN_ENA,
-                                         tx.TransferStatus.ARCHIVE_COMPLETED_VALIDATION_IN_ENA,
-                                         tx.TransferStatus.ARCHIVE_TRANSFERRED_TO_ENA
-                                        ]:
+        
+        # Iterate over submissions' data files rather than the files from the transfer records
+        # so, that data files that have no transfer records can still get a placeholder uploaded in ENA
+        for local_path in local_file_paths:
+            enaFile = file_submit_status_map.get(local_path)
+            if enaFile is None or tx.get_transfer_status(enaFile) not in status_for_files_in_remote:
                 files_not_in_remote.append(os.path.basename(local_path))
 
         # retrieve already uploaded files
@@ -1357,13 +1363,28 @@ class EnaReads:
         ghlper.touch_files(file_paths=mock_file_names)
 
         kwargs = dict(submission_id=self.submission_id)
-        ghlper.transfer_to_ena(
+        is_file_transferred = ghlper.transfer_to_ena(
             #webin_user=self.webin_user,
             #pass_word=self.pass_word,
             remote_path=self.remote_location,
             file_paths=mock_file_names,
             **kwargs,
         )
+
+        # ENA rejects read/run XMLs if data files are missing from ENA's file upload area.
+        # Stop trying to make the submission at this point because the submission will fail.
+        if not is_file_transferred:
+            files_not_in_remote_html = [f'<strong>{f}</strong>' for f in files_not_in_remote]
+            message = (
+                'Error uploading data file placeholders to the ENA file upload area: '
+                + f'{render_html_list(files_not_in_remote_html)}'
+                + 'Please try submitting again.'
+            )
+            
+            ghlper.logging_error(message, self.submission_id)
+            result = dict(status=False, value='', message=message)
+            return result
+        
         # branch for manifest submissions
         if Submission().is_manifest_submission(self.submission_id):
             pass
