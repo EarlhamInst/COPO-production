@@ -130,9 +130,10 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
                 formdata, formset, profile_id, seq_annotation_id
             )
             if sub_result.get("error", ""):
+                errors = sub_result.get("error", "")
                 notify_annotation_status(
                     data={"profile_id": profile_id},
-                    msg=sub_result.get("error", ""),
+                    msg=errors,
                     action="error",
                     html_id="annotation_info",
                 )
@@ -159,8 +160,10 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
                 action="error",
                 html_id="annotation_info",
             )
-        return HttpResponse(
-            content=MESSAGES["form_validation_error"], status=status.HTTP_400_BAD_REQUEST 
+            errors = msg
+        return JsonResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            data={'message': MESSAGES['form_validation_error'], 'errors': errors},
         )
 
     else:

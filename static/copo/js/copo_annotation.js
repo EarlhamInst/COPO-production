@@ -94,7 +94,7 @@ function submit() {
       console.log(data);
       BootstrapDialog.show({
         title: 'Error',
-        message: 'Error ' + data.responseText,
+        message: 'Error ' + showFormErrors(data, $('#annotation_info')),
         type: BootstrapDialog.TYPE_DANGER,
       });
     })
