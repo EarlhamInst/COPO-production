@@ -25,7 +25,8 @@ from os.path import join
 from pymongo import ReturnDocument
 import common.ena_utils.FileTransferUtils as tx
 from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_project
-
+from common.schemas.utils.data_utils import render_html_list
+from html import escape
 from common.utils import html_tags_utils as htags
 
 from django.conf import settings
@@ -204,16 +205,24 @@ def validate_annotation(form_data, formset, profile_id, seq_annotation_id=None):
                     and existing_annotation["_id"] != ObjectId(seq_annotation_id)
                     or not seq_annotation_id
                 ):
-                    return {
-                        "error": f'Files {f_name}, has been used for other annotation submission, please use another file name'
+                    f_name_html = [f'<strong>{escape(f_name)}</strong>']
+                    return {'error': (
+                            f'The following data files have already been used in another sequence annotation submission: '
+                            f'{render_html_list(f_name_html)}'
+                            + 'Please use different file names.'
+                        )
                     }
 
                 if existing_file["s3_etag"] == s3_file_etags[f_name]:
                     file_ids.append(str(existing_file["_id"]))
                     continue
             else:
-                return {
-                    "error": f'Files {f_name}, has been used for other read / assembly / annotation submission, please use another file name'
+                f_name_html = [f'<strong>{escape(f_name)}</strong>']
+                return {'error': (
+                        f'The following data files have already been used in another read, assembly or sequence annotation submission: '
+                        f'{render_html_list(f_name_html)}'
+                        + 'Please use different file names.'
+                    )
                 }
 
         # df = DataFile().get_collection_handle().find_one({"file_location": file_location, "deleted": {"$ne": get_deleted_flag()}})

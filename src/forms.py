@@ -34,12 +34,11 @@ class AssemblyForm(forms.Form):
     sample = forms.ChoiceField(label="SAMPLE")
     sample_text = forms.CharField(label="SAMPLE", widget=forms.TextInput(attrs={'placeholder': 'Sample accession'}), required=False)
     assemblyname = forms.CharField(label="ASSEMBLY NAME", widget=forms.TextInput(attrs={'placeholder': 'Unique '
-                                                                                                      'assembly name,'
-                                                                                                      ' user-provided'}))
+                                                                                                      'assembly name'}))
     assembly_type = forms.ChoiceField(label="ASSEMBLY TYPE", choices=[('clone', 'clone'), ('isolate', 'isolate')])
     coverage = forms.FloatField(label="COVERAGE", widget=forms.TextInput(attrs={'placeholder': 'The estimated depth of '
                                                                                                'sequencing coverage'}))
-    program = forms.CharField(label="PROGRAMME", widget=forms.TextInput(attrs={'placeholder': 'The assembly program'}))
+    program = forms.CharField(label="PROGRAMME", widget=forms.TextInput(attrs={'placeholder': 'The name of the assembly programme'}))
     platform = forms.CharField(label="PLATFORM", widget=forms.TextInput(attrs={'placeholder': 'The sequencing '
                                                                                               'platform, '
                                                                                               'or comma-separated '

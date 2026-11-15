@@ -24,6 +24,8 @@ import pandas as pd
 from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_project
 from common.dal.mongo_util import cursor_to_list
 from common.ena_utils.ena_helper import EnaSubmissionHelper
+from common.schemas.utils.data_utils import render_html_list
+from html import escape
 from common.validators.ena_validators.validation_messages import MESSAGES
 from .assembly_utils import (
     ASSEMBLY_FIELD_EXT_MAP, ASSEMBLY_FILE_FIELDS,
@@ -182,12 +184,24 @@ def validate_assembly(form, profile_id, assembly_id):
             if existing_file["file_location"] == file_location:
                 existing_assembly = existing_assemblies_map.get(str(existing_file["_id"]), None)
                 if existing_assembly and (assembly_id and str(existing_assembly["_id"]) != assembly_id or not assembly_id) :
-                    return {"error": f'Files {f_name}, has been used for other assembly submission, please use another file name'}
+                    f_name_html = [f'<strong>{escape(f_name)}</strong>']
+                    return {"error": (
+                            f'The following data files have already been used in another assembly submission: '
+                            f'{render_html_list(f_name_html)}'
+                            + 'Please use different file names.'
+                        )
+                    }
                 if existing_file["s3_etag"] == s3_file_etags[f_name]:
                     file_ids.append(str(existing_file["_id"]))
                     continue        
             else: 
-                return {"error": f'Files {f_name}, has been used for other read / assembly / annotation submission, please use another file name'}
+                f_name_html = [f'<strong>{escape(f_name)}</strong>']
+                return {"error": (
+                        f'The following data files have already been used in another read, assembly or sequence annotation submission: '
+                        f'{render_html_list(f_name_html)}'
+                        + 'Please use different file names.'
+                    )
+                }
 
         df = dict()
         df["file_name"] = f_name

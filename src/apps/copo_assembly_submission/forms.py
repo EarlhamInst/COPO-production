@@ -59,9 +59,9 @@ class AssemblyForm(forms.Form):
     sample = forms.ChoiceField(label="SAMPLE")
     sample_text = forms.CharField(label="SAMPLE", widget=forms.TextInput(attrs={'placeholder': 'Sample accession'}), required=False)
     submission_type = forms.ChoiceField(label="SUBMISSION TYPE", choices=[('genome', 'genome'), ('transcriptome', 'transcriptome')])
-    assemblyname = forms.CharField(label="ASSEMBLY NAME", widget=forms.TextInput(attrs={'placeholder': 'Unique assembly name, user-provided'}))
+    assemblyname = forms.CharField(label="ASSEMBLY NAME", widget=forms.TextInput(attrs={'placeholder': 'Unique assembly name'}))
     assembly_type = forms.ChoiceField(label="ASSEMBLY TYPE", choices=[('clone', 'clone'), ('isolate', 'isolate')])
-    program = forms.CharField(label="PROGRAMME", widget=forms.TextInput(attrs={'placeholder': 'The assembly program'}))
+    program = forms.CharField(label="PROGRAMME", widget=forms.TextInput(attrs={'placeholder': 'The name of the assembly programme'}))
     platform = forms.CharField(label="PLATFORM", widget=forms.TextInput(attrs={'placeholder': 'The sequencing '
                                                                                               'platform, '
                                                                                               'or comma-separated '
