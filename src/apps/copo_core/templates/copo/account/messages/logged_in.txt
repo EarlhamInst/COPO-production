@@ -1,0 +1,1 @@
+{# Overrides django-allauth's 'Successfully signed in as ...' message. It renders to nothing, so allauth doesn't add the message, which otherwise appears later on the first page that displays Django messages (e.g. the Assembly form) #}
