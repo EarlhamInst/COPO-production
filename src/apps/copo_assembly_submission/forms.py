@@ -76,12 +76,12 @@ class AssemblyForm(forms.Form):
                                     widget=forms.TextInput(attrs={'placeholder': 'The address of the authors'})) 
 
     coverage = forms.FloatField(label="COVERAGE", widget=forms.TextInput(attrs={'placeholder': 'The estimated depth of '
-                                                                                               'sequencing coverage'}),required=False, help_text='it is for genome assembly only')
-    mingaplength = forms.IntegerField(label="MINIMUM GAP LENGTH", required=False,help_text='it is for genome assembly only',
+                                                                                               'sequencing coverage'}),required=False, help_text='It is used for genome assembly only.')
+    mingaplength = forms.IntegerField(label="MINIMUM GAP LENGTH", required=False,help_text='It is used for genome assembly only.',
                                       widget=forms.TextInput(
                                           attrs={'placeholder': 'Minimum length of consecutive Ns to '
                                                                 'be considered a gap'}))
-    moleculetype = forms.ChoiceField(label="MOLECULE TYPE", required=False, help_text= 'it is for genome assembly only' ,
+    moleculetype = forms.ChoiceField(label="MOLECULE TYPE", required=False, help_text= 'It is used for genome assembly only.' ,
                                      choices=[('','-'), ('genomic DNA', 'genomic DNA'), ('genomic RNA', 'genomic RNA'),
                                               ("viral cRNA", "viral cRNA")])
     run_ref = forms.MultipleChoiceField(label="RUN REFERENCE", required=False)

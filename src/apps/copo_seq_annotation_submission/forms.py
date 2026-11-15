@@ -1,4 +1,6 @@
 from django import forms
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout,  Row, Column
 
@@ -14,13 +16,16 @@ class AnnotationForm(forms.Form):
         self.fields['primary_id'].choices = [('', 'Select an assembly')] + list(assembly_accession_choices or [])
         
         if pending_assembly_names:
-            self.fields['primary_id'].help_text = (
-                'Waiting for ENA to assign a GCA accession: ' + ', '.join(pending_assembly_names)
-                + '. Assemblies can be annotated once they have one, which can take a few days.')
+            self.fields['primary_id'].help_text = format_html(
+                '<div class="alert alert-warning" role="alert">Waiting for ENA to assign a GCA accession: {}. '
+                'Assemblies can be annotated once they have one, which can take a few days.</div>',
+                ', '.join(pending_assembly_names),
+            )
         elif not assembly_accession_choices:
-            self.fields['primary_id'].help_text = (
-                'No assemblies with a GCA accession were found. Submit the assembly first; '
-                'ENA assigns its GCA accession a few days after submission.')
+            self.fields['primary_id'].help_text = mark_safe(
+                '<div class="alert alert-warning" role="alert">No assemblies with a GCA accession were found. '
+                'Submit the assembly first; ENA assigns its GCA accession a few days after submission.</div>'
+            )
 
         if study_accession:
             self.fields['study'].initial = study_accession
