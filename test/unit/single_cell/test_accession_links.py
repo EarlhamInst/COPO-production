@@ -70,7 +70,9 @@ LABELS = {'ckan': 'CKAN', 'ena': 'ENA', 'sapio': 'Sapio', 'zenodo': 'Zenodo'}
     ('error_sapio', 'Error for Sapio'),
     ('status_zenodo', 'Status for Zenodo'),
     ('study_accession_ena', 'Study Accession for ENA'),
-    ('study_id', 'Study Id'),
+    ('study_id', 'Study ID'),
+    ('sample_id_ena', 'Sample ID for ENA'),
+    ('idea', 'Idea'),
     ('ena', 'Ena'),
 ])
 def test_column_titles_name_repositories_by_their_label(column_name, title):

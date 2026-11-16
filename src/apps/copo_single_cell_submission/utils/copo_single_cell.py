@@ -92,13 +92,17 @@ def get_column_title(column_name):
     The title of a table column from its name. A name that ends with a
     repository gets the repository's label 
     e.g. 'status_ckan' -> 'Status for CKAN' and 'study_accession_ena' ->
-    'Study Accession for ENA'. Other names are title-cased e.g. 'study_id' -> 'Study Id'.
+    'Study Accession for ENA'. Other names are title-cased, with 'ID' in
+    capitals e.g. 'study_id' -> 'Study ID'.
     '''
+    def title_case(words):
+        return ' '.join('ID' if word.lower() == 'id' else word.title() for word in words)
+
     *words, last_word = column_name.split('_')
     label = settings.REPOSITORY_LABELS.get(last_word.lower())
     if words and label:
-        return f"{' '.join(words).title()} for {label}"
-    return column_name.replace('_', ' ').title()
+        return f'{title_case(words)} for {label}'
+    return title_case(column_name.split('_'))
 
 
 def _apply_accession_links(columns):
