@@ -86,6 +86,29 @@ def _render_repo_accession_function(field_name):
         )
     return f"render_repo_accession('{repo}')" if repo else ''
 
+
+def _apply_accession_links(columns):
+    '''
+    For each repository with a 'link_column' (see `REPOSITORY_ACCESSION_LINKS`
+    in `data.py` file), hide the repository's accession column and render the
+    'link_column' column's value as a link to the accession instead.
+    `columns` is a list of DataTables column definitions and is changed in place.
+    '''
+    names = [column.get('data') for column in columns if isinstance(column.get('data'), str)]
+    for repo, cfg in settings.REPOSITORY_ACCESSION_LINKS.items():
+        link_column = cfg.get('link_column')
+        accession_field = next(
+            (name for name in names if name.lower().endswith(cfg['field_suffix'])), None
+        )
+        if not link_column or not accession_field or link_column not in names:
+            continue
+        for column in columns:
+            if column.get('data') == accession_field:
+                column['visible'] = False
+            elif column.get('data') == link_column:
+                column['render'] = f"renderRepoAccessionLink('{repo}', '{accession_field}')"
+    return columns
+
 def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), schema_name=str()):
     """Build the complete data structure for the single-cell UI DataTable.
 
@@ -192,6 +215,9 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
                     )
                 )  # render = "render_accession_column_function"
                 column_keys[component_name].append(name)
+
+            # Some repositories' accessions are shown as a link on another column
+            _apply_accession_links(columns[component_name])
 
             # If this component has file fields, add file status and ENA processing status columns
             if not file_df.empty:
@@ -317,6 +343,7 @@ def generate_accessions_singlecell(profile_id, study_id ):
         # Dynamically build column definitions from the keys in the first accession record
         for column in accessions[0].keys():
             columns.append(dict(data=column, title=column.replace("_", " ").title(), defaultContent='', render=_render_repo_accession_function(column)))
+        _apply_accession_links(columns)
         # Assign unique row IDs using the biosample accession (or study_id as fallback)
         for accession in accessions:
             accession["DT_RowId"] = "accession_" + accession.get("biosampleAccession") if "biosampleAccession" in accession else accession.get("study_id")

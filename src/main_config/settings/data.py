@@ -118,7 +118,9 @@ ENA_URL_HOSTNAME = get_env('ENA_URL_HOSTNAME') or 'www.ebi.ac.uk'
 # to 'url_template' with '{accession}' replaced by the accession
 # NB: '{accession}' is escaped as '{{accession}}' within f-strings.
 # It is exposed to JavaScript as 'REPOSITORY_ACCESSION_LINKS' via
-# the 'custom_context_template.py' file
+# the 'custom_context_template.py' file.
+# With 'link_column', the accession isn't shown in its own column. Instead,
+# the 'link_column' column keeps showing its own value as a link to it.
 REPOSITORY_ACCESSION_LINKS = {
     'ena': {
         'field_suffix': 'accession_ena',
@@ -127,6 +129,8 @@ REPOSITORY_ACCESSION_LINKS = {
     'sapio': {
         'field_suffix': 'accession_sapio',
         'url_template': f'{SAPIO_WEB_URL}/veloxClient/#dataType=Project;recordId={{accession}};view=dataRecord',
+        # The Sapio record ID is shown as a link on the Project ID
+        'link_column': 'study_id',
     },
     'zenodo': {
         'field_suffix': 'accession_zenodo',

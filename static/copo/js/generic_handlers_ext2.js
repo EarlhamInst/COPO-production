@@ -154,6 +154,22 @@ function render_repo_accession(repo) {
   };
 }
 
+function renderRepoAccessionLink(repo, accessionField) {
+  // Shows the column's value as a link to the repository record whose
+  // accession is in the row's 'accessionField' field
+  return function (data, type, row) {
+    if (type !== 'display' || data == null || data === '') {
+      return data;
+    }
+    const accession = row ? row[accessionField] : '';
+    const url = accession ? get_repo_accession_url(repo, accession) : '';
+    if (!url) {
+      return data;
+    }
+    return `<a target="_blank" rel="noopener noreferrer" href="${url}">${data}</a>`;
+  };
+}
+
 function addComponentMessage(componentName) {
   // Adds additional information to the component page
   let pageDescription = $('.page-welcome-message-template').find(
