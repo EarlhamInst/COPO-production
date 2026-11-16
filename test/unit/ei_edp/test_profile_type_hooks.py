@@ -10,7 +10,11 @@ from unittest import mock
 
 import pytest
 
-from src.apps.copo_core.profile_type_hooks import ProfileTypeHooks, get_profile_type_hooks
+from src.apps.copo_core.profile_type_hooks import (
+    ProfileTypeHooks,
+    get_all_profile_card_fields,
+    get_profile_type_hooks,
+)
 from src.apps.copo_single_cell_submission.utils.single_cell_utils import (
     SchemaClassType,
     get_schema_class,
@@ -44,6 +48,7 @@ def test_default_hooks_change_nothing():
     hooks = ProfileTypeHooks()
     profile = {'_id': 'p1', 'type': 'genomics'}
 
+    assert hooks.get_profile_card_fields() == []
     assert hooks.get_profile_card(profile) == {'details': [], 'data_attributes': {}}
     assert hooks.get_sample_page_context(profile) == {}
     assert hooks.check_blank_sample_manifest(profile, {}) == SUCCESS
@@ -138,15 +143,50 @@ def test_lims_blank_manifest_check_passes_the_chosen_batch():
 
 # --- EDP: the profile's card on the Work profiles page ---
 
-def test_card_links_the_jira_pip_and_says_whether_samples_are_registered():
-    card = EDPProfileTypeHooks().get_profile_card({**PROFILE, 'id': 'p1', 'related_pip': 'PIP-12'})
+def test_card_shows_the_sapio_project_links_the_jira_pip_and_says_whether_samples_are_registered():
+    card = EDPProfileTypeHooks().get_profile_card(
+        {**PROFILE, 'id': 'p1', 'related_pip': 'PIP-12', 'sapio_project_id': 'PR0001'}
+    )
 
-    assert card['details'] == [{
-        'label': 'Jira PIP',
-        'value': 'PIP-12',
-        'id': 'related_pip_p1',
-        'url': 'https://earlham-institute.atlassian.net/browse/PIP-12',
-    }]
+    assert card['details'] == [
+        {'label': 'Sapio Project ID', 'value': 'PR0001', 'id': 'sapio_project_id_p1'},
+        {
+            'label': 'Jira PIP',
+            'value': 'PIP-12',
+            'id': 'related_pip_p1',
+            'url': 'https://earlham-institute.atlassian.net/browse/PIP-12',
+        },
+    ]
+    assert card['data_attributes'] == {'has-sample-batches': 'true'}
+
+
+def test_card_reads_only_fields_that_the_profiles_page_loads():
+    # The Work profiles page only loads the fields that cards ask for so, a
+    # card built from just those fields must match one built from the full profile
+    profile = {
+        **PROFILE,
+        'id': 'p1',
+        'title': 'Profile',
+        'related_pip': 'PIP-12',
+        'sapio_project_id': 'PR0001',
+        'related_enq': 'ENQ-1',
+    }
+    loaded_fields = {'id', 'type'} | set(get_all_profile_card_fields())
+    loaded_profile = {field: value for field, value in profile.items() if field in loaded_fields}
+
+    hooks = EDPProfileTypeHooks()
+    assert hooks.get_profile_card(loaded_profile) == hooks.get_profile_card(profile)
+
+
+def test_card_counts_batch_fields_that_have_not_been_moved_into_a_batch():
+    # Profiles made before batches existed keep their batch fields on the profile
+    profile = {'id': 'p1', 'type': 'ei_edp', 'no_of_samples': '2', 'sample_type': 'Tissue',
+               'container_type': 'Tube'}
+    loaded_fields = {'id', 'type'} | set(get_all_profile_card_fields())
+    loaded_profile = {field: value for field, value in profile.items() if field in loaded_fields}
+
+    card = EDPProfileTypeHooks().get_profile_card(loaded_profile)
+
     assert card['data_attributes'] == {'has-sample-batches': 'true'}
 
 

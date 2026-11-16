@@ -25,7 +25,10 @@ from common.utils.logger import Logger
 # from dal.broker_da import BrokerDA, BrokerVisuals
 from src.apps.copo_core.models import Banner
 from src.apps.copo_core.models import SequencingCentre, ProfileType
-from src.apps.copo_core.profile_type_hooks import get_profile_type_hooks
+from src.apps.copo_core.profile_type_hooks import (
+    get_all_profile_card_fields,
+    get_profile_type_hooks,
+)
 from src.apps.copo_core.utils import get_all_profile_types_for_options_for_user
 
 
@@ -92,7 +95,9 @@ def copo_profile_index(request):
             {"$skip": db_skip_num},
             {"$limit": num_of_profiles_per_page},
             {"$project": {"study_status": "$submission.accessions.project.status", "study_release_date": "$submission.accessions.project.release_date",
-                          "sequencing_centre": 1, "title": 1, "description": 1, "associated_type": 1, "type": 1, "date_created": 1, "date_modified": 1, "sapio_project_id":1}}
+                          "sequencing_centre": 1, "title": 1, "description": 1, "associated_type": 1, "type": 1, "date_created": 1, "date_modified": 1,
+                          # Fields that the profile types' cards read (see `get_profile_card`)
+                          **{field: 1 for field in get_all_profile_card_fields()}}}
         ])
     
     profile_page = cursor_to_list_str2(

@@ -31,7 +31,7 @@
                                     <div class="date-created-div" date-created="{{ profile.date_created }}">
                                         <span class="text-bold">Created: </span> {{ profile.date_created }}
                                     </div>
-                                    {% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status%}
+                                    {% if profile.owner_name or profile.shared_owner_name or profile.associated_type or profile.sequencing_centre|is_list_empty or profile.study_status or profile.card.details %}
                                         <a id="showMoreProfileInfoBtn" class="btn view-more-details-btn" href="#" rel="popover"
                                             data-popover-content="#showMoreProfileInfoContent" data-placement="bottom" data-tour-id="profile_addtl_info_button">View more details</a>
                                     {% endif %}
@@ -51,12 +51,6 @@
                                             <span class="text-bold">Created: </span>
                                             <span>{{ profile.date_created }}</span>
                                         </div>
-                                        {% if profile.sapio_project_id %}
-                                        <div class="sapio-project-id-div mt-10">
-                                            <span class="text-bold">Sapio Project ID:</span>
-                                            <span id="sapio_project_id_{{profile.id}}">{{ profile.sapio_project_id }}</span>
-                                        </div>
-                                        {% endif %}
                                         {% for detail in profile.card.details %}
                                         <div class="profile-card-detail-div mt-10">
                                             <span class="text-bold">{{ detail.label }}:</span>

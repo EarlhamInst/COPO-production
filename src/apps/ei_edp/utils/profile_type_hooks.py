@@ -7,7 +7,14 @@ batch's sample count limits how many samples can be uploaded and submitted.
 from src.apps.copo_core.profile_type_hooks import ProfileTypeHooks
 
 from . import edp_utils
-from .constants import JIRA_BROWSE_URL, PROFILE_RELATED_PIP, SAMPLE_BATCH_ID
+from .constants import (
+    BATCH_FIELDS,
+    JIRA_BROWSE_URL,
+    PROFILE_RELATED_PIP,
+    PROFILE_SAMPLE_BATCHES,
+    PROFILE_SAPIO_PROJECT_ID,
+    SAMPLE_BATCH_ID,
+)
 from .edp_validation_messages import MESSAGES
 from .edp_validators import SampleCountValidator
 from .sample_batches import get_sample_batches
@@ -39,8 +46,27 @@ def get_batch_manifest_group(described_batches, label, option_text, default_batc
 
 class EDPProfileTypeHooks(ProfileTypeHooks):
 
+    def get_profile_card_fields(self):
+        # The batch fields are read when a profile's batch fields haven't been
+        # moved into a batch yet (see `get_sample_batches`)
+        return [
+            PROFILE_SAPIO_PROJECT_ID,
+            PROFILE_RELATED_PIP,
+            PROFILE_SAMPLE_BATCHES,
+            *BATCH_FIELDS,
+        ]
+
     def get_profile_card(self, profile):
         details = []
+        sapio_project_id = profile.get(PROFILE_SAPIO_PROJECT_ID)
+        if sapio_project_id:
+            details.append(
+                {
+                    'label': 'Sapio Project ID',
+                    'value': sapio_project_id,
+                    'id': f"sapio_project_id_{profile.get('id', '')}",
+                }
+            )
         related_pip = profile.get(PROFILE_RELATED_PIP)
         if related_pip:
             # Shown as a link to the PIP in Jira

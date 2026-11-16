@@ -33,6 +33,14 @@ class ProfileTypeHooks:
 
     # --- Work profiles page ---
 
+    def get_profile_card_fields(self):
+        '''Profile fields that `get_profile_card` reads.
+
+        The Work profiles page only loads the fields that every card shows so,
+        any others that a profile type's card needs have to be listed here.
+        '''
+        return []
+
     def get_profile_card(self, profile):
         '''Extra details for the profile's card on the Work profiles page.
 
@@ -91,3 +99,15 @@ def get_profile_type_hooks(profile_type):
     hooks_class_path = PROFILE_TYPE_HOOKS.get(str(profile_type or '').lower().strip())
     hooks_class = import_string(hooks_class_path) if hooks_class_path else ProfileTypeHooks
     return hooks_class()
+
+
+def get_all_profile_card_fields():
+    '''The profile fields that the cards of any profile type read.
+
+    The Work profiles page loads profiles of several types in one query, before
+    their types are known so, it loads the fields that any type's card needs.
+    '''
+    hooks = [ProfileTypeHooks()] + [
+        get_profile_type_hooks(profile_type) for profile_type in PROFILE_TYPE_HOOKS
+    ]
+    return sorted({field for hook in hooks for field in hook.get_profile_card_fields()})
