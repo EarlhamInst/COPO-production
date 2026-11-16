@@ -87,6 +87,20 @@ def _render_repo_accession_function(field_name):
     return f"render_repo_accession('{repo}')" if repo else ''
 
 
+def get_column_title(column_name):
+    '''
+    The title of a table column from its name. A name that ends with a
+    repository gets the repository's label 
+    e.g. 'status_ckan' -> 'Status for CKAN' and 'study_accession_ena' ->
+    'Study Accession for ENA'. Other names are title-cased e.g. 'study_id' -> 'Study Id'.
+    '''
+    *words, last_word = column_name.split('_')
+    label = settings.REPOSITORY_LABELS.get(last_word.lower())
+    if words and label:
+        return f"{' '.join(words).title()} for {label}"
+    return column_name.replace('_', ' ').title()
+
+
 def _apply_accession_links(columns):
     '''
     For each repository with a 'link_column' (see `REPOSITORY_ACCESSION_LINKS`
@@ -209,7 +223,7 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
                 columns[component_name].append(
                     dict(
                         data=name,
-                        title=name.replace("_", " for ").title(),
+                        title=get_column_title(name),
                         render=_render_repo_accession_function(name),
                         defaultContent=additional_columns_prefix_default_value[prefix],
                     )
@@ -342,7 +356,7 @@ def generate_accessions_singlecell(profile_id, study_id ):
     if accessions:
         # Dynamically build column definitions from the keys in the first accession record
         for column in accessions[0].keys():
-            columns.append(dict(data=column, title=column.replace("_", " ").title(), defaultContent='', render=_render_repo_accession_function(column)))
+            columns.append(dict(data=column, title=get_column_title(column), defaultContent='', render=_render_repo_accession_function(column)))
         _apply_accession_links(columns)
         # Assign unique row IDs using the biosample accession (or study_id as fallback)
         for accession in accessions:

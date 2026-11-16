@@ -138,6 +138,15 @@ REPOSITORY_ACCESSION_LINKS = {
     },
 }
 
+# How repositories are named in column titles e.g. 'status_ckan' is
+# shown as 'Status for CKAN'
+REPOSITORY_LABELS = {
+    'ckan': 'CKAN',
+    'ena': 'ENA',
+    'sapio': 'Sapio',
+    'zenodo': 'Zenodo',
+}
+
 # settings for manifest
 MANIFEST_VERSION = {
     "ASG": "2.5",

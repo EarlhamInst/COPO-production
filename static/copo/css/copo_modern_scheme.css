@@ -1063,7 +1063,7 @@ body > .popover .popover-content span:not(.text-bold) {
   border-radius: 6px !important;
   font-weight: 600 !important;
   padding: 5px 14px !important;
-  font-size: .8rem !important;
+  font-size: .9rem !important;
 }
 
 .bootstrap-dialog.form-modal #btnSaveSampleBatch:hover,
@@ -1082,7 +1082,7 @@ body > .popover .popover-content span:not(.text-bold) {
   border-radius: 6px !important;
   font-weight: 500 !important;
   padding: 5px 14px !important;
-  font-size: .8rem !important;
+  font-size: .9rem !important;
 }
 
 .bootstrap-dialog.form-modal #btnBack:hover,

@@ -3,12 +3,17 @@
 A repository with a 'link_column' (see REPOSITORY_ACCESSION_LINKS in the
 settings) has its accession column hidden, and the 'link_column' column keeps
 showing its own value as a link to the accession instead. e.g. a LIMS
-manifest's Project ID links to its Sapio project.
+manifest's Project ID links to its Sapio project. Repository columns are
+titled with the repository's label e.g. 'Status for CKAN'.
 '''
 
+import pytest
 from django.test import override_settings
 
-from src.apps.copo_single_cell_submission.utils.copo_single_cell import _apply_accession_links
+from src.apps.copo_single_cell_submission.utils.copo_single_cell import (
+    _apply_accession_links,
+    get_column_title,
+)
 
 LINKS = {
     'ena': {'field_suffix': 'accession_ena', 'url_template': 'https://ena/{accession}'},
@@ -51,3 +56,22 @@ def test_accession_column_is_kept_when_its_link_column_is_missing():
     result = _apply_accession_links(columns('accession_sapio'))
 
     assert 'visible' not in result[1]
+
+
+# --- Column titles ---
+
+LABELS = {'ckan': 'CKAN', 'ena': 'ENA', 'sapio': 'Sapio', 'zenodo': 'Zenodo'}
+
+
+@override_settings(REPOSITORY_LABELS=LABELS)
+@pytest.mark.parametrize('column_name, title', [
+    ('status_ckan', 'Status for CKAN'),
+    ('accession_ena', 'Accession for ENA'),
+    ('error_sapio', 'Error for Sapio'),
+    ('status_zenodo', 'Status for Zenodo'),
+    ('study_accession_ena', 'Study Accession for ENA'),
+    ('study_id', 'Study Id'),
+    ('ena', 'Ena'),
+])
+def test_column_titles_name_repositories_by_their_label(column_name, title):
+    assert get_column_title(column_name) == title
