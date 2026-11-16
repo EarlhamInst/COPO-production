@@ -34,6 +34,7 @@ MESSAGES = {
         "Number of samples must be a whole number of 1 or more, got '{sample_count}'."
     ),
     'missing_batch_field': 'Please fill in <strong>{field}</strong>.',
+    'invalid_batch_pip': "<strong>Jira PIP</strong> must look like PIP-1234, got '{pip}'.",
     # Shown in the manifest's lookup columns (Excel formula text: no double quotes, max 255 characters)
     'lookup_missing_submitter_sample_reference': (
         'Select a Submitter Sample Reference in this row to fill in this value'

@@ -34,6 +34,7 @@ from .constants import (
     LIMS_HEALTH_AND_SAFETY,
     LIMS_SAMPLE_RETURN,
     PROFILE_BUDGET_HOLDER,
+    PROFILE_RELATED_PIP,
     PROFILE_SAPIO_PROJECT_ID,
     SAMPLE_ID,
     SAMPLE_RETURN,
@@ -50,6 +51,7 @@ from .constants import (
 )
 from .edp_validation_messages import MESSAGES
 from .sample_batches import (
+    find_batch,
     find_batch_by_study_id,
     get_batch_study_id,
     get_sample_batches,
@@ -241,6 +243,8 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
         worksheet_sample["C4"] = profile.get(PROFILE_BUDGET_HOLDER, "")
         # The batch's study ID tells its LIMS manifest apart from other batches'
         worksheet_sample["C5"] = get_batch_study_id(profile, batch_id)
+        # The batch's Jira PIP is only for reference. It is not stored in Sapio on manifest upload.
+        worksheet_sample["F5"] = (find_batch(profile, batch_id) or {}).get(PROFILE_RELATED_PIP, "")
 
         if lims_project_metadata:
             worksheet_sample["L9"] = lims_project_metadata.get(LIMS_HEALTH_AND_SAFETY)

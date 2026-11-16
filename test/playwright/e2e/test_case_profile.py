@@ -46,7 +46,6 @@ def test_create_and_delete_edp_profile(page: Page, sapio_test_instance):
 
     sapio = read_sapio_project(
         project_id,
-        # TODO: Confirm Sapio name and check the Jira PIP once it is written to Sapio
         project_fields=['ProjectName', 'C_BudgetHolder', 'C_SampleCount'],
         sample_fields=['SampleId'],
     )

@@ -138,6 +138,7 @@ def test_edp_samples_submitted_in_batches(page: Page, tmp_path, sapio_test_insta
         no_of_samples=1,
         sample_type=EDP_PROFILE_FIELDS['sample_type'],
         container_type=EDP_PROFILE_FIELDS['container_type'],
+        related_pip='PIP-2',
     )
     assert result.get('status') == 'success', f'Adding a batch of samples failed: {result}'
     assert len(result['batches']) == 2
@@ -229,9 +230,8 @@ def test_lims_manifest_submission_to_sapio(page: Page, tmp_path, sapio_test_inst
     project_sheet = openpyxl.load_workbook(downloaded_manifest)['sample']
     assert project_sheet['C5'].value == project_id
     assert project_sheet['C4'].value == EDP_PROFILE_FIELDS['budget_holder']
-    # The `JIRA PIP` field will be filled in later by the PM team
-    # so it should not be pre-filled from the profile
-    assert project_sheet['F5'].value is None
+    # The batch's Jira PIP is filled in for reference
+    assert project_sheet['F5'].value == EDP_PROFILE_FIELDS['related_pip']
 
     patched_manifest = tmp_path / 'lims_manifest_patched.xlsx'
     sapio_sample_id, expected = build_lims_manifest(downloaded_manifest, patched_manifest, accession)

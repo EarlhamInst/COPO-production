@@ -446,7 +446,7 @@
       "control": "text"
     },
     {
-      "help_tip": "Please input the Jira PIP for this project e.g. PIP-1234",
+      "help_tip": "Please input the Jira PIP for this batch of samples e.g. PIP-1234",
       "required": "true",
       "default_value": "",
       "control_meta": {},
@@ -460,7 +460,7 @@
       "deprecated": false,
       "hidden": "false",
       "label": "Jira PIP",
-      "show_in_form": true,
+      "show_in_form": false,
       "id": "copo.profile.related_pip",
       "type": "string",
       "show_in_table": true,

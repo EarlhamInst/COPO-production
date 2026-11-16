@@ -9,8 +9,11 @@
 #   2. Removed profile fields: fields that are no longer used are deleted.
 #
 #   3. Sample batches: samples are now registered in batches so, the number of
-#      samples, sample type, container type and library type saved on the
-#      profile are moved into one batch (container types in title case).
+#      samples, sample type, container type, library type and Jira PIP saved on
+#      the profile are moved into one batch (container types in title case).
+#      The Jira PIP of a profile that already has batches is copied into
+#      those of its batches that have none. Batches still without a Jira PIP
+#      are given DEFAULT_JIRA_PIP as a placeholder since EDP is still being tested.
 #
 #   4. Saved LIMS manifests: values saved under a renamed LIMS manifest field
 #      are moved to its new name, e.g. 'customer_email' became 'user_email'.
@@ -21,7 +24,7 @@
 #      Plate View and, each batch is linked to its Sapio samples.
 #
 #   6. Missing values: values that can't be filled in automatically (e.g. the
-#      Jira PIP) are reported so that someone can add them to the profile.
+#      budget holder) are reported so that someone can add them to the profile.
 #
 # Every part only changes what is out of date, so the command can be run
 # again safely. Samples are never created or removed in Sapio.
@@ -76,10 +79,14 @@ RENAMED_LIMS_STUDY_FIELDS = {
     'customer_email': USER_EMAIL,  # 'customer' became 'user'
 }
 
+# Part 3: a placeholder Jira PIP for batches without one. A batch's PIP is only
+# shown in COPO and its LIMS manifest and, a batch can't be changed once its
+# samples are submitted so, a placeholder is given rather than asked for.
+DEFAULT_JIRA_PIP = 'PIP-1234'
+
 # Part 6: profile fields (with their form labels) that have to be filled in by someone
 REQUIRED_PROFILE_FIELDS = {
     PROFILE_RELATED_ENQ: 'Related ENQ',
-    PROFILE_RELATED_PIP: 'Jira PIP',
     PROFILE_BUDGET_HOLDER: 'Budget holder',
 }
 
@@ -169,6 +176,7 @@ class Command(BaseCommand):
             self.rename_profile_fields(changes)
             self.remove_profile_fields(changes)
             self.move_sample_fields_into_batch(changes)
+            self.give_batches_a_default_pip(changes)
             lims_manifest_count = self.rename_lims_study_fields(profile, commit)
             if lims:
                 self.upgrade_lims_project(lims, changes, commit)
@@ -217,7 +225,24 @@ class Command(BaseCommand):
     # --- Part 3: sample batches ---
     def move_sample_fields_into_batch(self, changes):
         if changes.profile.get(PROFILE_SAMPLE_BATCHES):
-            # Batch fields can't be left over on a profile with batches
+            # The Jira PIP used to be a profile field so, it becomes the PIP
+            # of the sample batches that were registered before each batch had one
+            profile_pip = changes.profile.get(PROFILE_RELATED_PIP)
+            batches = changes.profile[PROFILE_SAMPLE_BATCHES]
+            if not is_blank(profile_pip) and any(
+                is_blank(batch.get(PROFILE_RELATED_PIP)) for batch in batches
+            ):
+                changes.set(
+                    PROFILE_SAMPLE_BATCHES,
+                    [
+                        {**batch, PROFILE_RELATED_PIP: profile_pip}
+                        if is_blank(batch.get(PROFILE_RELATED_PIP))
+                        else batch
+                        for batch in batches
+                    ],
+                )
+                changes.notes.append(f'Jira PIP {profile_pip} copied into the batches without one')
+            # Batch fields cannot be left over on a profile with batches
             for field in BATCH_FIELDS:
                 if field in changes.profile:
                     changes.unset(field)
@@ -232,6 +257,29 @@ class Command(BaseCommand):
         changes.notes.append(
             'moved into batch 1: '
             + ', '.join(f'{label}: {batch[field] or "-"}' for field, label in BATCH_FIELDS.items())
+        )
+
+    def give_batches_a_default_pip(self, changes):
+        batches = changes.profile.get(PROFILE_SAMPLE_BATCHES) or []
+        numbers = [
+            number
+            for number, batch in enumerate(batches, start=1)
+            if is_blank(batch.get(PROFILE_RELATED_PIP))
+        ]
+        if not numbers:
+            return
+        changes.set(
+            PROFILE_SAMPLE_BATCHES,
+            [
+                {**batch, PROFILE_RELATED_PIP: DEFAULT_JIRA_PIP}
+                if is_blank(batch.get(PROFILE_RELATED_PIP))
+                else batch
+                for batch in batches
+            ],
+        )
+        changes.notes.append(
+            f"placeholder Jira PIP {DEFAULT_JIRA_PIP} given to "
+            + ', '.join(f'batch {number}' for number in numbers)
         )
 
     # --- Part 4: saved LIMS manifests ---

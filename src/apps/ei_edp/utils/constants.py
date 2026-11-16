@@ -9,7 +9,11 @@ PROFILE_TYPE = 'type'
 PROFILE_USER_ID = 'user_id'
 PROFILE_SAPIO_PROJECT_ID = 'sapio_project_id'
 PROFILE_RELATED_ENQ = 'related_enq'
-PROFILE_RELATED_PIP = 'related_pip' # Jira PIP e.g. PIP-1234
+
+# Jira PIP e.g. PIP-1234. Each batch of samples has its own. It is only
+# only stored and displayed in COPO; it is not saved in Sapio.
+PROFILE_RELATED_PIP = 'related_pip'
+JIRA_PIP_REGEX = r'^PIP-[0-9]+$'
 JIRA_BROWSE_URL = 'https://earlham-institute.atlassian.net/browse/{issue}'
 PROFILE_BUDGET_HOLDER = 'budget_holder'
 PROFILE_NO_OF_SAMPLES = 'no_of_samples'
@@ -39,7 +43,10 @@ BATCH_FIELDS = {
     PROFILE_SAMPLE_TYPE: 'Sample type',
     PROFILE_CONTAINER_TYPE: 'Container type',
     PROFILE_LIBRARY_TYPE: 'Library type',
+    PROFILE_RELATED_PIP: 'Jira PIP',
 }
+# The batch fields that describe its samples i.e. all but the Jira PIP
+BATCH_SAMPLE_FIELDS = [field for field in BATCH_FIELDS if field != PROFILE_RELATED_PIP]
 # Field on COPO sample records that names the batch the sample was uploaded
 # for. Samples uploaded before batches existed have none and belong to the
 # profile's first batch.
@@ -103,7 +110,6 @@ SAPIO_COL_POSITION = 'ColPosition'
 SAPIO_PROJECT_IDENTIFIER = 'C_ProjectIdentifier'
 SAPIO_PROJECT_NAME = 'ProjectName'
 SAPIO_PROJECT_DESC = 'ProjectDesc'
-SAPIO_RELATED_PIP = 'C_RelatedPIP' # TODO: Confirm Sapio name. 'Related PIP' is meant to be a Project field.
 SAPIO_BUDGET_HOLDER = 'C_BudgetHolder'
 SAPIO_HEALTH_AND_SAFETY = 'C_HandS'
 

@@ -609,11 +609,6 @@ class SapioAdapter(LIMSAdapter):
                 }
                 if profile.get(PROFILE_BUDGET_HOLDER):
                     project_fields[SAPIO_BUDGET_HOLDER] = profile[PROFILE_BUDGET_HOLDER]
-                # TODO: Confirm Sapio name. The Project data type in Sapio has no
-                # 'Related PIP' field yet (it is only on Request as `RequestName`)
-                # so, the Jira PIP isn't written until the field exists.
-                # if profile.get(PROFILE_RELATED_PIP):
-                #     project_fields[SAPIO_RELATED_PIP] = profile[PROFILE_RELATED_PIP]
                 project_records = Sapio().dataRecordManager.add_data_records_with_data(
                     data_type_name=SAPIO_PROJECT_DATA_TYPE, field_map_list=[project_fields]
                 )
@@ -665,11 +660,6 @@ class SapioAdapter(LIMSAdapter):
                     project_record.set_field_value(
                         SAPIO_BUDGET_HOLDER, profile[PROFILE_BUDGET_HOLDER]
                     )
-                # TODO: Confirm Sapio name (see the note where projects are created)
-                # if profile.get(PROFILE_RELATED_PIP):
-                #     project_record.set_field_value(
-                #         SAPIO_RELATED_PIP, profile[PROFILE_RELATED_PIP]
-                #     )
                 Sapio().dataRecordManager.commit_data_records([project_record])
 
                 # Attach existing profile that was created in COPO to its project

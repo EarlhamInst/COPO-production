@@ -3,9 +3,12 @@
 Samples are registered under an EDP profile in batches. Each batch has its own
 number of samples, sample type, container type and library type so, a profile
 (i.e. one LIMS project with one Related ENQ) can hold samples of more than one
-sample type. A batch can be edited until any of its samples have been submitted.
+sample type. Each batch also has its own Jira PIP, which is only shown in COPO
+and written to the batch's LIMS manifest. A batch can be edited until any of
+its samples have been submitted.
 '''
 
+import re
 import uuid
 
 from common.utils import helpers
@@ -16,11 +19,14 @@ from .constants import (
     BATCH_FIELDS,
     BATCH_ID,
     BATCH_LIMS_SAMPLE_RECORD_IDS,
+    BATCH_SAMPLE_FIELDS,
     CONTAINER_TYPES,
+    JIRA_PIP_REGEX,
     PREMADE_LIBRARY_SAMPLE_TYPES,
     PROFILE_CONTAINER_TYPE,
     PROFILE_LIBRARY_TYPE,
     PROFILE_NO_OF_SAMPLES,
+    PROFILE_RELATED_PIP,
     PROFILE_SAMPLE_BATCHES,
     PROFILE_SAMPLE_TYPE,
     PROFILE_SAPIO_PROJECT_ID,
@@ -70,11 +76,18 @@ def clean_batch_fields(fields):
                 MESSAGES['missing_batch_field'].format(field=BATCH_FIELDS[PROFILE_LIBRARY_TYPE])
             )
 
+    related_pip = str(fields.get(PROFILE_RELATED_PIP) or '').strip().upper()
+    if not related_pip:
+        errors.append(MESSAGES['missing_batch_field'].format(field=BATCH_FIELDS[PROFILE_RELATED_PIP]))
+    elif not re.match(JIRA_PIP_REGEX, related_pip):
+        errors.append(MESSAGES['invalid_batch_pip'].format(pip=related_pip))
+
     cleaned_fields = {
         PROFILE_NO_OF_SAMPLES: no_of_samples,
         PROFILE_SAMPLE_TYPE: sample_type,
         PROFILE_CONTAINER_TYPE: container_type,
         PROFILE_LIBRARY_TYPE: library_type,
+        PROFILE_RELATED_PIP: related_pip,
     }
     return cleaned_fields, errors
 
@@ -97,9 +110,10 @@ def batch_from_profile_fields(profile):
     in the LIMS aren't linked to a batch yet so, the batch's record IDs are
     left as `None` for the next LIMS sync to claim them. A new profile's
     first batch arrives the same way, through the profile form.
-    Returns `None` if the profile has no batch fields saved.
+    Returns `None` if the profile has no sample fields saved. A Jira PIP
+    alone (from when it was a profile field) does not make a batch.
     '''
-    if not any(str(profile.get(field) or '').strip() for field in BATCH_FIELDS):
+    if not any(str(profile.get(field) or '').strip() for field in BATCH_SAMPLE_FIELDS):
         return None
 
     try:
@@ -118,6 +132,7 @@ def batch_from_profile_fields(profile):
                 if is_premade_library(sample_type)
                 else ''
             ),
+            PROFILE_RELATED_PIP: str(profile.get(PROFILE_RELATED_PIP) or '').strip(),
         }
     )
     batch[BATCH_LIMS_SAMPLE_RECORD_IDS] = None
@@ -134,7 +149,13 @@ def get_sample_batches(profile):
     '''
     batches = profile.get(PROFILE_SAMPLE_BATCHES)
     if batches:
-        return list(batches)
+        # The Jira PIP used to be saved on the profile so, it stands in for
+        # the PIP of batches saved before
+        profile_pip = str(profile.get(PROFILE_RELATED_PIP) or '').strip()
+        return [
+            {**batch, PROFILE_RELATED_PIP: batch.get(PROFILE_RELATED_PIP) or profile_pip}
+            for batch in batches
+        ]
     batch = batch_from_profile_fields(profile)
     return [batch] if batch else []
 

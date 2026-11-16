@@ -31,6 +31,7 @@ from .constants import (
     PROFILE_CONTAINER_TYPE,
     PROFILE_LIBRARY_TYPE,
     PROFILE_NO_OF_SAMPLES,
+    PROFILE_RELATED_PIP,
     PROFILE_SAMPLE_TYPE,
     PROFILE_USER_EMAIL,
     PROFILE_USER_EMAIL_TOKEN,
@@ -665,13 +666,14 @@ def describe_upload_batches(profile):
         no_of_samples = int(batch.get(PROFILE_NO_OF_SAMPLES) or 0)
         samples_left = max(no_of_samples - uploaded_counts[batch[BATCH_ID]]['uploaded'], 0)
         library_type = f", {batch[PROFILE_LIBRARY_TYPE]}" if batch.get(PROFILE_LIBRARY_TYPE) else ''
+        related_pip = f" - {batch[PROFILE_RELATED_PIP]}" if batch.get(PROFILE_RELATED_PIP) else ''
         described_batches.append(
             {
                 BATCH_ID: batch[BATCH_ID],
                 'samples_left': samples_left,
                 'name': (
                     f"Batch {number}: {no_of_samples} x {batch.get(PROFILE_SAMPLE_TYPE, '')}{library_type} "
-                    f"({batch.get(PROFILE_CONTAINER_TYPE, '')})"
+                    f"({batch.get(PROFILE_CONTAINER_TYPE, '')}){related_pip}"
                 ),
             }
         )

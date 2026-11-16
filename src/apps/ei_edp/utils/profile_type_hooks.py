@@ -47,8 +47,9 @@ def get_batch_manifest_group(described_batches, label, option_text, default_batc
 class EDPProfileTypeHooks(ProfileTypeHooks):
 
     def get_profile_card_fields(self):
-        # The batch fields are read when a profile's batch fields haven't been
-        # moved into a batch yet (see `get_sample_batches`)
+        # The batch fields are read when a profile's batch fields have not been
+        # moved into a batch yet and the profile's Jira PIP stands in for that
+        # of batches saved before each batch had one
         return [
             PROFILE_SAPIO_PROJECT_ID,
             PROFILE_RELATED_PIP,
@@ -67,14 +68,17 @@ class EDPProfileTypeHooks(ProfileTypeHooks):
                     'id': f"sapio_project_id_{profile.get('id', '')}",
                 }
             )
-        related_pip = profile.get(PROFILE_RELATED_PIP)
-        if related_pip:
-            # Shown as a link to the PIP in Jira
+        batches = get_sample_batches(profile)
+        for number, batch in enumerate(batches, start=1):
+            related_pip = batch.get(PROFILE_RELATED_PIP)
+            if not related_pip:
+                continue
+            # Each batch's PIP is shown as a link to the PIP in Jira
             details.append(
                 {
-                    'label': 'Jira PIP',
+                    'label': f'Batch {number} Jira PIP' if len(batches) > 1 else 'Jira PIP',
                     'value': related_pip,
-                    'id': f"related_pip_{profile.get('id', '')}",
+                    'id': f"related_pip_{profile.get('id', '')}_{number}",
                     'url': JIRA_BROWSE_URL.format(issue=related_pip),
                 }
             )
@@ -82,9 +86,7 @@ class EDPProfileTypeHooks(ProfileTypeHooks):
             'details': details,
             # The 'Register samples' button reads 'Add more samples'
             # once the profile has a batch (see edp_sample_batches.js)
-            'data_attributes': {
-                'has-sample-batches': 'true' if get_sample_batches(profile) else 'false'
-            },
+            'data_attributes': {'has-sample-batches': 'true' if batches else 'false'},
         }
 
     def get_sample_page_context(self, profile):

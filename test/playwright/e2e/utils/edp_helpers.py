@@ -369,7 +369,6 @@ def create_edp_profile(
     page.fill('#copo\\.profile\\.title', title)
     page.fill('#copo\\.profile\\.description', description)
     page.fill('#copo\\.profile\\.related_enq', related_enq)
-    page.fill('#copo\\.profile\\.related_pip', related_pip)
     page.fill('#copo\\.profile\\.budget_holder', budget_holder)
     page.fill('#copo\\.profile\\.user_email', user_email)
 
@@ -380,6 +379,7 @@ def create_edp_profile(
         sample_type=sample_type,
         container_type=container_type,
         library_type=library_type,
+        related_pip=related_pip,
     )
 
     # Check the save's response rather than only the card appearing: a
@@ -408,7 +408,9 @@ def create_edp_profile(
     return profile_card, profile_id, sapio_project_id
 
 
-def fill_sample_batch_form(page, *, no_of_samples, sample_type, container_type, library_type=None):
+def fill_sample_batch_form(
+    page, *, no_of_samples, sample_type, container_type, related_pip, library_type=None
+):
     # Fills in the batch dialog (see edp_sample_batches.js). Its
     # 'Sample type' options are loaded from Sapio when it opens.
     expect(page.locator('#batch_no_of_samples')).to_be_visible(timeout=60000)
@@ -419,6 +421,7 @@ def fill_sample_batch_form(page, *, no_of_samples, sample_type, container_type, 
         page.select_option('#batch_library_type', library_type)
     # Select by the visible label so callers can pass what the user sees
     page.select_option('#batch_container_type', label=container_type)
+    page.fill('#batch_related_pip', related_pip)
 
 
 def open_edp_sample_batches(page, title):

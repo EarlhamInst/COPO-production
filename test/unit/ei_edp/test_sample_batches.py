@@ -19,7 +19,10 @@ from src.apps.ei_edp.utils.lims.sapio import adapter as sapio_adapter
 from src.apps.ei_edp.utils.lims.sapio.adapter import SapioAdapter, _group_samples_by_batch
 
 PROJECT_ID = 'PR0001'
-TISSUE = {'no_of_samples': '3', 'sample_type': 'Tissue', 'container_type': 'plate', 'library_type': ''}
+TISSUE = {
+    'no_of_samples': '3', 'sample_type': 'Tissue', 'container_type': 'plate', 'library_type': '',
+    'related_pip': 'PIP-1',
+}
 
 
 def batch(batch_id, record_ids, **fields):
@@ -38,7 +41,8 @@ def batch(batch_id, record_ids, **fields):
 
 def test_valid_fields_are_tidied_up():
     cleaned, errors = sample_batches.clean_batch_fields(
-        {'no_of_samples': ' 3 ', 'sample_type': ' Tissue ', 'container_type': 'plate', 'library_type': ''}
+        {'no_of_samples': ' 3 ', 'sample_type': ' Tissue ', 'container_type': 'plate', 'library_type': '',
+         'related_pip': ' pip-12 '}
     )
 
     assert errors == []
@@ -47,7 +51,21 @@ def test_valid_fields_are_tidied_up():
         'sample_type': 'Tissue',
         'container_type': 'Plate',
         'library_type': '',
+        'related_pip': 'PIP-12',
     }
+
+
+def test_jira_pip_is_required():
+    _, errors = sample_batches.clean_batch_fields({**TISSUE, 'related_pip': ' '})
+
+    assert errors == [MESSAGES['missing_batch_field'].format(field='Jira PIP')]
+
+
+@pytest.mark.parametrize('pip', ['1234', 'PIP1234', 'ENQ-1234', 'PIP-12a'])
+def test_jira_pip_must_look_like_a_pip(pip):
+    _, errors = sample_batches.clean_batch_fields({**TISSUE, 'related_pip': pip})
+
+    assert errors == [MESSAGES['invalid_batch_pip'].format(pip=pip.upper())]
 
 
 @pytest.mark.parametrize('raw', ['', '0', '-1', '2.5', 'abc', None])
@@ -123,11 +141,36 @@ def test_profile_fields_are_moved_into_a_batch():
     (query, update), _ = collection.update_one.call_args
     assert query == {'_id': 'p1'}
     assert update['$unset'] == {
-        'no_of_samples': '', 'sample_type': '', 'container_type': '', 'library_type': ''
+        'no_of_samples': '', 'sample_type': '', 'container_type': '', 'library_type': '',
+        'related_pip': '',
     }
     assert update['$set']['sample_batches'][0]['sample_type'] == 'Tissue'
+    assert update['$set']['sample_batches'][0]['related_pip'] == 'PIP-1'
     assert 'sample_type' not in profile
+    assert 'related_pip' not in profile
     assert len(profile['sample_batches']) == 1
+
+
+def test_a_jira_pip_alone_is_not_moved_into_a_batch():
+    # The Jira PIP used to be a profile field so, it doesn't mean the profile
+    # has samples to register
+    collection = mock.Mock()
+    profile = {'_id': 'p1', 'related_pip': 'PIP-1'}
+
+    assert not sample_batches.move_profile_fields_into_batch(profile, collection)
+    collection.update_one.assert_not_called()
+
+
+def test_batches_saved_before_each_had_a_jira_pip_use_the_profiles():
+    profile = {
+        '_id': 'p1',
+        'related_pip': 'PIP-1',
+        'sample_batches': [batch('b1', [1]), batch('b2', [2], related_pip='PIP-2')],
+    }
+
+    assert [b['related_pip'] for b in sample_batches.get_sample_batches(profile)] == ['PIP-1', 'PIP-2']
+    # The saved batches are left as they are
+    assert 'related_pip' not in profile['sample_batches'][0]
 
 
 def test_profile_with_batches_is_not_moved_again():
@@ -682,3 +725,64 @@ def test_later_batchs_manifest_is_sent_to_the_profiles_sapio_project():
         edp_utils.submit_lims_manifest_to_sapio('p1', f'{PROJECT_ID}-B2')
 
     assert get_lims_adapter.return_value.submit_manifest.call_args.args[0] == PROJECT_ID
+
+
+# --- The batches offered on the Samples and LIMS manifest pages ---
+
+def test_batch_names_end_with_their_jira_pip():
+    profile = {
+        '_id': 'p1',
+        'sample_batches': [
+            batch('b1', [1, 2], related_pip='PIP-1'),
+            batch('b2', [3], sample_type='Pre-made library', library_type='PacBio', related_pip='PIP-2'),
+        ],
+    }
+    uploaded_counts = {'b1': {'uploaded': 1, 'submitted': 0}, 'b2': {'uploaded': 0, 'submitted': 0}}
+    with mock.patch.object(edp_utils, 'Profile'), \
+            mock.patch.object(edp_utils, 'count_copo_batch_samples', return_value=uploaded_counts):
+        described = edp_utils.describe_upload_batches(profile)
+
+    assert [(b['name'], b['samples_left']) for b in described] == [
+        ('Batch 1: 2 x Tissue (Plate) - PIP-1', 1),
+        ('Batch 2: 1 x Pre-made library, PacBio (Plate) - PIP-2', 1),
+    ]
+
+
+# --- Only EDP managers create EDP profiles and register samples ---
+
+class FakeUser:
+    def __init__(self, groups, is_authenticated=True):
+        self.is_authenticated = is_authenticated
+        self.groups = mock.Mock()
+        self.groups.filter.side_effect = lambda name__in: mock.Mock(
+            exists=lambda: bool(set(groups) & set(name__in))
+        )
+
+
+@pytest.mark.parametrize('groups, expected', [
+    (['ei_edp_managers'], True),
+    (['data_managers'], True),
+    (['ei_edp_users'], False),
+    ([], False),
+])
+def test_edp_managers_and_data_managers_are_edp_managers(groups, expected):
+    assert edp_utils.is_edp_manager(FakeUser(groups)) is expected
+
+
+def test_anonymous_users_are_not_edp_managers():
+    assert not edp_utils.is_edp_manager(None)
+    assert not edp_utils.is_edp_manager(FakeUser(['ei_edp_managers'], is_authenticated=False))
+
+
+def test_only_edp_managers_create_edp_profiles(pre_save):
+    with mock.patch.object(edp_utils, 'is_edp_manager', return_value=False):
+        result = edp_utils.pre_save_edp_profile(form_fields(**TISSUE))
+
+    assert result == {'status': 'error', 'message': MESSAGES['edp_manager_required_for_profile']}
+
+
+def test_users_who_are_not_edp_managers_can_still_edit_a_shared_profile(pre_save):
+    with mock.patch.object(edp_utils, 'is_edp_manager', return_value=False):
+        result = edp_utils.pre_save_edp_profile(form_fields(title='Profile'), target_id='p1')
+
+    assert result == {'status': 'success'}

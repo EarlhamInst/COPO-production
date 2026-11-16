@@ -119,7 +119,7 @@ def test_lims_page_offers_each_batch_its_own_checklists():
     ]
 
     filter_values = handler.get_checklist_filter_values(PROFILE)
-    assert filter_values == BATCHES
+    assert filter_values == [{**batch, 'related_pip': ''} for batch in BATCHES]
 
     with mock.patch.object(edp_utils, 'describe_upload_batches', return_value=described_batches):
         context = handler.get_page_context(
@@ -143,21 +143,36 @@ def test_lims_blank_manifest_check_passes_the_chosen_batch():
 
 # --- EDP: the profile's card on the Work profiles page ---
 
-def test_card_shows_the_sapio_project_links_the_jira_pip_and_says_whether_samples_are_registered():
+def test_card_shows_the_sapio_project_links_each_batchs_jira_pip_and_says_whether_samples_are_registered():
+    batches = [{**BATCHES[0], 'related_pip': 'PIP-12'}, {**BATCHES[1], 'related_pip': 'PIP-13'}]
     card = EDPProfileTypeHooks().get_profile_card(
-        {**PROFILE, 'id': 'p1', 'related_pip': 'PIP-12', 'sapio_project_id': 'PR0001'}
+        {**PROFILE, 'id': 'p1', 'sample_batches': batches, 'sapio_project_id': 'PR0001'}
     )
 
     assert card['details'] == [
         {'label': 'Sapio Project ID', 'value': 'PR0001', 'id': 'sapio_project_id_p1'},
         {
-            'label': 'Jira PIP',
+            'label': 'Batch 1 Jira PIP',
             'value': 'PIP-12',
-            'id': 'related_pip_p1',
+            'id': 'related_pip_p1_1',
             'url': 'https://earlham-institute.atlassian.net/browse/PIP-12',
+        },
+        {
+            'label': 'Batch 2 Jira PIP',
+            'value': 'PIP-13',
+            'id': 'related_pip_p1_2',
+            'url': 'https://earlham-institute.atlassian.net/browse/PIP-13',
         },
     ]
     assert card['data_attributes'] == {'has-sample-batches': 'true'}
+
+
+def test_card_of_a_profile_with_one_batch_says_jira_pip():
+    card = EDPProfileTypeHooks().get_profile_card(
+        {'id': 'p1', 'type': 'ei_edp', 'sample_batches': [{**BATCHES[0], 'related_pip': 'PIP-12'}]}
+    )
+
+    assert [(detail['label'], detail['value']) for detail in card['details']] == [('Jira PIP', 'PIP-12')]
 
 
 def test_card_reads_only_fields_that_the_profiles_page_loads():

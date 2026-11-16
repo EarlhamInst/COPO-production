@@ -128,8 +128,10 @@ def test_saved_lims_manifests_are_renamed():
 def test_up_to_date_profile_is_left_alone():
     profile = {
         '_id': ObjectId(), 'title': 'New profile', 'type': 'ei_edp', 'sapio_project_id': PROJECT_ID,
-        'related_enq': 'ENQ-1', 'related_pip': 'PIP-1', 'budget_holder': 'Budget person',
-        'sample_batches': [{'batch_id': 'b1', 'no_of_samples': 1, 'lims_sample_record_ids': [5]}],
+        'related_enq': 'ENQ-1', 'budget_holder': 'Budget person',
+        'sample_batches': [
+            {'batch_id': 'b1', 'no_of_samples': 1, 'lims_sample_record_ids': [5], 'related_pip': 'PIP-1'}
+        ],
     }
     lims_result = {'status': 'success', 'department': 'already_linked', 'batch_sample_record_ids': {'b1': [5]}}
 
@@ -141,9 +143,59 @@ def test_up_to_date_profile_is_left_alone():
 
 
 def test_values_that_must_be_filled_in_are_reported():
-    output, _, _, _ = run(old_profile(), '--skip-lims')
+    output, _, _, _ = run(old_profile(budget_user=''), '--skip-lims')
 
-    assert 'needs filling in by editing the profile: Jira PIP' in output
+    assert 'needs filling in by editing the profile: Budget holder' in output
+
+
+def test_batches_without_a_jira_pip_are_given_a_placeholder():
+    profile = {
+        '_id': ObjectId(), 'title': 'Profile', 'type': 'ei_edp', 'sapio_project_id': PROJECT_ID,
+        'related_enq': 'ENQ-1', 'budget_holder': 'Budget person',
+        'sample_batches': [
+            {'batch_id': 'b1', 'no_of_samples': 1, 'lims_sample_record_ids': [5]},
+            {'batch_id': 'b2', 'no_of_samples': 1, 'lims_sample_record_ids': [6], 'related_pip': 'PIP-2'},
+        ],
+    }
+
+    output, profile_collection, _, _ = run(profile, '--commit', '--skip-lims')
+
+    update = saved_update(profile_collection)
+    assert [batch['related_pip'] for batch in update['$set']['sample_batches']] == ['PIP-1234', 'PIP-2']
+    assert 'placeholder Jira PIP PIP-1234 given to batch 1' in output
+
+
+def test_new_batch_without_a_jira_pip_is_given_a_placeholder():
+    output, profile_collection, _, _ = run(old_profile(), '--commit', '--skip-lims')
+
+    assert saved_update(profile_collection)['$set']['sample_batches'][0]['related_pip'] == 'PIP-1234'
+
+
+def test_profile_jira_pip_is_moved_into_its_new_batch():
+    output, profile_collection, _, _ = run(old_profile(related_pip='PIP-1'), '--commit', '--skip-lims')
+
+    update = saved_update(profile_collection)
+    assert update['$set']['sample_batches'][0]['related_pip'] == 'PIP-1'
+    assert 'related_pip' in update['$unset']
+    assert 'placeholder Jira PIP' not in output
+
+
+def test_profile_jira_pip_is_copied_into_batches_without_one():
+    profile = {
+        '_id': ObjectId(), 'title': 'Profile', 'type': 'ei_edp', 'sapio_project_id': PROJECT_ID,
+        'related_enq': 'ENQ-1', 'related_pip': 'PIP-1', 'budget_holder': 'Budget person',
+        'sample_batches': [
+            {'batch_id': 'b1', 'no_of_samples': 1, 'lims_sample_record_ids': [5]},
+            {'batch_id': 'b2', 'no_of_samples': 1, 'lims_sample_record_ids': [6], 'related_pip': 'PIP-2'},
+        ],
+    }
+
+    output, profile_collection, _, _ = run(profile, '--commit', '--skip-lims')
+
+    update = saved_update(profile_collection)
+    assert [batch['related_pip'] for batch in update['$set']['sample_batches']] == ['PIP-1', 'PIP-2']
+    assert 'related_pip' in update['$unset']
+    assert 'Jira PIP PIP-1 copied into the batches without one' in output
 
 
 def test_sapio_failure_is_reported_and_copo_is_still_updated():

@@ -1,7 +1,8 @@
 // Registering batches of samples under EDP profiles.
 //
-// Each batch has its own number of samples, sample type, container type and
-// library type (which is only asked for pre-made libraries). A new EDP profile
+// Each batch has its own number of samples, sample type, container type,
+// library type (which is only asked for pre-made libraries) and Jira PIP
+// (which is only shown in COPO and its LIMS manifest). A new EDP profile
 // is only saved along with its first batch: the profile form's 'Save' button
 // becomes 'Next', which opens the batch dialogue and the sample batch is saved with the
 // profile.
@@ -10,7 +11,14 @@
 
 const EDP_PROFILE_TYPE = 'ei_edp';
 const SAMPLE_BATCH_OPTIONS_URL = '/copo/ei_edp/sample_batch_options/';
-const BATCH_FIELD_NAMES = ['no_of_samples', 'sample_type', 'container_type', 'library_type'];
+const BATCH_FIELD_NAMES = [
+  'no_of_samples',
+  'sample_type',
+  'container_type',
+  'library_type',
+  'related_pip',
+];
+const JIRA_PIP_REGEX = /^PIP-[0-9]+$/;
 
 function getSampleBatchesURL(profileId) {
   return `/copo/ei_edp/${profileId}/sample_batches`;
@@ -89,6 +97,19 @@ function buildBatchForm(options) {
       'Select library type'
     )
   );
+  $form.append(
+    $('<div/>', { class: 'form-group batch-field-related_pip' })
+      .append(buildFieldLabel('related_pip', options))
+      .append(
+        $('<input/>', {
+          type: 'text',
+          class: 'form-control',
+          name: 'related_pip',
+          id: 'batch_related_pip',
+          placeholder: 'PIP-1234',
+        })
+      )
+  );
   // Show the help tips on hover, as the profile form does
   $form.find('.copo-tooltip').popup();
 
@@ -124,6 +145,7 @@ function getBatchFormValues($form, options) {
   BATCH_FIELD_NAMES.forEach((name) => {
     fields[name] = String($form.find(`[name="${name}"]`).val() || '').trim();
   });
+  fields.related_pip = fields.related_pip.toUpperCase();
   if (!isPremadeLibrary(fields.sample_type, options)) {
     fields.library_type = '';
   }
@@ -144,6 +166,11 @@ function checkBatchFormValues(fields, options) {
   });
   if (isPremadeLibrary(fields.sample_type, options) && !fields.library_type) {
     errors.push(`Please fill in <strong>${labels.library_type}</strong>.`);
+  }
+  if (!fields.related_pip) {
+    errors.push(`Please fill in <strong>${labels.related_pip}</strong>.`);
+  } else if (!JIRA_PIP_REGEX.test(fields.related_pip)) {
+    errors.push(`<strong>${labels.related_pip}</strong> must look like PIP-1234.`);
   }
   return errors;
 }
@@ -280,7 +307,16 @@ function buildBatchesTable(batches, options, onEdit) {
   const labels = options.labels;
   const $table = $('<table/>', { class: 'table table-condensed sample-batches-table' });
   const $headRow = $('<tr/>');
-  ['#', labels.no_of_samples, labels.sample_type, labels.container_type, labels.library_type, 'Registered', '']
+  [
+    '#',
+    labels.no_of_samples,
+    labels.sample_type,
+    labels.container_type,
+    labels.library_type,
+    labels.related_pip,
+    'Registered',
+    '',
+  ]
     .forEach((heading) => $headRow.append($('<th/>').text(heading)));
   $table.append($('<thead/>').append($headRow));
 
@@ -292,6 +328,7 @@ function buildBatchesTable(batches, options, onEdit) {
     $row.append($('<td/>').text(batch.sample_type));
     $row.append($('<td/>').text(batch.container_type));
     $row.append($('<td/>').text(batch.library_type || '-'));
+    $row.append($('<td/>').text(batch.related_pip || '-'));
     $row.append($('<td/>').text(batch.date_created));
 
     const $action = $('<td/>');
