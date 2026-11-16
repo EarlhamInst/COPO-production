@@ -1055,7 +1055,6 @@ class Command(BaseCommand):
 
         edp.components.set(
             [
-                files,
                 general_sample,
                 lims_integration,
                 accessions_schema,
