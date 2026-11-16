@@ -102,6 +102,7 @@ PROJECT_APPS = [
     'src.apps.copo_news',
     'src.apps.api',
     'src.apps.copo_single_cell_submission',
+    'src.apps.ei_edp',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
