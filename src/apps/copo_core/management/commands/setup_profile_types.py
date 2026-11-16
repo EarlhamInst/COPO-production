@@ -187,6 +187,21 @@ class Command(BaseCommand):
             tour_id="edit_record_button",
         )
 
+        # Samples are registered in batches under EDP profiles. The button's
+        # label changes to 'Add more samples' once a EDP profile has a 
+        # sample batch
+        register_samples = RecordActionButton().create_record_action_button(
+            name="register_samples",
+            title="Register samples",
+            label="Register samples",
+            type="single",
+            error_message="",
+            icon_class="fa fa-vials",
+            action="register_samples",
+            icon_colour="teal",
+            tour_id="register_samples_record_button",
+        )
+
         releasestudy = RecordActionButton().create_record_action_button(
             name="releasestudy",
             title="Publish study",
@@ -1055,7 +1070,7 @@ class Command(BaseCommand):
         dtol.action_buttons.set([releasestudy])
         genomics.action_buttons.set([releasestudy])
         biodata.action_buttons.set([])
-        edp.action_buttons.set([])
+        edp.action_buttons.set([register_samples])
         self.stdout.write(
             self.style.SUCCESS(f'Assigned action buttons to profile types\n\n')
         )

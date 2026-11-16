@@ -25,6 +25,7 @@ from common.utils.logger import Logger
 # from dal.broker_da import BrokerDA, BrokerVisuals
 from src.apps.copo_core.models import Banner
 from src.apps.copo_core.models import SequencingCentre, ProfileType
+from src.apps.copo_core.profile_type_hooks import get_profile_type_hooks
 from src.apps.copo_core.utils import get_all_profile_types_for_options_for_user
 
 
@@ -134,6 +135,11 @@ def copo_profile_index(request):
 
     schema_map = dict()
     for profile in profile_page:
+        # Add details to the profile based on the profile type
+        profile['card'] = get_profile_type_hooks(
+            profile.get('type') or profile.get('shared_type')
+        ).get_profile_card(profile)
+
         profile_type = profile.get('type', '')
         if type not in schema_map:
             schema = Profile().get_component_schema(profile_type=profile_type)
@@ -419,3 +425,4 @@ def release_study(request, profile_id):
 def get_sequencing_centres(request):
     centres = SequencingCentre.objects.all()
     return HttpResponse(encode(centres), content_type='application/json')
+

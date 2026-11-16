@@ -59,6 +59,7 @@ EDP_PROFILE_FIELDS = {
     'container_type': 'Plate',
     'no_of_samples': 1,
     'budget_holder': 'copo-playwright-test-user',
+    'related_pip': 'PIP-1',
     
     # The project team's development/test email address (which is set in
     # docker-compose.playwright.yaml) will receive emails about the 
@@ -209,12 +210,14 @@ def submit_sample_to_ena(page, profile_id):
     return poll_sample_accession(profile_id)
 
 
-def download_lims_manifest(page, profile_id, path):
-    # The blank LIMS manifest, pre-filled with the project's samples still
-    # to be submitted
-    response = page.request.get(
-        f'/copo/copo_single_cell/download_initial_manifest/{profile_id}/EI_EDP/{EDP_CHECKLIST}'
-    )
+def download_lims_manifest(page, profile_id, path, batch_id=None):
+    # The blank LIMS manifest of a batch of samples, pre-filled with the
+    # batch's samples still to be submitted. A profile with one batch
+    # doesn't need the batch to be given.
+    url = f'/copo/copo_single_cell/download_initial_manifest/{profile_id}/EI_EDP/{EDP_CHECKLIST}'
+    if batch_id:
+        url += f'?batch_id={batch_id}'
+    response = page.request.get(url)
     assert response.ok, f'Manifest download failed: {response.status}'
     path.write_bytes(response.body())
     return path
@@ -254,7 +257,7 @@ def save_lims_manifest(page):
     page.wait_for_load_state('networkidle')
 
 
-def submit_lims_manifest_to_sapio(page):
+def submit_lims_manifest_to_sapio(page, study_id=None):
     # Same table mechanics as the single-cell journey: the study tab's table
     # is `singlecell_table_study`, the toolbar is cloned into every tab (so
     # scope the click to the study table's own button), and the study tab
@@ -270,6 +273,18 @@ def submit_lims_manifest_to_sapio(page):
         "$('#singlecell_table_study').DataTable().rows({selected: true}).count() > 0",
         timeout=30000,
     )
+    if study_id:
+        # Each batch of samples has its own LIMS manifest i.e. its own study
+        # row so, select the batch's row in place of the auto-selected first one
+        selected_count = page.evaluate(
+            '''(studyId) => {
+                const table = $('#singlecell_table_study').DataTable();
+                table.rows().deselect();
+                return table.rows((index, data, node) => $(node).text().includes(studyId)).select().count();
+            }''',
+            study_id,
+        )
+        assert selected_count == 1, f'Expected one study row for {study_id}, found {selected_count}'
     with page.expect_response(lambda r: 'copo_forms' in r.url, timeout=120000) as response_info:
         page.click(".copo-dt[data-action='submit_singlecell_sapio'][data-table='singlecell_table_study']")
     response = response_info.value
@@ -330,39 +345,45 @@ def create_edp_profile(
     container_type,
     no_of_samples,
     related_enq,
+    related_pip,
     budget_holder,
     user_email,
 ):
     # Saving an EDP profile is not local-only: post_save_edp_profile()
     # creates a Sapio project (plus its samples and plates) and stores the
     # project's identifier back on the profile, and the 'Sample type'
-    # dropdown's options are themselves loaded from Sapio when the form
-    # opens. Every caller therefore needs the Sapio test instance reachable.
+    # dropdown's options are themselves loaded from Sapio when the batch
+    # dialog opens. Every caller therefore needs the Sapio test instance reachable.
+    #
+    # The profile is only saved along with its first batch of samples: the
+    # form's 'Next' button opens the 'Register samples' dialog and its 'Save'
+    # button saves both.
     #
     # Returns (profile_card, profile_id, sapio_project_id).
     open_new_profile_form(page, 'ei_edp')
 
     page.fill('#copo\\.profile\\.title', title)
     page.fill('#copo\\.profile\\.description', description)
-    page.select_option('#copo\\.profile\\.sample_type', sample_type)
-    
-    if library_type:
-        page.select_option('#copo\\.profile\\.library_type', library_type)
-    # <option> values are lower-case ('plate'/'tube'); select by the visible
-    # label so callers can pass what the user sees.
-    page.select_option('#copo\\.profile\\.container_type', label=container_type)
-    page.fill('#copo\\.profile\\.no_of_samples', str(no_of_samples))
     page.fill('#copo\\.profile\\.related_enq', related_enq)
+    page.fill('#copo\\.profile\\.related_pip', related_pip)
     page.fill('#copo\\.profile\\.budget_holder', budget_holder)
     page.fill('#copo\\.profile\\.user_email', user_email)
 
+    page.click('#btnFormSave')  # 'Next'
+    fill_sample_batch_form(
+        page,
+        no_of_samples=no_of_samples,
+        sample_type=sample_type,
+        container_type=container_type,
+        library_type=library_type,
+    )
+
     # Check the save's response rather than only the card appearing: a
-    # Sapio sync failure still saves the COPO profile (and renders its card)
-    # but reports a non-success status here.
+    # Sapio sync failure removes the new profile and reports an error here.
     with page.expect_response(
         lambda r: 'copo_forms' in r.url and r.request.method == 'POST', timeout=120000
     ) as response_info:
-        page.click('#btnFormSave')
+        page.click('#btnSaveFirstBatch')
     feedback = response_info.value.json().get('action_feedback', {})
     assert feedback.get('status') == 'success', f'EDP profile save failed: {feedback}'
 
@@ -383,11 +404,22 @@ def create_edp_profile(
     return profile_card, profile_id, sapio_project_id
 
 
-def edit_edp_profile_sample_count(page, title, no_of_samples):
-    # Changes the number of samples on an existing EDP profile and saves.
-    # Returns the save's feedback. On a rejected save the form stays open
-    # with the message shown in it, so it is left open for the caller to
-    # check; on success it is closed.
+def fill_sample_batch_form(page, *, no_of_samples, sample_type, container_type, library_type=None):
+    # Fills in the batch dialog (see edp_sample_batches.js). Its
+    # 'Sample type' options are loaded from Sapio when it opens.
+    expect(page.locator('#batch_no_of_samples')).to_be_visible(timeout=60000)
+    page.fill('#batch_no_of_samples', str(no_of_samples))
+    page.select_option('#batch_sample_type', sample_type)
+    if library_type:
+        # Only shown for pre-made libraries
+        page.select_option('#batch_library_type', library_type)
+    # Select by the visible label so callers can pass what the user sees
+    page.select_option('#batch_container_type', label=container_type)
+
+
+def open_edp_sample_batches(page, title):
+    # Opens the dialog that lists an EDP profile's sample batches from
+    # the profile's options menu ('Register samples'/'Add more samples')
     page.goto('/copo')
     dismiss_tour_if_present(page)
     dismiss_onboarding_modals(page)
@@ -395,21 +427,22 @@ def edit_edp_profile_sample_count(page, title, no_of_samples):
 
     profile_card = page.locator('.panel-heading', has_text=title)
     profile_card.locator('.profile-ellipsis').click()
-    page.click('#editProfileBtn')
+    page.click('#register_samples')
+    expect(page.locator('#batch_no_of_samples')).to_be_visible(timeout=60000)
 
-    sample_count = page.locator('#copo\\.profile\\.no_of_samples')
-    # The form is built server-side, and its Sample type options come from Sapio
-    expect(sample_count).to_be_visible(timeout=60000)
-    sample_count.fill(str(no_of_samples))
 
+def add_edp_sample_batch(page, title, **batch_fields):
+    # Registers another batch of samples under an existing EDP profile.
+    # Returns the server's response i.e. {'status', 'message', 'batches'}.
+    # The dialog is left open for the caller to check.
+    open_edp_sample_batches(page, title)
+    fill_sample_batch_form(page, **batch_fields)
     with page.expect_response(
-        lambda r: 'copo_forms' in r.url and r.request.method == 'POST', timeout=120000
+        lambda r: 'sample_batches' in r.url and r.request.method == 'POST', timeout=120000
     ) as response_info:
-        page.click('#btnFormSave')
-    feedback = response_info.value.json().get('action_feedback', {})
-    if feedback.get('status') != 'error':
-        close_profile_form_if_open(page)
-    return feedback
+        page.click('#btnSaveSampleBatch')
+    return response_info.value.json()
+
 
 def read_sapio_project(project_id, project_fields=(), sample_fields=()):
     # Reads directly from Sapio and not from COPO's copy in Mongo database, 

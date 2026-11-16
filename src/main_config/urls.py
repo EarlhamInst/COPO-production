@@ -80,6 +80,7 @@ urlpatterns = [
         'copo/tol_dashboard/',
         include('src.apps.copo_tol_dashboard.urls', namespace='copo_tol_dashboard'),
     ),
+    path('copo/ei_edp/', include('src.apps.ei_edp.urls', namespace='ei_edp')),
     path('copo/', include('src.apps.copo_core.urls', namespace='copo')),
     path('api/', include('src.apps.api.urls', namespace='api')),
     path('manifests/', include('src.apps.api.urls', namespace='manifests')),

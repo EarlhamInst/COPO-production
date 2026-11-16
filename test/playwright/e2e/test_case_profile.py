@@ -46,13 +46,15 @@ def test_create_and_delete_edp_profile(page: Page, sapio_test_instance):
 
     sapio = read_sapio_project(
         project_id,
+        # TODO: Confirm Sapio name and check the Jira PIP once it is written to Sapio
         project_fields=['ProjectName', 'C_BudgetHolder', 'C_SampleCount'],
         sample_fields=['SampleId'],
     )
     assert sapio['exists'], f'Sapio project {project_id} was not created'
     assert sapio['project']['ProjectName'] == related_enq
     assert sapio['project']['C_BudgetHolder'] == EDP_PROFILE_FIELDS['budget_holder']
-    assert int(sapio['project']['C_SampleCount']) == EDP_PROFILE_FIELDS['no_of_samples']
+    # The lab doesn't use the project's sample count for EDP projects so COPO leaves it unset
+    assert not sapio['project']['C_SampleCount']
     assert len(sapio['samples']) == EDP_PROFILE_FIELDS['no_of_samples']
 
     delete_profile(page, edp_profile_title)

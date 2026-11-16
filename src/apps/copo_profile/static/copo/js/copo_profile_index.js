@@ -28,7 +28,50 @@ function getProfilesPerPage() {
   return Number($('#profilesPerPage').val());
 }
 
-// Global variables
+function registerProfileAction(action, handler) {
+  // Options:
+  // - run(profileId, $button): called when the button is clicked
+  // - isAvailable({ $panel, canEditDelete }) (optional): false hides the button
+  // - getLabel($panel) (optional): the button's label for the profile
+  const profileActions = {};
+  profileActions[action] = handler;
+}
+
+registerProfileAction('release_study', {
+  run: function (profileId, $button) {
+    const $studyStatusEl = $(`#studyStatus_${profileId}`);
+
+    if ($studyStatusEl.length == 0) {
+      alert('Unable to process request.');
+      return;
+    }
+
+    if ($studyStatusEl.text() == 'PUBLIC') {
+      alert('Study is already published.');
+      return;
+    }
+
+    const result = confirm('Are you sure that you would like to publish the study?');
+
+    if (result) {
+      const url = `/copo/copo_profile/${profileId}/release_study`;
+      $.ajax({
+        url: url,
+      })
+        .done(function (data) {
+          $studyStatusEl.html('PUBLIC');
+          $(`#studyReleaseDate_${profileId}`).html(data['study_release_date']);
+
+          // Hide the 'Publish study' button after the study has been published
+          $button.hide();
+        })
+        .fail(function (data) {
+          alert(data.responseText);
+        });
+    }
+  },
+});
+
 let componentName;
 let csrfToken;
 let $gridCount;
@@ -205,51 +248,15 @@ $(document).on('document_ready', function () {
       .removeClass('grid-panel-body-selected');
   });
 
+  // Profile action buttons are handled by whoever registered
+  // their action (see registerProfileAction)
   $(document).on('click', 'button.action', function (e) {
-    let url;
     const $el = $(e.currentTarget);
-    const actionType = $el.data('action-type');
-
-    if (actionType) {
-      const profileId = $el.data('profile-id'); // Profile ID
-
-      if (actionType === 'release_study') {
-        const $studyStatusEl = $(`#studyStatus_${profileId}`);
-
-        if ($studyStatusEl.length == 0) {
-          alert('Unable to process request.');
-          return;
-        }
-
-        if ($studyStatusEl.text() == 'PUBLIC') {
-          alert('Study is already published.');
-          return;
-        }
-
-        const result = confirm('Are you sure that you would like to publish the study?');
-
-        if (result) {
-          const url = `/copo/copo_profile/${profileId}/release_study`;
-          $.ajax({
-            url: url,
-          })
-            .done(function (data) {
-              $studyStatusEl.html('PUBLIC');
-              $(`#studyReleaseDate_${profileId}`).html(
-                data['study_release_date']
-              );
-              
-              // Hide the 'Publish study' button after the study has been published
-              $el.hide();
-            })
-            .fail(function (data) {
-              alert(data.responseText);
-            });
-        }
-      }
+    const handler = profileActions[$el.data('action-type')];
+    if (handler) {
+      handler.run($el.data('profile-id'), $el);
     }
   });
-  
 
   // Toggle the visibility of the button to
   // sort in ascending order or descending order
@@ -444,17 +451,25 @@ function initialiseProfileActionsPopover() {
           $content.append($editButton, $deleteButton);
         }
 
-        // Add action buttons for both shared and non-shared profiles
+        // Add action buttons for both shared and non-shared profiles.
+        // The handler registered for a button's action can hide it
+        // or change its label for the profile (see registerProfileAction).
         actionButtons.forEach((item) => {
           const action = record_action_button_def[item];
           if (!action) {
             console.warn(`Unknown ${componentName} action button: ${item}`);
             return;
           }
+          const handler = profileActions[action.action] || {};
+          if (handler.isAvailable && !handler.isAvailable({ $panel, canEditDelete })) {
+            return;
+          }
+          const label = handler.getLabel ? handler.getLabel($panel) : action.label;
+          const title = handler.getLabel ? label : action.title;
           const $button = $(
-          `<button id="${item}" class="popover-action-btn popover-action-btn-teal action" title="${action.title}"
+          `<button id="${item}" class="popover-action-btn popover-action-btn-teal action" title="${title}"
             data-action-type="${action.action}" data-profile-id="${profileId}">
-            <i class="${action.icon_class}"></i>${action.label}
+            <i class="${action.icon_class}"></i>${label}
           </button>`
           );
           $content.append($button);

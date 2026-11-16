@@ -12,6 +12,26 @@ var formMode = 'add';
 var componentData = null;
 var global_key_split = '___0___';
 
+// Pages can run a step before a form is saved e.g. to collect more details
+// in another dialogue. Each interceptor is called with the form's JSON, the
+// form dialogue and a `proceed` function that saves the form. An interceptor
+// returns true if it has taken over i.e. it will call `proceed` itself.
+const formSaveInterceptors = [];
+
+function addFormSaveInterceptor(interceptor) {
+  formSaveInterceptors.push(interceptor);
+}
+
+function saveFormWithInterceptors(formJSON, dialogRef) {
+  const proceed = () => save_form(formJSON, dialogRef);
+  const isTakenOver = formSaveInterceptors.some((interceptor) =>
+    interceptor(formJSON, dialogRef, proceed)
+  );
+  if (!isTakenOver) {
+    proceed();
+  }
+}
+
 $(document).ready(function () {
   var csrftoken = $.cookie('csrftoken');
 
@@ -266,7 +286,7 @@ function json2HtmlForm(data) {
         .on('submit', function (e) {
           if (!e.isDefaultPrevented()) {
             e.preventDefault();
-            save_form(data.form, dialogRef);
+            saveFormWithInterceptors(data.form, dialogRef);
           } else {
             return false;
           }
@@ -291,6 +311,8 @@ function json2HtmlForm(data) {
         });
 
       const event = jQuery.Event('postformload'); //individual components can trap and handle this event as they so wish
+      event.formJSON = data.form;
+      event.dialogRef = dialogRef;
       $('body').trigger(event);
       /*
       if (!groups.includes('dtol_users')) {

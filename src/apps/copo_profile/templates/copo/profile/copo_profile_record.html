@@ -2,7 +2,7 @@
 {% load static %}
 {% load web_tags %}
 <div class="grid">
-    <div class="copo-records-panel" data-profile-type="{{ profile|coalesce:'type,shared_type' }}" data-is-shared-profile="{{ profile.shared_type|yesno:'true,false' }}"  study-status="{{ profile.study_status | get_first_value_from_array }}" study_release_date="{{ profile.study_release_date | get_first_value_from_array }}">
+    <div class="copo-records-panel" data-profile-type="{{ profile|coalesce:'type,shared_type' }}" data-is-shared-profile="{{ profile.shared_type|yesno:'true,false' }}"{% for name, value in profile.card.data_attributes.items %} data-{{ name }}="{{ value }}"{% endfor %}  study-status="{{ profile.study_status | get_first_value_from_array }}" study_release_date="{{ profile.study_release_date | get_first_value_from_array }}">
         <!--Panel -->
         <div class="panel panel-profile">
             <!--Panel heading -->
@@ -57,6 +57,16 @@
                                             <span id="sapio_project_id_{{profile.id}}">{{ profile.sapio_project_id }}</span>
                                         </div>
                                         {% endif %}
+                                        {% for detail in profile.card.details %}
+                                        <div class="profile-card-detail-div mt-10">
+                                            <span class="text-bold">{{ detail.label }}:</span>
+                                            {% if detail.url %}
+                                            <a {% if detail.id %}id="{{ detail.id }}" {% endif %}href="{{ detail.url }}" target="_blank" rel="noopener noreferrer">{{ detail.value }}</a>
+                                            {% else %}
+                                            <span {% if detail.id %}id="{{ detail.id }}"{% endif %}>{{ detail.value }}</span>
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
                                         {% if profile.description %}
                                             <div class="description-div mt-10">
                                                 <span class="text-bold">Description: </span>

@@ -7,11 +7,12 @@ from playwright.sync_api import Page, expect
 
 from test.playwright.e2e.utils.edp_helpers import (
     EDP_CHECKLIST,
+    add_edp_sample_batch,
     build_lims_manifest,
     copo_sample_ids,
     download_lims_manifest,
-    edit_edp_profile_sample_count,
     manifest_sample_ids,
+    open_edp_sample_batches,
     poll_sapio_study_status,
     save_lims_manifest,
     submit_lims_manifest_to_sapio,
@@ -25,6 +26,7 @@ from test.playwright.e2e.utils.edp_helpers import (
     read_sapio_project,
 )
 from test.playwright.e2e.utils.helpers import (
+    close_profile_form_if_open,
     delete_profile_by_title,
     run_django_shell,
 )
@@ -88,8 +90,8 @@ def _same_value(expected, actual):
 @pytest.mark.external
 def test_edp_samples_submitted_in_batches(page: Page, tmp_path, sapio_test_instance, ena_dev_sandbox):
     # An EDP customer submits their samples, then needs more:
-    # 1 sample submitted to Sapio --> lowering the count below it is refused
-    # --> raising it to 2 adds a Sapio sample --> the blank manifest lists only
+    # 1 sample submitted to Sapio --> its batch can no longer be changed
+    # --> adding a batch of 1 adds a Sapio sample --> that batch's blank manifest lists only
     # the new sample --> re-uploading the first manifest is refused --> the new
     # manifest is accepted and saved alongside the first sample --> 'Submit to
     # Sapio' --> both samples are in Sapio under their own customer names.
@@ -121,27 +123,40 @@ def test_edp_samples_submitted_in_batches(page: Page, tmp_path, sapio_test_insta
     assert feedback.get('status') == 'success', f'Submit to Sapio failed: {feedback}'
     poll_sapio_study_status(profile_id, project_id)
 
-    # --- Lowering the count below the submitted samples is refused ---
-    feedback = edit_edp_profile_sample_count(page, PROFILE_TITLE_FOR_SAMPLE_BATCH_SUBMISSION, 0)
-    message = (
-        f'1 of 1 samples in Sapio project {project_id} have already been submitted '
-        "so, the number of samples cannot be set lower than 1."
-    )
-    assert feedback == {'status': 'error', 'message': message}
-    expect(page.locator('.modal.in .formMessageDiv')).to_contain_text(message)
+    # --- The first batch is locked now that its sample has been submitted ---
+    open_edp_sample_batches(page, PROFILE_TITLE_FOR_SAMPLE_BATCH_SUBMISSION)
+    first_batch_row = page.locator('.sample-batches-table tbody tr').first
+    expect(first_batch_row).to_contain_text('Submitted')
+    expect(first_batch_row.locator('.edit-sample-batch')).to_have_count(0)
+    close_profile_form_if_open(page)
     assert [s['SampleId'] for s in _sapio_samples(project_id)] == [first_sample_id]
 
-    # --- Raising it adds a sample to the Sapio project ---
-    feedback = edit_edp_profile_sample_count(page, PROFILE_TITLE_FOR_SAMPLE_BATCH_SUBMISSION, 2)
-    assert feedback.get('status') == 'success', f'Increasing the sample count failed: {feedback}'
+    # --- Adding a batch adds a sample to the Sapio project ---
+    result = add_edp_sample_batch(
+        page,
+        PROFILE_TITLE_FOR_SAMPLE_BATCH_SUBMISSION,
+        no_of_samples=1,
+        sample_type=EDP_PROFILE_FIELDS['sample_type'],
+        container_type=EDP_PROFILE_FIELDS['container_type'],
+    )
+    assert result.get('status') == 'success', f'Adding a batch of samples failed: {result}'
+    assert len(result['batches']) == 2
+    second_batch_id = result['batches'][1]['batch_id']
+    # Each batch has its own LIMS manifest. The first batch's study ID is the
+    # Sapio project ID and later batches add their number.
+    second_study_id = f'{project_id}-B2'
+    close_profile_form_if_open(page)
     sapio_samples = {s['SampleId']: s['C_CustomerSampleName'] for s in _sapio_samples(project_id)}
     assert len(sapio_samples) == 2, f'Expected 2 Sapio samples, found {sapio_samples}'
     assert sapio_samples[first_sample_id] == first_expected['Submitter Sample Reference']
     (second_sample_id,) = set(sapio_samples) - {first_sample_id}
 
-    # --- The blank manifest lists only the new sample ---
-    second_downloaded = download_lims_manifest(page, profile_id, tmp_path / 'second_downloaded.xlsx')
+    # --- The second batch's blank manifest lists only its new sample ---
+    second_downloaded = download_lims_manifest(
+        page, profile_id, tmp_path / 'second_downloaded.xlsx', batch_id=second_batch_id
+    )
     assert manifest_sample_ids(second_downloaded) == [second_sample_id]
+    assert openpyxl.load_workbook(second_downloaded)['sample']['C5'].value == second_study_id
 
     # --- Changing the `Submitter Sample Reference` field value of 
     # submitted samples is not allowed because it is used as an identifier in Sapio ---
@@ -169,9 +184,9 @@ def test_edp_samples_submitted_in_batches(page: Page, tmp_path, sapio_test_insta
     save_lims_manifest(page)
     assert sorted(copo_sample_ids(profile_id)) == sorted([first_sample_id, second_sample_id])
 
-    feedback = submit_lims_manifest_to_sapio(page)
+    feedback = submit_lims_manifest_to_sapio(page, study_id=second_study_id)
     assert feedback.get('status') == 'success', f'Submit to Sapio failed: {feedback}'
-    poll_sapio_study_status(profile_id, project_id)
+    poll_sapio_study_status(profile_id, second_study_id)
 
     sapio_samples = {s['SampleId']: s['C_CustomerSampleName'] for s in _sapio_samples(project_id)}
     assert sapio_samples == {
