@@ -181,3 +181,18 @@ def trigger_startup_lookups(sender, **kwargs):
     update_ena_read_checklist.delay()
     update_ena_checklist.delay()
     update_singlecell_schema.delay()
+
+
+@worker_ready.connect
+def reset_interrupted_file_transfers(sender, **kwargs):
+    """Restart the file transfers that were running when this worker last stopped.
+
+    Only a worker that consumes the 'file_transfers' queue runs transfers so,
+    only it resets them. See `reset_interrupted_transfers`.
+    """
+    task_consumer = getattr(sender, 'task_consumer', None)
+    queue_names = {queue.name for queue in getattr(task_consumer, 'queues', [])}
+    if 'file_transfers' not in queue_names:
+        return
+    from common.ena_utils.FileTransferUtils import reset_interrupted_transfers
+    reset_interrupted_transfers()

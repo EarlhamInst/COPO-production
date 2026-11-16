@@ -141,6 +141,29 @@ def check_taxon_ena_submittable(taxon, is_binomial_required=True, by="id"):
     return errors, taxinfo
 
 
+# Seconds to wait for EBI's Ontology Lookup Service (OLS) before giving up
+OLS_TIMEOUT = 30
+
+
+class OntologyLookupUnavailable(Exception):
+    '''Raised when EBI's Ontology Lookup Service (OLS) can't be reached or
+    fails, so a term can't be checked either way. Callers report this
+    instead of an invalid value, since the term may well be valid.'''
+
+
+def _get_from_ols(url):
+    try:
+        response = requests.get(url, timeout=OLS_TIMEOUT)
+    except requests.RequestException as error:
+        l.error(f'OLS could not be reached: {error}')
+        raise OntologyLookupUnavailable(str(error)) from error
+    # A server error or rate limit says nothing about the term itself
+    if response.status_code >= 500 or response.status_code == 429:
+        l.error(f'OLS returned HTTP {response.status_code} for {url}')
+        raise OntologyLookupUnavailable(f'OLS returned HTTP {response.status_code}')
+    return response
+
+
 def checkOntologyTerm(ontology_id, ancestor, term):
     """
     Check that `term` exists in the given ontology and descends from `ancestor`.
@@ -155,12 +178,15 @@ def checkOntologyTerm(ontology_id, ancestor, term):
 
     Returns:
         True if a matching term that descends from ancestor is found, else False.
+
+    Raises:
+        OntologyLookupUnavailable: if OLS can't be reached or fails.
     """
     encoded_term = quote(term) # URL-encode the term to handle spaces and special characters
     ontology_id_lower = ontology_id.lower() # OLS4 API seems to require lowercase ontology IDs
     url = f"https://www.ebi.ac.uk/ols4/api/v2/entities?search={encoded_term}&size=10&page=0&facetFields=ontologyId+type&lang=en&exactMatch=true&ontologyId={ontology_id_lower}"
-    response = requests.get(url)
-    
+    response = _get_from_ols(url)
+
     if response.status_code == 200:
         data = response.json()
         for elm in data.get("elements",[]):
@@ -183,9 +209,12 @@ def checkNCBITaxonTerm(term):
     Returns:
         True if the taxon is found and its CURIE matches "NCBITaxon:{term}",
         False otherwise.
+
+    Raises:
+        OntologyLookupUnavailable: if OLS can't be reached or fails.
     """
     url = f"https://www.ebi.ac.uk/ols4/api/v2/ontologies/ncbitaxon/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_{term}?includeObsoleteEntities=false"
-    response = requests.get(url)
+    response = _get_from_ols(url)
     if response.status_code == 200:
         data = response.json()
         curie = data.get("curie","")

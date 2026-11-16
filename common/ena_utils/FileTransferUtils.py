@@ -191,6 +191,25 @@ def check_for_stuck_transfers():
                     Logger().log("resetting to pending transfer: " + tx["local_path"])
 
 
+def reset_interrupted_transfers():
+    '''Put transfers that a stopped worker left as 'processing' back to 'pending'.
+
+    Called when a worker that processes the 'file_transfers' queue starts.
+    A transfer can't still be running at that point so, one that is
+    'processing' was interrupted when the worker stopped. Otherwise, it would
+    wait for `check_for_stuck_transfers` (up to 12 hours for an upload), and
+    no other upload is started while two are 'processing'.
+
+    This assumes a single worker processes the 'file_transfers' queue. With
+    more than one, a worker restarting would reset the others' transfers.
+    '''
+    for tx in EnaFileTransfer().get_collection_handle().find(
+        {"status": "processing"}, {"local_path": 1}
+    ):
+        EnaFileTransfer().set_pending(tx["_id"])
+        Logger().log("resetting interrupted transfer to pending: " + str(tx.get("local_path", "")))
+
+
 def insert_message(message, user):
     sm = StatusMessage(message_owner=user, message=message)
     sm.save()

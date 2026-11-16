@@ -15,6 +15,11 @@ MESSAGES = {
         'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'
         'Expected value from ontology <strong><a href="{ontology_link}" target="_blank">{ontology_name}</a></strong>'),
 
+    'ontology_lookup_unavailable': (
+        'The values in column <strong>{column_name}</strong> could not be checked against ontology '
+        '<strong>{ontology_name}</strong> because the Ontology Lookup Service (OLS) could not be reached. '
+        'Please try uploading the manifest again later.'),
+
     'mismatched_value': (
         'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'
         'It does not match with the Taxon ID of your biosample <strong>{biosampleAccession}</strong>'),

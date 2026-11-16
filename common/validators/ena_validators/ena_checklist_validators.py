@@ -7,7 +7,7 @@ from common.utils.helpers import get_env
 import xml.etree.ElementTree as ET
 from Bio import Entrez
 from common.utils.helpers import notify_frontend
-from common.validators.helpers import check_taxon_ena_submittable, checkOntologyTerm
+from common.validators.helpers import check_taxon_ena_submittable, checkOntologyTerm, OntologyLookupUnavailable
 from .validation_messages import MESSAGES as msg
 
 # check mandatory fields are present in spreadsheet
@@ -272,7 +272,18 @@ class OntologyValidator(Validator):
                     if self.data[key][i]:
                         ontology =  field.get("ontology","").split(":")
                         if len(ontology) == 2:
-                            if not checkOntologyTerm(ontology_id=ontology[0], ancestor=ontology[1], term=self.data[key][i]):
+                            try:
+                                is_valid_term = checkOntologyTerm(ontology_id=ontology[0], ancestor=ontology[1], term=self.data[key][i])
+                            except OntologyLookupUnavailable:
+                                # Report it once and stop as every other lookup would
+                                # also wait for OLS to time out
+                                self.errors.append(msg["ontology_lookup_unavailable"].format(
+                                    column_name=field["label"],
+                                    ontology_name=field.get("ontology",""),
+                                ))
+                                self.flag = False
+                                return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
+                            if not is_valid_term:
                                 error_msg = msg["invalid_column_value_ontology"].format(
                                     invalid_value=self.data[key][i],
                                     column_name=field["label"],

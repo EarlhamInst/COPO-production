@@ -11,9 +11,17 @@ out to ENA, OLS or NCBI and belongs in a later batch with patched HTTP clients.
 
 from datetime import date, timedelta
 from unittest import mock
+import requests
 import pytest
 
-from common.validators.helpers import clean_str, validate_date, check_biocollection, checkOntologyTerm
+from common.validators.helpers import (
+    OntologyLookupUnavailable,
+    check_biocollection,
+    checkNCBITaxonTerm,
+    checkOntologyTerm,
+    clean_str,
+    validate_date,
+)
 
 
 def test_validate_date_accepts_a_past_date():
@@ -126,3 +134,33 @@ def test_check_ontology_term_rejects_when_no_string_synonym_matches():
 
     with mock.patch('common.validators.helpers.requests.get', return_value=_ols_response([element])):
         assert checkOntologyTerm('uberon', '0000061', 'brain') is False
+
+
+# An unreachable or failing OLS says nothing about the term itself so, it is
+# raised rather than answered as an invalid term
+@pytest.mark.parametrize(
+    'ols_response',
+    [
+        requests.ConnectionError('connection refused'),
+        requests.Timeout('read timed out'),
+        mock.Mock(status_code=503),
+        mock.Mock(status_code=429),
+    ],
+)
+@pytest.mark.parametrize(
+    'check',
+    [
+        lambda: checkOntologyTerm('uberon', '0000061', 'brain'),
+        lambda: checkNCBITaxonTerm('9606'),
+    ],
+)
+def test_ols_lookup_raises_when_ols_cannot_be_reached(check, ols_response):
+    with mock.patch('common.validators.helpers.requests.get', side_effect=[ols_response]) as get:
+        with pytest.raises(OntologyLookupUnavailable):
+            check()
+    assert get.call_args.kwargs['timeout']
+
+
+def test_ncbi_taxon_that_ols_does_not_have_is_invalid():
+    with mock.patch('common.validators.helpers.requests.get', return_value=mock.Mock(status_code=404)):
+        assert checkNCBITaxonTerm('0') is False

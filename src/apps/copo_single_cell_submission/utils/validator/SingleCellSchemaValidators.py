@@ -3,7 +3,7 @@ from django.conf import settings
 from common.dal.sample_da import Sample
 import re
 import pandas as pd
-from common.validators.helpers import checkOntologyTerm, checkNCBITaxonTerm, clean_str
+from common.validators.helpers import checkOntologyTerm, checkNCBITaxonTerm, clean_str, OntologyLookupUnavailable
 import requests
 from common.utils.helpers import get_env
 import xml.etree.ElementTree as ET
@@ -82,6 +82,7 @@ class IncorrectValueValidator(Validator):
         #get all BIOSAMPLEACCESSION_EXT_FIELD from the checklist fields
         biosampleAccession_ext_field_map = {key: field for key, field in schema_map.items() if field.get("term_type") == "BIOSAMPLEACCESSION_EXT_FIELD"}
 
+        ols_unavailable = False
         for column in self.data.columns:
             if column in schema_map.keys():
                 field = schema_map[column]
@@ -122,34 +123,48 @@ class IncorrectValueValidator(Validator):
                                     )
                                     self.errors.append(error_msg)
                                     self.flag = False
-                        elif type == "ontology":   
+                        elif type == "ontology":
                             reference = field.get("term_reference", "")
                             if reference:
-                                if reference == "NCBITaxon":
-                                    if not checkNCBITaxonTerm(row):
-                                        error_msg = MESSAGES["invalid_column_value_ontology"].format(
-                                            component=component,
-                                            invalid_value=row,
-                                            column_name=field["term_label"],
-                                            line_no=i + self.first_data_line_no,
-                                            ontology_name="NCBITaxon"
-                                        )
-                                        self.errors.append(error_msg)
-                                        self.flag = False
-                                else:
-                                    #it should be "ontology_id:ancestor, i.e. EFO:0004466"
-                                    ontology_id = reference.split(":")[0]
-                                    ancestor = clean_str(reference.split(":")[1])
-                                    if not checkOntologyTerm(ontology_id, ancestor, row):
-                                        error_msg = MESSAGES["invalid_column_value_ontology"].format(
-                                            component=component,
-                                            invalid_value=row,
-                                            column_name=field["term_label"],
-                                            line_no=i + self.first_data_line_no,
-                                            ontology_name=str(reference)
-                                        )
-                                        self.errors.append(error_msg)
-                                        self.flag = False
+                                # Once OLS can't be reached, the remaining ontology
+                                # values aren't checked as each lookup would also
+                                # wait for OLS to time out
+                                if ols_unavailable:
+                                    continue
+                                try:
+                                    if reference == "NCBITaxon":
+                                        if not checkNCBITaxonTerm(row):
+                                            error_msg = MESSAGES["invalid_column_value_ontology"].format(
+                                                component=component,
+                                                invalid_value=row,
+                                                column_name=field["term_label"],
+                                                line_no=i + self.first_data_line_no,
+                                                ontology_name="NCBITaxon"
+                                            )
+                                            self.errors.append(error_msg)
+                                            self.flag = False
+                                    else:
+                                        #it should be "ontology_id:ancestor, i.e. EFO:0004466"
+                                        ontology_id = reference.split(":")[0]
+                                        ancestor = clean_str(reference.split(":")[1])
+                                        if not checkOntologyTerm(ontology_id, ancestor, row):
+                                            error_msg = MESSAGES["invalid_column_value_ontology"].format(
+                                                component=component,
+                                                invalid_value=row,
+                                                column_name=field["term_label"],
+                                                line_no=i + self.first_data_line_no,
+                                                ontology_name=str(reference)
+                                            )
+                                            self.errors.append(error_msg)
+                                            self.flag = False
+                                except OntologyLookupUnavailable:
+                                    ols_unavailable = True
+                                    self.errors.append(MESSAGES["ontology_lookup_unavailable"].format(
+                                        component=component,
+                                        column_name=field["term_label"],
+                                        ontology_name=str(reference),
+                                    ))
+                                    self.flag = False
                             else:
                                 error_msg = MESSAGES["missing_ontology_term"].format(
                                     component=component,

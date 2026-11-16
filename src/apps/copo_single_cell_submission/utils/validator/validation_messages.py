@@ -33,6 +33,11 @@ MESSAGES = {
         "in column <strong>{column_name}</strong> at row <strong>{line_no}</strong>.<br>"
         "Expected a valid <strong>{ontology_name}</strong> term."
     ),
+    'ontology_lookup_unavailable': (
+        "Sheet <strong>{component}</strong>: The values in column <strong>{column_name}</strong> "
+        "could not be checked against <strong>{ontology_name}</strong> because the Ontology Lookup "
+        "Service (OLS) could not be reached. Please try uploading the manifest again later."
+    ),
     'mismatched_value': (
         "Sheet <strong>{component}</strong>: Value <strong>{invalid_value}</strong> "
         "in column <strong>{column_name}</strong> at row <strong>{line_no}</strong> "
