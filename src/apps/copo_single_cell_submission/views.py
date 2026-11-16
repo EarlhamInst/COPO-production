@@ -733,7 +733,9 @@ def copo_singlecell(request, schema_name, profile_id, ui_component):
         )
     )
 
+    schema_handler = get_schema_class(schema_name, SchemaClassType.HANDLER)()
     checklists = []
+    checklist_ids_by_filter = []
     if singlecell_checklists:
         # filter only checklists available for this profile
         schema = (
@@ -744,16 +746,28 @@ def copo_singlecell(request, schema_name, profile_id, ui_component):
         checklists_filter = schema.get("checklists_filter", [])
         if checklists_filter:
             checklists_filter_df = pd.DataFrame.from_records(checklists_filter)
-            columns = checklists_filter_df.columns
-            for col in columns:
-                if col != "key":
-                    checklists_filter_df = checklists_filter_df[
-                        (pd.isna(checklists_filter_df[col]))
-                        | (
-                            checklists_filter_df[col].astype(str).str.upper()
-                            == str(profile.get(col, "")).upper()
-                        )
-                    ]
+            filter_columns = [col for col in checklists_filter_df.columns if col != "key"]
+
+            # The schema's handler gives the values to filter by
+            # (e.g. one dict per batch of samples) and a checklist
+            # is offered if it matches any of them
+            def get_matches(filter_values):
+                matches = pd.Series(True, index=checklists_filter_df.index)
+                for col in filter_columns:
+                    matches &= (pd.isna(checklists_filter_df[col])) | (
+                        checklists_filter_df[col].astype(str).str.upper()
+                        == str(filter_values.get(col, "")).upper()
+                    )
+                return matches
+
+            matches_any = pd.Series(False, index=checklists_filter_df.index)
+            for filter_values in schema_handler.get_checklist_filter_values(profile):
+                matches = get_matches(filter_values)
+                matches_any |= matches
+                checklist_ids_by_filter.append(
+                    (filter_values, list(checklists_filter_df.loc[matches, "key"]))
+                )
+            checklists_filter_df = checklists_filter_df[matches_any]
             singlecell_checklists_df = pd.DataFrame.from_dict(
                 singlecell_checklists, orient="index"
             )
@@ -776,6 +790,9 @@ def copo_singlecell(request, schema_name, profile_id, ui_component):
         request,
         'copo/copo_single_cell.html',
         {
+            # The schema's handler can add to the page (e.g. a dropdown menu
+            # that chooses what a manifest is for)
+            **schema_handler.get_page_context(profile, checklist_ids_by_filter),
             'profile_id': profile_id,
             'profile': profile,
             'schema_name': schema_name,

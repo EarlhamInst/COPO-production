@@ -1,6 +1,6 @@
 '''Unit tests for the broker checks run before a manifest is downloaded or uploaded.
 
-The broker matches on the schema to decide which checks apply. For the EDP
+The broker asks the schema's handler (see `get_schema_class`) which checks apply. For the EDP
 schema used by LIMS manifests, samples must be submitted before a LIMS
 manifest can be downloaded or uploaded and a blank LIMS manifest also needs
 samples still remaining to be submitted in its LIMS project.
@@ -11,7 +11,10 @@ from unittest import mock
 
 import pytest
 
+from types import SimpleNamespace
+
 from src.apps.copo_core import broker_da as broker_module
+from src.apps.ei_edp.utils import edp_utils as edp_utils_module
 from src.apps.ei_edp.utils.constants import EDP_SCHEMA_NAME
 
 PROFILE_ID = 'profile1'
@@ -22,12 +25,20 @@ ALL_SUBMITTED = {'status': 'warning', 'message': 'all samples submitted'}
 
 
 def run(task, schema_name, samples_submitted=SUCCESS, blank_manifest=SUCCESS):
+    # The EDP schema's handler calls these `edp_utils` checks
     with mock.patch.object(broker_module, 'DAComponent'), \
             mock.patch.object(broker_module, 'Profile') as profile_da, \
-            mock.patch.object(broker_module, 'edp_utils') as edp_utils:
+            mock.patch.object(
+                edp_utils_module, 'check_edp_samples_submitted', return_value=samples_submitted
+            ) as check_edp_samples_submitted, \
+            mock.patch.object(
+                edp_utils_module, 'check_lims_blank_manifest', return_value=blank_manifest
+            ) as check_lims_blank_manifest:
         profile_da.return_value.get_record.return_value = PROFILE
-        edp_utils.check_edp_samples_submitted.return_value = samples_submitted
-        edp_utils.check_lims_blank_manifest.return_value = blank_manifest
+        edp_utils = SimpleNamespace(
+            check_edp_samples_submitted=check_edp_samples_submitted,
+            check_lims_blank_manifest=check_lims_blank_manifest,
+        )
         broker = broker_module.BrokerDA(
             context={},
             component='lims_integration',
@@ -65,7 +76,7 @@ def test_lims_blank_manifest_warns_when_no_samples_remain():
     )
 
     assert feedback == ALL_SUBMITTED
-    edp_utils.check_lims_blank_manifest.assert_called_once_with(profile=PROFILE)
+    edp_utils.check_lims_blank_manifest.assert_called_once_with(profile=PROFILE, batch_id='')
 
 
 def test_lims_blank_manifest_downloads_when_both_checks_pass():

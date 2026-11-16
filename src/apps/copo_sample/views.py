@@ -11,9 +11,7 @@ from common.ena_utils.EnaChecklistHandler import EnaCheckListSpreadsheet, write_
 from common.ena_utils import generic_helper as ghlper
 from common.utils.helpers import get_datetime, get_not_deleted_flag,map_to_dict
 from .utils import copo_sample
-from src.apps.ei_edp.utils import edp_utils
-from src.apps.ei_edp.utils.constants import EDP_PROFILE_TYPE
-from src.apps.ei_edp.utils.edp_validators import SampleCountValidator
+from src.apps.copo_core.profile_type_hooks import get_profile_type_hooks
 from io import BytesIO
 from common.utils.logger import Logger
 from common.ena_utils import generic_helper as ghlper
@@ -42,8 +40,11 @@ def copo_general_samples(request, profile_id, ui_component):
     profile_checklist_ids = Sample().get_distinct_checklist(profile_id)
     if not profile_checklist_ids:
         profile_checklist_ids = []
-    is_edp_profile = profile.get("type") == EDP_PROFILE_TYPE
-    return render(request, 'copo/copo_general_sample.html', {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids, 'ui_component': ui_component, 'is_edp_profile': is_edp_profile})
+    context = {'profile_id': profile_id, 'profile': profile, 'checklists': checklists, "profile_checklist_ids": profile_checklist_ids, 'ui_component': ui_component}
+    # A profile type can add to the page e.g. a dropdown menu
+    # that chooses what a manifest is for
+    context.update(get_profile_type_hooks(profile.get('type')).get_sample_page_context(profile))
+    return render(request, 'copo/copo_general_sample.html', context)
 
 
 @login_required
@@ -83,11 +84,16 @@ def parse_sample_spreadsheet(request):
             required_validators.append(element)
     """
 
-    # Under EDP profiles, the manifest cannot add more samples than are left to upload
+    # The profile's type can add validators and fields
+    # for the samples the manifest creates 
     profile = Profile().get_record(profile_id) or {}
-    if profile.get('type') == EDP_PROFILE_TYPE:
-        required_validators.append(SampleCountValidator)
-
+    upload = get_profile_type_hooks(profile.get('type')).prepare_sample_upload(profile, request.POST)
+    request.session['new_sample_fields'] = upload['new_sample_fields']
+    
+    if upload['error']:
+        return HttpResponse(status=400, content=upload['error'])
+    
+    required_validators.extend(upload['validators'])
     ena = EnaCheckListSpreadsheet(file=file, checklist_id=checklist_id, component="sample", validators=required_validators, with_read=False)
     #s3obj = s3()
     if name.endswith("xlsx") or name.endswith("xls"):
@@ -157,6 +163,9 @@ def save_sample_records(request):
             insert_record["sample_type"] = "isasample"
             insert_record["status"] = "pending"
             insert_record["deleted"] = get_not_deleted_flag()
+            # Fields that the profile's type sets on new samples (e.g. the batch
+            # of samples that the manifest was uploaded for). Updated samples keep theirs.
+            insert_record.update(request.session.get("new_sample_fields") or {})
         else:
             if sample["status"] in ["accepted", "rejected"]:
                 sample["status"] = "pending"
@@ -228,8 +237,6 @@ def download_manifest(request, profile_id, sample_checklist_id):
 @login_required
 @web_page_access_checker
 def download_blank_manifest(request, profile_id, sample_checklist_id):
-    # Under EDP profiles, only as many rows as there are samples
-    # left to upload can be filled in the blank manifest
     profile = Profile().get_record(profile_id)
     if not profile:
         return HttpResponse(status=404, content="Profile not found")
@@ -237,9 +244,14 @@ def download_blank_manifest(request, profile_id, sample_checklist_id):
     if not checklist:
         return HttpResponse(status=404, content="Checklist not found")
 
-    editable_row_count = None
-    if profile.get("type") == EDP_PROFILE_TYPE:
-        editable_row_count = edp_utils.get_samples_left_to_upload(profile)
+    # NB: A profile type can limit the number of rows that can be filled in a manifest
+    # like to the number of samples left to upload
+    editable_row_count, error = get_profile_type_hooks(
+        profile.get("type")
+    ).get_blank_sample_manifest_row_limit(profile, request.GET)
+    
+    if error:
+        return HttpResponse(status=400, content=error)
 
     bytesstring = BytesIO()
     write_manifest(checklist=checklist, with_read=False, file_path=bytesstring, editable_row_count=editable_row_count)

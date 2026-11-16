@@ -16,7 +16,11 @@ from common.schemas.utils import data_utils
 from common.utils import helpers
 from src.apps.copo_barcoding_submission.utils.EnaTaggedSequence import EnaTaggedSequence
 from src.apps.copo_single_cell_submission.utils import copo_single_cell
-from src.apps.ei_edp.utils import constants as edp_constants
+from src.apps.copo_core.profile_type_hooks import get_profile_type_hooks
+from src.apps.copo_single_cell_submission.utils.single_cell_utils import (
+    SchemaClassType,
+    get_schema_class,
+)
 from src.apps.ei_edp.utils import edp_utils
 
 
@@ -134,6 +138,10 @@ class BrokerDA:
 
         report_metadata["status"] = status
         self.context["action_feedback"] = report_metadata
+
+        # Nothing was saved (or the save was undone) so, there is no record to show
+        if status == 'error':
+            return self.context
 
         # process visualisation context,
 
@@ -515,17 +523,14 @@ class BrokerDA:
         # "copo_default" is the popup's one-off "use COPO default" choice.
         credential_source = self.request_dict.get("credential_source", "user")
 
-        match profile.get('type'):
-            case edp_constants.EDP_PROFILE_TYPE:
-                # Under EDP profiles, no more samples can be submitted
-                # than the number of samples requested on the profile
-                result = edp_utils.check_sample_submission(
-                    profile=profile,
-                    sample_ids=[target_id] if target_id else target_ids,
-                )
-                if result['status'] != 'success':
-                    self.context['action_feedback'] = result
-                    return self.context
+        # A profile type can stop the submission e.g. under EDP profiles, no
+        # more samples of a batch can be submitted than the batch registered
+        result = get_profile_type_hooks(profile.get('type')).check_sample_submission(
+            profile, [target_id] if target_id else target_ids
+        )
+        if result['status'] != 'success':
+            self.context['action_feedback'] = result
+            return self.context
 
         result = copo_sample.submit_sample(
             profile_id=self.profile_id,
@@ -742,28 +747,17 @@ class BrokerDA:
     def do_check_blank_manifest(self):
         profile = Profile().get_record(self.profile_id) or {}
         
-        # Checks whether a blank manifest can be downloaded
-        feedback = {'status': 'success', 'message': ''}
-
-        match self.request_dict.get('schema_name', str()):
-            case edp_constants.EDP_SCHEMA_NAME:
-                # Samples must be submitted under EDP profiles before a
-                # blank LIMS manifest can be downloaded and some samples in
-                # its LIMS project must still be remaining to be submitted.
-                feedback = edp_utils.check_edp_samples_submitted(
-                    profile=profile
-                )
-                if feedback['status'] == 'success':
-                    feedback = edp_utils.check_lims_blank_manifest(
-                        profile=profile
-                    )
-
+        # Checks whether a blank manifest can be downloaded. The Samples page
+        # asks the profile's type and the schema pages ask the schema's handler
+        # e.g. under EDP profiles, the chosen sample batch must still have samples left.
         if self.component == 'general_sample':
-            # Under EDP profiles, some of the samples requested on the
-            # profile must still be remaining to be uploaded before a
-            # blank sample manifest can be downloaded.
-            feedback = edp_utils.check_blank_sample_manifest(
-                profile=profile
+            feedback = get_profile_type_hooks(profile.get('type')).check_blank_sample_manifest(
+                profile, self.request_dict
+            )
+        else:
+            schema_name = self.request_dict.get('schema_name', str())
+            feedback = get_schema_class(schema_name, SchemaClassType.HANDLER)().check_blank_manifest(
+                profile, self.request_dict
             )
 
         self.context['action_feedback'] = feedback
@@ -772,16 +766,13 @@ class BrokerDA:
     def do_check_manifest_upload(self):
         profile = Profile().get_record(self.profile_id) or {}
 
-        # Checks whether a manifest can be uploaded
-        feedback = {'status': 'success', 'message': ''}
-
-        match self.request_dict.get('schema_name', str()):
-            case edp_constants.EDP_SCHEMA_NAME:
-                # Samples must be submitted under EDP profiles before a
-                # LIMS manifest describing them can be uploaded.
-                feedback = edp_utils.check_edp_samples_submitted(
-                    profile=profile
-                )
+        # Checks whether a manifest can be uploaded e.g. samples must be
+        # submitted under EDP profiles before a LIMS manifest describing them
+        # can be uploaded. The schema's handler decides.
+        schema_name = self.request_dict.get('schema_name', str())
+        feedback = get_schema_class(schema_name, SchemaClassType.HANDLER)().check_manifest_upload(
+            profile, self.request_dict
+        )
 
         self.context['action_feedback'] = feedback
         return self.context

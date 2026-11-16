@@ -725,6 +725,31 @@ class SingleCellSchemasHandler:
         # upload replaces the existing rows so nothing is kept.
         pass
 
+    # Hooks for the schema's page. Schemas that need different behaviour
+    # override them in their handler
+
+    def get_checklist_filter_values(self, profile):
+        # Each dictionary of values is matched against the schema's `checklists_filter`
+        # rows and a checklist is offered if it matches any of them.
+        # By default, the checklists are filtered by the profile's values.
+        return [profile]
+
+    def get_page_context(self, profile, checklist_ids_by_filter):
+        # Extra template context for the schema's page e.g. a `manifest_group`
+        # dropdown menu (see `ProfileTypeHooks.get_sample_page_context`).
+        # `checklist_ids_by_filter` pairs each dict from
+        # `get_checklist_filter_values` with the checklist IDs that it matched.
+        return {}
+
+    def check_blank_manifest(self, profile, request_data):
+        # Checks whether a blank manifest can be downloaded.
+        # `request_data` is the request's POST data.
+        return {'status': 'success', 'message': ''}
+
+    def check_manifest_upload(self, profile, request_data):
+        # Checks whether a manifest can be uploaded
+        return {'status': 'success', 'message': ''}
+
 
 class SinglecellschemasSpreadsheet:
     def __init__(

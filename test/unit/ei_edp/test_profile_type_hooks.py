@@ -1,0 +1,156 @@
+'''Unit tests for the hooks that let EDP profiles change shared pages and tasks.
+
+Shared code asks a profile type's hooks (`get_profile_type_hooks`) and a
+schema's handler (`get_schema_class`) rather than checking for EDP itself.
+The defaults change nothing. Under EDP profiles, a manifest is for one of the
+profile's batches of samples.
+'''
+
+from unittest import mock
+
+import pytest
+
+from src.apps.copo_core.profile_type_hooks import ProfileTypeHooks, get_profile_type_hooks
+from src.apps.copo_single_cell_submission.utils.single_cell_utils import (
+    SchemaClassType,
+    get_schema_class,
+)
+from src.apps.ei_edp.utils import edp_utils
+from src.apps.ei_edp.utils.edp_validation_messages import MESSAGES
+from src.apps.ei_edp.utils.profile_type_hooks import EDPProfileTypeHooks
+
+SUCCESS = {'status': 'success', 'message': ''}
+BATCHES = [
+    {'batch_id': 'b1', 'no_of_samples': 2, 'sample_type': 'Tissue', 'container_type': 'Plate',
+     'library_type': '', 'lims_sample_record_ids': []},
+    {'batch_id': 'b2', 'no_of_samples': 3, 'sample_type': 'Total RNA', 'container_type': 'Tube',
+     'library_type': '', 'lims_sample_record_ids': []},
+]
+PROFILE = {'_id': 'p1', 'type': 'ei_edp', 'sample_batches': BATCHES}
+
+
+@pytest.mark.parametrize('profile_type, hooks_class', [
+    ('ei_edp', EDPProfileTypeHooks),
+    (' EI_EDP ', EDPProfileTypeHooks),
+    ('genomics', ProfileTypeHooks),
+    ('', ProfileTypeHooks),
+    (None, ProfileTypeHooks),
+])
+def test_registry(profile_type, hooks_class):
+    assert type(get_profile_type_hooks(profile_type)) is hooks_class
+
+
+def test_default_hooks_change_nothing():
+    hooks = ProfileTypeHooks()
+    profile = {'_id': 'p1', 'type': 'genomics'}
+
+    assert hooks.get_profile_card(profile) == {'details': [], 'data_attributes': {}}
+    assert hooks.get_sample_page_context(profile) == {}
+    assert hooks.check_blank_sample_manifest(profile, {}) == SUCCESS
+    assert hooks.get_blank_sample_manifest_row_limit(profile, {}) == (None, '')
+    assert hooks.prepare_sample_upload(profile, {}) == {
+        'validators': [], 'new_sample_fields': {}, 'error': ''
+    }
+    assert hooks.check_sample_submission(profile, ['s1']) == SUCCESS
+
+
+def test_default_schema_handler_changes_nothing():
+    handler = get_schema_class('COPO_SINGLE_CELL', SchemaClassType.HANDLER)()
+    profile = {'_id': 'p1', 'sample_type': 'Tissue'}
+
+    assert handler.get_checklist_filter_values(profile) == [profile]
+    assert handler.get_page_context(profile, [(profile, ['c1'])]) == {}
+    assert handler.check_blank_manifest(profile, {}) == SUCCESS
+    assert handler.check_manifest_upload(profile, {}) == SUCCESS
+
+
+# --- EDP: a sample manifest is for one of the profile's batches ---
+
+def test_sample_upload_needs_a_batch_when_there_are_several():
+    upload = EDPProfileTypeHooks().prepare_sample_upload(PROFILE, {})
+
+    assert upload == {'validators': [], 'new_sample_fields': {}, 'error': MESSAGES['select_sample_batch']}
+
+
+def test_sample_upload_is_checked_against_and_tagged_with_its_batch():
+    upload = EDPProfileTypeHooks().prepare_sample_upload(PROFILE, {'batch_id': 'b2'})
+
+    assert upload['error'] == ''
+    assert upload['new_sample_fields'] == {'edp_batch_id': 'b2'}
+    [validator] = upload['validators']
+    assert validator.batch_id == 'b2'
+
+
+def test_blank_sample_manifest_rows_are_limited_to_the_batchs_samples_left():
+    with mock.patch.object(edp_utils, 'get_samples_left_to_upload', return_value=2) as samples_left:
+        result = EDPProfileTypeHooks().get_blank_sample_manifest_row_limit(PROFILE, {'batch_id': 'b2'})
+
+    assert result == (2, '')
+    samples_left.assert_called_once_with(PROFILE, 'b2')
+
+
+def test_samples_page_starts_with_the_first_batch_with_samples_left():
+    described_batches = [
+        {'batch_id': 'b1', 'name': 'Batch 1', 'samples_left': 0},
+        {'batch_id': 'b2', 'name': 'Batch 2', 'samples_left': 3},
+    ]
+    with mock.patch.object(edp_utils, 'describe_upload_batches', return_value=described_batches):
+        context = EDPProfileTypeHooks().get_sample_page_context(PROFILE)
+
+    assert context['use_profile_blank_manifest'] is True
+    group = context['manifest_group']
+    assert group['param'] == 'batch_id'
+    assert [(option['value'], option['text'], option['is_default']) for option in group['options']] == [
+        ('b1', 'Batch 1 - 0 left to upload', False),
+        ('b2', 'Batch 2 - 3 left to upload', True),
+    ]
+
+
+def test_lims_page_offers_each_batch_its_own_checklists():
+    handler = get_schema_class('EI_EDP', SchemaClassType.HANDLER)()
+    described_batches = [
+        {'batch_id': 'b1', 'name': 'Batch 1', 'samples_left': 0},
+        {'batch_id': 'b2', 'name': 'Batch 2', 'samples_left': 3},
+    ]
+
+    filter_values = handler.get_checklist_filter_values(PROFILE)
+    assert filter_values == BATCHES
+
+    with mock.patch.object(edp_utils, 'describe_upload_batches', return_value=described_batches):
+        context = handler.get_page_context(
+            PROFILE, [(BATCHES[0], ['tissue']), (BATCHES[1], ['rna', 'rna_v2'])]
+        )
+
+    assert [(option['value'], option['checklist_ids']) for option in context['manifest_group']['options']] == [
+        ('b1', 'tissue'),
+        ('b2', 'rna,rna_v2'),
+    ]
+
+
+def test_lims_blank_manifest_check_passes_the_chosen_batch():
+    handler = get_schema_class('EI_EDP', SchemaClassType.HANDLER)()
+    with mock.patch.object(edp_utils, 'check_edp_samples_submitted', return_value=SUCCESS), \
+            mock.patch.object(edp_utils, 'check_lims_blank_manifest', return_value=SUCCESS) as check:
+        assert handler.check_blank_manifest(PROFILE, {'batch_id': 'b2'}) == SUCCESS
+
+    check.assert_called_once_with(profile=PROFILE, batch_id='b2')
+
+
+# --- EDP: the profile's card on the Work profiles page ---
+
+def test_card_links_the_jira_pip_and_says_whether_samples_are_registered():
+    card = EDPProfileTypeHooks().get_profile_card({**PROFILE, 'id': 'p1', 'related_pip': 'PIP-12'})
+
+    assert card['details'] == [{
+        'label': 'Jira PIP',
+        'value': 'PIP-12',
+        'id': 'related_pip_p1',
+        'url': 'https://earlham-institute.atlassian.net/browse/PIP-12',
+    }]
+    assert card['data_attributes'] == {'has-sample-batches': 'true'}
+
+
+def test_card_of_a_profile_without_a_pip_or_batches():
+    card = EDPProfileTypeHooks().get_profile_card({'id': 'p1', 'type': 'ei_edp'})
+
+    assert card == {'details': [], 'data_attributes': {'has-sample-batches': 'false'}}
