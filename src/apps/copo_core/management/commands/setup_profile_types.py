@@ -1057,7 +1057,6 @@ class Command(BaseCommand):
             [
                 files,
                 general_sample,
-                reads_schema,
                 lims_integration,
                 accessions_schema,
             ]
