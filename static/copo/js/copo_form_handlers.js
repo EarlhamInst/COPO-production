@@ -3562,6 +3562,14 @@ function custom_validate(formObject) {
   });
 }
 
+function scrollDialogToTop(dialogRef) {
+  // The dialog's body scrolls rather than the dialog itself when its content
+  // is taller than the window (see '.form-modal .modal-body' in the CSS) so,
+  // both are scrolled to bring a message at the top of the dialog into view
+  dialogRef.getModalBody().scrollTop(0);
+  dialogRef.getModal().scrollTop(0);
+}
+
 function save_form(formJSON, dialogRef) {
   let task = 'save';
   let error_msg = "Couldn't add " + formJSON.form_label + '!';
@@ -3672,11 +3680,7 @@ function save_form(formJSON, dialogRef) {
           btnCancel.enable();
           btnSave.stopSpin();
 
-          let modalId = dialogRef
-            .getModal()
-            .closest('.bootstrap-dialog')
-            .attr('id');
-          $('#' + modalId).scrollTop(0);
+          scrollDialogToTop(dialogRef);
 
           return true;
         } else if (['warning'].indexOf(data.action_feedback.status) > -1) {
@@ -3698,11 +3702,7 @@ function save_form(formJSON, dialogRef) {
           btnCancel.disable();
           btnSave.stopSpin();
 
-          let modalId = dialogRef
-            .getModal()
-            .closest('.bootstrap-dialog')
-            .attr('id');
-          $('#' + modalId).scrollTop(0);
+          scrollDialogToTop(dialogRef);
 
           return true;
         } else {
@@ -3757,11 +3757,7 @@ function save_form(formJSON, dialogRef) {
       btnCancel.enable();
       btnSave.stopSpin();
 
-      let modalId = dialogRef
-        .getModal()
-        .closest('.bootstrap-dialog')
-        .attr('id');
-      $('#' + modalId).scrollTop(0);
+      scrollDialogToTop(dialogRef);
 
       return true;
     },
