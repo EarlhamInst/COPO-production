@@ -19,6 +19,26 @@ function get_selected_checklist_name() {
   }
 }
 
+// If the chosen manifest group (e.g. a batch of samples under an EDP profile)
+// lists the checklists it can use, only offer those and select the first of
+// them if the current one cannot be used
+function restrictChecklistsToManifestGroup() {
+  const $group = $('#manifest_group').find(':selected');
+  const checklistIds = String($group.data('checklist-ids') || '')
+    .split(',')
+    .filter(Boolean);
+  if (!checklistIds.length) {
+    return;
+  }
+  $('#checklist_id option').each(function () {
+    $(this).prop('disabled', !checklistIds.includes($(this).val()));
+  });
+  if (!checklistIds.includes(get_checklist_id()) && checklistIds.length) {
+    $('#checklist_id').val(checklistIds[0]);
+  }
+  $('.searchable-select').trigger('change.select2');
+}
+
 function initialise_checklist_id() {
   if ($('#checklist_id').length > 0) {
     first = true;
@@ -320,6 +340,7 @@ $(document).on('document_ready', function () {
   //load_records(componentMeta); // call to load component records
 
   initialise_checklist_id();
+  restrictChecklistsToManifestGroup();
   var args_dict = {
     singlecell_checklist_id: get_checklist_id(),
     schema_name: schema_name,
@@ -374,7 +395,7 @@ $(document).on('document_ready', function () {
   // Download blank manifest logic
   $(document).on('click', '.download-blank-manifest-template', function (e) {
     e.preventDefault();
-    let manifestURL = $(this).attr('href');
+    let manifestURL = withManifestGroup($(this).attr('href'));
 
     // Check whether a blank manifest can be downloaded for the component
     // e.g. for LIMS manifest submissions under EDP profiles,
@@ -388,7 +409,8 @@ $(document).on('document_ready', function () {
       'The blank manifest could not be downloaded.',
       function () {
         window.location.href = manifestURL;
-      }
+      },
+      getManifestGroupData()
     );
   });
 
@@ -453,6 +475,16 @@ $(document).on('document_ready', function () {
         e.stopPropagation();
         confirmCloseDialog(modal);
       });
+  });
+
+  // e.g. each EDP batch has its own LIMS manifest and only the
+  // checklists for its sample type can be used
+  $('#manifest_group').change(function () {
+    const previousChecklistId = get_checklist_id();
+    restrictChecklistsToManifestGroup();
+    if (get_checklist_id() !== previousChecklistId) {
+      $('#checklist_id').trigger('change');
+    }
   });
 
   $('#checklist_id').change(function () {

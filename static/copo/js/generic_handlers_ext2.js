@@ -1504,17 +1504,40 @@ function load_records(componentMeta, args_dict, columnDefs = null) {
   });
 }
 
+// Some profile types let users choose what a manifest is for (e.g. a batch of
+// samples) in a '#manifest_group' dropdown menu
+// The choice is sent as the request parameter named by its 'data-param'.
+function getManifestGroupData() {
+  const $group = $('#manifest_group');
+  const param = $group.data('param');
+  if (!$group.length || !param) {
+    return {};
+  }
+  return { [param]: $group.val() || '' };
+}
+
+function withManifestGroup(url) {
+  const query = $.param(getManifestGroupData());
+  if (!url || !query) {
+    return url;
+  }
+  return url + (url.includes('?') ? '&' : '?') + query;
+}
+
 // Ask the server to run a check given by `task` for `component` before
 // an action goes ahead. If the check passes, `onSuccess` is called to
 // carry out the action. Otherwise, a warning or error message is
 // displayed in a dialog entitled `title` or `fallbackMessage` if the
-// check returns no message or the request failed.
-function proceedIfCheckPasses(task, component, title, fallbackMessage, onSuccess) {
+// check returns no message or the request failed. 
+// `extraData` is sent along with the check e.g. the batch of samples 
+// that a manifest is for.
+function proceedIfCheckPasses(task, component, title, fallbackMessage, onSuccess, extraData = {}) {
   $.ajax({
     url: copoFormsURL,
     type: 'POST',
     headers: { 'X-CSRFToken': $.cookie('csrftoken') },
     data: {
+      ...extraData,
       task: task,
       component: component,
       profile_id: $('#profile_id').val(),

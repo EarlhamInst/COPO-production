@@ -44,12 +44,12 @@
     value="{% url 'copo_read_submission:download_initial_manifest' profile_id=profile_id %}"
   /-->
   {% for checklist in checklists %}
-    <!-- Blank manifests under EDP profiles are generated so that only the
-         samples left to upload can be filled in -->
+    <!-- Some profile types generate the blank manifest for the profile
+         e.g. so that only the samples left to upload can be filled in -->
     <input
       type="hidden"
       id="blank_manifest_url_{{checklist.primary_id}}"
-      {% if is_edp_profile %}
+      {% if use_profile_blank_manifest %}
       value="{% url 'copo_sample:download_blank_manifest' profile_id=profile_id sample_checklist_id=checklist.primary_id %}"
       {% else %}
       value="{{ checklist.primary_id  | get_blank_manifest_url  }}"
@@ -59,7 +59,7 @@
   <input
     type="hidden"
     id="component_subtitle"
-    value="<select id='checklist_id' class='searchable-select' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}' >  {{ checklist.primary_id }}: {{ checklist.name }}</option>{% endfor %}</select> "
+    value="<select id='checklist_id' class='searchable-select' name='checklists'>{% for checklist in checklists %}<option value='{{ checklist.primary_id }}' title='{{checklist.description}}' >  {{ checklist.primary_id }}: {{ checklist.name }}</option>{% endfor %}</select>{% include 'copo/manifest_group_select.html' %} "
   />
   <input
     type="hidden"

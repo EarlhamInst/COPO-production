@@ -298,6 +298,7 @@ $(document).on('document_ready', function () {
     'href',
     $('#blank_manifest_url_' + get_checklist_id()).val()
   );
+
   args_dict['profile_id'] = $('#profile_id').val();
   load_records(componentMeta, args_dict, columnDefs); // call to load component records
 
@@ -357,10 +358,10 @@ $(document).on('document_ready', function () {
   // Download blank manifest logic
   $(document).on('click', '.download-blank-manifest-template', function (e) {
     e.preventDefault();
-    let manifestURL = $(this).attr('href');
+    let manifestURL = withManifestGroup($(this).attr('href'));
 
     // Check whether a blank manifest can be downloaded for the component
-    // e.g. under EDP profiles, some of the samples requested on the
+    // e.g. under EDP profiles, some of the samples registered in the chosen batch on the
     // profile must still be remaining to be uploaded.
     // If the check fails, display a warning message.
     proceedIfCheckPasses(
@@ -370,7 +371,8 @@ $(document).on('document_ready', function () {
       'The blank manifest could not be downloaded.',
       function () {
         window.location.href = manifestURL;
-      }
+      },
+      getManifestGroupData()
     );
   });
 
@@ -526,6 +528,7 @@ function upload_spreadsheet(file) {
   var csrftoken = $.cookie('csrftoken');
   form = new FormData();
   form.append('checklist_id', get_checklist_id());
+  $.each(getManifestGroupData(), (param, value) => form.append(param, value));
   form.append('file', file);
   var percent = $('.percent');
   jQuery

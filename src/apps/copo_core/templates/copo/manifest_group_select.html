@@ -1,0 +1,7 @@
+{% if manifest_group %}
+    <select id='manifest_group' class='searchable-select' data-param='{{ manifest_group.param }}' title='{{ manifest_group.label }}'>
+        {% for option in manifest_group.options %}
+            <option value='{{ option.value }}' data-checklist-ids='{{ option.checklist_ids|default:'' }}' {% if option.is_default %} selected{% endif %}>{{ option.text }}</option>
+        {% endfor %}
+    </select>
+{% endif %}
