@@ -1,7 +1,9 @@
 from common.utils.logger import Logger
 import pandas as pd
 import os
+import requests
 import uuid
+from io import BytesIO
 from django.conf import settings
 from openpyxl.utils.cell import get_column_letter
 from openpyxl import load_workbook
@@ -226,7 +228,14 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
         if version:
             version = "_v" + version
 
-        workbook = load_workbook(settings.SINGLE_CELL_SCHEMAS_TEMPLATE_URL[EDP_SCHEMA_NAME])
+        # openpyxl can only open a local file so, a template that is read
+        # from the COPO-schemas repository is downloaded first
+        template = settings.SINGLE_CELL_SCHEMAS_TEMPLATE_URL[EDP_SCHEMA_NAME]
+        if template.startswith(("http://", "https://")):
+            response = requests.get(template, timeout=30)
+            response.raise_for_status()
+            template = BytesIO(response.content)
+        workbook = load_workbook(template)
         worksheet_sample = workbook["sample"]
 
         worksheet_sample["C4"] = profile.get(PROFILE_BUDGET_HOLDER, "")
@@ -665,9 +674,9 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
                     item[TERM_LABEL]: key
                     for key, item in self.schemas[sheetname].items()
                 }
-                component_df["Project ID"] = (
-                    profile[PROFILE_SAPIO_PROJECT_ID] if PROFILE_SAPIO_PROJECT_ID in profile else ""
-                )
+                # The rows link to the study row by the batch's study ID, which
+                # is the Sapio project ID only for the profile's first batch
+                component_df["Project ID"] = study_id
                 component_df = component_df.loc[
                     :, ~component_df.columns.str.contains('^Unnamed')
                 ]
