@@ -547,6 +547,39 @@ def test_dialog_options_come_from_sapio_and_the_profile_schema():
     assert options['premade_library_sample_types'] == ['Pre-made library', 'Pre-made library pool']
 
 
+def test_dialog_field_labels_come_from_the_profile_schema():
+    schema = [
+        {
+            'id': 'copo.profile.no_of_samples',
+            'label': 'Number of samples',
+            'required': 'true',
+            'help_tip': 'Please input the number of samples',
+        },
+        {'id': 'copo.profile.library_type', 'label': 'Library type', 'required': 'false', 'help_tip': ''},
+        {'id': 'copo.profile.sample_type', 'label': 'Kind of sample', 'required': True},
+    ]
+    with mock.patch.object(edp_utils, 'Profile') as profile_da, \
+            mock.patch.object(edp_utils, 'get_sapio_sample_type_options', return_value=[]):
+        profile_da.return_value.get_component_schema.return_value = schema
+        options = edp_utils.get_sample_batch_form_options()
+
+    assert options['fields']['no_of_samples'] == {
+        'label': 'Number of samples',
+        'required': True,
+        'help_tip': 'Please input the number of samples',
+    }
+    assert options['fields']['library_type']['required'] is False
+    assert options['fields']['sample_type']['required'] is True
+    assert options['labels']['sample_type'] == 'Kind of sample'
+    # A field missing from the schema falls back to its hard-coded label
+    assert options['fields']['container_type'] == {
+        'label': 'Container type',
+        'required': False,
+        'help_tip': '',
+    }
+    assert options['labels']['container_type'] == 'Container type'
+
+
 def test_dialog_lists_batches_with_their_lock(batches):
     profile, lims, _ = batches
     lims.get_submitted_sample_counts.return_value = {'b1': {'submitted': 2, 'total': 2}}

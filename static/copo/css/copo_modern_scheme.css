@@ -972,6 +972,7 @@ body > .popover .popover-content span:not(.text-bold) {
   background: var(--co-bg) !important;
 }
 
+.bootstrap-dialog.type-primary .modal-header,
 .bootstrap-dialog.form-modal .bootstrap-dialog-header,
 .bootstrap-dialog.form-modal .modal-header {
   background: var(--co-nav) !important;
@@ -980,10 +981,11 @@ body > .popover .popover-content span:not(.text-bold) {
   padding: 10px 16px !important;
 }
 
+.bootstrap-dialog .bootstrap-dialog-title,
 .bootstrap-dialog.form-modal .bootstrap-dialog-title,
 .bootstrap-dialog.form-modal .modal-title {
   color: #fff !important;
-  font-size: .88rem !important;
+  font-size: 16px !important;
   font-weight: 600 !important;
   letter-spacing: .01em !important;
 }
@@ -1021,8 +1023,9 @@ body > .popover .popover-content span:not(.text-bold) {
   padding: 8px 16px !important;
 }
 
+.bootstrap-dialog.form-modal .sample-batch-form label,
 .bootstrap-dialog.form-modal label {
-  font-size: .76rem !important;
+  font-size: 14px !important;
   font-weight: 600 !important;
   color: var(--co-muted) !important;
   text-transform: uppercase !important;
@@ -1037,7 +1040,7 @@ body > .popover .popover-content span:not(.text-bold) {
 .bootstrap-dialog.form-modal .form-control {
   border-radius: 6px !important;
   border: 1px solid var(--co-border) !important;
-  font-size: .82rem !important;
+  font-size: 14px !important;
   background: var(--co-surface) !important;
   color: var(--co-text) !important;
   padding: 5px 10px !important;
@@ -1051,6 +1054,7 @@ body > .popover .popover-content span:not(.text-bold) {
   box-shadow: 0 0 0 2px rgba(74,108,122,.12) !important;
 }
 
+.bootstrap-dialog.form-modal #btnSaveFirstBatch,
 .bootstrap-dialog.form-modal #btnFormSave {
   background: var(--co-accent) !important;
   color: #fff !important;
@@ -1060,10 +1064,13 @@ body > .popover .popover-content span:not(.text-bold) {
   padding: 5px 14px !important;
   font-size: .8rem !important;
 }
+
+.bootstrap-dialog.form-modal #btnSaveFirstBatch:hover,
 .bootstrap-dialog.form-modal #btnFormSave:hover {
   background: var(--co-accent-hover) !important;
 }
 
+.bootstrap-dialog.form-modal #btnBack,
 .bootstrap-dialog.form-modal #btnFormCancel,
 .bootstrap-dialog.form-modal #btnFormClose {
   background: var(--co-surface) !important;
@@ -1074,6 +1081,8 @@ body > .popover .popover-content span:not(.text-bold) {
   padding: 5px 14px !important;
   font-size: .8rem !important;
 }
+
+.bootstrap-dialog.form-modal #btnBack:hover,
 .bootstrap-dialog.form-modal #btnFormCancel:hover,
 .bootstrap-dialog.form-modal #btnFormClose:hover {
   border-color: var(--co-accent) !important;
@@ -1083,7 +1092,7 @@ body > .popover .popover-content span:not(.text-bold) {
 .form-control {
   border-radius: 8px !important;
   border: 1px solid var(--co-border) !important;
-  font-size: .84rem !important;
+  font-size: 14px !important;
   box-shadow: none !important;
 }
 .form-control:focus {
@@ -1113,7 +1122,7 @@ body > .popover .popover-content span:not(.text-bold) {
 }
 
 .panel { border-radius: var(--co-radius) !important; }
-.alert { border-radius: 8px !important; border: none !important; font-size: .84rem !important; }
+.alert { border-radius: 8px !important; border: none !important; font-size: .90rem !important; }
 .popover {
   border-radius: 10px !important;
   border: 1px solid var(--co-border) !important;

@@ -375,8 +375,21 @@ def get_sample_batch_form_options():
         options = schema.get(field, {}).get('option_values')
         return options if isinstance(options, list) else []
 
+    # Each field's label, 'required' flag and help tip come from the profile
+    # schema so, the dialogue's labels match those of the profile form. The
+    # hard-coded labels are only used if the schema lacks a field or its label.
+    fields = {}
+    for field, fallback_label in BATCH_FIELDS.items():
+        schema_field = schema.get(field, {})
+        fields[field] = {
+            'label': schema_field.get('label') or fallback_label,
+            'required': str(schema_field.get('required', '')).strip().lower() == 'true',
+            'help_tip': schema_field.get('help_tip', ''),
+        }
+
     return {
-        'labels': BATCH_FIELDS,
+        'fields': fields,
+        'labels': {field: details['label'] for field, details in fields.items()},
         'sample_type_options': get_sapio_sample_type_options(),
         'container_type_options': listed_options(PROFILE_CONTAINER_TYPE),
         'library_type_options': listed_options(PROFILE_LIBRARY_TYPE),

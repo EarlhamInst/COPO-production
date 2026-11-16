@@ -346,7 +346,7 @@
       "help_tip": "Choose a type of sample from the available options",
       "required": "true",
       "default_value": "",
-      "placeholder": "select sample type",
+      "placeholder": "Select sample type",
       "control_meta": {},
       "versions": [
         "ei_edp"
@@ -376,7 +376,7 @@
       "required": "false",
       "default_value": "",
       "control_meta": {},
-      "placeholder": "select library type",
+      "placeholder": "Select library type",
       "versions": [
         "ei_edp"
       ],
@@ -492,7 +492,7 @@
       "help_tip": "Choose a type of container from the available options",
       "required": "true",
       "default_value": "plate",
-      "placeholder": "select container type",
+      "placeholder": "Select container type",
       "control_meta": {},
       "versions": [
         "ei_edp"

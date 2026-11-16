@@ -29,24 +29,36 @@ function isPremadeLibrary(sampleType, options) {
   return premadeSampleTypes.includes(String(sampleType || '').toLowerCase().trim());
 }
 
-function buildSelectControl(name, label, optionValues, placeholder) {
+function buildFieldLabel(name, options) {
+  // Labelled like the profile form's fields (see 'form_label_ctrl' in
+  // copo_form_handlers.js): the label, 'required' flag and help tip
+  // come from the profile schema
+  const field = options.fields[name];
+  return form_label_ctrl({
+    id: `batch_${name}`,
+    label: field.label,
+    required: field.required,
+    help_tip: field.help_tip,
+  });
+}
+
+function buildSelectControl(name, options, optionValues, placeholder) {
   const $select = $('<select/>', { class: 'form-control', name: name, id: `batch_${name}` });
   $select.append($('<option/>', { value: '', text: placeholder }));
   optionValues.forEach((option) => {
     $select.append($('<option/>', { value: option.value, text: option.label }));
   });
   return $('<div/>', { class: `form-group batch-field-${name}` })
-    .append($('<label/>', { for: `batch_${name}`, text: label }))
+    .append(buildFieldLabel(name, options))
     .append($select);
 }
 
 function buildBatchForm(options) {
-  const labels = options.labels;
   const $form = $('<form/>', { class: 'sample-batch-form', novalidate: true });
 
   $form.append(
     $('<div/>', { class: 'form-group batch-field-no_of_samples' })
-      .append($('<label/>', { for: 'batch_no_of_samples', text: labels.no_of_samples }))
+      .append(buildFieldLabel('no_of_samples', options))
       .append(
         $('<input/>', {
           type: 'number',
@@ -59,24 +71,26 @@ function buildBatchForm(options) {
       )
   );
   $form.append(
-    buildSelectControl('sample_type', labels.sample_type, options.sample_type_options, 'select sample type')
+    buildSelectControl('sample_type', options, options.sample_type_options, 'Select sample type')
   );
   $form.append(
     buildSelectControl(
       'container_type',
-      labels.container_type,
+      options,
       options.container_type_options,
-      'select container type'
+      'Select container type'
     )
   );
   $form.append(
     buildSelectControl(
       'library_type',
-      labels.library_type,
+      options,
       options.library_type_options,
-      'select library type'
+      'Select library type'
     )
   );
+  // Show the help tips on hover, as the profile form does
+  $form.find('.copo-tooltip').popup();
 
   // The library type only applies to pre-made libraries so, it is hidden otherwise
   const toggleLibraryType = () => {
@@ -182,10 +196,11 @@ function openFirstBatchDialog(profileDialogRef, proceed) {
 
       const $content = $('<div/>')
         .append(
-          $('<p/>').text(
+          $('<p/>', { class: 'alert alert-info' })
+          .text(
             'Register the first batch of samples for this profile. ' +
-              'The profile is created along with the samples. ' +
-              "More samples can be added later from the profile's options."
+            'The profile is created along with the samples. ' +
+            "More samples can be added later from the profile's options."
           )
         )
         .append($('<div/>', { class: 'sample-batch-message' }).hide())
@@ -194,21 +209,26 @@ function openFirstBatchDialog(profileDialogRef, proceed) {
       BootstrapDialog.show({
         title: 'Register samples',
         message: $content,
-        cssClass: 'copo-modal1',
+        cssClass: 'copo-modal1 form-modal',
         closable: false,
         buttons: [
           {
+            id: 'btnBack',
             label: '<i class="fa fa-arrow-left"></i> Back',
             cssClass: 'tiny ui basic button',
             action: function (dialogRef) {
               // Keep what was entered in case the user comes back
-              writeHiddenBatchFields($profileForm, getBatchFormValues($batchForm, options));
+              writeHiddenBatchFields(
+                $profileForm,
+                getBatchFormValues($batchForm, options)
+              );
               dialogRef.close();
             },
           },
           {
             id: 'btnSaveFirstBatch',
-            label: '<i class="copo-components-icons glyphicon glyphicon-save"></i> Save',
+            label:
+              '<i class="copo-components-icons glyphicon glyphicon-save"></i> Save',
             cssClass: 'tiny ui basic primary button',
             action: function (dialogRef) {
               const fields = getBatchFormValues($batchForm, options);
@@ -234,8 +254,11 @@ function openFirstBatchDialog(profileDialogRef, proceed) {
     });
 }
 
-// The profile form's 'Save' button reads 'Next' for a new EDP profile
-$('body').on('postformload', function (event) {
+// The profile form's 'Save' button reads 'Next' for a new EDP profile.
+// Bound to the document rather than 'body' because this script runs in the
+// page's <head> before 'body' exists; the
+// `event` is triggered on 'body' and goes up to the document.
+$(document).on('postformload', function (event) {
   if (event.formJSON && event.dialogRef && isNewEdpProfileForm(event.formJSON, event.dialogRef)) {
     event.dialogRef
       .getButton('btnFormSave')
@@ -355,7 +378,7 @@ function openProfileSampleBatchesDialog(profileId, title) {
       dialog = BootstrapDialog.show({
         title: title,
         message: $content,
-        cssClass: 'copo-modal1',
+        cssClass: 'copo-modal1 form-modal',
         size: BootstrapDialog.SIZE_WIDE,
         closable: false,
         buttons: [
