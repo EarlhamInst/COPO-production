@@ -269,7 +269,7 @@
 }
 
 .form-modal .sample-batches-holder > h5,
-.form-modal .sample-batch-form-heading h5 {
+.form-modal .sample-batch-form-heading {
   color: #31708f;
   background-color: #d9edf7;
   width: max-content;
