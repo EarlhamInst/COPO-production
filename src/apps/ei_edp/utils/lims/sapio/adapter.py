@@ -168,6 +168,14 @@ class _SapioSyncWarning(Exception):
     pass
 
 
+def _discard_pending_changes():
+    # The record model manager is shared by every request in this process
+    # and it only clears the changes queued in it after a successful commit.
+    # Otherwise, the changes from a failed sync are sent again with the next
+    # commit, which then fails as well (e.g. on a project that has since been deleted)
+    Sapio().rec_man.rollback()
+
+
 def _group_samples_by_batch(batches, samples_under_project):
     '''Pair each batch with its samples in the Sapio project.
 
@@ -740,6 +748,7 @@ class SapioAdapter(LIMSAdapter):
                 }
 
         except _SapioSyncWarning as warning:
+            _discard_pending_changes()
             l.error(
                 f"Failed to sync sapio project {project_id} for profile id: {profile['_id']}. {warning}"
             )
@@ -750,6 +759,7 @@ class SapioAdapter(LIMSAdapter):
                 "created_sample_record_ids": created_sample_record_ids,
             }
         except Exception as e:
+            _discard_pending_changes()
             l.exception(e)
             l.error(
                 "Failed to create or update sapio project for profile id: "
@@ -857,6 +867,7 @@ class SapioAdapter(LIMSAdapter):
             )
             return summary
         except Exception as error:
+            _discard_pending_changes()
             l.exception(error)
             return {
                 'status': 'error',
@@ -1038,6 +1049,7 @@ class SapioAdapter(LIMSAdapter):
         try:
             return self._submit_manifest(project_id, schemas, components)
         except Exception as error:
+            _discard_pending_changes()
             l.exception(error)
             return {
                 'status': 'error',
