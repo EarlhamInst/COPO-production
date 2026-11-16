@@ -453,6 +453,10 @@ class Profile(DAComponent):
 
         schema = self.get_component_schema(profile_type=profile_type)
         for f in schema:
+            # Fields left out of the profile form aren't sent with it so, they
+            # are checked by whatever sets them (e.g. a profile type's pre-save action)
+            if not f.get("show_in_form", True):
+                continue
             field = f.get("id", "").split(".")[-1]
             label = f.get("label", field)
             field_value = auto_fields.get(f.get("id", ""), "")
