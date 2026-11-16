@@ -1,3 +1,12 @@
+// Global variables 
+let componentName;
+let csrfToken;
+let $gridCount;
+let $gridTotal;
+let tableId;
+let groups;
+let profileActions = {};
+
 function getProfileType() {
   return $('#profileType').find(':selected').val();
 }
@@ -33,7 +42,6 @@ function registerProfileAction(action, handler) {
   // - run(profileId, $button): called when the button is clicked
   // - isAvailable({ $panel, canEditDelete }) (optional): false hides the button
   // - getLabel($panel) (optional): the button's label for the profile
-  const profileActions = {};
   profileActions[action] = handler;
 }
 
@@ -51,7 +59,9 @@ registerProfileAction('release_study', {
       return;
     }
 
-    const result = confirm('Are you sure that you would like to publish the study?');
+    const result = confirm(
+      'Are you sure that you would like to publish the study?'
+    );
 
     if (result) {
       const url = `/copo/copo_profile/${profileId}/release_study`;
@@ -71,13 +81,6 @@ registerProfileAction('release_study', {
     }
   },
 });
-
-let componentName;
-let csrfToken;
-let $gridCount;
-let $gridTotal;
-let tableId;
-let groups;
 
 $(document).on('document_ready', function () {
   //****************************** Event handlers block *************************//
@@ -226,7 +229,7 @@ $(document).on('document_ready', function () {
     const profileStatus = $(e)
       .closest('.copo-records-panel')
       .attr('study-status');
-    
+
     alert(profileStatus);
 
     if (profileStatus == undefined) {
@@ -461,13 +464,18 @@ function initialiseProfileActionsPopover() {
             return;
           }
           const handler = profileActions[action.action] || {};
-          if (handler.isAvailable && !handler.isAvailable({ $panel, canEditDelete })) {
+          if (
+            handler.isAvailable &&
+            !handler.isAvailable({ $panel, canEditDelete })
+          ) {
             return;
           }
-          const label = handler.getLabel ? handler.getLabel($panel) : action.label;
+          const label = handler.getLabel
+            ? handler.getLabel($panel)
+            : action.label;
           const title = handler.getLabel ? label : action.title;
           const $button = $(
-          `<button id="${item}" class="popover-action-btn popover-action-btn-teal action" title="${title}"
+            `<button id="${item}" class="popover-action-btn popover-action-btn-teal action" title="${title}"
             data-action-type="${action.action}" data-profile-id="${profileId}">
             <i class="${action.icon_class}"></i>${label}
           </button>`
@@ -699,7 +707,7 @@ function deleteProfileRecord(profileRecordId) {
           })
             .done(function (data) {
               // Show a feedback message to the user.
-              // A warning is displayed when a profile is deleted but its 
+              // A warning is displayed when a profile is deleted but its
               // clean-up process did not complete successfully.
               // This can occur in cases like when a Sapio project under an EDP profile
               // could not be removed successfully.
@@ -923,7 +931,9 @@ function displayLegend(legendData) {
   const $group = $legend.find('.component-legend-group');
 
   // Sort alphabetically by acronym then build legend items
-  legendData.sort((a, b) => a.profileTypeAcronym.localeCompare(b.profileTypeAcronym));
+  legendData.sort((a, b) =>
+    a.profileTypeAcronym.localeCompare(b.profileTypeAcronym)
+  );
 
   legendData.forEach((element) => {
     // Avoid duplicate legend data
@@ -950,7 +960,8 @@ function displayLegend(legendData) {
     $group.append($item);
 
     // Add popover with expanded name and description (must be in DOM first)
-    const popoverContent = element.profileTypeDescription || element.profileType;
+    const popoverContent =
+      element.profileTypeDescription || element.profileType;
     $item.find('.component-legend-info-icon').webuiPopover({
       title: element.profileType,
       content: `<div class="webpop-content-div">${popoverContent}</div>`,
@@ -1082,7 +1093,8 @@ function setProfileGridHeading(grids) {
             profileType: acronym,
             profileTypeAcronym: 'SHARED',
             profileTypeColour: colour,
-            profileTypeDescription: 'Profiles that other users have shared with you.',
+            profileTypeDescription:
+              'Profiles that other users have shared with you.',
           };
         } else {
           acronym = profileType.toUpperCase();
