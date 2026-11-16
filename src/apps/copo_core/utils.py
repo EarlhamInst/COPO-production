@@ -1,5 +1,6 @@
 from .models import SequencingCentre, ProfileType, AssociatedProfileType, Banner
 from common.utils.helpers import get_datetime
+from .profile_type_hooks import get_profile_type_hooks
 
 def get_all_sequencing_centres_for_options():
     scs = SequencingCentre.objects.all()
@@ -21,7 +22,13 @@ def get_all_profile_types_for_options_for_user(user=None):
     if user:
         group_names  = user.groups.filter(name__regex=r'_users$').values_list('name', flat=True)
     pts = ProfileType.objects.all()
-    return [{"value": p.type, "label": p.description} for p in pts if (not p.is_deprecated) and (not p.is_permission_required or not user or f"{p.type}_users" in group_names)]
+    return [
+        {"value": p.type, "label": p.description}
+        for p in pts
+        if (not p.is_deprecated)
+        and (not p.is_permission_required or not user or f"{p.type}_users" in group_names)
+        and (not user or get_profile_type_hooks(p.type).can_create_profile(user))
+    ]
 
 def deactivate_expired_banners():
     for banner in Banner.objects.filter(

@@ -34,6 +34,12 @@ MESSAGES = {
         "Number of samples must be a whole number of 1 or more, got '{sample_count}'."
     ),
     'missing_batch_field': 'Please fill in <strong>{field}</strong>.',
+    'edp_manager_required_for_profile': (
+        'Only EDP managers can create EDP profiles. Please contact the EDP project manager (PM).'
+    ),
+    'edp_manager_required_for_samples': (
+        'Only EDP managers can register or change samples. Please contact the EDP project manager (PM).'
+    ),
     'invalid_batch_pip': "<strong>Jira PIP</strong> must look like PIP-1234, got '{pip}'.",
     # Shown in the manifest's lookup columns (Excel formula text: no double quotes, max 255 characters)
     'lookup_missing_submitter_sample_reference': (

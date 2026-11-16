@@ -26,6 +26,8 @@ from .constants import (
     BIOSAMPLE_ACCESSION,
     EDP_PROFILE_TYPE,
     EDP_SCHEMA_NAME,
+    DATA_MANAGERS_GROUP,
+    EDP_MANAGERS_GROUP,
     EDP_USERS_GROUP,
     PREMADE_LIBRARY_SAMPLE_TYPES,
     PROFILE_CONTAINER_TYPE,
@@ -88,6 +90,13 @@ def _add_to_edp_django_group(user_ids, action='add'):
         )
 
 
+def is_edp_manager(user):
+    # EDP managers (and data managers) create EDP profiles and register samples
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False
+    return user.groups.filter(name__in=[EDP_MANAGERS_GROUP, DATA_MANAGERS_GROUP]).exists()
+
+
 def pre_save_edp_profile(auto_fields, **kwargs):
     '''Validate EDP profile fields before saving their details to the database
 
@@ -102,6 +111,8 @@ def pre_save_edp_profile(auto_fields, **kwargs):
     '''
     target_id = kwargs.get('target_id', '')
     if not target_id:
+        if not is_edp_manager(helpers.get_current_user()):
+            return {'status': 'error', 'message': MESSAGES['edp_manager_required_for_profile']}
         cleaned_fields, errors = clean_batch_fields(
             {field: auto_fields.get(f'copo.profile.{field}', '') for field in BATCH_FIELDS}
         )

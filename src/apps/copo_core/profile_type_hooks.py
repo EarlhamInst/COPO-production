@@ -33,6 +33,12 @@ class ProfileTypeHooks:
 
     # --- Work profiles page ---
 
+    def can_create_profile(self, user):
+        '''Checks whether users can create profiles for the profile type. The profile type is
+        only offered to users who can. Users that a profile is shared with
+        can only work on it.'''
+        return True
+
     def get_profile_card_fields(self):
         '''Profile fields that `get_profile_card` reads.
 

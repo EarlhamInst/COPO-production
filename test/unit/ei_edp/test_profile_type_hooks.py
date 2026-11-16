@@ -48,6 +48,7 @@ def test_default_hooks_change_nothing():
     hooks = ProfileTypeHooks()
     profile = {'_id': 'p1', 'type': 'genomics'}
 
+    assert hooks.can_create_profile(mock.Mock()) is True
     assert hooks.get_profile_card_fields() == []
     assert hooks.get_profile_card(profile) == {'details': [], 'data_attributes': {}}
     assert hooks.get_sample_page_context(profile) == {}
@@ -209,3 +210,30 @@ def test_card_of_a_profile_without_a_pip_or_batches():
     card = EDPProfileTypeHooks().get_profile_card({'id': 'p1', 'type': 'ei_edp'})
 
     assert card == {'details': [], 'data_attributes': {'has-sample-batches': 'false'}}
+
+
+# --- EDP: who can create EDP profiles ---
+
+@pytest.mark.parametrize('is_manager', [True, False])
+def test_only_edp_managers_can_create_edp_profiles(is_manager):
+    user = mock.Mock()
+    with mock.patch.object(edp_utils, 'is_edp_manager', return_value=is_manager) as is_edp_manager:
+        assert EDPProfileTypeHooks().can_create_profile(user) is is_manager
+    is_edp_manager.assert_called_once_with(user)
+
+
+def test_profile_types_a_user_cannot_create_are_not_offered():
+    from src.apps.copo_core import utils as core_utils
+
+    profile_types = [
+        mock.Mock(type='genomics', description='Genomics', is_deprecated=False, is_permission_required=False),
+        mock.Mock(type='ei_edp', description='EDP', is_deprecated=False, is_permission_required=True),
+    ]
+    user = mock.Mock()
+    user.groups.filter.return_value.values_list.return_value = ['ei_edp_users']
+    with mock.patch.object(core_utils.ProfileType, 'objects') as objects, \
+            mock.patch.object(edp_utils, 'is_edp_manager', return_value=False):
+        objects.all.return_value = profile_types
+        options = core_utils.get_all_profile_types_for_options_for_user(user)
+
+    assert options == [{'value': 'genomics', 'label': 'Genomics'}]

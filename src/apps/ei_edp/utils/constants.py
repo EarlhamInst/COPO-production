@@ -2,6 +2,12 @@ EDP_SCHEMA_NAME = 'EI_EDP' # Type of Single-cell schema for EDP profiles
 EDP_PROFILE_TYPE = 'ei_edp'
 EDP_USERS_GROUP = 'ei_edp_users' # Django group for EDP users
 
+# Django group for EDP project managers. Only they (and data managers) can create
+# EDP profiles and register samples. The users that a profile is shared with
+# can only upload the LIMS and samples' metadata.
+EDP_MANAGERS_GROUP = 'ei_edp_managers'
+DATA_MANAGERS_GROUP = 'data_managers'
+
 # -- EDP profile fields --
 PROFILE_TITLE = 'title'
 PROFILE_DESCRIPTION = 'description'

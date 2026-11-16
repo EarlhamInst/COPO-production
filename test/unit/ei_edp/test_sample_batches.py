@@ -281,7 +281,9 @@ def test_submitted_samples_are_never_removed():
 
 @pytest.fixture
 def pre_save():
+    # Saved by an EDP manager unless a test says otherwise
     with mock.patch.object(edp_utils, 'get_lims_adapter') as get_lims_adapter, \
+            mock.patch.object(edp_utils, 'is_edp_manager', return_value=True), \
             mock.patch.object(edp_utils, 'Profile') as profile_da:
         profile_da.return_value.get_record.return_value = {'sapio_project_id': PROJECT_ID}
         lims = get_lims_adapter.return_value
