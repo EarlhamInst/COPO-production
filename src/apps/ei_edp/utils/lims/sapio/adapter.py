@@ -23,10 +23,11 @@ from sapiopylib.rest.utils.recordmodel.PyRecordModel import PyRecordModel
 from common.utils.logger import Logger
 
 from ...constants import (
+    BATCH_ID,
+    BATCH_LIMS_SAMPLE_RECORD_IDS,
     COPO_TO_SAPIO_VALUES,
     LIMS_HEALTH_AND_SAFETY,
     LIMS_SAMPLE_RETURN,
-    LOCKED_PROFILE_FIELDS,
     PROFILE_BUDGET_HOLDER,
     PROFILE_CONTAINER_TYPE,
     PROFILE_DESCRIPTION,
@@ -71,7 +72,6 @@ from ...constants import (
     SAPIO_QC_DATUM_DATA_TYPE,
     SAPIO_RECORD_ID,
     SAPIO_ROW_POSITION,
-    SAPIO_SAMPLE_COUNT,
     SAPIO_SAMPLE_DATA_TYPE,
     SAPIO_SAMPLE_ID,
     SAPIO_SAMPLE_RETURN,
@@ -82,6 +82,7 @@ from ...constants import (
     TERM_NAME,
 )
 from ...edp_validation_messages import MESSAGES
+from ...sample_batches import get_sample_batches
 from ..base import LIMSAdapter, LIMSUnavailable
 from .datamanager import Sapio
 
@@ -162,6 +163,42 @@ def _to_number(value):
             return value
     return value
 
+class _SapioSyncWarning(Exception):
+    # A sync failure whose message is shown to the user as it is
+    pass
+
+
+def _group_samples_by_batch(batches, samples_under_project):
+    '''Pair each batch with its samples in the Sapio project.
+
+    A batch whose record IDs are `None` was moved from the fields an EDP
+    profile used to have so, it claims every sample in the project that
+    no other batch has.
+    '''
+    samples_by_record_id = {sample.record_id: sample for sample in samples_under_project}
+    claimed_record_ids = {
+        record_id
+        for batch in batches
+        for record_id in (batch.get(BATCH_LIMS_SAMPLE_RECORD_IDS) or [])
+    }
+    for batch in batches:
+        record_ids = batch.get(BATCH_LIMS_SAMPLE_RECORD_IDS)
+        if record_ids is None:
+            batch_samples = [
+                sample
+                for sample in samples_under_project
+                if sample.record_id not in claimed_record_ids
+            ]
+            claimed_record_ids.update(sample.record_id for sample in batch_samples)
+        else:
+            batch_samples = [
+                samples_by_record_id[record_id]
+                for record_id in record_ids
+                if record_id in samples_by_record_id
+            ]
+        yield batch, batch_samples
+
+
 class SapioAdapter(LIMSAdapter):
 
     # ------------------------------------------------------------------ #
@@ -184,73 +221,257 @@ class SapioAdapter(LIMSAdapter):
     # ------------------------------------------------------------------ #
     # Project lifecycle
     # ------------------------------------------------------------------ #
-    def validate_profile_change(
-        self, profile: Dict[str, Any], requested_sample_count, changed_fields=()
-    ) -> Dict[str, str]:
-        sapio_project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, "")
-        if not sapio_project_id:
-            return {"status": "success"}
-
-        no_of_samples = requested_sample_count
+    def _load_project(self, project_id: str):
         project_records = (
             Sapio()
             .dataRecordManager.query_data_records(
                 data_type_name=SAPIO_PROJECT_DATA_TYPE,
                 data_field_name=SAPIO_PROJECT_IDENTIFIER,
-                value_list=[sapio_project_id],
+                value_list=[project_id],
             )
             .result_list
         )
-        if not project_records or len(project_records) == 0:
+        if not project_records:
+            return None
+        return Sapio().inst_man.add_existing_record(project_records[0])
+
+    def validate_profile_change(self, profile: Dict[str, Any]) -> Dict[str, str]:
+        sapio_project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, "")
+        if not sapio_project_id:
+            return {"status": "success"}
+
+        if not self._load_project(sapio_project_id):
             return {
                 "status": "error",
                 "message": MESSAGES['sapio_project_not_found'].format(
-                    project_id=profile[PROFILE_SAPIO_PROJECT_ID]
+                    project_id=sapio_project_id
                 ),
             }
-        project_record = project_records[0]
-        project: PyRecordModel = Sapio().inst_man.add_existing_record(project_record)
-        Sapio().relationship_man.load_children([project], SAPIO_SAMPLE_DATA_TYPE)
-        samples_under_project: List[PyRecordModel] = project.get_children_of_type(
-            SAPIO_SAMPLE_DATA_TYPE
-        )
-        # Samples that have a customer's name associated with them and 
-        # have been submitted, cannot be deleted. As a result, the 
-        # sample count can only drop as far as the number of samples submitted.
-        submitted_sample_count = sum(
-            1
-            for sample in samples_under_project
-            if sample.get_field_value(SAPIO_CUSTOMER_SAMPLE_NAME)
-        )
-        if no_of_samples < submitted_sample_count:
-            return {
-                'status': 'error',
-                'message': MESSAGES['sample_count_below_submitted'].format(
-                    submitted_sample_count=submitted_sample_count,
-                    total_sample_count=len(samples_under_project),
-                    project_id=sapio_project_id,
-                ),
-            }
-
-        # The sample, container and library types are written to every sample
-        # in the project on each save so, they cannot change once any have been submitted
-        if changed_fields and submitted_sample_count:
-            return {
-                'status': 'error',
-                'message': MESSAGES['profile_fields_locked'].format(
-                    submitted_sample_count=submitted_sample_count,
-                    total_sample_count=len(samples_under_project),
-                    project_id=sapio_project_id,
-                    fields=', '.join(LOCKED_PROFILE_FIELDS[field] for field in changed_fields),
-                ),
-            }
-
         return {"status": "success"}
 
-    def _attach_project_to_department(self, project: PyRecordModel):
+    def get_submitted_sample_counts(self, profile: Dict[str, Any]) -> Dict[str, Dict[str, int]]:
+        # Samples that have a customer's name associated with them have been
+        # submitted, so the batch they belong to can no longer be changed
+        sapio_project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, "")
+        batches = get_sample_batches(profile)
+        project = self._load_project(sapio_project_id) if sapio_project_id else None
+        samples_under_project: List[PyRecordModel] = []
+        if project:
+            Sapio().relationship_man.load_children([project], SAPIO_SAMPLE_DATA_TYPE)
+            samples_under_project = project.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
+
+        return {
+            batch[BATCH_ID]: {
+                'submitted': sum(
+                    1
+                    for sample in batch_samples
+                    if sample.get_field_value(SAPIO_CUSTOMER_SAMPLE_NAME)
+                ),
+                'total': len(batch_samples),
+            }
+            for batch, batch_samples in _group_samples_by_batch(batches, samples_under_project)
+        }
+
+    def delete_samples(self, record_ids: List[int]) -> Dict[str, str]:
+        if not record_ids:
+            return {"status": "success"}
+        try:
+            records = []
+            page_criteria = None
+            while True:
+                page = Sapio().dataRecordManager.query_data_records_by_id(
+                    SAPIO_SAMPLE_DATA_TYPE, list(record_ids), paging_criteria=page_criteria
+                )
+                records.extend(page.result_list)
+                if not page.is_next_page_available:
+                    break
+                page_criteria = page.next_page_criteria
+            Sapio().dataRecordManager.delete_data_record_list(
+                records, recursive_delete=True
+            )
+        except Exception as e:
+            l.exception(e)
+            l.error(f"Failed to delete sapio samples {record_ids}. Error: {e}")
+            return {"status": "warning", "message": MESSAGES['sapio_project_update_failed']}
+        return {"status": "success"}
+
+    def _resize_batch(
+        self,
+        project: PyRecordModel,
+        plates_under_project: List[PyRecordModel],
+        batch: Dict[str, Any],
+        batch_samples: List[PyRecordModel],
+        created_sample_record_ids: List[int],
+    ):
+        # Create or remove samples so that the batch has as many as it requests.
+        # Returns the batch's samples and the samples to delete from Sapio.
+        no_of_samples = int(batch.get(PROFILE_NO_OF_SAMPLES) or 0)
+        batch_samples = sorted(
+            batch_samples, key=lambda sample: sample.get_field_value(SAPIO_PLATE_ID) or ''
+        )
+
+        if len(batch_samples) < no_of_samples:
+            try:
+                sample_records = Sapio().dataRecordManager.add_data_records_with_data(
+                    data_type_name=SAPIO_SAMPLE_DATA_TYPE,
+                    field_map_list=[
+                        {
+                            SAPIO_EXEMPLAR_SAMPLE_TYPE: batch.get(PROFILE_SAMPLE_TYPE) or '',
+                            SAPIO_CONTAINER_TYPE: (batch.get(PROFILE_CONTAINER_TYPE) or '').capitalize(),
+                            SAPIO_LIBRARY_TYPE: batch.get(PROFILE_LIBRARY_TYPE) or '',
+                            SAPIO_EXEMPLAR_SAMPLE_STATUS: 'Logged',
+                        }
+                        for _ in range(len(batch_samples), no_of_samples)
+                    ],
+                )
+            except SapioServerException as e:
+                body = getattr(getattr(e.client_error, "response", None), "text", "") or ""
+                if "Duplicate values exist on fields that must be unique" in body:
+                    l.error(f"Sapio sample ID duplication when creating samples: {body}")
+                    raise _SapioSyncWarning(MESSAGES['sapio_duplicate_sample_ids']) from e
+                raise
+            new_samples: List[PyRecordModel] = Sapio().inst_man.add_existing_records(
+                sample_records
+            )
+            created_sample_record_ids.extend(sample.record_id for sample in new_samples)
+            project.add_children(new_samples)
+            batch_samples.extend(new_samples)
+
+        # Remove excess samples, but only those without a customer name (named samples are committed).
+        # Given that samples are sorted by plate, excess samples will be removed from the last
+        # plate first so as to avoid leaving gaps on earlier plates
+        samples_to_remove = []
+        excess = len(batch_samples) - no_of_samples
+        for sample in reversed(batch_samples):
+            if excess <= 0:
+                break
+            if not sample.get_field_value(SAPIO_CUSTOMER_SAMPLE_NAME):
+                samples_to_remove.append(sample)
+                excess -= 1
+        if excess > 0:
+            raise Exception(
+                f"The number of samples in batch '{batch.get(BATCH_ID)}' cannot be decreased "
+                "because customer samples are already associated with it."
+            )
+
+        if samples_to_remove:
+            removed_record_ids = {sample.record_id for sample in samples_to_remove}
+            # Detach removed samples from their plates before deletion
+            for plate in plates_under_project:
+                samples_on_plate = [
+                    sample
+                    for sample in plate.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
+                    if sample.record_id in removed_record_ids
+                ]
+                if samples_on_plate:
+                    plate.remove_children(samples_on_plate)
+            project.remove_children(samples_to_remove)
+            batch_samples = [
+                sample for sample in batch_samples if sample.record_id not in removed_record_ids
+            ]
+
+        return batch_samples, samples_to_remove
+
+    def _fill_plate(self, plate: PyRecordModel, unplated_samples: List[PyRecordModel]):
+        # Place samples in the plate's empty wells, column by column
+        taken_wells = {
+            (sample.get_field_value(SAPIO_COL_POSITION), sample.get_field_value(SAPIO_ROW_POSITION))
+            for sample in plate.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
+        }
+        samples_for_plate: List[PyRecordModel] = []
+        for column in range(1, PLATE_COLUMNS + 1):
+            for row in PLATE_ROWS:
+                if not unplated_samples:
+                    break
+                if (str(column), row) in taken_wells:
+                    continue
+                sample = unplated_samples.pop(0)
+                sample.set_field_value(SAPIO_PLATE_ID, plate.get_field_value(SAPIO_PLATE_ID))
+                sample.set_field_value(SAPIO_COL_POSITION, str(column))
+                sample.set_field_value(SAPIO_ROW_POSITION, row)
+                samples_for_plate.append(sample)
+        if samples_for_plate:
+            plate.add_children(samples_for_plate)
+
+    def _place_batch_on_plates(
+        self,
+        project: PyRecordModel,
+        plates_under_project: List[PyRecordModel],
+        batch_samples: List[PyRecordModel],
+        sample_type: str,
+    ) -> bool:
+        # Plates are kept to one batch so that a plate never mixes sample types.
+        # Samples not yet assigned to any plate (PlateId and StorageUnitPath both unset)
+        # fill the batch's own plates first before new plates are created.
+        # Returns True if any of the batch's samples could not be placed.
+        unplated_samples = [
+            sample
+            for sample in batch_samples
+            if not sample.get_field_value(SAPIO_PLATE_ID)
+            and not sample.get_field_value(SAPIO_STORAGE_UNIT_PATH)
+        ]
+        if not unplated_samples:
+            return False
+
+        batch_record_ids = {sample.record_id for sample in batch_samples}
+        for plate in plates_under_project:
+            if any(
+                sample.record_id in batch_record_ids
+                for sample in plate.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
+            ):
+                self._fill_plate(plate, unplated_samples)
+
+        # If samples still remain unplated, create as many new 96-well plates as needed
+        if unplated_samples:
+            new_plate_records = Sapio().dataRecordManager.add_data_records_with_data(
+                data_type_name=SAPIO_PLATE_DATA_TYPE,
+                field_map_list=[
+                    {
+                        SAPIO_PLATE_SAMPLE_TYPE: sample_type,
+                        SAPIO_PLATE_COLUMNS: PLATE_COLUMNS,
+                        SAPIO_PLATE_ROWS: len(PLATE_ROWS),
+                    }
+                    for _ in range(math.ceil(len(unplated_samples) / PLATE_WELLS))
+                ],
+            )
+            new_plates: List[PyRecordModel] = Sapio().inst_man.add_existing_records(
+                new_plate_records
+            )
+            project.add_children(new_plates)
+            Sapio().relationship_man.load_children(new_plates, SAPIO_SAMPLE_DATA_TYPE)
+            plates_under_project.extend(new_plates)
+            for plate in new_plates:
+                self._fill_plate(plate, unplated_samples)
+
+        return bool(unplated_samples)
+
+    def _take_batch_off_plates(
+        self, plates_under_project: List[PyRecordModel], batch_samples: List[PyRecordModel]
+    ):
+        # Take a batch's samples off any plates they were placed on while
+        # its container type was 'plate'. Their well elements are removed
+        # when the plates' well elements are synced.
+        batch_record_ids = {sample.record_id for sample in batch_samples}
+        for plate in plates_under_project:
+            samples_on_plate = [
+                sample
+                for sample in plate.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
+                if sample.record_id in batch_record_ids
+            ]
+            if not samples_on_plate:
+                continue
+            for sample in samples_on_plate:
+                sample.set_field_value(SAPIO_PLATE_ID, None)
+                sample.set_field_value(SAPIO_COL_POSITION, None)
+                sample.set_field_value(SAPIO_ROW_POSITION, None)
+            plate.remove_children(samples_on_plate)
+
+    def _attach_project_to_department(self, project: PyRecordModel, dry_run=False):
         # 'VeloxDepartment' is Sapio's built-in department data type.
         # The 'Projects' folder in Sapio's UI navigator is how it groups
         # a department's children of type 'Project'.
+        # Returns 'linked', 'already_linked' or 'department_not_found'.
+        # A dry run only says whether the project would be linked.
         department_records = (
             Sapio()
             .dataRecordManager.query_data_records(
@@ -266,7 +487,7 @@ class SapioAdapter(LIMSAdapter):
                 department=settings.SAPIO_PROJECT_DEPARTMENT
             )
             l.error(msg)
-            return {'status': 'error', 'project_id': '', 'message': msg}
+            return 'department_not_found'
 
         department: PyRecordModel = Sapio().inst_man.add_existing_record(
             department_records[0]
@@ -278,17 +499,20 @@ class SapioAdapter(LIMSAdapter):
             child.record_id == project.record_id
             for child in department.get_children_of_type(SAPIO_PROJECT_DATA_TYPE)
         ):
-            return
+            return 'already_linked'
 
-        department.add_child(project)
+        if not dry_run:
+            department.add_child(project)
+        return 'linked'
 
-    def _sync_plate_well_elements(self, plates: List[PyRecordModel]):
+    def _sync_plate_well_elements(self, plates: List[PyRecordModel], dry_run=False):
         # Sync 'PlateDesignerWellElement' records with the samples on each plate.
         # Create missing ones and delete those whose sample is no longer on the plate.
         # Sapio's Plate View needs one per well to show the sample; without it the
         # well is shown as a black colour with no sample details on hover.
+        # Returns (number added, number removed). A dry run changes nothing.
         if not plates:
-            return
+            return 0, 0
 
         existing_well_elements = []
         page_criteria = None
@@ -339,6 +563,9 @@ class SapioAdapter(LIMSAdapter):
             if (plate_record_id, sample.record_id) not in well_elements_to_keep
         ]
 
+        if dry_run:
+            return len(new_well_elements), len(well_elements_to_delete)
+
         if well_elements_to_delete:
             Sapio().dataRecordManager.delete_data_record_list(well_elements_to_delete)
         if new_well_elements:
@@ -346,12 +573,17 @@ class SapioAdapter(LIMSAdapter):
                 data_type_name=SAPIO_PLATE_WELL_ELEMENT_DATA_TYPE,
                 field_map_list=new_well_elements,
             )
+        return len(new_well_elements), len(well_elements_to_delete)
 
     def sync_project(self, profile: Dict[str, Any]) -> Dict[str, Any]:
         # The project ID might be minted below on first save.
         # Returned in all paths (including partial failure) so the caller can
         # persist it and avoid creating a duplicate project on retry.
         project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, "")
+        # Returned so that the caller can link each batch to its samples and,
+        # if the sync fails, remove the samples it created
+        batch_sample_record_ids: Dict[str, List[int]] = {}
+        created_sample_record_ids: List[int] = []
 
         # ProjectName is Required in Sapio; use related_enq with fallback to profile title.
         project_name = profile.get(PROFILE_RELATED_ENQ) or profile.get(PROFILE_TITLE) or ""
@@ -366,10 +598,14 @@ class SapioAdapter(LIMSAdapter):
                 project_fields = {
                     SAPIO_PROJECT_NAME: project_name,
                     SAPIO_PROJECT_DESC: profile.get(PROFILE_DESCRIPTION) or "",
-                    SAPIO_SAMPLE_COUNT: int(profile.get(PROFILE_NO_OF_SAMPLES) or 0),
                 }
                 if profile.get(PROFILE_BUDGET_HOLDER):
                     project_fields[SAPIO_BUDGET_HOLDER] = profile[PROFILE_BUDGET_HOLDER]
+                # TODO: Confirm Sapio name. The Project data type in Sapio has no
+                # 'Related PIP' field yet (it is only on Request as `RequestName`)
+                # so, the Jira PIP isn't written until the field exists.
+                # if profile.get(PROFILE_RELATED_PIP):
+                #     project_fields[SAPIO_RELATED_PIP] = profile[PROFILE_RELATED_PIP]
                 project_records = Sapio().dataRecordManager.add_data_records_with_data(
                     data_type_name=SAPIO_PROJECT_DATA_TYPE, field_map_list=[project_fields]
                 )
@@ -417,13 +653,15 @@ class SapioAdapter(LIMSAdapter):
                 project_record.set_field_value(
                     SAPIO_PROJECT_DESC, profile.get(PROFILE_DESCRIPTION) or ""
                 )
-                project_record.set_field_value(
-                    SAPIO_SAMPLE_COUNT, int(profile.get(PROFILE_NO_OF_SAMPLES) or 0)
-                )
                 if profile.get(PROFILE_BUDGET_HOLDER):
                     project_record.set_field_value(
                         SAPIO_BUDGET_HOLDER, profile[PROFILE_BUDGET_HOLDER]
                     )
+                # TODO: Confirm Sapio name (see the note where projects are created)
+                # if profile.get(PROFILE_RELATED_PIP):
+                #     project_record.set_field_value(
+                #         SAPIO_RELATED_PIP, profile[PROFILE_RELATED_PIP]
+                #     )
                 Sapio().dataRecordManager.commit_data_records([project_record])
 
                 # Attach existing profile that was created in COPO to its project
@@ -441,260 +679,76 @@ class SapioAdapter(LIMSAdapter):
             samples_under_project: List[PyRecordModel] = project.get_children_of_type(
                 SAPIO_SAMPLE_DATA_TYPE
             )
-            samples_under_project = sorted(
-                samples_under_project, key=lambda x: x.get_field_value(SAPIO_PLATE_ID)
-            )
             Sapio().relationship_man.load_children([project], SAPIO_PLATE_DATA_TYPE)
             plates_under_project: List[PyRecordModel] = project.get_children_of_type(
                 SAPIO_PLATE_DATA_TYPE
             )
-
-            # Track which plates need samples removed after deletion
-            assigned_plates_map_for_samples_to_delete = {}
-            samples_to_remove = []
-
-            existing_plate_ids_under_project = set()
-            for plate in plates_under_project:
-                existing_plate_ids_under_project.add(plate.get_field_value(SAPIO_PLATE_ID))
-
-            no_of_samples = int(profile.get(PROFILE_NO_OF_SAMPLES) or 0)
-            sample_type = profile.get(PROFILE_SAMPLE_TYPE) or ""
-            container_type = (profile.get(PROFILE_CONTAINER_TYPE) or "").capitalize()
-            library_type = profile.get(PROFILE_LIBRARY_TYPE) or ""
-
-            # Create samples up to the requested count if we don't have enough yet
-            if not samples_under_project or len(samples_under_project) < no_of_samples:
-                existing_no_of_samples = (
-                    len(samples_under_project) if samples_under_project else 0
-                )
-
-                try:
-                    sample_records = (
-                        Sapio().dataRecordManager.add_data_records_with_data(
-                            data_type_name=SAPIO_SAMPLE_DATA_TYPE,
-                            field_map_list=[
-                                {
-                                    SAPIO_EXEMPLAR_SAMPLE_TYPE: sample_type,
-                                    SAPIO_CONTAINER_TYPE: container_type,
-                                    SAPIO_LIBRARY_TYPE: library_type,
-                                    SAPIO_EXEMPLAR_SAMPLE_STATUS: 'Logged',
-                                }
-                                for _ in range(existing_no_of_samples, no_of_samples)
-                            ],
-                        )
-                    )
-                except SapioServerException as e:
-                    l.exception(e)
-                    body = (
-                        getattr(getattr(e.client_error, "response", None), "text", "")
-                        or ""
-                    )
-
-                    if "Duplicate values exist on fields that must be unique" in body:
-                        l.error(
-                            f"Sapio sample ID duplication when creating samples for project {project_id}: {body}"
-                        )
-                        return {
-                            "status": "warning",
-                            "project_id": project_id,
-                            "message": MESSAGES['sapio_duplicate_sample_ids'],
-                        }
-                samples: List[PyRecordModel] = Sapio().inst_man.add_existing_records(
-                    sample_records
-                )
-                project.add_children(samples)
-                samples_under_project.extend(samples)
-
-            # Remove excess samples, but only those without a customer name (named samples are committed).
-            # Given that samples are sorted by plate, excess samples will be removed from the last
-            # plate first then, the removal process will work backwards to avoid leaving gaps on earlier plates
-            diff = len(samples_under_project) - no_of_samples
-            if diff > 0:
-                for sample in reversed(samples_under_project):
-                    if not sample.get_field_value(SAPIO_CUSTOMER_SAMPLE_NAME):
-                        samples_to_remove.append(sample)
-                        diff -= 1
-                        assigned_plate_id = sample.get_field_value(SAPIO_PLATE_ID)
-                        if assigned_plate_id:
-                            if (
-                                assigned_plate_id
-                                not in assigned_plates_map_for_samples_to_delete
-                            ):
-                                assigned_plates_map_for_samples_to_delete[
-                                    assigned_plate_id
-                                ] = []
-                            assigned_plates_map_for_samples_to_delete[
-                                assigned_plate_id
-                            ].append(sample)
-                    if diff <= 0:
-                        break
-                if diff > 0:
-                    raise Exception(
-                        f"The number of samples cannot be decreased because customer samples are already associated with project '{project_id}'."
-                    )
-
-                project.remove_children(samples_to_remove)
-                samples_under_project = [
-                    s for s in samples_under_project if s not in samples_to_remove
-                ]
-
-            # Sync sample type fields on all remaining samples
-            for sample in samples_under_project:
-                sample.set_field_value(SAPIO_EXEMPLAR_SAMPLE_TYPE, sample_type)
-                sample.set_field_value(SAPIO_CONTAINER_TYPE, container_type)
-                sample.set_field_value(SAPIO_LIBRARY_TYPE, library_type)
-
-            plates_under_project_map = {
-                plate.get_field_value(SAPIO_PLATE_ID): plate
-                for plate in plates_under_project
-            }
-
-            # Detach removed samples from their plates before deletion
-            for plate_id, samples in assigned_plates_map_for_samples_to_delete.items():
-                plate = plates_under_project_map.get(plate_id, None)
-                if plate:
-                    plate.remove_children(samples)
-
-            # Only projects identified as 'plate' projects should have samples placed on plates
-            is_plate_container = container_type == 'Plate'
-
-            # Find samples not yet assigned to any plate (PlateId and StorageUnitPath both unset)
-            samples_without_plate = set()
-            if is_plate_container and samples_under_project:
-                for sample in samples_under_project:
-                    assigned_plate = sample.get_field_value(SAPIO_PLATE_ID)
-                    if not assigned_plate:
-                        assigned_plate = sample.get_field_value(SAPIO_STORAGE_UNIT_PATH)
-                        if not assigned_plate:
-                            samples_without_plate.add(sample)
-
-            # Fill empty slots in existing plates first before creating new ones
             Sapio().relationship_man.load_children(plates_under_project, SAPIO_SAMPLE_DATA_TYPE)
 
-            # Take samples off any plates they were placed on while the
-            # container type was 'plate' and remove their well elements
-            if not is_plate_container:
-                for plate in plates_under_project:
-                    samples_under_plate = plate.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
-                    if not samples_under_plate:
-                        continue
-                    for sample in samples_under_plate:
-                        sample.set_field_value(SAPIO_PLATE_ID, None)
-                        sample.set_field_value(SAPIO_COL_POSITION, None)
-                        sample.set_field_value(SAPIO_ROW_POSITION, None)
-                    plate.remove_children(samples_under_plate)
-
-            if samples_without_plate:
-                for plate in plates_under_project:
-                    sample_for_plate: List[PyRecordModel] = []
-                    # Build a position map for every well in the plate
-                    plate_assignments = {
-                        (str(column), row): False
-                        for column in range(1, PLATE_COLUMNS + 1)
-                        for row in PLATE_ROWS
-                    }
-                    samples_under_plate: List[PyRecordModel] = (
-                        plate.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
-                    )
-                    for sample in samples_under_plate:
-                        plate_assignments_key = (
-                            sample.get_field_value(SAPIO_COL_POSITION),
-                            sample.get_field_value(SAPIO_ROW_POSITION),
-                        )
-                        plate_assignments[plate_assignments_key] = True
-
-                    for _ in range(len(samples_under_plate), PLATE_WELLS):
-                        if not samples_without_plate:
-                            break
-                        key = next(
-                            (k for k, v in plate_assignments.items() if not v), None
-                        )
-                        if not key:
-                            l.error(
-                                "No more positions available in plate when assigning samples!"
-                            )
-                            break
-                        sample = samples_without_plate.pop()
-                        sample_for_plate.append(sample)
-                        sample.set_field_value(
-                            SAPIO_PLATE_ID, plate.get_field_value(SAPIO_PLATE_ID)
-                        )
-                        plate_assignments[key] = True
-                        sample.set_field_value(SAPIO_COL_POSITION, key[0])
-                        sample.set_field_value(SAPIO_ROW_POSITION, key[1])
-                    if sample_for_plate:
-                        plate.add_children(sample_for_plate)
-
-            # If samples still remain unplated, create as many new 96-well plates as needed
-            if samples_without_plate:
-                no_of_plates_needed = math.ceil(len(samples_without_plate) / PLATE_WELLS)
-                new_plate_records = (
-                    Sapio().dataRecordManager.add_data_records_with_data(
-                        data_type_name=SAPIO_PLATE_DATA_TYPE,
-                        field_map_list=[
-                            {
-                                SAPIO_PLATE_SAMPLE_TYPE: sample_type,
-                                SAPIO_PLATE_COLUMNS: PLATE_COLUMNS,
-                                SAPIO_PLATE_ROWS: len(PLATE_ROWS),
-                            }
-                            for _ in range(no_of_plates_needed)
-                        ],
-                    )
+            # Each batch's samples are synced on their own so that the
+            # types of one batch are never written to another batch's samples
+            samples_to_remove: List[PyRecordModel] = []
+            samples_left_unplated = False
+            for batch, batch_samples in _group_samples_by_batch(
+                get_sample_batches(profile), samples_under_project
+            ):
+                batch_samples, removed_samples = self._resize_batch(
+                    project, plates_under_project, batch, batch_samples, created_sample_record_ids
                 )
-                new_plates: List[PyRecordModel] = Sapio().inst_man.add_existing_records(
-                    new_plate_records
-                )
-                project.add_children(new_plates)
-                Sapio().relationship_man.load_children(new_plates, SAPIO_SAMPLE_DATA_TYPE)
+                samples_to_remove.extend(removed_samples)
 
-                for plate in new_plates:
-                    sample_for_plate: List[PyRecordModel] = []
-                    plate_assignments = {
-                        (str(column), row): False
-                        for column in range(1, PLATE_COLUMNS + 1)
-                        for row in PLATE_ROWS
-                    }
-                    for _ in range(PLATE_WELLS):
-                        if not samples_without_plate:
-                            break
-                        key = next(
-                            (k for k, v in plate_assignments.items() if not v), None
-                        )
-                        if not key:
-                            l.error(
-                                "No more positions available in plate when assigning samples!"
-                            )
-                            break
-                        sample = samples_without_plate.pop()
-                        sample_for_plate.append(sample)
-                        sample.set_field_value(
-                            SAPIO_PLATE_ID, plate.get_field_value(SAPIO_PLATE_ID)
-                        )
-                        plate_assignments[key] = True
-                        sample.set_field_value(SAPIO_COL_POSITION, key[0])
-                        sample.set_field_value(SAPIO_ROW_POSITION, key[1])
-                    if sample_for_plate:
-                        plate.add_children(sample_for_plate)
+                sample_type = batch.get(PROFILE_SAMPLE_TYPE) or ''
+                container_type = (batch.get(PROFILE_CONTAINER_TYPE) or '').capitalize()
+                library_type = batch.get(PROFILE_LIBRARY_TYPE) or ''
+                for sample in batch_samples:
+                    sample.set_field_value(SAPIO_EXEMPLAR_SAMPLE_TYPE, sample_type)
+                    sample.set_field_value(SAPIO_CONTAINER_TYPE, container_type)
+                    sample.set_field_value(SAPIO_LIBRARY_TYPE, library_type)
+
+                # Only batches identified as 'plate' batches should have samples placed on plates
+                if container_type == 'Plate':
+                    if self._place_batch_on_plates(
+                        project, plates_under_project, batch_samples, sample_type
+                    ):
+                        samples_left_unplated = True
+                else:
+                    self._take_batch_off_plates(plates_under_project, batch_samples)
+
+                batch_sample_record_ids[batch[BATCH_ID]] = [
+                    sample.record_id for sample in batch_samples
+                ]
 
             Sapio().rec_man.store_and_commit()
             # Hard-delete removed sample records from Sapio (recursive to clean up children)
-            Sapio().dataRecordManager.delete_data_record_list(
-                [sample.get_data_record() for sample in samples_to_remove],
-                recursive_delete=True,
-            )
-            
-            # Give each plated sample a well element so that it shows 
+            if samples_to_remove:
+                Sapio().dataRecordManager.delete_data_record_list(
+                    [sample.get_data_record() for sample in samples_to_remove],
+                    recursive_delete=True,
+                )
+
+            # Give each plated sample a well element so that it shows
             # as a coloured well in Sapio's Plate View
             self._sync_plate_well_elements(project.get_children_of_type(SAPIO_PLATE_DATA_TYPE))
 
-            if samples_without_plate:
+            if samples_left_unplated:
                 l.error("Not all samples have been assigned to plates!")
                 return {
                     "status": "warning",
                     "project_id": project_id,
                     "message": MESSAGES['sapio_project_update_failed'],
+                    "created_sample_record_ids": created_sample_record_ids,
                 }
 
+        except _SapioSyncWarning as warning:
+            l.error(
+                f"Failed to sync sapio project {project_id} for profile id: {profile['_id']}. {warning}"
+            )
+            return {
+                "status": "warning",
+                "project_id": project_id,
+                "message": str(warning),
+                "created_sample_record_ids": created_sample_record_ids,
+            }
         except Exception as e:
             l.exception(e)
             l.error(
@@ -707,9 +761,14 @@ class SapioAdapter(LIMSAdapter):
                 "status": "warning",
                 "project_id": project_id,
                 "message": MESSAGES['sapio_project_update_failed'],
+                "created_sample_record_ids": created_sample_record_ids,
             }
 
-        return {"status": "success", "project_id": project_id}
+        return {
+            "status": "success",
+            "project_id": project_id,
+            "batch_sample_record_ids": batch_sample_record_ids,
+        }
 
     def delete_project(self, project_id: str) -> Dict[str, str]:
         try:
@@ -738,6 +797,71 @@ class SapioAdapter(LIMSAdapter):
                 "message": MESSAGES['sapio_project_delete_failed'],
             }
         return {"status": "success"}
+
+    def upgrade_project(self, profile: Dict[str, Any], dry_run=True) -> Dict[str, Any]:
+        '''Bring an older EDP profile's Sapio project up to date.
+
+        Only fixes what is out of date; samples are never created or removed.
+        A dry run reads Sapio and reports what would change without writing.
+
+        1. Department: projects created before COPO linked them are attached
+           to the department in `settings.SAPIO_PROJECT_DEPARTMENT`.
+        2. Batches: each sample batch is paired with its samples (a batch moved
+           from the fields the profile used to have claims every sample no other
+           batch has). The record IDs are returned for the caller to save.
+        3. Container types: samples whose container type isn't the title case
+           value that Sapio accepts (e.g. 'plate' rather than 'Plate') are fixed.
+        4. Plate colours: plated samples without a 'PlateDesignerWellElement'
+           get one so that they show as coloured wells in Sapio's Plate View.
+        '''
+        project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, "")
+        try:
+            project = self._load_project(project_id) if project_id else None
+            if not project:
+                return {
+                    'status': 'error',
+                    'message': MESSAGES['sapio_project_not_found'].format(project_id=project_id),
+                }
+            summary = {'status': 'success', 'message': ''}
+
+            # 1. Department
+            summary['department'] = self._attach_project_to_department(project, dry_run=dry_run)
+
+            # 2. Batches and 3. container types
+            Sapio().relationship_man.load_children([project], SAPIO_SAMPLE_DATA_TYPE)
+            samples_under_project = project.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
+            summary['batch_sample_record_ids'] = {}
+            summary['container_types_fixed'] = 0
+            for batch, batch_samples in _group_samples_by_batch(
+                get_sample_batches(profile), samples_under_project
+            ):
+                summary['batch_sample_record_ids'][batch[BATCH_ID]] = [
+                    sample.record_id for sample in batch_samples
+                ]
+                container_type = (batch.get(PROFILE_CONTAINER_TYPE) or '').capitalize()
+                for sample in batch_samples:
+                    if container_type and sample.get_field_value(SAPIO_CONTAINER_TYPE) != container_type:
+                        summary['container_types_fixed'] += 1
+                        if not dry_run:
+                            sample.set_field_value(SAPIO_CONTAINER_TYPE, container_type)
+
+            if not dry_run:
+                Sapio().rec_man.store_and_commit()
+
+            # 4. Plate colours
+            Sapio().relationship_man.load_children([project], SAPIO_PLATE_DATA_TYPE)
+            plates = project.get_children_of_type(SAPIO_PLATE_DATA_TYPE)
+            Sapio().relationship_man.load_children(plates, SAPIO_SAMPLE_DATA_TYPE)
+            summary['well_elements_added'], summary['well_elements_removed'] = (
+                self._sync_plate_well_elements(plates, dry_run=dry_run)
+            )
+            return summary
+        except Exception as error:
+            l.exception(error)
+            return {
+                'status': 'error',
+                'message': f'Sapio project {project_id} could not be upgraded: {_describe_error(error)}',
+            }
 
     # ------------------------------------------------------------------ #
     # Manifest
@@ -779,20 +903,37 @@ class SapioAdapter(LIMSAdapter):
         Sapio().relationship_man.load_children([project], SAPIO_SAMPLE_DATA_TYPE)
         return project.get_children_of_type(SAPIO_SAMPLE_DATA_TYPE)
 
+    def _to_term_records(
+        self, samples: List[PyRecordModel], schemas: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        sapio_column_map = self._sample_field_map(schemas)
+        return [
+            {
+                term_name: sample.get_field_value(sapio_field)
+                for term_name, sapio_field in sapio_column_map.items()
+            }
+            for sample in samples
+        ]
+
     def get_project_samples(
         self, project_id: str, schemas: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         samples_under_project = self._load_project_samples(project_id)
         if not samples_under_project:
             return []
-        sapio_column_map = self._sample_field_map(schemas)
-        records_list = []
-        for sample in samples_under_project:
-            record_dict = {}
-            for term_name, sapio_field in sapio_column_map.items():
-                record_dict[term_name] = sample.get_field_value(sapio_field)
-            records_list.append(record_dict)
-        return records_list
+        return self._to_term_records(samples_under_project, schemas)
+
+    def get_batch_samples(
+        self, profile: Dict[str, Any], batch_id: str, schemas: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, "")
+        samples_under_project = self._load_project_samples(project_id) if project_id else []
+        for batch, batch_samples in _group_samples_by_batch(
+            get_sample_batches(profile), samples_under_project
+        ):
+            if batch[BATCH_ID] == batch_id:
+                return self._to_term_records(batch_samples, schemas)
+        return []
 
     def get_project_metadata(self, project_id: str) -> Dict[str, Any]:
         project_records = (

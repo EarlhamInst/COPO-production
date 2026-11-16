@@ -197,3 +197,18 @@ def test_existing_well_elements_are_read_from_every_page():
     )
     data_record_manager.add_data_records_with_data.assert_not_called()
     data_record_manager.delete_data_record_list.assert_not_called()
+
+
+def test_dry_run_counts_the_changes_without_making_them():
+    # Used by the migrate_edp_profiles command to report what it would do
+    plate = FakePlate(100, [sample(1, 'A', '1'), sample(2, 'B', '1')])
+    sapio = mock.Mock()
+    data_record_manager = sapio.return_value.dataRecordManager
+    data_record_manager.query_data_records.side_effect = [page([well_element(900, 100, 3)])]
+
+    with mock.patch.object(sapio_adapter, 'Sapio', sapio):
+        counts = SapioAdapter.__new__(SapioAdapter)._sync_plate_well_elements([plate], dry_run=True)
+
+    assert counts == (2, 1)
+    data_record_manager.add_data_records_with_data.assert_not_called()
+    data_record_manager.delete_data_record_list.assert_not_called()

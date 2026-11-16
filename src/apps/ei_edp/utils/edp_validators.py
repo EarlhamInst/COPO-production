@@ -11,12 +11,19 @@ SAMPLE_NAME_LABEL = 'Sample'
 
 class SampleCountValidator(Validator):
     '''Under EDP profiles, a sample manifest cannot add more samples than
-    are left to upload i.e. the number of samples requested on the profile
-    less those that have already been uploaded.
+    are left to upload i.e. the number of samples registered in the chosen
+    batch less those that have already been uploaded for it.
 
     Rows whose sample name already exists in the profile update that
     sample so, only rows with new sample names are counted.
     '''
+
+    batch_id = None
+
+    @classmethod
+    def for_batch(cls, batch_id):
+        # Validators are passed as classes so, the batch is bound to a subclass
+        return type(cls.__name__, (cls,), {'batch_id': batch_id})
 
     def validate(self):
         checklist = self.kwargs.get('checklist', {})
@@ -51,7 +58,7 @@ class SampleCountValidator(Validator):
         new_sample_count = len(sample_names - existing_sample_names)
 
         profile = self.kwargs.get('profile') or {}
-        samples_left_to_upload = get_samples_left_to_upload(profile)
+        samples_left_to_upload = get_samples_left_to_upload(profile, self.batch_id)
         if new_sample_count > samples_left_to_upload:
             self.errors.append(
                 MESSAGES['too_many_samples'].format(

@@ -9,8 +9,10 @@ as one of:
 - sent
 - skipped: email isn't set up on this server (e.g. CI). The save still
   succeeds, with a note that no email was sent.
-- failed: sending failed. The save still syncs Sapio, but reports a warning
+- failed: sending failed. The save still succeeds, but reports a warning
   naming the addresses that weren't emailed.
+
+Emails are only sent once the profile has been synced to Sapio.
 '''
 
 from unittest import mock
@@ -149,22 +151,15 @@ def test_failed_email_still_syncs_sapio_and_warns(save):
     assert result == {'status': 'warning', 'message': FAILED_MESSAGE}
 
 
-def test_sapio_failure_and_failed_email_are_both_reported(save):
+def test_nobody_is_emailed_when_sapio_fails(save):
+    # The profile isn't usable without its Sapio project so, emails are
+    # only sent once the sync has worked
     result, _ = save(
         failed_emails=['new@earlham.ac.uk'],
         sync_result={'status': 'warning', 'project_id': 'PR0001', 'message': 'Sapio sync failed.'},
     )
 
-    assert result == {'status': 'warning', 'message': 'Sapio sync failed. ' + FAILED_MESSAGE}
-
-
-def test_sapio_failure_is_not_hidden_by_a_skipped_email(save):
-    result, _ = save(
-        skipped_emails=['new@earlham.ac.uk'],
-        sync_result={'status': 'warning', 'project_id': 'PR0001', 'message': 'Sapio sync failed.'},
-    )
-
-    assert result == {'status': 'warning', 'message': 'Sapio sync failed. ' + SKIPPED_MESSAGE}
+    assert result == {'status': 'warning', 'message': 'Sapio sync failed.'}
 
 
 def test_only_newly_added_users_are_emailed():

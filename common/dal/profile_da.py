@@ -187,6 +187,9 @@ class Profile(DAComponent):
                     rec["message"] = result.get("message", "")
 
         if rec["status"] == "success":
+            # Retain previous profile record so that a post-save action can restore it 
+            # if the save has to be undone
+            previous_record = None if new_record else self.get_record(kwargs.get("target_id"))
             schema = self.get_component_schema(profile_type=type)
             rec = super(Profile, self).save_record(auto_fields, schema=schema, **kwargs)
 
@@ -196,14 +199,17 @@ class Profile(DAComponent):
                     index = post_action.rfind(".")
                     provider = post_action[0:index]
                     method = post_action[index + 1 :]
-                    result = getattr(get_class(provider), method)(rec)
+                    result = getattr(get_class(provider), method)(
+                        rec, new_record=new_record, previous_record=previous_record
+                    )
                     if result:
                         rec["status"] = result.get("status", "success")
                         rec["message"] = result.get("message", "")
 
-                # trigger after save actions
-                if not kwargs.get("target_id", str()):
-                    Person(profile_id=str(rec["_id"])).create_sra_person()            
+                # Trigger after save actions, unless the `post-save` action
+                # undid the save (e.g. when an EDP profile whose Sapio project sync failed)
+                if new_record and rec.get("status") != "error":
+                    Person(profile_id=str(rec["_id"])).create_sra_person()
         return rec
 
     def add_dataverse_details(self, profile_id, dataverse):

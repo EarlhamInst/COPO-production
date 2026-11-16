@@ -358,7 +358,7 @@
       "deprecated": false,
       "hidden": "false",
       "label": "Sample type",
-      "show_in_form": true,
+      "show_in_form": false,
       "id": "copo.profile.sample_type",
       "type": "string",
       "show_in_table": true,
@@ -387,7 +387,7 @@
       "deprecated": false,
       "hidden": "false",
       "label": "Library type",
-      "show_in_form": true,
+      "show_in_form": false,
       "id": "copo.profile.library_type",
       "type": "string",
       "show_in_table": true,
@@ -418,7 +418,7 @@
       "deprecated": false,
       "hidden": "false",
       "label": "Number of samples",
-      "show_in_form": true,
+      "show_in_form": false,
       "id": "copo.profile.no_of_samples",
       "type": "integer",
       "show_in_table": true,
@@ -444,6 +444,28 @@
       "type": "string",
       "show_in_table": true,
       "control": "text"
+    },
+    {
+      "help_tip": "Please input the Jira PIP for this project e.g. PIP-1234",
+      "required": "true",
+      "default_value": "",
+      "control_meta": {},
+      "versions": [
+        "ei_edp"
+      ],
+      "specifications": [
+        "ei_edp"
+      ],
+      "ref": "",
+      "deprecated": false,
+      "hidden": "false",
+      "label": "Jira PIP",
+      "show_in_form": true,
+      "id": "copo.profile.related_pip",
+      "type": "string",
+      "show_in_table": true,
+      "control": "text",
+      "regex": "^PIP-[0-9]+$"
     },
     {
       "help_tip": "Please input the name of the budget holder",
@@ -482,7 +504,7 @@
       "deprecated": false,
       "hidden": "false",
       "label": "Container type",
-      "show_in_form": true,
+      "show_in_form": false,
       "id": "copo.profile.container_type",
       "type": "string",
       "show_in_table": true,

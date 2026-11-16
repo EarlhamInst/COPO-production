@@ -15,7 +15,7 @@ def pre_save_erga_profile(auto_fields,**kwargs):
         return {"status": "success"} 
 
 
-def post_save_dtol_profile(profile):
+def post_save_dtol_profile(profile, **kwargs):
     if profile["date_created"] != profile["date_modified"]:
         associated_type_lst = profile.get("associated_type", [])
 

@@ -47,6 +47,12 @@ from .constants import (
     TERM_TYPE,
 )
 from .edp_validation_messages import MESSAGES
+from .sample_batches import (
+    find_batch_by_study_id,
+    get_batch_study_id,
+    get_sample_batches,
+    resolve_batch_id,
+)
 from openpyxl.utils.dataframe import dataframe_to_rows
 from common.ena_utils.generic_helper import notify_singlecell_status
 from openpyxl.worksheet.formula import ArrayFormula
@@ -79,20 +85,67 @@ def get_submitted_sample_references(project_id, schemas):
     }
 
 
-def get_pending_samples(project_id, schemas):
-    '''This function returns the samples from a Sapio LIMS project
-    that are yet to be submitted. These are the samples that a 
-    downloaded blank manifest will list.
+def get_pending_batch_samples(profile, batch_id, schemas):
+    '''This function returns the samples of one of the profile's batches
+    that are yet to be submitted to the LIMS. These are the samples that
+    the batch's downloaded blank manifest will list.
     '''
     return [
         record
-        for record in get_lims_adapter().get_project_samples(project_id, schemas)
+        for record in get_lims_adapter().get_batch_samples(profile, batch_id, schemas)
         if not record.get(SUBMITTER_SAMPLE_REFERENCE)
     ]
 
 
 class EDPSchemaHandler(SingleCellSchemasHandler):
     sample_name_field = SUBMITTER_SAMPLE_REFERENCE
+
+    def get_checklist_filter_values(self, profile):
+        # The values to filter by (e.g. the sample type) are kept on each batch
+        # of samples so, a checklist is offered if it matches any of the batches
+        return get_sample_batches(profile) or [profile]
+
+    def get_page_context(self, profile, checklist_ids_by_filter):
+        # Each batch of samples has a LIMS manifest and can only
+        # use the checklists for its sample type
+        from . import edp_utils
+        from .profile_type_hooks import get_batch_manifest_group
+
+        checklist_ids_by_batch = {
+            filter_values['batch_id']: checklist_ids
+            for filter_values, checklist_ids in checklist_ids_by_filter
+            if 'batch_id' in filter_values
+        }
+        described_batches = [
+            {**batch, 'checklist_ids': ','.join(checklist_ids_by_batch.get(batch['batch_id'], []))}
+            for batch in edp_utils.describe_upload_batches(profile)
+        ]
+        return {
+            'manifest_group': get_batch_manifest_group(
+                described_batches,
+                'The batch of samples that a LIMS manifest is for',
+                lambda batch: batch['name'],
+            )
+        }
+
+    def check_blank_manifest(self, profile, request_data):
+        # Samples must be submitted before a blank LIMS manifest can be
+        # downloaded and some of the chosen batch's samples must still be
+        # remaining to be submitted to the LIMS
+        from . import edp_utils
+
+        feedback = edp_utils.check_edp_samples_submitted(profile=profile)
+        if feedback['status'] != 'success':
+            return feedback
+        return edp_utils.check_lims_blank_manifest(
+            profile=profile, batch_id=request_data.get('batch_id', '')
+        )
+
+    def check_manifest_upload(self, profile, request_data):
+        # Samples must be submitted before a LIMS manifest describing them can be uploaded
+        from . import edp_utils
+
+        return edp_utils.check_edp_samples_submitted(profile=profile)
 
     def write_manifest(
         self,
@@ -120,13 +173,19 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
         if not sapio_project_id:
             raise Exception(MESSAGES['missing_sapio_project'])
 
-        # Existing LIMS samples (keyed by COPO term_name) to pre-fill the sample
-        # sheet, plus study-level values for the manifest header.
-        # A blank manifest will only list samples that are yet to be
-        # submitted like when the sample count on a profile has increased.
+        # Each batch of samples has its LIMS manifest so, the manifest is
+        # for the batch chosen on the page (or the profile's only batch)
+        batch_id = resolve_batch_id(
+            profile, request.GET.get('batch_id', '') if request is not None else ''
+        )
+        if not batch_id:
+            raise Exception(MESSAGES['select_sample_batch'])
+
+        # A blank manifest will only list the batch's samples that are yet to be
+        # submitted like when the batch's sample count has increased.
         # Submitted samples can be updated by uploading their original
         # manifest again with amendments.
-        lims_sample_records = get_pending_samples(sapio_project_id, schemas)
+        lims_sample_records = get_pending_batch_samples(profile, batch_id, schemas)
         if not lims_sample_records:
             raise Exception(MESSAGES['all_samples_submitted'])
         lims_project_metadata = get_lims_adapter().get_project_metadata(sapio_project_id)
@@ -171,7 +230,8 @@ class EDPSchemaHandler(SingleCellSchemasHandler):
         worksheet_sample = workbook["sample"]
 
         worksheet_sample["C4"] = profile.get(PROFILE_BUDGET_HOLDER, "")
-        worksheet_sample["C5"] = profile.get(PROFILE_SAPIO_PROJECT_ID, "")
+        # The batch's study ID tells its LIMS manifest apart from other batches'
+        worksheet_sample["C5"] = get_batch_study_id(profile, batch_id)
 
         if lims_project_metadata:
             worksheet_sample["L9"] = lims_project_metadata.get(LIMS_HEALTH_AND_SAFETY)
@@ -544,7 +604,9 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
             workbook = load_workbook(self.file, data_only=True)
             profile = Profile().get_record(self.profile_id)
             sample_ws = workbook["sample"]
-            sapio_project_id = str(sample_ws["C5"].value)
+            study_id = str(sample_ws["C5"].value or '').strip()
+            batch = find_batch_by_study_id(profile, study_id)
+            sapio_project_id = profile.get(PROFILE_SAPIO_PROJECT_ID, '')
             if sample_ws["E6"].value:
                 emails = str(sample_ws["E6"].value).strip()
             else:
@@ -552,15 +614,14 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
             is_returned = sample_ws["L8"].value
             health_safety = sample_ws["L9"].value
 
-            if not sapio_project_id or sapio_project_id != profile.get(
-                PROFILE_SAPIO_PROJECT_ID, ""
-            ):
+            # The study ID must be one of the profile's batches' study IDs
+            if not batch:
                 notify_singlecell_status(
                     data={"profile_id": self.profile_id},
                     msg=(
-                        "Incorrect project ID: " + str(sapio_project_id)
-                        if sapio_project_id
-                        else "Missing project ID in the manifest!"
+                        f'Incorrect project ID: {study_id}'
+                        if study_id
+                        else 'Missing project ID in the manifest!'
                     ),
                     action="error",
                     html_id=self.component_info,
@@ -570,11 +631,7 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
 
             study_dict = [
                 {
-                    STUDY_ID: (
-                        profile[PROFILE_SAPIO_PROJECT_ID]
-                        if PROFILE_SAPIO_PROJECT_ID in profile
-                        else ""
-                    ),
+                    STUDY_ID: study_id,
                     USER_EMAIL: emails,
                     SAMPLE_RETURN: is_returned,
                     HEALTH_SAFETY: health_safety,
@@ -660,6 +717,31 @@ class EDPSchemaSpreadsheet(SinglecellschemasSpreadsheet):
                             sample_ids=", ".join(changed_references)
                         ),
                         action="error",
+                        html_id=self.component_info,
+                        checklist_id=self.checklist_id,
+                    )
+                    return False
+
+                # Each batch has its LIMS manifest so, its rows must be
+                # the batch's samples
+                batch_sample_ids = {
+                    str(record.get(SAMPLE_ID))
+                    for record in get_lims_adapter().get_batch_samples(
+                        profile, batch['batch_id'], schemas
+                    )
+                }
+                samples_not_in_batch = sorted(
+                    str(sample_id)
+                    for sample_id in sample_df[SAMPLE_ID]
+                    if str(sample_id).strip() and str(sample_id) not in batch_sample_ids
+                )
+                if samples_not_in_batch:
+                    notify_singlecell_status(
+                        data={'profile_id': self.profile_id},
+                        msg=MESSAGES['samples_not_in_batch'].format(
+                            study_id=study_id, sample_ids=', '.join(samples_not_in_batch)
+                        ),
+                        action='error',
                         html_id=self.component_info,
                         checklist_id=self.checklist_id,
                     )

@@ -9,6 +9,8 @@ PROFILE_TYPE = 'type'
 PROFILE_USER_ID = 'user_id'
 PROFILE_SAPIO_PROJECT_ID = 'sapio_project_id'
 PROFILE_RELATED_ENQ = 'related_enq'
+PROFILE_RELATED_PIP = 'related_pip' # Jira PIP e.g. PIP-1234
+JIRA_BROWSE_URL = 'https://earlham-institute.atlassian.net/browse/{issue}'
 PROFILE_BUDGET_HOLDER = 'budget_holder'
 PROFILE_NO_OF_SAMPLES = 'no_of_samples'
 PROFILE_SAMPLE_TYPE = 'sample_type'
@@ -16,15 +18,35 @@ PROFILE_CONTAINER_TYPE = 'container_type'
 PROFILE_LIBRARY_TYPE = 'library_type'
 PROFILE_USER_EMAIL = 'user_email'
 PROFILE_USER_EMAIL_TOKEN = 'user_email_token'
+PROFILE_SAMPLE_BATCHES = 'sample_batches'
 
-# Profile fields (with their form labels) that cannot be changed once samples
-# have been submitted. The sample type decides which LIMS manifest is offered
-# and all three are written to every sample in the LIMS project on each save.
-LOCKED_PROFILE_FIELDS = {
+# -- Sample batches --
+# Each time samples are registered under an EDP profile, a batch is added to
+# the profile's `sample_batches` list. A batch keeps the fields below plus the
+# LIMS record IDs of its samples so that its samples can be told apart from
+# those of other batches in the same LIMS project.
+BATCH_ID = 'batch_id'
+BATCH_DATE_CREATED = 'date_created'
+BATCH_DATE_MODIFIED = 'date_modified'
+# `None` for a batch moved from the fields an EDP profile used to have, until
+# the next LIMS sync claims the project's existing samples for it
+BATCH_LIMS_SAMPLE_RECORD_IDS = 'lims_sample_record_ids'
+
+# Batch fields entered by users (with their form labels). They cannot be
+# changed once any of the batch's samples have been submitted.
+BATCH_FIELDS = {
+    PROFILE_NO_OF_SAMPLES: 'Number of samples',
     PROFILE_SAMPLE_TYPE: 'Sample type',
     PROFILE_CONTAINER_TYPE: 'Container type',
     PROFILE_LIBRARY_TYPE: 'Library type',
 }
+# Field on COPO sample records that names the batch the sample was uploaded
+# for. Samples uploaded before batches existed have none and belong to the
+# profile's first batch.
+SAMPLE_BATCH_ID = 'edp_batch_id'
+CONTAINER_TYPES = ('Plate', 'Tube')
+# A library type only applies to these sample types
+PREMADE_LIBRARY_SAMPLE_TYPES = ('Pre-made library', 'Pre-made library pool')
 
 # -- Column names that describe each field in the EDP schema --
 TERM_NAME = 'term_name'
@@ -81,7 +103,7 @@ SAPIO_COL_POSITION = 'ColPosition'
 SAPIO_PROJECT_IDENTIFIER = 'C_ProjectIdentifier'
 SAPIO_PROJECT_NAME = 'ProjectName'
 SAPIO_PROJECT_DESC = 'ProjectDesc'
-SAPIO_SAMPLE_COUNT = 'C_SampleCount'
+SAPIO_RELATED_PIP = 'C_RelatedPIP' # TODO: Confirm Sapio name. 'Related PIP' is meant to be a Project field.
 SAPIO_BUDGET_HOLDER = 'C_BudgetHolder'
 SAPIO_HEALTH_AND_SAFETY = 'C_HandS'
 

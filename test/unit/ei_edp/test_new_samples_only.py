@@ -44,6 +44,7 @@ SUBMITTED = {'S1', 'S2'}
 def lims():
     with mock.patch.object(edp_module, 'get_lims_adapter') as get_lims_adapter:
         get_lims_adapter.return_value.get_project_samples.return_value = LIMS_SAMPLES
+        get_lims_adapter.return_value.get_batch_samples.return_value = LIMS_SAMPLES
         yield get_lims_adapter.return_value
 
 
@@ -130,7 +131,7 @@ def test_asks_the_lims_once_per_save(lims):
 
 # --- Uploading: update existing samples ---
 
-def manifest(tmp_path, sample_ids, references=None):
+def manifest(tmp_path, sample_ids, references=None, study_id=PROJECT_ID):
     # The parts of the EDP manifest that loadManifest reads: the project
     # header on the sample sheet, its table from row 28, and the index sheet.
     # `references` sets a sample's Submitter Sample Reference (default: ref<ID>)
@@ -138,7 +139,7 @@ def manifest(tmp_path, sample_ids, references=None):
     workbook = openpyxl.Workbook()
     sample_sheet = workbook.active
     sample_sheet.title = 'sample'
-    sample_sheet['C5'] = PROJECT_ID
+    sample_sheet['C5'] = study_id
     sample_sheet['L8'] = 'No'
     sample_sheet['L9'] = 'No'
     sample_sheet.cell(28, 1, 'Sample ID')
@@ -176,7 +177,13 @@ def load(path):
     with mock.patch.object(edp_module, 'Profile') as profile, \
             mock.patch.object(edp_module, 'SinglecellSchemas'), \
             mock.patch.object(edp_module, 'notify_singlecell_status') as notify:
-        profile.return_value.get_record.return_value = {'sapio_project_id': PROJECT_ID}
+        profile.return_value.get_record.return_value = {
+            'sapio_project_id': PROJECT_ID,
+            'sample_batches': [
+                {'batch_id': 'b1', 'no_of_samples': 4, 'lims_sample_record_ids': None},
+                {'batch_id': 'b2', 'no_of_samples': 1, 'lims_sample_record_ids': []},
+            ],
+        }
         return spreadsheet.loadManifest('xls'), notify
 
 
@@ -208,4 +215,37 @@ def test_rejects_changed_submitter_reference(lims, tmp_path):
         action='error',
         html_id='singlecell_info',
         checklist_id='version_tissue',
+    )
+
+
+# --- Each batch has its own LIMS manifest ---
+
+def test_rejects_samples_from_another_batch(lims, tmp_path):
+    loaded, notify = load(manifest(tmp_path, ['S3', 'S9']))
+
+    assert loaded is False
+    notify.assert_called_with(
+        data={'profile_id': PROFILE_ID},
+        msg=MESSAGES['samples_not_in_batch'].format(study_id=PROJECT_ID, sample_ids='S9'),
+        action='error',
+        html_id='singlecell_info',
+        checklist_id='version_tissue',
+    )
+
+
+def test_later_batches_have_their_own_study_id(lims, tmp_path):
+    loaded, _ = load(manifest(tmp_path, ['S3'], study_id=f'{PROJECT_ID}-B2'))
+
+    assert loaded is True
+    lims.get_batch_samples.assert_called_once()
+    assert lims.get_batch_samples.call_args.args[1] == 'b2'
+
+
+@pytest.mark.parametrize('study_id', ['PR9999', f'{PROJECT_ID}-B3', ''])
+def test_rejects_study_ids_of_no_batch(lims, tmp_path, study_id):
+    loaded, notify = load(manifest(tmp_path, ['S3'], study_id=study_id))
+
+    assert loaded is False
+    assert notify.call_args.kwargs['msg'] in (
+        f'Incorrect project ID: {study_id}', 'Missing project ID in the manifest!'
     )
