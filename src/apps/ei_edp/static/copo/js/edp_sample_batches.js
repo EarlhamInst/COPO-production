@@ -408,7 +408,12 @@ function openProfileSampleBatchesDialog(profileId, title) {
         if (batches.length) {
           $tableHolder
             .append($('<h5/>').text('Registered samples'))
-            .append(buildBatchesTable(batches, options, editBatch));
+            .append(
+              // Scroll the list so that the form stays in view below
+              $('<div/>', { class: 'table-responsive sample-batches-table-scroll' }).append(
+                buildBatchesTable(batches, options, editBatch)
+              )
+            );
         }
       };
 
@@ -420,6 +425,7 @@ function openProfileSampleBatchesDialog(profileId, title) {
         closable: false,
         buttons: [
           {
+            id: 'btnFormCloseBatchEdit',
             label: 'Close',
             cssClass: 'tiny ui basic button',
             action: (dialogRef) => dialogRef.close(),
@@ -435,7 +441,8 @@ function openProfileSampleBatchesDialog(profileId, title) {
           },
           {
             id: 'btnSaveSampleBatch',
-            label: '<i class="copo-components-icons glyphicon glyphicon-save"></i> Register samples',
+            label:
+              '<i class="copo-components-icons glyphicon glyphicon-save"></i> Register samples',
             cssClass: 'tiny ui basic primary button',
             action: function (dialogRef) {
               const fields = getBatchFormValues($batchForm, options);
@@ -460,20 +467,29 @@ function openProfileSampleBatchesDialog(profileId, title) {
                   if (data.status === 'success') {
                     showBatchDialogMessage(
                       dialogRef,
-                      editedBatchId ? 'The batch has been changed.' : 'The samples have been registered.',
+                      editedBatchId
+                        ? 'The batch has been changed.'
+                        : 'The samples have been registered.',
                       'success'
                     );
                     markProfileAsHavingBatches(profileId);
                     resetForm();
                   } else {
                     // e.g. a locked batch or Sapio failing; nothing was saved
-                    showBatchDialogMessage(dialogRef, data.message, data.status);
+                    showBatchDialogMessage(
+                      dialogRef,
+                      data.message,
+                      data.status
+                    );
                   }
                 })
                 .fail(function (xhr) {
                   showBatchDialogMessage(
                     dialogRef,
-                    getResponseMessage(xhr, 'The samples could not be registered. Please try again.'),
+                    getResponseMessage(
+                      xhr,
+                      'The samples could not be registered. Please try again.'
+                    ),
                     'error'
                   );
                 })

@@ -46,6 +46,11 @@ def get_batch_manifest_group(described_batches, label, option_text, default_batc
 
 class EDPProfileTypeHooks(ProfileTypeHooks):
 
+    def can_create_profile(self, user):
+        # Only EDP managers assigned to the `ei_edp_managers` Django group can
+        # create EDP profiles and share them with users
+        return edp_utils.is_edp_manager(user)
+
     def get_profile_card_fields(self):
         # The batch fields are read when a profile's batch fields have not been
         # moved into a batch yet and the profile's Jira PIP stands in for that

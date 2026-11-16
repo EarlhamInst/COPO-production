@@ -1034,7 +1034,7 @@ body > .popover .popover-content span:not(.text-bold) {
 }
 
 .bootstrap-dialog.form-modal .form-group {
-  margin-bottom: 10px !important;
+  margin-bottom: 15px !important;
 }
 
 .bootstrap-dialog.form-modal .form-control {
@@ -1054,6 +1054,7 @@ body > .popover .popover-content span:not(.text-bold) {
   box-shadow: 0 0 0 2px rgba(74,108,122,.12) !important;
 }
 
+.bootstrap-dialog.form-modal #btnSaveSampleBatch,
 .bootstrap-dialog.form-modal #btnSaveFirstBatch,
 .bootstrap-dialog.form-modal #btnFormSave {
   background: var(--co-accent) !important;
@@ -1065,6 +1066,7 @@ body > .popover .popover-content span:not(.text-bold) {
   font-size: .8rem !important;
 }
 
+.bootstrap-dialog.form-modal #btnSaveSampleBatch:hover,
 .bootstrap-dialog.form-modal #btnSaveFirstBatch:hover,
 .bootstrap-dialog.form-modal #btnFormSave:hover {
   background: var(--co-accent-hover) !important;
@@ -1072,7 +1074,8 @@ body > .popover .popover-content span:not(.text-bold) {
 
 .bootstrap-dialog.form-modal #btnBack,
 .bootstrap-dialog.form-modal #btnFormCancel,
-.bootstrap-dialog.form-modal #btnFormClose {
+.bootstrap-dialog.form-modal #btnFormClose,
+.bootstrap-dialog.form-modal #btnFormCloseBatchEdit {
   background: var(--co-surface) !important;
   color: var(--co-text) !important;
   border: 1px solid var(--co-border) !important;
@@ -1084,7 +1087,8 @@ body > .popover .popover-content span:not(.text-bold) {
 
 .bootstrap-dialog.form-modal #btnBack:hover,
 .bootstrap-dialog.form-modal #btnFormCancel:hover,
-.bootstrap-dialog.form-modal #btnFormClose:hover {
+.bootstrap-dialog.form-modal #btnFormClose:hover,
+.bootstrap-dialog.form-modal #btnFormCloseBatchEdit:hover {
   border-color: var(--co-accent) !important;
   color: var(--co-accent) !important;
 }
