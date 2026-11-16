@@ -18,6 +18,22 @@
       "justMyCode": false
     },
     {
+      // Writes EDP profiles to a fake Sapio in MongoDB instead of Sapio's test instance.
+      // Run the Playwright tests with the same LIMS_ADAPTER (see docker-compose.playwright.yaml)
+      "name": "Python: Django (fake Sapio)",
+      "type": "debugpy",
+      "request": "launch",
+      "python": "/opt/venv/bin/python",
+      "program": "${workspaceFolder}/manage.py",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/lib:${PYTHONPATH}",
+        "LIMS_ADAPTER": "src.apps.ei_edp.utils.lims.sapio.fake.FakeSapioAdapter"
+      },
+      "args": ["runserver", "0.0.0.0:8000"],
+      "django": true,
+      "justMyCode": false
+    },
+    {
       "name": "Python: Setup All",
       "type": "debugpy",
       "request": "launch",

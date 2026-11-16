@@ -219,7 +219,13 @@ MEDIA_URL = '/media/'
 # Dotted path to the LIMS adapter for the EDP flow. Defaults to the Sapio
 # adapter; set to "src.apps.ei_edp.utils.lims.base.NullLIMSAdapter" (or a custom
 # subclass) to run without Sapio. See src/apps/ei_edp/utils/lims/.
-LIMS_ADAPTER = "src.apps.ei_edp.utils.lims.sapio.adapter.SapioAdapter"
+# The `LIMS_ADAPTER` environment variable overrides it, e.g. to run the
+# Playwright tests against "src.apps.ei_edp.utils.lims.sapio.fake.FakeSapioAdapter"
+# when Sapio's test instance is unavailable
+LIMS_ADAPTER = (
+    resolve_env.get_env('LIMS_ADAPTER')
+    or "src.apps.ei_edp.utils.lims.sapio.adapter.SapioAdapter"
+)
 
 MANIFEST_PATH = os.path.join(BASE_DIR, resolve_env.get_env('MEDIA_PATH'), 'assets', 'manifests')
 MANIFEST_FILE_NAME = "{0}_manifest_template{1}.xlsx" # 0: schema name_checklist_id, 1: version

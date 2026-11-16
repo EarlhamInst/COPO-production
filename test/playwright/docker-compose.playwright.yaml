@@ -72,6 +72,11 @@ services:
       - SAPIO_PASSWORD=${vault_sapio_password}
       - SAPIO_API_TOKEN=${vault_sapio_api_token}
       - SAPIO_API_URL=${vault_sapio_api_url}
+      # Set it in the terminal to run the EDP tests without Sapio, e.g.
+      # LIMS_ADAPTER=src.apps.ei_edp.utils.lims.sapio.fake.FakeSapioAdapter test/playwright/scripts/run_playwright_tests.sh -e
+      # copo_web must use the same adapter (see the 'Python: Django (fake Sapio)'
+      # debug configuration) or the tests read back from a different place than it writes
+      - LIMS_ADAPTER=${LIMS_ADAPTER:-}
     depends_on:
       - copo_web
     volumes:

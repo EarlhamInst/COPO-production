@@ -5,6 +5,7 @@ import pytest
 import requests
 
 from test.playwright.config.settings import BASE_URL, TEST_USER_PASSWORD, TEST_USER_USERNAME
+from test.playwright.e2e.utils.edp_helpers import using_fake_sapio
 from test.playwright.e2e.utils.helpers import run_django_shell
 
 # pytest-playwright provides `browser` and `context` fixtures out of the box.
@@ -91,6 +92,10 @@ def sapio_test_instance():
     # Unlike ENA above, a missing or unreachable Sapio is a setup problem in
     # the local stack rather than a third-party outage, so fail rather than
     # skip.
+    #
+    # The fake Sapio in MongoDB needs no connection to be checked
+    if using_fake_sapio():
+        return "fake Sapio"
     if not os.environ.get("SAPIO_API_URL"):
         pytest.fail(
             "SAPIO_API_URL is not set in the Playwright container. Run the suite via "

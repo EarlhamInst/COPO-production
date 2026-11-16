@@ -17,6 +17,10 @@ from test.playwright.e2e.utils.helpers import (
 
 from common.utils.helpers import get_env
 
+# Matches FAKE_SAPIO_ADAPTER in src/apps/ei_edp/utils/lims/sapio/fake.py, which
+# isn't imported here since it needs Django settings to be configured
+FAKE_SAPIO_ADAPTER = 'src.apps.ei_edp.utils.lims.sapio.fake.FakeSapioAdapter'
+
 TEST_FILES_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'test_files'))
 SAMPLE_MANIFEST = os.path.join(TEST_FILES_DIR, 'COPO_FAANG_manifest_success1.xlsx')
 # Holds only what a customer fills in. Everything EI/Sapio generates per
@@ -444,6 +448,13 @@ def add_edp_sample_batch(page, title, **batch_fields):
     return response_info.value.json()
 
 
+def using_fake_sapio():
+    # The tests run against the fake Sapio in MongoDB instead of Sapio's
+    # test instance when LIMS_ADAPTER is set to it (see docker-compose.playwright.yaml).
+    # copo_web must be running with the same adapter.
+    return get_env('LIMS_ADAPTER') == FAKE_SAPIO_ADAPTER
+
+
 def read_sapio_project(project_id, project_fields=(), sample_fields=()):
     # Reads directly from Sapio and not from COPO's copy in Mongo database, 
     # so that a test can confirm what actually was recorded/saved in the LIMS. 
@@ -451,6 +462,19 @@ def read_sapio_project(project_id, project_fields=(), sample_fields=()):
     # project' means exactly what COPO means by it when submitting.
     #
     # Returns {'exists': bool, 'project': {field: value}, 'samples': [{field: value}, ...]}.
+    if using_fake_sapio():
+        code = (
+            'import json\n'
+            'from src.apps.ei_edp.utils.lims.sapio.fake import FakeSapioAdapter\n'
+            f'result = FakeSapioAdapter().read_project({project_id!r}, '
+            f'{list(project_fields)!r}, {list(sample_fields)!r})\n'
+            "print('SAPIO_RESULT:' + json.dumps(result, default=str))\n"
+        )
+        marker_line = next(
+            line for line in run_django_shell(code).splitlines() if line.startswith('SAPIO_RESULT:')
+        )
+        return json.loads(marker_line[len('SAPIO_RESULT:'):])
+
     code = (
         'import json\n'
         'from src.apps.ei_edp.utils.lims.sapio.adapter import SapioAdapter\n'

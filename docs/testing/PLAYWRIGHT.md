@@ -187,6 +187,30 @@ for real, asynchronous ENA/Zenodo responses rather than asserting against
 local, synchronous state) and to leave real side effects behind (an ENA
 sandbox submission, a Zenodo draft deposition — never a published one).
 
+### Running the EDP tests without Sapio
+
+When Sapio's test instance is down or misconfigured, the EDP tests can run
+against a fake Sapio instead. `FakeSapioAdapter`
+(`src/apps/ei_edp/utils/lims/sapio/fake.py`) behaves like the Sapio adapter
+but keeps its projects and samples in the `FakeSapioRecords` MongoDB
+collection, so the tests read back what COPO wrote without calling Sapio. It
+only runs when `DEBUG` is on. It tests COPO's side of the EDP flow, not the
+Sapio integration itself, so run the tests against Sapio again once it is back.
+
+Both `copo_web` and the Playwright container must use it:
+
+1. Start the **Python: Django (fake Sapio)** debug configuration instead of
+   **Python: Django**. It sets `LIMS_ADAPTER` for the COPO server.
+2. Run the tests with the same `LIMS_ADAPTER`:
+
+```bash
+LIMS_ADAPTER=src.apps.ei_edp.utils.lims.sapio.fake.FakeSapioAdapter \
+  test/playwright/scripts/run_playwright_tests.sh -e
+```
+
+If only one of them uses it, the tests read back from a different place than
+COPO writes to and fail with the Sapio project not being found.
+
 ## Watching a test live
 
 While a test is running, you can watch the actual browser instead of

@@ -880,6 +880,8 @@ def download_init_blank_manifest(request, schema_name, profile_id, checklist_id)
         checklist_id=checklist_id,
         singlecell=singlecell,
         file_path=bytesstring,
+        # An EDP profile's manifest is for the batch of samples chosen on the page
+        request=request,
     )
     response = HttpResponse(
         bytesstring.getvalue(),
