@@ -173,7 +173,7 @@ requests-oauthlib==2.0.0
 #rjsmin==1.2.2
 roc-validator==0.13.1
 #rsa==3.4.2
-sapiopylib==2026.11.9.319
+sapiopylib==2026.6.3.307.3
 s3transfer==0.19.3
 #Send2Trash==1.5.0
 service-identity==26.1.0
