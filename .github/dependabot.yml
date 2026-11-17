@@ -61,13 +61,6 @@ updates:
         patterns:
           - "*"
     ignore:
-      # redis-py must stay on 5.x: redis-py 8 breaks Django Channels
-      # (channels-redis 4.1.0) — the channel-layer listener's blocking read
-      # times out after ~5s, closing every WebSocket with a 1011 and killing
-      # all live submission/validation feedback. Hold at 5.x (5.x patch/minor
-      # bumps are still allowed) until channels-redis supports redis-py 8.
-      - dependency-name: "redis"
-        update-types: ["version-update:semver-major"]
       # astroid must stay within pylint's supported range: pylint 4.0.7 (the
       # latest release as of writing) caps astroid at <=4.1.dev0, but astroid
       # itself has moved past that (4.3.0+). Dependabot keeps proposing astroid

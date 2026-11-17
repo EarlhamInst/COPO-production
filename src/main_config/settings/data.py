@@ -76,7 +76,17 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [(SESSION_REDIS_HOST, SESSION_REDIS_PORT)],
+            # redis-py 8 defaults to a 5 seconds socket read timeout, matching channels-redis’s
+            # 5 seconds BZPOPMIN block timeout. This causes reads to time out and WebSockets to
+            # close with 1011. Disable the read timeout (redis-py 5 default) to avoid this.
+            # Connection timeouts remain at 5 seconds.
+            "hosts": [
+                {
+                    "host": SESSION_REDIS_HOST,
+                    "port": SESSION_REDIS_PORT,
+                    "socket_timeout": None,
+                }
+            ],
             'capacity': 1500,
             'expiry': 10,
         },
