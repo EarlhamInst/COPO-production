@@ -166,7 +166,7 @@ pytz==2026.6
 #rauth==0.7.3
 #rcssmin==1.1.2
 #rdflib==7.1.4
-redis==5.3.1
+redis==8.1.0
 #rend==6.4.2
 requests==2.34.2
 requests-oauthlib==2.0.0
