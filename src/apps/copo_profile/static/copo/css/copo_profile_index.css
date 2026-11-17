@@ -164,6 +164,17 @@
 }
 
 /* Text/paragraph ellipsis when text is too long */
+.ellipsis-1-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1; /* number of lines to show */
+  line-clamp: 1;
+  line-height: 1.5em; /* fallback */
+  max-height: 1.5em; /*1.5em x 1 = 1.5em*/ /* fallback */
+}
+
 .ellipsis-2-lines {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -175,18 +186,18 @@
   -webkit-line-clamp: 2; /* number of lines to show */
   line-clamp: 2;
   line-height: 1.5em; /* fallback */
-  max-height: 3em; /*1.5em x 2 = 3em*/ /* fallback */
+  max-height: 3em; /* 1.5em x 2 = 3em*/ /* fallback */
 }
 
-.ellipsis-1-line {
+.ellipsis-4-lines {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1; /* number of lines to show */
-  line-clamp: 1;
+  -webkit-line-clamp: 4; /* number of lines to show */
+  line-clamp: 4;
   line-height: 1.5em; /* fallback */
-  max-height: 1.5em; /*1.5em x 1 = 1.5em*/ /* fallback */
+  max-height: 6em; /* 1.5em x 4 = 6em */ /* fallback */
 }
 
 .profile-ellipsis {

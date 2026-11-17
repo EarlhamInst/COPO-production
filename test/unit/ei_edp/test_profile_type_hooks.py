@@ -186,6 +186,8 @@ def test_card_reads_only_fields_that_the_profiles_page_loads():
         'related_pip': 'PIP-12',
         'sapio_project_id': 'PR0001',
         'related_enq': 'ENQ-1',
+        'budget_holder': 'Budget person',
+        'user_email': 'user@example.com',
     }
     loaded_fields = {'id', 'type'} | set(get_all_profile_card_fields())
     loaded_profile = {field: value for field, value in profile.items() if field in loaded_fields}
@@ -237,3 +239,22 @@ def test_profile_types_a_user_cannot_create_are_not_offered():
         options = core_utils.get_all_profile_types_for_options_for_user(user)
 
     assert options == [{'value': 'genomics', 'label': 'Genomics'}]
+
+
+def test_card_shows_the_related_enq_and_budget_holder_but_not_user_emails():
+    card = EDPProfileTypeHooks().get_profile_card({
+        'id': 'p1',
+        'type': 'ei_edp',
+        'related_enq': 'ENQ-1',
+        'sapio_project_id': 'PR0001',
+        'budget_holder': 'Budget person',
+        'user_email': 'user@example.com',
+        'sample_batches': [{**BATCHES[0], 'related_pip': 'PIP-12'}],
+    })
+
+    assert [(detail['label'], detail['value']) for detail in card['details']] == [
+        ('Related ENQ', 'ENQ-1'),
+        ('Sapio Project ID', 'PR0001'),
+        ('Jira PIP', 'PIP-12'),
+        ('Budget holder', 'Budget person'),
+    ]

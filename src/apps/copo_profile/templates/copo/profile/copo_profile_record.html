@@ -61,12 +61,6 @@
                                             {% endif %}
                                         </div>
                                         {% endfor %}
-                                        {% if profile.description %}
-                                            <div class="description-div mt-10">
-                                                <span class="text-bold">Description: </span>
-                                                <span>{{ profile.description }}</span>
-                                            </div>
-                                        {% endif %}
                                         {% if profile.owner_name %}
                                             <div class="owner-div mt-10">
                                                 <span class="text-bold">Owner: </span>
@@ -124,6 +118,12 @@
                                             </div>
                                             <div><span class="text-bold">Release Date: </span>
                                                 <span id="studyReleaseDate_{{profile.id}}">{{ profile.study_release_date | get_first_value_from_array}}</span>
+                                            </div>
+                                        {% endif %}
+                                        {% if profile.description %}
+                                            <div class="description-div mt-10">
+                                                <span class="text-bold">Description: </span>
+                                                <span class="ellipsis-4-lines" title="{{ profile.description }}">{{ profile.description }}</span>
                                             </div>
                                         {% endif %}
 

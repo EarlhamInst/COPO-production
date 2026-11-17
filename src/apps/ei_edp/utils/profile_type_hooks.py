@@ -10,6 +10,8 @@ from . import edp_utils
 from .constants import (
     BATCH_FIELDS,
     JIRA_BROWSE_URL,
+    PROFILE_BUDGET_HOLDER,
+    PROFILE_RELATED_ENQ,
     PROFILE_RELATED_PIP,
     PROFILE_SAMPLE_BATCHES,
     PROFILE_SAPIO_PROJECT_ID,
@@ -52,11 +54,13 @@ class EDPProfileTypeHooks(ProfileTypeHooks):
         return edp_utils.is_edp_manager(user)
 
     def get_profile_card_fields(self):
-        # The batch fields are read when a profile's batch fields have not been
-        # moved into a batch yet and the profile's Jira PIP stands in for that
+        # The sample batch fields are read when a profile's batch fields have not been
+        # moved into a batch as yet and the profile's Jira PIP stands in for that
         # of batches saved before each batch had one
         return [
+            PROFILE_RELATED_ENQ,
             PROFILE_SAPIO_PROJECT_ID,
+            PROFILE_BUDGET_HOLDER,
             PROFILE_RELATED_PIP,
             PROFILE_SAMPLE_BATCHES,
             *BATCH_FIELDS,
@@ -64,6 +68,13 @@ class EDPProfileTypeHooks(ProfileTypeHooks):
 
     def get_profile_card(self, profile):
         details = []
+        profile_id = profile.get('id', '')
+        related_enq = profile.get(PROFILE_RELATED_ENQ)
+        if related_enq:
+            details.append(
+                {'label': 'Related ENQ', 'value': related_enq, 'id': f'related_enq_{profile_id}'}
+            )
+            
         sapio_project_id = profile.get(PROFILE_SAPIO_PROJECT_ID)
         if sapio_project_id:
             details.append(
@@ -86,6 +97,11 @@ class EDPProfileTypeHooks(ProfileTypeHooks):
                     'id': f"related_pip_{profile.get('id', '')}_{number}",
                     'url': JIRA_BROWSE_URL.format(issue=related_pip),
                 }
+            )
+        budget_holder = profile.get(PROFILE_BUDGET_HOLDER)
+        if budget_holder:
+            details.append(
+                {'label': 'Budget holder', 'value': budget_holder, 'id': f'budget_holder_{profile_id}'}
             )
         return {
             'details': details,
