@@ -449,6 +449,25 @@ def test_batch_is_added(batches):
     assert saved_batches[1]['lims_sample_record_ids'] == [100]
 
 
+def test_batches_can_share_a_jira_pip(batches):
+    # Replacement samples are registered as a new batch, which may reuse the
+    # Jira PIP of the batch whose samples they replace, so a PIP must never
+    # have to be unique
+    profile, lims, collection = batches
+    profile['sample_batches'][0]['related_pip'] = 'PIP-1'
+
+    first_result = edp_utils.add_sample_batch(str(profile['_id']), {**TISSUE, 'related_pip': 'PIP-1'})
+    second_result = edp_utils.add_sample_batch(
+        str(profile['_id']), {**TISSUE, 'sample_type': 'Total RNA', 'related_pip': 'pip-1'}
+    )
+
+    assert first_result['status'] == 'success'
+    assert second_result['status'] == 'success'
+    saved_batches = collection.update_one.call_args.args[1]['$set']['sample_batches']
+    assert [b['related_pip'] for b in saved_batches] == ['PIP-1', 'PIP-1', 'PIP-1']
+    assert len({b['batch_id'] for b in saved_batches}) == 3
+
+
 def test_invalid_batch_is_not_added(batches):
     profile, lims, collection = batches
 

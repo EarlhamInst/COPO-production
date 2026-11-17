@@ -512,9 +512,7 @@ function openProfileSampleBatchesDialog(profileId, title) {
     });
 }
 
-// The 'Register samples' profile action button given to EDP profiles
-// (see setup_profile_types.py). Like editing, only the profile's owner
-// and data managers can register samples.
+// Only EDP managers (and data managers) can register or change samples.
 registerProfileAction('register_samples', {
   isAvailable: ({ canEditDelete }) => canEditDelete,
   getLabel: ($panel) =>
