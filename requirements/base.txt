@@ -9,7 +9,7 @@ asgiref==3.13.0
 astroid==4.3.4
 async-timeout==5.0.1
 attrs==26.1.0
-autobahn==26.10.2
+autobahn==26.11.1
 Automat==25.4.16
 autopep8==2.3.2
 #Babel==2.12.1
@@ -39,7 +39,7 @@ daphne==4.2.3
 decorator==5.3.1
 #deepdiff==4.0.7
 defusedxml==0.7.1
-Deprecated==3.0.0
+Deprecated==3.0.1
 dict-toolbox==5.0.0
 dict.sorted==1.0.0
 Django==6.1.3
