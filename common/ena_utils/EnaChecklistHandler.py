@@ -49,7 +49,7 @@ class ChecklistHandler:
         with open(file_location, 'r') as file:
             xmlstr = file.read()
             return xmlstr
-    '''
+    r'''
     <CHECKLIST_SET>
     <CHECKLIST accession="ERT000028" checklistType="Sequence">
     <IDENTIFIERS>
