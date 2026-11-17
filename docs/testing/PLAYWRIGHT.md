@@ -47,14 +47,14 @@ export COPO_LOCAL_COMPOSE_FILE_NAME="compose.yaml"
 
 **Step 3: Build latest Playwright Docker image (optional)**
 
-You do not usually need to build the `playwright:v1.64.1` image because the
+You do not usually need to build the `playwright:v1.65.0` image because the
 Docker compose service already declares a `build:` section which builds the tag on your
 local machine if it doesn't exist. This takes a few minutes to be built; it mainly involves
 pulling the base image. To build it by hand — say, to rebuild after changing
 `requirements/dev.txt`:
 
 ```
-docker build . -f deployment/web/Dockerfile_playwright -t playwright:v1.64.1
+docker build . -f deployment/web/Dockerfile_playwright -t playwright:v1.65.0
 ```
 
 The tag tracks the base image version in `Dockerfile_playwright`, so it
