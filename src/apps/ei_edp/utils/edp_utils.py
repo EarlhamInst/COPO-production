@@ -223,17 +223,29 @@ def _share_profile(profile, email_obj):
 
         if missing_user_emails:
             # Generate a UUID token per email address so uninvited users can claim access
-            # via the join_shared_profile view without needing an existing COPO account
-            user_email_tokens = {
-                str(uuid.uuid4()): email for email in missing_user_emails
+            # via the `join_shared_profile` view without needing an existing COPO account.
+            # Addresses that have already been invited keep their token (so the link
+            # they were sent still works) and are not emailed again when the profile is
+            # saved. Only newly added addresses get a token and an email invitation.
+            invited_tokens = {
+                token: email
+                for token, email in (profile.get(PROFILE_USER_EMAIL_TOKEN) or {}).items()
+                if email.lower() in {missing.lower() for missing in missing_user_emails}
+            }
+            invited_emails = {email.lower() for email in invited_tokens.values()}
+            new_user_email_tokens = {
+                str(uuid.uuid4()): email
+                for email in missing_user_emails
+                if email.lower() not in invited_emails
             }
             Profile().get_collection_handle().update_one(
                 {"_id": profile["_id"]},
-                {"$set": {PROFILE_USER_EMAIL_TOKEN: user_email_tokens}},
+                {"$set": {PROFILE_USER_EMAIL_TOKEN: {**invited_tokens, **new_user_email_tokens}}},
             )
-            email_obj.notify_shared_profile_to_non_existent_user(
-                profile, user_email_tokens
-            )
+            if new_user_email_tokens:
+                email_obj.notify_shared_profile_to_non_existent_user(
+                    profile, new_user_email_tokens
+                )
 
 
 

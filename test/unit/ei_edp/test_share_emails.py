@@ -198,7 +198,7 @@ def share():
     with mock.patch.object(edp_utils, 'helpers') as helpers, \
             mock.patch.object(edp_utils, 'CopoGroup') as copo_group, \
             mock.patch.object(edp_utils, 'User') as user, \
-            mock.patch.object(edp_utils, 'Profile'), \
+            mock.patch.object(edp_utils, 'Profile') as profile_da, \
             mock.patch.object(edp_utils, '_add_to_edp_django_group'), \
             mock.patch.object(edp_utils, 'Email') as email, \
             mock.patch.object(edp_utils, 'get_lims_adapter') as get_lims_adapter:
@@ -207,14 +207,28 @@ def share():
         email.return_value.failed_emails = []
         email.return_value.skipped_emails = []
         get_lims_adapter.return_value.sync_project.return_value = {'status': 'success'}
+        profile_collection = profile_da.return_value.get_collection_handle.return_value
 
-        def run(user_email, existing_users=(), shared_users=()):
+        def run(user_email, existing_users=(), shared_users=(), user_email_tokens=None):
+            # `user_email_tokens` are the invites sent when the profile was last saved
             copo_group.return_value.get_users_for_group_info.return_value = list(shared_users)
             user.objects.filter.return_value.values.return_value = list(existing_users)
             profile = {**PROFILE, 'user_email': user_email}
+            if user_email_tokens is not None:
+                profile['user_email_token'] = user_email_tokens
             edp_utils.post_save_edp_profile(profile)
             return email.return_value, copo_group.return_value
 
+        def saved_tokens():
+            # The email invite tokens saved on the profile by the last run
+            updates = [
+                update_call.args[1]['$set']['user_email_token']
+                for update_call in profile_collection.update_one.call_args_list
+                if 'user_email_token' in update_call.args[1].get('$set', {})
+            ]
+            return updates[-1] if updates else None
+
+        run.saved_tokens = saved_tokens
         yield run
 
 
@@ -297,3 +311,45 @@ def test_user_not_in_user_email_cannot_join(join):
 
     assert result['status'] == 'error'
     copo_group.add_user_to_group.assert_not_called()
+
+
+# --- Saving a profile again doesn't re-invite addresses ---
+
+def test_resaving_does_not_invite_addresses_again_and_keeps_their_tokens(share):
+    # new@earlham.ac.uk was invited when the profile was first saved
+    email, _ = share('new@earlham.ac.uk', user_email_tokens={'token1': 'new@earlham.ac.uk'})
+
+    email.notify_shared_profile_to_non_existent_user.assert_not_called()
+    email.notify_shared_profile_to_existing_user.assert_not_called()
+    # The link that was sent still works
+    assert share.saved_tokens() == {'token1': 'new@earlham.ac.uk'}
+
+
+def test_already_invited_address_entered_in_different_case_is_not_invited_again(share):
+    email, _ = share('New@Earlham.ac.uk', user_email_tokens={'token1': 'new@earlham.ac.uk'})
+
+    email.notify_shared_profile_to_non_existent_user.assert_not_called()
+    assert share.saved_tokens() == {'token1': 'new@earlham.ac.uk'}
+
+
+def test_newly_added_address_is_invited_and_earlier_invites_are_kept(share):
+    email, _ = share(
+        'new@earlham.ac.uk; another@earlham.ac.uk',
+        user_email_tokens={'token1': 'new@earlham.ac.uk'},
+    )
+
+    _, invited_tokens = email.notify_shared_profile_to_non_existent_user.call_args.args
+    assert list(invited_tokens.values()) == ['another@earlham.ac.uk']
+    saved = share.saved_tokens()
+    assert saved['token1'] == 'new@earlham.ac.uk'
+    assert sorted(saved.values()) == ['another@earlham.ac.uk', 'new@earlham.ac.uk']
+
+
+def test_removed_address_loses_its_invite(share):
+    email, _ = share(
+        'another@earlham.ac.uk',
+        user_email_tokens={'token1': 'new@earlham.ac.uk', 'token2': 'another@earlham.ac.uk'},
+    )
+
+    email.notify_shared_profile_to_non_existent_user.assert_not_called()
+    assert share.saved_tokens() == {'token2': 'another@earlham.ac.uk'}
