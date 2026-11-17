@@ -364,7 +364,7 @@ copo-noborders-table.dataTable thead td {
 }
 
 .copo-main .tabs-row:has(.tabs-container .nav-tabs li)::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: 0;
   left: 45px;
@@ -1142,7 +1142,9 @@ hr {
 /*custom panel */
 
 .copo-panel {
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.12), 0 2px 10px 0 rgba(0, 0, 0, 0.12) !important;
+  box-shadow:
+    0 4px 4px 0 rgba(0, 0, 0, 0.12),
+    0 2px 10px 0 rgba(0, 0, 0, 0.12) !important;
   border-radius: 4px !important;
   padding: 0.1em;
   margin-bottom: 20px;
@@ -2399,7 +2401,9 @@ div.shown span.side-help-trigger:before {
 }
 
 .transfer-highlight-1 {
-  box-shadow: 0px 0px 0px 5px #a3c293 inset, 0px 0px 0px 0px rgba(0, 0, 0, 0);
+  box-shadow:
+    0px 0px 0px 5px #a3c293 inset,
+    0px 0px 0px 0px rgba(0, 0, 0, 0);
 }
 
 .loading-spinner {
@@ -2488,4 +2492,20 @@ div.shown span.side-help-trigger:before {
 .page-welcome-message .step-list li .content {
   overflow-wrap: break-word;
   color: rgba(0, 0, 0, 0.87) !important;
+}
+
+@media (max-width: 1440px) {
+  /* The batch dropdown (e.g. on EDP Samples and LIMS pages) sits on its own
+    line under the checklist dropdown so that its long option text fits
+  */
+  .page-subtitle-text .select2-container {
+    width: 260px !important;
+  }
+
+  #manifest_group + .select2-container {
+    display: block;
+    width: 420px !important;
+    max-width: 100%;
+    margin-top: 6px;
+  }
 }
