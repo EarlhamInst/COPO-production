@@ -113,8 +113,8 @@ $(document).on('document_ready', function () {
     wsprotocol + window.location.host + '/ws/read_status/' + profile_id;
   var submission_wsurl =
     wsprotocol + window.location.host + '/ws/submission_status/' + profile_id;
-  s3socket = new WebSocket(read_wsurl);
-  submissionSocket = new WebSocket(submission_wsurl);
+  s3socket = new ReconnectingWebSocket(read_wsurl);
+  submissionSocket = new ReconnectingWebSocket(submission_wsurl);
 
   submissionSocket.onclose = function (e) {
     console.log('submissionSocket closing ', e);
