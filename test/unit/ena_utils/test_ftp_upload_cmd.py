@@ -55,7 +55,7 @@ def test_size_probe_returns_the_bytes_ena_already_holds():
     ftp = mock.MagicMock()
     ftp.size.return_value = 583400353848
 
-    with mock.patch('common.ena_utils.generic_helper.ftplib.FTP', return_value=ftp):
+    with mock.patch('common.ena_utils.generic_helper.ftplib.FTP_TLS', return_value=ftp):
         assert _remote_ftp_size(HOST, REMOTE_FILE, 'Webin-1', 'pw') == 583400353848
 
     ftp.size.assert_called_once_with(REMOTE_FILE)
@@ -71,12 +71,12 @@ def test_size_probe_treats_a_missing_remote_file_as_nothing_to_resume():
     ftp = mock.MagicMock()
     ftp.size.side_effect = real_ftplib.error_perm('550 Could not get file size.')
 
-    with mock.patch('common.ena_utils.generic_helper.ftplib.FTP', return_value=ftp):
+    with mock.patch('common.ena_utils.generic_helper.ftplib.FTP_TLS', return_value=ftp):
         assert _remote_ftp_size(HOST, REMOTE_FILE, 'Webin-1', 'pw') == 0
 
 
 def test_size_probe_survives_a_connection_failure():
-    with mock.patch('common.ena_utils.generic_helper.ftplib.FTP',
+    with mock.patch('common.ena_utils.generic_helper.ftplib.FTP_TLS',
                     side_effect=OSError('timed out')):
         assert _remote_ftp_size(HOST, REMOTE_FILE, 'Webin-1', 'pw') == 0
 
@@ -89,7 +89,7 @@ def test_size_probe_survives_a_login_refusal():
     ftp = mock.MagicMock()
     ftp.login.side_effect = real_ftplib.error_perm('530 Login incorrect.')
 
-    with mock.patch('common.ena_utils.generic_helper.ftplib.FTP', return_value=ftp):
+    with mock.patch('common.ena_utils.generic_helper.ftplib.FTP_TLS', return_value=ftp):
         assert _remote_ftp_size(HOST, REMOTE_FILE, 'Webin-1', 'pw') == 0
 
 
@@ -97,7 +97,31 @@ def test_size_probe_closes_the_control_connection():
     ftp = mock.MagicMock()
     ftp.size.return_value = 10
 
-    with mock.patch('common.ena_utils.generic_helper.ftplib.FTP', return_value=ftp):
+    with mock.patch('common.ena_utils.generic_helper.ftplib.FTP_TLS', return_value=ftp):
         _remote_ftp_size(HOST, REMOTE_FILE, 'Webin-1', 'pw')
 
     assert ftp.quit.called or ftp.close.called
+
+
+@pytest.mark.parametrize('resume_from', [0, 99])
+def test_upload_requires_tls(resume_from):
+    """--ssl-reqd makes curl abort instead of silently falling back to clear-text
+    FTP, which would send the Webin password unencrypted."""
+    cmd = _build_ftp_upload_cmd(FILE_PATH, FTP_URL, NETRC, resume_from=resume_from)
+
+    assert '--ssl-reqd' in cmd
+
+
+def test_size_probe_uses_a_verified_tls_connection():
+    import ssl
+
+    ftp = mock.MagicMock()
+    ftp.size.return_value = 10
+
+    with mock.patch('common.ena_utils.generic_helper.ftplib.FTP_TLS',
+                    return_value=ftp) as ftp_tls:
+        _remote_ftp_size(HOST, REMOTE_FILE, 'Webin-1', 'pw')
+
+    context = ftp_tls.call_args.kwargs['context']
+    assert context.verify_mode == ssl.CERT_REQUIRED
+    assert context.check_hostname

@@ -10,6 +10,7 @@ from common.utils import helpers
 from common.utils.channels import send_to_group
 from common.utils.logger import Logger
 import ftplib
+import ssl
 import re
 import shlex
 import subprocess
@@ -626,12 +627,17 @@ def _remote_ftp_size(ftp_host, remote_file, login, password, timeout=20):
     over a data connection, which hung for 60s against Webin and defeated the
     point of the probe.
 
+    FTP_TLS so the Webin password is not sent in clear text: login() issues
+    AUTH TLS before USER/PASS. No PROT P is needed because SIZE never opens a
+    data connection.
+
     Any failure (file not there yet, SIZE refused, login denied, timeout)
     answers 0, i.e. upload from the start — the behaviour before resume
     existed.
     """
     try:
-        ftp = ftplib.FTP(ftp_host, timeout=timeout)
+        ftp = ftplib.FTP_TLS(ftp_host, timeout=timeout,
+                             context=ssl.create_default_context())
     except Exception as e:
         lg.error(f'FTP size probe could not connect to {ftp_host}: {e}')
         return 0
@@ -666,6 +672,9 @@ def _build_ftp_upload_cmd(file_path, ftp_url, netrc_path, resume_from=0):
         ftp_url,
         "--netrc-file", netrc_path,
         "--ftp-create-dirs",
+        # Explicit FTPS: fail rather than fall back to clear text if TLS can't
+        # be negotiated, so the Webin password and data are never sent unencrypted.
+        "--ssl-reqd",
         "--retry", "3",
         "--retry-delay", "5",
     ]
