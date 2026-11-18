@@ -314,6 +314,107 @@ class Command(BaseCommand):
                     'author': 'COPO Project Team',
                     'news_image': '/copo/static/assets/img/service_unavailable.jpg',
                 },
+                {
+                    'title': 'Great News! Submissions Can Now Be Made Directly to Your Individual ENA Webin Account',
+                    'content': (
+                        '<p>We are pleased to introduce a new enhancement. Submissions can now be made directly to your '
+                        '<a href="https://www.ebi.ac.uk/ena" target="_blank">European Nucleotide Archive</a> (ENA) Webin account from COPO.</p>'
+
+                        '<p>This new functionality took effect from September 2026. It gives users greater control over '
+                        'ownership of their published metadata submissions while allowing them to update their metadata directly through their '
+                        'ENA Webin account. Any metadata updates made in ENA will then be synchronised with the corresponding record in COPO.</p>'
+                        "<p>Users can still make submissions to COPO's Webin account if needed. This feature is optional and is designed to "
+                        'improve the overall submission experience thereby giving users more control over how their metadata is managed '
+                        'and making it easier for them to share their published data with their own audiences.</p>'
+
+                        '<p>We look forward to seeing how you make the most of it.</p>'
+                        
+                        '<br><p>For more information, please see <a href="https://copo-docs.readthedocs.io/en/latest/about/overview.html#greater-control-over-your-metadata-submissions" target="_blank">Greater Control Over Your Metadata Submissions</a>.</p>'
+                    ),
+                    'category': NewsCategory.objects.get(name='Feature'),
+                    'author': 'COPO Project Team',
+                    'news_image': '/copo/static/assets/img/ena-and-copo.jpg',
+                },
+                {
+                    'title': 'COPO Project Receives ARIA Funding Through Collaboration with the University of Sheffield',
+                    'content': (
+                        '<p>We are delighted to announce that in September 2026, the Collaborative Open Omics (COPO) project team commenced '
+                        'collaboration with the NERC Environmental Omics Facility (NEOF) and Research Software Engineering (RSE) teams from the '
+                        '<a href="https://www.sheffield.ac.uk" target="_blank">University of Sheffield</a> (UoS) on the Shared Data Infrastructure for '
+                        'Climate Biodiversity Research (ARIA TA4) project, supported by funding from the '
+                        '<a href="https://aria.org.uk" target="_blank">Advanced Research and Invention Agency</a> (ARIA).</p>'
+
+                        '<br><p>The project is led by Professor Terry Burke from UoS and the <a href="https://www.earlham.ac.uk/" target="_blank">Earlham Institute</a> (EI), '
+                        'with Dr. Felix Shaw as the lead collaborator and head of the COPO team.</p>'
+
+                        '<p>With an estimated funding exceeding £1 million, the grant will support the project for two years and will run until August 2028. Its aim '
+                        'is to develop a practical, reliable and efficient way for research teams involved in ARIA Technical Areas (TA1, TA3 and TA5) to collect, '
+                        'analyse, document, check and share biodiversity research data in line with internationally recognised '
+                        'standards and Findable, Accessible, Interoperable and Reusable (FAIR) principles.</p>'
+
+                        '<p>Moreover, the project will demonstrate how shared approaches and consistent standards can help maintain high scientific '
+                        'quality while minimising the additional time and effort required from individual research teams to manage their data.</p>'
+
+                        '<p>The main project objectives are to produce research outputs that are reproducible (i.e. allowing others to repeat the work) and '
+                        'verifiable (i.e. allowing others to check the results) and supporting accelerated adaptation research across the technical areas.</p>'
+
+                        '<br><p>The expected outcomes include:</p>'
+                        '<ul>'
+                        '<li>A published Accelerated Adaptation Model (AAM) data standard adopted by the majority of the research teams.</li>'
+                        '<li>Open-source analytical tools and workflows, alongside training materials that can be used by the wider research community.</li>'
+                        '<li>A scalable approach to managing and sharing biodiversity research data that is reliable, trustworthy and requires minimal '
+                        'additional effort from research teams.</li>'
+                        '<li>Greater international collaboration on biodiversity data standards, including co-ordination with organisations and '
+                        'initiatives such as  <a href="https://www.ga4gh.org/" target="_blank">Global Alliance for Genomics and Health</a> (GA4GH) '
+                        'and <a href="https://www.miappe.org/" target="_blank">Minimum Information About Plant Phenotyping Experiment</a> (MIAPPE).</li>'
+                        '</ul>'
+
+                        '<br><p>The project will be delivered through six work packages (WP1-WP6) where - </p>'
+                        
+                        '<p>The NEOF and RSE teams will contribute to:</p>'
+                        '<ul>'
+                        '<li>WP1 - Programme Management, Co-design and TA1 Engagement: Co-ordinating the project and working with research teams to understand their requirements.</li>'
+                        '<li>WP3 - Bioinformatics Pipelines and Analytical Protocols: Developing data analysis workflows and providing relevant training.</li>'
+                        '<li>WP4 - Independent Verification: Checking research outputs through independent re-analysis to help ensure that results can be reproduced and verified.</li>'
+                        '<li>WP6 - Training and Low-Burden Integration: Supporting the adoption of the project tools and approaches while keeping the additional workload for research teams to a minimum.</li>'
+                        '</ul>'
+
+                        '<p>The COPO team will contribute to:</p>'
+                        '<ul>'
+                        '<li>WP2 - Shared Data Schema and Reporting Standards: Developing consistent approaches to organising, describing and reporting research data.</li>'
+                        '<li>WP5 - Dashboards and Analytics: Developing dashboards and analytical tools to help research teams access, explore and understand their data.</li>'
+                        '<li>WP6 - Training and Low-Burden Integration: Supporting onboarding, data management and the integration of the project infrastructure into research activities.</li>'
+                        '</ul>'
+
+                        '<br><p>Through this collaboration, the teams will combine their expertise in research data management, bioinformatics, '
+                        'software development and biodiversity science to deliver practical tools and approaches that support more open, '
+                        'reliable and reproducible research.</p>'
+                    ),
+                    'category': NewsCategory.objects.get(name='General'),
+                    'author': 'COPO Project Team',
+                    'news_image': '/copo/static/assets/img/uos-aria-ei.jpg',
+                },
+                {
+                    'title': 'Meet Our Newest Team Member: Fred Sangol Uche',
+                    'content': (
+                        '<p>Please join us in welcoming <a href="https://www.earlham.ac.uk/profile/fred-sangol-uche" target="_blank">Fred</a> to the Collaborative OPen Omics (COPO) team!</p>'
+                        
+                        '<br><p>Fred joined us as a Senior Developer on 2nd November, 2026 and brings experience in software development and working with data-driven systems. '
+                        'He will be building the <a href="https://aria.org.uk/" target="_blank">Advanced Research and Invention Agency</a> (ARIA) '
+                        'validation framework, designing the technology stack and investigating Docker-based templates to support metadata downloads '
+                        'from <a href="https://zenodo.org" target="_blank">Zenodo</a> '
+                        'and the <a href="https://www.ebi.ac.uk/ena" target="_blank">European Nucleotide Archive</a> (ENA).</p>'
+                        
+                        '<p>In addition, Fred will be developing spreadsheet templates for the ARIA Technical Area 1 (TA1) project groups based on '
+                        'the <a href="https://www.miappe.org/" target="_blank">Minimum Information About a Plant Phenotyping Experiment</a> (MIAPPE) '
+                        'standard and helping to establish the development environment of the COPO project.</p>'
+                        
+                        '<br><p>We are thrilled to have him with us and look forward to what we can accomplish together.</p>'
+                    ),
+                    'category': NewsCategory.objects.get(name='General'),
+                    'author': 'COPO Project Team',
+                    'news_image': '/copo/static/assets/img/fred.jpg',
+                },
                 # {
                 #     'title': '',
                 #     'content': '',
