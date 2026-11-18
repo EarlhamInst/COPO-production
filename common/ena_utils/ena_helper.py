@@ -56,6 +56,10 @@ READ_FILE_TYPE_EXTS = {
     'OxfordNanopore_native': ['.tar.gz'],
 }
 WEBIN_CLI_REPORT_LINE_PREFIXES = ('ERROR', 'WARNING')
+# Webin-CLI does not fall back to FTP automatically when an upload 
+# using it fails so, the webin-cli command is run without `-ascp`
+# to do an FTP upload.
+WEBIN_CLI_ASPERA_UPLOAD_FAILED = 'Failed to upload files using Aspera'
 
 def evaluate_read_file_type(file_name, declared_type=''):
     if isinstance(declared_type, str):
@@ -132,11 +136,23 @@ class EnaSubmissionHelper:
                             msg=message, action="error", html_id="submission_info")
 
     def run_webin_cli(self, manifest_path, context, action, output_dir=None):
-        # `action` can be 'validate' or 'submit'
+        # `action` can be 'validate' or 'submit'.
+        # Data files can be uploaded with Aspera or 
+        # with FTP if Aspera fails
+        return_code, output = self._run_webin_cli_command(manifest_path, context, action, output_dir, use_aspera=True)
+        
+        if return_code != 0 and WEBIN_CLI_ASPERA_UPLOAD_FAILED in output:
+            self.logging_debug('Webin-CLI could not upload with Aspera; trying again with FTP')
+            return_code, output = self._run_webin_cli_command(manifest_path, context, action, output_dir, use_aspera=False)
+            
+        return return_code, output
+
+    def _run_webin_cli_command(self, manifest_path, context, action, output_dir, use_aspera):
         test = ' -test ' if 'dev' in ena_service else ''
         output_option = f'-outputDir {output_dir}' if output_dir else ''
+        aspera_option = ' -ascp' if use_aspera else ''
         webin_cmd = (f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token} -password '{self.pass_word}' "
-                    f"{test} -context {context} -manifest {manifest_path} {output_option} -{action} -ascp")
+                    f"{test} -context {context} -manifest {manifest_path} {output_option} -{action}{aspera_option}")
         self.logging_debug(webin_cmd.replace(self.pass_word, 'xxxxxx'))
         try:
             output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True).decode('ascii')
