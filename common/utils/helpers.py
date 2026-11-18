@@ -593,6 +593,21 @@ def get_gff3_errors(s3obj, bucket, key):
     return get_gff3_content_errors(content, is_partial=is_partial)
 
 
+def get_local_gff3_errors(file_path):
+    # Return issues found at the start of a local gzipped GFF3 file or [] if none.
+    try:
+        with open(file_path, 'rb') as f:
+            raw = f.read(GFF3_CHECK_BYTES)
+    except OSError:
+        return ['The file could not be read']
+    try:
+        content = zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(raw)
+    except zlib.error:
+        return ['The file could not be read as gzip; it may be damaged']
+    is_partial = len(raw) >= GFF3_CHECK_BYTES
+    return get_gff3_content_errors(content, is_partial=is_partial)
+
+
 def get_gff3_content_errors(content, is_partial=False):
     '''Return issues with uncompressed GFF3 content (bytes) against ENA's rules or [].
 

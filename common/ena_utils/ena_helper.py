@@ -11,7 +11,7 @@ from common.dal.profile_da import Profile
 from common.utils import helpers
 from lxml import etree
 from common.schemas.utils.data_utils import simple_utc
-from common.utils.helpers import matches_expected_file_signature, notify_submission_status, notify_read_status, get_datetime, get_env, json_to_pytype
+from common.utils.helpers import matches_expected_file_signature, notify_submission_status, notify_read_status, get_datetime, get_env, json_to_pytype, get_local_gff3_errors
 from common.lookup.lookup import SRA_SAMPLE_TEMPLATE,SRA_PROJECT_TEMPLATE,SRA_SETTINGS, SRA_RUN_TEMPLATE,SRA_EXPERIMENT_TEMPLATE, SRA_SUBMISSION_MODIFY_TEMPLATE, SRA_SUBMISSION_TEMPLATE, ENA_CLI
 import subprocess
 import tempfile
@@ -1280,7 +1280,77 @@ class EnaSubmissionHelper:
 
 
 
-    def register_assembly(self, identifier=str(), assembly_component_data_df=pd.DataFrame(), 
+    def register_decoupled_annotation(self, identifier, component_data_df, singlecell_id,
+                                      component_name='sequencing_annotation_gff3_file'):
+        '''Submit each GFF3 annotation from the `sequencing_annotation_gff3_file`
+        worksheet in a reads manifest under Biodata profiles with Webin-CLI
+
+        `component_data_df` holds the worksheet's rows plus a `study_accession` column.
+        Rows that already have an accession are skipped, because ENA rejects a second
+        annotation with the same name. Each row's status and accession or error are
+        saved on the row.
+        '''
+        if component_data_df.empty:
+            return dict(status=True, message='No decoupled annotation data to submit')
+
+        ena_files = EnaFileTransfer().get_all_records_columns(
+            filter_by={'profile_id': self.profile_id}, projection={'local_path': 1})
+        local_path_map = {ena_file['local_path'].split('/')[-1]: ena_file['local_path']
+                          for ena_file in ena_files if ena_file.get('local_path', '')}
+
+        errors = []
+        for _, row in component_data_df.iterrows():
+            row_id = row[identifier]
+            if row.get('accession_ena', ''):
+                continue
+
+            def save_status(**status_column_value):
+                Singlecell().update_component_status(
+                    id=singlecell_id, component=component_name, identifier=identifier,
+                    identifier_value=row_id, repository='ena', status_column_value=status_column_value)
+
+            file_name = row['sequencing_annotation_gff3_file']
+            local_path = local_path_map.get(file_name, '')
+            file_error = ''
+            
+            if not local_path:
+                file_error = MESSAGES['missing_annotation_file'].format(file_name=file_name)
+            elif not matches_expected_file_signature(file_name, read_file_header(local_path)):
+                file_error = MESSAGES['invalid_compressed_file'].format(
+                    file_name=file_name, file_extension=os.path.splitext(file_name)[1])
+            else:
+                gff3_errors = get_local_gff3_errors(local_path)
+                if gff3_errors:
+                    file_error = (f'<strong>{file_name}</strong> is not a valid GFF3 file:<br>'
+                                  + '<br>'.join(gff3_errors))
+            if file_error:
+                self.logging_error(f'Decoupled annotation {row_id} has an invalid file: {file_error}')
+                save_status(status='rejected', error=file_error)
+                errors.append(file_error)
+                continue
+
+            self.logging_info(f'Submitting decoupled annotation {row_id}...')
+            name = f"{row['sequencing_annotation_gff3_title']}_{row['study_id']}_{row_id}"
+            accession, error = submit_decoupled_annotation_with_webin_cli(
+                self, name=name, study=row['study_accession'], primary_id=row['primary_id'],
+                gff3_path=local_path, description=row['sequencing_annotation_gff3_description'],
+                work_dir=os.path.join(tempfile.gettempdir(), self.profile_id, row['study_id'], component_name, row_id))
+
+            if accession:
+                Submission().add_annotation_accessions(self.submission_id, [{'alias': name, 'accession': accession}])
+                save_status(status='accepted', accession=accession, error='')
+                self.logging_info(f'Decoupled annotation {row_id} submitted to ENA with accession {accession}')
+            else:
+                self.logging_error(f'Decoupled annotation {row_id} was not submitted: {error}')
+                save_status(status='rejected', error=error)
+                errors.append(error)
+
+        if errors:
+            return dict(status=False, message='Decoupled annotation not registered due to the following errors: '
+                        + ', '.join(errors))
+        return dict(status=True, message='Decoupled annotations registered successfully.')
+
+    def register_assembly(self, identifier=str(), assembly_component_data_df=pd.DataFrame(),
                         assembly_run_ref_data_df=pd.DataFrame(),assembly_file_data_df=pd.DataFrame(), parent_map=dict(), singlecell_id=str()):
         
         if assembly_component_data_df.empty:

@@ -9,7 +9,10 @@ from common.utils.helpers import get_env
 import xml.etree.ElementTree as ET
 from .validation_messages import MESSAGES as msg
 from src.apps.copo_assembly_submission.utils.assembly_utils import get_assembly_file_error
-from src.apps.copo_seq_annotation_submission.utils.seq_annotation_utils import get_sequence_annotation_file_error
+from src.apps.copo_seq_annotation_submission.utils.seq_annotation_utils import (
+    SEQUENCE_ANNOTATION_FILE_TYPE_EXTS, get_sequence_annotation_file_error)
+from common.s3.s3Connection import S3Connection
+from common.utils.helpers import get_file_header, get_gff3_errors, matches_expected_file_signature
 from src.apps.copo_assembly_submission.utils.assembly_utils import has_valid_extension, to_html_list
 from common.ena_utils.ena_helper import READ_FILE_TYPE_EXTS
 from common.validators.ena_validators.validation_messages import MESSAGES as ena_msg
@@ -274,6 +277,55 @@ class SequencingAnnotationFileValidator(Validator):
                 self.flag = False
 
         return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+
+
+class SequencingAnnotationGff3FileValidator(Validator):
+    # Check each GFF3 file provided in the `sequencing_annotation_gff3_file` worksheet of a reads
+    # manifest under Biodata profiles
+    #  - the data file name must end in `.gff3.gz`
+    #  - if the file is already in COPO then, it must be gzipped and start with the
+    #    GFF3 header (i.e. '##gff-version 3', '##sequence-region' and '##species').
+    component_name = 'sequencing_annotation_gff3_file'
+    file_column = 'sequencing_annotation_gff3_file'
+
+    def validate(self):
+        component = self.kwargs.get('component', '')
+        if component != self.component_name or self.file_column not in self.data.columns:
+            # Missing columns are reported by `MandatoryValuesValidator`
+            return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+
+        valid_exts = SEQUENCE_ANNOTATION_FILE_TYPE_EXTS['gff3']
+        uploaded_files = None  # listed from S3 only if a file name is valid
+
+        for i, row in self.data.iterrows():
+            file_name = str(row[self.file_column] or '').strip()
+            if not file_name:
+                continue  # Empty values are reported by `MandatoryValuesValidator`
+
+            if not has_valid_extension(file_name, valid_exts):
+                error = ena_msg['invalid_file_extension'].format(
+                    file_name=file_name, valid_exts=to_html_list(valid_exts))
+            else:
+                if uploaded_files is None:
+                    uploaded_files = {obj['Key'] for obj in (S3Connection().list_objects(self.profile_id) or [])}
+                error = self._get_uploaded_file_error(file_name) if file_name in uploaded_files else ''
+
+            if error:
+                self.errors.append(f'Sheet <strong>{component}</strong>, row <strong>{i + 2}</strong>: {error}')
+                self.flag = False
+
+        return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+
+    def _get_uploaded_file_error(self, file_name):
+        # Return an error for a GFF3 file in S3 that is not gzipped or not valid GFF3 or ''
+        s3obj = S3Connection()
+        if not matches_expected_file_signature(file_name, get_file_header(s3obj, self.profile_id, file_name)):
+            return ena_msg['invalid_compressed_file'].format(file_name=file_name, file_extension='.gz')
+
+        gff3_errors = get_gff3_errors(s3obj, self.profile_id, file_name)
+        if gff3_errors:
+            return f'<strong>{file_name}</strong> is not a valid GFF3 file:<br>' + '<br>'.join(gff3_errors)
+        return ''
 
 
 def get_file_type_error(file_name, file_type, extensions_by_type):

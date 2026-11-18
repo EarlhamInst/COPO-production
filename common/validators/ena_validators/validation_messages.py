@@ -33,6 +33,9 @@ MESSAGES = {
         'Invalid value <strong>{invalid_value}</strong> in column <strong>{column_name}</strong> at row <strong>{row}</strong>.<br>'
         'It does not match with the Taxon ID of your biosample <strong>{biosampleAccession}</strong>'),
     
+    'missing_annotation_file': (
+        'Annotation file <strong>{file_name}</strong> could not be found for submission. '
+        'Please upload it to COPO and try again.'),
     'missing_assembly_file': (
         'Assembly file <strong>{file_name}</strong> could not be found for submission. '
         'Please upload it to COPO and try again.'),

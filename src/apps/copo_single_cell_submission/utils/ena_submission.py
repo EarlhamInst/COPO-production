@@ -169,6 +169,19 @@ def process_pending_submission_ena():
                                                                                                    analysis_component_name=submission_components["sequencing_annotation"]
                                                                                                    )
 
+                # Submit decoupled sequence annotations
+                if 'decoupled_annotation' in submission_components:
+                    decoupled_component_name = submission_components['decoupled_annotation']
+                    if singlecell_components.get(decoupled_component_name):
+                        decoupled_singlecell = Singlecell().get_collection_handle().find_one(
+                            {'profile_id': sub['profile_id'], 'study_id': study_id, 'deleted': get_not_deleted_flag()},
+                            {'schema_name': 1, 'checklist_id': 1, 'study_id': 1, 'components': 1})
+                        decoupled_data_df, decoupled_identifier = _prepare_decoupled_annotation_submission(
+                            singlecell=decoupled_singlecell, component_name=decoupled_component_name)
+                        ena_submission_helper.register_decoupled_annotation(
+                            identifier=decoupled_identifier, component_data_df=decoupled_data_df,
+                            singlecell_id=str(decoupled_singlecell['_id']), component_name=decoupled_component_name)
+
                 ena_submission_helper.push_action(message="Submission done", action="success")
                 ena_submission_helper.push_action(message="", action="refresh_table")
 
@@ -176,6 +189,28 @@ def process_pending_submission_ena():
                 l.exception(e)
                 _reset_study_status_on_failure(singlecell, study_id, repository, str(e))
                 Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
+
+def _prepare_decoupled_annotation_submission(singlecell, component_name='sequencing_annotation_gff3_file'):
+    # Return a reads manifest's (under Biodata profiles) decoupled annotation rows and their identifier column.
+    schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get('schema_name', ''), schemas=dict(),
+                                             target_id=singlecell.get('checklist_id', ''))
+    identifier_map, _ = SinglecellSchemas().get_key_map(schemas=schemas)
+    identifier = identifier_map.get(component_name, '')
+
+    components = singlecell.get('components', {})
+    rows = components.get(component_name, [])
+    studies = components.get('study', [])
+    study_accession = studies[0].get('accession_ena', '') if studies else ''
+    if not rows:
+        return pd.DataFrame(), identifier
+    if not study_accession:
+        l.error(f"Missing study accession for decoupled annotation submission: {singlecell.get('study_id', 'Unknown')}")
+        return pd.DataFrame(), identifier
+
+    component_data_df = pd.DataFrame.from_records(rows).astype(object).fillna('')
+    component_data_df['study_accession'] = study_accession
+    return component_data_df, identifier
+
 
 def _prepare_analysis_submission(singlecell, component_name="sequencing_annotation", is_assembly=False):
     #get info from the components: sequencing_annotation, sequencing_annotation_run_ref[run accession / experiment accession], sequencing_annotation_file
