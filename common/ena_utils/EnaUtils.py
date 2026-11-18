@@ -1,6 +1,6 @@
 import re
 
-import PyPDF2
+import pypdf
 
 # from dal.ena_da import EnaCollection
 import requests
@@ -30,13 +30,12 @@ def get_sample_html_from_details_id(details_id):
 
 # function does a pdf file test
 def is_pdf_file(file_name):
-    file_obj = open(file_name, 'rb')
-    is_pdf = True
-    try:
-        pdfReader = PyPDF2.PdfFileReader(file_obj)
-    except:
-        is_pdf = False
-    return is_pdf
+    with open(file_name, 'rb') as file_obj:
+        try:
+            pypdf.PdfReader(file_obj)
+        except Exception:
+            return False
+    return True
 
 
 def is_fastq_file(file_name):

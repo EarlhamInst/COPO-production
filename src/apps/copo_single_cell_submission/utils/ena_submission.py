@@ -118,7 +118,7 @@ def process_pending_submission_ena():
                 rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in study_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
                 study_component_df = pd.DataFrame.from_records(studies)
                 study_component_df = study_component_df.astype(object).fillna("")
-                study_component_df.rename(columns=rename_columns, inplace=True)
+                study_component_df = study_component_df.rename(columns=rename_columns)
                 study = study_component_df.to_dict('records')[0]
 
                 #submit study to ena
@@ -205,7 +205,7 @@ def _prepare_analysis_submission(singlecell, component_name="sequencing_annotati
     rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in analysis_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
     analysis_component_data_df = analysis_component_data_df.astype(object).fillna("")
     analysis_component_data_df = analysis_component_data_df[schema_columns]
-    analysis_component_data_df.rename(columns=rename_columns, inplace=True)
+    analysis_component_data_df = analysis_component_data_df.rename(columns=rename_columns)
     child_component_data_df_map = dict()
 
     #get study accession_ena and biosampleAccession
@@ -238,7 +238,7 @@ def _prepare_analysis_submission(singlecell, component_name="sequencing_annotati
         rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in analysis_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
         child_component_data_df = child_component_data_df.astype(object).fillna("")
         child_component_data_df = child_component_data_df[schema_columns]
-        child_component_data_df.rename(columns=rename_columns, inplace=True)
+        child_component_data_df = child_component_data_df.rename(columns=rename_columns)
         if component not in [f"{component_name}_run_ref", f"{component_name}_file"]:
             analysis_component_data_df = analysis_component_data_df.merge(
                 child_component_data_df,
@@ -302,7 +302,7 @@ def _prepare_assembly_submission(singlecell, component_name="assembly"):
     rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in assembly_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
     assembly_component_data_df = assembly_component_data_df.astype(object).fillna("")
     assembly_component_data_df = assembly_component_data_df[schema_columns]
-    assembly_component_data_df.rename(columns=rename_columns, inplace=True)
+    assembly_component_data_df = assembly_component_data_df.rename(columns=rename_columns)
     child_component_data_df_map = dict()
 
     #get study accession_ena and biosampleAccession
@@ -335,7 +335,7 @@ def _prepare_assembly_submission(singlecell, component_name="assembly"):
         rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in assembly_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
         child_component_data_df = child_component_data_df.astype(object).fillna("")
         child_component_data_df = child_component_data_df[schema_columns]
-        child_component_data_df.rename(columns=rename_columns, inplace=True)
+        child_component_data_df = child_component_data_df.rename(columns=rename_columns)
         child_component_data_df_map[component] = child_component_data_df
 
     assembly_run_ref_data_df = child_component_data_df_map.get("assembly_run_ref", pd.DataFrame())
@@ -411,7 +411,7 @@ def _prepare_file_submission(singlecell, file_component_name="file"):
     file_component_df = file_component_df[schema_columns]
 
     component_df = _merge_paranent_data(component_df=file_component_df, identifier_map=identifier_map, component_name=file_component_name, parent_map=parent_map, singlecell=singlecell, schemas=schemas, term_mapping=term_mapping)
-    component_df.rename(columns=rename_columns, inplace=True)
+    component_df = component_df.rename(columns=rename_columns)
 
     #component_df.drop(columns=[identifier_map["file"]], inplace=True, errors='ignore')
     return component_df, identifier_map
@@ -426,7 +426,7 @@ def _merge_paranent_data(component_df, identifier_map, component_name, parent_ma
             continue 
         referenced_component_df = pd.DataFrame.from_records(referenced_component_data)
         referenced_component_df = referenced_component_df.astype(object).fillna("")
-        referenced_component_df.drop(columns=["study_id"], inplace=True, errors='ignore')
+        referenced_component_df = referenced_component_df.drop(columns=["study_id"], errors='ignore')
         
         referenced_component_schema = schemas.get(referenced_component, {})
         if not referenced_component_schema:
@@ -438,15 +438,15 @@ def _merge_paranent_data(component_df, identifier_map, component_name, parent_ma
         rename_columns = {field["term_name"]: term_mapping[field["copo_name"]].get("ENA",field["term_name"]) for field in referenced_component_schema if field["copo_name"] and field["copo_name"] in term_mapping}
 
         referenced_component_df = referenced_component_df[schema_columns]
-        referenced_component_df.rename(columns=rename_columns, inplace=True)
+        referenced_component_df = referenced_component_df.rename(columns=rename_columns)
 
         component_df = component_df.merge(
             referenced_component_df,
             left_on=foreign_key,
             right_on=identifier_map[referenced_component])
-        component_df.rename(columns=rename_columns, inplace=True)
+        component_df = component_df.rename(columns=rename_columns)
         component_df = _merge_paranent_data(component_df, identifier_map, referenced_component, parent_map, singlecell, schemas, term_mapping=term_mapping)
-        component_df.drop(columns=[identifier_map[referenced_component]], inplace=True, errors='ignore')
+        component_df = component_df.drop(columns=[identifier_map[referenced_component]], errors='ignore')
     return component_df
 
 

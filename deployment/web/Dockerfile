@@ -1,5 +1,5 @@
 #FROM python:3.10.13-bullseye
-FROM python:3.12.15-slim-bookworm
+FROM python:3.12.16-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1
 
@@ -30,7 +30,6 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     # An unpinned `pip install --upgrade pip` is reused from the cache and never
     # upgrades. Increase this version when Docker Scout flags pip's vendored packages.
     pip install --upgrade "pip==26.2.2" && \
-    pip install "setuptools==78.1.1" && \
     apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment

@@ -10,7 +10,7 @@
 #
 ## Build main containers and playwright test container images
 # $ docker build . -f 'deployment/web/Dockerfile_local_linux' -t local_copo_web:v1.0.0
-# $ docker build . -f 'deployment/web/Dockerfile_playwright' -t playwright:v1.64.1
+# $ docker build . -f 'deployment/web/Dockerfile_playwright' -t playwright:v1.65.0
 #
 #
 ## Step #2 - Start the containers
@@ -27,7 +27,7 @@
 # $ docker compose -f local.copo.compose.linux.yaml down
 # $ docker compose --env-file .env -f local.copo.compose.linux.yaml up -d
 #
-## Note: To stop then start containers but retain existing database 
+## Note: To stop then start containers but retain existing database
 ## data and applied migrations, run:
 # $ docker compose --env-file .env -f local.copo.compose.linux.yaml restart
 #
