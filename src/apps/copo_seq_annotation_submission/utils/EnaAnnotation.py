@@ -4,7 +4,7 @@ import shutil
 
 from django.conf import settings
 from django_tools.middlewares import threadlocal as ThreadLocal
-from common.ena_utils.ena_helper import EnaSubmissionHelper, get_webin_cli_report
+from common.ena_utils.ena_helper import EnaSubmissionHelper, submit_decoupled_annotation_with_webin_cli
 from common.utils.helpers import (
     get_env,
     get_datetime,
@@ -446,45 +446,37 @@ def submit_ena_dtol_v2(submission_dom, analysis_dom, sub, seq_annotation_ids):
             return False
 
 def submit_decoupled_annotation(seq_annotation, sub):
-    # Validate and submit a GFF3 annotation with Webin-CLI (-context annotation)
+    # Validate and submit a GFF3 annotation with Webin-CLI (-context annotation). 
+    # NB: Both annotations from Sequence annotation forms and from reads manifests
+    # under Biodata profiles use the same function.
     profile_id = sub['profile_id']
     annotation_id = str(seq_annotation['_id'])
-    work_dir = Path(settings.MEDIA_ROOT) / 'ena_annotation_files' / profile_id / annotation_id
-    shutil.rmtree(work_dir, ignore_errors=True)
-    work_dir.mkdir(parents=True, exist_ok=True)
-
     gff3_file = DataFile().get_record(seq_annotation['files'][0])
-    manifest = '\n'.join([
-        f"NAME\t{seq_annotation['title']}_{annotation_id}",
-        f"STUDY\t{seq_annotation['study']}",
-        'ANALYSIS_TYPE\tDECOUPLED_ANNOTATION',
-        f"PRIMARY_ID\t{seq_annotation['primary_id']}",
-        f"GFF3\t{gff3_file['file_location']}",
-        f"DESCRIPTION\t{seq_annotation['description']}",
-    ]) + '\n'
-    manifest_path = work_dir / 'manifest.txt'
-    manifest_path.write_text(manifest)
 
     helper = EnaSubmissionHelper(profile_id=profile_id, submission_id=str(sub['_id']))
     notify_annotation_status(data={'profile_id': profile_id}, msg='Validating GFF3 annotation',
                              action='info', html_id='annotation_info')
-    return_code, output = helper.run_webin_cli(manifest_path, 'annotation', 'validate', output_dir=work_dir)
-    if return_code == 0:
-        return_code, output = helper.run_webin_cli(manifest_path, 'annotation', 'submit', output_dir=work_dir)
+    accession, error = submit_decoupled_annotation_with_webin_cli(
+        helper,
+        name=f"{seq_annotation['title']}_{annotation_id}",
+        study=seq_annotation['study'],
+        primary_id=seq_annotation['primary_id'],
+        gff3_path=gff3_file['file_location'],
+        description=seq_annotation['description'],
+        work_dir=Path(settings.MEDIA_ROOT) / 'ena_annotation_files' / profile_id / annotation_id,
+    )
 
     # Remove it from the pending list either way, like assemblies
     Submission().update_seq_annotation_submission(sub_id=str(sub['_id']), seq_annotation_id=annotation_id)
 
-    match = re.search(r'ERZ\d+', output) if return_code == 0 else None
-    if match:
-        SequenceAnnotation().add_accession(annotation_id, match.group(0))
-        Submission().add_annotation_accessions(sub['_id'], match.group(0))
+    if accession:
+        SequenceAnnotation().add_accession(annotation_id, accession)
+        # Add each item of a list ($each)
+        Submission().add_annotation_accessions(sub['_id'], [{'alias': annotation_id, 'accession': accession}])
         notify_annotation_status(data={'profile_id': profile_id}, msg='GFF3 annotation has been submitted',
                                  action='info', html_id='annotation_info')
         return
 
-    report = get_webin_cli_report(work_dir)
-    error = f'{output}<br>{report}' if report else output
     SequenceAnnotation().update_seq_annotation_error([annotation_id], None, error)
     notify_annotation_status(data={'profile_id': profile_id}, msg=error,
                              action='error', html_id='annotation_info')

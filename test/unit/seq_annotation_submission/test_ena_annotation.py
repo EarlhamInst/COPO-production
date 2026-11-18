@@ -310,7 +310,8 @@ def test_successful_submission_saves_the_erz_accession(submit_mocks):
         ('annotation', 'validate'), ('annotation', 'submit')]
     assert all(c.kwargs['output_dir'] == result.work_dir for c in result.webin_cli.call_args_list)
     result.seq_annotation.add_accession.assert_called_once_with(ANNOTATION_ID, 'ERZ12345678')
-    result.submission.add_annotation_accessions.assert_called_once_with('sub1', 'ERZ12345678')
+    result.submission.add_annotation_accessions.assert_called_once_with(
+        'sub1', [{'alias': ANNOTATION_ID, 'accession': 'ERZ12345678'}])
     result.submission.update_seq_annotation_submission.assert_called_once_with(
         sub_id='sub1', seq_annotation_id=ANNOTATION_ID)
     result.seq_annotation.update_seq_annotation_error.assert_not_called()

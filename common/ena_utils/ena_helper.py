@@ -91,6 +91,34 @@ def get_webin_cli_report(output_dir):
     return '<br>'.join(lines)
 
 
+def submit_decoupled_annotation_with_webin_cli(helper, name, study, primary_id, gff3_path, description, work_dir):
+    # Validate, then submit, one GFF3 annotation of an assembly with Webin-CLI via `-context annotation`.
+    work_dir = Path(work_dir)
+    shutil.rmtree(work_dir, ignore_errors=True)
+    work_dir.mkdir(parents=True, exist_ok=True)
+
+    manifest_path = work_dir / 'manifest.txt'
+    manifest_path.write_text('\n'.join([
+        f'NAME\t{name}',
+        f'STUDY\t{study}',
+        'ANALYSIS_TYPE\tDECOUPLED_ANNOTATION',
+        f'PRIMARY_ID\t{primary_id}',
+        f'GFF3\t{gff3_path}',
+        f'DESCRIPTION\t{description}',
+    ]) + '\n')
+
+    return_code, output = helper.run_webin_cli(manifest_path, 'annotation', 'validate', output_dir=work_dir)
+    if return_code == 0:
+        return_code, output = helper.run_webin_cli(manifest_path, 'annotation', 'submit', output_dir=work_dir)
+
+    match = re.search(r'ERZ\d+', output) if return_code == 0 else None
+    if match:
+        return match.group(0), ''
+
+    report = get_webin_cli_report(work_dir)
+    return '', f'{output}<br>{report}' if report else output
+
+
 class EnaSubmissionHelper:
     def __init__(self, submission_id=str(), profile_id=str(), credentials=None):
         self.submission_id = submission_id
