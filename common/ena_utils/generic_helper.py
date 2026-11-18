@@ -605,6 +605,13 @@ def _transfer_via_ftp(remote_path, file_paths, submission_id="", profile_id="",
     # FTP basic-auth wants just the Webin token (before '@'), not the full domain.
     webin_token = webin_user.split("@")[0]
     ftp_host = "webin2.ebi.ac.uk"
+    
+    # File names are appended directly to `remote_path` so, it must end with a
+    # slash separator for example 'abc/reads', otherwise a file upload 
+    # like 'abc/readsfile.fq.gz' would be incorrect
+    if remote_path and not remote_path.endswith('/'):
+        remote_path += '/'
+        
     ftp_base = f"ftp://{ftp_host}/{remote_path}"
 
     netrc_path = _write_netrc_file(ftp_host, webin_token, webin_password)

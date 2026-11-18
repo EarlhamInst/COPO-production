@@ -118,6 +118,7 @@ services:
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
       - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
+      - ENA_PORTAL_SEARCH_URL=https://wwwdev.ebi.ac.uk/ena/portal/api/search
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
       - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
@@ -233,6 +234,7 @@ services:
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
       - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
+      - ENA_PORTAL_SEARCH_URL=https://wwwdev.ebi.ac.uk/ena/portal/api/search
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
       - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk

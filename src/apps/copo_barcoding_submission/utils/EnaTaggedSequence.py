@@ -264,7 +264,7 @@ class EnaTaggedSequence:
                 if count != len(target_ids):
                     return dict(
                         status='error',
-                        message="One of the biocoding sequence have been accessed. Cannot submit again!",
+                        message="One of the barcoding sequence have been accessed. Cannot submit again!",
                     )
 
                 submission_status = submissions[0].get("tagged_seq_status", "complete")
@@ -277,15 +277,15 @@ class EnaTaggedSequence:
                     )
                     return dict(
                         status='success',
-                        message="Biocoding manifest submission has been scheduled!",
+                        message="Barcoding manifest submission has been scheduled!",
                     )
                 else:
                     return dict(
                         status='error',
-                        message="Biocoding manifest submission is processing. Please wait for the current submission to complete before submitting another.",
+                        message="Barcoding manifest submission is processing. Please wait for the current submission to complete before submitting another.",
                     )
 
-        return dict(status='error', message="System error. Biocoding manifest submission has NOT been scheduled! Please contact system administrator.")        
+        return dict(status='error', message="System error. Barcoding manifest submission has NOT been scheduled! Please contact system administrator.")        
 
     """
     def _get_submission_xml(self):

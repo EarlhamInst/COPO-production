@@ -97,9 +97,10 @@ def ena_assembly(request, profile_id, assembly_id=None):
                 formdata, profile_id, assembly_id
             )
             if sub_result.get("error", ""):
+                errors = sub_result.get("error", "")
                 notify_assembly_status(
                     data={"profile_id": profile_id},
-                    msg=sub_result.get("error", ""),
+                    msg=errors,
                     action="error",
                     html_id="assembly_info",
                 )
@@ -118,17 +119,19 @@ def ena_assembly(request, profile_id, assembly_id=None):
                 # form = AssemblyForm(study_accession=study_accession, sample_accession=sample_accession)
             # return HttpResponse()
         else:
+            errors = str(form.errors)
             notify_assembly_status(
                 data={"profile_id": profile_id},
-                msg=str(form.errors),
+                msg=errors,
                 action="error",
                 html_id="assembly_info",
             )
             is_error = True
             # messages.error(request, form.errors)
         # if is_error:
-        return HttpResponse(
-            content=MESSAGES["form_validation_error"], status=status.HTTP_400_BAD_REQUEST 
+        return JsonResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            data={'message': MESSAGES['form_validation_error'], 'errors': errors},
         )
 
     else:
