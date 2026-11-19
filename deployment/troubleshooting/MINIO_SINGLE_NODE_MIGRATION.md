@@ -6,19 +6,19 @@ Production MinIO now runs **single-node, 2 drives, EC:1**, pinned to
 `ei-copo-prod-service`, serving 47 buckets / 105 objects. Verified end to end:
 `/minio/health/live` 200, S3 root 403, COPO 200.
 
-| Phase | Outcome |
-|---|---|
-| 0 — Pre-flight | IAM exported off-host; sizing, volumes, nginx upstream all verified. |
-| 1 — New drives | `minio-sn-data1/2` created (`local-persist`). |
-| 2 — Mirror | Converged: 47/47 buckets, 105/105 objects, second pass 0 B. |
+| Phase                     | Outcome                                                                                                        |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| 0 — Pre-flight            | IAM exported off-host; sizing, volumes, nginx upstream all verified.                                           |
+| 1 — New drives            | `minio-sn-data1/2` created (`local-persist`).                                                                  |
+| 2 — Mirror                | Converged: 47/47 buckets, 105/105 objects, second pass 0 B.                                                    |
 | 3 — Quiesce, sync, verify | App stopped; `--remove` pass empty; **exhaustive diff of all 105 object paths+sizes IDENTICAL**; IAM imported. |
-| 4 — Cutover | MinIO service replaced; nginx restarted; app restarted. |
+| 4 — Cutover               | MinIO service replaced; nginx restarted; app restarted.                                                        |
 
 > ### The cutover did NOT use `docker stack deploy`
 >
 > **Because `main` still carried the distributed MinIO config at the time.**
 > Deploying the stack mid-migration would have recreated `copo_minio` as 2
-> replicas against the *old* drives, undoing the migration. So only the MinIO
+> replicas against the _old_ drives, undoing the migration. So only the MinIO
 > service was replaced, with `docker service` commands — see Phase 4. Web,
 > celery, nginx, mongo and postgres were left untouched.
 >
@@ -31,8 +31,8 @@ Production MinIO now runs **single-node, 2 drives, EC:1**, pinned to
 > #### How prod is actually deployed (clarified 2026-09-02)
 >
 > The individual who deploys a copy of `copo.compose.production.yaml` from GitHub on the
-> Docker Swarm manager on the VM, will manually update the image tags for both `copo_web` 
-> service and `copo_celery` service. Then, the individual will run `docker stack deploy` 
+> Docker Swarm manager on the VM, will manually update the image tags for both `copo_web`
+> service and `copo_celery` service. Then, the individual will run `docker stack deploy`
 > from their home directory on the VM.
 >
 > **Do not trust other copies of `copo.compose.production.yaml`** in home
@@ -83,10 +83,11 @@ ls -l /home/*/copo.compose.production.yaml
 ```
 
 Check with the owner of each copy that it isn't in use, then delete the stale
-ones. Replace `*` with the appropriate username of the current deployer's home 
+ones. Replace `*` with the appropriate username of the current deployer's home
 directory.
 
 **Cleanup still outstanding:**
+
 - Old volumes `minio-data1/2` on **both** nodes — keep until the cutover is
   signed off, then `docker volume rm` and delete the directories.
 - `nta` / `ntb` netshoot services left running on prod from an old overlay ping
@@ -130,7 +131,7 @@ Once you wipe or abandon its drives, the objects are gone.
 
 **Fixes:** the quorum amplification. Prod is 2 nodes x 2 drives; write quorum
 needs more than half, so losing either node drops 2 of 4 drives and writes stop.
-There is currently *zero* single-node fault tolerance — any 20s heartbeat blip
+There is currently _zero_ single-node fault tolerance — any 20s heartbeat blip
 between the two hosts is a write outage. That is the recurring incident. With one
 node there is no peer to lose and no cross-node quorum to break.
 
@@ -140,15 +141,15 @@ MinIO does not support and which is the prime suspect for the I/O stalls that
 starve the grid heartbeat. Isilon **group changes** — node join/leave, drive
 failure, FlexProtect/restripe jobs — pause NFS I/O for tens of seconds, matching
 MinIO's 20s `last pong too old` threshold. That also fits a detail the network
-theory never explained: the pongs failed in *both* directions, which a
+theory never explained: the pongs failed in _both_ directions, which a
 host-to-host network fault rarely does but a simultaneous storage stall does.
-Single-node makes such a stall a *slow request* instead of a *write outage*,
+Single-node makes such a stall a _slow request_ instead of a _write outage_,
 which is a large improvement, but the storage is still unsupported. Moving to
 local block devices remains the correct long-term fix and is out of scope here.
 
 **Trade-off accepted:** if `ei-copo-prod-service` goes down, MinIO is fully
 offline (previously reads survived one node loss). This is a smaller loss than it
-looks: all four drives already live on the *same* Isilon export, so the current
+looks: all four drives already live on the _same_ Isilon export, so the current
 cross-node redundancy is largely fictitious — losing the export loses everything
 either way.
 
@@ -182,8 +183,8 @@ back to a wipe without revisiting that decision.
 
    This step is **informational, not a gate.**
 
-   > **Ignore `df` on this mount.** It reports the export as *99% used with ~45T
-   > available*, and that figure is **wrong** (confirmed 2026-09-01). There is no
+   > **Ignore `df` on this mount.** It reports the export as _99% used with ~45T
+   > available_, and that figure is **wrong** (confirmed 2026-09-01). There is no
    > SmartQuota on `copo_data/copo_live`, and OneFS reports capacity to NFS
    > clients in ways that do not correspond to usable free space. **Space is not a
    > constraint on this migration.** If you need a real number, get it from the
@@ -198,6 +199,7 @@ back to a wipe without revisiting that decision.
    replicates `copo_live` off-cluster if you want cover for that.
 
 3. **Confirm the NFS mount layout on `ei-copo-prod-service`:**
+
    ```bash
    docker volume inspect minio-data1 minio-data2 -f '{{.Name}} -> {{.Options}} {{.Mountpoint}}'
    df -h /mnt/copo-data/prod_copo
@@ -215,7 +217,7 @@ back to a wipe without revisiting that decision.
    after cutover, with the objects present and intact.
 
    Worse: a service account secret **cannot be read back** from MinIO — `svcacct
-   info` returns the access key and never the secret. The only two ways to
+info` returns the access key and never the secret. The only two ways to
    reconstitute it are the IAM export/import below, or recreating it explicitly
    from the values in the Swarm secrets `ecs_access_key` / `ecs_secret_key`.
 
@@ -230,6 +232,7 @@ back to a wipe without revisiting that decision.
    docker exec "$C" mc admin cluster iam export l     # writes /l-iam-info.zip (~1.7 KB)
    docker cp "$C":/l-iam-info.zip /root/l-iam-info.zip
    ```
+
    **Copy the zip off the host** — it is worthless if it only exists inside a
    container you are about to destroy.
 
@@ -239,6 +242,7 @@ back to a wipe without revisiting that decision.
 5. **Record the live image tag.** Deploy drift is a known hazard here — the live
    stack has run tags ahead of what the repo pins. Use the tag you actually want
    live so you do not silently downgrade the app:
+
    ```bash
    docker service inspect copo_web -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}'
    ```
@@ -255,11 +259,11 @@ drives stay untouched and remain the rollback. On `ei-copo-prod-service`:
 
 **Volume facts, confirmed on prod 2026-09-01 — do not guess these:**
 
-| | |
-|---|---|
-| Names | `minio-data1`, `minio-data2` — **no `copo_` prefix** (Swarm `external: true` volumes are not stack-prefixed) |
-| Driver | **`local-persist`** (third-party plugin), *not* `local` |
-| Mountpoints on `ei-copo-prod-service` | `/mnt/copo-data/prod_copo/minio-data1-service`, `.../minio-data2-service` |
+|                                       |                                                                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Names                                 | `minio-data1`, `minio-data2` — **no `copo_` prefix** (Swarm `external: true` volumes are not stack-prefixed) |
+| Driver                                | **`local-persist`** (third-party plugin), _not_ `local`                                                      |
+| Mountpoints on `ei-copo-prod-service` | `/mnt/copo-data/prod_copo/minio-data1-service`, `.../minio-data2-service`                                    |
 
 The `-service` / `-frontend` suffix is per node: each host has its own directories
 on the shared Isilon export.
@@ -373,23 +377,28 @@ is not a blocker.
 ## Phase 3 — Quiesce, final sync, verify
 
 1. **Stop writes.** Scale the app down so nothing is uploading:
+
    ```bash
    docker service scale copo_web=0 copo_celery_worker=0 copo_celery_beat=0
    ```
+
    (Use the real service names from `docker service ls`.)
 
 2. **Final incremental mirror** — same loop as Phase 2, plus `--remove` to catch
    deletions that happened during the long first pass:
+
    ```bash
    docker exec $C mc mirror --preserve --retry --remove "old/$b" "new/$b"
    ```
 
 3. **Verify before you destroy anything.** Compare per-bucket object counts and
    total size on both sides; they must match exactly:
+
    ```bash
    docker exec $C mc du --recursive old
    docker exec $C mc du --recursive new
    ```
+
    Spot-check a few large objects with `mc stat` on both sides and compare ETags.
    **Do not proceed until these agree.**
 
@@ -450,6 +459,7 @@ credentials.
 name is still `minio`, so DNS resolves exactly as before.
 
 Bring the app back:
+
 ```bash
 docker service scale copo_web=1 copo_celery_worker=1 copo_celery_beat=1
 ```
@@ -468,7 +478,7 @@ upload a file through COPO and download it again. Confirm the logs contain **no*
 are now structurally impossible, so their absence is the signal the fix landed.
 
 The reverse proxy needs **no change** — verified 2026-09-01. `copo_nginx`
-(`copo/copo-nginx-minio:v1.30.2`, running on `ei-copo-prod-frontend`) proxies to
+(`copo/copo-nginx-minio:v1.30.7`, running on `ei-copo-prod-frontend`) proxies to
 the Swarm **service name**, not the per-slot hostnames, in
 `/etc/nginx/conf.d/django_project.conf`:
 
@@ -500,7 +510,7 @@ had to stay named `minio` rather than being renamed — everything downstream
 
 0. **The node label.** Placement is `node.labels.minio-service==true` (CD-220 —
    it used to be `node.hostname==…`, which broke deploys because
-   `copo.compose.yaml` is shared by demo *and* dev, so a hostname from one
+   `copo.compose.yaml` is shared by demo _and_ dev, so a hostname from one
    cluster matches no node in the other). The label is swarm state, not file
    state: nothing in the repo sets it and no code review can see it. **It must
    be on exactly one node per cluster, and that node must be the one holding
@@ -528,7 +538,7 @@ had to stay named `minio` rather than being renamed — everything downstream
    `ecs_access_key` / `ecs_secret_key`.
 3. **The object data.**
 
-So the compose file describes the *shape* of the deployment, not its *state*. A
+So the compose file describes the _shape_ of the deployment, not its _state_. A
 from-scratch rebuild is: create volumes → `stack deploy` → import IAM → restore
 objects.
 
@@ -556,10 +566,10 @@ Expect `/data1 /data2`, `minio`, `vip`, `1`, the
 Since CD-220, MinIO is placed by node label rather than by hostname:
 
 ```yaml
-      placement:
-        max_replicas_per_node: 1
-        constraints:
-          - 'node.labels.minio-service==true'
+placement:
+  max_replicas_per_node: 1
+  constraints:
+    - 'node.labels.minio-service==true'
 ```
 
 This is the correct fix — a hostname cannot work in `copo.compose.yaml`, which
@@ -582,11 +592,11 @@ docker node ls -q | xargs docker node inspect \
 Exactly one node per cluster should show `minio-service:true`, and it must match
 where the service actually runs (`docker service ps copo_minio`):
 
-| Cluster | Manager | Node that must carry `minio-service` |
-|---|---|---|
-| prod | `ei-copo-prod-sm.cyverseuk.org` | `ei-copo-prod-service` |
-| demo | `ei-copo-demo-sm.cyverseuk.org` | `ei-copo-demo-frontend` |
-| dev | `ei-copo-dev-sm.cyverseuk.org` | `ei-copo-dev-frontend` |
+| Cluster | Manager                         | Node that must carry `minio-service` |
+| ------- | ------------------------------- | ------------------------------------ |
+| prod    | `ei-copo-prod-sm.cyverseuk.org` | `ei-copo-prod-service`               |
+| demo    | `ei-copo-demo-sm.cyverseuk.org` | `ei-copo-demo-frontend`              |
+| dev     | `ei-copo-dev-sm.cyverseuk.org`  | `ei-copo-dev-frontend`               |
 
 Note prod's node is the **opposite** of demo's and dev's — easy to get backwards.
 
@@ -607,7 +617,7 @@ label was set on **both** nodes in **all three** clusters, which would have made
 placement a coin flip on every restart rather than a rule. Dev was the live
 risk, because it had already been deployed with the label constraint while prod
 and demo still had their hostname pin. Corrected before the change merged; the
-table above is the verified end state. **The labels must be right *before* this
+table above is the verified end state. **The labels must be right _before_ this
 config merges to a cluster, not after** — merging swaps a constraint that cannot
 drift for one that can.
 
@@ -621,7 +631,7 @@ Nothing destructive happens until Phase 4, and even then the old drives survive:
   stopped. Zero impact.
 - **After Phase 4:** `minio-data1/2` still hold the intact distributed pool.
   Revert the compose change (`git revert`), redeploy, and the old cluster
-  reassembles. Any objects written *after* cutover exist only on the new drives,
+  reassembles. Any objects written _after_ cutover exist only on the new drives,
   so mirror them back first.
 
 Keep the old volumes until the cutover is signed off. Delete them only when you
@@ -645,7 +655,7 @@ procedure is reused on a genuinely constrained filesystem.
    likely source of dead weight. Worth doing on its own merits before a long
    mirror — it is pure waste, and copying it wastes hours.
 2. **Stage to a different filesystem** — mirror the old cluster to any other host
-   or export with room, wipe the old drives, deploy single-node onto the *old*
+   or export with room, wipe the old drives, deploy single-node onto the _old_
    directories, then mirror back. Slower, and it gives up the intact-rollback
    property, so only do it if option 1 does not free enough.
 3. **Do not proceed** with a wipe-then-restore on the same filesystem with no
