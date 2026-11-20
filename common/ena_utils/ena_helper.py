@@ -677,10 +677,12 @@ class EnaSubmissionHelper:
         return dict(status=True, value='')
 
 
-    def register_files(self, submission_xml_path=str(), modify_submission_xml_path=str(), component_df=pd.DataFrame(), identifier_map={}, singlecell=None, file_component_name="file"):   
+    def register_files(self, submission_xml_path=str(), modify_submission_xml_path=str(), component_df=pd.DataFrame(), identifier_map={}, singlecell=None, file_component_name="file", file_columns=("read_1_file", "read_2_file")):
         """
         function creates and submits datafile xml
-        :return:
+        Fields from the schema that expect data files and whose `term_repository` is 'ena' 
+        need a corresponding '<column>_checksum' column for data files to 
+        be deposited to ENA.
         """
         instruments = helpers.get_db_data_sources(source='sequencing_instrument') # COPOLookup(data_source='sequencing_instrument').broker_data_source()
         output_location = tempfile.gettempdir()
@@ -716,8 +718,13 @@ class EnaSubmissionHelper:
             run_root = etree.parse(SRA_RUN_TEMPLATE, parser).getroot()
 
             column_name = "study_id"
+            
+            # Only data files specified as being deposited to ENA should be included
+            # in the `run.xml` not as experiment attributes
             non_attribute_names.append(column_name)
             non_attribute_names.append(file_identifier)
+            non_attribute_names.extend(file_columns)
+            non_attribute_names.extend(f'{name}_checksum' for name in file_columns)
             submission_name = str(self.submission_id) + "_" + row[column_name] +  "_"+ row[file_identifier]
             # add experiment node to experiment set
             experiment_node = etree.SubElement(experiment_root, 'EXPERIMENT')
@@ -795,18 +802,18 @@ class EnaSubmissionHelper:
             run_data_block_node = etree.SubElement(run_node, 'DATA_BLOCK')
             run_files_node = etree.SubElement(run_data_block_node, 'FILES')
 
-            for name in ["read_1_file", "read_2_file"]:
-                if row[name] is None or row[name] == "":
+            for name in file_columns:
+                if not row.get(name):
                     continue
 
                 run_file_node = etree.SubElement(run_files_node, 'FILE')
                 run_file_node.set("filename", os.path.join(enafile_map[row[name]], row[name])) #TBC for remote_location
-                
+
                 run_file_node.set(
                     "filetype",
                     ena_run_filetype(row[name], row.get("read_file_type", "")),
                 )
-                run_file_node.set("checksum", row[name+"_checksum"])  # todo: is this correct as submission time?
+                run_file_node.set("checksum", row.get(f'{name}_checksum', ''))  # TODO: Is this correct at submission time?
                 run_file_node.set("checksum_method", "MD5")
 
             # write run xml
