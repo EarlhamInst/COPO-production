@@ -51,34 +51,34 @@ jobs:
   
               wait_for_readiness  copo_web 8000
               docker exec $(docker-compose -f test/docker-compose.yaml ps -q copo_web) bash -c 'python manage.py makemigrations && python manage.py makemigrations allauth && python manage.py migrate && python manage.py setup_sequencing_centres && python manage.py setup_associated_profile_types && python manage.py setup_profile_types &&  python manage.py createsuperuser --noinput'
-      - run: "docker cp test/testfiles/. $(docker-compose -f test/docker-compose.yaml ps -q copo_browser):/usr/src/app/workspace"
+      - run: "docker cp test/test_files/. $(docker-compose -f test/docker-compose.yaml ps -q copo_browser):/usr/src/app/workspace"
       - run:  
           name: puppeteer test
           command: |
             copo_browser=$(docker-compose -f test/docker-compose.yaml ps -q copo_browser)
             copo_web=$(docker-compose -f test/docker-compose.yaml ps -q copo_web)
             (echo "running copo-login-logout.js" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/copo-login-logout.js)" && \
+            docker exec $copo_browser node -e "$(cat test/test_cases/copo-login-logout.js)" && \
             echo "running assign_permission.js" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/assign_permission.js)" && \
+            docker exec $copo_browser node -e "$(cat test/test_cases/assign_permission.js)" && \
             echo "running assign_associated_profile_types.js bge" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/assign_associated_profile_types.js)" bge && \
+            docker exec $copo_browser node -e "$(cat test/test_cases/assign_associated_profile_types.js)" bge && \
             echo "running assign_associated_profile_types.js sanger" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/assign_associated_profile_types.js)" sanger && \            
+            docker exec $copo_browser node -e "$(cat test/test_cases/assign_associated_profile_types.js)" sanger && \            
             echo "running ERGA_profile.js ei" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_profile.js)" ei "EARLHAM INSTITUTE" && \
+            docker exec $copo_browser node -e "$(cat test/test_cases/ERGA_profile.js)" ei "EARLHAM INSTITUTE" && \
             echo "running ERGA_upload_manifest.js" ei && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_upload_manifest.js)" ei && \
+            docker exec $copo_browser node -e "$(cat test/test_cases/ERGA_upload_manifest.js)" ei && \
             echo "running ERGA_approve_samples.js ei" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" ei && \
+            docker exec $copo_browser node -e "$(cat test/test_cases/ERGA_approve_samples.js)" ei && \
             echo "running ERGA_update_manifest.js" ei && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_update_manifest.js)" ei && \
+            docker exec $copo_browser node -e "$(cat test/test_cases/ERGA_update_manifest.js)" ei && \
             echo "running ERGA_approve_samples.js ei" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" ei && \
+            docker exec $copo_browser node -e "$(cat test/test_cases/ERGA_approve_samples.js)" ei && \
             echo "running ERGA_permit.js" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_permit.js)" ei && \
+            docker exec $copo_browser node -e "$(cat test/test_cases/ERGA_permit.js)" ei && \
             echo "running ERGA_approve_samples.js ei" && \
-            docker exec $copo_browser node -e "$(cat test/testcases/ERGA_approve_samples.js)" ei && \        
+            docker exec $copo_browser node -e "$(cat test/test_cases/ERGA_approve_samples.js)" ei && \        
             echo "done" ) || \
             (docker logs $copo_web && \
             docker exec $copo_web bash -c "less /copo/logs/*.log" && exit 1)

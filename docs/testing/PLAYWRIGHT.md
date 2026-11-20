@@ -206,7 +206,7 @@ doing what you intended.
 Browser tests should log in as a local test user via username/password, not
 by driving the real ORCID OAuth flow — ORCID is a third-party service with
 no test credentials, and automating a real login through it is inherently
-fragile (this is why the pre-existing suites under `test/testcases/` are
+fragile (this is why the pre-existing suites under `test/test_cases/` are
 mostly broken). `create_test_user` (run automatically as part of
 `setup_all`) creates a local user that logs in via allauth's plain
 username/password form at `/accounts/login/`, which works with zero
