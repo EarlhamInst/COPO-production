@@ -63,7 +63,7 @@ def process_pending_submission_zendo():
             SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=singlecell["checklist_id"], singlecell=singlecell, file_path=bytesstring)
 
             schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], schemas=dict(), target_id=singlecell["checklist_id"])
-            files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
+            files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas, repository='zenodo')
             local_path = [regex.Regex(f'{x}$') for x in files]
             projection = {'_id':0, 'local_path':1, 'status':1, 'is_archived':1, 'profile_id':1}
             filter = dict()

@@ -702,7 +702,7 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena", cr
 
     # Prepare file transfer records for all files referenced in the singlecell record
     schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get("schema_name", singlecell["schema_name"]), schemas=dict(), target_id=singlecell["checklist_id"])
-    files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
+    files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas, repository=repository)
     if files:
         # Pre-flight: verify every file referenced in the manifest is actually
         # present in S3 *before* creating transfer records or flipping the

@@ -13,7 +13,7 @@ from test.playwright.e2e.helpers import create_biodata_profile, dismiss_tour_if_
 TITLE = "Submission Journey Manifest Validation"
 DESCRIPTION = "A description that is at least twenty characters long."
 
-TESTFILES_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "testfiles"))
+TESTFILES_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "test_files"))
 SAMPLE_MANIFEST = os.path.join(TESTFILES_DIR, "COPO_FAANG_manifest_success1.xlsx")
 SINGLECELL_MANIFEST = os.path.join(
     TESTFILES_DIR, "copo_single_cell_manifest_version_faang_sc_rnaseq_success1.xlsx"

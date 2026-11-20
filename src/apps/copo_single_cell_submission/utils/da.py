@@ -6,6 +6,9 @@ from bson.objectid import ObjectId
 
 ADDITIONAL_COLUMNS_PREFIX_DEFAULT_VALUE = {"status":"pending", "accession":"", "error":""}
 
+# Default repository that data files will be deposited to if not specified in the schema
+DEFAULT_DATA_FILE_REPOSITORY = 'zenodo'
+
 class SinglecellSchemas(DAComponent):
     def __init__(self, profile_id=None, subcomponent=None):
         super(SinglecellSchemas, self).__init__(profile_id, "singlecellSchemas", subcomponent=subcomponent)
@@ -150,22 +153,43 @@ class SinglecellSchemas(DAComponent):
                 child_map[parent_component][component] = foreignkey["foreign_key"]
         return child_map
 
-    #get all files from the manifest
-    def get_all_files(self, singlecell, schemas=[]):
+    @staticmethod
+    def get_file_terms(schema, repository=None):
+        # Return the names of fields where the `term_type` is equal to 'file'.
+        # If a `term_repository` is specified, it should be considered when filtering
+        # No value i.e. a blank value for the `term_repository` column means
+        # the default repository which is, DEFAULT_DATA_FILE_REPOSITORY.
+        if not schema:
+            return []
+
+        schema_df = pd.DataFrame.from_records(schema)
+        file_terms = schema_df.loc[schema_df['term_type'] == 'file']
+
+        if repository and not file_terms.empty:
+            repo_col = (file_terms['term_repository'] if 'term_repository' in file_terms
+                        else pd.Series(DEFAULT_DATA_FILE_REPOSITORY, index=file_terms.index))
+            repo_col = repo_col.astype(object)
+            is_blank = repo_col.isna() | (repo_col.astype(str).str.strip() == '')
+            repo_col = repo_col.where(~is_blank, DEFAULT_DATA_FILE_REPOSITORY).astype(str).str.lower()
+            file_terms = file_terms[repo_col.str.split(',').apply(lambda r: repository in [x.strip() for x in r])]
+            
+        return file_terms['term_name'].tolist()
+
+    # Get all files from the manifest
+    def get_all_files(self, singlecell, schemas=[], repository=None):
+        # Get all data files from single-cell manifests based on the
+        # repository that the data files should be deposited to
         filelist = []
         for component, component_data in singlecell["components"].items():
-            schema = schemas.get(component, [])  
-            if not schema:
-                continue      
-            schema_df = pd.DataFrame.from_records(schema)
-            schema_file_df = schema_df.loc[schema_df['term_type'] == 'file', "term_name"]
+            file_terms = self.get_file_terms(schemas.get(component, []), repository=repository)
+            if not file_terms:
+                continue
+
             df = pd.DataFrame.from_records(component_data)
-            if not schema_file_df.empty:
-                file_df = df[list(set.intersection(set(schema_file_df.tolist()), set(df.columns)))]
-                file_df = file_df.dropna()
-                fileslist = file_df.values.tolist()
-                for files in fileslist:
-                    filelist.extend(list(filter(None, files)))
+            cols = [term for term in file_terms if term in df.columns]
+
+            for row in df[cols].values.tolist():
+                filelist.extend(f for f in row if isinstance(f, str) and f)
         return filelist
 
 class Singlecell(DAComponent):
