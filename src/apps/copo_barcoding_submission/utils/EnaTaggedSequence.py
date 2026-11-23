@@ -987,7 +987,7 @@ class EnaTaggedSequence:
             [dict(data=x, title=fields[x]["name"], defaultContent='') for x in label]
         )
         columns.append(dict(data="status", title="STATUS", defaultContent=''))
-        columns.append(dict(data="accession", title="ACCESSION", defaultContent='', render="render_ena_accession_function"))
+        columns.append(dict(data="accession", title="ACCESSION", defaultContent='', render="render_repo_accession('ena')"))
         columns.append(dict(data="error", title="ERROR", defaultContent=''))
 
         tag_sequences = TaggedSequence(profile_id=profile_id).execute_query(

@@ -115,6 +115,35 @@ ECS_ENDPOINT = get_env('ECS_ENDPOINT')
 # Settings for ENA
 ENA_URL_HOSTNAME = get_env('ENA_URL_HOSTNAME') or 'www.ebi.ac.uk'
 
+# Settings for Zenodo
+ZENODO_RECORDS_URL = (
+    (get_env('ZENODOURL') or 'https://zenodo.org/api').rstrip('/').removesuffix('/api') + '/records'
+)
+
+# Accession links based on a repository like ENA and Zenodo
+# Columns that end with 'field_suffix' are rendered in the UI as a link
+# to 'url_template' with '{accession}' replaced by the accession
+# NB: '{accession}' is escaped as '{{accession}}' within f-strings.
+# It is exposed to JavaScript as 'REPOSITORY_ACCESSION_LINKS' via
+# the 'custom_context_template.py' file.
+REPOSITORY_ACCESSION_LINKS = {
+    'ena': {
+        'field_suffix': 'accession_ena',
+        'url_template': f'https://{ENA_URL_HOSTNAME}/ena/browser/view/{{accession}}',
+    },
+    'zenodo': {
+        'field_suffix': 'accession_zenodo',
+        'url_template': f'{ZENODO_RECORDS_URL}/{{accession}}',
+    },
+}
+
+# How repositories are named in column titles e.g. 'status_ena' is
+# shown as 'Status for ENA'
+REPOSITORY_LABELS = {
+    'ena': 'ENA',
+    'zenodo': 'Zenodo',
+}
+
 # settings for manifest
 MANIFEST_VERSION = {
     "ASG": "2.5",

@@ -72,9 +72,13 @@
     <script src="{% static 'copo/validator1000hz/validator.min.js' %}"></script>
     <script src="{% static 'copo/rangeslider/rangeslider.min.js' %}"></script>
     <script src="{% static 'copo/jquery/js/jquery.alterclass.js' %}"></script>
-    
+
+    {{ repository_accession_links|json_script:"repository-accession-links" }}
     <script>
         const ENA_URL_HOSTNAME = "{{ ena_url_hostname|escapejs }}" || "www.ebi.ac.uk";
+        const REPOSITORY_ACCESSION_LINKS = JSON.parse(
+            document.getElementById("repository-accession-links")?.textContent || "{}"
+        );
     </script>
 
     <script src="{% static 'copo/js/base.js' %}"></script>
