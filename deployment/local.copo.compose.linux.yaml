@@ -29,7 +29,7 @@
 #
 ## Note: To stop then start containers but retain existing database
 ## data and applied migrations, run:
-# $ docker compose --env-file .env -f local.copo.compose.linux.yaml restart
+# $ docker compose --env-file .env -f local.copo.compose.linux.yaml up -d --force-recreate copo_web
 #
 #
 ## Step #3  - Run Django management commands in the terminal
@@ -103,8 +103,6 @@ services:
       - ENA_URL_HOSTNAME=wwwdev.ebi.ac.uk
       - CREDENTIAL_ENCRYPTION_KEY=${vault_copo_credential_encryption_key}
       - ENA_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/
-      - ENA_WEBIN_AUTH_URL=https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token?ttl=1
-      - ENA_URL_HOSTNAME=wwwdev.ebi.ac.uk
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD=password
       - MONGO_DB=copo_mongo
@@ -145,7 +143,7 @@ services:
       - DJANGO_SUPERUSER_PASSWORD=admin
       - DJANGO_SUPERUSER_EMAIL=admin@test.com
       - http_protocol=http
-      - ZENODOURL=https://zenodo.org/api
+      - ZENODOURL=https://sandbox.zenodo.org/api
       - ZENODOTOKEN=${vault_zenodo_api_token}
       - ENA_BROWSER_SERVICE=https://www.ebi.ac.uk/ena/browser/api # Has to be production ENA browser API endpoint
     depends_on:
