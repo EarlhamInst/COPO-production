@@ -36,6 +36,10 @@ webin_user = get_env('WEBIN_USER')
 webin_domain = get_env('WEBIN_USER').split("@")[1]
 ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
 
+# Appended to curl commands so that HTTP status follows the response body.
+CURL_HTTP_CODE_MARKER = '\n|HTTP_CODE:'
+CURL_HTTP_CODE_OPTION = ' -w "\\n|HTTP_CODE:%{http_code}|"'
+
 class EnaSubmissionHelper:
     def __init__(self, submission_id=str(), profile_id=str(), credentials=None):
         self.submission_id = submission_id
@@ -175,6 +179,36 @@ class EnaSubmissionHelper:
 
             return result
 
+    def parse_ena_receipt(self, output, action):
+        # Parse the receipt that ENA returns from a `curl` request made with `CURL_HTTP_CODE_OPTION`.
+        text = output.decode('utf-8', errors='replace') if isinstance(output, bytes) else str(output)
+        body, http_code = text, 'unknown'
+        if CURL_HTTP_CODE_MARKER in text:
+            body, _, code_part = text.rpartition(CURL_HTTP_CODE_MARKER)
+            http_code = code_part.strip().rstrip('|').strip() or 'unknown'
+
+        self.logging_debug(f'ENA response to {action}: HTTP={http_code} body_len={len(body)} body_preview={body[:500]!r}')
+
+        if http_code in ('401', '403'):
+            hint = ' Check the ENA Webin username and password.'
+        elif http_code.startswith('5') or http_code == '000':
+            hint = ' ENA may be unavailable. Please try again later.'
+        else:
+            hint = ''
+
+        if not body.strip():
+            return None, f'ENA returned an empty response (HTTP {http_code}) when trying to {action}.{hint}'
+
+        # A well-formed HTML error page is also valid XML so check for ENA's <RECEIPT> root as well
+        try:
+            root = etree.fromstring(body.encode('utf-8'))
+        except etree.XMLSyntaxError:
+            root = None
+        if root is None or root.tag != 'RECEIPT':
+            preview = ' '.join(body.split())[:200]
+            return None, f'ENA returned an unexpected response (HTTP {http_code}) when trying to {action}: {preview}.{hint}'
+        return root, None
+
     def get_sra_contacts(self):
         """
         function returns users with any SRA roles
@@ -221,8 +255,8 @@ class EnaSubmissionHelper:
                     + '" -F "SUBMISSION=@' \
                     + submission_xml_path \
                     + '" -F "SAMPLE=@' \
-                    + sample_xml_path \
-                    + '" -w "\\n|HTTP_CODE:%{http_code}|"' \
+                    + sample_xml_path + '"' \
+                    + CURL_HTTP_CODE_OPTION \
                     + ' "' + ena_service \
                     + '"'
         self.logging_debug(
@@ -238,25 +272,12 @@ class EnaSubmissionHelper:
             result['status'] = False
             raise e
 
-        output_text = output.decode('utf-8', errors='replace')
-        http_code = "unknown"
-        receipt = output
-        if "|HTTP_CODE:" in output_text:
-            body_text, _, code_part = output_text.rpartition("\n|HTTP_CODE:")
-            http_code = code_part.rstrip("|").strip()
-            receipt = body_text.encode('utf-8')
-        self.logging_debug(
-            "ENA response HTTP=" + http_code
-            + " body_len=" + str(len(receipt))
-            + " body_preview=" + repr(receipt[:500]))
-
-        if not receipt.strip():
+        root, error = self.parse_ena_receipt(output, action='register the samples')
+        if error:
             result['status'] = False
-            result['message'] = "ENA returned empty response (HTTP " + http_code + ")"
-            self.logging_debug(result['message'])
+            result['message'] = error
+            self.logging_debug(error)
             return result
-
-        root = etree.fromstring(receipt)
 
         if root.get('success') == 'false':
             result['status'] = False
@@ -576,8 +597,9 @@ class EnaSubmissionHelper:
                     + '" -F "SUBMISSION=@' \
                     + submission_xml_path \
                     + '" -F "PROJECT=@' \
-                    + study_xml_path \
-                    + '" "' + ena_service \
+                    + study_xml_path + '"' \
+                    + CURL_HTTP_CODE_OPTION \
+                    + ' "' + ena_service \
                     + '"'
         self.logging_debug(
             "CURL command to submit study xml to ENA: " + curl_cmd.replace(self.pass_word, "xxxxxx"))
@@ -592,18 +614,21 @@ class EnaSubmissionHelper:
                 Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected", "error": message})
             return dict(status=False, message=message)
 
-        root = etree.fromstring(receipt)
+        root, error = self.parse_ena_receipt(receipt, action='register the study')
 
-        if root.get('success') == 'false':
+        if error or root.get('success') == 'false':
             result['status'] = False
-            result['message'] = "Couldn't register STUDY due to the following errors: "
-            errors = root.findall('.//ERROR')
-            if errors:
-                error_text = str()
-                for e in errors:
-                    error_text = error_text + " \n" + e.text
+            if error:
+                result['message'] = error
+            else:
+                result['message'] = "Couldn't register STUDY due to the following errors: "
+                errors = root.findall('.//ERROR')
+                if errors:
+                    error_text = str()
+                    for e in errors:
+                        error_text = error_text + " \n" + e.text
 
-                result['message'] = result['message'] + error_text
+                    result['message'] = result['message'] + error_text
 
             # log error
             if singlecell_id:
@@ -842,8 +867,9 @@ class EnaSubmissionHelper:
                        + '" -F "EXPERIMENT=@' \
                        + experiement_xml_path \
                        + '" -F "RUN=@' \
-                       + run_xml_path \
-                       + '" "' + ena_service \
+                       + run_xml_path + '"' \
+                       + CURL_HTTP_CODE_OPTION \
+                       + ' "' + ena_service \
                        + '"'
 
             self.logging_debug(
@@ -859,7 +885,15 @@ class EnaSubmissionHelper:
                 errors.append(message)
                 raise e
 
-            receipt_root = etree.fromstring(receipt)
+            receipt_root, receipt_error = self.parse_ena_receipt(
+                receipt, action=f'register the EXPERIMENT and RUN for datafiles: "{row[file_identifier]}"')
+
+            if receipt_error:
+                result['status'] = False
+                result['message'] = receipt_error
+                errors.append(receipt_error)
+                Singlecell().update_component_status(id=singlecell['_id'], component=file_component_name, identifier=file_identifier, identifier_value=row[file_identifier], repository='ena', status_column_value={'status': 'rejected', 'error': receipt_error})
+                continue
 
             if receipt_root.get('success') == 'false':
                 result['status'] = False
