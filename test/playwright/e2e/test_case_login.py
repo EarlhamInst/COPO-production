@@ -10,7 +10,7 @@ from test.playwright.config.settings import (
     TEST_USER_PASSWORD,
     TEST_USER_USERNAME,
 )
-from test.playwright.e2e.helpers import dismiss_onboarding_modals, fill_and_submit_login_form
+from test.playwright.e2e.utils.helpers import dismiss_onboarding_modals, fill_and_submit_login_form
 
 
 def test_login(page: Page):

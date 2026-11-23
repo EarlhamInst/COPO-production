@@ -1,22 +1,30 @@
+import json
 import os
 import re
-import subprocess
-import sys
 import time
 
 import openpyxl
 import pytest
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError, expect
 
-from test.playwright.e2e.helpers import create_biodata_profile, dismiss_tour_if_present, upload_manifest
+from test.playwright.e2e.utils.helpers import (
+    create_biodata_profile,
+    delete_profile_by_title as _delete_profile_by_title,
+    dismiss_tour_if_present,
+    poll_sample_accession as _poll_sample_accession,
+    run_django_shell as _run_django_shell,
+    upload_manifest,
+)
 
 TITLE = "Submission Journey Manifest Validation"
 DESCRIPTION = "A description that is at least twenty characters long."
 
-TESTFILES_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "test_files"))
-SAMPLE_MANIFEST = os.path.join(TESTFILES_DIR, "COPO_FAANG_manifest_success1.xlsx")
+TEST_FILES_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "test_files")
+)
+SAMPLE_MANIFEST = os.path.join(TEST_FILES_DIR, "COPO_FAANG_manifest_success1.xlsx")
 SINGLECELL_MANIFEST = os.path.join(
-    TESTFILES_DIR, "copo_single_cell_manifest_version_faang_sc_rnaseq_success1.xlsx"
+    TEST_FILES_DIR, "copo_single_cell_manifest_version_faang_sc_rnaseq_success1.xlsx"
 )
 # Every filename the manifest's data row puts in a term_type=="file" column
 # -- across the file, expression_data_file and analysis_derived_data sheets.
@@ -33,11 +41,11 @@ SINGLECELL_MANIFEST = os.path.join(
 # nothing in the submission path verifies them, so the duplicate is
 # equivalent to a distinct fixture here.
 SINGLECELL_DATA_FILES = [
-    os.path.join(TESTFILES_DIR, "single_cell_read1_4.fastq.gz"),
-    os.path.join(TESTFILES_DIR, "single_cell_read2_4.fastq.gz"),
-    os.path.join(TESTFILES_DIR, "single_cell_expression_data_file4.h5ad"),
-    os.path.join(TESTFILES_DIR, "single_cell_analysis_derived_from_file4.json"),
-    os.path.join(TESTFILES_DIR, "single_cell_white_list_barcode_file4.tsv"),
+    os.path.join(TEST_FILES_DIR, "single_cell_read1_4.fastq.gz"),
+    os.path.join(TEST_FILES_DIR, "single_cell_read2_4.fastq.gz"),
+    os.path.join(TEST_FILES_DIR, "single_cell_expression_data_file4.h5ad"),
+    os.path.join(TEST_FILES_DIR, "single_cell_analysis_derived_from_file4.json"),
+    os.path.join(TEST_FILES_DIR, "single_cell_white_list_barcode_file4.tsv"),
 ]
 
 # Checklist dropdown <option> values — confirmed live, both pages have their
@@ -54,7 +62,7 @@ FAANG_SINGLECELL_CHECKLIST = "version_faang_sc_rnaseq"
 # field). The single-cell manifest's own sample sheet describes a different
 # species by default (Arenicola marina / 6344) -- the two fixtures were
 # authored independently and were never meant to describe the same animal.
-# When test_full_submission_and_publish_journey patches in the real
+# When test_singlecell_submission_and_publish_journey patches in the real
 # accession from that submission, it must patch these to match too, or the
 # single-cell manifest ends up claiming a real Homo sapiens accession is
 # Arenicola marina.
@@ -66,94 +74,41 @@ SAMPLE_MANIFEST_TAXON_ID = 9606
 # the same array formula reading from the study sheet).
 SINGLECELL_STUDY_ID = "STUDY004"
 
+# The schema routes each data file to ENA or Zenodo by its term_repository
+# column: read FASTQs go to ENA, everything else into the Zenodo deposition,
+# alongside the generated manifest.
+SINGLECELL_ENA_FILE_NAMES = {os.path.basename(f) for f in SINGLECELL_DATA_FILES[:2]}
+SINGLECELL_ZENODO_FILE_NAMES = {
+    os.path.basename(f) for f in SINGLECELL_DATA_FILES[2:]
+} | {"manifest.xlsx"}
 
-def _run_django_shell(code):
-    result = subprocess.run(
-        [sys.executable, "manage.py", "shell", "-c", code],
-        cwd="/copo",
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    return result.stdout
-
-
-def _delete_profile_by_title(title):
-    # Profile.validate_and_delete() is a hard delete that deliberately
-    # *refuses* to delete (returns False, no exception) if any sample,
-    # submission, or datafile document still references the profile --
-    # exactly the state every test in this file leaves behind (a saved
-    # sample, and for the full journey a real ENA submission too). That's
-    # sensible production behaviour (don't orphan tracked submission data),
-    # but test cleanup needs to actually clear the profile, so clear the
-    # referencing collections first via the same handle_dict the DAL itself
-    # uses, then let validate_and_delete's guard pass cleanly.
-    #
-    # enaFileTransfer matters here too, even though validate_and_delete()
-    # doesn't check it: EnaFileTransfer.get_pending_transfers() only claims
-    # ONE pending record globally (across every profile) per 10s beat tick
-    # (a deliberate throttle -- common/dal/copo_da.py), in unspecified Mongo
-    # order. Confirmed live: leaving 4 leftover pending records per aborted
-    # run meant later runs' real file transfers queued behind a growing
-    # backlog of dead ones and took minutes longer than they should have.
-    _run_django_shell(
-        "from common.dal.profile_da import Profile\n"
-        "from common.dal.copo_base_da import handle_dict\n"
-        f"profile_ids = [str(r['_id']) for r in Profile().get_all_records() if r.get('title') == {title!r}]\n"
-        "for pid in profile_ids:\n"
-        "    for collection in ('sample', 'submission', 'datafile', 'singlecell', 'enaFileTransfer'):\n"
-        "        handle_dict[collection].delete_many({'profile_id': pid})\n"
-        "    Profile().validate_and_delete(pid)\n"
-    )
+# Where the app under test submits to (ZENODOURL in the copo_web compose
+# service). This test's own process may have a different ZENODOURL, so the
+# sandbox checks below set it explicitly rather than inherit it: they must
+# never read from or delete on production Zenodo.
+ZENODO_SANDBOX_URL = os.environ.get("ZENODO_SANDBOX_URL", "https://sandbox.zenodo.org/api")
 
 
-def _poll_sample_accession(profile_id, timeout=1200, interval=10):
-    # process_pending_sample_submission (Celery beat, every 10s) is what
-    # actually calls real ENA -- there's no websocket/event this test can
-    # wait on directly, so poll the DB the same way the table's own redraw
-    # does under the hood. Real EBI latency is unknown up front, hence the
-    # generous timeout rather than trusting a short default.
-    # manage.py shell -c prints an import banner (+ blank separator line)
-    # before running this code, and a bare .strip().splitlines()[-N:] on the
-    # combined stdout is fragile: printing the final field as an empty
-    # string (the common case for "error") makes its trailing blank line
-    # get silently swallowed by strip(), shifting every field left by one.
-    # A single delimited marker line sidesteps that entirely.
-    code = (
-        "from common.dal.sample_da import Sample\n"
-        f"samples = Sample(profile_id={profile_id!r}).execute_query({{'profile_id': {profile_id!r}}})\n"
-        "s = samples[0] if samples else {}\n"
-        "print('POLL_RESULT:' + '|'.join([s.get('status', ''), s.get('biosampleAccession', ''), s.get('error', '')]))\n"
-    )
-    deadline = time.time() + timeout
-    status = ""
-    while time.time() < deadline:
-        marker_line = next(
-            (line for line in _run_django_shell(code).splitlines() if line.startswith("POLL_RESULT:")),
-            "POLL_RESULT:||",
-        )
-        status, accession, error = marker_line[len("POLL_RESULT:"):].split("|")
-        if status == "accepted" and accession:
-            return accession
-        if status == "rejected" or error:
-            raise AssertionError(f"Sample submission to ENA failed: status={status!r} error={error!r}")
-        time.sleep(interval)
-    raise AssertionError(f"Timed out waiting for a real BioSample accession (last status={status!r})")
-
-
-def _poll_singlecell_study_accession(profile_id, study_id, timeout=1200, interval=10):
-    # process_ena_submission (Celery beat, src/celery.py) is the single-cell
-    # equivalent of process_pending_sample_submission -- same "poll the DB,
-    # no direct event to wait on" reasoning as _poll_sample_accession.
+def _poll_singlecell_study_accession(
+    profile_id, study_id, repository="ena", timeout=1200, interval=10
+):
+    # process_ena_submission / process_submission_zenodo (Celery beat,
+    # src/celery.py) are the single-cell equivalents of
+    # process_pending_sample_submission -- same "poll the DB, no direct
+    # event to wait on" reasoning as _poll_sample_accession.
     #
     # Status lands on a *repository-suffixed* field inside the study
     # element of a *list*, not a bare top-level field like Sample uses:
     # Singlecell.update_component_status() does
-    #   components.study.$.<key>_ena
+    #   components.study.$.<key>_<repository>
     # via positional-array update matched on components.study[].study_id
     # (common/dal .../utils/da.py -- update_component_status()), so the
-    # relevant fields are status_ena / accession_ena / error_ena on
+    # relevant fields are e.g. status_ena / accession_ena / error_ena on
     # whichever components.study[] entry has study_id == study_id.
+    #
+    # Both repositories record a failure the same way: the study goes back to
+    # 'pending' with error_<repository> set, so a failure fails this poll
+    # straight away rather than waiting for the timeout.
     code = (
         "from src.apps.copo_single_cell_submission.utils.da import Singlecell\n"
         f"records = Singlecell(profile_id={profile_id!r}).execute_query({{'profile_id': {profile_id!r}}})\n"
@@ -162,29 +117,80 @@ def _poll_singlecell_study_accession(profile_id, study_id, timeout=1200, interva
         "    for s in r.get('components', {}).get('study', []):\n"
         f"        if s.get('study_id') == {study_id!r}:\n"
         "            study = s\n"
-        "print('POLL_RESULT:' + '|'.join(["
-        "study.get('status_ena', ''), study.get('accession_ena', ''), study.get('error_ena', '')"
-        "]))\n"
+        "print('POLL_RESULT:' + '|'.join(str(study.get(f'{key}_' + "
+        f"{repository!r}, '')) for key in ('status', 'accession', 'error')))\n"
     )
     deadline = time.time() + timeout
     status = ""
     while time.time() < deadline:
         marker_line = next(
-            (line for line in _run_django_shell(code).splitlines() if line.startswith("POLL_RESULT:")),
+            (
+                line
+                for line in _run_django_shell(code).splitlines()
+                if line.startswith("POLL_RESULT:")
+            ),
             "POLL_RESULT:||",
         )
-        status, accession, error = marker_line[len("POLL_RESULT:"):].split("|")
+        status, accession, error = marker_line[len("POLL_RESULT:") :].split("|")
         if status == "accepted" and accession:
             return accession
         if status == "rejected" or error:
-            raise AssertionError(f"Single-cell study submission to ENA failed: status={status!r} error={error!r}")
+            raise AssertionError(
+                f"Single-cell study submission to {repository} failed: status={status!r} error={error!r}"
+            )
         time.sleep(interval)
-    raise AssertionError(f"Timed out waiting for a real single-cell study accession (last status={status!r})")
+    raise AssertionError(
+        f"Timed out waiting for a real single-cell study {repository} accession (last status={status!r}). "
+        "Check that the Celery beat and worker debug configurations are running."
+    )
 
 
-def test_sample_manifest_validation_and_singlecell_rejects_stale_accession(page: Page):
+def _zenodo_sandbox_shell(code):
+    # Runs against the Zenodo *sandbox*, whatever this process's own
+    # ZENODOURL says (see ZENODO_SANDBOX_URL). ZENODOTOKEN is inherited, so
+    # it must be a sandbox token -- the same one the app under test uses.
+    return _run_django_shell(
+        "from src.apps.copo_single_cell_submission.utils.zenodo.deposition import Zenodo_deposition\n"
+        + code,
+        env={"ZENODOURL": ZENODO_SANDBOX_URL},
+    )
+
+
+def _read_zenodo_deposition(deposition_id):
+    # ZenodoClient.do_get() prints the URL it calls, so pick out the marker line.
+    out = _zenodo_sandbox_shell(
+        "import json\n"
+        f"d = Zenodo_deposition().read(_id={deposition_id!r})\n"
+        "print('POLL_RESULT:' + json.dumps({'state': d.get('state'), "
+        "'files': [f['filename'] for f in d.get('files', [])]}))\n"
+    )
+    marker_line = next(line for line in out.splitlines() if line.startswith("POLL_RESULT:"))
+    return json.loads(marker_line[len("POLL_RESULT:") :])
+
+
+def _delete_zenodo_draft(deposition_id):
+    # Only unpublished drafts can be deleted; the test never publishes, so
+    # this keeps repeated runs from piling up drafts in the sandbox account.
+    _zenodo_sandbox_shell(f"Zenodo_deposition().delete(_id={deposition_id!r})\n")
+
+
+def _click_singlecell_study_action(page, action):
+    # See the long comments in test_singlecell_submission_and_publish_journey
+    # for why the button must be scoped to the study tab's own table, and why
+    # the test waits for the study row's auto-selection instead of clicking it.
+    page.wait_for_function(
+        "() => $.fn.dataTable.isDataTable('#singlecell_table_study') && "
+        "$('#singlecell_table_study').DataTable().rows({selected: true}).count() > 0",
+        timeout=30000,
+    )
+    page.click(f'.copo-dt[data-action="{action}"][data-table="singlecell_table_study"]')
+
+
+def test_sample_manifest_validation_and_singlecell_rejects_stale_accession(
+    page: Page, ena_dev_sandbox
+):
     # Entirely local/synchronous — no real ENA or Zenodo submissions. See
-    # test_full_submission_and_publish_journey (marked "external") for the
+    # test_singlecell_submission_and_publish_journey (marked "external") for the
     # real submission flow this manifest data feeds into.
     #
     # create_biodata_profile()'s own success check only confirms *a*
@@ -221,7 +227,7 @@ def test_sample_manifest_validation_and_singlecell_rejects_stale_accession(page:
     # dev sandbox database every 24 hours, so *any* hardcoded accession goes
     # stale within a day regardless of how recently the fixture was created.
     # A real, currently-valid accession can only come from an actual ENA
-    # submission — that's test_full_submission_and_publish_journey's job, not
+    # submission — that's test_singlecell_submission_and_publish_journey's job, not
     # this local/fast test's. So what's actually correct to assert here isn't
     # "validation succeeds" (it structurally can't, deterministically, with a
     # static fixture) but "validation correctly rejects a stale accession" —
@@ -245,7 +251,7 @@ def test_sample_manifest_validation_and_singlecell_rejects_stale_accession(page:
     response = response_info.value
 
     assert response.status == 400
-    assert "Invalid ENA sample" in response.text()
+    assert "Invalid ENA sample" in response.text() or "Expected a valid Biosample Accession" in response.text()
     expect(page.locator("#save_singlecell_button")).to_be_disabled()
 
     # Not the UI delete flow here (already covered by
@@ -259,7 +265,9 @@ def test_sample_manifest_validation_and_singlecell_rejects_stale_accession(page:
 
 
 @pytest.mark.external
-def test_full_submission_and_publish_journey(page: Page, tmp_path):
+def test_singlecell_submission_and_publish_journey(
+    page: Page, tmp_path, ena_dev_sandbox
+):
     # The real journey: profile -> sample manifest -> real "Submit to ENA"
     # against EBI's own dev sandbox -> wait for a real BioSample accession
     # -> patch that accession into the single-cell manifest (openpyxl,
@@ -267,16 +275,23 @@ def test_full_submission_and_publish_journey(page: Page, tmp_path):
     # stay valid) -> single-cell manifest validates successfully this time
     # -> upload the manifest's referenced data files (ENA submission gates
     # on them existing in S3) -> real "Submit to ENA" for the study -> wait
-    # for real acceptance.
+    # for real acceptance -> real "Submit to ZENODO" for the same study
+    # against the Zenodo sandbox -> check the draft deposition holds the
+    # non-read files and the manifest, and none of the read FASTQs -> delete
+    # the draft.
     #
-    # The single-cell page's Submit-to-ENA button wasn't originally wired
-    # into this app's toolbar at all (see project memory
-    # project_singlecell_submit_publish_buttons_missing.md for how that was
-    # found and fixed in setup_profile_types.py). Publish-to-ENA and
-    # Submit/Publish-to-Zenodo remain out of scope for this test: Zenodo has
-    # no sandbox anywhere in this repo, so publishing was always going to
-    # stop short of a real Zenodo publish, and Publish-to-ENA depends on
-    # the study being fully released, which is its own separate flow.
+    # The submit buttons on the study tab are added by place_task_buttons()
+    # (static/copo/js/generic_handlers_ext2.js), one per repository the
+    # schema lists for the study component -- not by setup_profile_types.py.
+    #
+    # Prerequisites for the Zenodo step: copo_web's ZENODOURL points at the
+    # sandbox and its ZENODOTOKEN is a sandbox token, and this process has
+    # that same token in ZENODOTOKEN (used to inspect and delete the draft).
+    #
+    # Still out of scope: Publish-to-Zenodo (a published sandbox record
+    # can't be deleted, so every run would leave one behind) and
+    # Publish-to-ENA (depends on the study being fully released, which is
+    # its own separate flow).
     title = "External Full Submission Journey Profile"
     description = "A description that is at least twenty characters long."
     # create_biodata_profile()'s own success check only confirms *a*
@@ -319,7 +334,9 @@ def test_full_submission_and_publish_journey(page: Page, tmp_path):
     # offering COPO's default. If it doesn't appear (credentials already
     # valid), the submission just proceeds -- handle both paths.
     try:
-        page.locator("#repo_cred_modal .cred-modal-default").wait_for(state="visible", timeout=5000)
+        page.locator("#repo_cred_modal .cred-modal-default").wait_for(
+            state="visible", timeout=5000
+        )
     except PlaywrightTimeoutError:
         pass
     else:
@@ -391,7 +408,9 @@ def test_full_submission_and_publish_journey(page: Page, tmp_path):
     # remote dev MinIO (measured directly server-side, not a hang -- see
     # project_demo_minio_distributed_fragility memory), so the default 60s
     # wasn't enough to cover all 4 files uploading sequentially in one request.
-    expect(page.locator("#page_alert_panel")).to_contain_text("Files have been uploaded", timeout=300000)
+    expect(page.locator("#page_alert_panel")).to_contain_text(
+        "Files have been uploaded", timeout=300000
+    )
 
     page.goto(f"/copo/copo_single_cell/view/{profile_id}/COPO_SINGLE_CELL/singlecell")
     page.wait_for_load_state("networkidle")
@@ -432,13 +451,17 @@ def test_full_submission_and_publish_journey(page: Page, tmp_path):
     )
 
     with page.expect_response(lambda r: "copo_forms" in r.url, timeout=30000) as ri:
-        page.click('.copo-dt[data-action="submit_singlecell_ena"][data-table="singlecell_table_study"]')
+        page.click(
+            '.copo-dt[data-action="submit_singlecell_ena"][data-table="singlecell_table_study"]'
+        )
 
         # Same credentials-popup gate as the sample submission -- the real
         # copo_forms POST only fires once credentials are resolved, so this
         # has to happen inside the expect_response block.
         try:
-            page.locator("#repo_cred_modal .cred-modal-default").wait_for(state="visible", timeout=5000)
+            page.locator("#repo_cred_modal .cred-modal-default").wait_for(
+                state="visible", timeout=5000
+            )
         except PlaywrightTimeoutError:
             pass
         else:
@@ -449,11 +472,13 @@ def test_full_submission_and_publish_journey(page: Page, tmp_path):
             dismiss_tour_if_present(page)
             page.click("#repo_cred_modal .cred-modal-default")
     resp = ri.value
-    assert resp.status == 200, f"submit_singlecell_ena request failed: {resp.status} {resp.text()[:500]}"
+    assert (
+        resp.status == 200
+    ), f"submit_singlecell_ena request failed: {resp.status} {resp.text()[:500]}"
     body = resp.json()
-    assert body.get("action_feedback", {}).get("status") == "success", (
-        f"submit_singlecell_ena rejected: {body.get('action_feedback')}"
-    )
+    assert (
+        body.get("action_feedback", {}).get("status") == "success"
+    ), f"submit_singlecell_ena rejected: {body.get('action_feedback')}"
 
     # The completion notification (not just the earlier "Submission has been
     # scheduled" queuing one) only exists because of a matching app fix in
@@ -464,10 +489,47 @@ def test_full_submission_and_publish_journey(page: Page, tmp_path):
     # and a real PRJ* project accession -- this is the actual "the test
     # isn't done until the UI says so" signal, not just a DB poll.
     expect(
-        page.locator('#submission-activity-log div[data-alert-type="success"]', has_text="accepted by ENA")
+        page.locator(
+            '#submission-activity-log div[data-alert-type="success"]',
+            has_text="accepted by ENA",
+        )
     ).to_contain_text(re.compile(r"PRJ\w+"), timeout=1200000)
 
-    accession = _poll_singlecell_study_accession(profile_id, SINGLECELL_STUDY_ID, timeout=30)
+    accession = _poll_singlecell_study_accession(
+        profile_id, SINGLECELL_STUDY_ID, timeout=30
+    )
     assert accession and accession.startswith("PRJ")
 
+    # Submit the same study to Zenodo. No credentials popup here:
+    # copo_single_cell.js only shows it for ENA, Zenodo always uses COPO's
+    # own token.
+    with page.expect_response(lambda r: "copo_forms" in r.url, timeout=30000) as ri:
+        _click_singlecell_study_action(page, "submit_singlecell_zenodo")
+    resp = ri.value
+    assert (
+        resp.status == 200
+    ), f"submit_singlecell_zenodo request failed: {resp.status} {resp.text()[:500]}"
+    body = resp.json()
+    assert (
+        body.get("action_feedback", {}).get("status") == "success"
+    ), f"submit_singlecell_zenodo rejected: {body.get('action_feedback')}"
+
+    # Celery copies the Zenodo files out of S3 first, then
+    # process_submission_zenodo creates the deposition and uploads them.
+    deposition_id = _poll_singlecell_study_accession(
+        profile_id, SINGLECELL_STUDY_ID, repository="zenodo"
+    )
+    assert deposition_id.isdigit(), f"Unexpected Zenodo deposition id: {deposition_id!r}"
+
+    deposition = _read_zenodo_deposition(deposition_id)
+    assert deposition["state"] == "unsubmitted", f"Deposition should still be a draft: {deposition}"
+    uploaded = set(deposition["files"])
+    assert SINGLECELL_ZENODO_FILE_NAMES <= uploaded, (
+        f"Missing from the Zenodo deposition: {sorted(SINGLECELL_ZENODO_FILE_NAMES - uploaded)}"
+    )
+    assert not SINGLECELL_ENA_FILE_NAMES & uploaded, (
+        f"Read FASTQs belong in ENA, not Zenodo: {sorted(SINGLECELL_ENA_FILE_NAMES & uploaded)}"
+    )
+
+    _delete_zenodo_draft(deposition_id)
     _delete_profile_by_title(title)

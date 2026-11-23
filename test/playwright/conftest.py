@@ -1,4 +1,7 @@
+import os
+
 import pytest
+import requests
 
 from test.playwright.config.settings import BASE_URL, TEST_USER_PASSWORD, TEST_USER_USERNAME
 
@@ -60,3 +63,22 @@ def context(new_context, storage_state):
     # --video, not the CLI flags alone. Its own fixture teardown closes the
     # context and saves the trace; nothing further to do here.
     return new_context(storage_state=storage_state)
+
+
+@pytest.fixture(scope="session")
+def ena_dev_sandbox():
+    # Sample manifest validation looks every taxon up on ENA_URL_HOSTNAME
+    # (ENA's dev sandbox locally), and sample submission goes there too. When
+    # that host is down -- seen 2026-10-20, every /ena/taxonomy and
+    # /ena/browser path returned an nginx 404 -- a dependent test can only
+    # time out on a disabled "Finish" button, which reads like a COPO bug.
+    # Skip with the real reason instead.
+    host = os.environ.get("ENA_URL_HOSTNAME") or "www.ebi.ac.uk"
+    url = f"https://{host}/ena/taxonomy/rest/tax-id/9606"
+    try:
+        status = requests.get(url, timeout=30).status_code
+    except requests.RequestException as error:
+        pytest.skip(f"ENA unreachable ({url}): {error}")
+    if status != 200:
+        pytest.skip(f"ENA taxonomy lookup is down ({url} returned HTTP {status})")
+    return host
