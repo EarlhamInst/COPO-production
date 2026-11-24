@@ -171,6 +171,11 @@ def _click_singlecell_study_action(page, action):
     # See the long comments in test_singlecell_submission_and_publish_journey
     # for why the button must be scoped to the study tab's own table, and why
     # the test waits for the study row's auto-selection instead of clicking it.
+    #
+    # A page tour step can be shown again while the test waits
+    # on a long step and its overlay can block the submission
+    # button click so it is dismissed beforehand.
+    dismiss_tour_if_present(page)
     page.wait_for_function(
         "() => $.fn.dataTable.isDataTable('#singlecell_table_study') && "
         "$('#singlecell_table_study').DataTable().rows({selected: true}).count() > 0",
@@ -514,15 +519,18 @@ def test_singlecell_submission_and_publish_journey(
     )
     assert deposition_id.isdigit(), f"Unexpected Zenodo deposition id: {deposition_id!r}"
 
-    deposition = _read_zenodo_deposition(deposition_id)
-    assert deposition["state"] == "unsubmitted", f"Deposition should still be a draft: {deposition}"
-    uploaded = set(deposition["files"])
-    assert SINGLECELL_ZENODO_FILE_NAMES <= uploaded, (
-        f"Missing from the Zenodo deposition: {sorted(SINGLECELL_ZENODO_FILE_NAMES - uploaded)}"
-    )
-    assert not SINGLECELL_ENA_FILE_NAMES & uploaded, (
-        f"Read FASTQs belong in ENA, not Zenodo: {sorted(SINGLECELL_ENA_FILE_NAMES & uploaded)}"
-    )
+    try:
+        deposition = _read_zenodo_deposition(deposition_id)
+        assert deposition["state"] == "unsubmitted", f"Deposition should still be a draft: {deposition}"
+        uploaded = set(deposition["files"])
+        assert SINGLECELL_ZENODO_FILE_NAMES <= uploaded, (
+            f"Missing from the Zenodo deposition: {sorted(SINGLECELL_ZENODO_FILE_NAMES - uploaded)}"
+        )
+        assert not SINGLECELL_ENA_FILE_NAMES & uploaded, (
+            f"Read FASTQs belong in ENA, not Zenodo: {sorted(SINGLECELL_ENA_FILE_NAMES & uploaded)}"
+        )
+    finally:
+        # Delete drafts from Zenodo to clean up, even if the assertions above fail
+        _delete_zenodo_draft(deposition_id)
 
-    _delete_zenodo_draft(deposition_id)
     _delete_profile_by_title(title)
