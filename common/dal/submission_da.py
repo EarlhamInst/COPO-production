@@ -1121,7 +1121,7 @@ class Submission(DAComponent):
     def get_submission_downloading(self, component="study"):
         subs = self.get_collection_handle().find(
             {f"{component}_status": "downloading", "deleted": helpers.get_not_deleted_flag()},
-            {component: 1, "profile_id": 1, "date_modified": 1})
+            {component: 1, "profile_id": 1, "date_modified": 1, "repository": 1})
         return cursor_to_list(subs)
 
     def remove_component_from_submission(self, sub_id, component="study", component_ids=[]):

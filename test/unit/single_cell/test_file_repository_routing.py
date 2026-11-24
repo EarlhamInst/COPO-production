@@ -378,3 +378,57 @@ def test_run_xml_follows_the_file_columns_it_is_given(submitted_xml):
     written = submitted_xml(file_columns=['read_1_file'])
 
     assert run_file_names(written['run.xml']) == ['sampleA_R1.fastq.gz']
+
+
+@pytest.fixture
+def pending_check():
+    from src.apps.copo_single_cell_submission.utils import copo_single_cell
+
+    def run(transfers, repository='ena', singlecell_record=SINGLECELL):
+        submission = mock.MagicMock()
+        submission.get_submission_downloading.return_value = [
+            {'_id': 'sub1', 'profile_id': 'profile1', 'study': ['STUDY001'], 'repository': repository}]
+        singlecell = mock.MagicMock()
+        singlecell.get_collection_handle.return_value.find_one.return_value = singlecell_record
+        schemas = SinglecellSchemas.__new__(SinglecellSchemas)
+        schemas.get_schema = mock.MagicMock(return_value=SCHEMAS)
+        file_transfer = mock.MagicMock()
+        file_transfer.get_all_records_columns.return_value = transfers
+
+        with mock.patch.object(copo_single_cell, 'Submission', return_value=submission), \
+                mock.patch.object(copo_single_cell, 'Singlecell', return_value=singlecell), \
+                mock.patch.object(copo_single_cell, 'SinglecellSchemas', return_value=schemas), \
+                mock.patch.object(copo_single_cell, 'EnaFileTransfer', return_value=file_transfer):
+            copo_single_cell.update_submission_pending()
+        return submission
+
+    return run
+
+
+def test_ena_submission_is_pending_once_its_own_files_are_transferred(pending_check):
+    # The ENA files are the only ones that are queued for transfer and as a result, 
+    # the Zenodo files never get a transfer record. As such, the submission 
+    # should not wait for them.
+    transfers = [{'local_path': f'/tmp/profile1/{name}', 'status': 'complete'} for name in ENA_FILE_NAMES]
+
+    submission = pending_check(transfers)
+
+    submission.update_submission_pending.assert_called_once_with(['sub1'], component='study')
+
+
+def test_ena_submission_waits_while_one_of_its_files_is_still_transferring(pending_check):
+    transfers = [{'local_path': '/tmp/profile1/sampleA_R1.fastq.gz', 'status': 'complete'},
+                 {'local_path': '/tmp/profile1/sampleA_R2.fastq.gz', 'status': 'processing'}]
+
+    submission = pending_check(transfers)
+
+    submission.update_submission_pending.assert_not_called()
+
+
+def test_study_deleted_while_downloading_is_removed_from_the_submission(pending_check):
+    # A study whose single-cell record was deleted mid-submission is dropped from
+    # the submission instead of crashing the beat task for every submission.
+    submission = pending_check([], singlecell_record=None)
+
+    submission.remove_component_from_submission.assert_called_once_with(
+        sub_id='sub1', component='study', component_ids=['STUDY001'])

@@ -1037,9 +1037,9 @@ def update_submission_pending():
                 Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                 continue
 
-            # Get all files referenced by this singlecell record's schema
+            # Get the files routed to the submission's repository
             schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], schemas=dict(), target_id=singlecell["checklist_id"])
-            files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
+            files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas, repository=sub.get("repository"))
 
             # Look up the transfer status for each file
             local_path = [regex.Regex(f'{x}$') for x in files]
