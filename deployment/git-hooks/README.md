@@ -30,6 +30,7 @@ checked-out code:
   
   ```bash
   python manage.py migrate --noinput
+  python manage.py relax_unmodelled_columns
   python manage.py setup_schemas
   python manage.py setup_profile_types
   python manage.py setup_groups
@@ -40,6 +41,15 @@ there, so switching between branches that differ
 (e.g. `main` branch <-> `edp` branch) would otherwise leave the database
 describing the old branch (import errors, profiles that won't render).
 The hook keeps the database in step with the code.
+
+The `migrate` command cannot remove a column that another branch's
+migration added because that migration does not exist on the branch
+that was switched to so, `relax_unmodelled_columns` makes such columns
+optional so that inserts work again.
+
+The branch that added the column will always set it so that
+switching back is unaffected. The command only runs when `DEBUG=True` and
+`--dry-run` lists the columns without changing them.
 
 - Runs only on real branch switches and only when relevant files have been changed.
 - Skip a single checkout with `COPO_SKIP_SETUP=1 git checkout <branch>`.
