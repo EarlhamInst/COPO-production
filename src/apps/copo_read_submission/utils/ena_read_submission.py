@@ -20,6 +20,7 @@ from common.utils.helpers import (
 from common.schemas.utils.data_utils import simple_utc, render_html_list
 from django.conf import settings
 from common.ena_utils import generic_helper as ghlper
+from common.ena_utils import ena_requests
 from common.dal.copo_da import EnaChecklist, EnaFileTransfer
 from common.dal.sample_da import Sample
 from common.dal.submission_da import Submission
@@ -547,35 +548,24 @@ class EnaReads:
         result = dict(status=True, value='')
 
         # register project to the ENA service
-        curl_cmd = (
-            'curl -u "'
-            + self.user_token
-            + ':'
-            + self.pass_word
-            + '" -F "SUBMISSION=@'
-            + submission_xml_path
-            + '" -F "PROJECT=@'
-            + project_xml_path
-            + '" "'
-            + self.ena_service
-            + '"'
-        )
+        xml_files = {
+            'SUBMISSION': submission_xml_path,
+            'PROJECT': project_xml_path,
+        }
 
         ghlper.logging_info(
-            "Submitting project xml to ENA via CURL. CURL command is: "
-            + curl_cmd.replace(self.pass_word, "xxxxxx"),
+            "Submitting project xml to ENA via requests: " + str(xml_files),
             self.submission_id,
         )
 
         try:
-            receipt = subprocess.check_output(curl_cmd, shell=True)
+            receipt = ena_requests.post_xml_files(self.ena_service, self.user_token, self.pass_word, xml_files).content
         except Exception as e:
             if settings.DEBUG:
                 Logger().exception(e)
             message = (
-                'API call error '
-                + "Submitting project xml to ENA via CURL. CURL command is: "
-                + curl_cmd.replace(self.pass_word, "xxxxxx")
+                'API call error submitting project xml to ENA: '
+                + str(e).replace(self.pass_word, "xxxxxx")
             )
 
             ghlper.logging_error(message, self.submission_id)
@@ -856,19 +846,10 @@ class EnaReads:
         result = dict(status=True, value='')
 
         # register samples to the ENA service
-        curl_cmd = (
-            'curl -u "'
-            + self.user_token
-            + ':'
-            + self.pass_word
-            + '" -F "SUBMISSION=@'
-            + submission_xml_path
-            + '" -F "SAMPLE=@'
-            + sample_xml_path
-            + '" "'
-            + self.ena_service
-            + '"'
-        )
+        xml_files = {
+            'SUBMISSION': submission_xml_path,
+            'SAMPLE': sample_xml_path,
+        }
 
         ghlper.logging_info(
             "Submitting samples xml to ENA via requests. URL: " + self.ena_service,
@@ -876,14 +857,7 @@ class EnaReads:
         )
 
         try:
-            with open(submission_xml_path, 'rb') as sf, open(sample_xml_path, 'rb') as xf:
-                resp = requests.post(
-                    self.ena_service,
-                    auth=(self.user_token, self.pass_word),
-                    files={'SUBMISSION': sf, 'SAMPLE': xf},
-                    timeout=300,
-                )
-            receipt = resp.content
+            receipt = ena_requests.post_xml_files(self.ena_service, self.user_token, self.pass_word, xml_files).content
         except Exception as e:
             if settings.DEBUG:
                 Logger().exception(e)
@@ -1089,27 +1063,18 @@ class EnaReads:
 
             result = dict(status=True, value='')
 
-            # compose curl command for study release
-            curl_cmd = (
-                'curl -u "'
-                + self.user_token
-                + ':'
-                + self.pass_word
-                + '" -F "SUBMISSION=@'
-                + submission_xml_path
-                + '" "'
-                + self.ena_service
-                + '"'
-            )
+            # release the study
+            xml_files = {
+                'SUBMISSION': submission_xml_path,
+            }
 
             ghlper.logging_info(
-                "Releasing study via CURL. CURL command is: "
-                + curl_cmd.replace(self.pass_word, "xxxxxx"),
+                "Releasing study via requests: " + str(xml_files),
                 self.submission_id,
             )
 
             try:
-                receipt = subprocess.check_output(curl_cmd, shell=True)
+                receipt = ena_requests.post_xml_files(self.ena_service, self.user_token, self.pass_word, xml_files).content
             except Exception as e:
                 if settings.DEBUG:
                     Logger().exception(e)
@@ -1645,32 +1610,21 @@ class EnaReads:
                 final_submission_xml_path = result['value']
 
             # submit xmls to ENA service
-            curl_cmd = (
-                'curl -u "'
-                + self.user_token
-                + ':'
-                + self.pass_word
-                + '" -F "SUBMISSION=@'
-                + final_submission_xml_path
-                + '" -F "EXPERIMENT=@'
-                + experiement_xml_path
-                + '" -F "RUN=@'
-                + run_xml_path
-                + '" "'
-                + self.ena_service
-                + '"'
-            )
+            xml_files = {
+                'SUBMISSION': final_submission_xml_path,
+                'EXPERIMENT': experiement_xml_path,
+                'RUN': run_xml_path,
+            }
 
             ghlper.logging_info(
                 "Submitting EXPERIMENT and RUN XMLs for "
                 + str(submission_file_names)
-                + " using CURL. CURL command is: "
-                + curl_cmd.replace(self.pass_word, "xxxxxx"),
+                + " to ENA",
                 self.submission_id,
             )
 
             try:
-                receipt = subprocess.check_output(curl_cmd, shell=True)
+                receipt = ena_requests.post_xml_files(self.ena_service, self.user_token, self.pass_word, xml_files).content
             except Exception as e:
                 if settings.DEBUG:
                     Logger().exception(e)
@@ -1953,27 +1907,18 @@ class EnaReads:
 
         result = dict(status=True, value='')
 
-        # compose curl command for study release
-        curl_cmd = (
-            'curl -u "'
-            + self.user_token
-            + ':'
-            + self.pass_word
-            + '" -F "SUBMISSION=@'
-            + submission_xml_path
-            + '" "'
-            + self.ena_service
-            + '"'
-        )
+        # modify the study
+        xml_files = {
+            'SUBMISSION': submission_xml_path,
+        }
 
         ghlper.logging_info(
-            "Modifying study via CURL. CURL command is: "
-            + curl_cmd.replace(self.pass_word, "xxxxxx"),
+            "Modifying study via requests: " + str(xml_files),
             self.submission_id,
         )
 
         try:
-            receipt = subprocess.check_output(curl_cmd, shell=True)
+            receipt = ena_requests.post_xml_files(self.ena_service, self.user_token, self.pass_word, xml_files).content
         except Exception as e:
             if settings.DEBUG:
                 Logger().exception(e)

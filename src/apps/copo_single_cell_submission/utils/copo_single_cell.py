@@ -775,7 +775,7 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena", cr
 
     # Prepare file transfer records for all files referenced in the singlecell record
     schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get("schema_name", singlecell["schema_name"]), schemas=dict(), target_id=singlecell["checklist_id"])
-    files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
+    files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas, repository=repository)
     if files:
         # Pre-flight: verify every file referenced in the manifest is actually
         # present in S3 *before* creating transfer records or flipping the
@@ -1059,12 +1059,12 @@ def update_submission_pending():
                  {"schema_name":1,"checklist_id":1, "components":1})
             if not singlecell:
                 # Study was deleted while submission was in progress — remove it from the submission
-                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id= study_id)
+                Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                 continue
 
-            # Get all files referenced by this singlecell record's schema
+            # Get the files routed to the submission's repository
             schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], schemas=dict(), target_id=singlecell["checklist_id"])
-            files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
+            files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas, repository=sub.get("repository"))
 
             # Look up the transfer status for each file
             local_path = [regex.Regex(f'{x}$') for x in files]

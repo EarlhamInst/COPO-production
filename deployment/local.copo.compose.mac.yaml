@@ -30,8 +30,7 @@
 #
 ## Note: To stop then start containers but retain existing database
 ## data and applied migrations, run:
-# $ docker compose --env-file .env -f local.copo.compose.mac.yaml restart
-#
+# $ docker compose --env-file .env -f local.copo.compose.mac.yaml up -d --force-recreate copo_web
 #
 ## Step #3  - Run Django management commands in the terminal
 ## to set up the database and create a superuser (for a new deployment with empty DB only)
@@ -144,7 +143,7 @@ services:
       - DJANGO_SUPERUSER_PASSWORD=admin
       - DJANGO_SUPERUSER_EMAIL=admin@test.com
       - http_protocol=http
-      - ZENODOURL=https://zenodo.org/api
+      - ZENODOURL=https://sandbox.zenodo.org/api
       - ZENODOTOKEN=${vault_zenodo_api_token}
       - ENA_BROWSER_SERVICE=https://www.ebi.ac.uk/ena/browser/api # Has to be production ENA browser API endpoint
       - SAPIO_USE_API_USER=true
@@ -265,5 +264,5 @@ services:
   #     - SAPIOURL=${SAPIOURL}
   #     - SAPIOGUID=${SAPIOGUID}
   #     - SAPIOTOKEN=${SAPIOTOKEN}
-  #     - ZENODOURL=https://zenodo.org/api
+  #     - ZENODOURL=https://sandbox.zenodo.org/api
   #     - ZENODOTOKEN=${ZENODOTOKEN}

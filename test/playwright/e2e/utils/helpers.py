@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 import time
@@ -5,13 +6,16 @@ import time
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, expect
 
 
-def run_django_shell(code):
+def run_django_shell(code, env=None):
+    # `env` adds to or overrides this process's environment variables for
+    # the shell, e.g. to point the Zenodo client at the sandbox.
     result = subprocess.run(
         [sys.executable, 'manage.py', 'shell', '-c', code],
         cwd='/copo',
         check=True,
         capture_output=True,
         text=True,
+        env={**os.environ, **(env or {})},
     )
     return result.stdout
 
@@ -38,7 +42,7 @@ def delete_profile_by_title(title):
     # validate_and_delete() also runs the profile type's post-delete hook,
     # which for an EDP profile deletes its Sapio project -- so this cleans up
     # Sapio too, provided the SAPIO_* settings reach this container (see
-    # run_playwright_tests.sh).
+    # docker-compose.playwright.yaml).
     run_django_shell(
         'from common.dal.profile_da import Profile\n'
         'from common.dal.copo_base_da import handle_dict\n'

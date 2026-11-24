@@ -40,7 +40,7 @@ def process_pending_submission_zendo():
                     msg=msg,
                     action="error",
                     html_id="submission_info")
-                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                 continue
 
             singlecell_components = singlecell.get("components",{})
@@ -53,7 +53,7 @@ def process_pending_submission_zendo():
                     msg=msg,
                     action="error",
                     html_id="submission_info")
-                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                 continue
             study = studies[0]
 
@@ -63,7 +63,7 @@ def process_pending_submission_zendo():
             SingleCellSchemasHandler().write_manifest(singlecell_schema=schemas, checklist_id=singlecell["checklist_id"], singlecell=singlecell, file_path=bytesstring)
 
             schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], schemas=dict(), target_id=singlecell["checklist_id"])
-            files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
+            files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas, repository='zenodo')
             local_path = [regex.Regex(f'{x}$') for x in files]
             projection = {'_id':0, 'local_path':1, 'status':1, 'is_archived':1, 'profile_id':1}
             filter = dict()
@@ -116,9 +116,12 @@ def process_pending_submission_zendo():
                 else:
                     deposition_id = accession["deposition_id"]
                     deposition = Zenodo_deposition().read(_id=deposition_id)
+                    
                     if deposition.get("state","") == "done":
-                        deposition = Zenodo_deposition().new_version(_id=deposition_id)    
-                        deposition_id = deposition.get("id","")
+                        # The original published deposition is used as the new version
+                        response = Zenodo_deposition().new_version(_id=deposition_id)                            
+                        deposition_id = response['links']['latest_draft'].rstrip('/').rsplit('/', 1)[-1]
+                        deposition = Zenodo_deposition().read(_id=deposition_id)
                         Submission().update_component_submission_accession(profile_id=sub["profile_id"], repository="zenodo", component="study", identifier="study_id", accession={"study_id":study_id, "deposition_id":deposition["id"]})
                     else:
                         deposition = Zenodo_deposition().unlock(_id=deposition_id)
@@ -136,10 +139,19 @@ def process_pending_submission_zendo():
                 Zenodo_deposition().upload_files(bucket_link=deposition.get("links",{}).get("bucket",""), files=changed_files, bytesstring=bytesstring)            
             except Exception as e:
                 Logger().exception(e)
+                msg = f"Problem submitting {study_id} to Zenodo: {str(e)}"
                 notify_singlecell_status(data={"profile_id": sub["profile_id"]},
-                    msg=f"Problem to zenodo: {str(e)}",
+                    msg=msg,
                     action="error",
                     html_id="submission_info")
+                
+                # Record the failed submission to Zenodo by recording 
+                # the error on the study and setting the status to 'pending'
+                try:
+                    Singlecell().update_component_status(id=str(singlecell["_id"]), component="study", identifier="study_id", identifier_value=study_id, repository="zenodo", status_column_value={"status": "pending", "error": msg})
+                except Exception:
+                    Logger().exception(f"Failed to reset the Zenodo status for study_id={study_id}")
+                Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                 continue
 
             Singlecell().update_component_status(id=singlecell["_id"], component="study", identifier="study_id", identifier_value=study_id, repository="zenodo", status_column_value={"status": "accepted", "state" : deposition["state"],  "accession": str(deposition["id"]), "doi" : deposition.get("doi",""), "error": ""})  

@@ -136,8 +136,8 @@ def process_pending_submission_ena():
                         singlecell = Singlecell().get_collection_handle().find_one(
                             {"profile_id":sub["profile_id"], "study_id":study_id,"deleted": get_not_deleted_flag()},
                             {"schema_name":1,"checklist_id":1, "study_id":1, "components":1})
-                        file_component_df, identifier_map = _prepare_file_submission(singlecell=singlecell, file_component_name=submission_components["read"])
-                        context = ena_submission_helper.register_files(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, component_df=file_component_df, identifier_map=identifier_map, singlecell=singlecell, file_component_name=submission_components["read"])
+                        file_component_df, identifier_map, ena_file_columns = _prepare_file_submission(singlecell=singlecell, file_component_name=submission_components["read"])
+                        context = ena_submission_helper.register_files(submission_xml_path=submission_xml_path, modify_submission_xml_path=modify_submission_xml_path, component_df=file_component_df, identifier_map=identifier_map, singlecell=singlecell, file_component_name=submission_components["read"], file_columns=ena_file_columns)
 
                         #submit assembly to ena
                         if context['status']:
@@ -397,13 +397,30 @@ def _prepare_file_submission(singlecell, file_component_name="file"):
     parent_map = SinglecellSchemas().get_parent_map(foreign_key_map)
     file_component_data = components.get(file_component_name, [])
     if not file_component_data:
-        return
+        return pd.DataFrame(), identifier_map, []
     file_component_df = pd.DataFrame.from_records(file_component_data)
     file_component_df = file_component_df.astype(object).fillna("")
     file_component_schema = schemas.get(file_component_name, {})
     if not file_component_schema:
         Logger().error(f"Missing schema for {file_component_name} component in singlecell submission: {singlecell.get('study_id', 'Unknown')}")
-        return
+        return pd.DataFrame(), identifier_map, []
+
+    # Fields from the schema that have `term_repository` set as 'ena'
+    # and expect data files to be provided
+    # NB: Fields can also be referred to as terms
+    ena_file_columns = SinglecellSchemas.get_file_terms(file_component_schema, repository='ena')
+    if not ena_file_columns:
+        ena_file_columns = ['read_1_file', 'read_2_file']
+        Logger().log(f"No fields in the schema have 'file' as the `term_type` and 'ena' as the `term_repository` for '{schema_name}' "
+                     f'({file_component_name} component) so, falling back to the expected file fields: {ena_file_columns}')
+
+    # Drop fields that expect data files as well as their file 
+    # checksum fields because they should not be deposited to ENA
+    non_ena_file_columns = [term for term in SinglecellSchemas.get_file_terms(file_component_schema)
+                            if term not in ena_file_columns]
+    file_component_df = file_component_df.drop(
+        columns=non_ena_file_columns + [f'{term}_checksum' for term in non_ena_file_columns],
+        errors='ignore')
     file_component_schema_df = pd.DataFrame.from_records(file_component_schema)
     file_component_schema_df = file_component_schema_df.astype(object).fillna("")
     schema_columns = file_component_df.columns[file_component_df.columns.isin(file_component_schema_df["term_name"].tolist() + ["accession_ena"])]
@@ -415,7 +432,7 @@ def _prepare_file_submission(singlecell, file_component_name="file"):
     component_df = component_df.rename(columns=rename_columns)
 
     #component_df.drop(columns=[identifier_map["file"]], inplace=True, errors='ignore')
-    return component_df, identifier_map
+    return component_df, identifier_map, ena_file_columns
 
 
 def _merge_paranent_data(component_df, identifier_map, component_name, parent_map, singlecell, schemas=None, term_mapping=None):

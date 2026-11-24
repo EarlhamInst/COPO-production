@@ -123,6 +123,11 @@ SAPIO_PROJECT_DEPARTMENT = 'Technical Genomics'
 # Settings for ENA
 ENA_URL_HOSTNAME = get_env('ENA_URL_HOSTNAME') or 'www.ebi.ac.uk'
 
+# Settings for Zenodo
+ZENODO_RECORDS_URL = (
+    (get_env('ZENODOURL') or 'https://zenodo.org/api').rstrip('/').removesuffix('/api') + '/records'
+)
+
 # Accession links based on a repository like ENA, Zenodo and Sapio
 # Columns that end with 'field_suffix' are rendered in the UI as a link
 # to 'url_template' with '{accession}' replaced by the accession
@@ -144,7 +149,7 @@ REPOSITORY_ACCESSION_LINKS = {
     },
     'zenodo': {
         'field_suffix': 'accession_zenodo',
-        'url_template': 'https://zenodo.org/records/{accession}',
+        'url_template': f'{ZENODO_RECORDS_URL}/{{accession}}',
     },
 }
 
@@ -165,7 +170,7 @@ MANIFEST_VERSION = {
     "DTOL_EI": "2.4",
     "ERGA": "2.5.1",
     "DTOL_BARCODE": "",
-    "COPO_SINGLE_CELL": "0.4",
+    "COPO_SINGLE_CELL": "0.5",
     "COPO_IMAGE_REMBI": "0.1",
     "COPO_IMAGE_STX_FISH": "0.1",
     "COPO_READ": "0.1",

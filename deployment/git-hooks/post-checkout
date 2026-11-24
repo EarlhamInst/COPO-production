@@ -48,10 +48,13 @@ watch_paths=(
 requirements_paths=("requirements")
 
 # Run the `manage.py` commands in order to keep the database in sync with the code.
-# Run the migrations first to create the required tables then, `setup_schemas`
-# which loads the data that profile types and components depend on.
+# Run the migrations first to create the required tables then, make optional any
+# required column that another branch's migrations added but this branch's models
+# do not define (otherwise every insert into that table fails then,
+# `setup_schemas` which loads the data that profile types and components depend on.
 setup_commands=(
   "migrate --noinput"
+  "relax_unmodelled_columns"
   "setup_schemas"
   "setup_profile_types"
   "setup_groups"

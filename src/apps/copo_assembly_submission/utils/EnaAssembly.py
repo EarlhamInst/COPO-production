@@ -23,6 +23,7 @@ import pandas as pd
 from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_project
 from common.dal.mongo_util import cursor_to_list
 from common.ena_utils.ena_helper import EnaSubmissionHelper
+from common.ena_utils.ena_requests import WEBIN_CLI_PASSWORD_OPTION, webin_cli_env
 from common.validators.ena_validators.validation_messages import MESSAGES
 
 l = Logger()
@@ -200,7 +201,7 @@ def _submit_assembly(file_path, profile_id, submission_type):
     test = ""
     if "dev" in ena_service:
         test = " -test "
-    webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token}  -password '{pass_word}' {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
+    webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {user_token} {WEBIN_CLI_PASSWORD_OPTION} {test} -context {submission_type} -manifest {str(file_path)} -submit -ascp"
     Logger().debug(msg=webin_cmd)
     # print(webin_cmd)
     # try/except as it turns out this can fail even if validate is successfull
@@ -210,7 +211,7 @@ def _submit_assembly(file_path, profile_id, submission_type):
                         msg="Submitting Assembly",
                         action="info",
                         html_id="assembly_info")
-        output = subprocess.check_output(webin_cmd,stderr=subprocess.STDOUT, shell=True)
+        output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True, env=webin_cli_env(pass_word))
         output = output.decode("ascii")
         return_code = 0
     except subprocess.CalledProcessError as cpe:

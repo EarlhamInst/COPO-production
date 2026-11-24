@@ -28,10 +28,6 @@ services:
       - '5901:5900'
       - '5678:5678'
     environment:
-      # "copo_web" (underscore) is a valid Docker DNS name but Django's Host-header
-      # parser rejects underscores outright (RFC 1034/1035), regardless of
-      # ALLOWED_HOSTS. Use the hyphenated network alias defined alongside the
-      # copo_web service instead.
       - BASE_URL=http://copo-web:8000
       - DEBUG=True
       - DISPLAY=:99
@@ -41,11 +37,6 @@ services:
       - ENVIRONMENT_TYPE=test
       - PLAYWRIGHT_DEBUG_PORT=5678
       - VNC_PORT=5900
-      # Django settings import fails outright without these (some are cast with
-      # int(), so even being unset — not just wrong — crashes at import time).
-      # Mirrors copo_web's own environment block (deployment/local.copo.compose.mac.yaml)
-      # so tests can run manage.py commands (e.g. create_test_user) directly,
-      # against the same database copo_web itself uses.
       - SECRET_KEY=${vault_copo_web_secret_key}
       - MEDIA_PATH=media/
       - http_protocol=http
@@ -54,6 +45,9 @@ services:
       - ENA_URL_HOSTNAME=wwwdev.ebi.ac.uk
       - REDIS_HOST=copo_redis
       - REDIS_PORT=6379
+        # Run EDP tests without Sapio via the 
+        # 'Python: Django (fake Sapio)' in `launch.json`
+      - LIMS_ADAPTER=${LIMS_ADAPTER:-}
       - MONGO_USER=copo_user
       - MONGO_USER_PASSWORD=password
       - MONGO_DB=copo_mongo
@@ -72,11 +66,7 @@ services:
       - SAPIO_PASSWORD=${vault_sapio_password}
       - SAPIO_API_TOKEN=${vault_sapio_api_token}
       - SAPIO_API_URL=${vault_sapio_api_url}
-      # Set it in the terminal to run the EDP tests without Sapio, e.g.
-      # LIMS_ADAPTER=src.apps.ei_edp.utils.lims.sapio.fake.FakeSapioAdapter test/playwright/scripts/run_playwright_tests.sh -e
-      # copo_web must use the same adapter (see the 'Python: Django (fake Sapio)'
-      # debug configuration) or the tests read back from a different place than it writes
-      - LIMS_ADAPTER=${LIMS_ADAPTER:-}
+      - ZENODOTOKEN=${vault_zenodo_api_token}
     depends_on:
       - copo_web
     volumes:

@@ -131,7 +131,7 @@ services:
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
       - ENA_V1_SAMPLE_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples
-      - ZENODOURL=https://zenodo.org/api
+      - ZENODOURL=https://sandbox.zenodo.org/api
       - ZENODOTOKEN_FILE=/run/secrets/copo_zenodo_token
       - ENA_BROWSER_SERVICE=https://www.ebi.ac.uk/ena/browser/api # Has to be production ENA browser API endpoint
       - SAPIO_USE_API_USER=true
@@ -256,7 +256,7 @@ services:
       - ENA_V2_SERVICE_ASYNC=https://wwwdev.ebi.ac.uk/ena/submit/webin-v2/submit/queue
       - B2DROP_PERMITS=/copo/b2drop/permits
       - ENA_V1_SAMPLE_SERVICE=https://wwwdev.ebi.ac.uk/ena/submit/drop-box/samples
-      - ZENODOURL=https://zenodo.org/api
+      - ZENODOURL=https://sandbox.zenodo.org/api
       - ZENODOTOKEN_FILE=/run/secrets/copo_zenodo_token
       - ENA_BROWSER_SERVICE=https://www.ebi.ac.uk/ena/browser/api
       - SAPIO_USERNAME_FILE=/run/secrets/sapio_username

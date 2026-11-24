@@ -1,5 +1,7 @@
 from .da import SinglecellSchemas
+from .schema_checks import check_schema_sheets
 from common.utils.logger import Logger
+from common.lookup.copo_enums import Loglvl
 import pandas as pd
 import os
 from django.conf import settings
@@ -46,6 +48,22 @@ class SingleCellSchemasHandler:
         xls = pd.ExcelFile(url)
         return xls
 
+    def _log_schema_warnings(self, schema_name, xls):
+        '''Log quality problems in the schema spreadsheet as warnings. 
+           They do not stop the schema loading;
+        '''
+        sheets = {sheet: pd.read_excel(xls, sheet, dtype=str) for sheet in xls.sheet_names}
+        warnings = check_schema_sheets(sheets)
+        
+        for warning in warnings:
+            l.log(f'Schema {schema_name}: {warning}', level=Loglvl.WARNING)
+            
+        if warnings:
+            l.log(f'Schema {schema_name}: {len(warnings)} quality warnings.',
+                  level=Loglvl.WARNING)
+            
+        return warnings
+
     def _parseSchemas(self, schema_name, xls):
 
         # Only empty cells are treated as missing values. Otherwise, pandas
@@ -59,6 +77,8 @@ class SingleCellSchemasHandler:
         checklist_df = pd.read_excel(xls, "checklists", index_col="key") 
         checklist_filter_df = pd.read_excel(xls, "checklists_filter",dtype=str) if "checklists_filter" in xls.sheet_names else pd.DataFrame()
         schemas_df = pd.read_excel(xls, "data")  
+
+        self._log_schema_warnings(schema_name, xls)
 
         enums_dict = {}
         for c in enums_df.columns:

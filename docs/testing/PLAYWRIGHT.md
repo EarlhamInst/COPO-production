@@ -146,18 +146,25 @@ repeatedly. This is why tracing is opt-in rather than always-on.
 
 ## Tests marked `external` (real ENA/Zenodo/Sapio calls)
 
-Some tests make real network calls to services outside the local stack —
+Some tests make real network calls to services outside the local stack -
 ENA's dev sandbox (`wwwdev.ebi.ac.uk`, safe, EBI's own intended test
-environment), production Zenodo (`zenodo.org` — there is no Zenodo sandbox
-anywhere in this repo) and the Sapio LIMS test instance that `copo_web` is
-configured with. These are marked `@pytest.mark.external` and are **excluded by
-default**: a bare `run_playwright_tests.sh` run always passes
-`-m "not external"`.
+environment), the Zenodo sandbox (`sandbox.zenodo.org`) and the Sapio 
+LIMS QA instance. These are marked as
+`@pytest.mark.external` and are **excluded by default**: a bare
+`run_playwright_tests.sh` run always passes `-m "not external"`.
 
 Tests that need ENA's dev sandbox **skip** (with the HTTP status in the
 reason) when its taxonomy lookup is down, instead of timing out on a disabled
-button. Tests that need Sapio **fail** if it can't be queried, since that's a
+button.
+
+Tests that need Sapio **fail** if it can't be queried, since that's a
 local setup problem rather than a third-party outage.
+
+The external single-cell journeys test each repository on its own - 
+`test_singlecell_ena_submission_journey` submits a study to ENA only and
+`test_singlecell_zenodo_submission_journey` submits one to Zenodo only so
+neither depends on the other. Both register a sample with ENA first because
+the single-cell manifest has to reference a real BioSample accession.
 
 The EDP tests (`test_create_and_delete_edp_profile`,
 `test_lims_manifest_submission_to_sapio`) create a real project in Sapio for
@@ -241,7 +248,7 @@ and add the `--headed` flag to the test command.
 
 **Run the tests from the project root repository** not from within a Docker container then, connect 
 TigerVNC to `localhost:5901` once the run starts. Tests marked `external` call the 
-real instance of ENA, Sapio or Zenodo services so they need `-e` otherwise, they're skipped.
+real ENA, Sapio and Zenodo sandboxes so they need `-e` otherwise, they're skipped.
 
 **Entire test suite**
 
@@ -267,12 +274,10 @@ test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_lo
 test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_profile.py --headed
 
 test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_profile.py::test_create_and_delete_biodata_profile --headed
-
-# external (Sapio)
 test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_profile.py::test_create_and_delete_edp_profile --headed
 ```
 
-**EDP LIMS submission** (`test_case_edp_lims_submission_workflow.py`, both tests external: Sapio and ENA)
+**EDP LIMS submission** (`test_case_edp_lims_submission_workflow.py`)
 
 ```bash
 # Entire file
@@ -290,8 +295,9 @@ test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case
 
 test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_singlecell_submission_journey.py::test_sample_manifest_validation_and_singlecell_rejects_stale_accession --headed
 
-# External (ENA and Zenodo)
-test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_submission_and_publish_journey --headed
+# External: ENA only then, Zenodo only
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_ena_submission_journey --headed
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_zenodo_submission_journey --headed
 ```
 
 **Optional flags** (add them to any command above):
