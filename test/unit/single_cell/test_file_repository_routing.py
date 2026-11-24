@@ -314,7 +314,7 @@ def submitted_xml(tmp_path):
                 mock.patch.object(ena_helper, 'EnaFileTransfer') as ena_file_transfer, \
                 mock.patch.object(ena_helper, 'Singlecell'), \
                 mock.patch.object(ena_helper.tempfile, 'gettempdir', return_value=str(tmp_path)), \
-                mock.patch.object(ena_helper.subprocess, 'check_output', return_value=failed_receipt()):
+                mock.patch.object(helper, 'submit_xml_to_ena', return_value=(failed_receipt(), '200')):
             ena_file_transfer.return_value.get_all_records_columns.return_value = ena_transfers
             helper.register_files(
                 submission_xml_path='submission.xml', modify_submission_xml_path='modify.xml',
