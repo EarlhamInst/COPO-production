@@ -312,7 +312,7 @@ class StudyComponentValidator(Validator):
             elif len(self.data) > 1:
                 self.errors.append("Only one study is allowed")
                 self.flag = False
-        return self.errors, self.warnings, self.flag, self.kwargs.get("isupdate")
+        return self.errors, self.warnings, self.flag, missing_mandatory_column_count
 
 
 class AssemblyFileValidator(Validator):
@@ -321,11 +321,11 @@ class AssemblyFileValidator(Validator):
     def validate(self):
         component = self.kwargs.get('component', '')
         if component != 'assembly_file':
-            return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+            return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
 
         if not {'assembly_file_type', 'assembly_file'}.issubset(self.data.columns):
             # Missing columns are reported by `MandatoryValuesValidator`
-            return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+            return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
 
         schema = self.kwargs.get('schema', {})
         file_type_choices = schema.get('assembly_file_type', {}).get('choice') or []
@@ -347,7 +347,7 @@ class AssemblyFileValidator(Validator):
                     f'Sheet <strong>{component}</strong>, row <strong>{i + 2}</strong>: {error}')
                 self.flag = False
 
-        return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+        return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
 
 
 class SequencingAnnotationFileValidator(Validator):
@@ -358,11 +358,11 @@ class SequencingAnnotationFileValidator(Validator):
     def validate(self):
         component = self.kwargs.get('component', '')
         if component != 'sequencing_annotation_file':
-            return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+            return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
 
         if 'sequencing_annotation_file' not in self.data.columns:
             # Missing columns are reported by `MandatoryValuesValidator`
-            return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+            return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
 
         has_file_type = 'sequencing_annotation_file_type' in self.data.columns
         schema = self.kwargs.get('schema', {})
@@ -383,11 +383,11 @@ class SequencingAnnotationFileValidator(Validator):
                     f'Sheet <strong>{component}</strong>, row <strong>{i + 2}</strong>: {error}')
                 self.flag = False
 
-        return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+        return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
 
         if 'sequencing_annotation_file' not in self.data.columns:
             # Missing columns are reported by `MandatoryValuesValidator`
-            return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+            return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
 
         for i, row in self.data.iterrows():
             file_name = str(row['sequencing_annotation_file'] or '').strip()
@@ -400,7 +400,7 @@ class SequencingAnnotationFileValidator(Validator):
                     f'Sheet <strong>{component}</strong>, row <strong>{i + 2}</strong>: {error}')
                 self.flag = False
 
-        return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+        return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
 
 
 class SequencingAnnotationGff3FileValidator(Validator):
@@ -416,7 +416,7 @@ class SequencingAnnotationGff3FileValidator(Validator):
         component = self.kwargs.get('component', '')
         if component != self.component_name or self.file_column not in self.data.columns:
             # Missing columns are reported by `MandatoryValuesValidator`
-            return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+            return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
 
         valid_exts = SEQUENCE_ANNOTATION_FILE_TYPE_EXTS['gff3']
         uploaded_files = None  # listed from S3 only if a file name is valid
@@ -438,7 +438,7 @@ class SequencingAnnotationGff3FileValidator(Validator):
                 self.errors.append(f'Sheet <strong>{component}</strong>, row <strong>{i + 2}</strong>: {error}')
                 self.flag = False
 
-        return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+        return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
 
     def _get_uploaded_file_error(self, file_name):
         # Return an error for a GFF3 file in S3 that is not gzipped or not valid GFF3 or ''
@@ -474,12 +474,12 @@ class FileTypeValidator(Validator):
     def validate(self):
         component = self.kwargs.get('component', '')
         if component not in FILE_TYPE_CHECKS:
-            return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+            return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
 
         type_column, file_columns, extensions_by_type = FILE_TYPE_CHECKS[component]
         if type_column not in self.data.columns:
             # Missing columns are reported by `MandatoryValuesValidator`
-            return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+            return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
 
         for i, row in self.data.iterrows():
             file_type = row[type_column]
@@ -498,4 +498,4 @@ class FileTypeValidator(Validator):
                                        f'column <strong>{file_column}</strong>: {error}')
                     self.flag = False
 
-        return self.errors, self.warnings, self.flag, self.kwargs.get('isupdate')
+        return self.errors, self.warnings, self.flag, self.kwargs.get('missing_mandatory_column_count', 0)
