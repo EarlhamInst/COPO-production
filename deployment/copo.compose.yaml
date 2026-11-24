@@ -12,6 +12,7 @@ x-minio-common: &minio-common
   environment:
     - MINIO_ROOT_USER_FILE=/run/secrets/minio_access_key
     - MINIO_ROOT_PASSWORD_FILE=/run/secrets/minio_secret_key
+    - MINIO_DRIVE_MAX_TIMEOUT=2m
   secrets:
     - minio_access_key
     - minio_secret_key
