@@ -286,6 +286,6 @@ def test_a_study_missing_from_the_database_is_dropped_from_the_submission(collab
 
     zenodo = run(collaborators, submission())
 
-    collaborators['Submission'].return_value.remove_study_from_singlecell_submission.assert_called_once_with(
-        sub_id=SUBMISSION_ID, study_id=STUDY_ID)
+    collaborators['Submission'].return_value.remove_component_from_submission.assert_called_once_with(
+        sub_id=SUBMISSION_ID, component='study', component_ids=[STUDY_ID])
     zenodo.create.assert_not_called()

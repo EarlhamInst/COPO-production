@@ -40,7 +40,7 @@ def process_pending_submission_zendo():
                     msg=msg,
                     action="error",
                     html_id="submission_info")
-                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                 continue
 
             singlecell_components = singlecell.get("components",{})
@@ -53,7 +53,7 @@ def process_pending_submission_zendo():
                     msg=msg,
                     action="error",
                     html_id="submission_info")
-                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id=study_id)
+                Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                 continue
             study = studies[0]
 

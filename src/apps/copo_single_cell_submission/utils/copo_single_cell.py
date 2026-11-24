@@ -1034,7 +1034,7 @@ def update_submission_pending():
                  {"schema_name":1,"checklist_id":1, "components":1})
             if not singlecell:
                 # Study was deleted while submission was in progress — remove it from the submission
-                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id= study_id)
+                Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                 continue
 
             # Get all files referenced by this singlecell record's schema
