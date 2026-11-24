@@ -173,7 +173,7 @@ MANIFEST_VERSION = {
     "COPO_SINGLE_CELL": "0.5",
     "COPO_IMAGE_REMBI": "0.1",
     "COPO_IMAGE_STX_FISH": "0.1",
-    "COPO_READ": "0.1",
+    "COPO_READ": "0.2",
     "EI_EDP": "0.1",
 }
 

@@ -1,7 +1,8 @@
 from django import forms  
-from django.core.exceptions import ValidationError
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit
+
+from src.apps.copo_assembly_submission.utils.EnaAssembly import ASSEMBLY_FILE_FIELDS, ASSEMBLY_FIELD_EXT_MAP
 
 class AssemblyForm(forms.Form):
 
@@ -22,7 +23,7 @@ class AssemblyForm(forms.Form):
             self.fields['sample'].required = False
             self.fields['sample'].hidden = True
             pass
-            # todo this bit does not really work, a drop down menu shows up no matter what (altough empty and optional)
+            # todo this bit does not really work, a drop down menu shows up no matter what (although empty and optional)
             # so it works but it's an aesthetic problem
             # self.fields['sample'].hidden = True
             # self.fields['sample'].label = ''
@@ -32,17 +33,20 @@ class AssemblyForm(forms.Form):
             self.fields["study"].disabled = True
             self.fields["sample"].disabled = True
             self.fields["id"].initial =  str(assembly["_id"])
-
-        files_choices = [("", 'None')]
-        if ecs_files:
-            files_choices.extend([(x,x) for x in ecs_files])
         
-        file_fields = ["fasta", "flatfile", "agp", "chromosome_list", "unlocalised_list"]
-        for field in file_fields:
+        # Set up the file fields with initial values, read-only 
+        # attributes, and filtered choices based on valid extensions
+        for field in ASSEMBLY_FILE_FIELDS:
             self.fields[field].initial = None
             self.fields[field].widget.attrs['readonly'] = True  
-            self.fields[field].choices = files_choices
-        
+            
+            # Filter the ECS files (i.e. files that the user has uploaded) to 
+            # include only those files with valid extensions for the field
+            valid_file_extensions = tuple(ASSEMBLY_FIELD_EXT_MAP[field])
+            self.fields[field].choices = [('', 'None')] + [
+                (x, x) for x in (ecs_files or []) if x.endswith(valid_file_extensions)
+            ]
+                
         if run_accession:
             tuplelist = []
             for x in run_accession:
@@ -54,10 +58,10 @@ class AssemblyForm(forms.Form):
                             widget=forms.TextInput(attrs={'placeholder': 'Study accession'}))
     sample = forms.ChoiceField(label="SAMPLE")
     sample_text = forms.CharField(label="SAMPLE", widget=forms.TextInput(attrs={'placeholder': 'Sample accession'}), required=False)
-    submission_type = forms.ChoiceField(label="SUBMISSION_TYPE", choices=[('genome', 'genome'), ('transcriptome', 'transcriptome')])
-    assemblyname = forms.CharField(label="ASSEMBLYNAME", widget=forms.TextInput(attrs={'placeholder': 'Unique assembly name, user-provided'}))
-    assembly_type = forms.ChoiceField(label="ASSEMBLY_TYPE", choices=[('clone', 'clone'), ('isolate', 'isolate')])
-    program = forms.CharField(label="PROGRAM", widget=forms.TextInput(attrs={'placeholder': 'The assembly program'}))
+    submission_type = forms.ChoiceField(label="SUBMISSION TYPE", choices=[('genome', 'genome'), ('transcriptome', 'transcriptome')])
+    assemblyname = forms.CharField(label="ASSEMBLY NAME", widget=forms.TextInput(attrs={'placeholder': 'Unique assembly name'}))
+    assembly_type = forms.ChoiceField(label="ASSEMBLY TYPE", choices=[('clone', 'clone'), ('isolate', 'isolate')])
+    program = forms.CharField(label="PROGRAMME", widget=forms.TextInput(attrs={'placeholder': 'The name of the assembly programme'}))
     platform = forms.CharField(label="PLATFORM", widget=forms.TextInput(attrs={'placeholder': 'The sequencing '
                                                                                               'platform, '
                                                                                               'or comma-separated '
@@ -72,21 +76,20 @@ class AssemblyForm(forms.Form):
                                     widget=forms.TextInput(attrs={'placeholder': 'The address of the authors'})) 
 
     coverage = forms.FloatField(label="COVERAGE", widget=forms.TextInput(attrs={'placeholder': 'The estimated depth of '
-                                                                                               'sequencing coverage'}),required=False, help_text='it is for genome assembly only')
-    mingaplength = forms.IntegerField(label="MINGAPLENGTH", required=False,help_text='it is for genome assembly only',
+                                                                                               'sequencing coverage'}),required=False, help_text='It is used for genome assembly only.')
+    mingaplength = forms.IntegerField(label="MINIMUM GAP LENGTH", required=False,help_text='It is used for genome assembly only.',
                                       widget=forms.TextInput(
                                           attrs={'placeholder': 'Minimum length of consecutive Ns to '
                                                                 'be considered a gap'}))
-    moleculetype = forms.ChoiceField(label="MOLECULETYPE", required=False, help_text= 'it is for genome assembly only' ,
+    moleculetype = forms.ChoiceField(label="MOLECULE TYPE", required=False, help_text= 'It is used for genome assembly only.' ,
                                      choices=[('','-'), ('genomic DNA', 'genomic DNA'), ('genomic RNA', 'genomic RNA'),
                                               ("viral cRNA", "viral cRNA")])
-    run_ref = forms.MultipleChoiceField(label="RUN_REF", required=False)
+    run_ref = forms.MultipleChoiceField(label="RUN REFERENCE", required=False)
     
     fasta = forms.ChoiceField(label="FASTA", required=False )
     flatfile = forms.ChoiceField(label="FLATFILE", required=False )
-    agp = forms.ChoiceField(label="AGP", required=False)
-    chromosome_list = forms.ChoiceField(label="CHROMOSOME_LIST", required=False)
-    unlocalised_list = forms.ChoiceField(label="UNLOCALISED_LIST", required=False)
+    chromosome_list = forms.ChoiceField(label="CHROMOSOME LIST", required=False)
+    unlocalised_list = forms.ChoiceField(label="UNLOCALISED LIST", required=False)
     #fasta = forms.FileField(label="FASTA", required=False, widget=forms.FileInput(
     #    #attrs={'accept': '.fasta.gz, .fas.gz, .fsa.gz, fna.gz, .fa.gz, .fasta.bz2, .fas.bz2, .fsa.bz2, .fna.bz2, .fa.bz2'}
     #     ))
@@ -118,4 +121,4 @@ class AssemblyForm(forms.Form):
  
 
         if error:
-            raise ValidationError(error)
+            raise forms.ValidationError(error)

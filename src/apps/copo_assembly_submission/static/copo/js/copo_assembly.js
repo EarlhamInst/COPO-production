@@ -92,7 +92,7 @@ function upload_assembly_files() {
       console.log(data);
       BootstrapDialog.show({
         title: 'Error',
-        message: data.responseText,
+        message: showFormErrors(data, $('#assembly_info')),
         type: BootstrapDialog.TYPE_DANGER,
       });
     })

@@ -88,6 +88,10 @@ app.conf.beat_schedule = {
         'task': 'src.apps.copo_assembly_submission.tasks.update_assembly_submission_pending',
         'schedule': timedelta(seconds=10),
     },
+    'update_assembly_submission_with_gca_accession': {
+        'task': 'src.apps.copo_assembly_submission.tasks.update_assembly_submission_with_gca_accession',
+        'schedule': timedelta(days=1),
+    },
     'process_assembly_submission': {
         'task': 'src.apps.copo_assembly_submission.tasks.process_assembly_submission',
         'schedule': timedelta(seconds=10),

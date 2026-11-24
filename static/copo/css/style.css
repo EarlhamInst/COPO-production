@@ -2443,6 +2443,12 @@ div.shown span.side-help-trigger:before {
   vertical-align: bottom;
 }
 
+/* Styles in forms */
+.form .form-text > .alert-warning {
+  margin-top: 10px;
+  font-size: .98rem !important;
+}
+
 /* Asterisk styles in forms */
 .form .requiredField .asteriskField {
   color: red;

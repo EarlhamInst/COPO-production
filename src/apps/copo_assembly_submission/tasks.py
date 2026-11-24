@@ -15,3 +15,9 @@ def update_assembly_submission_pending(self):
     Logger().debug("Running update_assembly_submission_pending")
     enaAssembly.update_assembly_submission_pending()
     return True
+
+@app.task(bind=True, base=CopoBaseClassForTask)
+def update_assembly_submission_with_gca_accession(self):
+    Logger().debug("Running update_assembly_submission_with_gca_accession")
+    enaAssembly.update_assembly_gca_accessions()
+    return True
