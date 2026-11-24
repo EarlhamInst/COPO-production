@@ -63,7 +63,7 @@ $(document).ready(function () {
   var wsurl =
     wsprotocol + window.location.host + '/ws/assembly_status/' + profile_id;
 
-  s3socket = new WebSocket(wsurl);
+  s3socket = new ReconnectingWebSocket(wsurl);
 
   s3socket.onclose = function (e) {
     console.log('s3socket closing ', e);
