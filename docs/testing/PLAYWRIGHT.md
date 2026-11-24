@@ -156,19 +156,11 @@ Tests that need ENA's dev sandbox **skip** (with the HTTP status in the
 reason) when its taxonomy lookup is down, instead of timing out on a disabled
 button.
 
-The single-cell journey (`test_singlecell_submission_and_publish_journey`)
-submits the same study to ENA and then to Zenodo. For the Zenodo step:
-
-- `copo_web` must have `ZENODOURL=https://sandbox.zenodo.org/api` and a
-  sandbox token in `ZENODOTOKEN`. Check the running server and Celery
-  processes rather than the compose file, e.g.
-  `cat /proc/1/environ | tr '\0' '\n' | grep ZENODOURL`.
-- The test reads the draft deposition back from the sandbox to check it holds
-  the non-read files and `manifest.xlsx` but none of the read FASTQs, then
-  deletes the draft. These checks always go to the sandbox (override with
-  `ZENODO_SANDBOX_URL`), whatever the test container's own `ZENODOURL` is.
-- It never publishes to Zenodo: a published sandbox record can't be deleted,
-  so every run would leave one behind.
+The external single-cell journeys test each repository on its own - 
+`test_singlecell_ena_submission_journey` submits a study to ENA only and
+`test_singlecell_zenodo_submission_journey` submits one to Zenodo only so
+neither depends on the other. Both register a sample with ENA first because
+the single-cell manifest has to reference a real BioSample accession.
 
 To opt in and run them too, pass `-e` as the first argument:
 
@@ -246,8 +238,9 @@ test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case
 
 test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_singlecell_submission_journey.py::test_sample_manifest_validation_and_singlecell_rejects_stale_accession --headed
 
-# External (ENA and Zenodo)
-test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_submission_and_publish_journey --headed
+# External: ENA only, then Zenodo only
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_ena_submission_journey --headed
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_zenodo_submission_journey --headed
 ```
 
 **Optional flags** (add them to any command above):

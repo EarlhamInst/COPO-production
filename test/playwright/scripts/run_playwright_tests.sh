@@ -19,7 +19,8 @@
 #   test/playwright/scripts/run_playwright_tests.sh                     # whole suite
 #   test/playwright/scripts/run_playwright_tests.sh -t test/playwright/e2e/test_case_login.py
 #   test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_login.py --tracing=on -v
-#   test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_submission_and_publish_journey
+#   test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_zenodo_submission_journey
+#   test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_ena_submission_journey
 #   test/playwright/scripts/run_playwright_tests.sh -e test/playwright --headed # Connect to TigerVNC via localhost:5901 in your browser
 
 #

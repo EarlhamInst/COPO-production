@@ -55,7 +55,7 @@ FAANG_SINGLECELL_CHECKLIST = "version_faang_sc_rnaseq"
 # field). The single-cell manifest's own sample sheet describes a different
 # species by default (Arenicola marina / 6344) -- the two fixtures were
 # authored independently and were never meant to describe the same animal.
-# When test_singlecell_submission_and_publish_journey patches in the real
+# When _prepare_singlecell_study patches in the real
 # accession from that submission, it must patch these to match too, or the
 # single-cell manifest ends up claiming a real Homo sapiens accession is
 # Arenicola marina.
@@ -168,7 +168,7 @@ def _delete_zenodo_draft(deposition_id):
 
 
 def _click_singlecell_study_action(page, action):
-    # See the long comments in test_singlecell_submission_and_publish_journey
+    # See the long comments in _prepare_singlecell_study
     # for why the button must be scoped to the study tab's own table, and why
     # the test waits for the study row's auto-selection instead of clicking it.
     #
@@ -188,7 +188,8 @@ def test_sample_manifest_validation_and_singlecell_rejects_stale_accession(
     page: Page, ena_dev_sandbox
 ):
     # Entirely local/synchronous — no real ENA or Zenodo submissions. See
-    # test_singlecell_submission_and_publish_journey (marked "external") for the
+    # test_singlecell_ena_submission_journey / test_singlecell_zenodo_submission_journey
+    # (marked "external") for the
     # real submission flow this manifest data feeds into.
     #
     # create_biodata_profile()'s own success check only confirms *a*
@@ -225,7 +226,7 @@ def test_sample_manifest_validation_and_singlecell_rejects_stale_accession(
     # dev sandbox database every 24 hours, so *any* hardcoded accession goes
     # stale within a day regardless of how recently the fixture was created.
     # A real, currently-valid accession can only come from an actual ENA
-    # submission — that's test_singlecell_submission_and_publish_journey's job, not
+    # submission — that's the external journeys' job, not
     # this local/fast test's. So what's actually correct to assert here isn't
     # "validation succeeds" (it structurally can't, deterministically, with a
     # static fixture) but "validation correctly rejects a stale accession" —
@@ -262,35 +263,33 @@ def test_sample_manifest_validation_and_singlecell_rejects_stale_accession(
     _delete_profile_by_title(TITLE)
 
 
-@pytest.mark.external
-def test_singlecell_submission_and_publish_journey(
-    page: Page, tmp_path, ena_dev_sandbox
-):
-    # The real journey: profile -> sample manifest -> real "Submit to ENA"
-    # against EBI's own dev sandbox -> wait for a real BioSample accession
-    # -> patch that accession into the single-cell manifest (openpyxl,
-    # since ENA wipes its sandbox DB every 24h so no static accession would
-    # stay valid) -> single-cell manifest validates successfully this time
-    # -> upload the manifest's referenced data files (ENA submission gates
-    # on them existing in S3) -> real "Submit to ENA" for the study -> wait
-    # for real acceptance -> real "Submit to ZENODO" for the same study
-    # against the Zenodo sandbox -> check the draft deposition holds the
-    # non-read files and the manifest, and none of the read FASTQs -> delete
-    # the draft.
-    #
-    # The submit buttons on the study tab are added by place_task_buttons()
-    # (static/copo/js/generic_handlers_ext2.js), one per repository the
-    # schema lists for the study component -- not by setup_profile_types.py.
-    #
-    # Prerequisites for the Zenodo step: copo_web's ZENODOURL points at the
-    # sandbox and its ZENODOTOKEN is a sandbox token, and this process has
-    # that same token in ZENODOTOKEN (used to inspect and delete the draft).
-    #
-    # Still out of scope: Publish-to-Zenodo (a published sandbox record
-    # can't be deleted, so every run would leave one behind) and
-    # Publish-to-ENA (depends on the study being fully released, which is
-    # its own separate flow).
-    title = "External Full Submission Journey Profile"
+# The real submissions are split into one test per repository so that the 
+# submissions to ENA and Zenodo are tested independently since either of them 
+# can fail, be slow or be rerun without the other.
+# 
+# Both share `_prepare_singlecell_study()` which gets a study ready to
+# submit. That setup registers the sample with ENA because the single-cell
+# manifest must reference to a real BioSample accession.
+#
+# The submit buttons on the study tab are added by place_task_buttons()
+# (static/copo/js/generic_handlers_ext2.js), one per repository the schema lists
+# for the study component -- not by setup_profile_types.py.
+
+
+def _prepare_singlecell_study(page, tmp_path, title):
+    '''
+    Submission process:
+    1) Create a profile -> Upload sample manifest 
+       -> Submit sample using "Submit to ENA" button against EBI's dev instance 
+       -> Wait for a BioSample accession to be assigned 
+    2) Patch that BioSample accession into the Single-cell manifest 
+       (using openpyxl since ENA wipes its dev instance DB every
+       24h so no static accession would stay valid) 
+       -> Single-cell manifest validates successfully 
+    3) Upload the data files referenced in the Single-cell manifest.
+    4) Leave the browser on the profile's Single-cell page and return the
+       profile ID.
+    '''
     description = "A description that is at least twenty characters long."
     # create_biodata_profile()'s own success check only confirms *a*
     # matching-titled card is visible -- if a same-titled profile from an
@@ -381,7 +380,7 @@ def test_singlecell_submission_and_publish_journey(
     page.click("#save_singlecell_button")
     page.wait_for_load_state("networkidle")
 
-    # ENA submission gates on the referenced data files actually existing in
+    # Submission gates on the referenced data files actually existing in
     # the profile's S3/MinIO bucket (copo_single_cell.py's
     # check_s3_bucket_for_files(), matched by literal filename against what
     # the manifest's file/expression_data_file sheets reference) -- saving
@@ -405,7 +404,7 @@ def test_singlecell_submission_and_publish_journey(
     # The two ~5MB fastq.gz fixtures alone take 35-45s each against the
     # remote dev MinIO (measured directly server-side, not a hang -- see
     # project_demo_minio_distributed_fragility memory), so the default 60s
-    # wasn't enough to cover all 4 files uploading sequentially in one request.
+    # was not enough to cover all the data files uploading sequentially in one request.
     expect(page.locator("#page_alert_panel")).to_contain_text(
         "Files have been uploaded", timeout=300000
     )
@@ -414,12 +413,6 @@ def test_singlecell_submission_and_publish_journey(
     page.wait_for_load_state("networkidle")
     dismiss_tour_if_present(page)
 
-    # Submit to ENA for the study -- this button only exists because it was
-    # just wired into singlecell.recordaction_buttons in
-    # setup_profile_types.py (previously it existed as a RecordActionButton
-    # DB row but was never attached to the component's toolbar at all; see
-    # project_singlecell_submit_publish_buttons_missing.md).
-    #
     # `#singlecell_table` is never a real element -- it's only a *prefix*.
     # do_render_component_table_tabs() (generic_handlers_ext2.js) builds one
     # real table per component tab, id = `<tableID>_<component>` (e.g.
@@ -438,20 +431,27 @@ def test_singlecell_submission_and_publish_journey(
     # handler calls load_records() on every click, which redraws (and
     # `rows().deselect()`s) the table, racing the very selection it's
     # trying to set. Just wait for the auto-select to land instead of
-    # fighting it.
+    # fighting it. _click_singlecell_study_action() does that wait.
     page.wait_for_timeout(1000)
-    dismiss_tour_if_present(page)
+    return profile_id
 
-    page.wait_for_function(
-        "() => $.fn.dataTable.isDataTable('#singlecell_table_study') && "
-        "$('#singlecell_table_study').DataTable().rows({selected: true}).count() > 0",
-        timeout=30000,
-    )
+
+def _assert_submit_accepted(resp, action):
+    assert resp.status == 200, f"{action} request failed: {resp.status} {resp.text()[:500]}"
+    body = resp.json()
+    assert (
+        body.get("action_feedback", {}).get("status") == "success"
+    ), f"{action} rejected: {body.get('action_feedback')}"
+
+
+@pytest.mark.external
+def test_singlecell_ena_submission_journey(page: Page, tmp_path, ena_dev_sandbox):
+    # Submit the study to ENA's dev instance and wait for it to be accepted.
+    title = "External ENA Submission Journey Profile"
+    profile_id = _prepare_singlecell_study(page, tmp_path, title)
 
     with page.expect_response(lambda r: "copo_forms" in r.url, timeout=30000) as ri:
-        page.click(
-            '.copo-dt[data-action="submit_singlecell_ena"][data-table="singlecell_table_study"]'
-        )
+        _click_singlecell_study_action(page, "submit_singlecell_ena")
 
         # Same credentials-popup gate as the sample submission -- the real
         # copo_forms POST only fires once credentials are resolved, so this
@@ -469,14 +469,7 @@ def test_singlecell_submission_and_publish_journey(
             # variant on this page, dismiss it the same way.
             dismiss_tour_if_present(page)
             page.click("#repo_cred_modal .cred-modal-default")
-    resp = ri.value
-    assert (
-        resp.status == 200
-    ), f"submit_singlecell_ena request failed: {resp.status} {resp.text()[:500]}"
-    body = resp.json()
-    assert (
-        body.get("action_feedback", {}).get("status") == "success"
-    ), f"submit_singlecell_ena rejected: {body.get('action_feedback')}"
+    _assert_submit_accepted(ri.value, "submit_singlecell_ena")
 
     # The completion notification (not just the earlier "Submission has been
     # scheduled" queuing one) only exists because of a matching app fix in
@@ -498,19 +491,21 @@ def test_singlecell_submission_and_publish_journey(
     )
     assert accession and accession.startswith("PRJ")
 
-    # Submit the same study to Zenodo. No credentials popup here:
-    # copo_single_cell.js only shows it for ENA, Zenodo always uses COPO's
-    # own token.
+    _delete_profile_by_title(title)
+
+
+@pytest.mark.external
+def test_singlecell_zenodo_submission_journey(page: Page, tmp_path, ena_dev_sandbox):
+    # Submit the study to the Zenodo sandbox then, check that the draft deposition 
+    # holds the non-read files and the manifest then, delete the draft.
+    title = "External Zenodo Submission Journey Profile"
+    profile_id = _prepare_singlecell_study(page, tmp_path, title)
+
+    # No credentials popup modal will appear here because `copo_single_cell.js` 
+    # only shows it for ENA
     with page.expect_response(lambda r: "copo_forms" in r.url, timeout=30000) as ri:
         _click_singlecell_study_action(page, "submit_singlecell_zenodo")
-    resp = ri.value
-    assert (
-        resp.status == 200
-    ), f"submit_singlecell_zenodo request failed: {resp.status} {resp.text()[:500]}"
-    body = resp.json()
-    assert (
-        body.get("action_feedback", {}).get("status") == "success"
-    ), f"submit_singlecell_zenodo rejected: {body.get('action_feedback')}"
+    _assert_submit_accepted(ri.value, "submit_singlecell_zenodo")
 
     # Celery copies the Zenodo files out of S3 first, then
     # process_submission_zenodo creates the deposition and uploads them.
