@@ -95,7 +95,7 @@ def upload_ecs_files(request, profile_id):
     transfer_config = TransferConfig(
         multipart_threshold=chunk_size,
         multipart_chunksize=chunk_size,
-        max_concurrency=10,
+        max_concurrency=3,
         use_threads=True,
     )
 
