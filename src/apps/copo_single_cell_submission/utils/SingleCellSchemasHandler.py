@@ -25,6 +25,11 @@ from .validator.validation_messages import MESSAGES
 
 l = Logger()
 
+# Hidden sheet in generated manifests that records which 
+# checklist the manifest was made for
+CHECKLIST_SHEET_NAME = 'copo_checklist'
+CHECKLIST_ID_COLUMN = 'checklist_id'
+
 class SingleCellSchemasHandler:
     # def __init__(self):
     # self.headers = {'Accept': 'application/xsls' }
@@ -532,7 +537,15 @@ class SingleCellSchemasHandler:
                         writer.sheets["data_values"].protect()
                         writer.sheets["data_values"].hide()
                     # write a secret worksheet to keep the checklist id
-                    secret_sheet = writer.book.add_worksheet(f"checklist_{checklist_id}")
+                    # The checklist ID is stored in a cell instead of in the sheet name because Excel
+                    # limits sheet names to 31 characters and checklist IDs can be longer.
+                    # Two columns are written because loadManifest() reads every sheet with
+                    # converters for columns 0 and 1 which fails on a one-column sheet
+                    secret_sheet = writer.book.add_worksheet(CHECKLIST_SHEET_NAME)
+                    secret_sheet.write_row(0, 0, [CHECKLIST_ID_COLUMN, 'note'])
+                    secret_sheet.write_row(
+                        1, 0, [checklist_id, 'Used by COPO to check the manifest. Do not edit.']
+                    )
                     secret_sheet.protect()
                     secret_sheet.hide()
 
@@ -792,7 +805,7 @@ class SinglecellschemasSpreadsheet:
         self.filenames = []
         if file:
             self.file = file
- 
+
         # create list of required validators
 
         required = dict(globals().items())["required_validators"]
@@ -846,7 +859,6 @@ class SinglecellschemasSpreadsheet:
                 component_schema_df = component_schema_df.set_index(keys="term_name")
 
                 self.schemas[component] = component_schema_df.to_dict("index")
-
 
     def get_filenames_from_manifest(self):
         # return list(self.data["File name"])
@@ -960,18 +972,22 @@ class SinglecellschemasSpreadsheet:
                     if not self.data:
                         raise Exception("It is an empty file")
 
-                    if f"checklist_{self.checklist_id}" not in self.data.keys():
-                        #check if "checklist_xxxx" sheet exists for other checklist ids
-                        if any(key.startswith("checklist_") for key in self.data.keys()):
+                    # A manifest must belong to the selected checklist.
+                    # Manifests without a checklist sheet which is the secret sheet
+                    # (i.e. older ones) are let through
+                    checklist_sheet = self.data.pop(CHECKLIST_SHEET_NAME, None)
+                    if checklist_sheet is not None:
+                        manifest_checklist_id = (
+                            str(checklist_sheet[CHECKLIST_ID_COLUMN].iloc[0]).strip()
+                            if CHECKLIST_ID_COLUMN in checklist_sheet.columns
+                            and not checklist_sheet.empty
+                            else ''
+                        )
+                        if manifest_checklist_id != self.checklist_id:
                             raise Exception(MESSAGES["incorrect_manifest"])
-                        #continue in case it is a manifest without the secret sheet, an old manifest
 
                     # remove the data_values sheet which is used for dropdowns
                     self.data.pop("data_values", None)
-                    # remove the checklist id sheet which is used to store the checklist id
-                    self.data.pop(f"checklist_{self.checklist_id}", None)
-
-
                 else:
                     raise Exception(MESSAGES["incorrect_manifest"])
 
@@ -1072,9 +1088,9 @@ class SinglecellschemasSpreadsheet:
                         self.new_data[component] = self.new_data[component].rename(
                             columns=new_column_name
                         )
-                        #self.new_data[component] = self.new_data[component].iloc[
+                        # self.new_data[component] = self.new_data[component].iloc[
                         #    3:
-                        #]  # remove the first 3 rows
+                        # ]  # remove the first 3 rows
 
             except Exception as e:
                 # if error notify via web socket
@@ -1093,7 +1109,7 @@ class SinglecellschemasSpreadsheet:
         flag = True
         errors = []
         warnings = []
-        #self.isupdate = False
+        # self.isupdate = False
         """
         Validate mandatory field count only. Allow outdated files to pass through with warnings to minimize user friction 
         (avoiding the hassle of re-downloading the latest manifest).
@@ -1194,7 +1210,7 @@ class SinglecellschemasSpreadsheet:
         singlecell_data = {}
 
         for component, df in self.data.items():
-            #df = df.iloc[3:]  # remove the first 3 rows
+            # df = df.iloc[3:]  # remove the first 3 rows
             singlecell_data[component] = []
             headers = list()
             for col in list(df.columns):
