@@ -150,7 +150,7 @@ pycodestyle==2.15.0
 #PyJWT==2.8.0
 PyLD==3.3.0
 pylint==4.1.4
-pymongo==4.20.0
+pymongo==4.20.1
 #pyOpenSSL==25.1.0
 #pyparsing==3.1.2
 pypdf==7.1.0
