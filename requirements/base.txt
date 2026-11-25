@@ -212,7 +212,7 @@ wcwidth==0.9.4
 #widgetsnbextension==3.5.1
 #wrapt==1.16.0
 xlrd==2.0.2
-XlsxWriter==3.3.1
+XlsxWriter==3.3.3
 xmljson==0.2.1
 zipp==4.1.2
 zope.interface==8.7
