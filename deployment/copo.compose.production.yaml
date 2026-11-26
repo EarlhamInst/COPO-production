@@ -13,6 +13,9 @@ x-minio-common: &minio-common
     - MINIO_ROOT_USER_FILE=/run/secrets/minio_access_key
     - MINIO_ROOT_PASSWORD_FILE=/run/secrets/minio_secret_key
     - MINIO_DRIVE_MAX_TIMEOUT=2m
+    - MINIO_SCANNER_SPEED=slowest
+    - MINIO_API_STALE_UPLOADS_EXPIRY=1h
+    - MINIO_API_STALE_UPLOADS_CLEANUP_INTERVAL=1h
   secrets:
     - minio_access_key
     - minio_secret_key
