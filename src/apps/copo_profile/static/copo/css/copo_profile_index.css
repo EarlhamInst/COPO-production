@@ -220,11 +220,11 @@
 }
 
 .sort-up {
-  transform: translateY(-4px);
+  transform: translateY(0.30em);
 }
 
 .sort-down {
-  transform: translateY(4px);
+  transform: translateY(-0.10em);
 }
 
 .sort-dropdown-container {

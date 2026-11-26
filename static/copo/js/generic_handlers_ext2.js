@@ -482,6 +482,24 @@ function getAlertElement(htmlId) {
   return { $el: $(), inModal: false };
 }
 
+function showFormErrors(xhr, $alertElement) {
+  // `showFormErrors` reads messages from JSON for the popup 
+  // and puts errors into the form's alert element.
+  // It expects a JSON response body of { message, errors } and
+  // falls back to the raw response text for responses in 
+  // other formats.
+  const response = xhr.responseJSON || {};
+
+  if (response.errors && $alertElement.length) {
+    $alertElement
+      .html(response.errors)
+      .removeClass(Object.values(alertClassMap).join(' '))
+      .addClass(alertClassMap.error)
+      .fadeIn(50);
+  }
+  return response.message || xhr.responseText;
+}
+
 // Activity log palettes — keyed by alert type. 'fg' is the default/no-type colour.
 const ACTIVITY_LOG_THEMES = {
   dark: {

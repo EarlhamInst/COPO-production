@@ -2,9 +2,10 @@ import os
 from pathlib import Path
 import subprocess
 import re
+import requests
 from django.conf import settings
 from django_tools.middlewares import threadlocal as ThreadLocal
-from common.utils.helpers import get_env, get_datetime, get_deleted_flag, get_not_deleted_flag
+from common.utils.helpers import FILE_COMPRESSION_SIGNATURES, get_env, get_datetime, get_deleted_flag, get_file_header, get_not_deleted_flag
 from common.lookup.lookup import ENA_CLI
 from common.dal.copo_da import EnaFileTransfer, DataFile
 from common.dal.submission_da import Submission
@@ -23,7 +24,12 @@ import pandas as pd
 from common.ena_utils.EnaUtils import query_ena_file_processing_status_by_project
 from common.dal.mongo_util import cursor_to_list
 from common.ena_utils.ena_helper import EnaSubmissionHelper
+from common.schemas.utils.data_utils import render_html_list
+from html import escape
 from common.validators.ena_validators.validation_messages import MESSAGES
+from .assembly_utils import (
+    ASSEMBLY_FIELD_EXT_MAP, ASSEMBLY_FILE_FIELDS,
+)
 
 l = Logger()
 # other types of assemblies (not individualss or cultured isolates):
@@ -36,14 +42,14 @@ l = Logger()
 # (SAG)’
 # Transcriptome Assemblies: here the webin-cli command is different as -context transcriptome (instead of genome),
 # assembly type is ‘isolate’, there are no fields [coverage, mingaplength, moleculetype] in the manifest, and the only
-# file types allowed are FASTA and flatfile
+# file types allowed are FASTA and Flatfile
 # Metatranscriptome Assemblies: as transcriptome assembly
 
 
 pass_word = get_env('WEBIN_USER_PASSWORD')
 user_token = get_env('WEBIN_USER').split("@")[0]
 ena_service = get_env('ENA_SERVICE')
-
+PORTAL_SEARCH_URL = get_env('ENA_PORTAL_SEARCH_URL')
 
 """
 def upload_assembly_files(files):
@@ -72,6 +78,10 @@ def upload_assembly_files(files):
     output = "done"
     return output
 """
+
+
+    
+
 def validate_assembly(form, profile_id, assembly_id):
     #check assemblyname unique
     form["assemblyname"] = '_'.join(form["assemblyname"].split())
@@ -92,7 +102,6 @@ def validate_assembly(form, profile_id, assembly_id):
     Path(these_assemblies).mkdir(parents=True,exist_ok=True)
     #these_assemblies_url_path = f"{settings.MEDIA_URL}ena_assembly_files/{profile_id}"
     #manifest_content =""
-    file_fields = ["fasta", "flatfile", "agp", "chromosome_list", "unlocalised_list"]
     file_ids = []
 
 
@@ -111,9 +120,22 @@ def validate_assembly(form, profile_id, assembly_id):
         sub_id = sub["_id"]   
 
     files = []
-    for field in file_fields:
+    for field in ASSEMBLY_FILE_FIELDS:
         if not form[field]:
             continue
+        
+        # Check if the file has a valid extension for the given field
+        valid_exts = ASSEMBLY_FIELD_EXT_MAP.get(field, [])
+        valid_values  = (
+            '<ul>'
+            + ''.join(f'<li>{v}</li>' for v in valid_exts)
+            + '</ul>'
+        )
+        if not any(form[field].endswith(ext) for ext in valid_exts):
+            error_message = MESSAGES['invalid_file_extension'].format(file_name=form[field], valid_exts=valid_values)
+            return {"error": error_message}
+        
+        # Check for duplicate files
         if form[field] in files:
             error_message = MESSAGES['duplicate_file_error'].format(file_name=form[field])
             return {"error": error_message}
@@ -131,8 +153,18 @@ def validate_assembly(form, profile_id, assembly_id):
         if not s3_file_etags:
             # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
             return {"error": 'Files not found, please upload files to COPO and try again'}
-
-    files = [ form[field] for field in file_fields if form[field]]
+        
+        # Check if the file contents match the compression it claims to be
+        for f_name in files:
+            expected = next((m for ext, m in FILE_COMPRESSION_SIGNATURES.items() if f_name.endswith(ext)), None)
+            if expected and not get_file_header(s3obj, bucket_name, f_name).startswith(expected):
+                file_ext = Path(f_name).suffix
+                return {
+                    'error': MESSAGES['invalid_compressed_file'].format(file_name=f_name, file_extension=file_ext)
+                }
+                
+    # Check if any of the files is already being used in another submission
+    files = [form[field] for field in ASSEMBLY_FILE_FIELDS if form[field]]   
     datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name":{"$in": files}, "deleted": {"$ne": get_deleted_flag()}})
     existing_datafile_map = {f["file_name"]: f for f in datafiles}
     existing_assemblies = Assembly().get_all_records_columns(filter_by={"profile_id": profile_id, "deleted": {"$ne": get_deleted_flag()}})
@@ -141,7 +173,7 @@ def validate_assembly(form, profile_id, assembly_id):
         for file_id in existing_assembly["files"]:
             existing_assemblies_map[file_id] = existing_assembly
 
-    for field in file_fields:
+    for field in ASSEMBLY_FILE_FIELDS:
         f_name = form[field]
         if not f_name:
             continue
@@ -152,12 +184,24 @@ def validate_assembly(form, profile_id, assembly_id):
             if existing_file["file_location"] == file_location:
                 existing_assembly = existing_assemblies_map.get(str(existing_file["_id"]), None)
                 if existing_assembly and (assembly_id and str(existing_assembly["_id"]) != assembly_id or not assembly_id) :
-                    return {"error": f'Files {f_name}, has been used for other assembly submission, please use another file name'}
+                    f_name_html = [f'<strong>{escape(f_name)}</strong>']
+                    return {"error": (
+                            f'The following data files have already been used in another assembly submission: '
+                            f'{render_html_list(f_name_html)}'
+                            + 'Please use different file names.'
+                        )
+                    }
                 if existing_file["s3_etag"] == s3_file_etags[f_name]:
                     file_ids.append(str(existing_file["_id"]))
                     continue        
             else: 
-                return {"error": f'Files {f_name}, has been used for other read / assembly / annotation submission, please use another file name'}
+                f_name_html = [f'<strong>{escape(f_name)}</strong>']
+                return {"error": (
+                        f'The following data files have already been used in another read, assembly or sequence annotation submission: '
+                        f'{render_html_list(f_name_html)}'
+                        + 'Please use different file names.'
+                    )
+                }
 
         df = dict()
         df["file_name"] = f_name
@@ -193,7 +237,6 @@ def validate_assembly(form, profile_id, assembly_id):
             return {"success": "Assembly submission has been scheduled!", "table_data": table_data, "component": "assembly"}
     else:
         return {"success": "Assembly has been updated but no submission", "table_data": table_data, "component": "assembly"}                 
-
 
 
 def _submit_assembly(file_path, profile_id, submission_type):
@@ -253,7 +296,6 @@ def process_assembly_pending_submission():
    #sub_ids = []
     if not submissions:
         return
-    file_fields = ["fasta", "flatfile", "agp", "chromosome_list", "unlocalised_list"]
     ena_fields = []
     for x in Assembly().get_schema().get("schema_dict"):
         if x.get("ena_assembly_submisison", False):
@@ -286,7 +328,7 @@ def process_assembly_pending_submission():
             for field in ena_fields:
                 value = assembly.get(field, None)
                 if value:
-                    if field in file_fields:
+                    if field in ASSEMBLY_FILE_FIELDS:
                         manifest_content += field.upper() + "\t" + join(these_assemblies, value) + "\n"
                     else:
                         manifest_content += field.upper() + "\t" + str(value) + "\n"
@@ -419,3 +461,50 @@ def generate_additional_columns(profile_id):
                 EnaFileTransfer().complete_remote_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived)        
 
     return pd.DataFrame.from_dict(result)
+
+def get_study_assembly_accessions(study_accession):
+    # Map assembly name to a versioned GCA accession e.g. {'mCanAur2': 'GCA_977927465.1'}
+    # GFF3 data files can only be submitted after the assembly has been submitted and processed 
+    # because they depend on the GCA accession which is assigned after processing
+    response = requests.post(PORTAL_SEARCH_URL, 
+        auth=(user_token, pass_word),
+        data={
+        'result': 'assembly',
+        'query': f'study_accession="{study_accession}"',
+        'fields': 'assembly_name,assembly_set_accession',
+        'format': 'json',
+    }, timeout=30)
+    response.raise_for_status()
+    return {r['assembly_name']: r['assembly_set_accession'] for r in response.json()}
+
+def update_assembly_gca_accessions():
+    # Assemblies submitted to ENA will have an ERZxxxx accession but no GCAxxxx accession as yet
+    # This function will query ENA for the GCAxxxx accession and update the assembly 
+    # record with it once ENA assigns it
+    assemblies = Assembly().get_all_records_columns(filter_by={
+        'accession': {'$nin': ['', None]},
+        'gca_accession': {'$in': ['', None]},
+        'deleted': get_not_deleted_flag(),
+    })
+    
+    by_study = {}
+    for assembly in assemblies:
+        by_study.setdefault(assembly.get('study', ''), []).append(assembly)
+
+    for study_accession, study_assemblies in by_study.items():
+        if not study_accession:
+            continue
+        
+        try:
+            gca_accession_map = get_study_assembly_accessions(study_accession)
+        except requests.RequestException as e:
+            l.error(f'Failed to get GCA accessions for study {study_accession}: {e}')
+            continue 
+        
+        # Set the GCA accession for each assembly record based on the
+        # mapping of assembly names to their corresponding GCA accessions
+        for assembly in study_assemblies:
+            gca_accession = gca_accession_map.get(assembly['assemblyname'])
+            if gca_accession:
+                Assembly().get_collection_handle().update_one(
+                    {'_id': assembly['_id']}, {'$set': {'gca_accession': gca_accession}})

@@ -8,8 +8,12 @@ from rest_framework import status
 from common.dal.profile_da import Profile
 from common.dal.submission_da import Submission
 from common.s3.s3Connection import S3Connection
-from common.utils.helpers import notify_annotation_status
+from common.utils.helpers import get_not_deleted_flag, notify_annotation_status
+from src.apps.copo_assembly_submission.utils.da import Assembly
 from src.apps.copo_core.views import web_page_access_checker
+from src.apps.copo_seq_annotation_submission.utils.seq_annotation_utils import (
+    SEQUENCE_ANNOTATION_TYPES, SEQUENCE_ANNOTATION_TYPES_MAP, get_assembly_accession_choices,
+)
 from .forms import AnnotationFilesForm, AnnotationForm
 from .utils.da import SequenceAnnotation
 from .utils import EnaAnnotation
@@ -23,8 +27,12 @@ def copo_seq_annotation(request, profile_id="", ui_component=None):
     return render(request, 'copo/copo_seq_annotation.html', {'profile_id': profile_id, 'profile': profile, "ui_component": ui_component})
 
 @login_required
-def ena_annotation(request, profile_id, seq_annotation_id=None):
+def ena_annotation(request, profile_id, seq_annotation_id=None):  
     request.session["profile_id"] = profile_id
+    # Get the GCA accessions of assemblies to populate the options for the PRIMARY ID dropdown menu
+    assemblies = Assembly().get_all_records_columns(filter_by={'profile_id': profile_id, 'deleted': get_not_deleted_flag()})
+    assembly_accession_choices, pending_assembly_names = get_assembly_accession_choices(assemblies)
+
     is_error = False
     seq_annotation = None
 
@@ -35,6 +43,16 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
                 content="Sequence Annotation not exists",
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
+    # Get annotation type from the form data
+    seq_annotation_type =  (
+        request.POST.get('annotation_type')
+        or request.GET.get('annotation_type')
+        or (seq_annotation or {}).get('annotation_type')
+        or 'sequence_annotation'
+    )
+    if seq_annotation_type not in SEQUENCE_ANNOTATION_TYPES:
+        seq_annotation_type = 'sequence_annotation'
 
     study_accession = ""
     sample_accession = []
@@ -77,8 +95,8 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
                 ecs_files.append(file["Key"])
 
     AnnotationFilesFormSet = formset_factory(
-        wraps(AnnotationFilesForm)(partial(AnnotationFilesForm, ecs_files=ecs_files)),
-        extra=3,
+        wraps(AnnotationFilesForm)(partial(AnnotationFilesForm, ecs_files=ecs_files, annotation_type=seq_annotation_type)),
+        extra=SEQUENCE_ANNOTATION_TYPES_MAP[seq_annotation_type]['num_form_file_rows'],
     )
     if request.method == 'POST' or request.method == 'PUT':
         # return render(request, "copo/ena_assembly.html", {"profile_id": profile_id, "form": [], "hide_form": False})
@@ -90,7 +108,10 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
             run_accession=run_accession,
             experiment_accession=experiment_accession,
             seq_annotation=seq_annotation,
+            assembly_accession_choices=assembly_accession_choices,
+            pending_assembly_names=pending_assembly_names,
         )
+
         formset = AnnotationFilesFormSet(
             request.POST, request.FILES, prefix="annotation_files"
         )
@@ -109,9 +130,10 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
                 formdata, formset, profile_id, seq_annotation_id
             )
             if sub_result.get("error", ""):
+                errors = sub_result.get("error", "")
                 notify_annotation_status(
                     data={"profile_id": profile_id},
-                    msg=sub_result.get("error", ""),
+                    msg=errors,
                     action="error",
                     html_id="annotation_info",
                 )
@@ -138,8 +160,10 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
                 action="error",
                 html_id="annotation_info",
             )
-        return HttpResponse(
-            content=MESSAGES["form_validation_error"], status=status.HTTP_400_BAD_REQUEST 
+            errors = msg
+        return JsonResponse(
+            status=status.HTTP_400_BAD_REQUEST,
+            data={'message': MESSAGES['form_validation_error'], 'errors': errors},
         )
 
     else:
@@ -150,7 +174,12 @@ def ena_annotation(request, profile_id, seq_annotation_id=None):
             run_accession=run_accession,
             experiment_accession=experiment_accession,
             seq_annotation=seq_annotation,
+            assembly_accession_choices=assembly_accession_choices,
+            pending_assembly_names=pending_assembly_names,
         )
+        # Show the annotation type in the form
+        form.fields['annotation_type'].initial = seq_annotation_type
+        
         # AnnotationFilesFormSet = formset_factory(AnnotationFilesForm(ecs_files), extra=3 )
         formset = AnnotationFilesFormSet(prefix="annotation_files")
         if seq_annotation:

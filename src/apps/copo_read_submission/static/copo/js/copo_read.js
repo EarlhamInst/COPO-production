@@ -199,6 +199,12 @@ $(document).on('document_ready', function () {
       args_dict['profile_id'] = profile_id;
         load_records(componentMeta, args_dict, columnDefs); // call to load component records
     } else if (d.action === 'file_processing_status') {
+      // Background updates can arrive before the data table is rendered or after it is
+      // destroyed during a checklist change. Initialising `DataTable()` at this point
+      // creates an empty table which causes an `aDataSort` error on `draw()`.
+      // Skip the update so the next table load will include the latest data.
+      if (!$.fn.DataTable.isDataTable('#read_table')) return;
+
       table = $('#read_table').DataTable();
       //clear old, set new data
       table.rows().deselect();
