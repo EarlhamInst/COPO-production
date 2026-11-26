@@ -159,6 +159,10 @@ def process_pending_submission_zendo():
 
             notify_singlecell_status(data={"profile_id": sub["profile_id"]},
                     msg=f"{study_id} has been submitted to Zenodo.",
+                    action="success",
+                    html_id="submission_info")
+            notify_singlecell_status(data={"profile_id": sub["profile_id"]},
+                    msg="",
                     action="refresh_table",
                     html_id="submission_info")
             

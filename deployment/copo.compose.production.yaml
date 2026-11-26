@@ -12,6 +12,7 @@ x-minio-common: &minio-common
   environment:
     - MINIO_ROOT_USER_FILE=/run/secrets/minio_access_key
     - MINIO_ROOT_PASSWORD_FILE=/run/secrets/minio_secret_key
+    - MINIO_DRIVE_MAX_TIMEOUT=2m
   secrets:
     - minio_access_key
     - minio_secret_key
@@ -118,6 +119,7 @@ services:
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
       - ENA_ENDPOINT_REPORT=https://www.ebi.ac.uk/ena/submit/report/
+      - ENA_PORTAL_SEARCH_URL=https://www.ebi.ac.uk/ena/portal/api/search
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
       - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
@@ -230,6 +232,7 @@ services:
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
       - ENA_ENDPOINT_REPORT=https://www.ebi.ac.uk/ena/submit/report/
+      - ENA_PORTAL_SEARCH_URL=https://www.ebi.ac.uk/ena/portal/api/search
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH_FILE=/run/secrets/copo_bioimage_path
       - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
@@ -286,7 +289,7 @@ services:
       - ecs_access_key
       - copo_zenodo_token
   nginx:
-    image: copo/copo-nginx-minio:v1.30.2
+    image: copo/copo-nginx-minio:v1.30.7
     networks:
       - frontend
     volumes:

@@ -63,13 +63,14 @@
             <fieldset class="ena_annotation_form">      
 
             {{ form | crispy }}
-            {{ formset.management_form }}
-            <table>
-                {{ formset.management_form |crispy }}
-                {% for f in formset %}
-                {% crispy f %}
-                {% endfor %}
-            </table>
+            <div id="annotation_files_formset">
+                {{ formset.management_form }}
+                <table>
+                    {% for f in formset %}
+                    {% crispy f %}
+                    {% endfor %}
+                </table>
+            </div>
 
             </fieldset>
 

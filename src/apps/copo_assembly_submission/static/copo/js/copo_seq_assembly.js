@@ -181,7 +181,10 @@ $(document).ready(function () {
         $('.modal-dialog').find('#loading_span').fadeOut();
         BootstrapDialog.show({
           title: 'Error',
-          message: data.responseText,
+          message: showFormErrors(
+            data,
+            $('.modal-dialog').find('#assembly_info')
+          ),
           type: BootstrapDialog.TYPE_DANGER,
         });
       })

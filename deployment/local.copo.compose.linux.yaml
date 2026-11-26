@@ -10,7 +10,7 @@
 #
 ## Build main containers and playwright test container images
 # $ docker build . -f 'deployment/web/Dockerfile_local_linux' -t local_copo_web:v1.0.0
-# $ docker build . -f 'deployment/web/Dockerfile_playwright' -t playwright:v1.65.0
+# $ docker build . -f 'deployment/web/Dockerfile_playwright' -t playwright:v1.65.1
 #
 #
 ## Step #2 - Start the containers
@@ -86,7 +86,7 @@ services:
   copo_web:
     image: local_copo_web:v1.0.0 # Replace with your local image name
     command: >
-      bash -c "pip install -q --use-deprecated=legacy-resolver -r /copo/requirements/dev.txt; code-server serve-local --disable-telemetry --auth  none --host 0.0.0.0 --port 8000"
+      bash -c "bash /copo/shared_tools/scripts/setup/install_webin_cli.sh; pip install -q --use-deprecated=legacy-resolver -r /copo/requirements/dev.txt; code-server serve-local --disable-telemetry --auth  none --host 0.0.0.0 --port 8000"
     ports:
       - '8000:8000'
     environment:
@@ -127,6 +127,7 @@ services:
       - ALLOWED_HOSTS=
       - PUBLIC_NAME_SERVICE=https://id.tol.sanger.ac.uk/api/v3/
       - ENA_ENDPOINT_REPORT=https://wwwdev.ebi.ac.uk/ena/submit/report/
+      - ENA_PORTAL_SEARCH_URL=https://wwwdev.ebi.ac.uk/ena/portal/api/search
       - ASPERA_PATH=/root/.aspera/cli
       - BIOIMAGE_PATH=${vault_copo_bioimage_path}
       - BIOIMAGE_SERVER=bs-upload@fasp.ebi.ac.uk
