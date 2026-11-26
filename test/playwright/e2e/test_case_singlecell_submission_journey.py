@@ -2,6 +2,7 @@ import json
 import os
 import re
 import time
+import warnings
 
 import openpyxl
 import pytest
@@ -355,7 +356,13 @@ def _prepare_singlecell_study(page, tmp_path, title):
     # bakes in the last-computed values as plain values, so there's nothing
     # left to lose on save.
     patched_manifest = tmp_path / "singlecell_manifest_patched.xlsx"
-    wb = openpyxl.load_workbook(SINGLECELL_MANIFEST, data_only=True)
+    # The template's dropdown lists use an Excel data-validation extension
+    # openpyxl can't read, so it warns and drops them from this temporary
+    # copy. Harmless: COPO validates the values, not the dropdowns.
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore", message="Data Validation extension is not supported", category=UserWarning)
+        wb = openpyxl.load_workbook(SINGLECELL_MANIFEST, data_only=True)
     sample_sheet = wb["sample"]
     sample_sheet["C5"] = SAMPLE_MANIFEST_SCIENTIFIC_NAME
     sample_sheet["D5"] = SAMPLE_MANIFEST_TAXON_ID
