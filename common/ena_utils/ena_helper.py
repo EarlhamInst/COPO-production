@@ -21,6 +21,8 @@ from common.dal.sample_da import Sample
 from src.apps.copo_single_cell_submission.utils.da import Singlecell 
 from common.utils.copo_lookup_service import COPOLookup
 import requests
+from common.ena_utils import ena_requests
+from common.ena_utils.ena_requests import WEBIN_CLI_PASSWORD_OPTION, webin_cli_env
 from common.utils.logger import Logger
 lg = Logger()
 from src.apps.copo_assembly_submission.utils.da import Assembly
@@ -40,6 +42,10 @@ user_token = get_env('WEBIN_USER').split("@")[0]
 webin_user = get_env('WEBIN_USER')
 webin_domain = get_env('WEBIN_USER').split("@")[1]
 ena_v2_service_async = get_env("ENA_V2_SERVICE_ASYNC")
+
+# Seconds to wait for ENA to accept the connection, then for each read of its reply,
+# so a slow/unresponsive ENA can't hang a submission forever with nothing logged.
+ENA_SUBMIT_TIMEOUT = (30, 90) # Seconds to wait for connection and response
 
 ENA_READ_FILE_TYPES = (
     'fastq', 'bam', 'cram', 'sff', 'srf', 'sra', 'fasta', 'tab',
@@ -179,11 +185,12 @@ class EnaSubmissionHelper:
         test = ' -test ' if 'dev' in ena_service else ''
         output_option = f'-outputDir {output_dir}' if output_dir else ''
         aspera_option = ' -ascp' if use_aspera else ''
-        webin_cmd = (f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token} -password '{self.pass_word}' "
+        webin_cmd = (f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token} {WEBIN_CLI_PASSWORD_OPTION} "
                     f"{test} -context {context} -manifest {manifest_path} {output_option} -{action}{aspera_option}")
         self.logging_debug(webin_cmd.replace(self.pass_word, 'xxxxxx'))
         try:
-            output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True).decode('ascii')
+            output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True,
+                                             env=webin_cli_env(self.pass_word)).decode('ascii')
             return_code = 0
         except subprocess.CalledProcessError as cpe:
             return_code = cpe.returncode
@@ -287,6 +294,38 @@ class EnaSubmissionHelper:
 
             return result
 
+    def submit_xml_to_ena(self, xml_files):
+        # POST XML files to ENA's drop box
+        response = ena_requests.post_xml_files(ena_service, self.user_token, self.pass_word,
+                                               xml_files, timeout=ENA_SUBMIT_TIMEOUT)
+        return response.content, str(response.status_code)
+
+    def parse_ena_receipt(self, output, action, http_code='unknown'):
+        # Parse the XML receipt that ENA returns
+        body = output.decode('utf-8', errors='replace') if isinstance(output, bytes) else str(output)
+
+        self.logging_debug(f'ENA response to {action}: HTTP={http_code} body_len={len(body)} body_preview={body[:500]!r}')
+
+        if http_code in ('401', '403'):
+            hint = ' Check the ENA Webin username and password.'
+        elif http_code.startswith('5') or http_code == '000':
+            hint = ' ENA may be unavailable. Please try again later.'
+        else:
+            hint = ''
+
+        if not body.strip():
+            return None, f'ENA returned an empty response (HTTP {http_code}) when trying to {action}.{hint}'
+
+        # A well-formed HTML error page is also valid XML so check for ENA's <RECEIPT> root as well
+        try:
+            root = etree.fromstring(body.encode('utf-8'))
+        except etree.XMLSyntaxError:
+            root = None
+        if root is None or root.tag != 'RECEIPT':
+            preview = ' '.join(body.split())[:200]
+            return None, f'ENA returned an unexpected response (HTTP {http_code}) when trying to {action}: {preview}.{hint}'
+        return root, None
+
     def get_sra_contacts(self):
         """
         function returns users with any SRA roles
@@ -321,27 +360,10 @@ class EnaSubmissionHelper:
         result = dict(status=True, value='')
 
         # register samples to the ENA service
-        #
-        # --max-time bounds the whole request (connect + transfer) so curl
-        # exits on its own if ENA is slow/unresponsive, rather than hanging
-        # forever with no error and no log entry -- confirmed live: a real
-        # submission got stuck in "sending" status indefinitely (well past
-        # the Celery retry threshold) with nothing in the logs, because
-        # nothing here could ever time out. The subprocess timeout is a
-        # backstop in case curl itself doesn't honour --max-time.
-        curl_cmd = 'curl -s -S --max-time 90 -u "' + self.user_token + ':' + self.pass_word \
-                    + '" -F "SUBMISSION=@' \
-                    + submission_xml_path \
-                    + '" -F "SAMPLE=@' \
-                    + sample_xml_path \
-                    + '" -w "\\n|HTTP_CODE:%{http_code}|"' \
-                    + ' "' + ena_service \
-                    + '"'
-        self.logging_debug(
-            "CURL command to submit samples xml to ENA: " + curl_cmd.replace(self.pass_word, "xxxxxx"))
-
+        self.logging_debug(f'Submitting samples to ENA: {submission_xml_path}, {sample_xml_path}')
         try:
-            output = subprocess.check_output(curl_cmd, shell=True, stderr=subprocess.STDOUT, timeout=120)
+            output, http_code = self.submit_xml_to_ena(
+                {'SUBMISSION': submission_xml_path, 'SAMPLE': sample_xml_path})
         except Exception as e:
             ghlper.logging_exception(e)
             message = 'API call error ' + str(e).replace(self.pass_word, "xxxxxx")
@@ -350,25 +372,12 @@ class EnaSubmissionHelper:
             result['status'] = False
             raise e
 
-        output_text = output.decode('utf-8', errors='replace')
-        http_code = "unknown"
-        receipt = output
-        if "|HTTP_CODE:" in output_text:
-            body_text, _, code_part = output_text.rpartition("\n|HTTP_CODE:")
-            http_code = code_part.rstrip("|").strip()
-            receipt = body_text.encode('utf-8')
-        self.logging_debug(
-            "ENA response HTTP=" + http_code
-            + " body_len=" + str(len(receipt))
-            + " body_preview=" + repr(receipt[:500]))
-
-        if not receipt.strip():
+        root, error = self.parse_ena_receipt(output, action='register the samples', http_code=http_code)
+        if error:
             result['status'] = False
-            result['message'] = "ENA returned empty response (HTTP " + http_code + ")"
-            self.logging_debug(result['message'])
+            result['message'] = error
+            self.logging_debug(error)
             return result
-
-        root = etree.fromstring(receipt)
 
         if root.get('success') == 'false':
             result['status'] = False
@@ -681,22 +690,10 @@ class EnaSubmissionHelper:
         result = dict(status=True, value='')
 
         # register study to the ENA service
-        #
-        # --max-time bounds the request so a slow/unresponsive ENA can't
-        # hang this indefinitely -- same missing-timeout hang confirmed
-        # live for the sample-registration call above (process_sample()).
-        curl_cmd = 'curl -s -S --max-time 90 -u "' + self.user_token + ':' + self.pass_word \
-                    + '" -F "SUBMISSION=@' \
-                    + submission_xml_path \
-                    + '" -F "PROJECT=@' \
-                    + study_xml_path \
-                    + '" "' + ena_service \
-                    + '"'
-        self.logging_debug(
-            "CURL command to submit study xml to ENA: " + curl_cmd.replace(self.pass_word, "xxxxxx"))
-
+        self.logging_debug(f'Submitting study to ENA: {submission_xml_path}, {study_xml_path}')
         try:
-            receipt = subprocess.check_output(curl_cmd, shell=True, timeout=120)
+            receipt, http_code = self.submit_xml_to_ena(
+                {'SUBMISSION': submission_xml_path, 'PROJECT': study_xml_path})
         except Exception as e:
             ghlper.logging_exception(e)
             message = 'API call error ' + str(e).replace(self.pass_word, "xxxxxx")
@@ -705,18 +702,21 @@ class EnaSubmissionHelper:
                 Singlecell().update_component_status(id=singlecell_id, component="study", identifier="study_id", identifier_value=study["study_id"], repository="ena", status_column_value={"status": "rejected", "error": message})
             return dict(status=False, message=message)
 
-        root = etree.fromstring(receipt)
+        root, error = self.parse_ena_receipt(receipt, action='register the study', http_code=http_code)
 
-        if root.get('success') == 'false':
+        if error or root.get('success') == 'false':
             result['status'] = False
-            result['message'] = "Couldn't register STUDY due to the following errors: "
-            errors = root.findall('.//ERROR')
-            if errors:
-                error_text = str()
-                for e in errors:
-                    error_text = error_text + " \n" + e.text
+            if error:
+                result['message'] = error
+            else:
+                result['message'] = "Couldn't register STUDY due to the following errors: "
+                errors = root.findall('.//ERROR')
+                if errors:
+                    error_text = str()
+                    for e in errors:
+                        error_text = error_text + " \n" + e.text
 
-                result['message'] = result['message'] + error_text
+                    result['message'] = result['message'] + error_text
 
             # log error
             if singlecell_id:
@@ -790,10 +790,12 @@ class EnaSubmissionHelper:
         return dict(status=True, value='')
 
 
-    def register_files(self, submission_xml_path=str(), modify_submission_xml_path=str(), component_df=pd.DataFrame(), identifier_map={}, singlecell=None, file_component_name="file"):   
+    def register_files(self, submission_xml_path=str(), modify_submission_xml_path=str(), component_df=pd.DataFrame(), identifier_map={}, singlecell=None, file_component_name="file", file_columns=("read_1_file", "read_2_file")):
         """
         function creates and submits datafile xml
-        :return:
+        Fields from the schema that expect data files and whose `term_repository` is 'ena' 
+        need a corresponding '<column>_checksum' column for data files to 
+        be deposited to ENA.
         """
         instruments = helpers.get_db_data_sources(source='sequencing_instrument') # COPOLookup(data_source='sequencing_instrument').broker_data_source()
         output_location = tempfile.gettempdir()
@@ -829,8 +831,13 @@ class EnaSubmissionHelper:
             run_root = etree.parse(SRA_RUN_TEMPLATE, parser).getroot()
 
             column_name = "study_id"
+            
+            # Only data files specified as being deposited to ENA should be included
+            # in the `run.xml` not as experiment attributes
             non_attribute_names.append(column_name)
             non_attribute_names.append(file_identifier)
+            non_attribute_names.extend(file_columns)
+            non_attribute_names.extend(f'{name}_checksum' for name in file_columns)
             submission_name = str(self.submission_id) + "_" + row[column_name] +  "_"+ row[file_identifier]
             # add experiment node to experiment set
             experiment_node = etree.SubElement(experiment_root, 'EXPERIMENT')
@@ -908,18 +915,18 @@ class EnaSubmissionHelper:
             run_data_block_node = etree.SubElement(run_node, 'DATA_BLOCK')
             run_files_node = etree.SubElement(run_data_block_node, 'FILES')
 
-            for name in ["read_1_file", "read_2_file"]:
-                if row[name] is None or row[name] == "":
+            for name in file_columns:
+                if not row.get(name):
                     continue
 
                 run_file_node = etree.SubElement(run_files_node, 'FILE')
                 run_file_node.set("filename", os.path.join(enafile_map[row[name]], row[name])) #TBC for remote_location
-                
+
                 run_file_node.set(
                     "filetype",
                     evaluate_read_file_type(row[name], row.get('read_file_type', '')),
                 )
-                run_file_node.set("checksum", row[name+"_checksum"])  # todo: is this correct at submission time?
+                run_file_node.set("checksum", row.get(f'{name}_checksum', ''))  # TODO: Is this correct at submission time?
                 run_file_node.set("checksum_method", "MD5")
 
             # write run xml
@@ -939,33 +946,30 @@ class EnaSubmissionHelper:
             else:
                 final_submission_xml_path = submission_xml_path
 
-            # --max-time bounds the request so a slow/unresponsive ENA can't
-            # hang this indefinitely -- same missing-timeout hang confirmed
-            # live for the sample-registration call above (process_sample()).
-            curl_cmd = 'curl -s -S --max-time 90 -u "' + self.user_token + ':' + self.pass_word \
-                       + '" -F "SUBMISSION=@' \
-                       + final_submission_xml_path \
-                       + '" -F "EXPERIMENT=@' \
-                       + experiement_xml_path \
-                       + '" -F "RUN=@' \
-                       + run_xml_path \
-                       + '" "' + ena_service \
-                       + '"'
-
-            self.logging_debug(
-                "Submitting EXPERIMENT and RUN XMLs for " +
-                    row[file_identifier] + " using CURL. CURL command is: " + curl_cmd.replace(self.pass_word, "xxxxx"))
-
+            self.logging_debug(f'Submitting EXPERIMENT and RUN XMLs for {row[file_identifier]} to ENA')
             try:
-                receipt = subprocess.check_output(curl_cmd, shell=True, timeout=120)
+                receipt, http_code = self.submit_xml_to_ena({
+                    'SUBMISSION': final_submission_xml_path,
+                    'EXPERIMENT': experiement_xml_path,
+                    'RUN': run_xml_path,
+                })
             except Exception as e:
                 ghlper.logging_exception(e)
-                message = 'API call error ' + str(e).replace(self.pass_word, "xxxxxx"),
+                message = 'API call error ' + str(e).replace(self.pass_word, "xxxxxx")
                 self.logging_error(message, self.submission_id)
                 errors.append(message)
                 raise e
 
-            receipt_root = etree.fromstring(receipt)
+            receipt_root, receipt_error = self.parse_ena_receipt(
+                receipt, action=f'register the EXPERIMENT and RUN for datafiles: "{row[file_identifier]}"',
+                http_code=http_code)
+
+            if receipt_error:
+                result['status'] = False
+                result['message'] = receipt_error
+                errors.append(receipt_error)
+                Singlecell().update_component_status(id=singlecell['_id'], component=file_component_name, identifier=file_identifier, identifier_value=row[file_identifier], repository='ena', status_column_value={'status': 'rejected', 'error': receipt_error})
+                continue
 
             if receipt_root.get('success') == 'false':
                 result['status'] = False
@@ -1462,12 +1466,12 @@ class EnaSubmissionHelper:
                 test = " -test "
             #cli_path = "tools/reposit/ena_cli/webin-cli.jar"
             submission_type = row.get("submission_type", "transcriptome")
-            webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token} -password '{self.pass_word}' {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
+            webin_cmd = f"java -Xmx6144m -jar {ENA_CLI} -username {self.user_token} {WEBIN_CLI_PASSWORD_OPTION} {test} -context {submission_type} -manifest {str(manifest_path)} -validate -ascp"
             
             #qself.logging_debug(webin_cmd)
             try:
                 self.logging_info('validating assembly submission')
-                output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True)
+                output = subprocess.check_output(webin_cmd, stderr=subprocess.STDOUT, shell=True, env=webin_cli_env(self.pass_word))
                 self.logging_debug(output)
                 output = output.decode("ascii")
                 return_code = 0

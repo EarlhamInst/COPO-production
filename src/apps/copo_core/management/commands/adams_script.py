@@ -2,6 +2,7 @@ from django.core.management import BaseCommand
 
 import xml.etree.ElementTree as ET
 import subprocess
+from common.ena_utils import ena_requests
 from common.utils.helpers import resolve_env
 import os
 
@@ -57,27 +58,19 @@ class Command(BaseCommand):
 
         for run in update_dict:
             # retrieve submitted XML for run
-            curl_cmd = "curl -u " + self.user_token + \
-                       ':' + self.pass_word + " " + self.ena_sample_retrieval \
-                       + run
-            registered_run = subprocess.check_output(curl_cmd, shell=True)
+            url = self.ena_sample_retrieval + run
+            registered_run = ena_requests.get(url, self.user_token, self.pass_word).content
 
             self.update_samplexml(registered_run, update_dict[run], run)
 
 
     def modify_run(self, run):
-        curl_cmd = 'curl -u "' + self.user_token + ':' + self.pass_word \
-                   + '" -F "SUBMISSION=@modifysubmission.xml' \
-                   + '" -F "RUN=@' \
-                   + run + ".xml" \
-                   + '" "' + self.ena_service \
-                   + '"'
+        xml_files = {'SUBMISSION': 'modifysubmission.xml', 'RUN': run + ".xml"}
         try:
-            receipt = subprocess.check_output(curl_cmd, shell=True)
+            receipt = ena_requests.post_xml_files(self.ena_service, self.user_token, self.pass_word, xml_files).content
             print(receipt)
         except Exception as e:
-            message = 'API call error ' + "Submitting xml to ENA via CURL. CURL command is: " + curl_cmd.replace(
-                self.pass_word, "xxxxxx")
+            message = 'API call error ' + "Submitting xml to ENA: " + str(e).replace(self.pass_word, "xxxxxx")
             print(message)
             return False
         os.remove(run + ".xml")

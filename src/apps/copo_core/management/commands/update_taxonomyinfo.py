@@ -2,6 +2,7 @@ from django.core.management import BaseCommand
 from Bio import Entrez
 import xml.etree.ElementTree as ET
 import subprocess
+from common.ena_utils import ena_requests
 from common.utils.helpers import get_env
 import os
 import common.dal.sample_da as da
@@ -116,10 +117,8 @@ class Command(BaseCommand):
         updatedrecord = da.Sample().get_record(sample)
         # todo retrieve sample from xml
         # retrieve submitted XML for sample
-        curl_cmd = "curl -u " + self.user_token + \
-                   ':' + self.pass_word + " " + self.ena_sample_retrieval \
-                   + updatedrecord['biosampleAccession']
-        registered_sample = subprocess.check_output(curl_cmd, shell=True)
+        url = self.ena_sample_retrieval + updatedrecord['biosampleAccession']
+        registered_sample = ena_requests.get(url, self.user_token, self.pass_word).content
 
         self.update_samplexml(
             registered_sample, out['TAXON_ID'], updatedrecord['biosampleAccession'])
@@ -138,27 +137,19 @@ class Command(BaseCommand):
         # update ENA record
         updatedrecord = da.Source().get_record(source[0]['_id'])
         # retrieve submitted XML for source
-        curl_cmd = "curl -u " + self.user_token + \
-                   ':' + self.pass_word + " " + self.ena_sample_retrieval \
-                   + updatedrecord['biosampleAccession']
-        registered_specimen = subprocess.check_output(curl_cmd, shell=True)
+        url = self.ena_sample_retrieval + updatedrecord['biosampleAccession']
+        registered_specimen = ena_requests.get(url, self.user_token, self.pass_word).content
 
         self.update_samplexml(
             registered_specimen, updatedrecord['TAXON_ID'], updatedrecord['biosampleAccession'])
 
     def modify_sample(self, accession):
-        curl_cmd = 'curl -u ' + self.user_token + ':' + self.pass_word \
-                   + ' -F "SUBMISSION=@modifysubmission.xml' \
-                   + '" -F "SAMPLE=@' \
-                   + accession + ".xml" \
-                   + '" "' + self.ena_service \
-                   + '"'
+        xml_files = {'SUBMISSION': 'modifysubmission.xml', 'SAMPLE': accession + ".xml"}
         try:
-            receipt = subprocess.check_output(curl_cmd, shell=True)
+            receipt = ena_requests.post_xml_files(self.ena_service, self.user_token, self.pass_word, xml_files).content
             print(receipt)
         except Exception as e:
-            message = 'API call error ' + "Submitting xml to ENA via CURL. CURL command is: " + curl_cmd.replace(
-                self.pass_word, "xxxxxx")
+            message = 'API call error ' + "Submitting xml to ENA: " + str(e).replace(self.pass_word, "xxxxxx")
             Logger().exception(e)
             return False
 

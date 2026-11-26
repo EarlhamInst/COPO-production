@@ -62,6 +62,47 @@ def _query_ena_file_processing_status(accession_no):
             l.exception(e)
         return result
 
+def _render_repo_accession_function(field_name):
+    '''
+    This function returns the DataTables render expression function for a column
+    that displays an accession as a link to the corresponding repository.
+    e.g. "render_repo_accession('ena')" which the frontend evaluates into
+    a renderer function that links to that repository
+    Ref: See `REPOSITORY_ACCESSION_LINKS` in `data.py` file
+    '''
+    name = field_name.lower()
+
+    if name == 'biosampleaccession':
+        repo = 'ena'
+    else:
+        repo = next(
+            (
+                repo
+                for repo, cfg in settings.REPOSITORY_ACCESSION_LINKS.items()
+                if name.endswith(cfg['field_suffix'])
+            ),
+            None,
+        )
+    return f"render_repo_accession('{repo}')" if repo else ''
+
+
+def get_column_title(column_name):
+    '''
+    The title of a table column from its name. A name that ends with a
+    repository gets the repository's label
+    e.g. 'status_ena' -> 'Status for ENA' and 'study_accession_ena' ->
+    'Study Accession for ENA'. Other names are title-cased, with 'ID' in
+    capitals e.g. 'study_id' -> 'Study ID'.
+    '''
+    def title_case(words):
+        return ' '.join('ID' if word.lower() == 'id' else word.title() for word in words)
+
+    *words, last_word = column_name.split('_')
+    label = settings.REPOSITORY_LABELS.get(last_word.lower())
+    if words and label:
+        return f'{title_case(words)} for {label}'
+    return title_case(column_name.split('_'))
+
 def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), schema_name=str()):
     """Build the complete data structure for the single-cell UI DataTable.
 
@@ -159,9 +200,16 @@ def generate_singlecell_record(profile_id, checklist_id=str(), study_id=str(), s
 
             # Append repository-specific columns (accession, status, error) with appropriate renderers
             for name in additional_fields_map.get(component_name, []):
-                    prefix = name.split("_")[0]
-                    columns[component_name].append(dict(data=name, title=name.replace("_", " for ").title(), render="render_ena_accession_function" if name.lower().endswith("accession_ena") else "render_zenodo_accession_function" if name.lower().endswith("accession_zenodo") else "", defaultContent= additional_columns_prefix_default_value[prefix])) # render = "render_accession_column_function"
-                    column_keys[component_name].append(name)
+                prefix = name.split("_")[0]
+                columns[component_name].append(
+                    dict(
+                        data=name,
+                        title=get_column_title(name),
+                        render=_render_repo_accession_function(name),
+                        defaultContent=additional_columns_prefix_default_value[prefix],
+                    )
+                )  # render = "render_accession_column_function"
+                column_keys[component_name].append(name)
 
             # If this component has file fields, add file status and ENA processing status columns
             if not file_df.empty:
@@ -288,7 +336,7 @@ def generate_accessions_singlecell(profile_id, study_id ):
     if accessions:
         # Dynamically build column definitions from the keys in the first accession record
         for column in accessions[0].keys():
-            columns.append(dict(data=column, title=column.replace("_", " ").title(), defaultContent='', render="render_ena_accession_function" if column.lower().endswith("accession_ena")or column.lower()=="biosampleaccession" else "render_zenodo_accession_function" if column.lower().endswith("accession_zenodo") else ""))
+            columns.append(dict(data=column, title=get_column_title(column), defaultContent='', render=_render_repo_accession_function(column)))
         # Assign unique row IDs using the biosample accession (or study_id as fallback)
         for accession in accessions:
             accession["DT_RowId"] = "accession_" + accession.get("biosampleAccession") if "biosampleAccession" in accession else accession.get("study_id")
@@ -702,7 +750,7 @@ def submit_singlecell(profile_id, study_id, schema_name="", repository="ena", cr
 
     # Prepare file transfer records for all files referenced in the singlecell record
     schemas = SinglecellSchemas().get_schema(schema_name=singlecell.get("schema_name", singlecell["schema_name"]), schemas=dict(), target_id=singlecell["checklist_id"])
-    files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
+    files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas, repository=repository)
     if files:
         # Pre-flight: verify every file referenced in the manifest is actually
         # present in S3 *before* creating transfer records or flipping the
@@ -986,12 +1034,12 @@ def update_submission_pending():
                  {"schema_name":1,"checklist_id":1, "components":1})
             if not singlecell:
                 # Study was deleted while submission was in progress — remove it from the submission
-                Submission().remove_study_from_singlecell_submission(sub_id=str(sub["_id"]), study_id= study_id)
+                Submission().remove_component_from_submission(sub_id=str(sub["_id"]), component="study", component_ids=[study_id])
                 continue
 
-            # Get all files referenced by this singlecell record's schema
+            # Get the files routed to the submission's repository
             schemas = SinglecellSchemas().get_schema(schema_name=singlecell["schema_name"], schemas=dict(), target_id=singlecell["checklist_id"])
-            files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas)
+            files = SinglecellSchemas().get_all_files(singlecell=singlecell, schemas=schemas, repository=sub.get("repository"))
 
             # Look up the transfer status for each file
             local_path = [regex.Regex(f'{x}$') for x in files]

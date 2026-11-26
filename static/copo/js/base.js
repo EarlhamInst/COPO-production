@@ -29,6 +29,9 @@ function apply_color() {
     }
 }
 
-function get_ena_browser_url(accession) {
-  return `https://${ENA_URL_HOSTNAME}/ena/browser/view/${accession}`;
+function get_repo_accession_url(repo, accession) {
+  // Returns the link for an accession in a given repository,
+  // or an empty string if the repository has no URL template configured
+  const template = REPOSITORY_ACCESSION_LINKS[repo];
+  return template ? template.replace('{accession}', () => accession) : '';
 }

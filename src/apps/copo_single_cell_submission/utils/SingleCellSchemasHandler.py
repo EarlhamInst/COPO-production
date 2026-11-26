@@ -1,6 +1,8 @@
 from lxml import etree as ET
 from .da import SinglecellSchemas
+from .schema_checks import check_schema_sheets
 from common.utils.logger import Logger
+from common.lookup.copo_enums import Loglvl
 import pandas as pd
 import os
 from django.conf import settings
@@ -45,6 +47,22 @@ class SingleCellSchemasHandler:
         xls = pd.ExcelFile(url)
         return xls
 
+    def _log_schema_warnings(self, schema_name, xls):
+        '''Log quality problems in the schema spreadsheet as warnings. 
+           They do not stop the schema loading;
+        '''
+        sheets = {sheet: pd.read_excel(xls, sheet, dtype=str) for sheet in xls.sheet_names}
+        warnings = check_schema_sheets(sheets)
+        
+        for warning in warnings:
+            l.log(f'Schema {schema_name}: {warning}', level=Loglvl.WARNING)
+            
+        if warnings:
+            l.log(f'Schema {schema_name}: {len(warnings)} quality warnings.',
+                  level=Loglvl.WARNING)
+            
+        return warnings
+
     def _parseSchemas(self, schema_name, xls):
         enums_df = pd.read_excel(xls, "allowed_values", dtype=str)
         components_df = pd.read_excel(xls, "components", index_col="key")
@@ -53,6 +71,8 @@ class SingleCellSchemasHandler:
         term_mapping_df = pd.read_excel(xls, "term_mapping", index_col="copo_name")
         checklist_df = pd.read_excel(xls, "checklists", index_col="key")
         schemas_df = pd.read_excel(xls, "data")
+
+        self._log_schema_warnings(schema_name, xls)
 
         enums_dict = {}
         for c in enums_df.columns:

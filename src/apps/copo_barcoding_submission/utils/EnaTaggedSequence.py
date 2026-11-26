@@ -24,6 +24,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 import numpy as np
 from common.ena_utils.ena_helper import EnaSubmissionHelper
+from common.ena_utils import ena_requests
+from common.ena_utils.ena_requests import WEBIN_CLI_PASSWORD_OPTION, webin_cli_env
 
 
 l = Logger()
@@ -676,34 +678,24 @@ class EnaTaggedSequence:
         project_xml_path = result['value']
 
         # register project to the ENA service
-        curl_cmd = (
-            'curl -u "'
-            + self.user_token
-            + ':'
-            + self.pass_word
-            + '" -F "SUBMISSION=@'
-            + submission_xml_path
-            + '" -F "PROJECT=@'
-            + project_xml_path
-            + '" "'
-            + self.ena_service
-            + '"'
-        )
+        xml_files = {
+            'SUBMISSION': submission_xml_path,
+            'PROJECT': project_xml_path,
+        }
 
         l.log(
-            "Submitting project xml to ENA via CURL. CURL command is: "
-            + curl_cmd.replace(self.pass_word, "xxxxxx")
+            "Submitting project xml to ENA via requests: " + str(xml_files)
         )
 
         try:
-            receipt = subprocess.check_output(curl_cmd, shell=True)
+            receipt = ena_requests.post_xml_files(self.ena_service, self.user_token, self.pass_word, xml_files).content
         except Exception as e:
             if settings.DEBUG:
                 l.exception(e)
             message = (
                 'API call error '
-                + "Submitting project xml to ENA via CURL. CURL command is: "
-                + curl_cmd.replace(self.pass_word, "xxxxxx")
+                + "Submitting project xml to ENA: "
+                + str(e).replace(self.pass_word, "xxxxxx")
             )
             raise e
 
@@ -830,11 +822,9 @@ class EnaTaggedSequence:
             test = " -test "
         # cli_path = "tools/reposit/ena_cli/webin-cli.jar"
         webin_cmd = (
-            "java -Xmx2048m -jar {ENA_CLI} -username "
+            f"java -Xmx2048m -jar {ENA_CLI} -username "
             + self.user_token
-            + " -password '"
-            + self.pass_word
-            + "'"
+            + " " + WEBIN_CLI_PASSWORD_OPTION
             + test
             + " -context sequence -manifest "
             + str(manifest_path)
@@ -851,7 +841,7 @@ class EnaTaggedSequence:
                 html_id="tagged_seq_info",
             )
             output = subprocess.check_output(
-                webin_cmd, stderr=subprocess.STDOUT, shell=True
+                webin_cmd, stderr=subprocess.STDOUT, shell=True, env=webin_cli_env(self.pass_word)
             )
             output = output.decode("ascii")
         except subprocess.CalledProcessError as cpe:
@@ -921,11 +911,9 @@ class EnaTaggedSequence:
         if "dev" in self.ena_service:
             test = " -test "
         webin_cmd = (
-            "java -Xmx2048m -jar {ENA_CLI} -username "
+            f"java -Xmx2048m -jar {ENA_CLI} -username "
             + self.user_token
-            + " -password '"
-            + self.pass_word
-            + "'"
+            + " " + WEBIN_CLI_PASSWORD_OPTION
             + test
             + " -context sequence -manifest "
             + manifest_path
@@ -943,7 +931,7 @@ class EnaTaggedSequence:
                 html_id="tagged_seq_info",
             )
             output = subprocess.check_output(
-                webin_cmd, stderr=subprocess.STDOUT, shell=True
+                webin_cmd, stderr=subprocess.STDOUT, shell=True, env=webin_cli_env(self.pass_word)
             )
             output = output.decode("ascii")
         except subprocess.CalledProcessError as cpe:
@@ -987,7 +975,7 @@ class EnaTaggedSequence:
             [dict(data=x, title=fields[x]["name"], defaultContent='') for x in label]
         )
         columns.append(dict(data="status", title="STATUS", defaultContent=''))
-        columns.append(dict(data="accession", title="ACCESSION", defaultContent='', render="render_ena_accession_function"))
+        columns.append(dict(data="accession", title="ACCESSION", defaultContent='', render="render_repo_accession('ena')"))
         columns.append(dict(data="error", title="ERROR", defaultContent=''))
 
         tag_sequences = TaggedSequence(profile_id=profile_id).execute_query(

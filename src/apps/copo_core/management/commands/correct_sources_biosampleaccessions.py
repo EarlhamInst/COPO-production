@@ -4,6 +4,7 @@ from src.apps.copo_dtol_submission.utils.Dtol_Submission import build_specimen_s
     build_bundle_sample_xml, update_bundle_sample_xml
 import xml.etree.ElementTree as ET
 import subprocess
+from common.ena_utils import ena_requests
 from common.utils import helpers as resolve_env
 import os
 from common.schema_versions.lookup.dtol_lookups import DTOL_ENA_MAPPINGS
@@ -45,10 +46,8 @@ class Command(BaseCommand):
         # query ENA to identify correct specimen id to be associated with biosample accession
         for accession in updates_to_make:
             # todo it's possible isntead of this use the receipt command to get the alias, which is the COPO _id
-            curl_cmd = "curl -u " + self.user_token + \
-                       ':' + self.pass_word + " " + self.ena_sample_retrieval \
-                       + accession
-            registered_source = subprocess.check_output(curl_cmd, shell=True)
+            url = self.ena_sample_retrieval + accession
+            registered_source = ena_requests.get(url, self.user_token, self.pass_word).content
             # print(registered_source)
             root = ET.fromstring(registered_source)
             for sample in root.findall("SAMPLE"):
@@ -69,11 +68,9 @@ class Command(BaseCommand):
                 else:
                     specimen_to_correct = possible_source["SPECIMEN_ID"]
                     # retrieve information from the SRA accession instead
-                    curl_cmd = 'curl -m 300 -u ' + self.user_token + ':' + self.pass_word \
-                               + ' ' + self.ena_report \
-                               + possible_source["sraAccession"]
-                    # print(curl_cmd)
-                    ena_receipt = subprocess.check_output(curl_cmd, shell=True)
+                    url = self.ena_report + possible_source["sraAccession"]
+                    # print(url)
+                    ena_receipt = ena_requests.get(url, self.user_token, self.pass_word, timeout=(30, 300)).content
                     # print(ena_receipt)
                     report = json.loads(
                         ena_receipt.decode('utf8').replace("'", '"'))
@@ -131,18 +128,12 @@ class Command(BaseCommand):
 
     def modify_sample(self, id):
         fileis = "bundle_" + str(id) + ".xml"
-        curl_cmd = 'curl -u "' + self.user_token + ':' + self.pass_word \
-                   + '" -F "SUBMISSION=@modifysubmission.xml' \
-                   + '" -F "SAMPLE=@' \
-                   + fileis \
-                   + '" "' + self.ena_service \
-                   + '"'
+        xml_files = {'SUBMISSION': 'modifysubmission.xml', 'SAMPLE': fileis}
         try:
-            receipt = subprocess.check_output(curl_cmd, shell=True)
+            receipt = ena_requests.post_xml_files(self.ena_service, self.user_token, self.pass_word, xml_files).content
             # print(receipt)
         except Exception as e:
-            message = 'API call error ' + "Submitting xml to ENA via CURL. CURL command is: " + curl_cmd.replace(
-                self.pass_word, "xxxxxx")
+            message = 'API call error ' + "Submitting xml to ENA: " + str(e).replace(self.pass_word, "xxxxxx")
             # print(message)
             return False
             os.remove(fileis)

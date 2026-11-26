@@ -32,4 +32,8 @@ def copo_context(request):
         "upload_url": settings.UPLOAD_URL,
         "image_file_extensions": settings.IMAGE_FILE_EXTENSIONS,
         "ena_url_hostname": settings.ENA_URL_HOSTNAME,
+        "repository_accession_links": {
+            repo: cfg["url_template"]
+            for repo, cfg in settings.REPOSITORY_ACCESSION_LINKS.items()
+        },
     }

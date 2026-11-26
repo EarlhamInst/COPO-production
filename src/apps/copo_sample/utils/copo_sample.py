@@ -77,7 +77,7 @@ def generate_table_records(profile_id=str(), checklist_id=str()):
                 title=fields[x]["label"],
                 defaultContent='',
                 render=(
-                    "render_ena_accession_function"
+                    "render_repo_accession('ena')"
                     if x.lower().endswith("accession")
                     else ""
                 ),
@@ -95,7 +95,7 @@ def generate_table_records(profile_id=str(), checklist_id=str()):
                 title=fields[x]["label"],
                 defaultContent='',
                 render=(
-                    "render_ena_accession_function"
+                    "render_repo_accession('ena')"
                     if x.lower().endswith("accession")
                     else ""
                 ),
@@ -110,7 +110,7 @@ def generate_table_records(profile_id=str(), checklist_id=str()):
                 title=x.upper().replace("_", " "),
                 defaultContent='',
                 render=(
-                    "render_ena_accession_function"
+                    "render_repo_accession('ena')"
                     if x.lower().endswith("accession")
                     else ""
                 ),

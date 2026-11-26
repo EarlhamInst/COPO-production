@@ -19,10 +19,13 @@
 #   test/playwright/scripts/run_playwright_tests.sh                     # whole suite
 #   test/playwright/scripts/run_playwright_tests.sh -t test/playwright/e2e/test_case_login.py
 #   test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_login.py --tracing=on -v
-#   test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_submission_journey.py::test_full_submission_and_publish_journey
+#   test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_zenodo_submission_journey
+#   test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_ena_submission_journey
+#   test/playwright/scripts/run_playwright_tests.sh -e test/playwright --headed # Connect to TigerVNC via localhost:5901 in your browser
+
 #
 # -t records a trace (expands to --tracing=on -v). -e includes tests marked
-# "external" (real calls to ENA's dev sandbox / production Zenodo) — these
+# "external" (real calls to ENA's dev sandbox / the Zenodo sandbox) — these
 # are excluded by default (-m "not external") since they're slow and hit
 # real third-party services. Both flags are stripped before the rest of the
 # arguments are passed straight through to pytest. With no other arguments,
@@ -154,7 +157,11 @@ fi
 # As such, a pre-check ensures that COPO is actually being served before running the tests.
 if ! curl -s -o /dev/null --max-time 10 "$PROJECT_LOCAL_URL"; then
   echo "COPO is not responding on $PROJECT_LOCAL_URL." >&2
-  echo "Start the 'Python: Django' and 'Python: Celery Workers' debug configurations for copo_web first." >&2
+  printf "\nStart the 'Python: Django', 'Python: Celery Beat', 'Python: Celery Workers' "
+  printf "and 'Python: Celery Workers file_transfers' VS Code debug configurations in "
+  printf "order to run the Playwright tests.\n"
+  printf "They ensure that the COPO application runs on http://localhost:8000 "
+  printf "and its background tasks are running." >&2
   exit 1
 fi
 

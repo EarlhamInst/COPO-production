@@ -137,30 +137,21 @@ function render_thumbnail_image_column_function(data, type, row, meta) {
   }
 }
 
-function render_ena_accession_function(data, type, row, meta) {
-  if (data == null || data == '') {
-    return '';
-  }
-  if (type === 'display') {
-    var url = get_ena_browser_url(data);
-    var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
-    return html;
-  } else {
-    return data;
-  }
-}
-
-function render_zenodo_accession_function(data, type, row, meta) {
-  if (data == null || data == '') {
-    return '';
-  }
-  if (type === 'display') {
-    var url = 'https://zenodo.org/records/' + data;
-    var html = '<a target="_blank" href="' + url + '">' + data + '</a>';
-    return html;
-  } else {
-    return data;
-  }
+function render_repo_accession(repo) {
+  return function (data, type, row, meta) {
+    if (data == null || data == '') {
+      return '';
+    }
+    if (type === 'display') {
+      var url = get_repo_accession_url(repo, data);
+      if (!url) {
+        return data;
+      }
+      return '<a target="_blank" href="' + url + '">' + data + '</a>';
+    } else {
+      return data;
+    }
+  };
 }
 
 function addComponentMessage(componentName) {

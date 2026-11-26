@@ -146,12 +146,21 @@ repeatedly. This is why tracing is opt-in rather than always-on.
 
 ## Tests marked `external` (real ENA/Zenodo calls)
 
-Some tests make real network calls to third-party services — ENA's dev
-sandbox (`wwwdev.ebi.ac.uk`, safe, EBI's own intended test environment) and
-production Zenodo (`zenodo.org` — there is no Zenodo sandbox anywhere in
-this repo). These are marked `@pytest.mark.external` and are **excluded by
-default**: a bare `run_playwright_tests.sh` run always passes
-`-m "not external"`.
+Some tests make real network calls to services outside the local stack -
+ENA's dev sandbox (`wwwdev.ebi.ac.uk`, safe, EBI's own intended test
+environment) and the Zenodo sandbox (`sandbox.zenodo.org`). These are marked as
+`@pytest.mark.external` and are **excluded by default**: a bare
+`run_playwright_tests.sh` run always passes `-m "not external"`.
+
+Tests that need ENA's dev sandbox **skip** (with the HTTP status in the
+reason) when its taxonomy lookup is down, instead of timing out on a disabled
+button.
+
+The external single-cell journeys test each repository on its own - 
+`test_singlecell_ena_submission_journey` submits a study to ENA only and
+`test_singlecell_zenodo_submission_journey` submits one to Zenodo only so
+neither depends on the other. Both register a sample with ENA first because
+the single-cell manifest has to reference a real BioSample accession.
 
 To opt in and run them too, pass `-e` as the first argument:
 
@@ -163,7 +172,8 @@ test/playwright/scripts/run_playwright_tests.sh -e
 argument. Expect these to be slower than the rest of the suite (they poll
 for real, asynchronous ENA/Zenodo responses rather than asserting against
 local, synchronous state) and to leave real side effects behind (an ENA
-sandbox submission, a Zenodo draft deposition — never a published one).
+sandbox submission; a Zenodo sandbox draft only if the run is interrupted
+before it deletes it).
 
 ## Watching a test live
 
@@ -173,6 +183,70 @@ macOS, Safari or Finder's `Cmd+K` understands `vnc://localhost:5901`
 directly, no extra software needed. This only works while a run is actually
 in progress; the container (and its VNC server) is torn down the moment the
 test finishes.
+
+Install TigerVNC Viewer:
+
+```bash
+brew install --cask tigervnc-viewer
+```
+
+To view a test live:
+
+```bash
+test/playwright/scripts/run_playwright_tests.sh --headed
+```
+
+### Examples of commands to watch test live
+
+**Note**: Make sure that the steps have been followed in the **Prerequisites** section above.
+
+The key to watching a test live is to connect TigerVNC to `localhost:5901` once the run starts 
+and add the `--headed` flag to the test command.
+
+**Run the tests from the project root repository** not from within a Docker container then, connect 
+TigerVNC to `localhost:5901` once the run starts. Tests marked `external` call the 
+real ENA and Zenodo sandboxes so they need `-e` otherwise, they're skipped.
+
+**Entire test suite**
+
+```bash
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright --headed
+```
+
+**Login** (`test_case_login.py`)
+
+```bash
+# Entire file
+test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_login.py --headed
+
+test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_login.py::test_login --headed
+test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_login.py::test_login_rejects_bad_credentials --headed
+test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_login.py::test_login_shows_gdpr_modal_then_logout --headed
+```
+
+**Profile** (`test_case_profile.py`)
+
+```bash
+test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_profile.py::test_create_and_delete_biodata_profile --headed
+```
+
+**Single-cell submission** (`test_case_singlecell_submission_journey.py`)
+
+```bash
+# Entire file
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py --headed
+
+test/playwright/scripts/run_playwright_tests.sh test/playwright/e2e/test_case_singlecell_submission_journey.py::test_sample_manifest_validation_and_singlecell_rejects_stale_accession --headed
+
+# External: ENA only, then Zenodo only
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_ena_submission_journey --headed
+test/playwright/scripts/run_playwright_tests.sh -e test/playwright/e2e/test_case_singlecell_submission_journey.py::test_singlecell_zenodo_submission_journey --headed
+```
+
+**Optional flags** (add them to any command above):
+- `--slowmo 500` pauses 500 ms between browser actions so that the steps are easier to follow.
+- `-t` records a trace to `test/playwright/test_results/<test-name>/trace.zip`.
+- `-v` lists each test as it runs.
 
 ## Viewing a trace after the fact
 
@@ -206,7 +280,7 @@ doing what you intended.
 Browser tests should log in as a local test user via username/password, not
 by driving the real ORCID OAuth flow — ORCID is a third-party service with
 no test credentials, and automating a real login through it is inherently
-fragile (this is why the pre-existing suites under `test/testcases/` are
+fragile (this is why the pre-existing suites under `test/test_cases/` are
 mostly broken). `create_test_user` (run automatically as part of
 `setup_all`) creates a local user that logs in via allauth's plain
 username/password form at `/accounts/login/`, which works with zero
