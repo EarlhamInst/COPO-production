@@ -157,7 +157,7 @@ pymongo==4.20.0
 pypdf==7.1.0
 #pyrsistent==0.15.4
 pytest==9.2.0
-python-dateutil==2.9.0.post0
+python-dateutil==4.0.0
 #python-utils==3.8.2
 python3-openid==3.2.0
 pytz==2026.6
