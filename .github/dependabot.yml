@@ -1,9 +1,15 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# Dependabot version updates.
+# Docs: https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Schedule is MONTHLY with grouping, so each month produces roughly:
+#   - one PR with every safe (minor + patch) Python update,
+#   - one PR per Python MAJOR update, so each can be judged and tested alone,
+#   - one PR for GitHub Actions, and an occasional Docker base-image PR.
+#
+# Security updates are NOT affected by this schedule: they are raised as soon
+# as an advisory is published, as long as "Dependabot security updates" is
+# enabled in the repository settings.
 
-# Create a bot to automatically pull requests
 version: 2
 
 updates:
@@ -12,61 +18,36 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
 
-    open-pull-requests-limit: 10
+    # Skip releases younger than a week, so a package that ships several
+    # quick follow-up patches does not keep replacing the PR.
+    cooldown:
+      default-days: 7
+
+    open-pull-requests-limit: 5
 
     labels:
       - "dependencies"
       - "python"
 
     groups:
-      django:
-        patterns:
-          - "django*"
-          - "crispy-*"
-          - "daphne"
-          - "channels*"
-          - "asgiref"
-          - "djangorestframework"
-      aws:
-        patterns:
-          - "boto3"
-          - "botocore"
-          - "s3transfer"
-      celery:
-        patterns:
-          - "celery"
-          - "kombu"
-          - "billiard"
-          - "vine"
-      database:
-        patterns:
-          - "pymongo"
-          - "psycopg*"
-          - "redis"
-      data:
-        patterns:
-          - "numpy"
-          - "pandas"
-          - "biopython"
-          - "openpyxl"
-          - "xlrd"
-          - "XlsxWriter"
-      testing:
-        patterns:
-          - "pytest*"
-          - "mock"
-      all-others:
+      # Everything that should be safe, in a single PR. Majors are left out
+      # on purpose and arrive as individual PRs (e.g. Django 6, pandas 3).
+      python-minor-patch:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
     ignore:
       # astroid must stay within pylint's supported range: pylint 4.0.7 (the
       # latest release as of writing) caps astroid at <=4.1.dev0, but astroid
       # itself has moved past that (4.3.0+). Dependabot keeps proposing astroid
-      # bumps the "all-others" catch-all group can't actually install, breaking
-      # CI on every PR that includes them. Hold at patch-level until pylint
-      # raises its astroid ceiling.
+      # bumps that can't actually be installed, breaking CI on every PR that
+      # includes them. Hold at patch-level until pylint raises its astroid
+      # ceiling.
       - dependency-name: "astroid"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
@@ -74,7 +55,7 @@ updates:
   - package-ecosystem: "docker"
     directory: "/deployment/web/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
 
     labels:
       - "docker"
@@ -94,7 +75,12 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
 
     labels:
       - "github-actions"
+
+    groups:
+      github-actions:
+        patterns:
+          - "*"
