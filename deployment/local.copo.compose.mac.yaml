@@ -210,6 +210,10 @@ services:
     environment:
       - MINIO_ROOT_USER=copo@nbi.ac.uk
       - MINIO_ROOT_PASSWORD=${vault_ecs_secret_key}
+      - MINIO_DRIVE_MAX_TIMEOUT=2m
+      - MINIO_SCANNER_SPEED=slowest
+      - MINIO_API_STALE_UPLOADS_EXPIRY=1h
+      - MINIO_API_STALE_UPLOADS_CLEANUP_INTERVAL=1h
     ports:
       - '9000:9000'
       - '9001:9001'
