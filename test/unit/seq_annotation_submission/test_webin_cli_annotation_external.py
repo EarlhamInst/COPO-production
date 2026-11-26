@@ -42,15 +42,15 @@ STUDY_ACCESSION = 'PRJEB101635' # Study for Golden Jackal genome annotation
 # Each case: the GCA accession (with version, e.g. 'GCA_977927465.1'), and
 # optionally a path to a GFF3 file (.gff3 or .gff3.gz) whose sequence names
 # match that assembly. Paths are relative to the repo root, with or without a
-# leading '/' (e.g. 'test/testfiles/x.gff3.gz'), unless the file exists at the
+# leading '/' (e.g. 'test/test_files/x.gff3.gz'), unless the file exists at the
 # exact absolute path given. Without one, a small built-in GFF3 is used; its
 # sequence name 'chr1' won't match most assemblies, so ENA may reject it for
 # that reason alone.
 PUBLIC_GCA = 'GCA_977927465.2'
-PUBLIC_GCA_GFF3 = 'test/testfiles/test_annotation_mcanaur2_v2.gff3.gz'
+PUBLIC_GCA_GFF3 = 'test/test_files/test_annotation_mcanaur2_v2.gff3.gz'
 
 OTHER_OWNER_GCA = 'GCA_907163345.1'
-OTHER_OWNER_GCA_GFF3 = 'test/testfiles/test_annotation_hrh.gff3.gz'
+OTHER_OWNER_GCA_GFF3 = 'test/test_files/test_annotation_hrh.gff3.gz'
 
 # What you expect ENA to do for each case. Change these once you know ENA's rules.
 EXPECT_ACCEPTED = {
