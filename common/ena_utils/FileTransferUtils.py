@@ -136,6 +136,14 @@ def make_transfer_record(
                 tx["remote_path"] = remote_location
                 need_update = True
 
+        # Re-download data files from S3 locally since data files deleted by 
+        # `housekeeping_local_uploads` and flagged as archived are required 
+        # for re-download.
+        if no_remote_location and get_transfer_status(ena_file) == TransferStatus.ARCHIVE:
+            tx['transfer_status'] = 1
+            tx['is_archived'] = False
+            need_update = True
+
         # If the previous attempt was marked failed (or legacy "error"), a
         # resubmission should reset it to pending so the pipeline retries.
         if ena_file.get("status") in ("failed", "error") or ena_file.get("transfer_status") == int(TransferStatus.FAILED):
@@ -632,7 +640,7 @@ def get_transfer_status(tx):
         elif transfer_status > 2:
             return TransferStatus.DOWNLOADED_TO_LOCAL
         elif transfer_status == 2:
-            return TransferStatus.TRANSFERRING_TO_ENA
+            return TransferStatus.DOWNLOADING_TO_LOCAL
         elif transfer_status == 1:
             return TransferStatus.CHECKING_FOR_DOWNLOAD
         elif transfer_status == 0:  # for compatibility with old records

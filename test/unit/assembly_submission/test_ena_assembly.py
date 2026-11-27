@@ -524,3 +524,107 @@ def test_all_invalid_worksheet_assembly_files_are_reported_together(register_ass
         assembly_utils.get_assembly_file_error('AGP', 'scaffolds.agp.gz'),
         assembly_utils.get_assembly_file_error('FASTA', 'genome.fasta'),
     ]))
+
+
+# Waiting for the data files to be downloaded to COPO (update_assembly_submission_pending)
+#
+# The form only saves the assembly and queues its files to be downloaded from S3
+# to MEDIA_ROOT/ena_assembly_files/<profile_id>/. Celery moves the submission on
+# to 'pending' (where Webin-CLI is run) only once every file is on disk. Raw
+# transfer records are used, so the real get_transfer_status mapping is tested too.
+
+DOWNLOADED = {'transfer_status': 4, 'status': 'complete'}
+DOWNLOADING = {'transfer_status': 2, 'status': 'pending'}  # Being downloaded from S3, not on disk yet
+FAILED = {'transfer_status': 10, 'status': 'failed', 'failure_reason': 'NoSuchKey'}  # e.g. removed from S3
+
+
+@pytest.fixture
+def uploading_submission():
+    '''Run update_assembly_submission_pending for one submission with two assemblies.
+
+    assembly1 has the file a1.fasta.gz and assembly2 has a2.fasta.gz. Yields a
+    function taking each file's transfer record, which returns the mocks.
+    '''
+    assemblies = {
+        'assembly1': {'_id': 'assembly1', 'files': ['file1']},
+        'assembly2': {'_id': 'assembly2', 'files': ['file2']},
+    }
+    with mock.patch.object(EnaAssembly, 'Submission') as submission, \
+            mock.patch.object(EnaAssembly, 'Assembly') as assembly, \
+            mock.patch.object(EnaAssembly, 'EnaFileTransfer') as ena_file_transfer, \
+            mock.patch.object(EnaAssembly, 'ghlper') as ghlper:
+        submission.return_value.get_assembly_file_uploading.return_value = [
+            {'_id': 'sub1', 'profile_id': PROFILE_ID, 'assemblies': ['assembly1', 'assembly2']}]
+        assembly.return_value.get_record.side_effect = assemblies.get
+
+        def run(file1, file2):
+            records = [
+                dict(file1, file_id='file1', local_path=f'/media/ena_assembly_files/{PROFILE_ID}/a1.fasta.gz'),
+                dict(file2, file_id='file2', local_path=f'/media/ena_assembly_files/{PROFILE_ID}/a2.fasta.gz'),
+            ]
+            ena_file_transfer.return_value.get_collection_handle.return_value.find.side_effect = (
+                lambda query: [r for r in records if r['file_id'] in query['file_id']['$in']])
+
+            EnaAssembly.update_assembly_submission_pending()
+
+            return mock.Mock(
+                submission=submission.return_value,
+                assembly=assembly.return_value,
+                ghlper=ghlper,
+            )
+
+        yield run
+
+
+def removed_assemblies(run):
+    return [c.kwargs['assembly_id'] for c in run.submission.update_assembly_submission.call_args_list]
+
+
+def test_submission_is_ready_when_all_files_are_downloaded(uploading_submission):
+    run = uploading_submission(DOWNLOADED, DOWNLOADED)
+
+    run.submission.update_assembly_submission_pending.assert_called_once_with(['sub1'])
+    assert removed_assemblies(run) == []
+    run.assembly.update_assembly_error.assert_not_called()
+
+
+def test_submission_waits_while_a_file_is_still_downloading(uploading_submission):
+    # Webin-CLI fails with "Could not read data file" if it runs before the download finishes
+    run = uploading_submission(DOWNLOADED, DOWNLOADING)
+
+    run.submission.update_assembly_submission_pending.assert_not_called()
+    assert removed_assemblies(run) == []
+    run.assembly.update_assembly_error.assert_not_called()
+
+
+def test_assembly_with_a_failed_download_is_removed_and_the_other_submitted(uploading_submission):
+    run = uploading_submission(FAILED, DOWNLOADED)
+
+    assert removed_assemblies(run) == ['assembly1']
+    run.assembly.update_assembly_error.assert_called_once()
+    assert run.assembly.update_assembly_error.call_args.kwargs['assembly_ids'] == ['assembly1']
+    error = run.assembly.update_assembly_error.call_args.kwargs['msg']
+    assert '<strong>a1.fasta.gz</strong>' in error
+    assert 'Please upload them to COPO again' in error
+    run.ghlper.notify_assembly_status.assert_called_once_with(
+        data={'profile_id': PROFILE_ID}, msg=error, action='error', html_id='assembly_info')
+    run.submission.update_assembly_submission_pending.assert_called_once_with(['sub1'])
+
+
+def test_submission_is_not_made_pending_when_every_download_failed(uploading_submission):
+    # Removing the last assembly marks the submission complete, so it must not be moved to pending
+    run = uploading_submission(FAILED, FAILED)
+
+    assert removed_assemblies(run) == ['assembly1', 'assembly2']
+    assert run.assembly.update_assembly_error.call_count == 2
+    run.submission.update_assembly_submission_pending.assert_not_called()
+
+
+def test_validate_assembly_reports_missing_s3_bucket(validate_mocks):
+    # No bucket means no files have been uploaded to COPO for the profile
+    validate_mocks.check_for_s3_bucket.return_value = False
+
+    result = EnaAssembly.validate_assembly(make_form(fasta='genome.fasta.gz'), PROFILE_ID, None)
+
+    assert result == {'error': 'Files not found. Please upload the data files to COPO and try again'}
+    validate_mocks.check_s3_bucket_for_files.assert_not_called()

@@ -349,7 +349,7 @@ class S3Connection:
         if status:
             return dict(
                 status="success",
-                message="All files have been deleted "
+                message="Files have been deleted "
                 + (
                     "except the following that are currently in use:<br>"
                     + "<br>".join(file_not_deleted)

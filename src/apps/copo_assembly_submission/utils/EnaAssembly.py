@@ -146,24 +146,26 @@ def validate_assembly(form, profile_id, assembly_id):
         return {"error": "At least one assembly file is required"}
 
 
-    if s3obj.check_for_s3_bucket(bucket_name):
-        # get filenames from manifest
+    # Data files cannot be fetched for a submission if no S3 bucket exists
+    if not s3obj.check_for_s3_bucket(bucket_name):
+        return {'error': 'Files not found. Please upload the data files to COPO and try again'}
 
-        s3_file_etags,_ = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=files)
-        # check for files
-        if not s3_file_etags:
-            # error message has been sent to frontend by check_s3_bucket_for_files so return so prevent ena.collect() from running
-            return {"error": 'Files not found, please upload files to COPO and try again'}
+    s3_file_etags,_ = s3obj.check_s3_bucket_for_files(bucket_name=bucket_name, file_list=files)
+    
+    # Check for data files
+    if not s3_file_etags:
+        return {'error': 'Files not found. Please upload the data files to COPO and try again'}
+
+    # Check if the contents of the data file match the file compression it claims to be
+    for f_name in files:
+        expected = next((m for ext, m in FILE_COMPRESSION_SIGNATURES.items() if f_name.endswith(ext)), None)
         
-        # Check if the file contents match the compression it claims to be
-        for f_name in files:
-            expected = next((m for ext, m in FILE_COMPRESSION_SIGNATURES.items() if f_name.endswith(ext)), None)
-            if expected and not get_file_header(s3obj, bucket_name, f_name).startswith(expected):
-                file_ext = Path(f_name).suffix
-                return {
-                    'error': MESSAGES['invalid_compressed_file'].format(file_name=f_name, file_extension=file_ext)
-                }
-                
+        if expected and not get_file_header(s3obj, bucket_name, f_name).startswith(expected):
+            file_ext = Path(f_name).suffix
+            return {
+                'error': MESSAGES['invalid_compressed_file'].format(file_name=f_name, file_extension=file_ext)
+            }
+
     # Check if any of the files is already being used in another submission
     files = [form[field] for field in ASSEMBLY_FILE_FIELDS if form[field]]   
     datafiles = DataFile().get_all_records_columns(filter_by={"profile_id": profile_id, "file_name":{"$in": files}, "deleted": {"$ne": get_deleted_flag()}})
@@ -193,8 +195,12 @@ def validate_assembly(form, profile_id, assembly_id):
                         )
                     }
                 if existing_file["s3_etag"] == s3_file_etags[f_name]:
+                    # Reuse the record and make sure that a local copy of the data file is
+                    # (re)downloaded if the Celery housekeeping task has  
+                    # already archived or deleted the file.
+                    tx.make_transfer_record(file_id=str(existing_file['_id']), submission_id=str(sub_id), no_remote_location=True)
                     file_ids.append(str(existing_file["_id"]))
-                    continue        
+                    continue
             else: 
                 f_name_html = [f'<strong>{escape(f_name)}</strong>']
                 return {"error": (
@@ -272,20 +278,43 @@ def update_assembly_submission_pending():
     all_uploaded_sub_ids = []
     for sub in subs:
         all_file_uploaded = True
+        remaining_assemblies = 0
+        
         for assembly_id in sub["assemblies"]:
             assembly = Assembly().get_record(assembly_id)
             if not assembly:
                 Submission().update_assembly_submission(sub_id=str(sub["_id"]), assembly_id= assembly_id)
                 continue
 
-            enaFiles = cursor_to_list(EnaFileTransfer().get_collection_handle().find({"profile_id": sub["profile_id"], "file_id": {"$in": assembly["files"]}}))
+            ena_files = cursor_to_list(EnaFileTransfer().get_collection_handle().find({"profile_id": sub["profile_id"], "file_id": {"$in": assembly["files"]}}))
 
-            for enaFile in enaFiles:
-                if tx.get_transfer_status(enaFile) < tx.TransferStatus.DOWNLOADED_TO_LOCAL: 
-                    all_file_uploaded = False
-                    break
- 
-        if all_file_uploaded:
+            # A failed transfer will never become available locally so terminate the submission of
+            # the assembly instead of allowing the webin-cli to be executed without the file.
+            failed_files = [ena_file for ena_file in ena_files if tx.get_transfer_status(ena_file) == tx.TransferStatus.FAILED]
+            
+            if failed_files:
+                file_names_html = [f"<strong>{escape(os.path.basename(f['local_path']))}</strong>" for f in failed_files]
+                error = (
+                    "The following data files could not be retrieved from COPO's file storage area: "
+                    f'{render_html_list(file_names_html)}'
+                    'Please upload them to COPO again and resubmit the assembly.'
+                )
+                
+                Logger().error(f'Assembly {assembly_id} not submitted, file transfer failed: '
+                               + ', '.join(f"{f['local_path']} ({f.get('failure_reason', '')})" for f in failed_files))
+                Assembly().update_assembly_error(assembly_ids=[assembly_id], msg=error)
+                ghlper.notify_assembly_status(data={'profile_id': sub['profile_id']}, msg=error, action='error',
+                                              html_id='assembly_info')
+                Submission().update_assembly_submission(sub_id=str(sub['_id']), assembly_id=assembly_id)
+                continue
+
+            remaining_assemblies += 1
+            if any(tx.get_transfer_status(ena_file) < tx.TransferStatus.DOWNLOADED_TO_LOCAL for ena_file in ena_files):
+                all_file_uploaded = False
+
+        # If every assembly was removed, update_assembly_submission has already marked
+        # the submission complete, so don't move it to pending.
+        if all_file_uploaded and remaining_assemblies:
             all_uploaded_sub_ids.append(sub["_id"])
 
     if all_uploaded_sub_ids:
@@ -433,7 +462,7 @@ def generate_additional_columns(profile_id):
     result = []
     submissions = Submission().get_records_by_field("profile_id", profile_id)
 
-    enaFiles = Assembly() \
+    ena_files = Assembly() \
         .get_collection_handle() \
         .aggregate([
             {"$match": {"profile_id": profile_id, "accession":{"$exists": True}, "accession":{"$ne":""}}},
@@ -449,7 +478,7 @@ def generate_additional_columns(profile_id):
             {"$unwind": {'path': '$enaFileTransfer', "preserveNullAndEmptyArrays": True}},
             {"$project": {"accession":1 , "ecs_location": "$enaFileTransfer.ecs_location",  "status": "$enaFileTransfer.status"}}
             ])
-    enaFilesMap = { enaFile["accession"] : enaFile.get("ecs_location", "") for enaFile in list(enaFiles)}
+    ena_filesMap = { ena_file["accession"] : ena_file.get("ecs_location", "") for ena_file in list(ena_files)}
 
     if submissions and len(submissions) > 0:
         project_accessions = submissions[0].get("accessions",[]).get("project",[])
@@ -458,7 +487,7 @@ def generate_additional_columns(profile_id):
             if assembly_accessions:
                 assession_map = query_ena_file_processing_status_by_project(project_accessions[0].get("accession"), "SEQUENCE_ASSEMBLY")
                 result = [{ "_id": ObjectId(accession_obj["assembly_id"]), "ena_file_processing_status":assession_map.get(accession_obj["accession"], "") } for accession_obj in assembly_accessions if accession_obj.get("accession","") ]     
-                ecs_locations_with_file_archived = [ enaFilesMap[accession_obj["accession"]] for accession_obj in assembly_accessions if accession_obj.get("accession","") and "File archived" in assession_map.get(accession_obj["accession"], "")]
+                ecs_locations_with_file_archived = [ ena_filesMap[accession_obj["accession"]] for accession_obj in assembly_accessions if accession_obj.get("accession","") and "File archived" in assession_map.get(accession_obj["accession"], "")]
                 EnaFileTransfer().complete_remote_transfer_status_by_ecs_path( ecs_locations=ecs_locations_with_file_archived)        
 
     return pd.DataFrame.from_dict(result)
